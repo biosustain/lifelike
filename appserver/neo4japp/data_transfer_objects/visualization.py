@@ -134,6 +134,12 @@ class DuplicateEdgeConnectionData(CamelDictMixin):
 
 
 @attr.s(frozen=True)
+class ExpandNodeRequest(CamelDictMixin):
+    node_id: int = attr.ib()
+    filter_labels: List[str] = attr.ib()
+
+
+@attr.s(frozen=True)
 class ReferenceTableDataRequest(CamelDictMixin):
     node_edge_pairs: List[ReferenceTablePair] = attr.ib()
 

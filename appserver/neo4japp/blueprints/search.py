@@ -1,7 +1,7 @@
 import attr
 from flask import Blueprint
 from neo4japp.blueprints.auth import auth
-from neo4japp.database import get_search_service_dao, get_neo4j_service_dao
+from neo4japp.database import get_search_service_dao
 from neo4japp.services.pdf_search import PDFSearch, PDFSearchResult
 from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
 

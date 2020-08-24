@@ -3,7 +3,7 @@ import attr
 from flask import Blueprint
 from werkzeug.datastructures import FileStorage
 
-from neo4japp.database import db, get_neo4j_service_dao, get_user_file_import_service
+from neo4japp.database import db, get_kg_service, get_user_file_import_service
 from neo4japp.data_transfer_objects.user_file_import import (
     ImportGenesRequest,
     Neo4jColumnMapping,
@@ -21,7 +21,7 @@ bp = Blueprint('user-file-import-api', __name__, url_prefix='/user-file-import')
 @bp.route('/get-db-labels', methods=['GET'])
 @jsonify_with_class()
 def get_db_labels():
-    neo4j = get_neo4j_service_dao()
+    neo4j = get_kg_service()
     labels = neo4j.get_db_labels()
     return SuccessResponse(result=labels, status_code=200)
 
@@ -29,7 +29,7 @@ def get_db_labels():
 @bp.route('/get-db-relationship-types', methods=['GET'])
 @jsonify_with_class()
 def get_db_relationship_types():
-    neo4j = get_neo4j_service_dao()
+    neo4j = get_kg_service()
     relationship_types = neo4j.get_db_relationship_types()
     return SuccessResponse(result=relationship_types, status_code=200)
 
@@ -37,7 +37,7 @@ def get_db_relationship_types():
 @bp.route('/get-node-properties', methods=['GET'])
 @jsonify_with_class(NodePropertiesRequest)
 def get_node_properties(req: NodePropertiesRequest):
-    neo4j = get_neo4j_service_dao()
+    neo4j = get_kg_service()
     props = neo4j.get_node_properties(req.node_label)
     return SuccessResponse(result=props, status_code=200)
 

@@ -16,7 +16,7 @@ import {
 
 @Injectable()
 export class VisualizationService {
-    readonly visApi = '/api/neo4j';
+    readonly visApi = '/api/visualizer';
 
     constructor(private http: HttpClient) {}
 
