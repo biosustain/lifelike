@@ -46,7 +46,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
                 const error: ApiHttpError = res.error.apiHttpError;
                 if (statusCode === 401) {
                     if (error.message === JWT_REFRESH_TOKEN_EXPIRED || error.message === JWT_REFRESH_TOKEN_INVALID ||
-                        error.message === JWT_AUTH_TOKEN_EXPIRED || error.message === JWT_AUTH_TOKEN_INVALID) {
+                        error.message === JWT_AUTH_TOKEN_INVALID) {
                         // Clear any previous login state which forces users to log out
                         // and log in again if token has been expired or invalid
                         this.store.dispatch(AuthActions.loginReset());
