@@ -63,12 +63,26 @@ def get_neo4j():
     return g.neo4j
 
 
-def get_neo4j_service_dao():
-    if 'neo4j_service_dao' not in g:
-        from neo4japp.services import Neo4JService
+def get_kg_service():
+    if 'kg_service' not in g:
+        from neo4japp.services import KgService
         graph = _connect_to_neo4j()
-        g.neo4j_service_dao = Neo4JService(graph=graph)
-    return g.neo4j_service_dao
+        g.kg_service = KgService(
+            graph=graph,
+            session=db.session,
+        )
+    return g.kg_service
+
+
+def get_visualizer_service():
+    if 'visualizer_service' not in g:
+        from neo4japp.services import VisualizerService
+        graph = _connect_to_neo4j()
+        g.visualizer_service = VisualizerService(
+            graph=graph,
+            session=db.session,
+        )
+    return g.visualizer_service
 
 
 def get_user_file_import_service():
@@ -167,7 +181,7 @@ def reset_dao():
     handy for production later.
     """
     for dao in [
-        'neo4j_service_dao',
+        'kg_service',
         'user_file_import_service',
         'search_dao',
         'authorization_service',
@@ -175,6 +189,7 @@ def reset_dao():
         'projects_service',
         'lmdb_dao',
         'annotation_neo4j',
+        'visualizer_service',
     ]:
         if dao in g:
             g.pop(dao)

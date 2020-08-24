@@ -6,27 +6,17 @@ from typing import List
 
 from neo4japp.blueprints import GraphRequest
 from neo4japp.constants import *
-from neo4japp.database import get_neo4j_service_dao
+from neo4japp.database import get_visualizer_service
 
 from neo4japp.data_transfer_objects.visualization import (
+    ExpandNodeRequest,
     GetSnippetsForEdgeRequest,
     GetSnippetsForClusterRequest,
     ReferenceTableDataRequest,
 )
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
-bp = Blueprint('neo4j-api', __name__, url_prefix='/neo4j')
-
-
-@attr.s(frozen=True)
-class ReactionRequest(CamelDictMixin):
-    biocyc_id: int = attr.ib()
-
-
-@attr.s(frozen=True)
-class ExpandNodeRequest(CamelDictMixin):
-    node_id: int = attr.ib()
-    filter_labels: List[str] = attr.ib()
+bp = Blueprint('visualizer-api', __name__, url_prefix='/visualizer')
 
 
 @bp.route('/batch', methods=['GET'])
@@ -37,20 +27,20 @@ def get_batch():
     relationship
     TODO: Document query language
     """
-    neo4j = get_neo4j_service_dao()
+    visualizer_service = get_visualizer_service()
     data_query = request.args.get('data', '')
     try:
         decoded_query = bytearray.fromhex(data_query).decode()
     except ValueError:
         return SuccessResponse(result='No results found', status_code=200)
-    result = neo4j.query_batch(decoded_query)
+    result = visualizer_service.query_batch(decoded_query)
     return SuccessResponse(result=result, status_code=200)
 
 
 @bp.route('/expand', methods=['POST'])
 @jsonify_with_class(ExpandNodeRequest)
 def expand_graph_node(req: ExpandNodeRequest):
-    neo4j = get_neo4j_service_dao()
+    neo4j = get_visualizer_service()
     node = neo4j.expand_graph(req.node_id, req.filter_labels)
     return SuccessResponse(result=node, status_code=200)
 
@@ -58,7 +48,7 @@ def expand_graph_node(req: ExpandNodeRequest):
 @bp.route('/get-reference-table-data', methods=['POST'])
 @jsonify_with_class(ReferenceTableDataRequest)
 def get_reference_table_data(req: ReferenceTableDataRequest):
-    neo4j = get_neo4j_service_dao()
+    neo4j = get_visualizer_service()
     reference_table_data = neo4j.get_reference_table_data(
         req.node_edge_pairs,
     )
@@ -68,7 +58,7 @@ def get_reference_table_data(req: ReferenceTableDataRequest):
 @bp.route('/get-snippets-for-edge', methods=['POST'])
 @jsonify_with_class(GetSnippetsForEdgeRequest)
 def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
-    neo4j = get_neo4j_service_dao()
+    neo4j = get_visualizer_service()
     edge_snippets_result = neo4j.get_snippets_for_edge(
         page=req.page,
         limit=req.limit,
@@ -80,7 +70,7 @@ def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
 @bp.route('/get-snippets-for-cluster', methods=['POST'])
 @jsonify_with_class(GetSnippetsForClusterRequest)
 def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
-    neo4j = get_neo4j_service_dao()
+    neo4j = get_visualizer_service()
     cluster_snippets_result = neo4j.get_snippets_for_cluster(
         page=req.page,
         limit=req.limit,
