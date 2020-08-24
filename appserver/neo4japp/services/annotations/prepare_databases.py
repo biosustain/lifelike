@@ -22,7 +22,16 @@ from neo4japp.services.annotations.constants import (
     SPECIES_NCBI_LMDB,
     DatabaseType,
 )
-from neo4japp.services.annotations.util import normalize_str
+from neo4japp.services.annotations.util import (
+    create_chemical_for_ner,
+    create_compound_for_ner,
+    create_disease_for_ner,
+    create_gene_for_ner,
+    create_phenotype_for_ner,
+    create_protein_for_ner,
+    create_species_for_ner,
+    normalize_str,
+)
 
 
 # reference to this directory
@@ -70,11 +79,7 @@ def prepare_lmdb_genes_database(filename: str):
                 gene_name = line[1]
                 synonym = line[2]
 
-                gene = {
-                    'id_type': DatabaseType.Ncbi.value,
-                    'name': gene_name,
-                    'synonym': synonym,
-                }
+                gene = create_gene_for_ner(name=gene_name, synonym=synonym)
 
                 try:
                     transaction.put(
@@ -105,12 +110,11 @@ def prepare_lmdb_chemicals_database(filename: str):
                 synonyms = line[2].split('|')
 
                 if chemical_name != 'null':
-                    chemical = {
-                        'chemical_id': chemical_id,
-                        'id_type': DatabaseType.Chebi.value,
-                        'name': chemical_name,
-                        'synonym': chemical_name,
-                    }
+                    chemical = create_chemical_for_ner(
+                        chemical_id=chemical_id,
+                        name=chemical_name,
+                        synonym=chemical_name,
+                    )
 
                     try:
                         transaction.put(
@@ -123,12 +127,11 @@ def prepare_lmdb_chemicals_database(filename: str):
                                 if synonym_term != 'null':
                                     normalized_key = normalize_str(synonym_term)
 
-                                    synonym = {
-                                        'chemical_id': chemical_id,
-                                        'id_type': DatabaseType.Chebi.value,
-                                        'name': chemical_name,
-                                        'synonym': synonym_term,
-                                    }
+                                    synonym = create_chemical_for_ner(
+                                        chemical_id=chemical_id,
+                                        name=chemical_name,
+                                        synonym=synonym_term,
+                                    )
 
                                     transaction.put(
                                         normalized_key.encode('utf-8'),
@@ -158,12 +161,11 @@ def prepare_lmdb_compounds_database(filename: str):
                 synonyms = line[2].split('|')
 
                 if compound_name != 'null':
-                    compound = {
-                        'compound_id': compound_id,
-                        'id_type': DatabaseType.Biocyc.value,
-                        'name': compound_name,
-                        'synonym': compound_name,
-                    }
+                    compound = create_compound_for_ner(
+                        compound_id=compound_id,
+                        name=compound_name,
+                        synonym=compound_name,
+                    )
 
                     try:
                         transaction.put(
@@ -176,12 +178,11 @@ def prepare_lmdb_compounds_database(filename: str):
                                 if synonym_term != 'null':
                                     normalized_key = normalize_str(synonym_term)
 
-                                    synonym = {
-                                        'compound_id': compound_id,
-                                        'id_type': DatabaseType.Biocyc.value,
-                                        'name': compound_name,
-                                        'synonym': synonym_term,
-                                    }
+                                    synonym = create_compound_for_ner(
+                                        compound_id=compound_id,
+                                        name=compound_name,
+                                        synonym=synonym_term,
+                                    )
 
                                     transaction.put(
                                         normalized_key.encode('utf-8'),
@@ -210,14 +211,10 @@ def prepare_lmdb_proteins_database(filename: str):
                 #
                 protein_id = line[1]
                 protein_name = line[2] if 'Uncharacterized protein' not in line[2] else line[0]  # noqa
-                protein = {
-                    # changed protein_id to protein_name for now (JIRA LL-671)
-                    # will eventually change back to protein_id
-                    'protein_id': protein_name,
-                    'id_type': DatabaseType.Uniprot.value,
-                    'name': protein_name,
-                    'synonym': protein_name,
-                }
+                # changed protein_id to protein_name for now (JIRA LL-671)
+                # will eventually change back to protein_id
+                protein = create_protein_for_ner(
+                    name=protein_name, synonym=protein_name)
 
                 try:
                     transaction.put(
@@ -249,13 +246,12 @@ def prepare_lmdb_species_database(filename: str):
                 species_category = line[2]
                 species_name = line[3]
 
-                species = {
-                    'tax_id': species_id,
-                    'id_type': DatabaseType.Ncbi.value,
-                    'category': species_category if species_category else 'Uncategorized',
-                    'name': species_name,
-                    'synonym': species_name,
-                }
+                species = create_species_for_ner(
+                    species_id=species_id,
+                    category=species_category if species_category else 'Uncategorized',
+                    name=species_name,
+                    synonym=species_name,
+                )
 
                 try:
                     transaction.put(
@@ -284,12 +280,8 @@ def prepare_lmdb_diseases_database(filename: str):
                 disease_name = line[1]
                 synonym = line[2]
 
-                disease = {
-                    'disease_id': disease_id,
-                    'id_type': DatabaseType.Mesh.value,
-                    'name': disease_name,
-                    'synonym': synonym,  # disease_name also in synonym column
-                }
+                disease = create_disease_for_ner(
+                    disease_id=disease_id, name=disease_name, synonym=synonym)
 
                 try:
                     transaction.put(
@@ -320,12 +312,11 @@ def prepare_lmdb_phenotypes_database(filename: str):
                 # turn string repr list into list
                 synonyms = literal_eval(line[3])
 
-                phenotype = {
-                    'phenotype_id': phenotype_id,
-                    'id_type': DatabaseType.Mesh.value,
-                    'name': phenotype_name,
-                    'synonym': phenotype_name,
-                }
+                phenotype = create_phenotype_for_ner(
+                    phenotype_id=phenotype_id,
+                    name=phenotype_name,
+                    synonym=phenotype_name,
+                )
 
                 try:
                     transaction.put(
@@ -337,12 +328,11 @@ def prepare_lmdb_phenotypes_database(filename: str):
                         for synonym_term in synonyms:
                             normalized_key = normalize_str(synonym_term)
 
-                            synonym = {
-                                'phenotype_id': phenotype_id,
-                                'id_type': DatabaseType.Mesh.value,
-                                'name': phenotype_name,
-                                'synonym': synonym_term,
-                            }
+                            synonym = create_phenotype_for_ner(
+                                phenotype_id=phenotype_id,
+                                name=phenotype_name,
+                                synonym=synonym_term,
+                            )
 
                             transaction.put(
                                 normalized_key.encode('utf-8'),
