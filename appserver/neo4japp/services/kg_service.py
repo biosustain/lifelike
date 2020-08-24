@@ -114,24 +114,3 @@ class KgService(HybridDBDao):
         """Get all properties of a label."""
         props = self.graph.run(f'match (n: {node_label}) unwind keys(n) as key return distinct key').data()  # noqa
         return {node_label: [prop['key'] for prop in props]}
-
-    # TODO LL-1143: This should probably go in a different service...
-    def get_organisms_from_gene_ids(self, gene_ids: List[str]):
-        query = self.get_organisms_from_gene_ids_query()
-        result = self.graph.run(
-            query, {
-                'gene_ids': gene_ids
-            }
-        ).data()
-        return result
-
-    def get_organisms_from_gene_ids_query(self):
-        """Retrieves a list of gene and corresponding organism data
-        from a given list of genes."""
-        query = """
-            MATCH (g:Gene) WHERE g.id IN $gene_ids
-            WITH g
-            MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)
-            RETURN g.id AS gene_id, g.name as gene_name, t.id as taxonomy_id, t.name as species_name
-        """
-        return query

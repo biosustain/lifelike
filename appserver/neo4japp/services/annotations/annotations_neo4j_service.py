@@ -5,14 +5,12 @@ from typing import Dict, List
 
 from py2neo import Graph
 
-from neo4japp.services.common import HybridDBDao
+from neo4japp.services import KgService
 from neo4japp.models import OrganismGeneMatch
 
 
-class AnnotationsNeo4jService(HybridDBDao):
-    """Allows access to the main Neo4jService. Separated due
-    to being specific for annotations.
-    """
+class AnnotationsNeo4jService(KgService):
+    """KG service specific to annotations."""
     def __init__(
         self,
         session: Session,
@@ -108,6 +106,15 @@ class AnnotationsNeo4jService(HybridDBDao):
 
         return [row['organism_id'] for row in result]
 
+    def get_organisms_from_gene_ids(self, gene_ids: List[str]):
+        query = self.get_organisms_from_gene_ids_query()
+        result = self.graph.run(
+            query, {
+                'gene_ids': gene_ids
+            }
+        ).data()
+        return result
+
     def get_gene_to_organism_query(self):
         """Retrieves a list of all the genes with a given name
         in a particular organism."""
@@ -125,5 +132,16 @@ class AnnotationsNeo4jService(HybridDBDao):
         """
         query = """
             MATCH (t:Taxonomy) WHERE t.id IN $ids RETURN t.id as organism_id
+        """
+        return query
+
+    def get_organisms_from_gene_ids_query(self):
+        """Retrieves a list of gene and corresponding organism data
+        from a given list of genes."""
+        query = """
+            MATCH (g:Gene) WHERE g.id IN $gene_ids
+            WITH g
+            MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)
+            RETURN g.id AS gene_id, g.name as gene_name, t.id as taxonomy_id, t.name as species_name
         """
         return query
