@@ -12,6 +12,7 @@ export interface GraphNode {
   data: {[key: string]: any};
   subLabels: Array<string>;
   displayName: string;
+  entityUrl: string;
 }
 
 /** Edge represenattion from the backend */

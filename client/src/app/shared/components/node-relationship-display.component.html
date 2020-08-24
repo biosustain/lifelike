@@ -6,7 +6,10 @@
             [matTooltipPosition]="tooltipPosition"
         >
             <i class="fas fa-fw fa-circle" [ngStyle]="{'color': leftNodeColor}"></i>
-            {{ leftNodeName }}
+            <a *ngIf="leftNodeUrl; else leftNodeNoUrl" target="_blank" [href]="leftNodeUrl">{{ leftNodeName }}</a>
+            <ng-template #leftNodeNoUrl>
+              {{ leftNodeName }}
+            </ng-template>
         </div>
     </div>
     <div id="relationship-container" *ngIf="edge">
@@ -23,7 +26,10 @@
             [matTooltipPosition]="tooltipPosition"
         >
             <i class="fas fa-fw fa-circle" [ngStyle]="{'color': rightNodeColor}"></i>
-            {{ rightNodeName }}
+            <a *ngIf="rightNodeUrl; else rightNodeNoUrl" target="_blank" [href]="rightNodeUrl">{{ rightNodeName }}</a>
+            <ng-template #rightNodeNoUrl>
+              {{ rightNodeName }}
+            </ng-template>
         </div>
     </div>
 </div>
