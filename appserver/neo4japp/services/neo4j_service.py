@@ -155,21 +155,20 @@ class Neo4JService(GraphBaseDao):
             return self._query_neo4j(query)
         return None
 
-    def get_connected_nodes(self, node_id: str, filter_labels: List[str], limit: int):
+    def get_connected_nodes(self, node_id: str, filter_labels: List[str]):
         query = self.get_connected_nodes_query(filter_labels)
 
         results = self.graph.run(
             query,
             {
                 'node_id': node_id,
-                'limit': limit
             }
         ).data()
 
         return [result['node_id'] for result in results]
 
-    def expand_graph(self, node_id: str, filter_labels: List[str], limit: int):
-        connected_node_ids = self.get_connected_nodes(node_id, filter_labels, limit)
+    def expand_graph(self, node_id: str, filter_labels: List[str]):
+        connected_node_ids = self.get_connected_nodes(node_id, filter_labels)
         query = self.get_expand_query(node_id, connected_node_ids)
         return self._query_neo4j(query)
 
@@ -376,11 +375,20 @@ class Neo4JService(GraphBaseDao):
 
         return gene_to_organism_map
 
-    def get_organisms_from_ids(self, tax_ids: List[str]) -> List[str]:
+    def get_organisms_from_tax_ids(self, tax_ids: List[str]) -> List[str]:
         query = self.get_taxonomy_from_synonyms()
         result = self.graph.run(query, {'ids': tax_ids}).data()
 
         return [row['organism_id'] for row in result]
+
+    def get_organisms_from_gene_ids(self, gene_ids: List[str]):
+        query = self.get_organisms_from_gene_ids_query()
+        result = self.graph.run(
+            query, {
+                'gene_ids': gene_ids
+            }
+        ).data()
+        return result
 
     def load_reaction_graph(self, biocyc_id: str):
         query = self.get_reaction_query(biocyc_id)
@@ -581,7 +589,6 @@ class Neo4JService(GraphBaseDao):
                 MATCH (n)-[:ASSOCIATED]-(s)
                 WHERE ID(n) = $node_id
                 RETURN DISTINCT ID(s) as node_id
-                LIMIT $limit
             """
         else:
             label_filter_str = ''
@@ -593,7 +600,6 @@ class Neo4JService(GraphBaseDao):
                 MATCH (n)-[:ASSOCIATED]-(s)
                 WHERE ID(n) = $node_id AND ({})
                 RETURN DISTINCT ID(s) as node_id
-                LIMIT $limit
             """.format(label_filter_str)
         return query
 
@@ -720,6 +726,17 @@ class Neo4JService(GraphBaseDao):
             WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p)
             WHERE p.id IN $organisms
             RETURN s.name AS gene, collect(g.id) AS gene_ids, p.id AS organism_id
+        """
+        return query
+
+    def get_organisms_from_gene_ids_query(self):
+        """Retrieves a list of gene and corresponding organism data
+        from a given list of genes."""
+        query = """
+            MATCH (g:Gene) WHERE g.id IN $gene_ids
+            WITH g
+            MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)
+            RETURN g.id AS gene_id, g.name as gene_name, t.id as taxonomy_id, t.name as species_name
         """
         return query
 
