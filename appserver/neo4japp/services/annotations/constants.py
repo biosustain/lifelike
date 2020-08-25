@@ -144,7 +144,7 @@ class AnnotationMethod(Enum):
 # these links are used in annotations and custom annotations
 # first are search links
 # then entity hyperlinks
-NCBI_LINK = 'https://www.ncbi.nlm.nih.gov/gene/?query='
+NCBI_LINK = 'https://www.ncbi.nlm.nih.gov/gene/?term='
 UNIPROT_LINK = 'https://www.uniprot.org/uniprot/?sort=score&query='
 WIKIPEDIA_LINK = 'https://www.google.com/search?q=site:+wikipedia.org+'
 GOOGLE_LINK = 'https://www.google.com/search?q='
