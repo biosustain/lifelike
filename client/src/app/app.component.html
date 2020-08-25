@@ -31,6 +31,10 @@
         <i class="fa fa-grip-vertical"></i>
       </a>
 
+      <a [href]="helpDeskUrl" target="_blank" placement="right" triggers="hover" ngbTooltip="Feedback and Questions">
+        <i class="fa fa-comment"></i>
+      </a>
+
       <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
         <div ngbDropdown placement="top-left" container="body">
           <a id="account-dropdown" ngbDropdownToggle ngbTooltip="Options" container="body">
