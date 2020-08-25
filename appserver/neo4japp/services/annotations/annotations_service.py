@@ -1093,10 +1093,10 @@ class AnnotationsService:
             )
 
         for entity, token_positions in entity_tokenpos_pairs:
-            if entity['name'] in gene_organism_matches:
+            if entity['synonym'] in gene_organism_matches:
                 gene_id, organism_id = self._get_closest_gene_organism_pair(
                     gene_position=token_positions,
-                    organism_matches=gene_organism_matches[entity['name']]
+                    organism_matches=gene_organism_matches[entity['synonym']]
                 )
 
                 category = self.organism_categories[organism_id]
