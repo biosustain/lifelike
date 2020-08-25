@@ -466,7 +466,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       case 'UNIPROT':
         return this.buildUrl(Hyperlink.Uniprot, ann.meta.id);
       case 'NCBI':
-        if (ann.meta.type === 'Genes') {
+        if (ann.meta.type === 'Gene') {
           return this.buildUrl(Hyperlink.NcbiGenes, ann.meta.id);
         } else if (ann.meta.type === 'Species') {
           return this.buildUrl(Hyperlink.NcbiSpecies, ann.meta.id);
