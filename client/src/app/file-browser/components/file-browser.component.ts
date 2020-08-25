@@ -332,7 +332,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           } else if (event.type === HttpEventType.Response) {
             progressDialogRef.close();
             const body = event.body as any;
-            this.snackBar.open(`File '${body.result.filenames[0]}' uploaded`, 'Close', {duration: 5000});
+            this.snackBar.open(`File '${body.result.filenames}' uploaded`, 'Close', {duration: 5000});
             this.refresh(); // updates the list on successful upload
           }
         },

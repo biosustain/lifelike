@@ -166,8 +166,12 @@ class AnnotationsPDFParser:
                         if should_add_virtual_space(prev_char, lt_obj):
                             virtual_space_char = LTAnno(' ')
                             char_coord_objs_in_pdf.append(virtual_space_char)
-                        # only append if previous is not a whitespace
-                        if self._not_whitespace(char=prev_char.get_text()) and self._not_whitespace(char=lt_obj.get_text()):  # noqa
+                            prev_char = virtual_space_char
+                        if self._is_whitespace(char=lt_obj.get_text()):
+                            if self._not_whitespace(char=prev_char.get_text()):
+                                # only append if previous is not a whitespace
+                                char_coord_objs_in_pdf.append(lt_obj)
+                        else:
                             char_coord_objs_in_pdf.append(lt_obj)
                     else:
                         char_coord_objs_in_pdf.append(lt_obj)
