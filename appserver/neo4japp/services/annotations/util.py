@@ -17,27 +17,27 @@ def normalize_str(s) -> str:
     return normalized.translate(str.maketrans('', '', whitespace))
 
 
-def create_chemical_for_ner(chemical_id: str, name: str, synonym: str) -> dict:
+def create_chemical_for_ner(id_: str, name: str, synonym: str) -> dict:
     return {
-        EntityIdStr.Chemical.value: chemical_id,
+        EntityIdStr.Chemical.value: id_,
         'id_type': DatabaseType.Chebi.value,
         'name': name,
         'synonym': synonym,
     }
 
 
-def create_compound_for_ner(compound_id: str, name: str, synonym: str) -> dict:
+def create_compound_for_ner(id_: str, name: str, synonym: str) -> dict:
     return {
-        EntityIdStr.Compound.value: compound_id,
+        EntityIdStr.Compound.value: id_,
         'id_type': DatabaseType.Biocyc.value,
         'name': name,
         'synonym': synonym,
     }
 
 
-def create_disease_for_ner(disease_id: str, name: str, synonym: str) -> dict:
+def create_disease_for_ner(id_: str, name: str, synonym: str) -> dict:
     return {
-        EntityIdStr.Disease.value: disease_id,
+        EntityIdStr.Disease.value: id_,
         'id_type': DatabaseType.Mesh.value,
         'name': name,
         'synonym': synonym,
@@ -52,9 +52,9 @@ def create_gene_for_ner(name: str, synonym: str) -> dict:
     }
 
 
-def create_phenotype_for_ner(phenotype_id: str, name: str, synonym: str) -> dict:
+def create_phenotype_for_ner(id_: str, name: str, synonym: str) -> dict:
     return {
-        EntityIdStr.Phenotype.value: phenotype_id,
+        EntityIdStr.Phenotype.value: id_,
         'id_type': DatabaseType.Mesh.value,
         'name': name,
         'synonym': synonym,
@@ -73,13 +73,13 @@ def create_protein_for_ner(name: str, synonym: str) -> dict:
 
 
 def create_species_for_ner(
-    species_id: str,
+    id_: str,
     name: str,
     synonym: str,
     category: str = 'Uncategorized',
 ) -> dict:
     return {
-        EntityIdStr.Species.value: species_id,
+        EntityIdStr.Species.value: id_,
         'id_type': DatabaseType.Ncbi.value,
         'category': category,
         'name': name,

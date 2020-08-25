@@ -111,7 +111,7 @@ def prepare_lmdb_chemicals_database(filename: str):
 
                 if chemical_name != 'null':
                     chemical = create_chemical_for_ner(
-                        chemical_id=chemical_id,
+                        id_=chemical_id,
                         name=chemical_name,
                         synonym=chemical_name,
                     )
@@ -128,7 +128,7 @@ def prepare_lmdb_chemicals_database(filename: str):
                                     normalized_key = normalize_str(synonym_term)
 
                                     synonym = create_chemical_for_ner(
-                                        chemical_id=chemical_id,
+                                        id_=chemical_id,
                                         name=chemical_name,
                                         synonym=synonym_term,
                                     )
@@ -162,7 +162,7 @@ def prepare_lmdb_compounds_database(filename: str):
 
                 if compound_name != 'null':
                     compound = create_compound_for_ner(
-                        compound_id=compound_id,
+                        id_=compound_id,
                         name=compound_name,
                         synonym=compound_name,
                     )
@@ -179,7 +179,7 @@ def prepare_lmdb_compounds_database(filename: str):
                                     normalized_key = normalize_str(synonym_term)
 
                                     synonym = create_compound_for_ner(
-                                        compound_id=compound_id,
+                                        id_=compound_id,
                                         name=compound_name,
                                         synonym=synonym_term,
                                     )
@@ -247,7 +247,7 @@ def prepare_lmdb_species_database(filename: str):
                 species_name = line[3]
 
                 species = create_species_for_ner(
-                    species_id=species_id,
+                    id_=species_id,
                     category=species_category if species_category else 'Uncategorized',
                     name=species_name,
                     synonym=species_name,
@@ -281,7 +281,7 @@ def prepare_lmdb_diseases_database(filename: str):
                 synonym = line[2]
 
                 disease = create_disease_for_ner(
-                    disease_id=disease_id, name=disease_name, synonym=synonym)
+                    id_=disease_id, name=disease_name, synonym=synonym)
 
                 try:
                     transaction.put(
@@ -313,7 +313,7 @@ def prepare_lmdb_phenotypes_database(filename: str):
                 synonyms = literal_eval(line[3])
 
                 phenotype = create_phenotype_for_ner(
-                    phenotype_id=phenotype_id,
+                    id_=phenotype_id,
                     name=phenotype_name,
                     synonym=phenotype_name,
                 )
@@ -329,7 +329,7 @@ def prepare_lmdb_phenotypes_database(filename: str):
                             normalized_key = normalize_str(synonym_term)
 
                             synonym = create_phenotype_for_ner(
-                                phenotype_id=phenotype_id,
+                                id_=phenotype_id,
                                 name=phenotype_name,
                                 synonym=synonym_term,
                             )
