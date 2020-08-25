@@ -1,10 +1,20 @@
 import attr
+from enum import Enum
 
 from neo4japp.exceptions import FormatterException
 from neo4japp.models import GraphNode
 from neo4japp.util import CamelDictMixin
 
 from typing import Dict, List, Optional
+
+
+# Start Enums #
+
+class Direction(Enum):
+    TO = 'Incoming'
+    FROM = 'Outgoing'
+
+# End Enums
 
 
 @attr.s(frozen=True)
@@ -191,6 +201,7 @@ class GetClusterSnippetsResult(CamelDictMixin):
 
 @attr.s(frozen=True)
 class GetReferenceTableDataResult(CamelDictMixin):
+    direction: Direction = attr.ib()
     reference_table_rows: List[ReferenceTableRow] = attr.ib()
 
 # End Response DTOs #
