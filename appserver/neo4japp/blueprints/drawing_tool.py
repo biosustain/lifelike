@@ -156,7 +156,7 @@ def get_community_projects():
         .options(joinedload(Project.user),
                  joinedload(Project.dir),
                  joinedload(Project.dir, Directory.project)) \
-        .filter(Project.public is True)
+        .filter(Project.public.is_(True))
 
     filter_query = request.args.get('q', '').strip()
     if len(filter_query):
