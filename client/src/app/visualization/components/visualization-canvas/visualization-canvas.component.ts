@@ -628,6 +628,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
             expanded: duplicateNode.expanded,
             color: duplicateNode.color,
             font: duplicateNode.font,
+            entityUrl: duplicateNode.entityUrl,
         } as VisNode;
     }
 

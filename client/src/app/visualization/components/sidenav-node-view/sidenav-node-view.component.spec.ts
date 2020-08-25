@@ -40,6 +40,7 @@ describe('SidenavNodeViewComponent', () => {
                 primaryLabel: 'MockNode',
                 color: null,
                 font: null,
+                entityUrl: null,
             },
             edges: [],
         };
