@@ -375,12 +375,6 @@ class Neo4JService(GraphBaseDao):
 
         return gene_to_organism_map
 
-    def get_organisms_from_tax_ids(self, tax_ids: List[str]) -> List[str]:
-        query = self.get_taxonomy_from_synonyms()
-        result = self.graph.run(query, {'ids': tax_ids}).data()
-
-        return [row['organism_id'] for row in result]
-
     def get_organisms_from_gene_ids(self, gene_ids: List[str]):
         query = self.get_organisms_from_gene_ids_query()
         result = self.graph.run(
