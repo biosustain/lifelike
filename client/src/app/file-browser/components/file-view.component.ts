@@ -259,12 +259,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         ...annotation.meta,
         id: annotation.meta.id || id,
         idType,
-        links: {
-          ncbi: annotation.meta.links.ncbi || this.buildUrl(SearchLink.Ncbi, annotation.meta.allText),
-          uniprot: annotation.meta.links.uniprot || this.buildUrl(SearchLink.Uniprot, annotation.meta.allText),
-          wikipedia: annotation.meta.links.wikipedia || this.buildUrl(SearchLink.Wikipedia, annotation.meta.allText),
-          google: annotation.meta.links.google || this.buildUrl(SearchLink.Google, annotation.meta.allText),
-        },
       },
     };
 
