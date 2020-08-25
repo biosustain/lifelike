@@ -19,6 +19,7 @@ export interface AssociationSnippet {
 export interface ClusterData {
     referenceTableRows: ReferenceTableRow[];
     relationship: string;
+    direction: Direction;
 }
 
 export enum Direction {
@@ -182,6 +183,7 @@ export interface GetClusterSnippetsResult {
 
 export interface GetReferenceTableDataResult {
     referenceTableRows: ReferenceTableRow[];
+    direction: Direction;
 }
 
 export interface GetSnippetsResult {
