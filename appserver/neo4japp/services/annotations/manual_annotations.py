@@ -16,12 +16,13 @@ from neo4japp.exceptions import (
 from neo4japp.models import (
     Files,
     FileContent,
+    GlobalList,
+    InclusionExclusionType,
 )
 
 
 class ManualAnnotationsService:
-    @staticmethod
-    def add_inclusions(project_id, file_id, user_id, custom_annotation, annotate_all):
+    def add_inclusions(self, project_id, file_id, user_id, custom_annotation, annotate_all):
         """ Adds custom annotation to a given file.
         If annotate_all is True, parses the file to find all occurrences of the annotated term.
 
@@ -95,13 +96,19 @@ class ManualAnnotationsService:
             else:
                 raise DuplicateRecord('Annotation already exists.')
 
+        if annotation_to_add['meta']['includeGlobally']:
+            self.add_to_global_list(
+                annotation_to_add,
+                InclusionExclusionType.INCLUSION.value,
+                file.content_id
+            )
+
         file.custom_annotations = [*inclusions, *file.custom_annotations]
         db.session.commit()
 
         return inclusions
 
-    @staticmethod
-    def remove_inclusions(project_id, file_id, uuid, remove_all):
+    def remove_inclusions(self, project_id, file_id, uuid, remove_all):
         """ Removes custom annotation from a given file.
         If remove_all is True, removes all custom annotations with matching term and entity type.
 
@@ -139,8 +146,7 @@ class ManualAnnotationsService:
 
         return removed_annotation_uuids
 
-    @staticmethod
-    def add_exclusion(project_id, file_id, user_id, exclusion):
+    def add_exclusion(self, project_id, file_id, user_id, exclusion):
         """ Adds exclusion of automatic annotation to a given file.
         """
         file = Files.query.filter_by(
@@ -156,11 +162,17 @@ class ManualAnnotationsService:
             'exclusion_date': str(datetime.now(TIMEZONE))
         }
 
+        if excluded_annotation['excludeGlobally']:
+            self.add_to_global_list(
+                excluded_annotation,
+                InclusionExclusionType.EXCLUSION.value,
+                file.content_id
+            )
+
         file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
         db.session.commit()
 
-    @staticmethod
-    def remove_exclusion(project_id, file_id, user_id, entity_type, term):
+    def remove_exclusion(self, project_id, file_id, user_id, entity_type, term):
         """ Removes exclusion of automatic annotation from a given file.
         """
         file = Files.query.filter_by(
@@ -181,8 +193,7 @@ class ManualAnnotationsService:
 
         db.session.commit()
 
-    @staticmethod
-    def get_combined_annotations(project_id, file_id):
+    def get_combined_annotations(self, project_id, file_id):
         """ Returns automatic annotations that were not marked for exclusion
         combined with custom annotations.
         """
@@ -195,10 +206,13 @@ class ManualAnnotationsService:
 
         def isExcluded(exclusions, annotation):
             for exclusion in exclusions:
-                if annotation['meta']['keywordType'] == exclusion['type'] and \
+                if annotation['meta']['type'] == exclusion['type'] and \
                         annotation['textInDocument'] == exclusion['text']:
                     return True
             return False
+
+        if len(file.annotations) == 0:
+            return file.custom_annotations
 
         annotations = file.annotations['documents'][0]['passages'][0]['annotations']
         filtered_annotations = [
@@ -207,3 +221,15 @@ class ManualAnnotationsService:
         ]
 
         return filtered_annotations + file.custom_annotations
+
+    def add_to_global_list(self, annotation, type, file_id):
+        """ Adds inclusion or exclusion to a global_list table
+        """
+        global_list_annotation = GlobalList(
+            annotation=annotation,
+            type=type,
+            file_id=file_id,
+        )
+
+        db.session.add(global_list_annotation)
+        db.session.commit()

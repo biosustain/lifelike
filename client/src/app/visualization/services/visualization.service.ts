@@ -29,12 +29,12 @@ export class VisualizationService {
 
     /**
      * expandNode will take a node id and return all children
-     * of the dept of 1.
+     * of the depth of 1.
      * @param nodeId the node id from the database
      */
-    expandNode(nodeId: number, filterLabels: string[], limit: number = NODE_EXPANSION_LIMIT) {
+    expandNode(nodeId: number, filterLabels: string[]) {
         return this.http.post<{result: Neo4jResults}>(
-            `${this.visApi}/expand`, {nodeId, filterLabels, limit},
+            `${this.visApi}/expand`, {nodeId, filterLabels},
         ).pipe(map(resp => resp.result));
     }
 

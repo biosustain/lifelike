@@ -12,6 +12,14 @@
       }
   notify: Restart logstash container
 
+- name: Create logstash filters
+  copy:
+    src: "filters/{{ item }}"
+    dest: "/{{ logstash_conf_dir }}/pipeline/{{ item }}"
+  with_items:
+    - filter-nginx.conf
+  notify: Restart logstash container
+
 - name: Start logstash container
   docker_container:
     name: "{{ logstash_hostname }}"
