@@ -15,7 +15,7 @@ def parse_sort(value: str, choices: Dict[str, Column], default_value: str):
                 raise ValueError('bad sort token')
             desc = True
             column_name = token[1:]
-        elif token[1] == '+':
+        elif token[0] == '+':
             if not len(token) >= 2:
                 raise ValueError('bad sort token')
             desc = False
