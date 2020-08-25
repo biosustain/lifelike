@@ -15,7 +15,7 @@ export enum Hyperlink {
 }
 
 export enum SearchLink {
-  Ncbi = 'https://www.ncbi.nlm.nih.gov/gene/?query=',
+  Ncbi = 'https://www.ncbi.nlm.nih.gov/gene/?term=',
   Uniprot = 'https://www.uniprot.org/uniprot/?sort=score&query=',
   Wikipedia = 'https://www.google.com/search?q=site:+wikipedia.org+',
   Google = 'https://www.google.com/search?q=',
