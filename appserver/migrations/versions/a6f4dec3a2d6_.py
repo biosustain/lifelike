@@ -54,31 +54,34 @@ def data_upgrades():
     try:
         for f in files:
             fix = False
-            annotations_list = f.annotations['documents'][0]['passages'][0]['annotations']
-            for annotation in annotations_list:
-                if annotation.get('uuid', None) is None:
-                    # if one doesn't have uuid then
-                    # rest shouldn't have either
-                    fix = True
-                    break
-
-            if fix:
-                updated_annotations = []
+            if f.annotations:
+                annotations_list = f.annotations['documents'][0]['passages'][0]['annotations']
                 for annotation in annotations_list:
-                    updated_annotations.append({
-                        **annotation,
-                        'uuid': str(uuid4()),
-                    })
+                    if annotation.get('uuid', None) is None:
+                        # if one doesn't have uuid then
+                        # rest shouldn't have either
+                        fix = True
+                        break
 
-                f.annotations['documents'][0]['passages'][0]['annotations'] = updated_annotations
-                session.execute(
-                    files_table.update().where(
-                        files_table.c.id == f.id).values(annotations=f.annotations)
-                )
+                if fix:
+                    updated_annotations = []
+                    for annotation in annotations_list:
+                        updated_annotations.append({
+                            **annotation,
+                            'uuid': str(uuid4()),
+                        })
+
+                    f.annotations['documents'][0]['passages'][0]['annotations'] = updated_annotations
+                    session.execute(
+                        files_table.update().where(
+                            files_table.c.id == f.id).values(annotations=f.annotations)
+                    )
         session.commit()
-    except Exception:
+    except Exception as exc:
         session.rollback()
         session.close()
+        # need to raise otherwise migration will still succeed
+        raise Exception(exc)
 
 
 def data_downgrades():
