@@ -4,7 +4,9 @@ import requests
 
 from collections import deque
 from math import inf
-from typing import cast, Dict, List, Optional, Set, Tuple, Union
+from functools import partial
+from itertools import starmap
+from typing import cast, Any, Dict, List, Optional, Set, Tuple, Union
 from uuid import uuid4
 
 from pdfminer.layout import LTAnno, LTChar
@@ -77,6 +79,12 @@ class AnnotationsService:
         # for the global and local, structured the same as LMDB
         self.local_species_inclusion: Dict[str, List[dict]] = {}
         self.global_chemical_inclusion: Dict[str, List[dict]] = {}
+        self.global_compound_inclusion: Dict[str, List[dict]] = {}
+        self.global_disease_inclusion: Dict[str, List[dict]] = {}
+        self.global_gene_inclusion: Dict[str, List[dict]] = {}
+        self.global_phenotype_inclusion: Dict[str, List[dict]] = {}
+        self.global_protein_inclusion: Dict[str, List[dict]] = {}
+        self.global_species_inclusion: Dict[str, List[dict]] = {}
 
         self.matched_genes: Dict[str, List[PDFTokenPositions]] = {}
         self.matched_chemicals: Dict[str, List[PDFTokenPositions]] = {}
@@ -157,6 +165,17 @@ class AnnotationsService:
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Species.value and exclusion.get('text'))  # noqa
 
+    def _get_global_inclusion_pairs(self) -> List[Tuple[str, str, Any, Any]]:
+        return [
+            (EntityType.Chemical.value, EntityIdStr.Chemical.value, self.global_chemical_inclusion, create_chemical_for_ner),  # noqa
+            (EntityType.Compound.value, EntityIdStr.Compound.value, self.global_compound_inclusion, create_compound_for_ner),  # noqa
+            (EntityType.Disease.value, EntityIdStr.Disease.value, self.global_disease_inclusion, create_disease_for_ner),  # noqa
+            (EntityType.Gene.value, EntityIdStr.Gene.value, self.global_gene_inclusion, create_gene_for_ner),  # noqa
+            (EntityType.Phenotype.value, EntityIdStr.Phenotype.value, self.global_phenotype_inclusion, create_phenotype_for_ner),  # noqa
+            (EntityType.Protein.value, EntityIdStr.Protein.value, self.global_protein_inclusion, create_protein_for_ner),  # noqa
+            (EntityType.Species.value, EntityIdStr.Species.value, self.global_species_inclusion, create_species_for_ner),  # noqa
+        ]
+
     def _set_local_species_inclusion(self, custom_annotations: List[dict]) -> None:
         """Creates a dictionary structured very similar to LMDB.
         Used for local species custom annotation lookups.
@@ -181,7 +200,7 @@ class AnnotationsService:
                             if unique:
                                 self.local_species_inclusion[normalized_species_name].append(
                                     create_species_for_ner(
-                                        species_id=species_id,
+                                        id_=species_id,
                                         name=species_name,
                                         synonym=species_name,
                                     )
@@ -189,49 +208,67 @@ class AnnotationsService:
                         else:
                             self.local_species_inclusion[normalized_species_name] = [
                                 create_species_for_ner(
-                                    species_id=species_id,
+                                    id_=species_id,
                                     name=species_name,
                                     synonym=species_name,
                                 )
                             ]
 
-    def _set_global_chemical_inclusions(self):
+    def _set_global_inclusions(
+        self,
+        entity_type: str,
+        entity_id_str: str,
+        global_inclusion: Dict[str, List[dict]],
+        create_entity_ner_func,
+    ) -> None:
         """Creates a dictionary structured very similar to LMDB.
-        Used for global chemical custom annotation lookups.
+        Used for global entity custom annotation lookups.
         """
         for inclusion in self.global_annotations_to_include:
             if inclusion.get('meta', None):
-                if inclusion['meta'].get('type', None) == EntityType.Chemical.value:
-                    chemical_id = inclusion['meta'].get('id', None)
-                    chemical_name = inclusion['meta'].get('allText', None)
-                    normalized_chemical_name = normalize_str(chemical_name)
+                if inclusion['meta'].get('type', None) == entity_type:
+                    entity_id = inclusion['meta'].get('id', None)
+                    entity_name = inclusion['meta'].get('allText', None)
+                    normalized_entity_name = normalize_str(entity_name)
 
-                    if chemical_id and chemical_name:
-                        if normalized_chemical_name in self.global_chemical_inclusion:
-                            unique = all(
-                                [
-                                    entity['chemical_id'] != chemical_id for
-                                    entity in self.global_chemical_inclusion[normalized_chemical_name]  # noqa
-                                ]
-                            )
-                            # need to check unique because a custom annotation
-                            # can have multiple of the same entity
-                            if unique:
-                                self.global_chemical_inclusion[normalized_chemical_name].append(
-                                    create_chemical_for_ner(
-                                        chemical_id=chemical_id,
-                                        name=chemical_name,
-                                        synonym=chemical_name,
-                                    )
-                                )
-                        else:
-                            self.global_chemical_inclusion[normalized_chemical_name] = [
-                                create_chemical_for_ner(
-                                    chemical_id=chemical_id,
-                                    name=chemical_name,
-                                    synonym=chemical_name,
-                                )
+                    if entity_id and entity_name:
+                        unique = all(
+                            [
+                                entity[entity_id_str] != entity_id for
+                                entity in global_inclusion.get(normalized_entity_name, [])  # noqa
                             ]
+                        )
+                        # need to check unique because a custom annotation
+                        # can have multiple of the same entity
+                        if unique:
+                            if entity_type in {
+                                EntityType.Chemical.value,
+                                EntityType.Compound.value,
+                                EntityType.Disease.value,
+                                EntityType.Phenotype.value,
+                                EntityType.Species.value
+                            }:
+                                entity = create_entity_ner_func(
+                                    id_=entity_id,
+                                    name=entity_name,
+                                    synonym=entity_name
+                                )
+                            else:
+                                entity = create_entity_ner_func(
+                                    name=entity_name,
+                                    synonym=entity_name
+                                )
+
+                            # gene doesn't have id in LMDB
+                            # but we need to add it here for global inclusions
+                            # because the user could potentially add a gene id
+                            if entity_type == EntityType.Gene.value:
+                                entity[entity_id_str] = entity_id
+
+                            if normalized_entity_name in global_inclusion:
+                                global_inclusion[normalized_entity_name].append(entity)
+                            else:
+                                global_inclusion[normalized_entity_name] = [entity]
 
     def validate_chemicals_lmdb(
         self,
@@ -325,6 +362,15 @@ class AnnotationsService:
                     self.matched_compounds[token.keyword].append(token)
                 else:
                     self.matched_compounds[token.keyword] = [token]
+            else:
+                # didn't find in LMDB so look in global compound inclusion
+                # for global inclusions, add to same dict as LMDB matches
+                # for local inclusions add to separate dict
+                if self.global_compound_inclusion and lookup_key.decode('utf-8') in self.global_compound_inclusion:  # noqa
+                    if token.keyword in self.matched_compounds:
+                        self.matched_compounds[token.keyword].append(token)
+                    else:
+                        self.matched_compounds[token.keyword] = [token]
 
             return comp_val
 
@@ -368,6 +414,15 @@ class AnnotationsService:
                     self.matched_diseases[token.keyword].append(token)
                 else:
                     self.matched_diseases[token.keyword] = [token]
+            else:
+                # didn't find in LMDB so look in global disease inclusion
+                # for global inclusions, add to same dict as LMDB matches
+                # for local inclusions add to separate dict
+                if self.global_disease_inclusion and lookup_key.decode('utf-8') in self.global_disease_inclusion:  # noqa
+                    if token.keyword in self.matched_diseases:
+                        self.matched_diseases[token.keyword].append(token)
+                    else:
+                        self.matched_diseases[token.keyword] = [token]
 
             return diseases_val
 
@@ -411,6 +466,15 @@ class AnnotationsService:
                     self.matched_genes[token.keyword].append(token)
                 else:
                     self.matched_genes[token.keyword] = [token]
+            else:
+                # didn't find in LMDB so look in global gene inclusion
+                # for global inclusions, add to same dict as LMDB matches
+                # for local inclusions add to separate dict
+                if self.global_gene_inclusion and lookup_key.decode('utf-8') in self.global_gene_inclusion:  # noqa
+                    if token.keyword in self.matched_genes:
+                        self.matched_genes[token.keyword].append(token)
+                    else:
+                        self.matched_genes[token.keyword] = [token]
 
             return gene_val
 
@@ -454,6 +518,15 @@ class AnnotationsService:
                     self.matched_phenotypes[token.keyword].append(token)
                 else:
                     self.matched_phenotypes[token.keyword] = [token]
+            else:
+                # didn't find in LMDB so look in global phenotype inclusion
+                # for global inclusions, add to same dict as LMDB matches
+                # for local inclusions add to separate dict
+                if self.global_phenotype_inclusion and lookup_key.decode('utf-8') in self.global_phenotype_inclusion:  # noqa
+                    if token.keyword in self.matched_phenotypes:
+                        self.matched_phenotypes[token.keyword].append(token)
+                    else:
+                        self.matched_phenotypes[token.keyword] = [token]
 
             return phenotype_val
 
@@ -497,6 +570,15 @@ class AnnotationsService:
                     self.matched_proteins[token.keyword].append(token)
                 else:
                     self.matched_proteins[token.keyword] = [token]
+            else:
+                # didn't find in LMDB so look in global protein inclusion
+                # for global inclusions, add to same dict as LMDB matches
+                # for local inclusions add to separate dict
+                if self.global_protein_inclusion and lookup_key.decode('utf-8') in self.global_protein_inclusion:  # noqa
+                    if token.keyword in self.matched_proteins:
+                        self.matched_proteins[token.keyword].append(token)
+                    else:
+                        self.matched_proteins[token.keyword] = [token]
 
             return protein_val
 
@@ -551,6 +633,14 @@ class AnnotationsService:
                         self.matched_local_species_inclusion[token.keyword].append(token)
                     else:
                         self.matched_local_species_inclusion[token.keyword] = [token]
+
+                # didn't find in LMDB so look in global protein inclusion
+                # for global inclusions, add to same dict as LMDB matches
+                if self.global_species_inclusion and lookup_key.decode('utf-8') in self.global_species_inclusion:  # noqa
+                    if token.keyword in self.matched_species:
+                        self.matched_species[token.keyword].append(token)
+                    else:
+                        self.matched_species[token.keyword] = [token]
 
             return species_val
 
@@ -1007,10 +1097,18 @@ class AnnotationsService:
                     # did not find a match in LMDB
                     # check global inclusions
                     dispatch_table = {
-                        EntityType.Chemical.value: self.global_chemical_inclusion
+                        EntityType.Chemical.value: self.global_chemical_inclusion,
+                        EntityType.Compound.value: self.global_compound_inclusion,
+                        EntityType.Disease.value: self.global_disease_inclusion,
+                        EntityType.Phenotype.value: self.global_phenotype_inclusion,
+                        EntityType.Protein.value: self.global_protein_inclusion,
+                        EntityType.Species.value: self.global_species_inclusion
                     }
 
-                    entities = dispatch_table[token_type].get(normalize_str(word), None) or []
+                    if dispatch_table.get(token_type, None):
+                        entities = dispatch_table[token_type].get(normalize_str(word), [])
+                    else:
+                        raise AnnotationError(f'Unexpected entity type {token_type}.')
 
                 synonym_common_names_dict: Dict[str, Set[str]] = {}
 
@@ -1163,8 +1261,21 @@ class AnnotationsService:
                 # if there are exact matches we want those and ignore the others
                 entities_to_use = [entity for entity in entities if entity['synonym'] == word]
 
-                if len(entities_to_use) == 0:
+                if not entities_to_use:
                     entities_to_use = entities
+
+                if not entities_to_use:
+                    # did not find a match in LMDB
+                    # check global inclusions
+                    # TODO: Not right - the word will never be in the KG
+                    # otherwise it'd have matched (if organism is present)
+                    # need to use the gene id and query the KG to get the
+                    # gene name and use that instead
+                    #
+                    # need to make a second entities_to_use
+                    # which uses the returned gene name
+                    # otherwise the synonym will be added to entity_tokenpos...
+                    entities_to_use = self.global_gene_inclusion.get(normalize_str(word), [])
 
                 for entity in entities_to_use:
                     entity_synonym = entity['synonym']
@@ -1551,6 +1662,7 @@ class AnnotationsService:
         cropbox_in_pdf: Tuple[int, int],
         check_entities_in_lmdb: Dict[str, bool],
         types_to_annotate: List[Tuple[str, str]],
+        global_inclusions: List[Tuple[str, str, Any, Any]],
         organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
         """Create annotations.
@@ -1571,8 +1683,9 @@ class AnnotationsService:
                     ...
                 ]
         """
+        deque(starmap(self._set_global_inclusions, global_inclusions), maxlen=0)
+
         # find matches in lmdb
-        from functools import partial
         deque(map(partial(self._find_lmdb_match, check_entities=check_entities_in_lmdb), tokens), maxlen=0)  # noqa
 
         unified_annotations: List[Annotation] = []
@@ -1595,6 +1708,7 @@ class AnnotationsService:
         custom_annotations: List[dict],
     ) -> List[Annotation]:
         entity_type_and_id_pairs = [
+            # TODO: move this to a getter function since it's used multiple times
             # Order is IMPORTANT here, Species should always be annotated before Genes
             (EntityType.Species.value, EntityIdStr.Species.value),
             (EntityType.Chemical.value, EntityIdStr.Chemical.value),
@@ -1617,7 +1731,6 @@ class AnnotationsService:
         }
 
         self._set_local_species_inclusion(custom_annotations)
-        self._set_global_chemical_inclusions()
 
         annotations = self._create_annotations(
             tokens=tokens.token_positions,
@@ -1625,6 +1738,7 @@ class AnnotationsService:
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             check_entities_in_lmdb=entities_to_check,
             types_to_annotate=entity_type_and_id_pairs,
+            global_inclusions=self._get_global_inclusion_pairs(),
             organisms_from_custom_annotations=custom_annotations,
         )
         return self._clean_annotations(annotations=annotations)
@@ -1730,7 +1844,6 @@ class AnnotationsService:
         }
 
         self._set_local_species_inclusion(custom_annotations)
-        self._set_global_chemical_inclusions()
 
         species_annotations = self._create_annotations(
             tokens=tokens.token_positions,
@@ -1738,6 +1851,7 @@ class AnnotationsService:
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             check_entities_in_lmdb=entities_to_check,
             types_to_annotate=entity_type_and_id_pairs,
+            global_inclusions=self._get_global_inclusion_pairs(),
             organisms_from_custom_annotations=custom_annotations,
         )
 
@@ -1768,6 +1882,7 @@ class AnnotationsService:
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             check_entities_in_lmdb=entities_to_check,
             types_to_annotate=entity_type_and_id_pairs,
+            global_inclusions=self._get_global_inclusion_pairs(),
             organisms_from_custom_annotations=custom_annotations,
         )
 
