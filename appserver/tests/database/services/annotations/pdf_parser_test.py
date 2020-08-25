@@ -141,9 +141,19 @@ def test_extract_tokens(annotations_setup, index, text):
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
+        (6, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=[
+                '3', '-', 'g', 'e', 'r', 'a', 'n', 'y', 'l', '-', '3', '-', '[',
+                '(', 'Z', ')', '-', '2', '-', 'i', 's', 'o', 'c', 'y', 'a', 'n',
+                'o', 'v', 'i', 'n', 'y', 'l', ']', '-', '3', 'H', '-', 'i', 'n',
+                'd', 'o', 'l', 'e'],
+            cropbox_in_pdf=(9, 9),
+            min_idx_in_page={1: 1},
+        )),
     ],
 )
-def test_combine_char_into_word(annotations_setup, index, chars):
+def test_combine_char_into_word_with_correct_index_positions(annotations_setup, index, chars):
     pdf_parser = get_annotations_pdf_parser()
     words = pdf_parser.combine_chars_into_words(parsed_chars=chars)
 
@@ -186,6 +196,111 @@ def test_combine_char_into_word(annotations_setup, index, chars):
             ('saying…', {5: 's', 6: 'a', 7: 'y', 8: 'i', 9: 'n', 10: 'g', 11: '…'}),
         ]
         assert combined == words
+
+
+@pytest.mark.parametrize(
+    'index, chars',
+    [
+        (1, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=[
+                '3', '-', 'g', 'e', 'r', 'a', 'n', 'y', 'l', '-', '3', '-', '[',
+                '(', 'Z', ')', '-', '2', '-', 'i', 's', 'o', 'c', 'y', 'a', 'n',
+                'o', 'v', 'i', 'n', 'y', 'l', ']', '-', '3', 'H', '-', 'i', 'n',
+                'd', 'o', 'l', 'e'],
+            cropbox_in_pdf=(9, 9),
+            min_idx_in_page={1: 1},
+        )),
+        (2, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=[
+                '2', ',', '3', '-', 'B', 'e', 'n', 'z', 'o',
+                'p', 'y', 'r', 'r', 'o', 'l', 'e'],
+            cropbox_in_pdf=(9, 9),
+            min_idx_in_page={1: 1},
+        )),
+        (3, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=[
+                '(', 'P', 'h', 'o', 's', 'p', 'h', 'o', 'n',
+                'o', 'm', 'e', 't', 'h', 'o', 'x', 'y', ')',
+                'e', 't', 'h', 'y', 'l', ')', 'a', 'd', 'e', 'n', 'i', 'n', 'e', ')'],
+            cropbox_in_pdf=(9, 9),
+            min_idx_in_page={1: 1},
+        )),
+        (4, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=[
+                '(', 'P', 'h', 'o', 's', 'p', 'h', 'o', 'n',
+                'o', 'm', 'e', 't', 'h', 'o', 'x', 'y', ')',
+                'e', 't', 'h', 'y', 'l', ')', 'a', 'd', 'e', 'n', 'i', 'n', 'e'],
+            cropbox_in_pdf=(9, 9),
+            min_idx_in_page={1: 1},
+        )),
+        (5, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=[
+                '(', 'x', 'y', 'l', 'B', ')'],
+            cropbox_in_pdf=(9, 9),
+            min_idx_in_page={1: 1},
+        )),
+        (6, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=[
+                '2', ',', '6', '-', 'd', 'i', 'o', 'x', 'o', 'p',
+                'u', 'r', 'i', 'n', 'e', '(', 'x', 'y', 'l', 'B', ')'],
+            cropbox_in_pdf=(9, 9),
+            min_idx_in_page={1: 1},
+        )),
+        (7, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=[
+                'x', 'y', 'l', 'B', ')'],
+            cropbox_in_pdf=(9, 9),
+            min_idx_in_page={1: 1},
+        )),
+        (8, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=[
+                '(', 'x', 'y', 'l', 'B'],
+            cropbox_in_pdf=(9, 9),
+            min_idx_in_page={1: 1},
+        )),
+        (9, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=[
+                '(', 'x', 'y', 'l', 'B', ','],
+            cropbox_in_pdf=(9, 9),
+            min_idx_in_page={1: 1},
+        )),
+        (10, PDFParsedCharacters(
+            char_coord_objs_in_pdf=None,
+            chars_in_pdf=[
+                '2', ',', '6', '-', 'd', 'i', 'o', 'x', 'o', 'p',
+                'u', 'r', 'i', 'n', 'e', '?', '!'],
+            cropbox_in_pdf=(9, 9),
+            min_idx_in_page={1: 1},
+        )),
+    ],
+)
+def test_leading_trailing_punctuation_removed(annotations_setup, index, chars):
+    pdf_parser = get_annotations_pdf_parser()
+    words = pdf_parser.combine_chars_into_words(parsed_chars=chars)
+
+    if index == 1:
+        assert {'3-geranyl-3-[(Z)-2-isocyanovinyl]-3H-indole'} == set([w for w, _ in words])
+    elif index == 2:
+        assert {'2,3-Benzopyrrole'} == set([w for w, _ in words])
+    elif index == 3:
+        assert {'Phosphonomethoxy)ethyl)adenine'} == set([w for w, _ in words])
+    elif index == 4:
+        assert {'(Phosphonomethoxy)ethyl)adenine'} == set([w for w, _ in words])
+    elif index == 5 or index == 7 or index == 8 or index == 9:
+        assert {'xylB'} == set([w for w, _ in words])
+    elif index == 6:
+        assert {'2,6-dioxopurine(xylB)'} == set([w for w, _ in words])
+    elif index == 10:
+        assert {'2,6-dioxopurine'} == set([w for w, _ in words])
 
 
 def test_expand_ligatures(annotations_setup):
