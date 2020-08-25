@@ -19,8 +19,7 @@ from neo4japp.models import (
     DomainURLsMap,
     AnnotationStyle
 )
-from neo4japp.services import KgService
-from neo4japp.services.annotations import ManualAnnotationsService
+from neo4japp.services.annotations import AnnotationsNeo4jService, ManualAnnotationsService
 from neo4japp.services.annotations.constants import EntityType
 
 
@@ -281,7 +280,7 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
         ]
 
     monkeypatch.setattr(
-        KgService,
+        AnnotationsNeo4jService,
         'get_organisms_from_gene_ids',
         get_organisms_from_gene_ids_result,
     )
