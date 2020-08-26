@@ -1,7 +1,7 @@
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import and_
 
-from typing import Dict, List
+from typing import Dict, List, Set
 
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import OrganismGeneMatch
@@ -70,3 +70,6 @@ class AnnotationsNeo4jService(RDBMSBaseDao):
         postgres_result.update(neo4j_result)
 
         return postgres_result
+
+    def get_genes_from_ids(self, gene_ids: List[str]) -> Set[str]:
+        return self.neo4j.get_genes(genes=gene_ids)
