@@ -632,18 +632,6 @@ def test_tokens_gene_vs_protein(
         (1, [
                 PDFTokenPositions(
                     page_number=1,
-                    keyword='SerpinA1',
-                    char_positions={0: 'S', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 6: 'A', 7: '1'},
-                ),
-                PDFTokenPositions(
-                    page_number=1,
-                    keyword='human',
-                    char_positions={9: 'h', 10: 'u', 11: 'm', 12: 'a', 13: 'n'},
-                ),
-        ]),
-        (2, [
-                PDFTokenPositions(
-                    page_number=1,
                     keyword='Serpin A1',
                     char_positions={0: 'S', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 7: 'A', 8: '1'},
                 ),
@@ -654,7 +642,7 @@ def test_tokens_gene_vs_protein(
                 ),
         ]),
         # overlapping intervals
-        (3, [
+        (2, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='SERPIN',
@@ -671,16 +659,40 @@ def test_tokens_gene_vs_protein(
                     char_positions={10: 'h', 11: 'u', 12: 'm', 13: 'a', 14: 'n'},
                 ),
         ]),
-        (4, [
+        (3, [
                 PDFTokenPositions(
                     page_number=1,
-                    keyword='serpin A1',
-                    char_positions={0: 'S', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 7: 'A', 8: '1'},
+                    keyword='serpina1',
+                    char_positions={0: 's', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 6: 'a', 7: '1'},
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
-                    char_positions={10: 'h', 11: 'u', 12: 'm', 13: 'a', 14: 'n'},
+                    char_positions={9: 'h', 10: 'u', 11: 'm', 12: 'a', 13: 'n'},
+                ),
+        ]),
+        (4, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='SERPINA1',
+                    char_positions={0: 'S', 1: 'E', 2: 'R', 3: 'P', 4: 'I', 5: 'N', 6: 'A', 7: '1'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='human',
+                    char_positions={9: 'h', 10: 'u', 11: 'm', 12: 'a', 13: 'n'},
+                ),
+        ]),
+        (5, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='SerpinA1',
+                    char_positions={0: 'S', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 6: 'A', 7: '1'},
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='human',
+                    char_positions={9: 'h', 10: 'u', 11: 'm', 12: 'a', 13: 'n'},
                 ),
         ]),
     ],
@@ -710,14 +722,7 @@ def test_tokens_gene_vs_protein_serpina1_cases(
         custom_annotations=[],
     )
 
-    if index == 1:
-        assert len(annotations) == 2
-        assert annotations[0].keyword == 'serpina1'
-        assert annotations[0].meta.type == EntityType.Gene.value
-
-        assert annotations[1].keyword == 'human'
-        assert annotations[1].meta.type == EntityType.Species.value
-    elif index == 2 or index == 4:
+    if index == 1 or index == 2 or index == 5:
         assert len(annotations) == 2
         assert annotations[0].keyword == 'Serpin A1'
         assert annotations[0].meta.type == EntityType.Protein.value
@@ -726,65 +731,18 @@ def test_tokens_gene_vs_protein_serpina1_cases(
         assert annotations[1].meta.type == EntityType.Species.value
     elif index == 3:
         assert len(annotations) == 2
-        assert annotations[0].keyword == 'Serpin A1'
-        assert annotations[0].meta.type == EntityType.Protein.value
+        assert annotations[0].keyword == 'serpina1'
+        assert annotations[0].meta.type == EntityType.Gene.value
 
         assert annotations[1].keyword == 'human'
         assert annotations[1].meta.type == EntityType.Species.value
+    elif index == 4:
+        assert len(annotations) == 2
+        assert annotations[0].keyword == 'SERPINA1'
+        assert annotations[0].meta.type == EntityType.Gene.value
 
-
-@pytest.mark.parametrize(
-    'index, tokens',
-    [
-        (1, [
-                PDFTokenPositions(
-                    page_number=1,
-                    keyword='SerpinA1',
-                    char_positions={0: 'S', 1: 'e', 2: 'r', 3: 'p', 4: 'i', 5: 'n', 6: 'A', 7: '1'},
-                ),
-                PDFTokenPositions(
-                    page_number=1,
-                    keyword='human',
-                    char_positions={9: 'h', 10: 'u', 11: 'm', 12: 'a', 13: 'n'},
-                ),
-        ]),
-    ],
-)
-def test_tokens_gene_vs_protein_serpina1_case_all_caps_from_knowledge_graph(
-    default_lmdb_setup,
-    mock_get_gene_to_organism_serpina1_match_result_all_caps,
-    index,
-    tokens,
-    get_annotations_service
-):
-    annotation_service = get_annotations_service
-
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
-
-    annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
-        ),
-        custom_annotations=[],
-    )
-
-    assert len(annotations) == 2
-    # because KG returned a gene name of all caps
-    # it does not match the text in document so was not
-    # annotated as a gene
-    # because we assume gene names from KG are case sensitive
-    assert annotations[0].keyword == 'Serpin A1'
-    assert annotations[0].meta.type == EntityType.Protein.value
-
-    assert annotations[1].keyword == 'human'
-    assert annotations[1].meta.type == EntityType.Species.value
+        assert annotations[1].keyword == 'human'
+        assert annotations[1].meta.type == EntityType.Species.value
 
 
 @pytest.mark.parametrize(
@@ -864,20 +822,13 @@ def test_fix_false_positive_gene_annotations(get_annotations_service, index, ann
         annotations_list=annotations,
     )
 
+    # do exact case matching for genes
     if index == 1:
-        # gene annotation should be removed
-        # if it's a bacteria gene but the last
-        # letter is not capitalized
         assert len(fixed) == 0
     elif index == 2:
-        # if correct gene synonym is all caps
-        # but text in document is not
-        # then remove the annotation
         assert len(fixed) == 0
     elif index == 3:
-        # bacteria gene should have three lowercase
-        # with one uppercase at the end
-        assert len(fixed) == 0
+        assert len(fixed) == 1
 
 
 @pytest.mark.parametrize(
