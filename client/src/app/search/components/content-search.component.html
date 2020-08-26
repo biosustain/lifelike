@@ -77,7 +77,7 @@
 
                 <div class="search-results search-results-selectable">
                   <div *ngFor="let result of results.view" class="search-results-item"
-                       (click)="results.select(result)" tabindex="0" (keydown)="$event.keyCode != 13 || results.select(result)"
+                       (appTabSelectable)="results.select(result)"
                        [class.active]="results.isSelected(result)">
                     <div class="mb-1">
                       <app-file-type-label [object]="result.item"></app-file-type-label>
