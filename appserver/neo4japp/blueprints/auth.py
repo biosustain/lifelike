@@ -14,6 +14,7 @@ from neo4japp.exceptions import (
 )
 from neo4japp.models.auth import AppUser
 from neo4japp.util import generate_jwt_token
+from neo4japp.utils.logger import UserEventLog
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -134,7 +135,8 @@ def login():
         raise RecordNotFoundException('Credentials not found or invalid.')
 
     if user.check_password(data.get('password')):
-        current_app.logger.info(f'User login: <{user.email}>')
+        current_app.logger.info(
+            UserEventLog(username=user.username, event_type='user login').to_dict())
         # Issue access jwt
         access_jwt_encoded = generate_jwt_token(
             sub=user.email,
