@@ -26,14 +26,14 @@ t_user = db.Table(
 t_files = db.Table(
     'files',
     db.MetaData(),
-    db.Column('id', db.Integer(), primary_key=True, autoincrement=True),
+    db.Column('id', db.Integer, primary_key=True, autoincrement=True),
     db.Column('user_id', db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'), nullable=False),
     db.Column('username', db.String(64)),
 )
 
 
 def upgrade():
-    op.add_column('files', db.Column('user_id', db.Integer(), nullable=True))
+    op.add_column('files', db.Column('user_id', db.Integer, nullable=True))
     op.create_foreign_key(op.f('fk_files_user_id_appuser'), 'files', 'appuser', ['user_id'], ['id'], ondelete='CASCADE')
 
     conn = op.get_bind()

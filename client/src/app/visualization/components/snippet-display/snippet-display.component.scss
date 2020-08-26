@@ -6,6 +6,10 @@
   max-width: 95px;
 }
 
+::ng-deep .mat-expansion-panel-body {
+  padding: 0 !important;
+}
+
 .mat-icon {
   font-size: 12px;
 }
@@ -15,34 +19,10 @@
 }
 
 .snippet-panel-header {
-  text-align: left;
-  padding: 0;
-  margin-right: 1rem;
+  background-color: rgba(0, 0, 0, 0.03);
 }
-
-// TODO: Turning this off for now, because animating the open/close
-// of the panels causes weird behavior for the bottom borders of the accordion.
-// Ex: Turn this on and switch `destroyOnHide` in the template to `false` then view the
-// snippet panels. You should see odd behavior after opening/closing accordions
-// where some panels in the list don't have bottom borders.
-
-// collapse toggle
-// ::ng-deep .collapse {
-//   transition: max-height .55s, opacity .55s;
-//   max-height: 0;
-//   opacity: 0;
-//   display: block !important;
-
-//   &.show {
-//     max-height: 100rem;
-//     opacity: 1;
-//   }
-// }
-
-::ng-deep .accordion {
-  .card {
-    margin: 0.5rem 0;
-  }
+.snippet-panel-header:focus {
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
 .snippet-result {

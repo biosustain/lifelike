@@ -1,3 +1,4 @@
 elk_server_host: elk.prod.lifelike.bio:5044
 filebeat_version: 7.8
 filebeat_conf_dir: /etc/filebeat/
+cloud_provider: gcp

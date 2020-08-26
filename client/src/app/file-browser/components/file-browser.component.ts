@@ -2,6 +2,7 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/cor
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, combineLatest, from, Observable, Subscription, throwError } from 'rxjs';
+import { mergeMap, map } from 'rxjs/operators';
 import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
@@ -308,6 +309,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       this.directory.id,
       data,
     )
+      .pipe(
+        map(res => res.file_id),
+        mergeMap(fileId => this.filesService.annotateFile(
+          this.locator.projectName, fileId, data.annotationMethod))
+      )
       .pipe(this.errorHandler.create())
       .subscribe(event => {
           if (event.type === HttpEventType.UploadProgress) {
@@ -327,14 +333,13 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           } else if (event.type === HttpEventType.Response) {
             progressDialogRef.close();
             const body = event.body as any;
-            this.snackBar.open(`File '${body.result.filename}' uploaded`, 'Close', {duration: 5000});
+            this.snackBar.open(`File '${body.result.filenames}' uploaded`, 'Close', {duration: 5000});
             this.refresh(); // updates the list on successful upload
           }
         },
         err => {
           progressDialogRef.close();
-          this.refresh();  // update the list annotations could fail but upload could succeed
-          // TODO: refactor this so annotations gets called after upload
+          this.refresh();
           return throwError(err);
         },
       );
