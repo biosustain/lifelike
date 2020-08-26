@@ -369,8 +369,8 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
     if (this.entitySearchListIdx >= this.entitySearchList.length) {
       this.entitySearchListIdx = 0;
     }
-    this.graphCanvas.panToNode(
-      this.entitySearchList[this.entitySearchListIdx] as UniversalGraphNode
+    this.graphCanvas.panToEntity(
+      this.entitySearchList[this.entitySearchListIdx] as UniversalGraphEntity
     );
   }
 
@@ -380,8 +380,8 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
     if (this.entitySearchListIdx <= -1) {
       this.entitySearchListIdx = this.entitySearchList.length - 1;
     }
-    this.graphCanvas.panToNode(
-      this.entitySearchList[this.entitySearchListIdx] as UniversalGraphNode
+    this.graphCanvas.panToEntity(
+      this.entitySearchList[this.entitySearchListIdx] as UniversalGraphEntity
     );
   }
 

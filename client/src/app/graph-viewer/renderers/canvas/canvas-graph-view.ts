@@ -403,18 +403,12 @@ export class CanvasGraphView extends GraphView {
     this.applyZoomToFit(duration, padding);
   }
 
-  // TODO - remove it and wherever its referenced
-  panToNode(node: UniversalGraphNode, duration: number = 1500, padding = 50) {
-    this.previousZoomToFitTime = window.performance.now();
-    this.applyPanToNode(node, duration, padding);
-  }
-
   panToEntity(entity: UniversalGraphEntity, duration: number = 1500, padding = 50) {
     this.previousZoomToFitTime = window.performance.now();
 
     if ('from' in entity && 'to' in entity) {
       // Pan to edge
-      this.applyPanToEdge(entity, duration, padding);
+      this.applyPanToEdge(entity as UniversalGraphEdge, duration, padding);
     } else {
       // Pan to node
       this.applyPanToNode(entity as UniversalGraphNode, duration, padding);
@@ -438,19 +432,24 @@ export class CanvasGraphView extends GraphView {
       select = select.transition().duration(duration);
     }
 
-    const from: UniversalGraphNode = this.nodeHashMap[edge.from];
-    const to: UniversalGraphNode = this.nodeHashMap[edge.to];
+    const from: UniversalGraphNode = this.nodeHashMap.get(edge.from);
+    const to: UniversalGraphNode = this.nodeHashMap.get(edge.to);
+
+    const {minX, minY, maxX, maxY} = this.getNodeBoundingBox([from, to], padding);
+
+    const width = maxX - minX;
+    const height = maxY - minY;
 
     select.call(
       this.zoom.transform,
       d3.zoomIdentity
         // move to center of canvas
         .translate(canvasWidth / 2, canvasHeight / 2)
-        .scale(2)
+        .scale(Math.max(1, Math.min(canvasWidth / width, canvasHeight / height)))
         // move to the midpoint of the edge
         .translate(
-          -Math.abs(from.data.x - to.data.x) / 2,
-          -Math.abs(from.data.y - to.data.y) / 2
+          -((from.data.x + to.data.x) / 2),
+          -((from.data.y + to.data.y) / 2)
         ),
     );
 
