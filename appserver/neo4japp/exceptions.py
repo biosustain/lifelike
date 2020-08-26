@@ -48,6 +48,8 @@ class DuplicateRecord(BaseException):
 
 class InvalidArgumentsException(BaseException):
     """A generic error occurred with invalid API arguments."""
+    
+    fields: Optional[Dict[str, List[str]]]
 
     def __init__(self, message: str,
                  additional_msgs: Optional[List[str]] = None,
@@ -60,7 +62,7 @@ class InvalidArgumentsException(BaseException):
         :param fields: A dictionary of fields and their errors
         """
         super().__init__('Argument Error', message, additional_msgs or [])
-        self.fields = fields or []
+        self.fields = fields or {}
 
     def to_dict(self):
         retval = super().to_dict()
