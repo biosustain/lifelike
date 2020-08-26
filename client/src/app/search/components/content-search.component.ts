@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { ContentSearchOptions, TYPES, TYPES_MAP } from '../content-search';
 import { ActivatedRoute } from '@angular/router';
@@ -9,17 +9,20 @@ import { ContentSearchService } from '../services/content-search.service';
 import { RankedItem } from '../../interfaces/shared.interface';
 import { CollectionModal } from '../../shared/utils/collection-modal';
 import { getObjectCommands } from 'app/file-browser/utils/objects';
+import { ModuleProperties } from '../../shared/modules';
 
 @Component({
   selector: 'app-content-search',
   templateUrl: './content-search.component.html',
 })
 export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchOptions,
-  RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
+    RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
   private readonly defaultLimit = 100;
   public results = new CollectionModal<RankedItem<DirectoryObject>>([], {
     multipleSelection: false,
   });
+
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   constructor(route: ActivatedRoute,
               workspaceManager: WorkspaceManager,
@@ -29,6 +32,13 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
   get valid(): boolean {
     return !!this.params.q.length;
+  }
+
+  valueChanged(value: ContentSearchOptions) {
+    this.modulePropertiesChange.emit({
+      title: value.q.length ? `Files: ${value.q}` : 'File Search',
+      fontAwesomeIcon: 'search',
+    });
   }
 
   getResults(params: ContentSearchOptions) {

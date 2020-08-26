@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
@@ -12,6 +12,7 @@ import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { tap } from 'rxjs/operators';
 import { createSearchParamsFromQuery, getQueryParams } from '../utils/search';
 import { GraphSearchParameters } from '../graph-search';
+import { ModuleProperties } from '../../shared/modules';
 
 @Component({
   selector: 'app-graph-search',
@@ -19,6 +20,8 @@ import { GraphSearchParameters } from '../graph-search';
 })
 export class GraphSearchComponent implements OnInit, OnDestroy {
   @ViewChild('body', {static: false}) body: ElementRef;
+
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   readonly loadTask: BackgroundTask<GraphSearchParameters, FTSResult> = new BackgroundTask(params => {
     return this.searchService.visualizerSearchTemp(
@@ -35,6 +38,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
 
   legend: Map<string, string> = new Map();
 
+  private valuesSubscription: Subscription;
   routerParamSubscription: Subscription;
   loadTaskSubscription: Subscription;
 
@@ -47,6 +51,13 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.valuesSubscription = this.loadTask.values$.subscribe(value => {
+      this.modulePropertiesChange.emit({
+        title: value.query != null && value.query.length ? `Visualizer: ${value.query}` : 'Visualizer Search',
+        fontAwesomeIcon: 'search',
+      });
+    });
+
     this.loadTaskSubscription = this.loadTask.results$.subscribe(({result}) => {
       const {nodes, total} = result;
       this.results = nodes;
@@ -81,8 +92,9 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.loadTaskSubscription.unsubscribe();
     this.routerParamSubscription.unsubscribe();
+    this.loadTaskSubscription.unsubscribe();
+    this.valuesSubscription.unsubscribe();
   }
 
   refresh() {
