@@ -71,10 +71,8 @@
 
     <tbody *ngIf="status.resultsShown">
     <tr *ngFor="let user of shownUsers"
-        (click)="selection.toggle(user)"
-        [class.active]="selection.isSelected(user)"
-        (keydown)="$event.keyCode != 13 || selection.toggle(user)"
-        tabindex="0">
+        (appTabSelectable)="selection.toggle(user)"
+        [class.active]="selection.isSelected(user)">
       <td class="align-middle text-truncate mw-100">
         <div class="custom-control custom-checkbox">
           <input type="checkbox" class="custom-control-input" id="user-{{ user.id }}"
