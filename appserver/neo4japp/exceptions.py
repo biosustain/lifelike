@@ -48,7 +48,7 @@ class DuplicateRecord(BaseException):
 
 class InvalidArgumentsException(BaseException):
     """A generic error occurred with invalid API arguments."""
-    
+
     fields: Optional[Dict[str, List[str]]]
 
     def __init__(self, message: str,

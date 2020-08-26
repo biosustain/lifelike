@@ -7,7 +7,8 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.database import get_search_service_dao, db
 from neo4japp.exceptions import InvalidArgumentsException
-from neo4japp.models import AppUser, Directory, Projects, AppRole, projects_collaborator_role, Files, Project
+from neo4japp.models import AppUser, Directory, Projects, AppRole, \
+    projects_collaborator_role, Files, Project
 from neo4japp.services.pdf_search import PDFSearch
 from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
 from neo4japp.utils.request import paginate_from_args
@@ -103,8 +104,10 @@ def search_content():
 
     # Role table used to check if we have permission
     project_role_sq = db.session.query(projects_collaborator_role) \
-        .join(t_project_role_role, t_project_role_role.id == projects_collaborator_role.c.app_role_id) \
-        .join(t_project_role_user, t_project_role_user.id == projects_collaborator_role.c.appuser_id) \
+        .join(t_project_role_role,
+              t_project_role_role.id == projects_collaborator_role.c.app_role_id) \
+        .join(t_project_role_user,
+              t_project_role_user.id == projects_collaborator_role.c.appuser_id) \
         .subquery()
 
     queries = []
@@ -126,7 +129,7 @@ def search_content():
             .join(t_directory, t_directory.id == Project.dir_id) \
             .join(t_project, t_project.id == t_directory.projects_id) \
             .outerjoin(project_role_sq, project_role_sq.c.projects_id == t_project.id) \
-            .filter(sqlalchemy.or_(Project.public == True,
+            .filter(sqlalchemy.or_(Project.public.is_(True),
                                    sqlalchemy.and_(t_project_role_user.id == user_id,
                                                    t_project_role_role.name == 'project-read')))
         map_query = ft_search(map_query, q)
@@ -152,7 +155,9 @@ def search_content():
             .outerjoin(project_role_sq, project_role_sq.c.projects_id == t_project.id) \
             .filter(sqlalchemy.and_(t_project_role_user.id == user_id,
                                     t_project_role_role.name == 'project-read'))
-        file_query = file_query.filter(sqlalchemy.func.lower(Files.filename).like(f'%{q.lower()}%')) # TODO: Make FT
+        file_query = file_query.filter(
+            sqlalchemy.func.lower(Files.filename).like(f'%{q.lower()}%')
+        )  # TODO: Make FT
         queries.append(file_query)
 
     if not len(queries):
@@ -164,7 +169,9 @@ def search_content():
     combined_query = sqlalchemy.union_all(*queries).alias('combined_results')
 
     # Distinct and order
-    base_query = db.session.query(combined_query).order_by(sqlalchemy.desc(combined_query.c.rank)).distinct()
+    base_query = db.session.query(combined_query).order_by(
+        sqlalchemy.desc(combined_query.c.rank)
+    ).distinct()
 
     # Paginate
     query = paginate_from_args(
