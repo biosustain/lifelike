@@ -348,9 +348,14 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
 
   search() {
     if (this.entitySearchTerm.length) {
-      this.entitySearchList = this.graphCanvas.nodes.filter(n => {
+      const nodes = this.graphCanvas.nodes.filter(n => {
         return n.display_name.toLowerCase().includes(this.entitySearchTerm.toLowerCase());
       });
+      const edges = this.graphCanvas.edges.filter(n => {
+        return n.label.toLowerCase().includes(this.entitySearchTerm.toLowerCase());
+      });
+
+      this.entitySearchList = [].concat(nodes).concat(edges);
       this.entitySearchListIdx = -1;
     } else {
       this.entitySearchList = [];
