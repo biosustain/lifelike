@@ -201,7 +201,7 @@ class GetClusterSnippetsResult(CamelDictMixin):
 
 @attr.s(frozen=True)
 class GetReferenceTableDataResult(CamelDictMixin):
-    direction: Direction = attr.ib()
+    direction: str = attr.ib()
     reference_table_rows: List[ReferenceTableRow] = attr.ib()
 
 # End Response DTOs #
