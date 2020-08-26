@@ -1,0 +1,24 @@
+<div style="max-width: 500px" class="card bg-light">
+  <div class="card-body">
+    <div>
+      <i class="fa fa-exclamation-circle fa-3x text-danger"></i>
+    </div>
+    <ng-container *ngIf="userError != null">
+      <div class="mt-4">
+        <h5>{{ userError.title }}</h5>
+      </div>
+      <div class="mt-2">
+        {{ userError.message }}
+      </div>
+    </ng-container>
+    <div class="mt-4">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>
+<ng-container *ngIf="userError != null">
+  <div *ngIf="userError.detail" class="detail mt-4">
+    <div class="detail-title">Error Detail (Visible due to app being in debug mode)</div>
+    <pre>{{ userError.detail }}</pre>
+  </div>
+</ng-container>
