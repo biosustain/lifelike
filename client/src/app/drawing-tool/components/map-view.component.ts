@@ -1,86 +1,49 @@
-import { AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { MapService } from '../services';
-import { KnowledgeMap } from '../services/interfaces';
 
 import { MapExportDialogComponent } from './map-export-dialog.component';
-import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
-import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
-import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
+import { ModuleAwareComponent } from '../../shared/modules';
 import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { map, tap } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { MapComponent } from './map.component';
+import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 
 @Component({
   selector: 'app-map-view',
   templateUrl: './map-view.component.html',
   styleUrls: [
-    './map-view.component.scss',
+    './map.component.scss',
   ],
 })
-export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterViewInit, ModuleAwareComponent {
+export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResult>
+    implements OnDestroy, AfterViewInit, ModuleAwareComponent {
   @Input() titleVisible = true;
 
-  @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
-
-  @ViewChild('canvas', {static: true}) canvasChild;
-
-  loadTask: BackgroundTask<MapLocator, [KnowledgeMap, ExtraResult]>;
-  loadSubscription: Subscription;
   paramsSubscription: Subscription;
   queryParamsSubscription: Subscription;
 
-  locator: MapLocator | undefined;
   returnUrl: string;
 
   hasEditPermission = false;
-  _map: KnowledgeMap | undefined;
-  pendingInitialize = false;
 
-  graphCanvas: CanvasGraphView;
-
-  historyChangesSubscription: Subscription;
-  unsavedChangesSubscription: Subscription;
-
-  unsavedChanges$ = new BehaviorSubject<boolean>(false);
-
-  constructor(
-    readonly mapService: MapService,
-    readonly snackBar: MatSnackBar,
-    readonly modalService: NgbModal,
-    readonly messageDialog: MessageDialog,
-    readonly progressDialog: ProgressDialog,
-    readonly ngZone: NgZone,
-    readonly route: ActivatedRoute,
-    readonly errorHandler: ErrorHandler,
-    readonly workspaceManager: WorkspaceManager,
-  ) {
-    this.loadTask = new BackgroundTask((locator) => {
-      return combineLatest([
-        this.mapService.getMap(locator.projectName, locator.hashId).pipe(
-          // tslint:disable-next-line: no-string-literal
-          map(resp => resp['project'] as KnowledgeMap),
-          // TODO: This line is from the existing code and should be properly typed
-        ),
-        this.getExtraSource(),
-      ]);
-    });
-
-    this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, extra], value}) => {
-      this.map = result;
-      this.handleExtra(extra);
-    });
+  constructor(mapService: MapService,
+              snackBar: MatSnackBar,
+              modalService: NgbModal,
+              messageDialog: MessageDialog,
+              ngZone: NgZone, route: ActivatedRoute,
+              errorHandler: ErrorHandler,
+              workspaceManager: WorkspaceManager,
+              public readonly progressDialog: ProgressDialog) {
+    super(mapService, snackBar, modalService, messageDialog, ngZone, route, errorHandler, workspaceManager);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
@@ -91,95 +54,21 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
         projectName: params.project_name,
         hashId: params.hash_id,
       };
-
-      this.loadTask.update(this.locator);
     });
   }
 
-  getExtraSource(): Observable<ExtraResult> {
-    return new BehaviorSubject(null);
-  }
-
-  handleExtra(data: ExtraResult) {
-  }
-
-  // ========================================
+// ========================================
   // Angular events
   // ========================================
 
-  ngAfterViewInit() {
-    const style = new KnowledgeMapStyle();
-    this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
-      nodeRenderStyle: style,
-      edgeRenderStyle: style,
-    });
-
-    this.registerGraphBehaviors();
-
-    this.graphCanvas.startParentFillResizeListener();
-    this.ngZone.runOutsideAngular(() => {
-      this.graphCanvas.startAnimationLoop();
-    });
-
-    this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
-      this.unsavedChanges$.next(true);
-    });
-
-    this.unsavedChangesSubscription = this.unsavedChanges$.subscribe(value => {
-      this.emitModuleProperties();
-    });
-
-    if (this.pendingInitialize) {
-      this.initializeMap();
-    }
-  }
-
-  @Input()
-  set map(value: KnowledgeMap | undefined) {
-    this._map = value;
-    this.initializeMap();
-  }
-
-  get map() {
-    return this._map;
-  }
-
-  private initializeMap() {
-    if (!this.map) {
-      return;
-    }
-
-    if (!this.graphCanvas) {
-      this.pendingInitialize = true;
-      return;
-    }
-
-    this.graphCanvas.setGraph(this.map.graph);
-    this.graphCanvas.zoomToFit(0);
-    this.emitModuleProperties();
-  }
-
-  registerGraphBehaviors() {
-    this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcut(this.graphCanvas), -100);
-  }
-
   ngOnDestroy() {
+    super.ngOnDestroy();
     this.queryParamsSubscription.unsubscribe();
-    this.historyChangesSubscription.unsubscribe();
-    this.unsavedChangesSubscription.unsubscribe();
-    this.graphCanvas.destroy();
+    this.paramsSubscription.unsubscribe();
   }
 
   shouldConfirmUnload() {
     return this.unsavedChanges$.getValue();
-  }
-
-  emitModuleProperties() {
-    this.modulePropertiesChange.emit({
-      title: this.map ? this.map.label : 'Map',
-      fontAwesomeIcon: 'project-diagram',
-      badge: this.unsavedChanges$.getValue() ? '*' : null,
-    });
   }
 
   // ========================================
@@ -195,14 +84,14 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
 
     // Push to backend to save
     this.mapService.updateMap(this.locator.projectName, this.map)
-      .pipe(this.errorHandler.create())
-      .subscribe(() => {
-        this.unsavedChanges$.next(false);
-        this.emitModuleProperties();
-        this.snackBar.open('Map saved.', null, {
-          duration: 2000,
+        .pipe(this.errorHandler.create())
+        .subscribe(() => {
+          this.unsavedChanges$.next(false);
+          this.emitModuleProperties();
+          this.snackBar.open('Map saved.', null, {
+            duration: 2000,
+          });
         });
-      });
   }
 
   // ========================================
@@ -249,10 +138,10 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
       });
 
       project().pipe(
-        tap(
-          () => progressDialogRef.close(),
-          () => progressDialogRef.close()),
-        this.errorHandler.create(),
+          tap(
+              () => progressDialogRef.close(),
+              () => progressDialogRef.close()),
+          this.errorHandler.create(),
       ).subscribe(resp => {
         // It is necessary to create a new blob object with mime-type explicitly set
         // otherwise only Chrome works like it should
@@ -295,9 +184,9 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadPDF() {
     this.requestDownload(
-      () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'pdf'),
-      'application/pdf',
-      '.pdf',
+        () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'pdf'),
+        'application/pdf',
+        '.pdf',
     );
   }
 
@@ -306,9 +195,9 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadSVG() {
     this.requestDownload(
-      () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'svg'),
-      'application/svg',
-      '.svg',
+        () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'svg'),
+        'application/svg',
+        '.svg',
     );
   }
 
@@ -317,27 +206,15 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadPNG() {
     this.requestDownload(
-      () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'png'),
-      'application/png',
-      '.png',
+        () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'png'),
+        'application/png',
+        '.png',
     );
   }
 
   // ========================================
   // Template stuff
   // ========================================
-
-  zoomToFit() {
-    this.graphCanvas.zoomToFit();
-  }
-
-  undo() {
-    this.graphCanvas.undo();
-  }
-
-  redo() {
-    this.graphCanvas.redo();
-  }
 
   goToReturnUrl() {
     if (this.shouldConfirmUnload()) {
@@ -348,9 +225,4 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
       this.workspaceManager.navigateByUrl(this.returnUrl);
     }
   }
-}
-
-export interface MapLocator {
-  projectName: string;
-  hashId: string;
 }

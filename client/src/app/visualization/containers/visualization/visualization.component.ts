@@ -20,11 +20,9 @@ import {
   Neo4jResults,
   NewClusterSnippetsPageRequest,
   NewEdgeSnippetsPageRequest,
-  GraphSearchParameters,
   VisEdge,
   VisNode,
 } from 'app/interfaces';
-import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
@@ -34,6 +32,7 @@ import { ProgressDialog } from '../../../shared/services/progress-dialog.service
 import { MessageDialog } from '../../../shared/services/message-dialog.service';
 import { MessageType } from '../../../interfaces/message-dialog.interface';
 import { Progress } from '../../../interfaces/common-dialog.interface';
+import { GraphSearchParameters } from '../../../search/graph-search';
 
 @Component({
   selector: 'app-visualization',

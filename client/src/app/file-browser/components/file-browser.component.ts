@@ -30,6 +30,7 @@ import { KnowledgeMap, UniversalGraphNode } from '../../drawing-tool/services/in
 import { catchError } from 'rxjs/operators';
 import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
 import { getLink } from '../../search/utils/records';
+import { getObjectCommands } from '../utils/objects';
 
 interface PathLocator {
   projectName?: string;
@@ -443,20 +444,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   getObjectCommands(object: AnnotatedDirectoryObject): any[] {
-    switch (object.type) {
-      case 'dir':
-        const directory = object.data as Directory;
-        // TODO: Convert to hash ID
-        return ['/projects', this.locator.projectName, 'folders', directory.id];
-      case 'file':
-        const file = object.data as PdfFile;
-        return ['/projects', this.locator.projectName, 'files', file.file_id];
-      case 'map':
-        const map = object.data as KnowledgeMap;
-        return ['/projects', this.locator.projectName, 'maps', map.hash_id, 'edit'];
-      default:
-        throw new Error(`unknown directory object type: ${object.type}`);
-    }
+    return getObjectCommands(object);
   }
 
   getObjectQueryParams() {

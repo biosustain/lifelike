@@ -9,6 +9,8 @@ import { GraphSearchService } from './services/graph-search.service';
 import { ContentSearchComponent } from './components/content-search.component';
 import { ContentSearchFormComponent } from './components/content-search-form.component';
 import { ContentSearchService } from './services/content-search.service';
+import { DrawingToolModule } from '../drawing-tool/drawing-tool.module';
+import { FileBrowserModule } from '../file-browser/file-browser.module';
 
 const components = [
   GraphSearchComponent,
@@ -22,6 +24,8 @@ const components = [
 @NgModule({
   imports: [
     SharedModule,
+    DrawingToolModule,
+    FileBrowserModule,
   ],
   declarations: components,
   providers: [

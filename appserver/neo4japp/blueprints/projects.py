@@ -424,11 +424,15 @@ def get_child_directories(current_dir_id: int, project_name: str):
         } for d in reversed(parents)],
         objects=[
             *[{
+                'id': c.id,
                 'type': 'dir',
                 'name': c.name,
                 'creator': {
                     'id': c.user_id,
-                    'name': username
+                    'username': username,
+                },
+                'project': {
+                    'project_name': project_name,
                 },
                 'annotation_date': None,
                 'creation_date': None,
@@ -436,11 +440,15 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'data': c.to_dict(),
             } for (c, username) in child_dirs],
             *[{
+                'id': f.file_id,
                 'type': 'file',
                 'name': f.filename,
                 'creator': {
                     'id': f.user_id,
-                    'name': username
+                    'username': username
+                },
+                'project': {
+                    'project_name': project_name,
                 },
                 'description': f.description,
                 'annotation_date': f.annotations_date,
@@ -452,6 +460,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                         'excluded_annotations'], keyfn=lambda x: x)),
             } for (f, username) in files],
             *[{
+                'id': m.hash_id,
                 'type': 'map',
                 'name': m.label,
                 'annotation_date': None,
@@ -459,7 +468,10 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'modification_date': m.date_modified,
                 'creator': {
                     'id': m.user_id,
-                    'name': username
+                    'username': username
+                },
+                'project': {
+                    'project_name': project_name,
                 },
                 'description': m.description,
                 'data': CasePreservedDict(m.to_dict(exclude=['graph'], keyfn=lambda x: x)),
