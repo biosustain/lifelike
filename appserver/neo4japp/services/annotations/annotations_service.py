@@ -241,6 +241,7 @@ class AnnotationsService:
                         # need to check unique because a custom annotation
                         # can have multiple of the same entity
                         if unique:
+                            entity = {}  # to avoid UnboundLocalError
                             if entity_type in {
                                 EntityType.Chemical.value,
                                 EntityType.Compound.value,
@@ -254,14 +255,31 @@ class AnnotationsService:
                                     synonym=entity_name
                                 )
                             else:
-                                entity = create_entity_ner_func(
-                                    name=entity_name,
-                                    synonym=entity_name
-                                )
+                                if entity_type == EntityType.Gene.value:
+                                    # the word manually annotated by user
+                                    # will not be in the KG
+                                    # otherwise it would've been annotated
+                                    # so we use the gene_id to query the KG to get
+                                    # the correct gene name and use that gene name
+                                    # as the synonym too for gene/organism matching
+                                    gene_name = self.annotation_neo4j.get_genes_from_ids(gene_ids=[entity_id])  # noqa
+                                    if gene_name:
+                                        entity = create_entity_ner_func(
+                                            name=gene_name.pop(),
+                                            synonym=entity_name
+                                        )
+                                else:
+                                    entity = create_entity_ner_func(
+                                        name=entity_name,
+                                        synonym=entity_name
+                                    )
 
+                            # differentiate between LMDB
+                            entity['inclusion'] = True
                             # gene doesn't have id in LMDB
                             # but we need to add it here for global inclusions
-                            # because the user could potentially add a gene id
+                            # because the user could add a gene id
+                            # which we use to check for unique above
                             if entity_type == EntityType.Gene.value:
                                 entity[entity_id_str] = entity_id
 
@@ -1267,18 +1285,10 @@ class AnnotationsService:
                 if not entities_to_use:
                     # did not find a match in LMDB
                     # check global inclusions
-                    # TODO: Not right - the word will never be in the KG
-                    # otherwise it'd have matched (if organism is present)
-                    # need to use the gene id and query the KG to get the
-                    # gene name and use that instead
-                    #
-                    # need to make a second entities_to_use
-                    # which uses the returned gene name
-                    # otherwise the synonym will be added to entity_tokenpos...
                     entities_to_use = self.global_gene_inclusion.get(normalize_str(word), [])
 
                 for entity in entities_to_use:
-                    entity_synonym = entity['synonym']
+                    entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
                     gene_names.add(entity_synonym)
 
                     entity_tokenpos_pairs.append((entity, token_positions))
@@ -1290,10 +1300,11 @@ class AnnotationsService:
             )
 
         for entity, token_positions in entity_tokenpos_pairs:
-            if entity['name'] in gene_organism_matches:
+            entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
+            if entity_synonym in gene_organism_matches:
                 gene_id, organism_id = self._get_closest_gene_organism_pair(
                     gene_position=token_positions,
-                    organism_matches=gene_organism_matches[entity['name']]
+                    organism_matches=gene_organism_matches[entity_synonym]
                 )
 
                 category = self.organism_categories[organism_id]

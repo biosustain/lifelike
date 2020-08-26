@@ -1,5 +1,5 @@
 import attr
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Set, Union
 
 from neo4japp.data_transfer_objects.visualization import (
     DuplicateEdgeConnectionData,
@@ -344,6 +344,11 @@ class Neo4JService(GraphBaseDao):
             total_results=total_results,
             query_data=edges,
         )
+
+    def get_genes(self, genes: List[str]) -> Set[str]:
+        query = self.get_gene_from_ids()
+        result = self.graph.run(query, {'gene_ids': genes}).data()
+        return set(row['gene_name'] for row in result)
 
     def get_genes_to_organisms(
         self,
@@ -709,6 +714,13 @@ class Neo4JService(GraphBaseDao):
             return [n]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) as nodes,
             COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
         """.format(biocyc_id)
+        return query
+
+    def get_gene_from_ids(self):
+        query = """
+            MATCH (g:Gene) WHERE g.id IN $gene_ids
+            RETURN g.name as gene_name
+        """
         return query
 
     def get_gene_to_organism_query(self):
