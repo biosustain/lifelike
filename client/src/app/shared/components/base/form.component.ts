@@ -5,7 +5,7 @@ import { EventEmitter, Input } from '@angular/core';
 
 export abstract class FormComponent<O> {
   abstract form: AbstractControl;
-  abstract result: EventEmitter<O>;
+  abstract formResult: EventEmitter<O>;
 
   constructor(protected readonly messageDialog: MessageDialog) {
   }
@@ -18,7 +18,7 @@ export abstract class FormComponent<O> {
 
   submit() {
     if (!this.form.invalid) {
-      this.result.emit({...this.form.value});
+      this.formResult.emit({...this.form.value});
     } else {
       this.messageDialog.display({
         title: 'Invalid Input',
