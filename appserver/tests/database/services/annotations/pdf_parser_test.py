@@ -15,55 +15,55 @@ directory = path.realpath(path.dirname(__file__))
     [
         (1, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
+            chars_in_pdf=[c for c in 'I am a sentence\n'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (2, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],
+            chars_in_pdf=[c for c in 'E. \nColi'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (3, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],
+            chars_in_pdf=[c for c in 'Typh-imurium'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (4, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', 'c', 'o', 'm', 'm', 'a', ','],
+            chars_in_pdf=[c for c in 'I Havecomma,'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (5, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', ')'],
+            chars_in_pdf=[c for c in 'I Have)'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (6, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', '.'],
+            chars_in_pdf=[c for c in 'I Have.'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (7, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['I', ' ', 'H', 'a', 'v', 'e', '.', ')', ','],
+            chars_in_pdf=[c for c in 'I Have.),'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (8, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['(', ',', 'I', ' ', 'H', 'a', 'v', 'e', '.', ')', ','],
+            chars_in_pdf=[c for c in '(,I Have.),'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (9, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['-', '*', 'I', ' ', 'H', 'a', 'v', 'e', '-', ' '],
+            chars_in_pdf=[c for c in '-*I Have- '],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
@@ -113,19 +113,19 @@ def test_extract_tokens(annotations_setup, index, text):
     [
         (1, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['I', ' ', 'a', 'm', ' ', 'a', ' ', 's', 'e', 'n', 't', 'e', 'n', 'c', 'e', '\n'],  # noqa
+            chars_in_pdf=[c for c in 'I am a sentence\n'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (2, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['E', '.', ' ', '\n', 'C', 'o', 'l', 'i'],
+            chars_in_pdf=[c for c in 'E. \nColi'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (3, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['T', 'y', 'p', 'h', '-', 'i', 'm', 'u', 'r', 'i', 'u', 'm'],  # noqa
+            chars_in_pdf=[c for c in 'Typh-imurium'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
@@ -137,17 +137,13 @@ def test_extract_tokens(annotations_setup, index, text):
         )),
         (5, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=['J', 'u', 's', 't', ' ', 's', 'a', 'y', 'i', 'n', 'g', '…'],  # noqa
+            chars_in_pdf=[c for c in 'Just saying…'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (6, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=[
-                '3', '-', 'g', 'e', 'r', 'a', 'n', 'y', 'l', '-', '3', '-', '[',
-                '(', 'Z', ')', '-', '2', '-', 'i', 's', 'o', 'c', 'y', 'a', 'n',
-                'o', 'v', 'i', 'n', 'y', 'l', ']', '-', '3', 'H', '-', 'i', 'n',
-                'd', 'o', 'l', 'e'],
+            chars_in_pdf=[c for c in '3-geranyl-3-[(Z)-2-isocyanovinyl]-3H-indole'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
@@ -203,81 +199,61 @@ def test_combine_char_into_word_with_correct_index_positions(annotations_setup, 
     [
         (1, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=[
-                '3', '-', 'g', 'e', 'r', 'a', 'n', 'y', 'l', '-', '3', '-', '[',
-                '(', 'Z', ')', '-', '2', '-', 'i', 's', 'o', 'c', 'y', 'a', 'n',
-                'o', 'v', 'i', 'n', 'y', 'l', ']', '-', '3', 'H', '-', 'i', 'n',
-                'd', 'o', 'l', 'e'],
+            chars_in_pdf=[c for c in '3-geranyl-3-[(Z)-2-isocyanovinyl]-3H-indole'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (2, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=[
-                '2', ',', '3', '-', 'B', 'e', 'n', 'z', 'o',
-                'p', 'y', 'r', 'r', 'o', 'l', 'e'],
+            chars_in_pdf=[c for c in '2,3-Benzopyrrole'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (3, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=[
-                '(', 'P', 'h', 'o', 's', 'p', 'h', 'o', 'n',
-                'o', 'm', 'e', 't', 'h', 'o', 'x', 'y', ')',
-                'e', 't', 'h', 'y', 'l', ')', 'a', 'd', 'e', 'n', 'i', 'n', 'e', ')'],
+            chars_in_pdf=[c for c in '(Phosphonomethoxy)ethyl)adenine)'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (4, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=[
-                '(', 'P', 'h', 'o', 's', 'p', 'h', 'o', 'n',
-                'o', 'm', 'e', 't', 'h', 'o', 'x', 'y', ')',
-                'e', 't', 'h', 'y', 'l', ')', 'a', 'd', 'e', 'n', 'i', 'n', 'e'],
+            chars_in_pdf=[c for c in '(Phosphonomethoxy)ethyl)adenine'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (5, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=[
-                '(', 'x', 'y', 'l', 'B', ')'],
+            chars_in_pdf=[c for c in '(xylB)'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (6, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=[
-                '2', ',', '6', '-', 'd', 'i', 'o', 'x', 'o', 'p',
-                'u', 'r', 'i', 'n', 'e', '(', 'x', 'y', 'l', 'B', ')'],
+            chars_in_pdf=[c for c in '2,6-dioxopurine(xylB)'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (7, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=[
-                'x', 'y', 'l', 'B', ')'],
+            chars_in_pdf=[c for c in 'xylB)'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (8, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=[
-                '(', 'x', 'y', 'l', 'B'],
+            chars_in_pdf=[c for c in '(xylB'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (9, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=[
-                '(', 'x', 'y', 'l', 'B', ','],
+            chars_in_pdf=[c for c in '(xylB,'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
         (10, PDFParsedCharacters(
             char_coord_objs_in_pdf=None,
-            chars_in_pdf=[
-                '2', ',', '6', '-', 'd', 'i', 'o', 'x', 'o', 'p',
-                'u', 'r', 'i', 'n', 'e', '?', '!'],
+            chars_in_pdf=[c for c in '2,6-dioxopurine?!'],
             cropbox_in_pdf=(9, 9),
             min_idx_in_page={1: 1},
         )),
