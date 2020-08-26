@@ -6,6 +6,7 @@ import {
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
+  UniversalGraphEntity,
 } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode } from 'app/graph-viewer/styles/styles';
 import { debounceTime, throttleTime } from 'rxjs/operators';
@@ -402,20 +403,66 @@ export class CanvasGraphView extends GraphView {
     this.applyZoomToFit(duration, padding);
   }
 
+  // TODO - remove it and wherever its referenced
   panToNode(node: UniversalGraphNode, duration: number = 1500, padding = 50) {
     this.previousZoomToFitTime = window.performance.now();
     this.applyPanToNode(node, duration, padding);
   }
 
+  panToEntity(entity: UniversalGraphEntity, duration: number = 1500, padding = 50) {
+    this.previousZoomToFitTime = window.performance.now();
+
+    if ('from' in entity && 'to' in entity) {
+      // Pan to edge
+      this.applyPanToEdge(entity, duration, padding);
+    } else {
+      // Pan to node
+      this.applyPanToNode(entity as UniversalGraphNode, duration, padding);
+    }
+  }
+
+  private applyPanToEdge(
+    edge: UniversalGraphEdge,
+    duration: number = 1500,
+    padding = 50
+  ) {
+    this.previousZoomToFitPadding = padding;
+
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+
+    let select = d3.select(this.canvas);
+
+    // Calling transition() causes a delay even if duration = 0
+    if (duration > 0) {
+      select = select.transition().duration(duration);
+    }
+
+    const from: UniversalGraphNode = this.nodeHashMap[edge.from];
+    const to: UniversalGraphNode = this.nodeHashMap[edge.to];
+
+    select.call(
+      this.zoom.transform,
+      d3.zoomIdentity
+        // move to center of canvas
+        .translate(canvasWidth / 2, canvasHeight / 2)
+        .scale(2)
+        // move to the midpoint of the edge
+        .translate(
+          -Math.abs(from.data.x - to.data.x) / 2,
+          -Math.abs(from.data.y - to.data.y) / 2
+        ),
+    );
+
+    this.invalidateAll();
+    this.requestRender();
+  }
 
   private applyPanToNode(node: UniversalGraphNode, duration: number = 1500, padding = 50) {
     this.previousZoomToFitPadding = padding;
 
     const canvasWidth = this.canvas.width;
     const canvasHeight = this.canvas.height;
-
-    // TODO - do we need this to for nodes that have been resized to have accurate scaling?
-    const {minX, minY, maxX, maxY} = this.getNodeBoundingBox(this.nodes, padding);
 
     let select = d3.select(this.canvas);
 
