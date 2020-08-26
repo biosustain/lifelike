@@ -1,6 +1,7 @@
-import { Directory } from '../file-browser/services/project-space.service';
+import { Directory, Project } from '../file-browser/services/project-space.service';
 import { PdfFile } from './pdf-files.interface';
 import { KnowledgeMap } from '../drawing-tool/services/interfaces';
+import { User } from './auth.interface';
 
 export interface DirectoryContent {
   dir: Directory;
@@ -10,14 +11,13 @@ export interface DirectoryContent {
 
 export interface DirectoryObject {
   type: 'dir' | 'file' | 'map';
+  id?: any;
   name: string;
   description?: string;
   annotationDate?: string;
   creationDate?: string;
   modificationDate?: string;
-  creator?: {
-    id: number,
-    name: string;
-  };
-  data: Directory | KnowledgeMap | PdfFile;
+  creator?: User;
+  project: Pick<Project, 'projectName'>;
+  data?: Directory | KnowledgeMap | PdfFile;
 }

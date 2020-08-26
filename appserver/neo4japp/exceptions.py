@@ -1,3 +1,6 @@
+from typing import Dict, List, Optional
+
+
 class BaseException(Exception):
     def __init__(self, name, message, *args):
         self.name = name
@@ -41,6 +44,28 @@ class DirectoryError(BaseException):
 class DuplicateRecord(BaseException):
     def __init__(self, message, additional_msgs=[]):
         super().__init__('Duplicate record', message, additional_msgs)
+
+
+class InvalidArgumentsException(BaseException):
+    """A generic error occurred with invalid API arguments."""
+
+    def __init__(self, message: str,
+                 additional_msgs: Optional[List[str]] = None,
+                 fields: Optional[Dict[str, List[str]]] = None):
+        """
+        Construct a new instance.
+
+        :param message: The machine-readable message
+        :param additional_msgs: Additional messages
+        :param fields: A dictionary of fields and their errors
+        """
+        super().__init__('Argument Error', message, additional_msgs or [])
+        self.fields = fields or []
+
+    def to_dict(self):
+        retval = super().to_dict()
+        retval['fields'] = self.fields
+        return retval
 
 
 class InvalidFileNameException(BaseException):

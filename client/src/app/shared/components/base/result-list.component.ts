@@ -7,12 +7,12 @@ import { ActivatedRoute } from '@angular/router';
 import { WorkspaceManager } from '../../workspace-manager';
 
 export abstract class ResultListComponent<O, R, RL extends ResultList<R> = ResultList<R>> implements OnInit, OnDestroy {
-  public readonly loadTask: BackgroundTask<O, RL> = new BackgroundTask(params => this.getResults(params));
+  public loadTask: BackgroundTask<O, RL> = new BackgroundTask(params => this.getResults(params));
 
   public params: O = this.getDefaultParams();
 
   public collectionSize = 0;
-  public readonly results = new CollectionModal<R>([], {
+  public results = new CollectionModal<R>([], {
     multipleSelection: true,
   });
 
@@ -47,7 +47,7 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
   }
 
   search(params: Partial<O>) {
-    this.workspaceManager.navigate([], {
+    this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {
       queryParams: {
         ...this.serializeParams({
           ...this.getDefaultParams(),

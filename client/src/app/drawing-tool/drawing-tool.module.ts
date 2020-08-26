@@ -14,12 +14,12 @@ import { MapExportDialogComponent } from './components/map-export-dialog.compone
 import { MapViewComponent } from './components/map-view.component';
 import { SharedModule } from 'app/shared/shared.module';
 import { RouterModule } from '@angular/router';
-import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { NodeFormComponent } from './components/map-editor/node-form.component';
 import { EdgeFormComponent } from './components/map-editor/edge-form.component';
 import { MapEditDialogComponent } from './components/map-edit-dialog.component';
 import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
 import { MapRestoreDialogComponent } from './components/map-restore-dialog.component';
+import { MapComponent } from './components/map.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +30,7 @@ import { MapRestoreDialogComponent } from './components/map-restore-dialog.compo
     MapEditorComponent,
     PaletteComponent,
     InfoPanelComponent,
+    MapComponent,
     MapViewComponent,
     MapExportDialogComponent,
     NodeFormComponent,
@@ -49,13 +50,13 @@ import { MapRestoreDialogComponent } from './components/map-restore-dialog.compo
   ],
   imports: [
     SharedModule,
-    FileBrowserModule,
   ],
   providers: [
     CopyPasteMapsService,
   ],
   exports: [
     RouterModule,
+    MapComponent,
   ],
 })
 export class DrawingToolModule {

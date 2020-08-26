@@ -16,80 +16,107 @@
       </div>
     </div>
 
-    <div class="module-body flex-fill overflow-auto" #body>
-      <ng-container *ngIf="!valid; else searchEntered">
-        <div class="text-center my-4 px-4">
-          Search for records above.
-        </div>
-      </ng-container>
-
-      <ng-template #searchEntered>
-        <ng-container *ngIf="status.placeholdersShown">
-          <div class="mb-3">
-            <span class="placeholder-box">Showing 10 of 20 results</span>
-          </div>
-
-          <div class="search-results">
-            <div class="search-results-item">
-              <h5 class="search-results-item-title">
-                <span class="placeholder-box">Loading loading</span>
-              </h5>
-              <div class="search-results-item-body">
-                <div>
-                  <span class="placeholder-box">Loading loading loading</span>
-                </div>
-                <div class="mt-2">
-                  <span class="placeholder-box">Loading loading loading loading</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="search-results-item">
-              <h5 class="search-results-item-title">
-                <span class="placeholder-box">Loading load loading</span>
-              </h5>
-              <div class="search-results-item-body">
-                <div>
-                  <span class="placeholder-box">Loading loading</span>
-                </div>
-                <div class="mt-2">
-                  <span class="placeholder-box">Loading loading loading load loading</span>
-                </div>
-              </div>
+    <div class="module-body-split module-body-preview-split overflow-auto">
+      <div class="module-body-split-main overflow-auto" #body>
+        <ng-container *ngIf="!valid; else searchEntered">
+          <div class="module-body">
+            <div class="text-center my-4 px-4">
+              Search for records above.
             </div>
           </div>
         </ng-container>
 
-        <ng-container *ngIf="status.resultsShown">
-          <ng-container *ngIf="results.length; else noResults">
-            <div class="text-muted mb-3">
-              <app-results-summary
-                [page]="params.page"
-                [pageSize]="params.limit"
-                [collectionSize]="collectionSize"></app-results-summary>
-            </div>
-
-            <div class="search-results">
-              <div class="search-results-item" *ngFor="let result of results.view">
-                {{ result.item.name }}
+        <ng-template #searchEntered>
+          <ng-container *ngIf="status.placeholdersShown">
+            <div class="module-body">
+              <div class="mb-3">
+                <span class="placeholder-box">Showing 10 of 20 results</span>
               </div>
-            </div>
 
-            <div class="mt-4">
-              <ngb-pagination
-                [page]="params.page"
-                [pageSize]="params.limit"
-                [collectionSize]="collectionSize"
-                (pageChange)="goToPage($event)"></ngb-pagination>
+              <div class="search-results">
+                <div class="search-results-item">
+                  <h5 class="search-results-item-title">
+                    <span class="placeholder-box">Loading loading</span>
+                  </h5>
+                  <div class="search-results-item-body">
+                    <div>
+                      <span class="placeholder-box">Loading loading loading</span>
+                    </div>
+                    <div class="mt-2">
+                      <span class="placeholder-box">Loading loading loading loading</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="search-results-item">
+                  <h5 class="search-results-item-title">
+                    <span class="placeholder-box">Loading load loading</span>
+                  </h5>
+                  <div class="search-results-item-body">
+                    <div>
+                      <span class="placeholder-box">Loading loading</span>
+                    </div>
+                    <div class="mt-2">
+                      <span class="placeholder-box">Loading loading loading load loading</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </ng-container>
-          <ng-template #noResults>
-            <div class="text-center my-4 px-4">
-              No records match your current filters.
-            </div>
-          </ng-template>
+
+          <ng-container *ngIf="status.resultsShown">
+            <ng-container *ngIf="results.length; else noResults">
+              <div class="module-body text-muted">
+                <div class="mb-3">
+                  <app-results-summary
+                      [page]="params.page"
+                      [pageSize]="params.limit"
+                      [collectionSize]="collectionSize"></app-results-summary>
+                </div>
+
+                <div class="search-results search-results-selectable">
+                  <div *ngFor="let result of results.view" class="search-results-item"
+                       (click)="results.select(result)" tabindex="0" (keydown)="$event.keyCode != 13 || results.select(result)"
+                       [class.active]="results.isSelected(result)">
+                    <div class="mb-1">
+                      <app-file-type-label [object]="result.item"></app-file-type-label>
+                    </div>
+                    <div class="search-results-item-header">
+                      <h5>
+                        <a [appLink]="getObjectCommands(result.item)" [newTab]="true">{{ result.item.name }}</a>
+                      </h5>
+                    </div>
+                    <div class="mt-2 paragraph-truncate-3">
+                      {{ result.item.description }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-4">
+                  <ngb-pagination
+                      [page]="params.page"
+                      [pageSize]="params.limit"
+                      [collectionSize]="collectionSize"
+                      (pageChange)="goToPage($event)"></ngb-pagination>
+                </div>
+              </div>
+            </ng-container>
+            <ng-template #noResults>
+              <div class="module-body">
+                <div class="text-center my-4 px-4">
+                  No records match your current filters.
+                </div>
+              </div>
+            </ng-template>
+          </ng-container>
+        </ng-template>
+      </div>
+      <div class="module-body-split-sidebar">
+        <ng-container *ngIf="results.selection.length">
+          <app-file-info [object]="results.selection[0].item"></app-file-info>
         </ng-container>
-      </ng-template>
+      </div>
     </div>
   </div>
 </ng-container>

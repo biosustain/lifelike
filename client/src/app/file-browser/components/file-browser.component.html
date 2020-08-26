@@ -33,7 +33,7 @@
                 [class.active]="i === path.length - 1">
               <ng-container *ngIf="i !== path.length - 1">
                 <a
-                  [appLink]="i === 0 ? ['/projects', locator.projectName] : ['/projects', locator.projectName, 'folders', element.id]">
+                    [appLink]="i === 0 ? ['/projects', locator.projectName] : ['/projects', locator.projectName, 'folders', element.id]">
                   {{ i === 0 ? locator.projectName : element.name }}
                 </a>
               </ng-container>
@@ -110,7 +110,7 @@
 
       <!-- Body -->
       <div class="flex-fill overflow-auto">
-        <div class="d-flex module-body-split">
+        <div class="module-body-split module-body-browser-split">
           <div class="module-body-split-main">
             <table class="table module-body-table" [class.table-selectable]="status.resultsShown"
                    style="table-layout: fixed">
@@ -251,7 +251,7 @@
 
                 <td class="align-middle text-nowrap text-truncate" (click)="results.toggle(object)">
                   <div *ngIf="object.creator" class="text-truncate">
-                    {{ object.creator.name }}
+                    {{ object.creator.username }}
                   </div>
                 </td>
 
@@ -285,7 +285,6 @@
               </tbody>
             </table>
 
-
             <div class="module-body">
               <div *ngIf="status.emptyResultsShown && results.viewLength === 0" class="text-center">
                 {{ results.filter != null ? 'There are no results matching your filter.' : 'There are no items in this folder.' }}
@@ -293,40 +292,8 @@
             </div>
           </div>
 
-          <div class="flex-fill d-none d-cbp-lg-block module-body-split-sidebar">
-            <div class="module-body-split-sidebar-body">
-              <ng-container *ngIf="results.selection.length">
-                <div [ngSwitch]="results.lastSelection.type" class="mb-3 text-muted">
-                  <div *ngSwitchCase="'dir'"><i class="fa fa-fw fa-folder text-icon"></i> Folder</div>
-                  <div *ngSwitchCase="'file'"><i class="fa fa-fw fa-file text-icon"></i> Document</div>
-                  <div *ngSwitchCase="'map'"><i class="fa fa-fw fa-project-diagram text-icon"></i> Map</div>
-                </div>
-
-                <h5 (click)="displayEditDialog(results.lastSelection)">{{ results.lastSelection.name }}</h5>
-
-                <div class="mt-3" *ngIf="results.lastSelection.description"
-                     (click)="displayEditDialog(results.lastSelection)">
-                  {{ results.lastSelection.description }}
-                </div>
-
-                <hr class="my-3">
-
-                <ul class="list-unstyled mt-3">
-                  <li *ngIf="results.lastSelection.annotationDate">
-                    <strong>Annotated:</strong> {{ results.lastSelection.annotationDate | date: 'short' }}
-                  </li>
-                  <li *ngIf="results.lastSelection.modificationDate">
-                    <strong>Modified:</strong> {{ results.lastSelection.modificationDate | date: 'short' }}
-                  </li>
-                  <li *ngIf="results.lastSelection.creationDate">
-                    <strong>Created:</strong> {{ results.lastSelection.creationDate | date: 'short' }}
-                  </li>
-                  <li *ngIf="results.lastSelection.creator">
-                    <strong>Author:</strong> {{ results.lastSelection.creator.name }}
-                  </li>
-                </ul>
-              </ng-container>
-            </div>
+          <div class="d-none d-cbp-lg-block module-body-split-sidebar">
+            <app-file-info [object]="results.lastSelection" *ngIf="results.selection.length"></app-file-info>
           </div>
         </div>
       </div>
