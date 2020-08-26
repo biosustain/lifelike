@@ -48,6 +48,7 @@ class Projects(RDBMSBase):  # type: ignore
     project_name = db.Column(db.String(250), unique=True, nullable=False)
     description = db.Column(db.Text)
     creation_date = db.Column(db.DateTime, default=db.func.now())
+    modified_date = db.Column(db.DateTime)
     users = db.Column(db.ARRAY(db.Integer), nullable=False)
 
     directories = db.relationship('Directory')
