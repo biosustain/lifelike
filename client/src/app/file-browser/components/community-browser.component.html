@@ -76,7 +76,7 @@
 
       <!-- Body -->
       <div class="flex-fill overflow-auto">
-        <div class="d-flex module-body-split">
+        <div class="d-flex module-body-split module-body-browser-split">
           <div class="module-body-split-main">
             <table class="table module-body-table" [class.table-selectable]="status.resultsShown"
                    style="table-layout: fixed">
@@ -210,17 +210,17 @@
 
               <div *ngIf="status.resultsShown && results.length">
                 <ngb-pagination
-                  [page]="locator.page"
-                  [pageSize]="locator.limit"
-                  [collectionSize]="collectionSize"
-                  (pageChange)="goToPage($event)"></ngb-pagination>
+                    [page]="locator.page"
+                    [pageSize]="locator.limit"
+                    [collectionSize]="collectionSize"
+                    (pageChange)="goToPage($event)"></ngb-pagination>
               </div>
             </div>
           </div>
 
           <div class="flex-fill d-none d-cbp-lg-block module-body-split-sidebar">
-            <div class="module-body-split-sidebar-body">
-              <ng-container *ngIf="results.selection.length">
+            <ng-container *ngIf="results.selection.length">
+              <div class="module-body">
                 <div class="mb-3 text-muted">
                   <div><i class="fa fa-fw fa-project-diagram text-icon"></i> Map</div>
                 </div>
@@ -238,8 +238,8 @@
                     <strong>Author:</strong> {{ results.lastSelection.user.username }}
                   </li>
                 </ul>
-              </ng-container>
-            </div>
+              </div>
+            </ng-container>
           </div>
         </div>
       </div>

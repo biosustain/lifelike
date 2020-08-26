@@ -7,6 +7,8 @@ import { deserializePaginatedParams, getChoicesFromQuery, serializePaginatedPara
 import { PaginatedResultListComponent } from '../../shared/components/base/paginated-result-list.component';
 import { ContentSearchService } from '../services/content-search.service';
 import { RankedItem } from '../../interfaces/shared.interface';
+import { CollectionModal } from '../../shared/utils/collection-modal';
+import { getObjectCommands } from 'app/file-browser/utils/objects';
 
 @Component({
   selector: 'app-content-search',
@@ -15,6 +17,9 @@ import { RankedItem } from '../../interfaces/shared.interface';
 export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchOptions,
   RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
   private readonly defaultLimit = 100;
+  public results = new CollectionModal<RankedItem<DirectoryObject>>([], {
+    multipleSelection: false,
+  });
 
   constructor(route: ActivatedRoute,
               workspaceManager: WorkspaceManager,
@@ -44,7 +49,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     return {
       ...deserializePaginatedParams(params, this.defaultLimit),
       q: params.hasOwnProperty('q') ? params.q : '',
-      types: params.hasOwnProperty('type') ? getChoicesFromQuery(params, 'type', TYPES_MAP) : [...TYPES],
+      types: params.hasOwnProperty('types') ? getChoicesFromQuery(params, 'types', TYPES_MAP) : [...TYPES],
     };
   }
 
@@ -54,5 +59,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       q: params.q,
       types: params.types.map(value => value.id).join(';'),
     };
+  }
+
+  getObjectCommands(object: DirectoryObject) {
+    return getObjectCommands(object);
   }
 }
