@@ -1,6 +1,7 @@
 @import './variables';
 @import '~bootstrap/scss/bootstrap';
 @import './mixins';
+@import './buttons';
 @import './placeholders';
 @import './modules';
 @import './vertical-menu';
@@ -16,11 +17,12 @@
 @import './forms';
 @import './dropdown';
 @import './window';
+@import './container_breakpoints';
 @import './utilities';
 
 body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  font-size: 11pt;
+  font-size: $font-size-base;
   overflow: hidden;
 }
 
@@ -36,4 +38,8 @@ canvas:focus {
 a:focus {
   outline: 1px solid $primary;
   box-shadow: none;
+}
+
+.text-icon {
+  color: $gray-500;
 }

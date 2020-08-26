@@ -1,139 +1,140 @@
 .module {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%;
 }
 
 .module-header {
+  padding: $module-header-padding-y $module-header-padding-x;
+  border-bottom: $module-header-border-width solid $module-header-border-color;
+  box-shadow: $module-header-box-shadow;
+  z-index: 2;
+}
+
+.module-title-bar {
   display: flex;
-  padding: 2rem 0;
   align-items: center;
 }
 
+.module-title-bar-back {
+  padding: $module-back-button-padding;
+  border: 0;
+  background: transparent;
+  color: $link-color;
+
+  &:hover {
+    color: $link-hover-color;
+  }
+}
+
 .module-title {
+  margin: 0;
+  padding: 0;
+  font-size: $module-title-font-size;
+  font-weight: $module-title-font-weight;
+  line-height: $module-title-line-height;
   @include text-truncate();
 }
 
-.module-toolbar {
-  margin-left: auto;
-  padding-left: 1rem;
-  white-space: nowrap;
+.module-body {
+  padding: $module-body-padding-x;
 }
 
-// ========================================
-// Main module
-// ========================================
+.module-body-table {
+  th, td {
+    &:first-child {
+      padding-left: $module-body-padding-x;
+    }
 
-.module.module-centered {
-  .module-header-container {
-    border-bottom: 1px solid $gray-200;
-  }
-
-  .module-title {
-    font-size: $font-size-base * 2;
-    font-weight: bold;
-  }
-
-  .module-toolbar {
-    margin-left: auto;
-  }
-
-  .module-header, .module-body {
-    margin: auto;
-    padding-left: 2rem;
-    padding-right: 2rem;
-    max-width: map-get($container-max-widths, 'lg');
-  }
-
-  .module-body {
-    margin-top: $spacer * 2;
-    margin-bottom: $spacer * 4;
-  }
-
-  .module-section {
-    margin-bottom: $spacer * 2.5;
-  }
-
-  .module-section-header {
-    margin-bottom: $spacer * 1.25;
-
-    h2 {
-      font-size: 180%;
-      font-weight: bold;
+    &:last-child {
+      padding-right: $module-body-padding-x;
     }
   }
 }
 
-// ========================================
-// Sidebar
-// ========================================
+.module-section {
+  margin-bottom: $module-section-margin-bottom;
+}
 
-.module.module-sidebar {
+.module-section-header {
+  margin-bottom: $module-section-header-margin-bottom;
+}
+
+.module-section-header-title {
+  font-size: $module-section-title-font-size;
+  font-weight: $module-section-title-font-weight;
+  color: $module-section-title-color;
+}
+
+.module-body-container {
+  max-width: 800px;
+}
+
+.module-body-split {
   display: flex;
-  flex-direction: column;
+  height: 100%;
+}
 
-  .module-header-container {
-    background: $white;
-    border-bottom: 1px solid $gray-300;
-    box-shadow: 0 1px 5px $gray-400;
-  }
+.module-body-split-main {
+  max-width: 1000px;
+  overflow: auto;
+}
 
+.module-body-split-sidebar {
+  background: $light;
+  min-width: 300px;
+  flex-grow: 1;
+  padding: $spacer * 2;
+  overflow: auto;
+}
+
+.module-body-split-sidebar-body {
+  max-width: 300px;
+}
+
+.module.cbp-md {
   .module-header {
-    display: flex;
-    margin: auto;
-    padding: 1.25rem 1rem;
-    align-items: center;
-    font-weight: bold;
-    max-width: map-get($grid-breakpoints, "xl");
-  }
-
-  .module-header-body {
-    margin: auto;
-    padding: 0 1rem 1rem;
-    max-width: map-get($grid-breakpoints, "xl");
-  }
-
-  .module-title {
-    font-size: $font-size-base * 1.1;
-  }
-
-  .module-body-container {
-    flex: 1 1 auto;
-    overflow: auto;
+    padding: $module-header-padding-y-lg $module-header-padding-x-lg;
   }
 
   .module-body {
-    margin: auto;
-    max-width: map-get($grid-breakpoints, "xl");
-    height: 100%;
+    flex-grow: 1;
+    padding: $module-body-padding-x-lg;
+    overflow: auto;
   }
 
-  .module-body-padded {
-    padding: 1rem;
-  }
-}
+  .module-body-table {
+    th, td {
+      &:first-child {
+        padding-left: $module-body-padding-x-lg;
+      }
 
-// ========================================
-// Document
-// ========================================
-
-.module.module-document {
-  display: flex;
-  flex-direction: column;
-
-  .module-header-container {
-  }
-
-  .module-header {
-    display: flex;
-    padding: 1rem;
-    align-items: center;
-    font-weight: bold;
-    border-bottom: 1px solid $gray-200;
-  }
-
-  .module-header-body {
-    padding: 0 1rem 1rem;
+      &:last-child {
+        padding-right: $module-body-padding-x-lg;
+      }
+    }
   }
 
   .module-title {
-    font-size: $font-size-base * 1.4;
+    font-size: $module-title-font-size-lg;
+  }
+
+  .module-body-split-sidebar {
+    padding-right: $module-header-padding-x-lg;
+  }
+
+  .module-section {
+    margin-bottom: $module-section-margin-bottom-lg;
+  }
+
+  .module-section-header {
+    margin-bottom: $module-section-header-margin-bottom-lg;
+  }
+
+  .module-section-header-title {
+    font-size: $module-section-title-font-size-lg;
+    font-weight: $module-section-title-font-weight-lg;
+    color: $module-section-title-color;
   }
 }

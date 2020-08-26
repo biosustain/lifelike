@@ -1392,8 +1392,8 @@ class AnnotationsService:
         custom_annotations: List[Annotation] = []
 
         for word, token_list in tokens.items():
+            entities = self.local_species_inclusion.get(normalize_str(word), None) or []
             for token_positions in token_list:
-                entities = self.local_species_inclusion.get(normalize_str(word), None) or []
                 for entity in entities:
                     annotation = self._create_annotation_object(
                         char_coord_objs_in_pdf=char_coord_objs_in_pdf,
