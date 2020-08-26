@@ -47,7 +47,6 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   hasEditPermission = false;
   _map: KnowledgeMap | undefined;
   pendingInitialize = false;
-  infoPinned = true;
 
   graphCanvas: CanvasGraphView;
 
@@ -75,9 +74,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
           // TODO: This line is from the existing code and should be properly typed
         ),
         this.getExtraSource(),
-      ]).pipe(
-        this.errorHandler.create(),
-      );
+      ]);
     });
 
     this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, extra], value}) => {
@@ -298,7 +295,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadPDF() {
     this.requestDownload(
-      () => this.mapService.generatePDF(this.locator.projectName, this.locator.hashId),
+      () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'pdf'),
       'application/pdf',
       '.pdf',
     );
@@ -309,7 +306,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadSVG() {
     this.requestDownload(
-      () => this.mapService.generateSVG(this.locator.projectName, this.locator.hashId),
+      () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'svg'),
       'application/svg',
       '.svg',
     );
@@ -320,7 +317,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
    */
   downloadPNG() {
     this.requestDownload(
-      () => this.mapService.generatePNG(this.locator.projectName, this.locator.hashId),
+      () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'png'),
       'application/png',
       '.png',
     );

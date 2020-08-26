@@ -90,7 +90,8 @@ class AppUser(RDBMSBase):
         original_dict = super().to_dict(exclude=['password_hash'] + exclude)
         return {
             **original_dict,
-            **{'roles': [role.to_dict()['name'] for role in self.roles]}
+            **({'roles': [role.to_dict()['name'] for role in self.roles]}
+               if 'roles' not in exclude else {})
         }
 
 

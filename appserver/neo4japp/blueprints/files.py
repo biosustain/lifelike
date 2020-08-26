@@ -86,7 +86,7 @@ def search_doi(content: bytes) -> Optional[str]:
     doi = match.group(1).decode('utf-8').replace('%2F', '/')
     # Make sure that the match does not contain undesired characters at the end.
     # E.g. when the match is at the end of a line, and there is a full stop.
-    while doi[-1] in './%':
+    while doi and doi[-1] in './%':
         doi = doi[:-1]
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
