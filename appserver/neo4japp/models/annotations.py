@@ -19,6 +19,8 @@ class GlobalList(RDBMSBase):
     file_id = db.Column(db.Integer, db.ForeignKey('files_content.id'), nullable=False, index=True)
     reviewed = db.Column(db.Boolean, default=False)
     approved = db.Column(db.Boolean, default=False)
+    creation_date = db.Column(db.DateTime, default=db.func.now())
+    modified_date = db.Column(db.DateTime)
 
 
 class AnnotationStopWords(RDBMSBase):

@@ -49,6 +49,8 @@ class AppUser(RDBMSBase):
     first_name = db.Column(db.String(120), nullable=False)
     last_name = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(256))
+    creation_date = db.Column(db.DateTime, default=db.func.now())
+    modified_date = db.Column(db.DateTime)
 
     # load all roles associated with the user eagerly using subquery
     roles = db.relationship(
