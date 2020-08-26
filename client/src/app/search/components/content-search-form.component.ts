@@ -12,7 +12,7 @@ import { FormComponent } from '../../shared/components/base/form.component';
 })
 export class ContentSearchFormComponent extends FormComponent<ContentSearchOptions> {
   typeChoices: SearchType[] = TYPES.concat().sort((a, b) => a.name.localeCompare(b.name));
-  @Output() result = new EventEmitter<ContentSearchOptions>();
+  @Output() formResult = new EventEmitter<ContentSearchOptions>();
 
   form = new FormGroup({
     q: new FormControl('', Validators.required),
