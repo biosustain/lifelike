@@ -12,7 +12,7 @@ export class TabSelectableDirective {
   @HostBinding('tabindex') tabIndex = '0';
 
   @HostListener('click')
-  click(event) {
+  click() {
     this.appTabSelectable.emit();
   }
 
