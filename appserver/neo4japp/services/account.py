@@ -55,7 +55,7 @@ class AccountService(RDBMSBaseDao):
         if user and admin:
             if 'admin' not in [r.name for r in admin.roles]:
                 raise NotAuthorizedException(
-                    'You do not have enough priviledges to delete a user')
+                    'You do not have enough privileges to delete a user')
             elif user.id == admin.id:
                 raise NotAuthorizedException(
                     'You cannot delete your own account')
