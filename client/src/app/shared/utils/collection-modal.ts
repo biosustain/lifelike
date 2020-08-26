@@ -186,6 +186,21 @@ export class CollectionModal<T> {
     }
   }
 
+  selectOnly(item: T): void {
+    const deselect = new Set<T>();
+    for (const other of this._selection) {
+      if (item !== other) {
+        deselect.add(other);
+      }
+    }
+    if (deselect.size) {
+      this.deselect(...deselect.values());
+    }
+    if (!this._selection.has(item)) {
+      this.select(item);
+    }
+  }
+
   selectAll(): void {
     this.select(...this._items);
   }
@@ -220,6 +235,15 @@ export class CollectionModal<T> {
 
   isSelected(item: T) {
     return this._selection.has(item);
+  }
+
+  get lastSelection(): T | undefined {
+    const selection = this.selection;
+    if (selection.length) {
+      return selection[selection.length - 1];
+    } else {
+      return null;
+    }
   }
 
   get length(): number {

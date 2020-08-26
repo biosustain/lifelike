@@ -1,9 +1,8 @@
 .table {
   thead th {
-    padding: ($table-cell-padding / 2) $table-cell-padding;
     font-size: $font-size-sm;
     border-top: 0;
-    border-bottom: $table-border-width solid $table-border-color;
+    border-bottom: 0;
     color: $gray-600;
   }
 }

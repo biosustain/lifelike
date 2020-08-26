@@ -5,6 +5,7 @@ import { ResizableDirective } from './resizable.directive';
 import { LinkWithHrefDirective, LinkWithoutHrefDirective } from './link.directive';
 import { FormInputDirective } from './form-input.directive';
 import { AutoFocusDirective } from './auto-focus.directive';
+import { ContainerBreakpointsDirective } from './container-breakpoints.directive';
 
 const directives = [
   DebounceClickDirective,
@@ -14,6 +15,7 @@ const directives = [
   LinkWithHrefDirective,
   FormInputDirective,
   AutoFocusDirective,
+  ContainerBreakpointsDirective,
 ];
 
 @NgModule({

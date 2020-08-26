@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import re
 from datetime import datetime
 
 import graphviz as gv
@@ -15,31 +16,39 @@ from flask import (
     jsonify,
 )
 from flask_apispec import use_kwargs
-from sqlalchemy import or_
+from sqlalchemy import or_, func
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy_searchable import search
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_permission
-from neo4japp.database import db
+# TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
+from neo4japp.blueprints.projects import bp as newbp
+from neo4japp.constants import ANNOTATION_STYLES_DICT
+from neo4japp.data_transfer_objects import PublicMap
+from neo4japp.data_transfer_objects.common import ResultList, PaginatedRequest
+from neo4japp.database import db, get_authorization_service, get_projects_service
 from neo4japp.exceptions import (
     InvalidFileNameException, RecordNotFoundException, NotAuthorizedException
 )
 from neo4japp.models import (
     AccessActionType,
     Project,
-    ProjectSchema,
     Projects,
     Directory,
     ProjectBackup,
 )
+from neo4japp.models.schema import ProjectSchema
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
 
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
+from neo4japp.util import jsonify_with_class, CasePreservedDict
 from neo4japp.utils.logger import UserEventLog
+from neo4japp.utils.request import parse_sort, parse_page, parse_limit, paginate_from_args
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
@@ -145,14 +154,50 @@ def upload_map(projects_name: str):
 @bp.route('/community', methods=['GET'])
 @auth.login_required
 def get_community_projects():
-    # TODO: LL-415, what do we do with this now that we have projects?
     """ Return a list of all the projects made public by users """
 
-    # Pull the projects that are made public
-    projects = Project.query.filter_by(public=True).all()
-    project_schema = ProjectSchema(many=True)
+    query = Project.query \
+        .options(joinedload(Project.user),
+                 joinedload(Project.dir),
+                 joinedload(Project.dir, Directory.project)) \
+        .filter(Project.public.is_(True))
 
-    return {'projects': project_schema.dump(projects)}, 200
+    filter_query = request.args.get('q', '').strip()
+    if len(filter_query):
+        query = query.filter(or_(
+            func.lower(Project.label).contains(func.lower(filter_query)),
+            func.lower(Project.description).contains(func.lower(filter_query))
+        ))
+
+    query = paginate_from_args(
+        query,
+        request.args,
+        columns={
+            'dateModified': Project.date_modified,
+            'label': Project.label,
+        },
+        default_sort='label',
+        upper_limit=200
+    )
+
+    response = ResultList(
+        total=query.total,
+        results=[
+            PublicMap(
+                map=CasePreservedDict(o.to_dict(exclude=[
+                    'graph',
+                    'search_vector'
+                ], keyfn=lambda x: x)),
+                user=o.user.to_dict(
+                    exclude=[
+                        'first_name', 'last_name', 'email', 'roles',
+                    ],
+                ),
+                project=o.dir.project
+            ) for o in query.items
+        ])
+
+    return jsonify(response.to_dict())
 
 
 @bp.route('/projects', methods=['GET'])
@@ -309,61 +354,67 @@ def delete_project(hash_id: str, projects_name: str):
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/pdf', methods=['GET'])
 @auth.login_required
-@requires_project_permission(AccessActionType.READ)
 def get_project_pdf(projects_name: str, hash_id: str):
     """ Gets a PDF file from the project drawing """
 
-    unprocessed = []
-    processed = {}
-    processed_ids = []
-    references = []
-
     user = g.current_user
+    auth_service = get_authorization_service()
+    project_service = get_projects_service()
+    is_superuser = auth_service.has_role(user, 'admin')
 
-    projects = Projects.query.filter(Projects.project_name == projects_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {projects_name} not found')
+    hash_id_queue = [hash_id]
+    seen_hash_ids = set()
+    map_pdfs = {}
+    pdf_map_links = []
 
-    yield user, projects
+    while len(hash_id_queue):
+        current_hash_id = hash_id_queue.pop(0)
 
-    try:
-        project = Project.query.filter(
-            Project.hash_id == hash_id,
-        ).join(
-            Directory,
-            Directory.id == Project.dir_id,
-        ).filter(
-            Directory.projects_id == projects.id,
-        ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('not found :-( ')
+        try:
+            project = Project.query \
+                .options(joinedload(Project.user),
+                         joinedload(Project.dir),
+                         joinedload(Project.dir, Directory.project)) \
+                .filter(Project.hash_id == current_hash_id) \
+                .one()
 
-    unprocessed.append(project.hash_id)
+            # Check permission
+            if not is_superuser:
+                role = project_service.has_role(user, project.dir.project)
+                if role is None or not auth_service.is_allowed(role, AccessActionType.READ,
+                                                               project.dir.project):
+                    raise NotAuthorizedException('No permission to read linked map')
 
-    while len(unprocessed):
-        item = unprocessed.pop(0)
-        project = Project.query.filter_by(hash_id=item).one_or_none()
-        if not project:
-            raise RecordNotFoundException('No record found')
-        pdf_data = process(project)
-        pdf_object = PdfFileReader(io.BytesIO(pdf_data))
-        processed[item] = pdf_object
-        processed_ids.append(item)
-        unprocessed_, references_ = get_references(pdf_object)
-        unprocessed.extend([x for x in unprocessed_ if x not in unprocessed])
-        references.extend(references_)
+            pdf_data = process(project)
+            pdf_object = PdfFileReader(io.BytesIO(pdf_data), strict=False)
+            map_pdfs[current_hash_id] = pdf_object
 
-    for annot, hash_id in references:
-        annot[NameObject('/Dest')] = ArrayObject([processed[hash_id].getPage(0).indirectRef,
-                                                  NameObject('/Fit')])
-        del (annot['/A'])
+            # Search through map links in the PDF and find related maps we should add to the PDF
+            unprocessed_, references_ = get_references(pdf_object)
+            pdf_map_links.extend(references_)
 
-    yield merge_pdfs(processed, processed_ids)
+            hash_id_queue.extend([x for x in unprocessed_ if x not in seen_hash_ids])
+            seen_hash_ids.update([x for x in unprocessed_ if x not in seen_hash_ids])
+        except (NoResultFound, NotAuthorizedException):
+            if current_hash_id == hash_id:
+                # If it's the ***ARANGO_USERNAME*** map requested, we need to fail early
+                raise RecordNotFoundException('Requested map not found or cannot be read')
+            else:
+                # If it's a linked map and we can't load it, just don't add it to the PDF
+                continue
+
+    for object, hash_id in pdf_map_links:
+        if hash_id in map_pdfs:
+            object[NameObject('/Dest')] = ArrayObject([map_pdfs[hash_id].getPage(0).indirectRef,
+                                                       NameObject('/Fit')])
+            del (object['/A'])
+
+    return merge_pdfs(map_pdfs)
 
 
-def merge_pdfs(processed, pdf_list):
+def merge_pdfs(processed):
     final = PdfFileWriter()
-    for pdf_id in pdf_list:
+    for pdf_id in processed:
         final.addPage(processed[pdf_id].getPage(0))
     output = io.BytesIO()
     final.write(output)
@@ -374,8 +425,13 @@ def merge_pdfs(processed, pdf_list):
 def get_references(pdf_object):
     unprocessed = []
     references = []
+    map_link_pattern = re.compile("^/projects/([^/]+)/maps/([^/]+)")
     for x in pdf_object.getPage(0).get('/Annots', []):
         x = x.getObject()
+        m = map_link_pattern.search(x['/A']['/URI'])
+        if m:
+            unprocessed.append(m.group(2))
+            references.append((x, m.group(2)))
         if 'dt/map/' in x['/A']['/URI']:
             id = x['/A']['/URI'].split('map/')[-1]
             unprocessed.append(id)
