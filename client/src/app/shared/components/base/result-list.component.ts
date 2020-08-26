@@ -17,6 +17,7 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
   });
 
   private routerParamSubscription: Subscription;
+  private valuesSubscription: Subscription;
   private loadTaskSubscription: Subscription;
 
   constructor(protected readonly route: ActivatedRoute,
@@ -24,6 +25,10 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
   }
 
   ngOnInit() {
+    this.valuesSubscription = this.loadTask.values$.subscribe(value => {
+      this.valueChanged(value);
+    });
+
     this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: result}) => {
       this.collectionSize = result.total;
       this.results.replace(result.results);
@@ -38,8 +43,9 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
   }
 
   ngOnDestroy() {
-    this.loadTaskSubscription.unsubscribe();
     this.routerParamSubscription.unsubscribe();
+    this.loadTaskSubscription.unsubscribe();
+    this.valuesSubscription.unsubscribe();
   }
 
   refresh() {
@@ -60,6 +66,9 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
 
   get valid(): boolean {
     return true;
+  }
+
+  valueChanged(value: O) {
   }
 
   abstract getResults(params: O): Observable<RL>;
