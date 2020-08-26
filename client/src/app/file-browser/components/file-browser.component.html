@@ -231,7 +231,7 @@
                     (click)="results.toggle(object)">
                   <ng-container *ngIf="object.type === 'file'">
                     <div popoverTitle="Annotation Status" [ngbPopover]="object.annotationsTooltipContent"
-                         container="body"
+                         container="body" class="text-truncate"
                          placement="right" triggers="mouseenter:mouseleave"
                          [disablePopover]="!object.annotationsTooltipContent">
                       <ng-container *ngIf="object.annotationsTooltipContent && object.annotationsTooltipContent.length">
