@@ -82,10 +82,8 @@ def init_default_access(mapper, connection, target):
     read_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-read'
     )).fetchone()
-    # read_role = AppRole.query.filter(AppRole.name == 'project-read').one_or_none()
     if read_role is None:
         connection.execute(AppRole.__table__.insert().values(name='project-read'))
-        # read_role = AppRole.query.filter(AppRole.name == 'project-read').one()
         read_role = connection.execute(AppRole.__table__.select().where(
             AppRole.__table__.c.name == 'project-read'
         )).fetchone()
@@ -111,10 +109,8 @@ def init_default_access(mapper, connection, target):
     write_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-write'
     )).fetchone()
-    # write_role = AppRole.query.filter(AppRole.name == 'project-write').one_or_none()
     if write_role is None:
         connection.execute(AppRole.__table__.insert().values(name='project-write'))
-        # write_role = AppRole.query.filter(AppRole.name == 'project-write').one()
         write_role = connection.execute(AppRole.__table__.select().where(
             AppRole.__table__.c.name == 'project-write'
         )).fetchone()
@@ -140,7 +136,6 @@ def init_default_access(mapper, connection, target):
     admin_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-admin'
     )).fetchone()
-    # admin_role = AppRole.query.filter(AppRole.name == 'project-admin').one_or_none()
     if admin_role is None:
         connection.execute(AppRole.__table__.insert().values(name='project-admin'))
         admin_role = connection.execute(AppRole.__table__.select().where(
