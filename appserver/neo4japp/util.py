@@ -416,6 +416,7 @@ def get_first_known_label_from_list(labels: List[str]):
 
     raise ValueError('Detected node label of an unknown type!')
 
+
 class AttrDict(dict):
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
