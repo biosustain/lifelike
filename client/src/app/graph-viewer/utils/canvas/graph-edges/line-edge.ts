@@ -138,9 +138,9 @@ export class LineEdge implements PlacedEdge {
       ctx.beginPath();
       ctx.moveTo(this.source.x, this.source.y);
       ctx.lineTo(this.target.x, this.target.y);
-      this.stroke.setContext(ctx);
       ctx.lineJoin = 'miter';
       ctx.lineCap = 'butt';
+      this.stroke.setContext(ctx);
       ctx.stroke();
       ctx.restore();
     }

@@ -586,13 +586,24 @@ export class WorkspaceManager {
         }
       }
 
-      if (extras.replaceTabIfMatch != null) {
+      if (extras.matchExistingTab != null) {
         let foundTab = false;
 
         for (const tab of targetPane.tabs) {
-          if (tab.url.match(extras.replaceTabIfMatch)) {
+          if (tab.url.match(extras.matchExistingTab)) {
             targetPane.activeTab = tab;
             foundTab = true;
+
+            // This mechanism allows us to update an existing tab in a one-way data coupling
+            if (extras.shouldReplaceTab != null) {
+              const component = tab.getComponent();
+              if (component != null) {
+                if (!extras.shouldReplaceTab(component)) {
+                  return;
+                }
+              }
+            }
+
             break;
           }
         }
@@ -707,7 +718,8 @@ export class WorkspaceManager {
 export interface WorkspaceNavigationExtras {
   newTab?: boolean;
   sideBySide?: boolean;
-  replaceTabIfMatch?: string | RegExp;
+  matchExistingTab?: string | RegExp;
+  shouldReplaceTab?: (component: any) => boolean;
 }
 
 function getQueryString(params: { [key: string]: string }) {

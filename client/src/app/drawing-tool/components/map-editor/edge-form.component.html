@@ -45,14 +45,14 @@
               <app-quick-search [query]="edge.label" [links]="edge.data?.search"></app-quick-search>
             </fieldset>
 
-            <div class="mt-4">
-              <div *ngIf="edge.data.source" class="mb-2">
-                <button *ngIf="edge.data.source" type="button" class="btn btn-outline-secondary btn-block"
-                        (click)="goToSource(edge.data.source)">
-                  Go to Source
-                </button>
-              </div>
+	        <fieldset class="fieldset-properties mt-4"
+	                  *ngIf="edge.data?.sources">
+	          <legend>Sources <i class="fas fa-external-link-alt ml-1"></i></legend>
 
+	          <app-sources (executeFileSource)="goToSource($event)" [links]="edge.data?.sources"></app-sources>
+	        </fieldset>
+
+            <div class="mt-4">
               <button (click)="doDelete()" type="button" class="btn btn-danger btn-block">
                 Delete
               </button>
