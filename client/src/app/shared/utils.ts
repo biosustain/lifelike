@@ -110,6 +110,10 @@ export function isAltOrOptionPressed(event: KeyboardEvent | MouseEvent) {
   return event.altKey;
 }
 
+export function isShiftPressed(event: KeyboardEvent | MouseEvent) {
+  return event.shiftKey;
+}
+
 export function isCtrlOrMetaPressed(event: KeyboardEvent | MouseEvent) {
   const os = getClientOS();
   switch (os) {
