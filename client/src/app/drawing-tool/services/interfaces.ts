@@ -2,7 +2,6 @@ export interface UniversalEntityData {
   hyperlink?: string;
   hyperlinks?: Hyperlink[];
   detail?: string;
-  source?: string;
   search?: Hyperlink[];
   subtype?: string;
   sources?: Hyperlink[];
