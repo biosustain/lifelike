@@ -116,6 +116,7 @@ export class Container<T> {
  * Represents a tab with a title and possibly a component inside.
  */
 export class Tab {
+  workspaceManager: WorkspaceManager;
   url: string;
   defaultsSet = false;
   title = 'New Tab';
@@ -130,6 +131,7 @@ export class Tab {
 
   constructor(private readonly injector: Injector,
               private readonly componentFactoryResolver: ComponentFactoryResolver) {
+    this.workspaceManager = this.injector.get<WorkspaceManager>(WorkspaceManager);
   }
 
   queuePropertyChange(properties: ModuleProperties) {
@@ -143,6 +145,7 @@ export class Tab {
       this.badge = this.pendingProperties.badge;
       this.loading = !!this.pendingProperties.loading;
       this.pendingProperties = null;
+      this.workspaceManager.save();
     }
   }
 

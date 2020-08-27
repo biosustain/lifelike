@@ -1,0 +1,11 @@
+@each $color, $value in $theme-colors {
+  .btn-#{$color} {
+    &.disabled,
+    &:disabled {
+      color: color-yiq($value);
+      background-color: transparent;
+      border-color: $value;
+      opacity: 0.4;
+    }
+  }
+}
