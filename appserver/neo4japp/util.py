@@ -418,6 +418,14 @@ def get_first_known_label_from_list(labels: List[str]):
 
 
 class AttrDict(dict):
+    """ Wrap a python dictionary into an object
+    """
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
+
+    def to_dict(self, exclude=[]):
+        if len(exclude):
+            return self.__dict__
+        else:
+            return {key: self.__dict__[key] for key in self.__dict__ if key not in exclude}
