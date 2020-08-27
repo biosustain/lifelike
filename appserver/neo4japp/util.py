@@ -426,6 +426,9 @@ class AttrDict(dict):
 
     def to_dict(self, exclude=[]):
         if len(exclude):
-            return self.__dict__
+            return snake_to_camel_dict(self.__dict__, dict())
         else:
-            return {key: self.__dict__[key] for key in self.__dict__ if key not in exclude}
+            return snake_to_camel_dict(
+                {key: self.__dict__[key] for key in self.__dict__ if key not in exclude},
+                dict()
+            )
