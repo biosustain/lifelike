@@ -58,6 +58,7 @@ export class ProjectCreateDialogComponent extends CommonDialogComponent {
         this.errorHandler.create(),
       ).subscribe(newProject => this.modal.close(newProject));
     } else {
+      this.form.markAsDirty();
       this.messageDialog.display({
         title: 'Invalid Input',
         message: 'There are some errors with your input.',

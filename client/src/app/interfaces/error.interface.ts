@@ -4,6 +4,6 @@ export interface ApiHttpError {
 }
 
 export interface ServerError {
-    serverError: ApiHttpError;
-    status: number;
+    apiHttpError: ApiHttpError;
+    detail: string;
 }

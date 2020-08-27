@@ -34,9 +34,11 @@ from neo4japp.models import (
     Directory,
     Project,
     Projects,
-    projects_collaborator_role, ProjectSchema,
+    projects_collaborator_role,
 )
+from neo4japp.models.schema import ProjectSchema
 from neo4japp.util import jsonify_with_class, SuccessResponse, CasePreservedDict
+from neo4japp.utils.logger import UserEventLog
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
 
@@ -89,7 +91,9 @@ def add_projects():
     )
 
     current_app.logger.info(
-        f'User created projects: <{g.current_user.email}:{projects.project_name}>')
+        f'User created projects: <{projects.project_name}>',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='projects create').to_dict())
 
     proj_service = get_projects_service()
     try:
@@ -429,6 +433,9 @@ def get_child_directories(current_dir_id: int, project_name: str):
                     'id': c.user_id,
                     'name': username
                 },
+                'annotation_date': None,
+                'creation_date': None,
+                'modification_date': None,
                 'data': c.to_dict(),
             } for (c, username) in child_dirs],
             *[{
@@ -439,14 +446,20 @@ def get_child_directories(current_dir_id: int, project_name: str):
                     'name': username
                 },
                 'description': f.description,
+                'annotation_date': f.annotations_date,
+                'creation_date': f.creation_date,
+                'modification_date': None,
                 'data': CasePreservedDict(
                     f.to_dict(exclude=[
-                        'annotations', 'annotations_date', 'custom_annotations',
+                        'annotations', 'custom_annotations',
                         'excluded_annotations'], keyfn=lambda x: x)),
             } for (f, username) in files],
             *[{
                 'type': 'map',
                 'name': m.label,
+                'annotation_date': None,
+                'creation_date': None,
+                'modification_date': m.date_modified,
                 'creator': {
                     'id': m.user_id,
                     'name': username

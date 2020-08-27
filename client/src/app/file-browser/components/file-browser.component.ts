@@ -2,6 +2,7 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/cor
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, combineLatest, from, Observable, Subscription, throwError } from 'rxjs';
+import { mergeMap, map } from 'rxjs/operators';
 import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
@@ -29,7 +30,6 @@ import { ModuleProperties } from '../../shared/modules';
 import { KnowledgeMap, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { catchError } from 'rxjs/operators';
 import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
-import { getLink } from '../../search/utils/records';
 
 interface PathLocator {
   projectName?: string;
@@ -93,7 +93,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       (locator: PathLocator) => this.projectPageService.getDirectory(
         locator.projectName,
         locator.directoryId,
-      ).pipe(this.errorHandler.create()),
+      ),
     );
 
     this.loadTaskSubscription = this.loadTask.results$.subscribe(({result}) => {
@@ -118,7 +118,6 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       this.modulePropertiesChange.emit({
         title: this.locator.projectName,
         fontAwesomeIcon: 'layer-group',
-        loading: true,
       });
 
       this.loadTask.update(this.locator);
@@ -308,6 +307,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       this.directory.id,
       data,
     )
+      .pipe(
+        map(res => res.file_id),
+        mergeMap(fileId => this.filesService.annotateFile(
+          this.locator.projectName, fileId, data.annotationMethod))
+      )
       .pipe(this.errorHandler.create())
       .subscribe(event => {
           if (event.type === HttpEventType.UploadProgress) {
@@ -327,12 +331,13 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
           } else if (event.type === HttpEventType.Response) {
             progressDialogRef.close();
             const body = event.body as any;
-            this.snackBar.open(`File '${body.result.filename}' uploaded`, 'Close', {duration: 5000});
+            this.snackBar.open(`File '${body.result.filenames}' uploaded`, 'Close', {duration: 5000});
             this.refresh(); // updates the list on successful upload
           }
         },
         err => {
           progressDialogRef.close();
+          this.refresh();
           return throwError(err);
         },
       );
@@ -451,8 +456,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         const file = object.data as PdfFile;
         return ['/projects', this.locator.projectName, 'files', file.file_id];
       case 'map':
-        const map = object.data as KnowledgeMap;
-        return ['/projects', this.locator.projectName, 'maps', map.hash_id, 'edit'];
+        const _map = object.data as KnowledgeMap;
+        return ['/projects', this.locator.projectName, 'maps', _map.hash_id, 'edit'];
       default:
         throw new Error(`unknown directory object type: ${object.type}`);
     }
@@ -480,6 +485,22 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         source: this.getObjectCommands(object).join('/'),
       },
     } as Partial<UniversalGraphNode>));
+  }
+
+  goUp() {
+    if (this.path != null) {
+      if (this.path.length > 2) {
+        this.workspaceManager.navigate(
+          ['/projects', this.locator.projectName, 'folders', this.path[this.path.length - 2].id]
+        );
+      } else if (this.path.length === 2) {
+          this.workspaceManager.navigate(
+            ['/projects', this.locator.projectName]
+          );
+      } else {
+        this.workspaceManager.navigate(['/projects']);
+      }
+    }
   }
 }
 

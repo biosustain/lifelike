@@ -124,13 +124,13 @@ describe('SnippetDisplayComponentComponent', () => {
     });
 
     it('should load snippet panels', () => {
-        const snippetPanels = document.getElementsByClassName('accordion');
+        const snippetPanels = document.getElementsByClassName('association-snippet-panel');
 
         expect(snippetPanels.length).toEqual(1);
     });
 
     it('should show publication data on snippet panels', () => {
-        const snippetPanelTitles = document.getElementsByClassName('snippet-panel-header');
+        const snippetPanelTitles = document.getElementsByClassName('snippet-panel-title');
         const snippetPanelPubData = document.getElementsByClassName('snippet-panel-pub-data');
 
         expect(snippetPanelTitles.length).toEqual(1);
@@ -144,7 +144,7 @@ describe('SnippetDisplayComponentComponent', () => {
     });
 
     it('should link to pubtator', () => {
-        const snippetPanel = document.getElementsByClassName('snippet-panel-header')[0] as HTMLElement;
+        const snippetPanel = document.getElementsByClassName('snippet-panel-title')[0] as HTMLElement;
         const pubmedLinks = document.getElementsByClassName('pubtator-link');
 
         snippetPanel.click();
@@ -160,7 +160,7 @@ describe('SnippetDisplayComponentComponent', () => {
     });
 
     it('should show the normalized confidence score for a snippet', () => {
-        const snippetPanel = document.getElementsByClassName('snippet-panel-header')[0] as HTMLElement;
+        const snippetPanel = document.getElementsByClassName('snippet-panel-title')[0] as HTMLElement;
         snippetPanel.click();
 
         fixture.detectChanges();

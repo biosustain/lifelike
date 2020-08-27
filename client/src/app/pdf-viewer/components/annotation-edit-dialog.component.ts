@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, ViewEncapsulation } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Annotation } from '../annotation-type';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES } from '../../shared/annotation-types';
 import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
@@ -43,11 +43,10 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   }
 
   getValue(): Annotation {
-    const links = this.form.value.links.map((value, i) => {
-      return [
-        this.linkTemplates[i].domain,
-        value.length ? value : this.substituteLink(this.linkTemplates[i].url, this.allText),
-      ];
+    const links = {};
+    this.form.value.links.forEach((value, i) => {
+      const domain = this.linkTemplates[i].domain.toLowerCase();
+      links[domain] = value || this.substituteLink(this.linkTemplates[i].url, this.allText);
     });
 
     let primaryLink = '';

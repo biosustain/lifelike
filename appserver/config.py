@@ -37,7 +37,7 @@ class Development(Base):
 
     ASSETS_DEBUG = True
     WTF_CSRF_ENABLED = False
-    DOMAIN = 'http://localhost:4200'
+    DOMAIN = 'http://localhost'
 
 
 class Staging(Base):
