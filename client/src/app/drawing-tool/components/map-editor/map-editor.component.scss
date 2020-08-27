@@ -1,13 +1,16 @@
 @import 'src/scss/variables';
 
 .graph-container {
-  position: relative;
+  top: 0;
+  left: 0;
+  position: absolute;
   width: 100%;
   height: 100%;
   overflow: hidden;
 }
 
 .graph-view {
+  background: $gray-100;
   position: absolute;
   top: 0;
   left: 0;
@@ -33,8 +36,7 @@
   bottom: 0;
   width: 250px;
   z-index: 20;
-  overflow: auto;
-  overflow-y: scroll;
+  overflow: hidden;
   background: $white;
   border-left: 1px solid $window-border-color;
 }

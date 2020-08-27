@@ -3,11 +3,15 @@ import attr
 from flask import Blueprint
 from werkzeug.datastructures import FileStorage
 
-from neo4japp.database import get_neo4j_service_dao, get_user_file_import_service
+from neo4japp.database import db, get_neo4j_service_dao, get_user_file_import_service
 from neo4japp.data_transfer_objects.user_file_import import (
+    ImportGenesRequest,
     Neo4jColumnMapping,
-    UploadFileRequest,
     NodePropertiesRequest,
+    UploadFileRequest,
+)
+from neo4japp.models import (
+    Worksheet
 )
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
@@ -60,3 +64,18 @@ def upload_node_mapping(req: Neo4jColumnMapping):
     importer.save_relationship_to_neo4j(graph_db_mappings)
 
     return SuccessResponse(result='', status_code=200)
+
+
+@bp.route('/import-genes', methods=['POST'])
+@jsonify_with_class(ImportGenesRequest, has_file=True)
+def import_genes(req: ImportGenesRequest):
+    import_service = get_user_file_import_service()
+    result = import_service.import_worksheet(
+        file_name=req.file_name,
+        sheet_name=req.sheet_name,
+        worksheet=req.file_input,
+        worksheet_node_name=req.worksheet_node_name,
+        relationships=req.relationships,
+    )
+
+    return SuccessResponse(result=result, status_code=200)

@@ -12,8 +12,7 @@ class GraphNode(NEO4JBase):
         self.sub_labels = sub_labels
         self.display_name = display_name
 
-    @staticmethod
-    def property_filter(properties, only=None, include=None, exclude=None, keyfn=None):
+    def property_filter(self, properties, only=None, include=None, exclude=None, keyfn=None):
         if only:
             attrs = only
         else:

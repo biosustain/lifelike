@@ -42,6 +42,10 @@ export class Container<T> {
               readonly component: Type<T>) {
   }
 
+  get attached(): boolean {
+    return this.viewContainerRef != null;
+  }
+
   /**
    * Create the component if necessary and attach it to the given ref. If
    * this component has already been attached to a ref, then an error
@@ -116,6 +120,7 @@ export class Container<T> {
  * Represents a tab with a title and possibly a component inside.
  */
 export class Tab {
+  workspaceManager: WorkspaceManager;
   url: string;
   defaultsSet = false;
   title = 'New Tab';
@@ -130,6 +135,7 @@ export class Tab {
 
   constructor(private readonly injector: Injector,
               private readonly componentFactoryResolver: ComponentFactoryResolver) {
+    this.workspaceManager = this.injector.get<WorkspaceManager>(WorkspaceManager);
   }
 
   queuePropertyChange(properties: ModuleProperties) {
@@ -143,6 +149,7 @@ export class Tab {
       this.badge = this.pendingProperties.badge;
       this.loading = !!this.pendingProperties.loading;
       this.pendingProperties = null;
+      this.workspaceManager.save();
     }
   }
 

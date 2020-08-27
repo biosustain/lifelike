@@ -307,7 +307,7 @@ export class VisualizationComponent implements OnInit, OnDestroy {
 
     this.openLoadingClustersDialog();
 
-    this.visService.expandNode(nodeId, filterLabels, NODE_EXPANSION_LIMIT).subscribe(
+    this.visService.expandNode(nodeId, filterLabels).subscribe(
       (r: Neo4jResults) => {
         const nodeRef = this.nodes.get(nodeId) as VisNode;
         const visJSDataFormat = this.convertToVisJSFormat(r);

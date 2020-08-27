@@ -1,17 +1,17 @@
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, Subject, Subscription } from 'rxjs';
+import { combineLatest, from, throwError, Subject, Subscription, BehaviorSubject } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { Hyperlink, SearchLink } from 'app/shared/constants';
+import { Hyperlink, DatabaseType, AnnotationType } from 'app/shared/constants';
 
 import { PdfAnnotationsService } from '../../drawing-tool/services';
 
 import { cloneDeep } from 'lodash';
 import {
-  Annotation,
-  RemovedAnnotationExclusion,
   AddedAnnotationExclsuion,
+  Annotation,
   Location,
   Meta,
+  RemovedAnnotationExclusion,
   UniversalGraphNode,
 } from '../../drawing-tool/services/interfaces';
 
@@ -26,6 +26,12 @@ import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-d
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { catchError } from 'rxjs/operators';
+import { error } from 'util';
+import { HttpErrorResponse } from '@angular/common/http';
+import { UserError } from '../../shared/exceptions';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -107,6 +113,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     private readonly modalService: NgbModal,
     private route: ActivatedRoute,
     private readonly errorHandler: ErrorHandler,
+    private readonly progressDialog: ProgressDialog,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
 
@@ -114,8 +121,20 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       return combineLatest(
         this.pdf.getFileMeta(file.file_id, this.projectName),
         this.pdf.getFile(file.file_id, this.projectName),
-        this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName),
-      ).pipe(errorHandler.create());
+        this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName).pipe(
+          catchError(err => {
+            // There have been so many issues with annotations that let's explicitly mention
+            // a problem with annotation loading
+            return throwError(new UserError(
+              'Annotation Data Failed to Load',
+              'This document cannot be loaded because the annotation data for this file has a problem. ' +
+              'You may try to re-annotate this file or re-upload it.',
+              null,
+              err,
+            ));
+          }),
+        ),
+      );
     });
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
@@ -256,12 +275,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         ...annotation.meta,
         id: annotation.meta.id || id,
         idType,
-        links: {
-          ncbi: annotation.meta.links.ncbi || this.buildUrl(SearchLink.Ncbi, annotation.meta.allText),
-          uniprot: annotation.meta.links.uniprot || this.buildUrl(SearchLink.Uniprot, annotation.meta.allText),
-          wikipedia: annotation.meta.links.wikipedia || this.buildUrl(SearchLink.Wikipedia, annotation.meta.allText),
-          google: annotation.meta.links.google || this.buildUrl(SearchLink.Google, annotation.meta.allText),
-        },
       },
     };
 
@@ -270,14 +283,23 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const dialogRef = this.modalService.open(ConfirmDialogComponent);
     dialogRef.componentInstance.message = 'Do you want to annotate the rest of the document with this term as well?';
     dialogRef.result.then((annotateAll: boolean) => {
+      const progressDialogRef = this.progressDialog.display({
+        title: `Adding Annotations`,
+        progressObservable: new BehaviorSubject<Progress>(new Progress({
+          status: 'Adding annotations to the file...',
+        })),
+      });
+
       this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd, annotateAll, this.projectName)
         .pipe(this.errorHandler.create())
         .subscribe(
           (annotations: Annotation[]) => {
+            progressDialogRef.close();
             this.addedAnnotations = annotations;
             this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
           },
           err => {
+            progressDialogRef.close();
             this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
           },
         );
@@ -297,16 +319,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         .pipe(this.errorHandler.create())
         .subscribe(
           response => {
-            this.removedAnnotationIds = [];
-            let msg = 'Removal completed';
-            for (const [id, status] of Object.entries(response)) {
-              if (status === 'Removed') {
-                this.removedAnnotationIds.push(id);
-              } else {
-                msg = `${msg}, but one or more annotations could not be removed because you are not the owner`;
-              }
-            }
-            this.snackBar.open(msg, 'Close', {duration: 10000});
+            this.removedAnnotationIds = response;
+            this.snackBar.open('Removal completed', 'Close', {duration: 10000});
           },
           err => {
             this.snackBar.open(`Error: removal failed`, 'Close', {duration: 10000});
@@ -418,6 +432,16 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.pdfViewerLib.incrementZoom(-0.1);
   }
 
+  zoomActualSize() {
+    this.pdfViewerLib.setZoom(1);
+    this.pdfViewerLib.originalSize = true;
+  }
+
+  fitToPage() {
+    this.pdfViewerLib.setZoom(1);
+    this.pdfViewerLib.originalSize = false;
+  }
+
   /**
    * Open pdf by file_id along with location to scroll to
    * @param file - represent the pdf to open
@@ -460,17 +484,17 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   generateHyperlink(ann: Annotation): string {
     switch (ann.meta.idType) {
-      case 'CHEBI':
+      case DatabaseType.Chebi:
         return this.buildUrl(Hyperlink.Chebi, ann.meta.id);
-      case 'MESH':
+      case DatabaseType.Mesh:
         // prefix 'MESH:' should be removed from the id in order for search to work
         return this.buildUrl(Hyperlink.Mesh, ann.meta.id.substring(5));
-      case 'UNIPROT':
+      case DatabaseType.Uniprot:
         return this.buildUrl(Hyperlink.Uniprot, ann.meta.id);
-      case 'NCBI':
-        if (ann.meta.type === 'Genes') {
+      case DatabaseType.Ncbi:
+        if (ann.meta.type === AnnotationType.Gene) {
           return this.buildUrl(Hyperlink.NcbiGenes, ann.meta.id);
-        } else if (ann.meta.type === 'Species') {
+        } else if (ann.meta.type === AnnotationType.Species) {
           return this.buildUrl(Hyperlink.NcbiSpecies, ann.meta.id);
         }
         return '';
@@ -479,7 +503,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   }
 
-  private buildUrl(provider: Hyperlink | SearchLink, query: string): string {
+  private buildUrl(provider: Hyperlink, query: string): string {
     return provider + query;
   }
 
@@ -538,7 +562,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         )
           .pipe(this.errorHandler.create())
           .subscribe(() => {
-            this.pdfFile = newFile;
+            this.pdfFile.filename = newFile.filename;
+            this.pdfFile.description = newFile.description;
             this.emitModuleProperties();
             this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
           });
@@ -553,5 +578,4 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       fontAwesomeIcon: 'file-pdf',
     });
   }
-
 }

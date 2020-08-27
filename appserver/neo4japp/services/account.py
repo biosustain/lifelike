@@ -55,15 +55,22 @@ class AccountService(RDBMSBaseDao):
         if user and admin:
             if 'admin' not in [r.name for r in admin.roles]:
                 raise NotAuthorizedException(
-                    'You do not have enough priviledges to delete a user')
+                    'You do not have enough privileges to delete a user')
             elif user.id == admin.id:
                 raise NotAuthorizedException(
                     'You cannot delete your own account')
         self.session.delete(user)
         self.commit_or_flush(commit_now)
 
-    def get_user_list(self) -> Sequence[AppUser]:
-        return AppUser.query.order_by(AppUser.username).all()
+    def get_user_list(self, query_dict={}) -> Sequence[AppUser]:
+        username = query_dict.get("username", "")
+
+        if len(username) > 0:
+            return AppUser.query.filter(
+                AppUser.username.contains(username)
+            ).order_by(AppUser.username).limit(10).all()
+        else:
+            return AppUser.query.order_by(AppUser.username).all()
 
     def update_user(self, user: AppUser, changes: UserUpdateRequest, commit_now=True) -> AppUser:
         # TODO: 'user roll' updates will have to be handled separately
