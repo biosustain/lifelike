@@ -3,7 +3,7 @@
   <span><em> ({{ r.organism_name }})</em></span>
 </ng-template>
 
-<div class="input-group">
+<div class="input-group" style="width: 200px">
   <input type="text" class="form-control"
     [class.is-invalid]="fetchFailed" [(ngModel)]="model"
     [editable]='false' [inputFormatter]="formatter" [ngbTypeahead]="searcher" [resultTemplate]="rt"
