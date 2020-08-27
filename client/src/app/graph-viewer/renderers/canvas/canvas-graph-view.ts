@@ -800,9 +800,6 @@ export class CanvasGraphView extends GraphView {
 
     this.behaviors.apply(behavior => behavior.dragStart(d3.event.sourceEvent));
 
-    this.dragging.replace(subject ? [subject] : []);
-    this.selection.replace(subject ? [subject] : []);
-
     this.touchPosition = {
       position: {
         x: this.transform.invertX(mouseX),
@@ -833,7 +830,6 @@ export class CanvasGraphView extends GraphView {
 
   canvasDragEnded(): void {
     this.behaviors.apply(behavior => behavior.dragEnd(d3.event.sourceEvent));
-    this.dragging.replace([]);
     this.nodePositionOverrideMap.clear();
     this.mouseDown = false;
     this.touchPosition = null;
