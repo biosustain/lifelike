@@ -1,10 +1,11 @@
-<div class="module module-centered">
-  <div class="module-header-container">
-    <div class="module-header">
+<div class="module" appContainerBreakpoints>
+  <div class="module-header">
+    <div class="module-title-bar">
       <div class="module-title">
         Lifelike
       </div>
-      <div class="module-toolbar">
+
+      <div class="ml-auto">
         <ng-container *ngIf="(buildInfo$ | async) as buildInfo; else buildInfoLoading">
           <span *ngIf="buildInfo.buildTimestamp !== 'undefined'; else undefinedTimestamp">
             Version:
@@ -24,13 +25,11 @@
     </div>
   </div>
 
-  <div class="module-body-container">
-    <div class="module-body">
-      <div class="jumbotron text-center">
-        <p>
-          Explore academic knowledge through interconnected graphs.
-        </p>
-      </div>
+  <div class="module-body">
+    <div class="jumbotron text-center">
+      <p>
+        Explore academic knowledge through interconnected graphs.
+      </p>
     </div>
   </div>
 </div>

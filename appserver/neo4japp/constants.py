@@ -1,4 +1,6 @@
-from datetime import datetime, timezone
+from datetime import timezone
+
+TIMEZONE = timezone.utc
 
 # Start BioCyc, Regulon, Ecocyc Dataset
 TYPE_GENE = 'Gene'
@@ -236,5 +238,3 @@ ANNOTATION_STYLES_DICT = {
         "label": "phentotype",
     },
 }
-
-TIMEZONE = timezone.utc
