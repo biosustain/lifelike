@@ -310,7 +310,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       .pipe(
         map(res => res.file_id),
         mergeMap(fileId => this.filesService.annotateFile(
-          this.locator.projectName, fileId, data.annotationMethod))
+          this.locator.projectName, fileId, data.annotationMethod)),
       )
       .pipe(this.errorHandler.create())
       .subscribe(event => {
@@ -446,6 +446,22 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
+  getObjectId(object: AnnotatedDirectoryObject): any {
+    switch (object.type) {
+      case 'dir':
+        const directory = object.data as Directory;
+        return directory.id;
+      case 'file':
+        const file = object.data as PdfFile;
+        return file.file_id;
+      case 'map':
+        const _map = object.data as KnowledgeMap;
+        return _map.hash_id;
+      default:
+        throw new Error(`unknown directory object type: ${object.type}`);
+    }
+  }
+
   getObjectCommands(object: AnnotatedDirectoryObject): any[] {
     switch (object.type) {
       case 'dir':
@@ -482,7 +498,14 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       label: object.type === 'map' ? 'map' : 'link',
       sub_labels: [],
       data: {
-        source: this.getObjectCommands(object).join('/'),
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.getObjectId(object) + '',
+        }],
+        sources: [{
+          domain: 'File Source',
+          url: this.getObjectCommands(object).join('/'),
+        }],
       },
     } as Partial<UniversalGraphNode>));
   }
@@ -491,12 +514,12 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     if (this.path != null) {
       if (this.path.length > 2) {
         this.workspaceManager.navigate(
-          ['/projects', this.locator.projectName, 'folders', this.path[this.path.length - 2].id]
+          ['/projects', this.locator.projectName, 'folders', this.path[this.path.length - 2].id],
         );
       } else if (this.path.length === 2) {
-          this.workspaceManager.navigate(
-            ['/projects', this.locator.projectName]
-          );
+        this.workspaceManager.navigate(
+          ['/projects', this.locator.projectName],
+        );
       } else {
         this.workspaceManager.navigate(['/projects']);
       }
