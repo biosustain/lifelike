@@ -26,3 +26,7 @@ export interface Line {
        endX: number,
        endY: number): DrawnLine;
 }
+
+export interface LineOptions {
+  lineCap?: CanvasLineCap;
+}

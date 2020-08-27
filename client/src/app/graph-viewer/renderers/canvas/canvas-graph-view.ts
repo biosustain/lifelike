@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import { GraphView } from '../graph-view';
 import {
   GraphEntity,
-  GraphEntityType,
+  GraphEntityType, UniversalEdgeStyle,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -11,6 +11,9 @@ import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode } from 'app/gr
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
 import { isStopResult } from '../behaviors';
+import { LineEdge } from '../../utils/canvas/graph-edges/line-edge';
+import { SolidLine } from '../../utils/canvas/lines/solid';
+import { nullCoalesce } from '../../utils/types';
 
 export interface CanvasGraphViewOptions {
   nodeRenderStyle: NodeRenderStyle;
@@ -590,12 +593,10 @@ export class CanvasGraphView extends GraphView {
       const noZoomScale = 1 / this.transform.scale(1).k;
       const touchPositionEntity = this.touchPosition.entity;
 
+      // Either we highlight the 'touched entity' if we have one (because the user just
+      // touched one), otherwise we draw something at the mouse coordinates
       if (touchPositionEntity != null) {
-        ctx.beginPath();
-        const bbox = this.getEntityBoundingBox([touchPositionEntity], 10);
-        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
-        ctx.fill();
+        this.drawEntityHighlight(ctx, touchPositionEntity);
       } else {
         ctx.beginPath();
         ctx.arc(this.touchPosition.position.x, this.touchPosition.position.y, 20 * noZoomScale, 0, 2 * Math.PI, false);
@@ -611,11 +612,7 @@ export class CanvasGraphView extends GraphView {
     if (!this.touchPosition) {
       const highlighted = this.highlighting.get();
       for (const highlightedEntity of highlighted) {
-        ctx.beginPath();
-        const bbox = this.getEntityBoundingBox([highlightedEntity], 10);
-        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
-        ctx.fill();
+        this.drawEntityHighlight(ctx, highlightedEntity);
       }
     }
   }
@@ -695,6 +692,47 @@ export class CanvasGraphView extends GraphView {
       canvas.style.cursor = 'move';
     } else {
       canvas.style.cursor = 'default';
+    }
+  }
+
+  /**
+   * Draw a highlight around the entity.
+   */
+  private drawEntityHighlight(ctx: CanvasRenderingContext2D, entity: GraphEntity) {
+    if (entity.type === GraphEntityType.Edge) {
+      const d = entity.entity as UniversalGraphEdge;
+      const from = this.expectNodeByHash(d.from);
+      const to = this.expectNodeByHash(d.to);
+      const placedFrom: PlacedNode = this.placeNode(from);
+      const placedTo: PlacedNode = this.placeNode(to);
+
+      const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
+      const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
+
+      const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
+      const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
+      const lineWidth = lineWidthScale * 1 + 20;
+
+      (new LineEdge(ctx, {
+        source: {
+          x: fromX,
+          y: fromY,
+        },
+        target: {
+          x: toX,
+          y: toY,
+        },
+        stroke: new SolidLine(lineWidth, 'rgba(0, 0, 0, 0.075)', {
+          lineCap: 'square',
+        }),
+        forceHighDetailLevel: true,
+      })).draw(this.transform);
+    } else {
+      ctx.beginPath();
+      const bbox = this.getEntityBoundingBox([entity], 10);
+      ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+      ctx.fill();
     }
   }
 
