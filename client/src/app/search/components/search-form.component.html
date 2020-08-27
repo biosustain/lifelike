@@ -22,7 +22,7 @@
         <div class="d-flex flex-column">
           <app-select formId="domain" [choices]="domainChoices" style="width: 200px"
                       [values]="form.value.domains" (valuesChange)="form.get('domains').setValue($event)"
-                      (touch)="form.get('domains').markAsTouched()"
+                      (touch)="form.get('domains').markAsDirty()"
                       [choiceLabel]="choiceLabel">
           </app-select>
 
@@ -38,7 +38,7 @@
         <div class="d-flex flex-column">
           <app-select formId="entity-types" [choices]="entityTypeChoices" style="width: 200px"
                       [values]="form.value.entityTypes" (valuesChange)="form.get('entityTypes').setValue($event)"
-                      (touch)="form.get('entityTypes').markAsTouched()"
+                      (touch)="form.get('entityTypes').markAsDirty()"
                       [choiceLabel]="choiceLabel">
           </app-select>
 

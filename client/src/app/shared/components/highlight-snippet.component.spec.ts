@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
 
 import { HighlightSnippetComponent } from './highlight-snippet.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('HighlightSnippetComponent', () => {
     let instance: HighlightSnippetComponent;
@@ -27,14 +27,14 @@ describe('HighlightSnippetComponent', () => {
 
     beforeEach(() => {
         // Reset mock data before each test
-        mockSnippet = 'The quick brown fox jumped over the lazy dog';
-        mockEntry1Text = 'fox';
-        mockEntry2Text = 'dog';
-        mockEntry1Type = 'Hunter';
-        mockEntry2Type = 'Prey';
+        mockSnippet = 'The quick_brown_fox jumped over the lazy_dog';
+        mockEntry1Text = 'quick brown fox';
+        mockEntry2Text = 'lazy dog';
+        mockEntry1Type = 'Prey';
+        mockEntry2Type = 'Hunter';
         mockLegend = new Map<string, string[]>([
-            ['Hunter', ['#CD5D67', '#410B13']],
-            ['Prey', ['#8FA6CB', '#7D84B2']]
+            ['Prey', ['#CD5D67', '#410B13']],
+            ['Hunter', ['#8FA6CB', '#7D84B2']]
         ]);
 
         fixture = TestBed.createComponent(HighlightSnippetComponent);
@@ -65,8 +65,8 @@ describe('HighlightSnippetComponent', () => {
         const keyTerm1Span = keyTermSpans[0];
         const keyTerm2Span = keyTermSpans[1];
 
-        expect(keyTerm1Span.innerText).toEqual('fox');
-        expect(keyTerm2Span.innerText).toEqual('dog');
+        expect(keyTerm1Span.innerText).toEqual('quick brown fox');
+        expect(keyTerm2Span.innerText).toEqual('lazy dog');
     });
 
     it('should style key term spans with input colors', () => {

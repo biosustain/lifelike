@@ -1,0 +1,2 @@
+docker_nginx_img: kg-webserver-staging:latest
+docker_appserver_img: kg-appserver-staging:latest

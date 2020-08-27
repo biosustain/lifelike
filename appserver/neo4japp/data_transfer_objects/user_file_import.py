@@ -1,5 +1,7 @@
 import attr
 
+from enum import Enum
+
 from typing import Dict, List, Optional
 
 from werkzeug.datastructures import FileStorage
@@ -100,3 +102,68 @@ class GraphRelationshipCreationMapping(CamelDictMixin):
 class GraphCreationMapping(CamelDictMixin):
     new_nodes: List[GraphNodeCreationMapping] = attr.ib(default=attr.Factory(list))
     new_relationships: List[GraphRelationshipCreationMapping] = attr.ib(default=attr.Factory(list))
+
+
+# Begin KG Import Classes
+class GeneMatchingProperty(Enum):
+    ID = 'ID'
+    NAME = 'Name'
+
+
+class RelationshipDirection(Enum):
+    TO = 'To'
+    FROM = 'From'
+
+
+@attr.s(frozen=True)
+class Properties(CamelDictMixin):
+    column: str = attr.ib()
+    property_name: str = attr.ib()
+
+
+@attr.s(frozen=True)
+class ImportRelationship(CamelDictMixin):
+    column_index1: str = attr.ib()
+    column_index2: str = attr.ib()
+    node_label1: str = attr.ib()
+    node_label2: str = attr.ib()
+    node_properties1: List[Properties] = attr.ib()
+    node_properties2: List[Properties] = attr.ib()
+    relationship_label: str = attr.ib()
+    relationship_properties: List[Properties] = attr.ib()
+    relationship_direction: str = attr.ib()
+    @relationship_direction.validator
+    def validate(self, attribute, value):
+        relationship_direction_enum_vals = [data.value for data in RelationshipDirection]
+        if value not in relationship_direction_enum_vals:
+            raise ValueError(
+                'ImportRelationship.relationship_direction should equal a value of the ' +
+                'RelationshipDirection enum!'
+            )
+
+
+@attr.s(frozen=True)
+class GeneImportRelationship(ImportRelationship):
+    species_selection: Optional[str] = attr.ib()
+    gene_matching_property: Optional[str] = attr.ib()
+    @gene_matching_property.validator
+    def validate(self, attribute, value):
+        if value is None:
+            return
+
+        gene_matching_property_enum_vals = [data.value for data in GeneMatchingProperty]
+        if value not in gene_matching_property_enum_vals:
+            raise ValueError(
+                'GeneImportRelationship.gene_matching_property should equal a value of the ' +
+                'GeneMatchingProperty enum!'
+            )
+
+
+@attr.s(frozen=True)
+class ImportGenesRequest(CamelDictMixin):
+    file_name: str = attr.ib()
+    sheet_name: str = attr.ib()
+    file_input: FileStorage = attr.ib()
+    worksheet_node_name: str = attr.ib()
+    relationships: List[GeneImportRelationship] = attr.ib()
+# End KG Import classes

@@ -48,6 +48,11 @@ def _connect_to_neo4j():
     return Graph(
         host=current_app.config.get("NEO4J_HOST"),
         auth=current_app.config.get('NEO4J_AUTH').split('/'),
+        # max time in seconds to keep connection in pool
+        # good for long processing before querying the graph
+        # as the connection could be stale and the pool
+        # is maxed out so new connections can't be added
+        max_age=60,
     )
 
 
@@ -59,10 +64,10 @@ def get_neo4j():
 
 
 def get_neo4j_service_dao():
-    if 'neo4j_dao' not in g:
+    if 'neo4j_service_dao' not in g:
         from neo4japp.services import Neo4JService
         graph = _connect_to_neo4j()
-        g.neo4j_service_dao = Neo4JService(graph)
+        g.neo4j_service_dao = Neo4JService(graph=graph)
     return g.neo4j_service_dao
 
 
@@ -70,7 +75,7 @@ def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
         graph = _connect_to_neo4j()
-        g.current_user_file_import_service = UserFileImportService(graph)
+        g.current_user_file_import_service = UserFileImportService(graph=graph, session=db.session)
     return g.current_user_file_import_service
 
 
@@ -78,28 +83,28 @@ def get_search_service_dao():
     if 'search_dao' not in g:
         from neo4japp.services import SearchService
         graph = _connect_to_neo4j()
-        g.search_service_dao = SearchService(graph)
+        g.search_service_dao = SearchService(graph=graph)
     return g.search_service_dao
 
 
 def get_authorization_service():
     if 'authorization_service' not in g:
         from neo4japp.services import AuthService
-        g.authorization_service = AuthService(db.session)
+        g.authorization_service = AuthService(session=db.session)
     return g.authorization_service
 
 
 def get_account_service():
     if 'account_service' not in g:
         from neo4japp.services import AccountService
-        g.account_service = AccountService(db.session)
+        g.account_service = AccountService(session=db.session)
     return g.account_service
 
 
 def get_projects_service():
     if 'projects_service' not in g:
         from neo4japp.services import ProjectsService
-        g.projects_service = ProjectsService(db.session)
+        g.projects_service = ProjectsService(session=db.session)
     return g.projects_service
 
 
@@ -135,6 +140,11 @@ def get_annotations_service(lmdb_dao):
     )
 
 
+def get_manual_annotations_service():
+    from neo4japp.services.annotations import ManualAnnotationsService
+    return ManualAnnotationsService()
+
+
 def get_annotations_pdf_parser():
     from neo4japp.services.annotations import AnnotationsPDFParser
     return AnnotationsPDFParser()
@@ -157,13 +167,14 @@ def reset_dao():
     handy for production later.
     """
     for dao in [
-        'neo4j_dao',
+        'neo4j_service_dao',
         'user_file_import_service',
         'search_dao',
         'authorization_service',
         'account_service',
         'projects_service',
         'lmdb_dao',
+        'annotation_neo4j',
     ]:
         if dao in g:
             g.pop(dao)

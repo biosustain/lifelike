@@ -16,7 +16,6 @@ SPECIES_NCBI_LMDB = 'species_ncbi'
 # NLP endpoint
 NLP_ENDPOINT = 'http://nlpapi:5001/infer/v1'
 
-LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH = 4
 PDF_NEW_LINE_THRESHOLD = .30
 PDF_CHARACTER_SPACING_THRESHOLD = .325
 COMMON_TWO_LETTER_WORDS = {
@@ -38,7 +37,7 @@ COMMON_FOUR_LETTER_WORDS = {
     'that', 'with', 'have', 'this', 'will', 'your', 'from',
     'name', 'they', 'know', 'want', 'been', 'good', 'much',
     'some', 'time', 'none', 'link', 'bond', 'acid', 'role',
-    'them', 'even',
+    'them', 'even', 'same',
 }
 
 COMMON_MISC_WORDS = {
@@ -54,8 +53,8 @@ COMMON_WORDS = set.union(*[
     COMMON_MISC_WORDS,
 ])
 
-CHEMICAL_EXCLUSION = {'aa', 'same'}
-COMPOUND_EXCLUSION = {'aa', 'same'}  # should this be the same as chemical?
+# CHEMICAL_EXCLUSION = {'aa', 'same'}
+# COMPOUND_EXCLUSION = {'aa', 'same'}  # should this be the same as chemical?
 SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial', 'aa', 'pigs', 'electron'}
 
 # utf-32 unicode
@@ -141,10 +140,15 @@ class AnnotationMethod(Enum):
     Rules = 'Rules Based'
 
 
+class ManualAnnotationType(Enum):
+    Inclusion = 'inclusion'
+    Exclusion = 'exclusion'
+
+
 # these links are used in annotations and custom annotations
 # first are search links
 # then entity hyperlinks
-NCBI_LINK = 'https://www.ncbi.nlm.nih.gov/gene/?query='
+NCBI_LINK = 'https://www.ncbi.nlm.nih.gov/gene/?term='
 UNIPROT_LINK = 'https://www.uniprot.org/uniprot/?sort=score&query='
 WIKIPEDIA_LINK = 'https://www.google.com/search?q=site:+wikipedia.org+'
 GOOGLE_LINK = 'https://www.google.com/search?q='

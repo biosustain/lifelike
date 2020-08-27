@@ -4,9 +4,13 @@ import pytest
 
 from os import path, remove, walk
 
-from neo4japp.services.annotations import prepare_databases, AnnotationsNeo4jService
+from neo4japp.models import FileContent, GlobalList
+
+from neo4japp.services.annotations import AnnotationsService, AnnotationsNeo4jService, LMDBDao
 from neo4japp.services.annotations.constants import (
     DatabaseType,
+    EntityType,
+    ManualAnnotationType,
     OrganismCategory,
     CHEMICALS_CHEBI_LMDB,
     COMPOUNDS_BIOCYC_LMDB,
@@ -33,6 +37,20 @@ def lmdb_chemical_factory(
 ):
     return {
         'chemical_id': chemical_id,
+        'id_type': id_type,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
+def lmdb_compound_factory(
+    compound_id: str,
+    id_type: str,
+    name: str,
+    synonym: str,
+):
+    return {
+        'compound_id': compound_id,
         'id_type': id_type,
         'name': name,
         'synonym': synonym,
@@ -69,6 +87,20 @@ def lmdb_gene_factory(
     }
 
 
+def lmdb_phenotype_factory(
+    phenotype_id: str,
+    id_type: str,
+    name: str,
+    synonym: str,
+):
+    return {
+        'phenotype_id': name,
+        'id_type': id_type,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
 def lmdb_protein_factory(
     protein_id: str,
     id_type: str,
@@ -100,6 +132,13 @@ def lmdb_species_factory(
         'synonym': synonym,
     }
 # End LMDB Data Helpers
+
+
+def create_empty_lmdb(path_to_folder: str, db_name: str):
+    map_size = 1099511627776
+    env = lmdb.open(path.join(directory, path_to_folder), map_size=map_size, max_dbs=2)
+    db = env.open_db(db_name.encode('utf-8'), dupsort=True)
+    env.close()
 
 
 def create_entity_lmdb(path_to_folder: str, db_name: str, entity_objs=[]):
@@ -148,12 +187,40 @@ def default_lmdb_setup(app, request):
         category=OrganismCategory.Eukaryota.value,
     )
 
+    # Create phenotype data
+    whey_protein = lmdb_phenotype_factory(
+        phenotype_id='MESH:D000067816',
+        id_type=DatabaseType.Mesh.value,
+        name='Whey Proteins',
+        synonym='Whey Proteins',
+    )
+
     # Create protein data
     hyp27_protein = lmdb_protein_factory(
         protein_id='Y1954_CLOPE',
         id_type=DatabaseType.Uniprot.value,
         name='Hyp27',
         synonym='Hyp27',
+    )
+
+    wasabi = lmdb_protein_factory(
+        protein_id='KKX1U_UROMN',
+        id_type=DatabaseType.Uniprot.value,
+        name='Wasabi receptor toxin',
+        synonym='Wasabi receptor toxin',
+    )
+    ns2a = lmdb_protein_factory(
+        protein_id='NS2A_CVBM',
+        id_type=DatabaseType.Uniprot.value,
+        name='ns2a',
+        synonym='ns2a',
+    )
+
+    NS2A = lmdb_protein_factory(
+        protein_id='POLG_ZIKVK',
+        id_type=DatabaseType.Uniprot.value,
+        name='NS2A',
+        synonym='NS2A',
     )
 
     serpina1_protein = lmdb_protein_factory(
@@ -172,6 +239,14 @@ def default_lmdb_setup(app, request):
         synonym='human',
     )
 
+    rat = lmdb_species_factory(
+        tax_id='10114',
+        category=OrganismCategory.Eukaryota.value,
+        id_type=DatabaseType.Ncbi.value,
+        name='rat',
+        synonym='rat',
+    )
+
     moniliophthora_roreri = lmdb_species_factory(
         tax_id='221103',
         category=OrganismCategory.Eukaryota.value,
@@ -180,6 +255,7 @@ def default_lmdb_setup(app, request):
         synonym='Moniliophthora roreri',
     )
 
+    # Create chemical data
     arginine = lmdb_chemical_factory(
         chemical_id='CHEBI:29952',
         id_type=DatabaseType.Chebi.value,
@@ -201,14 +277,43 @@ def default_lmdb_setup(app, request):
         synonym='H',
     )
 
+    adenosine = lmdb_chemical_factory(
+        chemical_id='CHEBI:16335',
+        id_type=DatabaseType.Chebi.value,
+        name='adenosine',
+        synonym='adenosine',
+    )
+
+    adenosine2 = lmdb_compound_factory(
+        compound_id='ADENOSINE',
+        id_type=DatabaseType.Biocyc.value,
+        name='adenosine',
+        synonym='adenosine',
+    )
+
+    guanosine = lmdb_compound_factory(
+        compound_id='GUANOSINE',
+        id_type=DatabaseType.Biocyc.value,
+        name='guanosine',
+        synonym='guanosine',
+    )
+
+    # Create disease data
+    cold_sore = lmdb_disease_factory(
+        disease_id='MESH:D006560',
+        id_type=DatabaseType.Mesh.value,
+        name='cold sore',
+        synonym='cold sore',
+    )
+
     entities = [
-        (CHEMICALS_CHEBI_LMDB, 'chemicals', [arginine, hypofluorite, histidine]),
-        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),  # TODO: Create test compound data
-        (DISEASES_MESH_LMDB, 'diseases', []),  # TODO: Create test disease data
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', [adenosine, arginine, hypofluorite, histidine]),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', [adenosine2, guanosine]),
+        (DISEASES_MESH_LMDB, 'diseases', [cold_sore]),
         (GENES_NCBI_LMDB, 'genes', [bola3, hyp27_gene, serpina1_gene, serpina1_gene2]),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),  # TODO: Create test phenotype data
-        (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein]),
-        (SPECIES_NCBI_LMDB, 'species', [human, moniliophthora_roreri]),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', [whey_protein]),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein, wasabi, ns2a, NS2A]),
+        (SPECIES_NCBI_LMDB, 'species', [human, moniliophthora_roreri, rat]),
     ]
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
@@ -502,19 +607,7 @@ def mock_get_gene_to_organism_match_result(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'serpina1': {'9606': '5265'}}
-
-    monkeypatch.setattr(
-        AnnotationsNeo4jService,
-        'get_gene_to_organism_match_result',
-        get_match_result,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_get_gene_to_organism_serpina1_match_result_all_caps(monkeypatch):
-    def get_match_result(*args, **kwargs):
-        return {'SERPINA1': {'9606': '5265'}}
+        return {'serpina1': {'9606': '5265'}, 'SERPINA1': {'9606': '5265'}}
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
@@ -578,5 +671,341 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
 
 
 @pytest.fixture(scope='function')
+def mock_global_compound_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'guanosine', 'hydrogen'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        '_get_compound_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_chemical_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'hypofluorite', 'hydrogen', 'adenosine'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        '_get_chemical_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_disease_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'cold sore'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        '_get_disease_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_gene_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'BOLA3', 'rpoS'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        '_get_gene_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_phenotype_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'Whey Proteins'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        '_get_phenotype_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_protein_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'Wasabi receptor toxin'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        '_get_protein_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_species_exclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'human', 'dog'}
+
+    monkeypatch.setattr(
+        AnnotationsService,
+        '_get_species_annotations_to_exclude',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_get_gene_ace2_for_global_gene_inclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'ACE2'}
+
+    monkeypatch.setattr(
+        AnnotationsNeo4jService,
+        'get_genes_from_ids',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_chemical_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'CHEBI:Fake',
+            'type': EntityType.Chemical.value,
+            'allText': 'fake-chemical-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_compound_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'BIOC:Fake',
+            'type': EntityType.Compound.value,
+            'allText': 'compound-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_gene_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': '59272',
+            'type': EntityType.Gene.value,
+            'allText': 'gene-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_disease_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'Ncbi:Fake',
+            'type': EntityType.Disease.value,
+            'allText': 'disease-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_phenotype_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'Ncbi:Fake',
+            'type': EntityType.Phenotype.value,
+            'allText': 'phenotype-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_protein_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'Ncbi:Fake',
+            'type': EntityType.Protein.value,
+            'allText': 'protein-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_species_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'Ncbi:Fake',
+            'type': EntityType.Species.value,
+            'allText': 'species-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
 def annotations_setup(app):
     pass
+
+
+@pytest.fixture(scope='function')
+def get_annotation_n4j(neo4j_service_dao, session):
+    return AnnotationsNeo4jService(
+        neo4j_service=neo4j_service_dao, session=session)
+
+
+@pytest.fixture(scope='function')
+def get_lmdb():
+    for db_name, entity in [
+        (CHEMICALS_CHEBI_LMDB, 'chemicals'),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds'),
+        (GENES_NCBI_LMDB, 'genes'),
+        (DISEASES_MESH_LMDB, 'diseases'),
+        (PROTEINS_UNIPROT_LMDB, 'proteins'),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes'),
+        (SPECIES_NCBI_LMDB, 'species'),
+    ]:
+        create_empty_lmdb(f'lmdb/{entity}', db_name)
+
+    genes_lmdb_path = path.join(directory, 'lmdb/genes')
+    chemicals_lmdb_path = path.join(directory, 'lmdb/chemicals')
+    compounds_lmdb_path = path.join(directory, 'lmdb/compounds')
+    proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
+    species_lmdb_path = path.join(directory, 'lmdb/species')
+    diseases_lmdb_path = path.join(directory, 'lmdb/diseases')
+    phenotypes_lmdb_path = path.join(directory, 'lmdb/phenotypes')
+
+    return LMDBDao(
+        genes_lmdb_path=genes_lmdb_path,
+        chemicals_lmdb_path=chemicals_lmdb_path,
+        compounds_lmdb_path=compounds_lmdb_path,
+        proteins_lmdb_path=proteins_lmdb_path,
+        species_lmdb_path=species_lmdb_path,
+        diseases_lmdb_path=diseases_lmdb_path,
+        phenotypes_lmdb_path=phenotypes_lmdb_path,
+    )
+
+
+@pytest.fixture(scope='function')
+def get_annotations_service(
+    get_annotation_n4j,
+    get_lmdb,
+    request
+):
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+    return AnnotationsService(
+        lmdb_session=get_lmdb,
+        annotation_neo4j=get_annotation_n4j,
+    )
