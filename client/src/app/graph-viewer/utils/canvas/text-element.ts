@@ -177,44 +177,49 @@ export class TextElement {
       let boxHorizontalOverflow = false;
       let boxVerticalOverflow = true;
       let actualWidth = 0;
-      const tokens = this.text.split(/ +/g);
       const lines: ComputedLine[] = [];
+      const blocks = this.text.split(/\r?\n/g);
 
-      for (const {line, metrics, remainingTokens} of this.getWidthFittedLines(tokens, effectiveWidth)) {
-        const lineHorizontalOverflow = metrics.width > effectiveWidth;
+      blockLoop:
+      for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+        const tokens = blocks[blockIndex].split(/ +/g);
 
-        if (lineHorizontalOverflow) {
-          // If this line overflows, make sure to mark the box as overflowing and
-          // update the width of the box
-          boxHorizontalOverflow = true;
-          actualWidth = effectiveWidth;
-        } else if (metrics.width > actualWidth) {
-          // If the line isn't overflowing but this line's width is longer than the
-          // running actual width, update that
-          actualWidth = metrics.width;
+        for (const {line, metrics, remainingTokens} of this.getWidthFittedLines(tokens, effectiveWidth)) {
+          const lineHorizontalOverflow = metrics.width > effectiveWidth;
+
+          if (lineHorizontalOverflow) {
+            // If this line overflows, make sure to mark the box as overflowing and
+            // update the width of the box
+            boxHorizontalOverflow = true;
+            actualWidth = effectiveWidth;
+          } else if (metrics.width > actualWidth) {
+            // If the line isn't overflowing but this line's width is longer than the
+            // running actual width, update that
+            actualWidth = metrics.width;
+          }
+
+          lines.push({
+            text: line,
+            metrics,
+            xOffset: 0, // We'll update later
+            horizontalOverflow: lineHorizontalOverflow,
+          });
+
+          // We've overflow the height if we add another line
+          if ((remainingTokens || blockIndex < blocks.length - 1) && (
+            (effectiveHeight != null && (lines.length + 1) * this.actualLineHeight > effectiveHeight)
+            || (this.maxLines != null && lines.length >= this.maxLines))
+          ) {
+            boxVerticalOverflow = true;
+            break blockLoop;
+          }
         }
 
-        lines.push({
-          text: line,
-          metrics,
-          xOffset: 0, // We'll update later
-          horizontalOverflow: lineHorizontalOverflow,
-        });
-
-        // We've overflow the height if we add another line
-        if (remainingTokens && (
-          (effectiveHeight != null && (lines.length + 1) * this.actualLineHeight > effectiveHeight)
-          || (this.maxLines != null && lines.length >= this.maxLines))
-        ) {
-          boxVerticalOverflow = true;
-          break;
+        // Do X offset for center and other alignments
+        // Do this in a second phase because actualWidth is still being calculated
+        for (const line of lines) {
+          line.xOffset = this.calculateComputedLineLeftOffset(line.metrics, actualWidth);
         }
-      }
-
-      // Do X offset for center and other alignments
-      // Do this in a second phase because actualWidth is still being calculated
-      for (const line of lines) {
-        line.xOffset = this.calculateComputedLineLeftOffset(line.metrics, actualWidth);
       }
 
       return {
