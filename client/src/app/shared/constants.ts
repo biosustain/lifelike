@@ -14,11 +14,26 @@ export enum Hyperlink {
   NcbiSpecies = 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
 }
 
-export enum SearchLink {
-  Ncbi = 'https://www.ncbi.nlm.nih.gov/gene/?query=',
-  Uniprot = 'https://www.uniprot.org/uniprot/?sort=score&query=',
-  Wikipedia = 'https://www.google.com/search?q=site:+wikipedia.org+',
-  Google = 'https://www.google.com/search?q=',
+export enum AnnotationType {
+  Chemical = 'Chemical',
+  Compound = 'Compound',
+  Disease = 'Disease',
+  Gene = 'Gene',
+  Protein = 'Protein',
+  Species = 'Species',
+  Phenotype = 'Phenotype',
+  Company = 'Company',
+  Mutation = 'Mutation',
+  Pathway = 'Pathway',
+  Entity = 'Entity',
+}
+
+export enum DatabaseType {
+  Chebi = 'CHEBI',
+  Mesh = 'MESH',
+  Uniprot = 'UNIPROT',
+  Ncbi = 'NCBI',
+  Biocyc = 'BIOCYC',
 }
 
 export const LOGOUT_SUCCESS = '[Auth] Logout Success';
