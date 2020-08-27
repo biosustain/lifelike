@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
+import { getTopParent } from '../../utils/forms';
 
 @Component({
   selector: 'app-form-input-feedback',
@@ -8,4 +9,8 @@ import { AbstractControl } from '@angular/forms';
 export class FormInputFeedbackComponent {
   @Input() control: AbstractControl | undefined;
   @Input() errors = {};
+
+  get dirty() {
+    return this.control != null && (this.control.dirty || getTopParent(this.control).dirty);
+  }
 }

@@ -27,11 +27,11 @@ class AuthService(RDBMSBaseDao):
         user: AppUser,
         commit_now: bool = True,
     ) -> Sequence[AccessControlPolicy]:
-        """ Grant a permission, or priviledge on an asset to a user
+        """ Grant a permission, or privilege on an asset to a user
 
         Returns the number of access control policies created
-        from granting that priviledge. Multiple policies
-        may be created from a single permission or priviledge.
+        from granting that privilege. Multiple policies
+        may be created from a single permission or privilege.
 
         """
         retval = []
@@ -83,7 +83,7 @@ class AuthService(RDBMSBaseDao):
         user: AppUser,
         commit_now: bool = True,
     ) -> None:
-        """ Revokes a permission, or priviledge on an asset to a user """
+        """ Revokes a permission, or privilege on an asset to a user """
         # only removes the write permission on the specific asset
         if permission == AccessActionType.WRITE:
             AccessControlPolicy.query.filter(
