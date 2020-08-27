@@ -1,5 +1,6 @@
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import AppRole, AppUser
+from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
 from neo4japp.exceptions import DuplicateRecord, NotAuthorizedException
 from neo4japp.data_transfer_objects import UserUpdateRequest
@@ -67,7 +68,7 @@ class AccountService(RDBMSBaseDao):
 
         if len(username) > 0:
             return AppUser.query.filter(
-                AppUser.username.contains(username)
+                AppUser.username.ilike(f'%{username}%')
             ).order_by(AppUser.username).limit(10).all()
         else:
             return AppUser.query.order_by(AppUser.username).all()
