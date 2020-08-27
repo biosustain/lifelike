@@ -1,6 +1,5 @@
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import AppRole, AppUser
-from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
 from neo4japp.exceptions import DuplicateRecord, NotAuthorizedException
 from neo4japp.data_transfer_objects import UserUpdateRequest
