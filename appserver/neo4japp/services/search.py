@@ -210,11 +210,23 @@ class SearchService(GraphBaseDao):
             ))
         return formatted_results
 
-    def visualizer_search_temp(self, term: str, page: int = 1,
-                               limit: int = 100, filter: str = 'labels()') -> FTSResult:
+    def visualizer_search_temp(
+        self,
+        term: str,
+        organism: str,
+        page: int = 1,
+        limit: int = 10,
+        filter: str = 'labels(node)'
+    ) -> FTSResult:
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:
             return FTSResult(query_term, [], 0, page, limit)
+
+        if organism:
+            organism_match_string = 'MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy {id: $organism})'
+        else:
+            organism_match_string = 'OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)'
+
         cypher_query = f"""
             CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
             YIELD node, score
@@ -222,7 +234,7 @@ class SearchService(GraphBaseDao):
             WHERE {filter}
             WITH score, n
             ORDER BY score DESC
-            OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)
+            {organism_match_string}
             WITH MAX(score) as score, collect(DISTINCT [n, t.id, t.name, n.namespace]) AS nodes
             UNWIND nodes as node
             RETURN score, node[0] AS node, node[1] AS taxonomy_id, node[2] AS taxonomy_name,
@@ -233,10 +245,13 @@ class SearchService(GraphBaseDao):
 
         results = self.graph.run(
             cypher_query,
-            parameters={'amount': (page - 1) * limit,
-                        'limit': limit,
-                        'search_term': query_term,
-                        }).data()
+            parameters={
+                'organism': organism,
+                'amount': (page - 1) * limit,
+                'limit': limit,
+                'search_term': query_term,
+            }
+        ).data()
 
         records = self._visualizer_search_temp_result_formatter(results)
 
@@ -245,11 +260,16 @@ class SearchService(GraphBaseDao):
             YIELD node
             MATCH (node)-[]-(n)
             WHERE {filter}
-            OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)
+            {organism_match_string}
             RETURN COUNT(DISTINCT n) as total
         """
         total_results = self.graph.run(
-            total_query, parameters={'search_term': query_term}).evaluate()
+            total_query,
+            parameters={
+                'search_term': query_term,
+                'organism': organism
+            }
+        ).evaluate()
 
         return FTSResult(term, records, total_results, page, limit)
 
@@ -267,7 +287,6 @@ class SearchService(GraphBaseDao):
             CALL db.index.fulltext.queryNodes("synonymIdx", $term)
             YIELD node, score
             MATCH (node)-[]-(t:Taxonomy)
-            WHERE t.rank = 'species'
             RETURN t.id AS tax_id, t.name AS organism_name, node.name AS synonym
             LIMIT $limit
         """

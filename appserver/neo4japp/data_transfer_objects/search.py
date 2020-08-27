@@ -52,3 +52,30 @@ class GeneFilteredRequest(CamelDictMixin):
 class OrganismRequest(CamelDictMixin):
     query: str = attr.ib()
     limit: int = attr.ib()
+
+
+@attr.s(frozen=True)
+class SearchRequest(CamelDictMixin):
+    query: str = attr.ib()
+    page: int = attr.ib()
+    limit: int = attr.ib()
+
+
+@attr.s(frozen=True)
+class SimpleSearchRequest(CamelDictMixin):
+    query: str = attr.ib()
+    page: int = attr.ib()
+    limit: int = attr.ib()
+    filter: str = attr.ib()
+
+
+@attr.s(frozen=True)
+class VizSearchRequest(SimpleSearchRequest):
+    organism: str = attr.ib()
+
+
+@attr.s(frozen=True)
+class PDFSearchRequest(CamelDictMixin):
+    query: str = attr.ib()
+    offset: int = attr.ib()
+    limit: int = attr.ib()
