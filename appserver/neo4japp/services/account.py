@@ -67,7 +67,7 @@ class AccountService(RDBMSBaseDao):
 
         if len(username) > 0:
             return AppUser.query.filter(
-                AppUser.username.contains(username)
+                AppUser.username.ilike(f'%{username}%')
             ).order_by(AppUser.username).limit(10).all()
         else:
             return AppUser.query.order_by(AppUser.username).all()
