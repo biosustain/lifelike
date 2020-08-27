@@ -3,7 +3,7 @@ from flask import Blueprint, request
 from neo4japp.blueprints.auth import auth
 from neo4japp.models import AnnotationStyle, DomainURLsMap
 
-bp = Blueprint('entity-resources', __name__, url_prefix='/annotations')
+bp = Blueprint('entity-resources', __name__, url_prefix='/entity-resources')
 
 
 @bp.route('/style/<string:annotation_label>', methods=['GET'])

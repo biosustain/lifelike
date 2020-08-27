@@ -1,4 +1,4 @@
-<div class="pdf-viewer-container" [class.debugmode]="debugMode">
+<div class="pdf-viewer-container" [class.debugmode]="debugMode" (mouseup)="mouseUp($event)">
   <div *ngIf="!isLoadCompleted" class="pdf-loading-box floating-toolbar">
     Loading<span *ngIf="allPages"> page {{currentRenderedPage}} of {{allPages}}</span>...
   </div>
