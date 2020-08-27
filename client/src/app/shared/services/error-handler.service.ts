@@ -34,7 +34,7 @@ export class ErrorHandler {
       } else if (res.status === 500) {
         title = 'Unexpected Application Problem';
         message = 'Lifelike has encountered some unexpected problems. Please try again later.';
-      } else if (res.error) {
+      } else if (res.error && res.error.apiHttpError && res.error.apiHttpError.message != null) {
         message = (res.error as ServerError).apiHttpError.message;
       }
 

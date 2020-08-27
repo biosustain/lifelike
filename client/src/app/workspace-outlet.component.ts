@@ -3,7 +3,7 @@ import {
   ChangeDetectorRef,
   Component, EventEmitter,
   HostListener,
-  Input, OnDestroy, Output,
+  Input, OnChanges, OnDestroy, Output,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
@@ -14,7 +14,7 @@ import { Container } from './shared/workspace-manager';
   template: `
     <ng-container #child></ng-container>`,
 })
-export class WorkspaceOutletComponent implements AfterViewInit, OnDestroy {
+export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() name: string;
   @Output() outletFocus = new EventEmitter<any>();
   @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
@@ -54,6 +54,12 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (this.active) {
+      this.attachComponent();
+    }
+  }
+
+  ngOnChanges(): void {
+    if (this.active && this.viewComponentRef && this.currentContainer && !this.currentContainer.attached) {
       this.attachComponent();
     }
   }
