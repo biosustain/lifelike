@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
 import { combineLatest, from, throwError, Subject, Subscription, BehaviorSubject } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { Hyperlink, SearchLink } from 'app/shared/constants';
+import { Hyperlink, DatabaseType, AnnotationType } from 'app/shared/constants';
 
 import { PdfAnnotationsService } from '../../drawing-tool/services';
 
@@ -275,12 +275,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         ...annotation.meta,
         id: annotation.meta.id || id,
         idType,
-        links: {
-          ncbi: annotation.meta.links.ncbi || this.buildUrl(SearchLink.Ncbi, annotation.meta.allText),
-          uniprot: annotation.meta.links.uniprot || this.buildUrl(SearchLink.Uniprot, annotation.meta.allText),
-          wikipedia: annotation.meta.links.wikipedia || this.buildUrl(SearchLink.Wikipedia, annotation.meta.allText),
-          google: annotation.meta.links.google || this.buildUrl(SearchLink.Google, annotation.meta.allText),
-        },
       },
     };
 
@@ -490,17 +484,17 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   generateHyperlink(ann: Annotation): string {
     switch (ann.meta.idType) {
-      case 'CHEBI':
+      case DatabaseType.Chebi:
         return this.buildUrl(Hyperlink.Chebi, ann.meta.id);
-      case 'MESH':
+      case DatabaseType.Mesh:
         // prefix 'MESH:' should be removed from the id in order for search to work
         return this.buildUrl(Hyperlink.Mesh, ann.meta.id.substring(5));
-      case 'UNIPROT':
+      case DatabaseType.Uniprot:
         return this.buildUrl(Hyperlink.Uniprot, ann.meta.id);
-      case 'NCBI':
-        if (ann.meta.type === 'Genes') {
+      case DatabaseType.Ncbi:
+        if (ann.meta.type === AnnotationType.Gene) {
           return this.buildUrl(Hyperlink.NcbiGenes, ann.meta.id);
-        } else if (ann.meta.type === 'Species') {
+        } else if (ann.meta.type === AnnotationType.Species) {
           return this.buildUrl(Hyperlink.NcbiSpecies, ann.meta.id);
         }
         return '';
@@ -509,7 +503,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   }
 
-  private buildUrl(provider: Hyperlink | SearchLink, query: string): string {
+  private buildUrl(provider: Hyperlink, query: string): string {
     return provider + query;
   }
 
