@@ -881,9 +881,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     const overlayContainer = pdfPageView.div;
     const overlayDiv = document.createElement('div');
     overlayDiv.setAttribute('style', `border: 2px solid red; position:absolute;` +
-      'left:' + (left - 2) + 'px;top:' + (top + 2) + 'px;width:' + (width + 2) + 'px;height:' + (height + 2) + 'px;');
+      'left:' + (left - 4) + 'px;top:' + (top - 4) + 'px;width:' + (width + 8) + 'px;height:' + (height + 8) + 'px;');
     overlayContainer.appendChild(overlayDiv);
-    overlayDiv.scrollIntoView();
+    overlayDiv.scrollIntoView({block: 'center'});
     jQuery(overlayDiv).effect('highlight', {}, 1000);
     setTimeout(() => {
       jQuery(overlayDiv).remove();
