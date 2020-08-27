@@ -446,6 +446,22 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
+  getObjectId(object: AnnotatedDirectoryObject): any {
+    switch (object.type) {
+      case 'dir':
+        const directory = object.data as Directory;
+        return directory.id;
+      case 'file':
+        const file = object.data as PdfFile;
+        return file.file_id;
+      case 'map':
+        const _map = object.data as KnowledgeMap;
+        return _map.hash_id;
+      default:
+        throw new Error(`unknown directory object type: ${object.type}`);
+    }
+  }
+
   getObjectCommands(object: AnnotatedDirectoryObject): any[] {
     switch (object.type) {
       case 'dir':
@@ -482,6 +498,10 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       label: object.type === 'map' ? 'map' : 'link',
       sub_labels: [],
       data: {
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.getObjectId(object) + '',
+        }],
         sources: [{
           domain: 'File Source',
           url: this.getObjectCommands(object).join('/'),
