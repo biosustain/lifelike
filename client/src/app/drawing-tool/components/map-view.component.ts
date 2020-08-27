@@ -59,7 +59,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
 
   entitySearchTerm = '';
-  entitySearchList: UniversalGraphEntity[] = [];
+  entitySearchList: GraphEntity[] = [];
   entitySearchListIdx = -1;
 
   constructor(
@@ -350,18 +350,16 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
     if (this.entitySearchTerm.length) {
       const nodes = this.graphCanvas.nodes.filter(n => {
         return n.display_name.toLowerCase().includes(this.entitySearchTerm.toLowerCase());
-      });
+      }).map(n => ({type: GraphEntityType.Node, entity: n}));
+
       const edges = this.graphCanvas.edges.filter(n => {
         return n.label.toLowerCase().includes(this.entitySearchTerm.toLowerCase());
-      });
+      }).map(e => ({type: GraphEntityType.Edge, entity: e}));
 
       this.entitySearchList = [...nodes, ...edges];
       this.entitySearchListIdx = -1;
 
-      const graphEntityNodes: GraphEntity[] = nodes.map(n => ({type: GraphEntityType.Node, entity: n}));
-      const graphEntityEdges: GraphEntity[] = edges.map(e => ({type: GraphEntityType.Edge, entity: e}));
-
-      this.graphCanvas.searchHighlighting.replace([...graphEntityEdges, ...graphEntityNodes]);
+      this.graphCanvas.searchHighlighting.replace([...nodes, ...edges]);
       this.graphCanvas.requestRender();
 
     } else {
@@ -381,7 +379,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
       this.entitySearchListIdx = 0;
     }
     this.graphCanvas.panToEntity(
-      this.entitySearchList[this.entitySearchListIdx] as UniversalGraphEntity
+      this.entitySearchList[this.entitySearchListIdx] as GraphEntity
     );
   }
 
@@ -392,7 +390,7 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
       this.entitySearchListIdx = this.entitySearchList.length - 1;
     }
     this.graphCanvas.panToEntity(
-      this.entitySearchList[this.entitySearchListIdx] as UniversalGraphEntity
+      this.entitySearchList[this.entitySearchListIdx] as GraphEntity
     );
   }
 

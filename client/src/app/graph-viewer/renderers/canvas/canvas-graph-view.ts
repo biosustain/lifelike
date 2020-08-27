@@ -403,17 +403,17 @@ export class CanvasGraphView extends GraphView {
     this.applyZoomToFit(duration, padding);
   }
 
-  panToEntity(entity: UniversalGraphEntity, duration: number = 1500, padding = 50) {
+  panToEntity(e: GraphEntity, duration: number = 1500, padding = 50) {
     this.previousZoomToFitTime = window.performance.now();
 
-    if ('from' in entity && 'to' in entity) {
+    this.searchFocus.replace([e]);
+
+    if (e.type === GraphEntityType.Edge) {
       // Pan to edge
-      this.searchFocus.replace([{type: GraphEntityType.Edge, entity}]);
-      this.applyPanToEdge(entity as UniversalGraphEdge, duration, padding);
+      this.applyPanToEdge(e.entity as UniversalGraphEdge, duration, padding);
     } else {
       // Pan to node
-      this.searchFocus.replace([{type: GraphEntityType.Node, entity}]);
-      this.applyPanToNode(entity as UniversalGraphNode, duration, padding);
+      this.applyPanToNode(e.entity as UniversalGraphNode, duration, padding);
     }
   }
 
@@ -437,7 +437,7 @@ export class CanvasGraphView extends GraphView {
     const from: UniversalGraphNode = this.nodeHashMap.get(edge.from);
     const to: UniversalGraphNode = this.nodeHashMap.get(edge.to);
 
-    const {minX, minY, maxX, maxY} = this.getNodeBoundingBox([from, to], padding);
+    const {minX, minY, maxX, maxY} = this.getEdgeBoundingBox([edge], padding);
 
     const width = maxX - minX;
     const height = maxY - minY;
