@@ -6,12 +6,16 @@ import { ObjectDeleteDialogComponent } from './components/object-delete-dialog.c
 import { ObjectUploadDialogComponent } from './components/object-upload-dialog.component';
 import { FileViewComponent } from './components/file-view.component';
 import { PdfViewerLibModule } from '../pdf-viewer/pdf-viewer-lib.module';
-import { ProjectBrowserComponent } from './components/project-browser.component';
+import { BrowserProjectListComponent } from './components/browser/browser-project-list.component';
 import { ProjectTitleAcronymPipe } from './services/project-title-acronym.pipe';
 import { ProjectEditDialogComponent } from './components/project-edit-dialog.component';
 import { ProjectCreateDialogComponent } from './components/project-create-dialog.component';
 import { DirectoryEditDialogComponent } from './components/directory-edit-dialog.component';
 import { ObjectDeletionResultDialogComponent } from './components/object-deletion-result-dialog.component';
+import { CommunityBrowserComponent } from './components/community-browser.component';
+import { BrowserComponent } from './components/browser/browser.component';
+import { BrowserCommunityListComponent } from './components/browser/browser-community-list.component';
+import { BrowserContextComponent } from './components/browser/browser-context.component';
 
 @NgModule({
   declarations: [
@@ -21,11 +25,15 @@ import { ObjectDeletionResultDialogComponent } from './components/object-deletio
     ObjectDeletionResultDialogComponent,
     FileBrowserComponent,
     FileViewComponent,
-    ProjectBrowserComponent,
+    BrowserComponent,
+    BrowserContextComponent,
+    BrowserCommunityListComponent,
+    BrowserProjectListComponent,
     ProjectTitleAcronymPipe,
     ProjectEditDialogComponent,
     ProjectCreateDialogComponent,
     DirectoryEditDialogComponent,
+    CommunityBrowserComponent,
   ],
   imports: [
     SharedModule,
