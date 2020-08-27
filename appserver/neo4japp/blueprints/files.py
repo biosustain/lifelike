@@ -79,8 +79,12 @@ def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -
 
 
 def search_doi(content: bytes) -> Optional[str]:
-    doi_re = rb'(?:doi|DOI)(?::|=)\s*([\d\w\./%]+)'
+    # ref: https://stackoverflow.com/a/10324802
+    # Has a good breakdown of the DOI specifications,
+    # in case need to play around with the regex in the future
+    doi_re = rb'\b(10[.][0-9]{4,}(?:[.][0-9]+)*/(?:(?!["&\'<>])\S)+)\b'
     match = re.search(doi_re, content)
+
     if match is None:
         return None
     doi = match.group(1).decode('utf-8').replace('%2F', '/')

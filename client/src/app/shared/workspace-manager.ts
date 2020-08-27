@@ -42,6 +42,10 @@ export class Container<T> {
               readonly component: Type<T>) {
   }
 
+  get attached(): boolean {
+    return this.viewContainerRef != null;
+  }
+
   /**
    * Create the component if necessary and attach it to the given ref. If
    * this component has already been attached to a ref, then an error
