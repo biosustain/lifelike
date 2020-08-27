@@ -165,18 +165,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       const linkedFileId = this.route.snapshot.params.file_id;
       const fragment = this.route.snapshot.fragment || '';
       // TODO: Do proper query string parsing
-      const pageMatch = fragment.match(/page=([0-9]+)/);
-      const coordMatch = fragment.match(/coords=([0-9.]+),([0-9.]+),([0-9.]+),([0-9.]+)/);
-      const location: Location = pageMatch != null && coordMatch != null ? {
-        pageNumber: parseInt(pageMatch[1], 10),
-        rect: [
-          parseFloat(coordMatch[1]),
-          parseFloat(coordMatch[2]),
-          parseFloat(coordMatch[3]),
-          parseFloat(coordMatch[4]),
-        ],
-      } : null;
-      this.openPdf(new DummyFile(linkedFileId), location);
+      this.openPdf(new DummyFile(linkedFileId), this.parseLocationFromUrl(fragment));
     }
   }
 
@@ -593,5 +582,19 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       title: this.pdfFile.filename,
       fontAwesomeIcon: 'file-pdf',
     });
+  }
+
+  parseLocationFromUrl(fragment: string): Location | undefined {
+    const pageMatch = fragment.match(/page=([0-9]+)/);
+    const coordMatch = fragment.match(/coords=([0-9.]+),([0-9.]+),([0-9.]+),([0-9.]+)/);
+    return pageMatch != null && coordMatch != null ? {
+      pageNumber: parseInt(pageMatch[1], 10),
+      rect: [
+        parseFloat(coordMatch[1]),
+        parseFloat(coordMatch[2]),
+        parseFloat(coordMatch[3]),
+        parseFloat(coordMatch[4]),
+      ],
+    } : null;
   }
 }
