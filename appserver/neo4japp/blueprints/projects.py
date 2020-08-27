@@ -431,26 +431,26 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'name': c.name,
                 'creator': {
                     'id': c.user_id,
-                    'name': username
+                    'name': c.username
                 },
                 'annotation_date': None,
                 'creation_date': None,
                 'modification_date': None,
                 'data': c.__dict__,
-            } for (c, username) in child_dirs],
+            } for c in child_dirs],
             *[{
                 'type': 'file',
                 'name': f.filename,
                 'creator': {
                     'id': f.user_id,
-                    'name': username
+                    'name': f.username
                 },
                 'description': f.description,
                 'annotation_date': f.annotations_date,
                 'creation_date': f.creation_date,
                 'modification_date': None,
                 'data': f.__dict__
-            } for (f, username) in files],
+            } for f in files],
             *[{
                 'type': 'map',
                 'name': m.label,
@@ -459,11 +459,11 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'modification_date': m.date_modified,
                 'creator': {
                     'id': m.user_id,
-                    'name': username
+                    'name': m.username
                 },
                 'description': m.description,
                 'data': m.__dict__,
-            } for (m, username) in maps],
+            } for m in maps],
         ],
     )
     yield jsonify(dict(result=contents.to_dict()))
