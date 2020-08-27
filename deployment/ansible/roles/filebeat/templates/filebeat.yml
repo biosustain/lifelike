@@ -1,6 +1,48 @@
 filebeat.inputs:
-- type: docker
-  containers.ids: '*'
+  - type: docker
+    containers.ids:
+      - "*"
+
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.image: gcr.io/able-goods-221820/{{ docker_nginx_img }}
+          config:
+            - type: docker
+              containers.ids:
+                - "${data.docker.container.id}"
+            - module: nginx
+              access:
+                enabled: true
+                containers:
+                  stream: "stdout"
+              error:
+                enabled: true
+                containers:
+                  stream: "stderr"
+
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.image: gcr.io/able-goods-221820/{{ docker_appserver_img }}
+          config:
+            - type: docker
+              containers.id:
+                - "${data.docker.container.id}"
+              multiline.pattern: 'ERROR|INFO|DEBUG|WARN'
+              multiline.negate: true
+              multiline.match: after
+
+processors:
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
+  - add_fields:
+      fields:
+        cloud_provider: "{{ cloud_provider }}"
 
 output.logstash:
     hosts: ["{{ elk_server_host }}"]
