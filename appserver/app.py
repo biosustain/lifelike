@@ -77,8 +77,10 @@ def seed():
             if isinstance(model, Table):
                 logger.info(f"Creating fixtures for {class_name}...")
                 db.session.execute(model.insert(), fixture['records'])
+                table = model
             else:
                 model_meta = inspect(model)
+                table = model.__table__
                 relationships = model_meta.relationships
                 logger.info(f"Creating fixtures for {class_name}...")
 
@@ -97,6 +99,17 @@ def seed():
                         else:
                             setattr(instance, key, record[key])
                     db.session.add(instance)
+
+            db.session.flush()
+            db.session.commit()
+
+            if 'id' in table.columns:
+                logger.info(f"Updating sequence for {table.name}...")
+                conn.execute(f'SELECT pg_catalog.setval('
+                             f'pg_get_serial_sequence(\'{table.name}\', \'id\'), '
+                             f'MAX(id) + 1) FROM {table.name};')
+            else:
+                logger.info(f"No ID column for {class_name}")
 
             db.session.flush()
             db.session.commit()
