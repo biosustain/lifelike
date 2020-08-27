@@ -408,9 +408,11 @@ export class CanvasGraphView extends GraphView {
 
     if ('from' in entity && 'to' in entity) {
       // Pan to edge
+      this.searchFocus.replace([{type: GraphEntityType.Edge, entity}]);
       this.applyPanToEdge(entity as UniversalGraphEdge, duration, padding);
     } else {
       // Pan to node
+      this.searchFocus.replace([{type: GraphEntityType.Node, entity}]);
       this.applyPanToNode(entity as UniversalGraphNode, duration, padding);
     }
   }
@@ -659,6 +661,7 @@ export class CanvasGraphView extends GraphView {
 
     yield* this.drawTouchPosition(ctx);
     yield* this.drawHighlightBackground(ctx);
+    yield* this.drawSearchHighlightBackground(ctx);
     yield* this.drawLayoutGroups(ctx);
     yield* this.drawEdges(ctx);
     yield* this.drawNodes(ctx);
@@ -697,6 +700,29 @@ export class CanvasGraphView extends GraphView {
         const bbox = this.getEntityBoundingBox([highlightedEntity], 10);
         ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
         ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+        ctx.fill();
+      }
+    }
+  }
+
+  private* drawSearchHighlightBackground(ctx: CanvasRenderingContext2D) {
+    yield null;
+
+    if (!this.touchPosition) {
+      const highlighted = this.searchHighlighting.get();
+      for (const highlightedEntity of highlighted) {
+        ctx.beginPath();
+        const bbox = this.getEntityBoundingBox([highlightedEntity], 10);
+        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+        ctx.fillStyle = 'rgba(252, 243, 167, 0.575)';
+        ctx.fill();
+      }
+      const focus = this.searchFocus.get();
+      for (const focusEntity of focus) {
+        ctx.beginPath();
+        const bbox = this.getEntityBoundingBox([focusEntity], 10);
+        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+        ctx.fillStyle = 'rgba(186, 202, 251, 0.575)';
         ctx.fill();
       }
     }

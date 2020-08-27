@@ -3,7 +3,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { MapService } from '../services';
-import { KnowledgeMap, UniversalGraph, UniversalGraphEntity, UniversalGraphNode } from '../services/interfaces';
+import {
+  KnowledgeMap, UniversalGraph, UniversalGraphEntity,
+  UniversalGraphNode, GraphEntityType, GraphEntity
+} from '../services/interfaces';
 
 import { MapExportDialogComponent } from './map-export-dialog.component';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
@@ -355,11 +358,22 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
         return n.label.toLowerCase().includes(this.entitySearchTerm.toLowerCase());
       });
 
-      this.entitySearchList = [].concat(nodes).concat(edges);
+      this.entitySearchList = [...nodes, ...edges];
       this.entitySearchListIdx = -1;
+
+      const graphEntityNodes: GraphEntity[] = nodes.map(n => ({type: GraphEntityType.Node, entity: n}));
+      const graphEntityEdges: GraphEntity[] = edges.map(e => ({type: GraphEntityType.Edge, entity: e}));
+
+      this.graphCanvas.searchHighlighting.replace([...graphEntityEdges, ...graphEntityNodes]);
+      this.graphCanvas.requestRender();
+
     } else {
       this.entitySearchList = [];
       this.entitySearchListIdx = -1;
+
+      this.graphCanvas.searchHighlighting.replace([]);
+      this.graphCanvas.searchFocus.replace([]);
+      this.graphCanvas.requestRender();
     }
   }
 
