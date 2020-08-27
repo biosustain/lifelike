@@ -2,7 +2,7 @@ import { Hyperlink } from '../drawing-tool/services/interfaces';
 
 export const SEARCH_LINKS: readonly Hyperlink[] = Object.freeze([{
   domain: 'NCBI',
-  url: 'https://www.ncbi.nlm.nih.gov/gene/?query=%s',
+  url: 'https://www.ncbi.nlm.nih.gov/gene/?term=%s',
 }, {
   domain: 'UniProt',
   url: 'https://www.uniprot.org/uniprot/?sort=score&query=%s',
