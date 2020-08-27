@@ -693,8 +693,6 @@ export class CanvasGraphView extends GraphView {
       canvas.style.cursor = 'grabbing';
     } else if (this.panningOrZooming) {
       canvas.style.cursor = 'move';
-    } else if (this.highlighting.get().length) {
-      canvas.style.cursor = 'grab';
     } else {
       canvas.style.cursor = 'default';
     }
