@@ -99,6 +99,12 @@ export abstract class GraphView implements GraphActionReceiver {
   readonly dragging = new CacheGuardedEntityList(this);
 
   /**
+   * Holds the nodes and edges for search highlighting
+   */
+  readonly searchHighlighting = new CacheGuardedEntityList(this);
+  readonly searchFocus = new CacheGuardedEntityList(this);
+
+  /**
    * Whether nodes are arranged automatically.
    */
   automaticLayoutEnabled = false;
