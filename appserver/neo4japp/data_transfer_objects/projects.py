@@ -1,7 +1,11 @@
-import attr
 from enum import Enum
 from typing import Dict, Sequence, Union
-from neo4japp.models import Files, Directory, Project
+
+import attr
+
+from neo4japp.models.drawing_tool import Project
+from neo4japp.models.files import Files
+from neo4japp.models.projects import Directory
 from neo4japp.util import CamelDictMixin
 
 

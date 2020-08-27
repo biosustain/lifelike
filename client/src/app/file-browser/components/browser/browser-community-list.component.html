@@ -1,0 +1,82 @@
+<ng-container *ngIf="(loadTask.status$ | async) as status">
+  <ng-container *ngIf="status.failedErrorShown; else noError">
+    <div class="module-section">
+      <div class="module-section-header">
+        <h2 class="module-section-header-title">Community Content</h2>
+      </div>
+
+      <div class="module-section-body">
+        <app-module-error [error]="status.error">
+          <button class="btn btn-primary" type="button" (click)="refresh()">Retry</button>
+        </app-module-error>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #noError>
+    <ng-container *ngIf="status.placeholdersShown">
+      <div class="module-section">
+        <div class="module-section-header">
+          <h2 class="module-section-header-title"><span class="placeholder-box">Loading loading</span></h2>
+        </div>
+
+        <div class="module-section-body">
+          <div class="mb-3">
+            <span class="placeholder-box">Loading loading loading loading</span>
+          </div>
+
+          <div class="tile-deck tile-deck">
+            <div *ngFor="let p of [0, 1, 2]" class="tile d-flex flex-column justify-content-center align-items-center">
+              <div class="flex-fill d-flex align-items-center">
+            <span class="placeholder-box">
+              <i class="fas fa-layer-group fa-4x"></i>
+            </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="status.resultsShown">
+      <ng-container *ngIf="results.view.length">
+        <div class="module-section">
+          <div class="module-section-header">
+            <h2 class="module-section-header-title">Community Content</h2>
+          </div>
+
+          <div class="module-section-body">
+            <div class="tile-deck">
+              <div *ngFor="let o of results.view" class="tile d-flex flex-column">
+                <div class="flex-fill d-flex justify-content-center align-items-center my-2">
+                  <a [appLink]="['/projects', o.project.projectName, 'maps', o.map.hash_id]" [newTab]="true"
+                     class="text-muted">
+                    <i class="fas fa-project-diagram fa-2x"></i>
+                  </a>
+                </div>
+                <div class="text-truncate text-center">
+                  <a [appLink]="['/projects', o.project.projectName, 'maps', o.map.hash_id]" [newTab]="true"
+                     class="d-block text-truncate">
+                    <strong>{{ o.map.label }}</strong>
+                  </a>
+                  <div class="text-truncate text-muted">
+                    By {{ o.user.username }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="tile d-flex flex-column align-items-center justify-content-center"
+                   *ngIf="collectionSize > results.length">
+                <div class="text-truncate text-center">
+                  <a [appLink]="['/community']" class="d-block text-truncate">
+                    View {{ collectionSize - results.length }} more...
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-template>
+</ng-container>
