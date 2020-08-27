@@ -34,6 +34,7 @@ export class LoginComponent {
 
       this.form.get('password').reset('');
     } else {
+      this.form.markAsDirty();
       this.messageDialog.display({
         title: 'Invalid Input',
         message: 'There are some errors with your input.',
