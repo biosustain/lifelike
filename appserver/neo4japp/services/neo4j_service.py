@@ -2,6 +2,7 @@ import attr
 from typing import Dict, List, Optional, Union
 
 from neo4japp.data_transfer_objects.visualization import (
+    Direction,
     DuplicateEdgeConnectionData,
     DuplicateVisEdge,
     EdgeConnectionData,
@@ -222,6 +223,7 @@ class Neo4JService(GraphBaseDao):
         from_ids = list({pair.edge.original_from for pair in node_edge_pairs})
         to_ids = list({pair.edge.original_to for pair in node_edge_pairs})
         description = node_edge_pairs[0].edge.label  # Every edge should have the same label
+        direction = Direction.FROM.value if len(from_ids) == 1 else Direction.TO.value
 
         query = self.get_individual_snippet_count_from_edges_query()
         counts = self.graph.run(
@@ -244,7 +246,8 @@ class Neo4JService(GraphBaseDao):
             ))
 
         return GetReferenceTableDataResult(
-            reference_table_rows=reference_table_rows
+            reference_table_rows=reference_table_rows,
+            direction=direction
         )
 
     def get_snippets_for_edge(
