@@ -48,6 +48,11 @@ def _connect_to_neo4j():
     return Graph(
         host=current_app.config.get("NEO4J_HOST"),
         auth=current_app.config.get('NEO4J_AUTH').split('/'),
+        # max time in seconds to keep connection in pool
+        # good for long processing before querying the graph
+        # as the connection could be stale and the pool
+        # is maxed out so new connections can't be added
+        max_age=60,
     )
 
 

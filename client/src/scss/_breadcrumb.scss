@@ -4,6 +4,12 @@
   padding: 0;
   margin: 0;
   color: $gray-600;
+
+  a {
+    &:link, &:visited {
+      color: $gray-600;
+    }
+  }
 }
 
 .breadcrumb-item {
