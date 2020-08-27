@@ -424,7 +424,17 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       data: {
         sources,
         search,
-        hyperlink,
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.pdfFile.file_id,
+        }, {
+          type: 'DATABASE',
+          url: hyperlink,
+        }],
+        hyperlinks: [{
+          domain: 'Annotation URL',
+          url: hyperlink,
+        }],
         detail: meta.type === 'Link' ? meta.allText : '',
       },
     } as Partial<UniversalGraphNode>));
