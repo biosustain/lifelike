@@ -60,9 +60,12 @@ describe('VisualizationCanvasComponent', () => {
     let mockNodes: DataSet<VisNode>;
     let mockEdges: DataSet<VisEdge>;
     let mockDuplicateNodeEdgePairs: DuplicateNodeEdgePair[];
-    let mockReferenceTableRows: ReferenceTableRow[];
-    let mockGetReferenceTableDataResult: GetReferenceTableDataResult;
-    let mockGroupRequest: GroupRequest;
+    let mockReferenceTableRowsOutgoing: ReferenceTableRow[];
+    let mockGetReferenceTableDataResultOutgoing: GetReferenceTableDataResult;
+    let mockGroupRequestOutgoing: GroupRequest;
+    let mockReferenceTableRowsIncoming: ReferenceTableRow[];
+    let mockGetReferenceTableDataResultIncoming: GetReferenceTableDataResult;
+    let mockGroupRequestIncoming: GroupRequest;
     let mockConfig: Neo4jGraphConfig;
     let mockLegend: Map<string, string[]>;
     let mockValidSettingsFormValues: SettingsFormValues;
@@ -160,10 +163,16 @@ describe('VisualizationCanvasComponent', () => {
             mockEdgeGenerator(102, 1, 'to', 3),
         ]);
 
-        mockGroupRequest = {
+        mockGroupRequestOutgoing = {
             relationship: 'Mock Edge',
             node: 1,
             direction: Direction.FROM,
+        } as GroupRequest;
+
+        mockGroupRequestIncoming = {
+            relationship: 'Mock Edge',
+            node: 1,
+            direction: Direction.TO,
         } as GroupRequest;
 
         mockConfig = {
@@ -206,7 +215,7 @@ describe('VisualizationCanvasComponent', () => {
             } as DuplicateNodeEdgePair,
         ];
 
-        mockReferenceTableRows = [
+        mockReferenceTableRowsOutgoing = [
             {
                 nodeId: '2',
                 nodeDisplayName: 'Mock Node 2',
@@ -223,8 +232,24 @@ describe('VisualizationCanvasComponent', () => {
             } as ReferenceTableRow,
         ];
 
-        mockGetReferenceTableDataResult = {
-            referenceTableRows: mockReferenceTableRows,
+        mockGetReferenceTableDataResultOutgoing = {
+            referenceTableRows: mockReferenceTableRowsOutgoing,
+            direction: Direction.FROM,
+        } as GetReferenceTableDataResult;
+
+        mockReferenceTableRowsIncoming = [
+            {
+                nodeId: '2',
+                nodeDisplayName: 'Mock Node 2',
+                nodeLabel: 'Mock Node',
+                snippetCount: 1,
+                edge: mockDuplicateEdgeGenerator(101, 1, 'to', 2),
+            } as ReferenceTableRow,
+        ];
+
+        mockGetReferenceTableDataResultIncoming = {
+            referenceTableRows: mockReferenceTableRowsIncoming,
+            direction: Direction.TO,
         } as GetReferenceTableDataResult;
 
         mockLegend = new Map<string, string[]>([
@@ -510,28 +535,46 @@ describe('VisualizationCanvasComponent', () => {
 
     it('groupNeighborsWithRelationship should cluster neighbors of the given node connected by the given relationship', async () => {
         spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
-            of(mockGetReferenceTableDataResult)
+            of(mockGetReferenceTableDataResultOutgoing)
         );
 
-        instance.groupNeighborsWithRelationship(mockGroupRequest);
+        instance.groupNeighborsWithRelationship(mockGroupRequestOutgoing);
 
         await expect(instance.clusters.size).toEqual(1);
     });
 
-    it('isNotAClusterEdge should detect whether an edge is a cluster edge or not', () => {
-        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
-            of(mockGetReferenceTableDataResult)
+    it('should create a second cluster if relationship is in the opposite direction', async () => {
+        mockEdges.add(mockEdgeGenerator(103, 2, 'to', 1));
+
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValues(
+            of(mockGetReferenceTableDataResultOutgoing),
+            of(mockGetReferenceTableDataResultIncoming)
         );
 
-        instance.groupNeighborsWithRelationship(mockGroupRequest);
+        instance.groupNeighborsWithRelationship(mockGroupRequestOutgoing);
+
+        await expect(instance.clusters.size).toEqual(1);
+
+        instance.groupNeighborsWithRelationship(mockGroupRequestIncoming);
+
+        await expect(instance.clusters.size).toEqual(2);
+    });
+
+    it('isNotAClusterEdge should detect whether an edge is a cluster edge or not', () => {
+        spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
+            of(mockGetReferenceTableDataResultOutgoing)
+        );
+
+        instance.groupNeighborsWithRelationship(mockGroupRequestOutgoing);
 
         const clusterInfo = instance.clusters.entries().next();
         const clusterEdge = instance.networkGraph.getConnectedEdges(clusterInfo.value[0])[0];
 
         expect(clusterInfo.value[1]).toEqual(
             {
-                referenceTableRows: mockReferenceTableRows,
+                referenceTableRows: mockReferenceTableRowsOutgoing,
                 relationship: 'Mock Edge',
+                direction: Direction.FROM,
             } as ClusterData
         );
         expect(instance.isNotAClusterEdge(clusterEdge)).toBeFalse();
@@ -590,14 +633,14 @@ describe('VisualizationCanvasComponent', () => {
 
     it('expandOrCollapseNode should destroy any connected clusters of the given node', () => {
         spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
-            of(mockGetReferenceTableDataResult)
+            of(mockGetReferenceTableDataResultOutgoing)
         );
 
         const nodeRef = instance.nodes.get(1) as VisNode;
         const updatedNodeState = {...nodeRef, expanded: true};
         instance.nodes.update(updatedNodeState);
 
-        instance.groupNeighborsWithRelationship(mockGroupRequest);
+        instance.groupNeighborsWithRelationship(mockGroupRequestOutgoing);
         instance.expandOrCollapseNode(1);
 
         expect(instance.clusters.size).toEqual(0);
@@ -694,10 +737,10 @@ describe('VisualizationCanvasComponent', () => {
 
     it('cleanUpDuplicates should remove the given duplicate nodes and their duplicate edges from the canvas', () => {
         spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
-            of(mockGetReferenceTableDataResult)
+            of(mockGetReferenceTableDataResultOutgoing)
         );
 
-        instance.groupNeighborsWithRelationship(mockGroupRequest);
+        instance.groupNeighborsWithRelationship(mockGroupRequestOutgoing);
 
         expect(instance.nodes.get(2)).toBeNull();
         expect(instance.nodes.get(3)).toBeNull();
@@ -716,12 +759,12 @@ describe('VisualizationCanvasComponent', () => {
 
     it('safelyOpenCluster should open and clean up a cluster', () => {
         spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
-            of(mockGetReferenceTableDataResult)
+            of(mockGetReferenceTableDataResultOutgoing)
         );
 
         const cleanUpDuplicatesSpy = spyOn(instance, 'cleanUpDuplicates').and.callThrough();
 
-        instance.groupNeighborsWithRelationship(mockGroupRequest);
+        instance.groupNeighborsWithRelationship(mockGroupRequestOutgoing);
         const clusterInfo = instance.clusters.entries().next();
 
         instance.safelyOpenCluster(clusterInfo.value[0]);
@@ -743,10 +786,10 @@ describe('VisualizationCanvasComponent', () => {
 
     it('removeNodes should open clusters connected to removed nodes', () => {
         spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
-            of(mockGetReferenceTableDataResult)
+            of(mockGetReferenceTableDataResultOutgoing)
         );
 
-        instance.groupNeighborsWithRelationship(mockGroupRequest);
+        instance.groupNeighborsWithRelationship(mockGroupRequestOutgoing);
         instance.removeNodes([1]);
 
         expect(instance.clusters.size).toEqual(0);
@@ -847,10 +890,10 @@ describe('VisualizationCanvasComponent', () => {
 
     it('should show tooltip and update selected cluster nodes if an unselected cluster is right-clicked', () => {
         spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
-            of(mockGetReferenceTableDataResult)
+            of(mockGetReferenceTableDataResultOutgoing)
         );
 
-        instance.groupNeighborsWithRelationship(mockGroupRequest);
+        instance.groupNeighborsWithRelationship(mockGroupRequestOutgoing);
         const clusterInfo = instance.clusters.entries().next();
         const clusterId = clusterInfo.value[0];
 
@@ -996,10 +1039,10 @@ describe('VisualizationCanvasComponent', () => {
 
     it('removeNodeFromCluster should pull out a single node from a cluster, but also not mutate the cluster', async () => {
         spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
-            of(mockGetReferenceTableDataResult)
+            of(mockGetReferenceTableDataResultOutgoing)
         );
 
-        instance.groupNeighborsWithRelationship(mockGroupRequest);
+        instance.groupNeighborsWithRelationship(mockGroupRequestOutgoing);
 
         const clusterInfo = instance.clusters.entries().next();
         const clusterId = clusterInfo.value[0];
