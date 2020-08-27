@@ -283,8 +283,9 @@ class ProjectsService(RDBMSBaseDao):
             )
 
             d = dict(zip(tuple_key, tuple_val))
+            d = AttrDict(d)
 
-            return (d, d['username'])
+            return d
 
         dirs = list(map(process_directory, dirs))
 
@@ -328,7 +329,7 @@ class ProjectsService(RDBMSBaseDao):
             f = dict(zip(tuple_key, tuple_val))
             f = AttrDict(f)
 
-            return (f, f['username'])
+            return f
 
         files = list(map(process_file, files))
 
@@ -366,12 +367,8 @@ class ProjectsService(RDBMSBaseDao):
             m = dict(zip(tuple_key, tuple_val))
             m = AttrDict(m)
 
-            return (m, m.username)
+            return m
 
         maps = list(map(process_map, maps))
-
-        print(dirs)
-        print(files)
-        print(maps)
 
         return dirs, files, maps
