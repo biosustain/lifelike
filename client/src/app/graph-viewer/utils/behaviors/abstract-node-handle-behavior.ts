@@ -21,7 +21,9 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
 
     if (subject.type === GraphEntityType.Node) {
       this.handle = this.getHandleIntersected(this.graphView.placeNode(this.target), graphX, graphY);
-      this.activeDragStart(event, graphX, graphY);
+      if (this.handle != null) {
+        this.activeDragStart(event, graphX, graphY);
+      }
     }
 
     return BehaviorResult.Continue;

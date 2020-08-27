@@ -25,7 +25,8 @@ export class MovableNode extends AbstractCanvasBehavior {
     const transform = this.graphView.transform;
     const subject: GraphEntity | undefined = d3.event.subject;
 
-    if (subject.type === GraphEntityType.Node) {
+    if (subject.type === GraphEntityType.Node
+      && this.graphView.selection.getEntitySet().has(subject.entity)) {
       const node = subject.entity as UniversalGraphNode;
 
       // We need to store the offset between the mouse and the node, because when
@@ -70,12 +71,12 @@ export class MovableNode extends AbstractCanvasBehavior {
           data: {
             x: this.target.data.x,
             y: this.target.data.y,
-          }
+          },
         } as Partial<UniversalGraphNode>, {
           data: {
             x: this.originalTarget.data.x,
             y: this.originalTarget.data.y,
-          }
+          },
         } as Partial<UniversalGraphNode>));
       }
 

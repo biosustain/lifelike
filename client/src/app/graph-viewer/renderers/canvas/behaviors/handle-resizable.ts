@@ -1,10 +1,9 @@
 import { cloneDeep } from 'lodash';
-import * as d3 from 'd3';
 
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { AbstractCanvasBehavior } from '../../behaviors';
 import { GraphEntityUpdate } from '../../../actions/graph';
 import { AbstractNodeHandleBehavior, Handle } from '../../../utils/behaviors/abstract-node-handle-behavior';
 
