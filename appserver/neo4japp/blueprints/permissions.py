@@ -62,7 +62,7 @@ def requires_project_permission(action: AccessActionType):
                     role = proj.has_role(user, projects)
                     if role is None or not auth.is_allowed(role, action, projects):
                         raise NotAuthorizedException(
-                            f'{user.username} does not have {action.name} priviledge'
+                            f'{user.username} does not have {action.name} privilege'
                         )
                 retval = next(gen)
             finally:

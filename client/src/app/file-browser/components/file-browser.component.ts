@@ -2,7 +2,7 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/cor
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, combineLatest, from, Observable, Subscription, throwError } from 'rxjs';
-import { mergeMap, map } from 'rxjs/operators';
+import { catchError, map, mergeMap } from 'rxjs/operators';
 import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
@@ -28,8 +28,9 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ModuleProperties } from '../../shared/modules';
 import { KnowledgeMap, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
-import { catchError } from 'rxjs/operators';
 import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
+import moment from 'moment';
+import { nullCoalesce } from '../../graph-viewer/utils/types';
 import { getLink } from '../../search/utils/records';
 import { getObjectCommands } from '../utils/objects';
 
@@ -63,7 +64,26 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       } else if (a.type !== 'dir' && b.type === 'dir') {
         return 1;
       } else {
-        return a.name.localeCompare(b.name);
+        const aDate = nullCoalesce(a.modificationDate, a.creationDate);
+        const bDate = nullCoalesce(b.modificationDate, b.creationDate);
+
+        if (aDate != null && bDate != null) {
+          const aMoment = moment(aDate);
+          const bMoment = moment(bDate);
+          if (aMoment.isAfter(bMoment)) {
+            return -1;
+          } else if (aMoment.isBefore(bMoment)) {
+            return 1;
+          } else {
+            return a.name.localeCompare(b.name);
+          }
+        } else if (aDate != null) {
+          return -1;
+        } else if (bDate != null) {
+          return 1;
+        } else {
+          return a.name.localeCompare(b.name);
+        }
       }
     },
   });
@@ -312,7 +332,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       .pipe(
         map(res => res.file_id),
         mergeMap(fileId => this.filesService.annotateFile(
-          this.locator.projectName, fileId, data.annotationMethod))
+          this.locator.projectName, fileId, data.annotationMethod)),
       )
       .pipe(this.errorHandler.create())
       .subscribe(event => {
@@ -448,6 +468,22 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
+  getObjectId(object: AnnotatedDirectoryObject): any {
+    switch (object.type) {
+      case 'dir':
+        const directory = object.data as Directory;
+        return directory.id;
+      case 'file':
+        const file = object.data as PdfFile;
+        return file.file_id;
+      case 'map':
+        const _map = object.data as KnowledgeMap;
+        return _map.hash_id;
+      default:
+        throw new Error(`unknown directory object type: ${object.type}`);
+    }
+  }
+
   getObjectCommands(object: AnnotatedDirectoryObject): any[] {
     return getObjectCommands(object);
   }
@@ -471,7 +507,14 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       label: object.type === 'map' ? 'map' : 'link',
       sub_labels: [],
       data: {
-        source: this.getObjectCommands(object).join('/'),
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.getObjectId(object) + '',
+        }],
+        sources: [{
+          domain: 'File Source',
+          url: this.getObjectCommands(object).join('/'),
+        }],
       },
     } as Partial<UniversalGraphNode>));
   }
@@ -480,16 +523,24 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     if (this.path != null) {
       if (this.path.length > 2) {
         this.workspaceManager.navigate(
-          ['/projects', this.locator.projectName, 'folders', this.path[this.path.length - 2].id]
+          ['/projects', this.locator.projectName, 'folders', this.path[this.path.length - 2].id],
         );
       } else if (this.path.length === 2) {
-          this.workspaceManager.navigate(
-            ['/projects', this.locator.projectName]
-          );
+        this.workspaceManager.navigate(
+          ['/projects', this.locator.projectName],
+        );
       } else {
         this.workspaceManager.navigate(['/projects']);
       }
     }
+  }
+
+  // ========================================
+  // Template
+  // ========================================
+
+  getDateShown(object: DirectoryObject) {
+    return nullCoalesce(object.modificationDate, object.creationDate);
   }
 }
 

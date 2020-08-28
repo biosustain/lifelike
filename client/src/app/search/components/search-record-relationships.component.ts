@@ -71,7 +71,6 @@ export class SearchRecordRelationshipsComponent {
     this.diseaseLabel = isNullOrUndefined(disease.label) ? '' : disease.label;
   }
 
-
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     dataTransfer.setData('text/plain', this.node.node.displayName);
@@ -80,7 +79,14 @@ export class SearchRecordRelationshipsComponent {
       label: this.node.node.label.toLowerCase(),
       sub_labels: [],
       data: {
-        hyperlink: getLink(this.node),
+        hyperlinks: [{
+          domain: '',
+          url: getLink(this.node),
+        }],
+        references: [{
+          type: 'DATABASE',
+          id: getLink(this.node),
+        }],
       },
     } as Partial<UniversalGraphNode>));
   }
