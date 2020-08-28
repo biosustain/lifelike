@@ -49,9 +49,21 @@ export class SearchFormComponent {
       this.search.emit({...this.form.value});
     } else {
       this.form.markAsDirty();
+
+      let errorMsg = '';
+      if (this.form.get('query').getError('required')) {
+        errorMsg += 'Search term is required. ';
+      }
+      if (this.form.get('domains').getError('required')) {
+        errorMsg += 'You must select at least one domain. ';
+      }
+      if (this.form.get('entityTypes').getError('required')) {
+        errorMsg += 'You must select at least one entity type. ';
+      }
+
       this.messageDialog.display({
         title: 'Invalid Input',
-        message: 'There are some errors with your input.',
+        message: errorMsg,
         type: MessageType.Error,
       });
     }
