@@ -30,6 +30,8 @@ import { ModuleProperties } from '../../shared/modules';
 import { KnowledgeMap, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { catchError } from 'rxjs/operators';
 import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
+import moment from 'moment';
+import { nullCoalesce } from '../../graph-viewer/utils/types';
 
 interface PathLocator {
   projectName?: string;
@@ -61,7 +63,26 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       } else if (a.type !== 'dir' && b.type === 'dir') {
         return 1;
       } else {
-        return a.name.localeCompare(b.name);
+        const aDate = nullCoalesce(a.modificationDate, a.creationDate);
+        const bDate = nullCoalesce(b.modificationDate, b.creationDate);
+
+        if (aDate != null && bDate != null) {
+          const aMoment = moment(aDate);
+          const bMoment = moment(bDate);
+          if (aMoment.isAfter(bMoment)) {
+            return -1;
+          } else if (aMoment.isBefore(bMoment)) {
+            return 1;
+          } else {
+            return a.name.localeCompare(b.name);
+          }
+        } else if (aDate != null) {
+          return -1;
+        } else if (bDate != null) {
+          return 1;
+        } else {
+          return a.name.localeCompare(b.name);
+        }
       }
     },
   });
