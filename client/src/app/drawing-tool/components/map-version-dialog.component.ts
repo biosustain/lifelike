@@ -10,10 +10,12 @@ import { CommonFormDialogComponent } from '../../shared/components/dialog/common
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Project } from 'app/file-browser/services/project-space.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 import { MapService } from '../services/map.service';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
+import { map } from 'rxjs/internal/operators/map';
+import { flatMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-map-version-dialog',
@@ -39,7 +41,6 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   > = new BackgroundTask(() => this.mapService.getMapVersions(this.projectName, this.currentMap.hash_id));
   private loadTaskSubscription: Subscription;
   versionChoices: string[];
-  private versionMaps: KnowledgeMap[];
   mapToPreview: KnowledgeMap;
   graphCanvas: CanvasGraphView;
   isMapVisible = false;
@@ -57,12 +58,14 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   ngOnInit() {
     this.loadTaskSubscription = this.loadTask.results$.subscribe(
       ({ result: versions}) => {
-        this.versionChoices = versions.versions.map((version) => 'Date Modified: ' + version.date_modified);
+        this.versionChoices = versions.versions.map((version) => 'Version ' + version.id + '. Date Modified: ' + version.date_modified);
         this.versionChoices.unshift('');
-        this.versionMaps = versions.versions.map((version) => version);
       }
     );
     this.loadTask.update();
+  }
+
+  ngAfterViewInit() {
     const style = new KnowledgeMapStyle();
     this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
       nodeRenderStyle: style,
@@ -71,8 +74,7 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
     this.graphCanvas.startParentFillResizeListener();
     this.ngZone.runOutsideAngular(() => {
         this.graphCanvas.startAnimationLoop();
-      });
-
+    });
   }
 
   ngOnDestroy() {
@@ -92,18 +94,19 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   }
 
   preview() {
-    this.isMapVisible = true;
-    this.mapToPreview = this.findMap();
-    this.graphCanvas.setGraph(this.mapToPreview.graph);
-    this.graphCanvas.zoomToFit(0);
+    this.findVersion().subscribe(result => {
+      this.mapToPreview = result.version;
+      this.graphCanvas.setGraph(this.mapToPreview.graph);
+      this.graphCanvas.zoomToFit(0);
+    })
   }
 
-  getValue(): KnowledgeMap {
-    return this.findMap();
+  getValue(): Observable<{version: KnowledgeMap}>{
+    return this.findVersion();
   }
 
-  findMap(): KnowledgeMap {
-    const date = this.form.value.version.substring(15);
-    return this.versionMaps.filter((version) => version.date_modified === date)[0];
+  findVersion() {
+    const versionId = this.form.value.version.split('.')[0].substring(8);
+    return this.mapService.getMapVersionbyID(this.projectName, this.currentMap.hash_id, versionId);
   }
 }
