@@ -30,9 +30,8 @@ import { ModuleProperties } from '../../shared/modules';
 import { KnowledgeMap, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
 import moment from 'moment';
-import { nullCoalesce } from '../../graph-viewer/utils/types';
-import { getLink } from '../../search/utils/records';
 import { getObjectCommands } from '../utils/objects';
+import { nullCoalesce } from '../../shared/utils/types';
 
 interface PathLocator {
   projectName?: string;
