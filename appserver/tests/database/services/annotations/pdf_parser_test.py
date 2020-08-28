@@ -166,7 +166,7 @@ def test_combine_char_into_word_with_correct_index_positions(annotations_setup, 
         assert combined == words
     elif index == 2:
         combined = [
-            ('E.', {0: 'E.'}),
+            ('E.', {0: 'E', 1: '.'}),
             ('Coli', {4: 'C', 5: 'o', 6: 'l', 7: 'i'}),
         ]
         assert combined == words
