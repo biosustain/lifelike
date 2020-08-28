@@ -1,4 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  AfterViewChecked,
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 
 import { cloneDeep } from 'lodash';
 import { UniversalGraphNode } from '../../services/interfaces';
@@ -13,7 +22,8 @@ import { isNullOrUndefined } from 'util';
   selector: 'app-node-form',
   templateUrl: './node-form.component.html',
 })
-export class NodeFormComponent {
+export class NodeFormComponent implements AfterViewInit {
+  @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
 
   nodeTypeChoices = annotationTypes;
   lineTypeChoices = [
@@ -35,6 +45,10 @@ export class NodeFormComponent {
   @Output() sourceOpen = new EventEmitter<string>();
 
   activeTab: string;
+
+  ngAfterViewInit() {
+    setTimeout(() => this.focus(), 10);
+  }
 
   get nodeSubtypeChoices() {
     const type = annotationTypesMap.get(this.node.label);
@@ -61,6 +75,8 @@ export class NodeFormComponent {
 
     this.updatedNode = cloneDeep(node);
     this.updatedNode.style = this.updatedNode.style || {};
+
+    setTimeout(() => this.focus(), 10);
   }
 
   checkSubtype() {
@@ -162,5 +178,13 @@ export class NodeFormComponent {
 
   mayShowDetailText() {
     return this.node.label === 'note';
+  }
+
+  focus() {
+    if (this.displayNameRef != null) {
+      const element = this.displayNameRef.nativeElement;
+      element.focus();
+      element.select();
+    }
   }
 }
