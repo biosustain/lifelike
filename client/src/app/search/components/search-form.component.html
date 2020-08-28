@@ -52,7 +52,11 @@
         </label>
 
         <div class="d-flex flex-column">
-          <app-organism-autocomplete formId="organism" (organismPicked)="setOrganism($event)"></app-organism-autocomplete>
+          <app-organism-autocomplete
+            formId="organism"
+            [organismTaxId]="organismChoice"
+            (organismPicked)="setOrganism($event)"
+          ></app-organism-autocomplete>
         </div>
       </div>
 
