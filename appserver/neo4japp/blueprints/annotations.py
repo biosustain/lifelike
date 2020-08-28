@@ -36,11 +36,14 @@ from neo4japp.models import (
     Files,
     FileContent,
     GlobalList,
-    InclusionExclusionType,
     Projects,
 )
 import neo4japp.models.files_queries as files_queries
-from neo4japp.services.annotations.constants import AnnotationMethod, EntityType
+from neo4japp.services.annotations.constants import (
+    AnnotationMethod,
+    EntityType,
+    ManualAnnotationType,
+)
 from neo4japp.util import jsonify_with_class, SuccessResponse
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
@@ -189,7 +192,7 @@ def export_global_inclusions():
     yield g.current_user
 
     inclusions = GlobalList.query.filter_by(
-        type=InclusionExclusionType.INCLUSION.value,
+        type=ManualAnnotationType.Inclusion.value,
         reviewed=False
     ).all()
 
@@ -239,7 +242,7 @@ def export_global_exclusions():
     yield g.current_user
 
     exclusions = GlobalList.query.filter_by(
-        type=InclusionExclusionType.EXCLUSION.value,
+        type=ManualAnnotationType.Exclusion.value,
         reviewed=False,
     ).all()
 

@@ -1,7 +1,8 @@
 import attr
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Set, Union
 
 from neo4japp.data_transfer_objects.visualization import (
+    Direction,
     DuplicateEdgeConnectionData,
     DuplicateVisEdge,
     EdgeConnectionData,
@@ -222,6 +223,7 @@ class Neo4JService(GraphBaseDao):
         from_ids = list({pair.edge.original_from for pair in node_edge_pairs})
         to_ids = list({pair.edge.original_to for pair in node_edge_pairs})
         description = node_edge_pairs[0].edge.label  # Every edge should have the same label
+        direction = Direction.FROM.value if len(from_ids) == 1 else Direction.TO.value
 
         query = self.get_individual_snippet_count_from_edges_query()
         counts = self.graph.run(
@@ -244,7 +246,8 @@ class Neo4JService(GraphBaseDao):
             ))
 
         return GetReferenceTableDataResult(
-            reference_table_rows=reference_table_rows
+            reference_table_rows=reference_table_rows,
+            direction=direction
         )
 
     def get_snippets_for_edge(
@@ -344,6 +347,11 @@ class Neo4JService(GraphBaseDao):
             total_results=total_results,
             query_data=edges,
         )
+
+    def get_genes(self, genes: List[str]) -> Set[str]:
+        query = self.get_gene_from_ids()
+        result = self.graph.run(query, {'gene_ids': genes}).data()
+        return set(row['gene_name'] for row in result)
 
     def get_genes_to_organisms(
         self,
@@ -709,6 +717,13 @@ class Neo4JService(GraphBaseDao):
             return [n]+ COALESCE(nodes(p1), [])+ COALESCE(nodes(p2), []) as nodes,
             COALESCE(relationships(p1), []) + COALESCE(relationships(p2), []) as relationships
         """.format(biocyc_id)
+        return query
+
+    def get_gene_from_ids(self):
+        query = """
+            MATCH (g:Gene) WHERE g.id IN $gene_ids
+            RETURN g.name as gene_name
+        """
         return query
 
     def get_gene_to_organism_query(self):

@@ -68,7 +68,6 @@ export class EdgeFormComponent {
       originalData: {
         label: this.originalEdge.label,
         data: {
-          hyperlink: this.originalEdge.data.hyperlink,
           hyperlinks: this.originalEdge.data.hyperlinks,
           detail: this.originalEdge.data.detail,
         },
@@ -84,7 +83,6 @@ export class EdgeFormComponent {
       updatedData: {
         label: this.updatedEdge.label,
         data: {
-          hyperlink: this.updatedEdge.data.hyperlink,
           hyperlinks: this.updatedEdge.data.hyperlinks,
           detail: this.updatedEdge.data.detail,
         },

@@ -6,6 +6,7 @@ import {
   Input,
 } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
+import { getTopParent } from '../utils/forms';
 
 /**
  * Implements shared properties of an input.
@@ -19,6 +20,8 @@ export class FormInputDirective implements AfterContentChecked {
   @HostBinding('class.form-control') formControl = true;
 
   ngAfterContentChecked() {
-    this.invalid = this.appFormInput && this.appFormInput.touched && this.appFormInput.invalid;
+    this.invalid = this.appFormInput
+      && (this.appFormInput.dirty || getTopParent(this.appFormInput).dirty)
+      && this.appFormInput.invalid;
   }
 }
