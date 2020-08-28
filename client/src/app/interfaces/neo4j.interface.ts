@@ -104,6 +104,19 @@ export interface SearchRecord {
   dataId: string;
 }
 
+export interface OrganismsResult {
+  limit: number;
+  nodes: OrganismAutocomplete;
+  query: string;
+  total: number;
+}
+
+export interface OrganismAutocomplete {
+  organism_name: string;
+  synonym: string;
+  tax_id: string;
+}
+
 export interface Domain {
   id: string;
   name: string;
