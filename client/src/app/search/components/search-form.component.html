@@ -22,7 +22,7 @@
         <div class="d-flex flex-column">
           <app-select formId="domain" [choices]="domainChoices" style="width: 200px"
                       [values]="form.value.domains" (valuesChange)="form.get('domains').setValue($event)"
-                      (touch)="form.get('domains').markAsTouched()"
+                      (touch)="form.get('domains').markAsDirty()"
                       [choiceLabel]="choiceLabel">
           </app-select>
 
@@ -38,11 +38,21 @@
         <div class="d-flex flex-column">
           <app-select formId="entity-types" [choices]="entityTypeChoices" style="width: 200px"
                       [values]="form.value.entityTypes" (valuesChange)="form.get('entityTypes').setValue($event)"
-                      (touch)="form.get('entityTypes').markAsTouched()"
+                      (touch)="form.get('entityTypes').markAsDirty()"
                       [choiceLabel]="choiceLabel">
           </app-select>
 
           <app-form-input-feedback [control]="form.get('entityTypes')"></app-form-input-feedback>
+        </div>
+      </div>
+
+      <div class="form-group d-flex align-items-start ml-3 mb-0">
+        <label for="organism" class="my-0 mr-2 mt-2">
+          Organism:
+        </label>
+
+        <div class="d-flex flex-column">
+          <app-organism-autocomplete formId="organism" (organismPicked)="setOrganism($event)"></app-organism-autocomplete>
         </div>
       </div>
 

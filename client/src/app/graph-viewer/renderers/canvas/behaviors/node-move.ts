@@ -4,6 +4,7 @@ import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-to
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { GraphEntityUpdate } from '../../../actions/graph';
+import { CompoundAction, GraphAction } from '../../../actions/actions';
 
 export class MovableNode extends AbstractCanvasBehavior {
   /**
@@ -12,9 +13,10 @@ export class MovableNode extends AbstractCanvasBehavior {
    * when the user is dragging nodes on the canvas, otherwise the node 'jumps'
    * so node center is the same the mouse position, and the jump is not what we want.
    */
-  private offsetBetweenNodeAndMouseInitialPosition: number[] = [0, 0];
   private target: UniversalGraphNode | undefined;
   private originalTarget: UniversalGraphNode | undefined;
+  private startMousePosition: [number, number] = [0, 0];
+  private originalNodePositions = new Map<UniversalGraphNode, [number, number]>();
 
   constructor(protected readonly graphView: CanvasGraphView) {
     super();
@@ -25,15 +27,11 @@ export class MovableNode extends AbstractCanvasBehavior {
     const transform = this.graphView.transform;
     const subject: GraphEntity | undefined = d3.event.subject;
 
-    if (subject.type === GraphEntityType.Node) {
+    if (subject.type === GraphEntityType.Node
+      && this.graphView.selection.getEntitySet().has(subject.entity)) {
       const node = subject.entity as UniversalGraphNode;
 
-      // We need to store the offset between the mouse and the node, because when
-      // we actually move the node, we need to move it relative to this offset
-      this.offsetBetweenNodeAndMouseInitialPosition = [
-        node.data.x - transform.invertX(mouseX),
-        node.data.y - transform.invertY(mouseY),
-      ];
+      this.startMousePosition = [transform.invertX(mouseX), transform.invertY(mouseY)];
 
       this.target = node;
       this.originalTarget = cloneDeep(this.target);
@@ -48,12 +46,22 @@ export class MovableNode extends AbstractCanvasBehavior {
     const transform = this.graphView.transform;
 
     if (this.target) {
-      const node = this.target;
-      node.data.x = transform.invertX(mouseX) + this.offsetBetweenNodeAndMouseInitialPosition[0];
-      node.data.y = transform.invertY(mouseY) + this.offsetBetweenNodeAndMouseInitialPosition[1];
-      this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
-      this.graphView.invalidateNode(node);
-      // TODO: Store this in history as ONE object
+      const shiftX = transform.invertX(mouseX) - this.startMousePosition[0];
+      const shiftY = transform.invertY(mouseY) - this.startMousePosition[1];
+      for (const entity of this.graphView.selection.get()) {
+        if (entity.type === GraphEntityType.Node) {
+          const node = entity.entity as UniversalGraphNode;
+          if (!this.originalNodePositions.has(node)) {
+            this.originalNodePositions.set(node, [node.data.x, node.data.y]);
+          }
+          const [originalX, originalY] = this.originalNodePositions.get(node);
+          node.data.x = originalX + shiftX;
+          node.data.y = originalY + shiftY;
+          this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
+          this.graphView.invalidateNode(node);
+          // TODO: Store this in history as ONE object
+        }
+      }
     }
 
     return BehaviorResult.Continue;
@@ -63,26 +71,43 @@ export class MovableNode extends AbstractCanvasBehavior {
     if (this.target) {
       if (this.target.data.x !== this.originalTarget.data.x ||
         this.target.data.y !== this.originalTarget.data.y) {
-        this.graphView.execute(new GraphEntityUpdate('Move node', {
-          type: GraphEntityType.Node,
-          entity: this.target,
-        }, {
-          data: {
-            x: this.target.data.x,
-            y: this.target.data.y,
-          }
-        } as Partial<UniversalGraphNode>, {
-          data: {
-            x: this.originalTarget.data.x,
-            y: this.originalTarget.data.y,
-          }
-        } as Partial<UniversalGraphNode>));
+        const actions: GraphAction[] = [];
+
+        for (const [node, [originalX, originalY]] of
+          this.originalNodePositions.entries()) {
+          actions.push(new GraphEntityUpdate('Move node', {
+            type: GraphEntityType.Node,
+            entity: node,
+          }, {
+            data: {
+              x: node.data.x,
+              y: node.data.y,
+            },
+          } as Partial<UniversalGraphNode>, {
+            data: {
+              x: originalX,
+              y: originalY,
+            },
+          } as Partial<UniversalGraphNode>));
+        }
+
+        this.graphView.execute(new CompoundAction('Node move', actions));
+
+        this.target = null;
+        this.originalNodePositions.clear();
+
+        return BehaviorResult.Stop;
+      } else {
+        this.target = null;
+        this.originalNodePositions.clear();
+
+        return BehaviorResult.Continue;
       }
+    } else {
+      this.originalNodePositions.clear();
 
-      this.target = null;
+      return BehaviorResult.Continue;
     }
-
-    return BehaviorResult.Continue;
   }
 
   draw(ctx: CanvasRenderingContext2D, transform: any) {

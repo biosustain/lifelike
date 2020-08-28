@@ -37,7 +37,14 @@ export class SearchRecordNodeComponent {
       label: this.node.node.label.toLowerCase(),
       sub_labels: [],
       data: {
-        hyperlink: getLink(this.node),
+        hyperlinks: [{
+          domain: 'Visualizer',
+          url: getLink(this.node),
+        }],
+        references: [{
+          type: 'DATABASE',
+          id: getLink(this.node),
+        }],
       },
     } as Partial<UniversalGraphNode>));
   }

@@ -7,6 +7,7 @@ import sqlalchemy as sa
 
 from sqlalchemy import and_
 from sqlalchemy.orm.query import Query
+from sqlalchemy.types import TIMESTAMP
 
 from neo4japp.database import db, ma
 
@@ -49,6 +50,8 @@ class AppUser(RDBMSBase):
     first_name = db.Column(db.String(120), nullable=False)
     last_name = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(256))
+    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
+    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
 
     # load all roles associated with the user eagerly using subquery
     roles = db.relationship(
