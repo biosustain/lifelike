@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, NgZone, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, NgZone, ViewChild, AfterViewInit } from '@angular/core';
 import {
   FormGroup, FormControl, Validators
 } from '@angular/forms';
@@ -24,7 +24,7 @@ import { flatMap } from 'rxjs/operators';
     './map-version-dialog.component.scss',
   ],
 })
-export class MapVersionDialogComponent extends CommonFormDialogComponent implements OnInit, OnDestroy {
+export class MapVersionDialogComponent extends CommonFormDialogComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() currentMap: KnowledgeMap;
   @Input() projectName: string;
 
@@ -98,10 +98,10 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
       this.mapToPreview = result.version;
       this.graphCanvas.setGraph(this.mapToPreview.graph);
       this.graphCanvas.zoomToFit(0);
-    })
+    });
   }
 
-  getValue(): Observable<{version: KnowledgeMap}>{
+  getValue(): Observable<{version: KnowledgeMap}> {
     return this.findVersion();
   }
 
