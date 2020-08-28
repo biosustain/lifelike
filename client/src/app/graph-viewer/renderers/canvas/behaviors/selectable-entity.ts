@@ -42,6 +42,9 @@ export class SelectableEntity extends AbstractCanvasBehavior {
     } else {
       this.graphView.selection.replace(subject ? [subject] : []);
       this.graphView.dragging.replace(subject ? [subject] : []);
+      if (subject != null) {
+        this.graphView.invalidateEntity(subject);
+      }
     }
     this.graphView.requestRender(); // TODO: Don't call unless needed
     return BehaviorResult.Continue;
