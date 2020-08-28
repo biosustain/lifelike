@@ -81,19 +81,6 @@ export class MapService extends AbstractService {
     );
   }
 
-  getMapVersion(
-    projectName: string,
-    hashId: string,
-    versionHash: string
-  ): Observable<{ version: KnowledgeMap }> {
-    return this.http.get<{ version: KnowledgeMap }>(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
-        projectName
-      )}/map/${encodeURIComponent(hashId)}/${encodeURIComponent(versionHash)}`,
-      this.getHttpOptions(true)
-    );
-  }
-
   getMapVersions(
     projectName: string,
     hashId: string,
@@ -106,18 +93,18 @@ export class MapService extends AbstractService {
     );
   }
 
-  updateMapVersion(
+  getMapVersionbyID(
     projectName: string,
-    newMap: KnowledgeMap,
-    versionId: number
-  ): Observable<any> {
-    return this.http.patch(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
+    hashId: string,
+    versionID: number
+  ): Observable<{version: KnowledgeMap}> {
+    return this.http.get<{version: KnowledgeMap}>(
+      `${this.MAPS_BASE_URL}/${encodeURIComponent(
         projectName
-      )}/map/${encodeURIComponent(newMap.hash_id)}/${encodeURIComponent(versionId)}`,
-      newMap,
+      )}/map/${encodeURIComponent(hashId)}/version/${encodeURIComponent(versionID)}`,
       this.getHttpOptions(true)
     );
+    
   }
 
   // ========================================

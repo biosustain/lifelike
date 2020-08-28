@@ -125,9 +125,12 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     const dialogRef = this.modalService.open(MapVersionDialogComponent);
     dialogRef.componentInstance.map = cloneDeep(this.map);
     dialogRef.componentInstance.projectName = this.locator.projectName;
-    dialogRef.result.then((newMap: KnowledgeMap) => {
-      this.graphCanvas.setGraph(newMap.graph);
-    }, () => {
+    dialogRef.result.then((newMap: Observable<{version: KnowledgeMap}>) => {
+      newMap.subscribe(result => {
+        this.graphCanvas.setGraph(result.version.graph);
+        this.snackBar.open('Map reverted to Version from ' + result.version.date_modified, null, {
+          duration: 3000,
+        });});
     });
   }
 
