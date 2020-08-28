@@ -84,3 +84,13 @@
     }
   }
 }
+
+.nav-sidebar-tabs {
+  background: $window-header-bg;
+  border-color: $window-border-color;
+  padding: ($spacer * 0.5) ($spacer * 0.5) 0;
+
+  a.nav-link {
+    color: inherit;
+  }
+}

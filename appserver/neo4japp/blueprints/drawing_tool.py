@@ -5,6 +5,7 @@ import re
 from datetime import datetime
 
 import graphviz as gv
+import sqlalchemy
 from PyPDF4 import PdfFileReader, PdfFileWriter
 from PyPDF4.generic import NameObject, ArrayObject
 from flask import (
@@ -17,7 +18,7 @@ from flask import (
 )
 from flask_apispec import use_kwargs
 from sqlalchemy import or_, func
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy_searchable import search
 from werkzeug.utils import secure_filename
@@ -27,8 +28,9 @@ from neo4japp.blueprints.permissions import requires_project_permission
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import ANNOTATION_STYLES_DICT
+# TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.data_transfer_objects import PublicMap
-from neo4japp.data_transfer_objects.common import ResultList, PaginatedRequest
+from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.database import db, get_authorization_service, get_projects_service
 from neo4japp.exceptions import (
     InvalidFileNameException, RecordNotFoundException, NotAuthorizedException
@@ -39,47 +41,63 @@ from neo4japp.models import (
     Projects,
     Directory,
     ProjectBackup,
+    AppUser,
+    AppRole,
+    projects_collaborator_role,
 )
 from neo4japp.models.schema import ProjectSchema
-from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
-
-# TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
-from neo4japp.blueprints.projects import bp as newbp
-from neo4japp.util import jsonify_with_class, CasePreservedDict
+from neo4japp.util import CasePreservedDict
 from neo4japp.utils.logger import UserEventLog
-from neo4japp.utils.request import parse_sort, parse_page, parse_limit, paginate_from_args
+from neo4japp.utils.request import paginate_from_args
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['GET'])
 @auth.login_required
-@requires_project_permission(AccessActionType.READ)
 def get_map_by_hash(hash_id: str, projects_name: str):
-    """ Serve map by hash_id lookup """
-    user = g.current_user
+    """
+    Get a map by its hash.
+    """
 
-    projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    t_owner = aliased(AppUser)
+    t_directory = aliased(Directory)
+    t_project = aliased(Projects)
+    t_project_role_role = aliased(AppRole)
+    t_project_role_user = aliased(AppUser)
 
-    yield user, projects
+    # Role table used to check if we have permission
+    project_role_sq = db.session.query(projects_collaborator_role) \
+        .join(t_project_role_role,
+              t_project_role_role.id == projects_collaborator_role.c.app_role_id) \
+        .join(t_project_role_user,
+              t_project_role_user.id == projects_collaborator_role.c.appuser_id) \
+        .subquery()
+
+    map_query = db.session.query(Project) \
+        .join(t_owner, t_owner.id == Project.user_id) \
+        .join(t_directory, t_directory.id == Project.dir_id) \
+        .join(t_project, t_project.id == t_directory.projects_id) \
+        .outerjoin(project_role_sq, project_role_sq.c.projects_id == t_project.id) \
+        .options(contains_eager(Project.user, alias=t_owner),
+                 contains_eager(Project.dir, alias=t_directory)
+                 .contains_eager(Directory.project, t_project)) \
+        .filter(Project.hash_id == hash_id,
+                t_project.project_name == projects_name,
+                sqlalchemy.or_(Project.public.is_(True),
+                               sqlalchemy.and_(t_project_role_user.id == g.current_user.id,
+                                               t_project_role_role.name == 'project-read')))
 
     # Pull up map by hash_id
     try:
-        project = Project.query.filter(
-            Project.hash_id == hash_id,
-        ).join(
-            Directory,
-            Directory.id == Project.dir_id,
-        ).filter(
-            Directory.projects_id == projects.id,
-        ).one()
+        map = map_query.one()
     except NoResultFound:
-        raise RecordNotFoundException('not found :-( ')
+        raise RecordNotFoundException('Map not found or you do not have permission to view it.')
 
-    project_schema = ProjectSchema()
+    map_schema = ProjectSchema()
 
-    yield jsonify({'project': project_schema.dump(project)})
+    return jsonify({'project': map_schema.dump(map)})
 
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/download', methods=['GET'])

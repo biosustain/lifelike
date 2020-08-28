@@ -1,11 +1,12 @@
+import { ReferenceType } from '../../shared/references';
+
 export interface UniversalEntityData {
-  hyperlink?: string;
+  references?: Reference[];
   hyperlinks?: Hyperlink[];
   detail?: string;
-  source?: string;
   search?: Hyperlink[];
   subtype?: string;
-  sources?: Hyperlink[];
+  sources?: Source[];
 }
 
 export interface UniversalNodeStyle {
@@ -76,6 +77,17 @@ export interface GraphEntity {
 export interface Hyperlink {
   url: string;
   domain: string;
+}
+
+export interface Source {
+  type?: ReferenceType;
+  url: string;
+  domain?: string;
+}
+
+export interface Reference {
+  type: ReferenceType;
+  id: string;
 }
 
 export interface Location {
