@@ -103,7 +103,7 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
   }
 
   getObjectCommands(object: PublicMap): any[] {
-    return ['/projects', object.project.projectName, 'maps', object.map.hash_id, 'edit'];
+    return ['/projects', object.project.projectName, 'maps', object.map.hash_id];
   }
 
   getObjectQueryParams() {
