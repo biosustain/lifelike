@@ -273,6 +273,21 @@ class SearchService(GraphBaseDao):
 
         return FTSResult(term, records, total_results, page, limit)
 
+    def get_organism_with_tax_id(self, tax_id):
+        query = """
+            MATCH (t:Taxonomy {id: $tax_id})
+            RETURN t.id AS tax_id, t.name AS organism_name
+        """
+
+        result = self.graph.run(
+            query,
+            {
+                'tax_id': tax_id,
+            }
+        ).data()
+
+        return result[0] if len(result) else None
+
     def get_organisms(self, term: str, limit: int) -> Dict[str, Any]:
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:

@@ -12,9 +12,11 @@ import { OrganismAutocomplete } from 'app/interfaces';
   templateUrl: './search-form.component.html',
 })
 export class SearchFormComponent {
+  @Output() search = new EventEmitter<SearchParameters>();
+
   domainChoices: Domain[] = DOMAINS.concat().sort((a, b) => a.name.localeCompare(b.name));
   entityTypeChoices: EntityType[] = ENTITY_TYPES.concat().sort((a, b) => a.name.localeCompare(b.name));
-  @Output() search = new EventEmitter<SearchParameters>();
+  organismChoice: string;
 
   form = new FormGroup({
     query: new FormControl('', Validators.required),
@@ -35,6 +37,7 @@ export class SearchFormComponent {
   @Input()
   set params(params: SearchParameters) {
     if (params) {
+      this.organismChoice = params.organism;
       this.form.patchValue({
         query: params.query,
         domains: params.domains != null ? params.domains : [...this.domainChoices],

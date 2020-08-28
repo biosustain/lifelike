@@ -5,7 +5,7 @@
 
 <div class="input-group" style="width: 200px">
   <input type="text" class="form-control"
-    [class.is-invalid]="fetchFailed" [(ngModel)]="model"
+    [class.is-invalid]="fetchFailed" [(ngModel)]="organism"
     [editable]='false' [inputFormatter]="formatter" [ngbTypeahead]="searcher" [resultTemplate]="rt"
     (selectItem)="notifySelection($event)"
   >

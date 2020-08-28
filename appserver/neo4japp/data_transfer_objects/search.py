@@ -55,6 +55,11 @@ class OrganismRequest(CamelDictMixin):
 
 
 @attr.s(frozen=True)
+class OrganismFromTaxIdRequest(CamelDictMixin):
+    organism_tax_id: str = attr.ib()
+
+
+@attr.s(frozen=True)
 class SearchRequest(CamelDictMixin):
     query: str = attr.ib()
     page: int = attr.ib()
