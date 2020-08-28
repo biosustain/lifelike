@@ -436,7 +436,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'annotation_date': None,
                 'creation_date': None,
                 'modification_date': None,
-                'data': CasePreservedDict(c.__dict__),
+                'data': c.__dict__.to_dict(snake_to_camel_transform=True),
             } for c in child_dirs],
             *[{
                 'type': 'file',
