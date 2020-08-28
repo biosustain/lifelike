@@ -426,7 +426,7 @@ class AttrDict(dict):
 
     def to_dict(self, exclude=[], snake_to_camel_transform=False):
         new_dict = {}
-        
+
         if len(exclude):
             new_dict = {key: self.__dict__[key] for key in self.__dict__ if key not in exclude}
         else:
