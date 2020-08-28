@@ -33,7 +33,7 @@
   border-left: 4px solid $gray-300;
   vertical-align: top;
   width: 20px;
-  padding: 0.75rem;
+  padding: 1rem;
   cursor: pointer;
   align-items: center;
   justify-content: center;
@@ -43,4 +43,18 @@
     color: $white;
     border-color: $link-color;
   }
+}
+
+.side-pane-close-text {
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  max-width: 50px;
+  overflow: hidden;
+}
+
+.side-pane-open-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  max-width: 50px;
+  overflow: hidden;
 }
