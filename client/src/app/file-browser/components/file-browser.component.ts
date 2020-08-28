@@ -2,7 +2,7 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/cor
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, combineLatest, from, Observable, Subscription, throwError } from 'rxjs';
-import { mergeMap, map } from 'rxjs/operators';
+import { catchError, map, mergeMap } from 'rxjs/operators';
 import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
@@ -28,7 +28,6 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ModuleProperties } from '../../shared/modules';
 import { KnowledgeMap, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
-import { catchError } from 'rxjs/operators';
 import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
 import moment from 'moment';
 import { nullCoalesce } from '../../graph-viewer/utils/types';
@@ -545,6 +544,14 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         this.workspaceManager.navigate(['/projects']);
       }
     }
+  }
+
+  // ========================================
+  // Template
+  // ========================================
+
+  getDateShown(object: DirectoryObject) {
+    return nullCoalesce(object.modificationDate, object.creationDate);
   }
 }
 
