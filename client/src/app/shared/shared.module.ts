@@ -24,6 +24,8 @@ import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
 import { FriendlyDateStrPipe, TruncatePipe } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
+import { OrganismAutocompleteComponent } from './components/organism-autocomplete.component';
+import { SharedSearchService } from './services/shared-search.service';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { SortLegendComponent } from './components/sort-legend.component';
 import { ConfirmDialogComponent } from './components/dialog/confirm-dialog.component';
@@ -55,6 +57,7 @@ const components = [
   TooltipComponent,
   SortLegendComponent,
   ConfirmDialogComponent,
+  OrganismAutocompleteComponent,
   FormInputFeedbackComponent,
   BackgroundTaskProgressComponent,
   FormRowComponent,
@@ -101,7 +104,10 @@ const components = [
     FriendlyDateStrPipe,
     NodeTextStylePipe,
   ],
-  providers: [SharedNgrxEffects],
+  providers: [
+    SharedNgrxEffects,
+    SharedSearchService,
+  ],
   // exported modules are visible to modules that import this one
   exports: [
     // Modules

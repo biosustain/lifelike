@@ -15,6 +15,7 @@ from neo4japp.models import (
     Files,
     Project,
 )
+from neo4japp.util import AttrDict
 from typing import Sequence, Optional, Union, Tuple
 
 
@@ -259,7 +260,11 @@ class ProjectsService(RDBMSBaseDao):
             with ownership
         """
         dirs = self.session.query(
-            Directory,
+            Directory.id,
+            Directory.name,
+            Directory.directory_parent_id,
+            Directory.projects_id,
+            Directory.user_id,
             AppUser.username,
         ).join(
             AppUser, Directory.user_id == AppUser.id
@@ -267,8 +272,36 @@ class ProjectsService(RDBMSBaseDao):
             Directory.directory_parent_id == current_dir.id
         ).all()
 
+        def process_directory(tuple_val):
+            tuple_key = (
+                'id',
+                'name',
+                'directory_parent_id',
+                'projects_id',
+                'user_id',
+                'username'
+            )
+
+            d = dict(zip(tuple_key, tuple_val))
+            d = AttrDict(d)
+
+            return d
+
+        dirs = list(map(process_directory, dirs))
+
         files = self.session.query(
-            Files,
+            Files.id,
+            Files.file_id,
+            Files.filename,
+            Files.description,
+            Files.content_id,
+            Files.user_id,
+            Files.creation_date,
+            Files.annotations_date,
+            Files.project,
+            Files.dir_id,
+            Files.doi,
+            Files.upload_url,
             AppUser.username,
         ).join(
             AppUser, Files.user_id == AppUser.id
@@ -276,13 +309,66 @@ class ProjectsService(RDBMSBaseDao):
             Files.dir_id == current_dir.id
         ).all()
 
+        def process_file(tuple_val):
+            tuple_key = (
+                'id',
+                'file_id',
+                'filename',
+                'description',
+                'content_id',
+                'user_id',
+                'creation_date',
+                'annotations_date',
+                'project',
+                'dir_id',
+                'doi',
+                'upload_url',
+                'username',
+            )
+
+            f = dict(zip(tuple_key, tuple_val))
+            f = AttrDict(f)
+
+            return f
+
+        files = list(map(process_file, files))
+
         maps = self.session.query(
-            Project,
-            AppUser.username,
+            Project.id,
+            Project.label,
+            Project.description,
+            Project.date_modified,
+            Project.author,
+            Project.public,
+            Project.user_id,
+            Project.dir_id,
+            Project.hash_id,
+            AppUser.username
         ).join(
             AppUser, Project.user_id == AppUser.id
         ).filter(
             Project.dir_id == current_dir.id
         ).all()
+
+        def process_map(tuple_val):
+            tuple_key = (
+                'id',
+                'label',
+                'description',
+                'date_modified',
+                'author',
+                'public',
+                'user_id',
+                'dir_id',
+                'hash_id',
+                'username'
+            )
+
+            m = dict(zip(tuple_key, tuple_val))
+            m = AttrDict(m)
+
+            return m
+
+        maps = list(map(process_map, maps))
 
         return dirs, files, maps

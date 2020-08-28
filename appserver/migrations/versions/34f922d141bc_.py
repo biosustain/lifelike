@@ -13,6 +13,9 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils.types import TSVectorType
 
 from neo4japp.models import (
+    AccessActionType,
+    AccessRuleType,
+    AccessControlPolicy,
     AppRole,
     AppUser,
     Project as Map,
@@ -173,6 +176,67 @@ def data_upgrades():
         (admin_role_id,) = conn.execute(sa.select([
             t_app_role.c.id
         ]).where(t_app_role.c.name == 'project-admin')).fetchone()
+
+        conn.execute(AccessControlPolicy.__table__.insert().values(
+            action=AccessActionType.READ,
+            asset_type=Projects.__tablename__,
+            asset_id=projects_id,
+            principal_type=AppRole.__tablename__,
+            principal_id=admin_role_id,
+            rule_type=AccessRuleType.ALLOW,
+        ))
+        conn.execute(AccessControlPolicy.__table__.insert().values(
+            action=AccessActionType.WRITE,
+            asset_type=Projects.__tablename__,
+            asset_id=projects_id,
+            principal_type=AppRole.__tablename__,
+            principal_id=admin_role_id,
+            rule_type=AccessRuleType.ALLOW,
+        ))
+
+        # Get the read role
+        (read_role_id,) = conn.execute(sa.select([
+            t_app_role.c.id
+        ]).where(t_app_role.c.name == 'project-read')).fetchone()
+
+        conn.execute(AccessControlPolicy.__table__.insert().values(
+            action=AccessActionType.READ,
+            asset_type=Projects.__tablename__,
+            asset_id=projects_id,
+            principal_type=AppRole.__tablename__,
+            principal_id=read_role_id,
+            rule_type=AccessRuleType.ALLOW,
+        ))
+        conn.execute(AccessControlPolicy.__table__.insert().values(
+            action=AccessActionType.WRITE,
+            asset_type=Projects.__tablename__,
+            asset_id=projects_id,
+            principal_type=AppRole.__tablename__,
+            principal_id=read_role_id,
+            rule_type=AccessRuleType.DENY,
+        ))
+
+        # Get the write role
+        (write_role_id,) = conn.execute(sa.select([
+            t_app_role.c.id
+        ]).where(t_app_role.c.name == 'project-write')).fetchone()
+
+        conn.execute(AccessControlPolicy.__table__.insert().values(
+            action=AccessActionType.READ,
+            asset_type=Projects.__tablename__,
+            asset_id=projects_id,
+            principal_type=AppRole.__tablename__,
+            principal_id=write_role_id,
+            rule_type=AccessRuleType.ALLOW,
+        ))
+        conn.execute(AccessControlPolicy.__table__.insert().values(
+            action=AccessActionType.WRITE,
+            asset_type=Projects.__tablename__,
+            asset_id=projects_id,
+            principal_type=AppRole.__tablename__,
+            principal_id=write_role_id,
+            rule_type=AccessRuleType.ALLOW,
+        ))
 
         conn.execute(
             projects_collaborator_role.insert(),

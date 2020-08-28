@@ -62,6 +62,7 @@ export class UserSecurityComponent {
       }));
       this.form.reset();
     } else {
+      this.form.markAsDirty();
       this.messageDialog.display({
         title: 'Invalid Input',
         message: 'There are some errors with your input.',

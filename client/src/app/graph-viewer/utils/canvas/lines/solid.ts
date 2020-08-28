@@ -1,8 +1,12 @@
-import { DrawnLine, Line } from './lines';
+import { DrawnLine, Line, LineOptions } from './lines';
 
 export class SolidLine implements Line {
+  lineCap: CanvasLineCap = 'butt';
+
   constructor(readonly width: number,
-              readonly style: string) {
+              readonly style: string,
+              readonly options: LineOptions = {}) {
+    Object.assign(this, options);
   }
 
   draw(ctx: CanvasRenderingContext2D, startX: number, startY: number, endX: number, endY: number): DrawnLine {
@@ -16,6 +20,7 @@ export class SolidLine implements Line {
   setContext(ctx: CanvasRenderingContext2D) {
     ctx.lineWidth = this.width;
     ctx.strokeStyle = this.style;
+    ctx.lineCap = this.lineCap;
     ctx.setLineDash([]);
   }
 }
