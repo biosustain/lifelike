@@ -30,8 +30,8 @@ class Files(RDBMSBase):  # type: ignore
                         db.ForeignKey('appuser.id', ondelete='CASCADE'),
                         index=True,
                         nullable=False)
-    creation_date = db.Column(db.DateTime, default=db.func.now())
-    modified_date = db.Column(db.DateTime)
+    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
+    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
     annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), index=True, nullable=False)
@@ -67,8 +67,8 @@ class Directory(RDBMSBase):
     project = db.relationship('Projects', foreign_keys=projects_id)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), index=True, nullable=True)
     user = db.relationship('AppUser', foreign_keys=user_id)
-    creation_date = db.Column(db.DateTime, default=db.func.now())
-    modified_date = db.Column(db.DateTime)
+    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
+    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
 
     @classmethod
     def query_child_directories(cls, dir_id: int) -> Query:
@@ -102,8 +102,8 @@ class Worksheet(RDBMSBase):  # type: ignore
     filename = db.Column(db.String(200), nullable=False)
     sheetname = db.Column(db.String(200), nullable=False)
     neo4j_node_id = db.Column(db.Integer, nullable=False)
-    creation_date = db.Column(db.DateTime, default=db.func.now())
-    modified_date = db.Column(db.DateTime)
+    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
+    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
     content_id = db.Column(db.Integer,
                            db.ForeignKey('files_content.id', ondelete='CASCADE'),
                            index=True,
