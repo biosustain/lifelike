@@ -424,11 +424,15 @@ class AttrDict(dict):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
 
-    def to_dict(self, exclude=[]):
+    def to_dict(self, exclude=[], snake_to_camel_transform=False):
+        new_dict = {}
+        
         if len(exclude):
-            return snake_to_camel_dict(self.__dict__, dict())
+            new_dict = {key: self.__dict__[key] for key in self.__dict__ if key not in exclude}
         else:
-            return snake_to_camel_dict(
-                {key: self.__dict__[key] for key in self.__dict__ if key not in exclude},
-                dict()
-            )
+            new_dict = self.__dict__
+
+        if snake_to_camel_transform:
+            return snake_to_camel_dict(new_dict, dict())
+        else:
+            return new_dict
