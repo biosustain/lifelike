@@ -177,6 +177,7 @@ export class CanvasGraphView extends GraphView {
       .on('mouseup', this.canvasMouseUp.bind(this))
       .call(d3.drag()
         .container(this.canvas)
+        .filter(() => !d3.event.button)
         .subject(this.getEntityAtMouse.bind(this))
         .on('start', this.canvasDragStarted.bind(this))
         .on('drag', this.canvasDragged.bind(this))
@@ -764,7 +765,6 @@ export class CanvasGraphView extends GraphView {
     const graphY = this.transform.invertY(mouseY);
     const entityAtMouse = this.getEntityAtPosition(graphX, graphY);
 
-    this.highlighting.replace(entityAtMouse ? [entityAtMouse] : []);
     this.hoverPosition = {x: graphX, y: graphY};
 
     this.behaviors.apply(behavior => behavior.mouseMove());
@@ -800,9 +800,6 @@ export class CanvasGraphView extends GraphView {
 
     this.behaviors.apply(behavior => behavior.dragStart(d3.event.sourceEvent));
 
-    this.dragging.replace(subject ? [subject] : []);
-    this.selection.replace(subject ? [subject] : []);
-
     this.touchPosition = {
       position: {
         x: this.transform.invertX(mouseX),
@@ -833,7 +830,6 @@ export class CanvasGraphView extends GraphView {
 
   canvasDragEnded(): void {
     this.behaviors.apply(behavior => behavior.dragEnd(d3.event.sourceEvent));
-    this.dragging.replace([]);
     this.nodePositionOverrideMap.clear();
     this.mouseDown = false;
     this.touchPosition = null;
