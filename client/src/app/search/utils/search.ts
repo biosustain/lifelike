@@ -9,6 +9,7 @@ export function getQueryParams(params: GraphSearchParameters) {
     page: params.page,
     domains: params.domains ? params.domains.map(value => value.id).join(';') : null,
     entityTypes: params.entityTypes ? params.entityTypes.map(value => value.id).join(';') : null,
+    organism: params.organism,
   };
 }
 
@@ -17,6 +18,7 @@ export function createSearchParamsFromQuery(params): GraphSearchParameters {
     query: params.q,
     domains: getChoicesFromQuery(params, 'domains', DOMAIN_MAP),
     entityTypes: getChoicesFromQuery(params, 'entityTypes', ENTITY_TYPE_MAP),
+    organism: params.organism,
     page: params.page != null && params.page.length ? parseInt(params.page, 10) : 1,
     limit: VIZ_SEARCH_LIMIT,
   };

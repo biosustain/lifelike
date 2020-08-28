@@ -6,6 +6,7 @@ import { MessageType } from '../../interfaces/message-dialog.interface';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { nonEmptyList } from '../../shared/validators';
 import { GraphSearchParameters } from '../graph-search';
+import { OrganismAutocomplete } from 'app/interfaces';
 
 @Component({
   selector: 'app-graph-search-form',
@@ -20,6 +21,7 @@ export class GraphSearchFormComponent {
     query: new FormControl('', Validators.required),
     domains: new FormControl('', nonEmptyList),
     entityTypes: new FormControl('', nonEmptyList),
+    organism: new FormControl(null),
   });
 
   constructor(private readonly messageDialog: MessageDialog) {
@@ -27,6 +29,7 @@ export class GraphSearchFormComponent {
       query: '',
       domains: [...this.domainChoices],
       entityTypes: [...this.entityTypeChoices],
+      organism: '',
     });
   }
 
@@ -37,6 +40,7 @@ export class GraphSearchFormComponent {
         query: params.query,
         domains: params.domains != null ? params.domains : [...this.domainChoices],
         entityTypes: params.entityTypes != null ? params.entityTypes : [...this.entityTypeChoices],
+        organism: params.organism,
       });
     }
   }
@@ -46,9 +50,21 @@ export class GraphSearchFormComponent {
       this.search.emit({...this.form.value});
     } else {
       this.form.markAsDirty();
+
+      let errorMsg = '';
+      if (this.form.get('query').getError('required')) {
+        errorMsg += 'Search term is required. ';
+      }
+      if (this.form.get('domains').getError('required')) {
+        errorMsg += 'You must select at least one domain. ';
+      }
+      if (this.form.get('entityTypes').getError('required')) {
+        errorMsg += 'You must select at least one entity type. ';
+      }
+
       this.messageDialog.display({
         title: 'Invalid Input',
-        message: 'There are some errors with your input.',
+        message: errorMsg,
         type: MessageType.Error,
       });
     }
@@ -56,5 +72,9 @@ export class GraphSearchFormComponent {
 
   choiceLabel(choice) {
     return choice.name;
+  }
+
+  setOrganism(organism: OrganismAutocomplete | null) {
+    this.form.get('organism').setValue(organism ? organism.tax_id : null);
   }
 }

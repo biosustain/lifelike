@@ -24,9 +24,22 @@ export class GraphSearchService {
     ).pipe(map(resp => resp.result));
   }
 
-  visualizerSearchTemp(query: string, page: number = 1, limit: number = 10, filter: string = 'labels(node)') {
+  visualizerSearchTemp(
+      query: string,
+      organism: string = '',
+      page: number = 1,
+      limit: number = 10,
+      filter: string = 'labels(node)'
+  ) {
     return this.http.post<{ result: FTSResult }>(
-      `${this.searchApi}/viz-search-temp`, {query, page, filter, limit},
+      `${this.searchApi}/viz-search-temp`, {query, organism, page, filter, limit},
+    ).pipe(map(resp => resp.result));
+  }
+
+  getGenesFilteredByOrganism(query: string, organismId: string, filters: string) {
+    return this.http.post<{ result: FTSResult }>(
+      `${this.searchApi}/genes_filtered_by_organism_and_others`,
+      {query, organismId, filters},
     ).pipe(map(resp => resp.result));
   }
 }

@@ -26,6 +26,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
   readonly loadTask: BackgroundTask<GraphSearchParameters, FTSResult> = new BackgroundTask(params => {
     return this.searchService.visualizerSearchTemp(
       params.query,
+      params.organism,
       params.page,
       params.limit,
       this.createFilterQuery(params.domains, params.entityTypes),
