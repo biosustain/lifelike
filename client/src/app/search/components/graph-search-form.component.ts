@@ -45,6 +45,7 @@ export class GraphSearchFormComponent {
     if (!this.form.invalid) {
       this.search.emit({...this.form.value});
     } else {
+      this.form.markAsDirty();
       this.messageDialog.display({
         title: 'Invalid Input',
         message: 'There are some errors with your input.',

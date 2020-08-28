@@ -12,6 +12,7 @@ export abstract class CommonFormDialogComponent extends CommonDialogComponent {
     if (!this.form.invalid) {
       super.submit();
     } else {
+      this.form.markAsDirty();
       this.messageDialog.display({
         title: 'Invalid Input',
         message: 'There are some errors with your input.',
