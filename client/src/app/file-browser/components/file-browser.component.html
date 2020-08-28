@@ -132,7 +132,7 @@
                   </div>
                 </th>
                 <th class="text-truncate d-none d-cbp-sm-table-cell">Annotated</th>
-                <th class="text-truncate d-none d-cbp-md-table-cell">Created</th>
+                <th class="text-truncate d-none d-cbp-md-table-cell">Modified</th>
                 <th class="text-truncate">Author</th>
                 <th></th>
               </tr>
@@ -245,7 +245,7 @@
                 <td class="align-middle text-nowrap text-truncate d-none d-cbp-md-table-cell"
                     (click)="results.toggle(object)">
                   <div class="text-truncate" *ngIf="object.creator">
-                    {{ object.data.creation_date | date: 'shortDate' }}
+                    {{ getDateShown(object) | date: 'shortDate' }}
                   </div>
                 </td>
 
