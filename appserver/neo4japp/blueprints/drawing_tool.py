@@ -356,6 +356,7 @@ def get_versions(projects_name: str, hash_id: str):
 
     yield {'versions': version_schema.dump(project_versions)}, 200
 
+
 @bp.route('/<string:projects_name>/map/<string:hash_id>/version/<version_id>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
