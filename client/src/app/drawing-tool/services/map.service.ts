@@ -104,7 +104,6 @@ export class MapService extends AbstractService {
       )}/map/${encodeURIComponent(hashId)}/version/${encodeURIComponent(versionID)}`,
       this.getHttpOptions(true)
     );
-    
   }
 
   // ========================================
