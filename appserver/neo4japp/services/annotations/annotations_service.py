@@ -2097,7 +2097,7 @@ class AnnotationsService:
         """
         matches = []
         for token in tokens.token_positions:
-            if token.keyword != keyword:
+            if normalize_str(token.keyword) != normalize_str(keyword):
                 continue
             keyword_positions: List[Annotation.TextPosition] = []
             self._create_keyword_objects(
