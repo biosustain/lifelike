@@ -106,3 +106,9 @@ class GeneAnnotation(Annotation):
     @attr.s(frozen=True)
     class GeneMeta(Annotation.Meta):
         category: str = attr.ib(default='')
+
+
+@attr.s(frozen=False)
+class LMDBMatch(CamelDictMixin):
+    entities: List[dict] = attr.ib()
+    tokens: List[PDFTokenPositions] = attr.ib()
