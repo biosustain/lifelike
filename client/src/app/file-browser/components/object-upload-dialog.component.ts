@@ -25,7 +25,7 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent {
   readonly userRoles$: Observable<string[]>;
 
   // select annotation method
-  readonly annotationMethods = ['NLP', 'Rules Based'];
+  readonly annotationMethods = ['Rules Based'];  // ['NLP', 'Rules Based']; -- See JIRA LL-1592
 
   readonly form: FormGroup = new FormGroup({
     type: new FormControl(''),
