@@ -14,8 +14,8 @@ export class SharedSearchService {
   }
 
   getOrganismFromTaxId(organismTaxId: string) {
-    return this.http.post<{ result: OrganismAutocomplete}>(
-      `${this.searchApi}/organism`, {organismTaxId},
+    return this.http.get<{ result: OrganismAutocomplete}>(
+      `${this.searchApi}/organism/${organismTaxId}`,
     ).pipe(map(resp => resp.result));
   }
 
