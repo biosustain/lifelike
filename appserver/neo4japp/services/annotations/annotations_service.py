@@ -50,6 +50,7 @@ from .util import (
     create_protein_for_ner,
     create_species_for_ner,
     normalize_str,
+    standardize_str,
 )
 
 from neo4japp.data_transfer_objects import (
@@ -2097,7 +2098,7 @@ class AnnotationsService:
         """
         matches = []
         for token in tokens.token_positions:
-            if normalize_str(token.keyword) != normalize_str(keyword):
+            if standardize_str(token.keyword) != standardize_str(keyword):
                 continue
             keyword_positions: List[Annotation.TextPosition] = []
             self._create_keyword_objects(
