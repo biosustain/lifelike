@@ -325,11 +325,17 @@ def update_project(hash_id: str, projects_name: str):
         extra=UserEventLog(username=g.current_user.username, event_type='map update').to_dict())
 
     # Update project's attributes
-    project.description = data.get("description", "")
-    project.label = data.get("label", "")
-    project.graph = data.get("graph", {"edges": [], "nodes": []})
+    if 'description' in data:
+        project.description = data['description']
+    if 'label' in data:
+        project.label = data['label']
+    if 'graph' in data:
+        project.graph = data['graph']
+    if not project.graph:
+        project.graph = {"edges": [], "nodes": []}
     project.date_modified = datetime.now()
-    project.public = data.get("public", False)
+    if 'public' in data:
+        project.public = data['public']
 
     # Commit to db
     db.session.add(project)
