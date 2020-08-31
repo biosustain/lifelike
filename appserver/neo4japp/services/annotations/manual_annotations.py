@@ -7,7 +7,6 @@ from neo4japp.database import (
     db,
     get_annotations_service,
     get_annotations_pdf_parser,
-    get_lmdb_dao,
 )
 from neo4japp.exceptions import (
     RecordNotFoundException,
@@ -74,8 +73,7 @@ class ManualAnnotationsService:
             parsed_pdf_chars = pdf_parser.parse_pdf(pdf=fp)
             fp.close()
             tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-            lmdb_dao = get_lmdb_dao()
-            annotator = get_annotations_service(lmdb_dao=lmdb_dao)
+            annotator = get_annotations_service()
             matches = annotator.get_matching_manual_annotations(keyword=term, tokens=tokens)
 
             def add_annotation(new_annotation):
