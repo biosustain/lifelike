@@ -72,6 +72,14 @@ def search(req: PDFSearchRequest):
     return SuccessResponse(result=res, status_code=200)
 
 
+@bp.route('/organism/<string:organism_tax_id>', methods=['GET'])
+@jsonify_with_class()
+def get_organism(organism_tax_id: str):
+    search_dao = get_search_service_dao()
+    result = search_dao.get_organism_with_tax_id(organism_tax_id)
+    return SuccessResponse(result=result, status_code=200)
+
+
 @bp.route('/organisms', methods=['POST'])
 @jsonify_with_class(OrganismRequest)
 def get_organisms(req: OrganismRequest):

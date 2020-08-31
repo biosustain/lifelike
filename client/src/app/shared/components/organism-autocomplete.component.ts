@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
 import { NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
@@ -13,13 +13,24 @@ import {
   templateUrl: './organism-autocomplete.component.html',
   styleUrls: ['./organism-autocomplete.component.scss']
 })
-export class OrganismAutocompleteComponent {
+export class OrganismAutocompleteComponent implements OnInit {
+  @Input() organismTaxId: string;
+
   @Output() organismPicked = new EventEmitter<OrganismAutocomplete|null>();
   fetchFailed = false;
   isFetching = false;
-  model: any;
+
+  organism: OrganismAutocomplete;
 
   constructor(private search: SharedSearchService) {
+  }
+
+  ngOnInit() {
+    this.search.getOrganismFromTaxId(
+      this.organismTaxId
+    ).subscribe(
+      (response) => this.organism = response
+    );
   }
 
   searcher = (text$: Observable<string>) => text$.pipe(
@@ -45,6 +56,7 @@ export class OrganismAutocompleteComponent {
   formatter = (organism: OrganismAutocomplete) => organism.organism_name;
 
   notifySelection(event: NgbTypeaheadSelectItemEvent) {
+    this.organism = event.item;
     this.organismPicked.emit(event.item);
   }
 }
