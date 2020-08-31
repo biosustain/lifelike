@@ -132,10 +132,17 @@ def get_annotation_neo4j():
     return g.annotation_neo4j
 
 
-def get_annotations_service(lmdb_dao):
+def get_annotations_service():
     from neo4japp.services.annotations import AnnotationsService
     return AnnotationsService(
-        lmdb_session=lmdb_dao,
+        annotation_neo4j=get_annotation_neo4j(),
+    )
+
+
+def get_entity_recognition():
+    from neo4japp.services.annotations import EntityRecognitionService
+    return EntityRecognitionService(
+        lmdb_session=get_lmdb_dao(),
         annotation_neo4j=get_annotation_neo4j(),
     )
 
