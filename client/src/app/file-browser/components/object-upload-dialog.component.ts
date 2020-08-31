@@ -39,7 +39,8 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent {
       },
     ]),
     description: new FormControl(''),
-    annotationMethod: new FormControl(this.annotationMethods[1], [Validators.required]),
+    // TODO: Change to this.annotationMethods[1] once NLP is re-enabled (above)
+    annotationMethod: new FormControl(this.annotationMethods[0], [Validators.required]),
   }, [
     (form: FormGroup) => {
       if (form.value.type === UploadType.Files) {
