@@ -112,3 +112,16 @@ class GeneAnnotation(Annotation):
 class LMDBMatch(CamelDictMixin):
     entities: List[dict] = attr.ib()
     tokens: List[PDFTokenPositions] = attr.ib()
+
+
+@attr.s(frozen=True)
+class EntityResults(CamelDictMixin):
+    local_species_inclusion: Dict[str, List[dict]] = attr.ib()
+    matched_local_species_inclusion: Dict[str, List[PDFTokenPositions]] = attr.ib()
+    matched_genes: Dict[str, LMDBMatch] = attr.ib()
+    matched_chemicals: Dict[str, LMDBMatch] = attr.ib()
+    matched_compounds: Dict[str, LMDBMatch] = attr.ib()
+    matched_proteins: Dict[str, LMDBMatch] = attr.ib()
+    matched_species: Dict[str, LMDBMatch] = attr.ib()
+    matched_diseases: Dict[str, LMDBMatch] = attr.ib()
+    matched_phenotypes: Dict[str, LMDBMatch] = attr.ib()
