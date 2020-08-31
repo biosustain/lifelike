@@ -91,7 +91,7 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
           from: this.from.hash,
           to: node.hash,
           label: null,
-        }));
+        }, true));
         this.graphView.requestRender();
       }
     }
