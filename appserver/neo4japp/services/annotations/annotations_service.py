@@ -417,7 +417,7 @@ class AnnotationsService:
 
             if not comp_val:
                 # didn't find in LMDB so look in global inclusion
-                chem_val = self.global_compound_inclusion.get(lookup_key, [])
+                comp_val = self.global_compound_inclusion.get(lookup_key, [])
 
             lowered_word = token.keyword.lower()
             global_exclusion = self._get_compound_annotations_to_exclude()
@@ -490,7 +490,7 @@ class AnnotationsService:
 
             if not diseases_val:
                 # didn't find in LMDB so look in global inclusion
-                chem_val = self.global_disease_inclusion.get(lookup_key, [])
+                diseases_val = self.global_disease_inclusion.get(lookup_key, [])
 
             lowered_word = token.keyword.lower()
             global_exclusion = self._get_disease_annotations_to_exclude()
@@ -563,7 +563,7 @@ class AnnotationsService:
 
             if not gene_val:
                 # didn't find in LMDB so look in global inclusion
-                chem_val = self.global_gene_inclusion.get(lookup_key, [])
+                gene_val = self.global_gene_inclusion.get(lookup_key, [])
 
             lowered_word = token.keyword.lower()
             global_exclusion = self._get_gene_annotations_to_exclude()
@@ -636,7 +636,7 @@ class AnnotationsService:
 
             if not phenotype_val:
                 # didn't find in LMDB so look in global inclusion
-                chem_val = self.global_phenotype_inclusion.get(lookup_key, [])
+                phenotype_val = self.global_phenotype_inclusion.get(lookup_key, [])
 
             lowered_word = token.keyword.lower()
             global_exclusion = self._get_phenotype_annotations_to_exclude()
@@ -714,7 +714,7 @@ class AnnotationsService:
 
             if not protein_val:
                 # didn't find in LMDB so look in global inclusion
-                chem_val = self.global_protein_inclusion.get(lookup_key, [])
+                protein_val = self.global_protein_inclusion.get(lookup_key, [])
 
             lowered_word = token.keyword.lower()
             global_exclusion = self._get_protein_annotations_to_exclude()
