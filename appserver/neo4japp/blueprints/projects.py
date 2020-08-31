@@ -432,7 +432,8 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'name': c.name,
                 'creator': {
                     'id': c.user_id,
-                    'username': username,
+                    'name': c.username,
+                    'username': c.username,
                 },
                 'project': {
                     'project_name': project_name,
@@ -440,15 +441,16 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'annotation_date': None,
                 'creation_date': None,
                 'modification_date': None,
-                'data': c.to_dict(),
-            } for (c, username) in child_dirs],
+                'data': c.__dict__.to_dict(snake_to_camel_transform=True),
+            } for c in child_dirs],
             *[{
                 'id': f.file_id,
                 'type': 'file',
                 'name': f.filename,
                 'creator': {
                     'id': f.user_id,
-                    'username': username
+                    'name': f.username,
+                    'username': f.username
                 },
                 'project': {
                     'project_name': project_name,
@@ -457,11 +459,8 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'annotation_date': f.annotations_date,
                 'creation_date': f.creation_date,
                 'modification_date': None,
-                'data': CasePreservedDict(
-                    f.to_dict(exclude=[
-                        'annotations', 'custom_annotations',
-                        'excluded_annotations'], keyfn=lambda x: x)),
-            } for (f, username) in files],
+                'data': CasePreservedDict(f.__dict__)
+            } for f in files],
             *[{
                 'id': m.hash_id,
                 'type': 'map',
@@ -471,14 +470,15 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'modification_date': m.date_modified,
                 'creator': {
                     'id': m.user_id,
-                    'username': username
+                    'name': m.username,
+                    'username': m.username
                 },
                 'project': {
                     'project_name': project_name,
                 },
                 'description': m.description,
-                'data': CasePreservedDict(m.to_dict(exclude=['graph'], keyfn=lambda x: x)),
-            } for (m, username) in maps],
+                'data': CasePreservedDict(m.__dict__),
+            } for m in maps],
         ],
     )
     yield jsonify(dict(result=contents.to_dict()))
