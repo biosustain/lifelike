@@ -6,7 +6,12 @@ from os import path, remove, walk
 
 from neo4japp.models import FileContent, GlobalList
 
-from neo4japp.services.annotations import AnnotationsService, AnnotationsNeo4jService, LMDBDao
+from neo4japp.services.annotations import (
+    AnnotationsService,
+    AnnotationsNeo4jService,
+    EntityRecognitionService,
+    LMDBDao,
+)
 from neo4japp.services.annotations.constants import (
     DatabaseType,
     EntityType,
@@ -676,7 +681,7 @@ def mock_global_compound_exclusion(monkeypatch):
         return {'guanosine', 'hydrogen'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_compound_annotations_to_exclude',
         get_exclusions,
     )
@@ -688,7 +693,7 @@ def mock_global_chemical_exclusion(monkeypatch):
         return {'hypofluorite', 'hydrogen', 'adenosine'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_chemical_annotations_to_exclude',
         get_exclusions,
     )
@@ -700,7 +705,7 @@ def mock_global_disease_exclusion(monkeypatch):
         return {'cold sore'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_disease_annotations_to_exclude',
         get_exclusions,
     )
@@ -712,7 +717,7 @@ def mock_global_gene_exclusion(monkeypatch):
         return {'BOLA3', 'rpoS'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_gene_annotations_to_exclude',
         get_exclusions,
     )
@@ -724,7 +729,7 @@ def mock_global_phenotype_exclusion(monkeypatch):
         return {'Whey Proteins'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_phenotype_annotations_to_exclude',
         get_exclusions,
     )
@@ -736,7 +741,7 @@ def mock_global_protein_exclusion(monkeypatch):
         return {'Wasabi receptor toxin'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_protein_annotations_to_exclude',
         get_exclusions,
     )
@@ -748,7 +753,7 @@ def mock_global_species_exclusion(monkeypatch):
         return {'human', 'dog'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_species_annotations_to_exclude',
         get_exclusions,
     )
@@ -960,6 +965,16 @@ def get_annotation_n4j(neo4j_service_dao, session):
 
 
 @pytest.fixture(scope='function')
+def entity_inclusion_setup(get_annotation_n4j, get_lmdb):
+    entity_service = EntityRecognitionService(
+        annotation_neo4j=get_annotation_n4j,
+        lmdb_session=get_lmdb
+    )
+    entity_service.set_entity_inclusions(custom_annotations=[])
+    return entity_service
+
+
+@pytest.fixture(scope='function')
 def get_lmdb():
     for db_name, entity in [
         (CHEMICALS_CHEBI_LMDB, 'chemicals'),
@@ -994,7 +1009,7 @@ def get_lmdb():
 @pytest.fixture(scope='function')
 def get_annotations_service(
     get_annotation_n4j,
-    get_lmdb,
+    entity_inclusion_setup,
     request
 ):
     def teardown():
@@ -1006,6 +1021,5 @@ def get_annotations_service(
     request.addfinalizer(teardown)
 
     return AnnotationsService(
-        lmdb_session=get_lmdb,
         annotation_neo4j=get_annotation_n4j,
     )
