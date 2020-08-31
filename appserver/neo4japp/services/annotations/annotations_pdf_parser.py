@@ -450,9 +450,18 @@ class AnnotationsPDFParser:
                             char_idx_map = {}
                             word = ''
                         else:
-                            word, char_idx_map = self.remove_leading_trailing_punctuation(
-                                word=word, char_map=char_idx_map,
-                            )
+                            if len(word) == 2:
+                                # skip words like E., I.
+                                # basically initials like because
+                                # some possible tokens start with those
+                                if word[0] not in ascii_letters:
+                                    word, char_idx_map = self.remove_leading_trailing_punctuation(
+                                        word=word, char_map=char_idx_map,
+                                    )
+                            else:
+                                word, char_idx_map = self.remove_leading_trailing_punctuation(
+                                    word=word, char_map=char_idx_map,
+                                )
 
                             if word and char_idx_map:
                                 words_with_char_idx.append((word, char_idx_map))
@@ -465,9 +474,18 @@ class AnnotationsPDFParser:
                             word += curr_char
                             char_idx_map[i] = curr_char
 
-                        word, char_idx_map = self.remove_leading_trailing_punctuation(
-                            word=word, char_map=char_idx_map,
-                        )
+                        if len(word) == 2:
+                            # skip words like E., I.
+                            # basically initials like because
+                            # some possible tokens start with those
+                            if word[0] not in ascii_letters:
+                                word, char_idx_map = self.remove_leading_trailing_punctuation(
+                                    word=word, char_map=char_idx_map,
+                                )
+                        else:
+                            word, char_idx_map = self.remove_leading_trailing_punctuation(
+                                word=word, char_map=char_idx_map,
+                            )
 
                         if word and char_idx_map:
                             words_with_char_idx.append((word, char_idx_map))
