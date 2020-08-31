@@ -159,6 +159,10 @@ def handle_error(code: int, ex: BaseException):
 
 
 def handle_generic_error(code: int, ex: Exception):
+    # TODO: Get the request context when we get an error
+    # this will contain a transaction ID for sentry
+    # integration. We can even display this to users
+    print('The request: ', request.headers)
     reterr = {'apiHttpError': str(ex)}
     current_app.logger.error('Request caused unhandled exception', exc_info=ex)
     reterr['version'] = GITHUB_HASH
