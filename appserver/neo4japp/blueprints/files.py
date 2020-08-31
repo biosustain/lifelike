@@ -82,7 +82,7 @@ def search_doi(content: bytes) -> Optional[str]:
     # ref: https://stackoverflow.com/a/10324802
     # Has a good breakdown of the DOI specifications,
     # in case need to play around with the regex in the future
-    doi_re = rb'\b(10[.][0-9]{4,}(?:[.][0-9]+)*/(?:(?!["&\'<>])\S)+)\b'
+    doi_re = rb'(?i)(?:doi:\s*|https?:\/\/doi\.org\/)(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b'  # noqa
     match = re.search(doi_re, content)
 
     if match is None:
