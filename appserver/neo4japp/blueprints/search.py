@@ -7,7 +7,6 @@ from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
 from neo4japp.data_transfer_objects import (
     GeneFilteredRequest,
     OrganismRequest,
-    OrganismFromTaxIdRequest,
     PDFSearchRequest,
     SearchRequest,
     SimpleSearchRequest,
@@ -73,11 +72,11 @@ def search(req: PDFSearchRequest):
     return SuccessResponse(result=res, status_code=200)
 
 
-@bp.route('/organism', methods=['POST'])
-@jsonify_with_class(OrganismFromTaxIdRequest)
-def get_organism(req: OrganismFromTaxIdRequest):
+@bp.route('/organism/<string:organism_tax_id>', methods=['GET'])
+@jsonify_with_class()
+def get_organism(organism_tax_id: str):
     search_dao = get_search_service_dao()
-    result = search_dao.get_organism_with_tax_id(req.organism_tax_id)
+    result = search_dao.get_organism_with_tax_id(organism_tax_id)
     return SuccessResponse(result=result, status_code=200)
 
 
