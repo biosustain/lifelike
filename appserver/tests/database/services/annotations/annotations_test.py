@@ -608,7 +608,7 @@ def test_tokens_gene_vs_protein(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -738,7 +738,7 @@ def test_tokens_gene_vs_protein_serpina1_cases(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1012,7 +1012,7 @@ def test_gene_annotation_uses_id_from_knowledge_graph(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1069,7 +1069,7 @@ def test_gene_annotation_human_vs_rat(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1128,7 +1128,7 @@ def test_ignore_terms_length_two_or_less(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1183,7 +1183,7 @@ def test_global_excluded_chemical_annotations(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1238,7 +1238,7 @@ def test_global_excluded_compound_annotations(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1293,7 +1293,7 @@ def test_global_excluded_disease_annotations(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1348,7 +1348,7 @@ def test_global_excluded_gene_annotations(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1403,7 +1403,7 @@ def test_global_excluded_phenotype_annotations(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1458,7 +1458,7 @@ def test_global_excluded_protein_annotations(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1513,7 +1513,7 @@ def test_global_excluded_species_annotations(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1569,7 +1569,7 @@ def test_global_excluded_annotations_does_not_interfere_with_other_entities(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1613,7 +1613,7 @@ def test_lmdb_match_protein_by_exact_case_if_multiple_matches(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1657,7 +1657,7 @@ def test_global_chemical_inclusion_annotation(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1701,7 +1701,7 @@ def test_global_compound_inclusion_annotation(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1755,7 +1755,7 @@ def test_global_gene_inclusion_annotation(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1801,7 +1801,7 @@ def test_global_disease_inclusion_annotation(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1845,7 +1845,7 @@ def test_global_phenotype_inclusion_annotation(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1889,7 +1889,7 @@ def test_global_protein_inclusion_annotation(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
@@ -1933,7 +1933,7 @@ def test_global_species_inclusion_annotation(
             token_positions=tokens,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=(5, 5),
-            min_idx_in_page=[1, 5, 10],
+            min_idx_in_page={0: 1},
         ),
         custom_annotations=[],
     )
