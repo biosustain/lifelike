@@ -1,6 +1,7 @@
 import hashlib
 
 from sqlalchemy_utils.types import TSVectorType
+from sqlalchemy.types import TIMESTAMP
 
 from neo4japp.database import db
 from neo4japp.models.common import RDBMSBase
@@ -13,7 +14,8 @@ class Project(RDBMSBase):
     id = db.Column(db.Integer, primary_key=True)
     label = db.Column(db.String(250), nullable=False)
     description = db.Column(db.Text)
-    date_modified = db.Column(db.DateTime)
+    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
+    date_modified = db.Column(TIMESTAMP(timezone=True), nullable=False)
     graph = db.Column(db.JSON)
     author = db.Column(db.String(240), nullable=False)
     public = db.Column(db.Boolean, default=False)
@@ -22,7 +24,7 @@ class Project(RDBMSBase):
     dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), index=True, nullable=False)
     dir = db.relationship('Directory', foreign_keys=dir_id)
     hash_id = db.Column(db.String(50), unique=True)
-    search_vector = db.Column(TSVectorType('label'))
+    search_vector = db.Column(TSVectorType('label'), index=True)
 
     def set_hash_id(self):
         """ Assign hash based on project id with salt
@@ -40,7 +42,8 @@ class ProjectBackup(RDBMSBase):
     project_id = db.Column(db.Integer, primary_key=True, nullable=False)
     label = db.Column(db.String(250), nullable=False)
     description = db.Column(db.Text)
-    date_modified = db.Column(db.DateTime)
+    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
+    date_modified = db.Column(TIMESTAMP(timezone=True), nullable=False)
     graph = db.Column(db.JSON)
     author = db.Column(db.String(240), nullable=False)
     public = db.Column(db.Boolean, default=False)

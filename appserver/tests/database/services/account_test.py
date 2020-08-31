@@ -27,7 +27,7 @@ def test_can_update_user(session, account_service, user_attribute, new_value):
     session.add(user)
     session.flush()
 
-    attributes = user.to_dict(exclude=['id'])
+    attributes = user.to_dict(exclude=['id', 'creation_date', 'modified_date'])
 
     attributes.update({user_attribute: new_value})
     attributes['password'] = password
@@ -46,7 +46,7 @@ def test_can_update_password(session, account_service):
     session.add(user)
     session.flush()
 
-    attributes = user.to_dict(exclude=['id'])
+    attributes = user.to_dict(exclude=['id', 'creation_date', 'modified_date'])
     attributes['newPassword'] = 'mickies'
     attributes['password'] = password
     attributes = camel_to_snake_dict(attributes, {})
