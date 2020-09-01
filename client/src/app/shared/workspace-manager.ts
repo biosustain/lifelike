@@ -563,62 +563,65 @@ export class WorkspaceManager {
   navigateByUrl(url: string | UrlTree, extras?: NavigationExtras & WorkspaceNavigationExtras): Promise<boolean> {
     extras = extras || {};
 
-    let targetPane = this.focusedPane || this.panes.getFirstOrCreate();
+    if (this.router.url === this.workspaceUrl) {
+      let targetPane = this.focusedPane || this.panes.getFirstOrCreate();
 
-    if (extras.newTab) {
-      if (extras.sideBySide) {
-        let sideBySidePane = null;
-        for (const otherPane of this.panes.panes) {
-          if (targetPane.id !== otherPane.id) {
-            sideBySidePane = otherPane;
-            break;
+      if (extras.newTab) {
+        if (extras.sideBySide) {
+          let sideBySidePane = null;
+          for (const otherPane of this.panes.panes) {
+            if (targetPane.id !== otherPane.id) {
+              sideBySidePane = otherPane;
+              break;
+            }
           }
-        }
 
-        if (sideBySidePane == null) {
-          if (targetPane.id === 'left') {
-            targetPane = this.panes.create('right');
+          if (sideBySidePane == null) {
+            if (targetPane.id === 'left') {
+              targetPane = this.panes.create('right');
+            } else {
+              targetPane = this.panes.create('left');
+            }
           } else {
-            targetPane = this.panes.create('left');
+            targetPane = sideBySidePane;
           }
-        } else {
-          targetPane = sideBySidePane;
         }
-      }
 
-      if (extras.matchExistingTab != null) {
-        let foundTab = false;
+        if (extras.matchExistingTab != null) {
+          let foundTab = false;
 
-        for (const tab of targetPane.tabs) {
-          if (tab.url.match(extras.matchExistingTab)) {
-            targetPane.activeTab = tab;
-            foundTab = true;
+          for (const tab of targetPane.tabs) {
+            if (tab.url.match(extras.matchExistingTab)) {
+              targetPane.activeTab = tab;
+              foundTab = true;
 
-            // This mechanism allows us to update an existing tab in a one-way data coupling
-            if (extras.shouldReplaceTab != null) {
-              const component = tab.getComponent();
-              if (component != null) {
-                if (!extras.shouldReplaceTab(component)) {
-                  return;
+              // This mechanism allows us to update an existing tab in a one-way data coupling
+              if (extras.shouldReplaceTab != null) {
+                const component = tab.getComponent();
+                if (component != null) {
+                  if (!extras.shouldReplaceTab(component)) {
+                    return;
+                  }
                 }
               }
+
+              break;
             }
-
-            break;
           }
-        }
 
-        if (!foundTab) {
+          if (!foundTab) {
+            targetPane.createTab();
+          }
+        } else {
           targetPane.createTab();
         }
-      } else {
-        targetPane.createTab();
+
+        this.focusedPane = targetPane;
       }
 
-      this.focusedPane = targetPane;
+      this.interceptNextRoute = true;
     }
 
-    this.interceptNextRoute = true;
     return this.router.navigateByUrl(url, extras);
   }
 
