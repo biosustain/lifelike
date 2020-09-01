@@ -11,6 +11,7 @@ import { ContentSearchFormComponent } from './components/content-search-form.com
 import { ContentSearchService } from './services/content-search.service';
 import { DrawingToolModule } from '../drawing-tool/drawing-tool.module';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
+import { FileRecordsComponent } from './components/file-records.component';
 
 const components = [
   GraphSearchComponent,
@@ -19,13 +20,14 @@ const components = [
   SearchRecordRelationshipsComponent,
   ContentSearchComponent,
   ContentSearchFormComponent,
+  FileRecordsComponent
 ];
 
 @NgModule({
   imports: [
     SharedModule,
     DrawingToolModule,
-    FileBrowserModule,
+    FileBrowserModule
   ],
   declarations: components,
   providers: [

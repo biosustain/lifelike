@@ -5,7 +5,7 @@ import os
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import parallel_bulk
 from neo4japp.database import db
-from neo4japp.models import Files, FileContent, AppUser
+from neo4japp.models import Files, FileContent, AppUser, Projects
 
 FRAGMENT_SIZE = 2147483647
 PDF_MAPPING = '/home/n4j/neo4japp/services/indexing/mappings/pdf_snippets.json'
@@ -35,19 +35,22 @@ def create_index_and_mappings():
 def populate_single_index(fid: int):
     fi, fc = db.session.query(Files, FileContent).filter(Files.id == fid).join(FileContent).one()
     email = db.session.query(AppUser.email).filter(AppUser.id == fi.user_id).one()
+    project_directory = db.session.query(Projects.project_name) \
+        .filter(fi.project == Projects.id).one()
     encoded_pdf = base64.b64encode(fc.raw_file)
     data = encoded_pdf.decode('utf-8')
     document = {
-            'id': fi.file_id,
-            'data': data,
-            'filename': fi.filename,
-            'description': fi.description,
-            'internal_link': fi.file_id,
-            'uploaded_date': fi.creation_date,
-            'external_link': fi.upload_url,
-            'email': email.email,
-            'doi': fi.doi
-        }
+        'id': fi.file_id,
+        'data': data,
+        'filename': fi.filename,
+        'description': fi.description,
+        'internal_link': fi.file_id,
+        'uploaded_date': fi.creation_date,
+        'external_link': fi.upload_url,
+        'email': email.email,
+        'doi': fi.doi,
+        'project_directory': project_directory
+    }
     elastic_client.create('pdf', id=fi.file_id, body=document, pipeline=ATTACHMENT_PIPELINE_NAME)
     elastic_client.indices.refresh('pdf')
 
@@ -62,16 +65,19 @@ def populate_all_indexes():
         Files.creation_date,
         Files.upload_url,
         Files.user_id,
-        FileContent.raw_file
+        FileContent.raw_file,
+        Files.project
     ).join(
         FileContent,
         FileContent.id == Files.content_id
     )
     for filename, description, file_id, doi, creation_date, \
-            uploaded_url, user_id, file in entries.all():
+        uploaded_url, user_id, file, project in entries.all():
         encoded_pdf = base64.b64encode(file)
         data = encoded_pdf.decode('utf-8')
         email = db.session.query(AppUser.email).filter(user_id == AppUser.id).one_or_none()
+        project_directory = db.session.query(Projects.project_name) \
+            .filter(project == Projects.id).one_or_none()
         document = {
             '_index': 'pdf',
             'pipeline': ATTACHMENT_PIPELINE_NAME,
@@ -85,7 +91,8 @@ def populate_all_indexes():
                 'uploaded_date': creation_date,
                 'external_link': uploaded_url,
                 'email': email.email,
-                'doi': doi
+                'doi': doi,
+                'project_directory': project_directory
             }
         }
         documents.append(document)

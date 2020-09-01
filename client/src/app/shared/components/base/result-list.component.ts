@@ -37,6 +37,7 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
     this.routerParamSubscription = this.route.queryParams.subscribe(params => {
       this.params = this.deserializeParams(params);
       if (this.valid) {
+        this.getSnippetResults(this.params);
         this.loadTask.update(this.params);
       }
     });
@@ -78,4 +79,6 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
   abstract deserializeParams(params: { [key: string]: string }): Required<O>;
 
   abstract serializeParams(params: O, restartPagination: boolean): Record<keyof O, string>;
+
+  abstract getSnippetResults(params);
 }
