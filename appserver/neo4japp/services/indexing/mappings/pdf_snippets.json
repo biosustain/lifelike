@@ -29,6 +29,9 @@
           "doi": {
             "type": "text"
           },
+          "project_directory": {
+            "type": "text"
+          },
           "data": {
             "type": "text",
             "index_options": "offsets"
