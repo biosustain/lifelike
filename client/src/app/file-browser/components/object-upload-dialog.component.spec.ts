@@ -53,7 +53,7 @@ describe('FileUploadDialogComponent', () => {
     });
 
     it('should select Rules Based annotation method by default', () => {
-        expect(component.form.get('annotationMethod').value).toEqual(component.annotationMethods[0]);
+        expect(component.form.get('annotationMethod').value).toEqual(component.annotationMethods[1]);
     });
 
     it('should update form annotation method with selected option', () => {
