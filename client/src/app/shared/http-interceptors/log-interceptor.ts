@@ -10,7 +10,7 @@ import { catchError } from 'rxjs/operators';
 
 /**
  * LogInterceptor is used to create a unique transaction
- * id that can be augmented with the Sentry SDK to track
+ * id that can be added to the Sentry SDK to track
  * a transaction's lifecycle.
  */
 @Injectable()
