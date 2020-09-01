@@ -1,16 +1,22 @@
 import base64
+import itertools
 import json
+import logging
 import os
 
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import parallel_bulk
+from sqlalchemy.orm import joinedload
+
 from neo4japp.database import db
-from neo4japp.models import Files, FileContent, AppUser, Projects
+from neo4japp.models import Files, Directory
 
 FRAGMENT_SIZE = 2147483647
 PDF_MAPPING = '/home/n4j/neo4japp/services/indexing/mappings/pdf_snippets.json'
 ATTACHMENT_PIPELINE = '/home/n4j/neo4japp/services/indexing/pipelines/attachments_pipeline.json'
 ATTACHMENT_PIPELINE_NAME = 'attachment'
+
+logger = logging.getLogger(__name__)
 
 elastic_client = Elasticsearch(timeout=180, hosts=[os.environ.get('ELASTICSEARCH_HOSTS')])
 
@@ -32,73 +38,56 @@ def create_index_and_mappings():
         print('Index created')
 
 
+def populate_index(pk: int = None, batch_size=100):
+    query = db.session.query(Files) \
+        .options(joinedload(Files.content),
+                 joinedload(Files.user),
+                 joinedload(Files.dir).joinedload(Directory.project)) \
+        .enable_eagerloads(False)
+
+    if pk is not None:
+        query = query.filter(Files.id == pk)
+
+    results = iter(query.yield_per(batch_size))
+
+    while True:
+        batch = list(itertools.islice(results, batch_size))
+        if not batch:
+            break
+
+        documents = []
+
+        for file in batch:  # type: Files
+            documents.append({
+                '_index': 'pdf',
+                'pipeline': ATTACHMENT_PIPELINE_NAME,
+                '_id': file.file_id,
+                '_source': {
+                    'id': file.file_id,
+                    'data': base64.b64encode(file.content.raw_file).decode('utf-8'),
+                    'filename': file.filename,
+                    'description': file.description,
+                    'internal_link': file.file_id,
+                    'uploaded_date': file.creation_date,
+                    'external_link': file.upload_url,
+                    'email': file.user.email,
+                    'doi': file.doi,
+                    'project_id': file.project_.id,
+                    'project_directory': file.project_.project_name,
+                }
+            })
+
+        for success, info in parallel_bulk(elastic_client, documents):
+            if not success:
+                logger.warning('Failed to index document in ES: {}'.format(info))
+
+
 def populate_single_index(fid: int):
-    fi, fc = db.session.query(Files, FileContent).filter(Files.id == fid).join(FileContent).one()
-    email = db.session.query(AppUser.email).filter(AppUser.id == fi.user_id).one()
-    project_directory = db.session.query(Projects.project_name)\
-        .filter(fi.project == Projects.id).one()
-    encoded_pdf = base64.b64encode(fc.raw_file)
-    data = encoded_pdf.decode('utf-8')
-    document = {
-            'id': fi.file_id,
-            'data': data,
-            'filename': fi.filename,
-            'description': fi.description,
-            'internal_link': fi.file_id,
-            'uploaded_date': fi.creation_date,
-            'external_link': fi.upload_url,
-            'email': email.email,
-            'doi': fi.doi,
-            'project_directory': project_directory
-        }
-    elastic_client.create('pdf', id=fi.file_id, body=document, pipeline=ATTACHMENT_PIPELINE_NAME)
-    elastic_client.indices.refresh('pdf')
+    populate_index(fid)
 
 
 def populate_all_indexes():
-    documents = []
-    entries = db.session.query(
-        Files.filename,
-        Files.description,
-        Files.file_id,
-        Files.doi,
-        Files.creation_date,
-        Files.upload_url,
-        Files.user_id,
-        FileContent.raw_file,
-        Files.project
-    ).join(
-        FileContent,
-        FileContent.id == Files.content_id
-    )
-    for filename, description, file_id, doi, creation_date, \
-            uploaded_url, user_id, file, project in entries.all():
-        encoded_pdf = base64.b64encode(file)
-        data = encoded_pdf.decode('utf-8')
-        email = db.session.query(AppUser.email).filter(user_id == AppUser.id).one_or_none()
-        project_directory = db.session.query(Projects.project_name)\
-            .filter(project == Projects.id).one_or_none()
-        document = {
-            '_index': 'pdf',
-            'pipeline': ATTACHMENT_PIPELINE_NAME,
-            '_id': file_id,
-            '_source': {
-                'id': file_id,
-                'data': data,
-                'filename': filename,
-                'description': description,
-                'internal_link': file_id,
-                'uploaded_date': creation_date,
-                'external_link': uploaded_url,
-                'email': email.email,
-                'doi': doi,
-                'project_directory': project_directory
-            }
-        }
-        documents.append(document)
-    for success, info in parallel_bulk(elastic_client, documents):
-        if not success:
-            print(info)
+    populate_index(None)
 
 
 def seed_elasticsearch():
