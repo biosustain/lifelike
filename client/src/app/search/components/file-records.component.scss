@@ -1,0 +1,56 @@
+.snippet-result {
+  white-space: normal;
+}
+
+.description {
+  width: 300px;
+  white-space: pre-line;
+  margin-left: 20px;
+  color: #838080;
+}
+
+.description-title {
+  font-weight: 600;
+  margin-top: 20px;
+}
+
+.snippet-panel-header {
+  margin-top: 20px;
+  color: #0c8caa;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.uploaded-and-date {
+  margin-left: 20px;
+}
+
+.snippet-paragraph {
+  margin: 20px 40px 0 26px;
+}
+
+.snippet-link {
+  margin-right: 10px;
+}
+
+.panel-button {
+  margin-left: 20px;
+}
+
+.open-panel {
+  color: white;
+  background: #0c8caa;
+}
+
+.card {
+  margin-bottom: 10px;
+
+}
+
+.card-header {
+  background: transparent;
+}
+
+.card-body {
+  background: rgba(0, 0, 0, 0.03);
+}
