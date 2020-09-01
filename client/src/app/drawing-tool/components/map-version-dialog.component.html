@@ -37,9 +37,9 @@
     <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">
       Cancel
     </button>
-    <button type="button" class="btn btn-secondary mr-2" (click)="preview()">
+    <button type="button" class="btn btn-secondary mr-2" (click)="preview()" [disabled]="!form.valid">
       Preview
     </button>
-    <button type="submit" class="btn btn-primary">Restore this Version</button>
+    <button type="submit" class="btn btn-primary" [disabled]="!form.valid">Restore this Version</button>
   </app-modal-footer>
 </form>
