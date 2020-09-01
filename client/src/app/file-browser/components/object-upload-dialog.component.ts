@@ -25,7 +25,7 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent {
   readonly userRoles$: Observable<string[]>;
 
   // select annotation method
-  readonly annotationMethods = ['Rules Based'];  // ['NLP', 'Rules Based']; -- See JIRA LL-1592
+  readonly annotationMethods = ['NLP', 'Rules Based'];
 
   readonly form: FormGroup = new FormGroup({
     type: new FormControl(''),
@@ -39,8 +39,7 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent {
       },
     ]),
     description: new FormControl(''),
-    // TODO: Change to this.annotationMethods[1] once NLP is re-enabled (above)
-    annotationMethod: new FormControl(this.annotationMethods[0], [Validators.required]),
+    annotationMethod: new FormControl(this.annotationMethods[1], [Validators.required]),
   }, [
     (form: FormGroup) => {
       if (form.value.type === UploadType.Files) {

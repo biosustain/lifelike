@@ -40,16 +40,29 @@
     <div class="mt-2" *ngIf="(userRoles$ | async)?.includes('admin')">
       <label>Select annotation method (Required)</label>
       <app-form-row for="annotationMethod" label="Annotations" [control]="form.get('annotationMethod')">
-        <div *ngFor="let method of annotationMethods">
+        <div *ngFor="let method of annotationMethods; let i = index">
           <div class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input"
-                   id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
-                   (change)="onAnnotationMethodPick(method, $event.target.checked)"
-                   [checked]="form.get('annotationMethod').value === method">
-            <label class="custom-control-label d-flex align-items-center"
-                   for="annotation-type-{{method.replace(' ', '-') | lowercase}}">
-              {{ method }}
-            </label>
+            <span *ngIf="i == 0; else displayNormal">
+              <input type="checkbox" class="custom-control-input"
+                    id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
+                    (change)="onAnnotationMethodPick(method, $event.target.checked)"
+                    [checked]="form.get('annotationMethod').value === method"
+                    disabled>
+              <label class="custom-control-label d-flex align-items-center"
+                    for="annotation-type-{{method.replace(' ', '-') | lowercase}}">
+                {{ method }}
+              </label>
+            </span>
+            <ng-template #displayNormal>
+              <input type="checkbox" class="custom-control-input"
+                    id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
+                    (change)="onAnnotationMethodPick(method, $event.target.checked)"
+                    [checked]="form.get('annotationMethod').value === method">
+              <label class="custom-control-label d-flex align-items-center"
+                    for="annotation-type-{{method.replace(' ', '-') | lowercase}}">
+                {{ method }}
+              </label>
+            </ng-template>
           </div>
         </div>
       </app-form-row>
