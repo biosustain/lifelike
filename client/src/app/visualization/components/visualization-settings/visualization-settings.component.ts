@@ -22,7 +22,7 @@ export class VisualizationSettingsComponent implements OnInit {
     navbarCollapsed: boolean;
 
     constructor() {
-        this.navbarCollapsed = true;
+        this.navbarCollapsed = false;
 
         this.settingsForm = new FormGroup({
             animation: new FormControl(true),
