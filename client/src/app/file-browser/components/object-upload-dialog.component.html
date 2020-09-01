@@ -40,9 +40,9 @@
     <div class="mt-2" *ngIf="(userRoles$ | async)?.includes('admin')">
       <label>Select annotation method (Required)</label>
       <app-form-row for="annotationMethod" label="Annotations" [control]="form.get('annotationMethod')">
-        <div *ngFor="let method of annotationMethods; let i = index">
+        <div *ngFor="let method of annotationMethods">
           <div class="custom-control custom-checkbox">
-            <span *ngIf="i == 0; else displayNormal">
+            <span *ngIf="method === 'NLP'; else displayNormal">
               <input type="checkbox" class="custom-control-input"
                     id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
                     (change)="onAnnotationMethodPick(method, $event.target.checked)"
