@@ -32,6 +32,7 @@ import { catchError } from 'rxjs/operators';
 import { error } from 'util';
 import { HttpErrorResponse } from '@angular/common/http';
 import { UserError } from '../../shared/exceptions';
+import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -590,5 +591,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         parseFloat(coordMatch[4]),
       ],
     } : null;
+  }
+
+  displayShareDialog() {
+    const modalRef = this.modalService.open(ShareDialogComponent);
+    modalRef.componentInstance.url = `${window.location.origin}/projects/`
+      + `${this.projectName}/files/${this.currentFileId}?fromWorkspace`;
   }
 }
