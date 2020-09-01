@@ -47,6 +47,7 @@ import { GenericFileUploadComponent } from './components/generic-file-upload/gen
 import { SourcesComponent } from './components/sources/sources.component';
 import { ModuleErrorComponent } from './components/module-error.component';
 import { ModuleProgressComponent } from './components/module-progress.component';
+import { ShareDialogComponent } from './components/dialog/share-dialog.component';
 
 const components = [
   MessageDialogComponent,
@@ -76,12 +77,14 @@ const components = [
   SourcesComponent,
   ModuleErrorComponent,
   ModuleProgressComponent,
+  ShareDialogComponent,
 ];
 
 @NgModule({
   entryComponents: [
     MessageDialogComponent,
     ProgressDialogComponent,
+    ShareDialogComponent,
   ],
   imports: [
     CommonModule,
