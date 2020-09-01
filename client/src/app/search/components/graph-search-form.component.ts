@@ -16,6 +16,7 @@ export class GraphSearchFormComponent {
   domainChoices: Domain[] = DOMAINS.concat().sort((a, b) => a.name.localeCompare(b.name));
   entityTypeChoices: EntityType[] = ENTITY_TYPES.concat().sort((a, b) => a.name.localeCompare(b.name));
   @Output() search = new EventEmitter<GraphSearchParameters>();
+  organismChoice: string;
 
   form = new FormGroup({
     query: new FormControl('', Validators.required),
@@ -36,6 +37,7 @@ export class GraphSearchFormComponent {
   @Input()
   set params(params: GraphSearchParameters) {
     if (params) {
+      this.organismChoice = params.organism;
       this.form.patchValue({
         query: params.query,
         domains: params.domains != null ? params.domains : [...this.domainChoices],

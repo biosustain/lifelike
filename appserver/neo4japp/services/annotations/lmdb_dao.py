@@ -2,6 +2,7 @@ import lmdb
 import json
 
 from os import path
+from typing import List
 
 from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.constants import (
@@ -137,7 +138,7 @@ class LMDBDao:
         for txn in txns:
             txn.abort()
 
-    def get_lmdb_values(self, txn, key, token_type):
+    def get_lmdb_values(self, txn, key, token_type) -> List[dict]:
         """Return all values for an lmdb key."""
         cursor = txn.cursor()
         cursor.set_key(key.encode('utf-8'))
