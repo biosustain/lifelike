@@ -20,6 +20,7 @@ import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behavi
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 
 @Component({
   selector: 'app-map-view',
@@ -347,6 +348,12 @@ export class MapViewComponent<ExtraResult = void> implements OnDestroy, AfterVie
     } else {
       this.workspaceManager.navigateByUrl(this.returnUrl);
     }
+  }
+
+  displayShareDialog() {
+    const modalRef = this.modalService.open(ShareDialogComponent);
+    modalRef.componentInstance.url = `${window.location.origin}/projects/`
+      + `${this.locator.projectName}/maps/${this.locator.hashId}?fromWorkspace`;
   }
 }
 
