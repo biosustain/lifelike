@@ -80,11 +80,11 @@ def test_can_get_list_of_projects(client, session, test_user):
         ).one()
         session.execute(
             projects_collaborator_role.insert(),
-            [dict(
-                appuser_id=test_user.id,
-                app_role_id=role.id,
-                projects_id=projects.id,
-            )]
+            [{
+                'appuser_id': test_user.id,
+                'app_role_id': role.id,
+                'projects_id': projects.id,
+            }]
         )
         session.flush()
 
@@ -169,10 +169,10 @@ def test_can_add_directory(client, session, fix_project, fix_directory, test_use
 
     response = client.post(
         f'/projects/{fix_project.project_name}/directories',
-        data=json.dumps(dict(
-            dirname='new-dir',
-            parentDir=fix_directory.id
-        )),
+        data=json.dumps({
+            'dirname': 'new-dir',
+            'parentDir': fix_directory.id
+        }),
         headers=headers,
         content_type='application/json',
     )
@@ -195,7 +195,7 @@ def test_can_rename_directory(client, session, fix_project, fix_directory, test_
 
     response = client.post(
         f'/projects/{fix_project.project_name}/directories/{new_dir.id}/rename',
-        data=json.dumps(dict(name='sledbob')),
+        data=json.dumps({'name': 'sledbob'}),
         headers=headers,
         content_type='application/json',
     )
@@ -252,11 +252,11 @@ def test_can_move_directory(client, session, fix_project, fix_directory, test_us
 
     response = client.post(
         f'/projects/{fix_project.project_name}/directories/move',
-        data=json.dumps(dict(
-            asset_id=nested_dir_2.id,
-            dest_dir_id=fix_directory.id,
-            asset_type='dir'
-        )),
+        data=json.dumps({
+            'asset_id': nested_dir_2.id,
+            'dest_dir_id': fix_directory.id,
+            'asset_type': 'dir'
+        }),
         headers=headers,
         content_type='application/json',
     )

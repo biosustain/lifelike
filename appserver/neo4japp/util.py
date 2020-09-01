@@ -396,12 +396,12 @@ def generate_jwt_token(
         algorithm - jwt.encode compatible algorithms (see docs)
     """
     time_now = datetime.utcnow()
-    return jwt.encode(dict(
-        iat=time_now,
-        sub=sub,
-        exp=time_now + timedelta(**{time_unit: time_offset}),
-        type=token_type,
-    ), secret, algorithm=algorithm)
+    return jwt.encode({
+        'iat': time_now,
+        'sub': sub,
+        'exp': time_now + timedelta(**{time_unit: time_offset}),
+        'type': token_type,
+    }, secret, algorithm=algorithm)
 
 
 def get_first_known_label_from_node(node: Node):
@@ -433,6 +433,6 @@ class AttrDict(dict):
             new_dict = self.__dict__
 
         if snake_to_camel_transform:
-            return snake_to_camel_dict(new_dict, dict())
+            return snake_to_camel_dict(new_dict, {})
         else:
             return new_dict

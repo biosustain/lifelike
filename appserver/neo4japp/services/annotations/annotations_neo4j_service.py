@@ -35,7 +35,7 @@ class AnnotationsNeo4jService(KgService):
             )
         )
 
-        gene_to_organism_map: Dict[str, Dict[str, str]] = dict()
+        gene_to_organism_map: Dict[str, Dict[str, str]] = {}
         for row in result:
             gene_name: str = row[0]
             gene_id: str = row[1]
@@ -80,7 +80,7 @@ class AnnotationsNeo4jService(KgService):
         genes: List[str],
         organisms: List[str],
     ) -> Dict[str, Dict[str, str]]:
-        gene_to_organism_map: Dict[str, Dict[str, str]] = dict()
+        gene_to_organism_map: Dict[str, Dict[str, str]] = {}
 
         query = self.get_gene_to_organism_query()
         result = self.graph.run(

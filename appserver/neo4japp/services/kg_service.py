@@ -69,8 +69,8 @@ class KgService(HybridDBDao):
         # different type of nodes/edges being converted.
         # The default does not always set an appropriate label
         # name.
-        node_dict = dict()
-        rel_dict = dict()
+        node_dict = {}
+        rel_dict = {}
 
         # TODO: Maybe this would be more appropriate as a class property?
         url_map = {
@@ -94,8 +94,10 @@ class KgService(HybridDBDao):
         for rel in relationships:
             graph_rel = GraphRelationship.from_py2neo(rel)
             rel_dict[graph_rel.id] = graph_rel
-        return dict(nodes=[n.to_dict() for n in node_dict.values()],
-                    edges=[r.to_dict() for r in rel_dict.values()])
+        return {
+            'nodes': [n.to_dict() for n in node_dict.values()],
+            'edges': [r.to_dict() for r in rel_dict.values()]
+        }
 
     def query_batch(self, data_query: str):
         """ query batch uses a custom query language (one we make up here)

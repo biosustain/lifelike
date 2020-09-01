@@ -355,7 +355,7 @@ class UserFileImportService(HybridDBDao):
         # needed because haven't committed yet
         # so the match would not return a node
         created_nodes = set()  # type: ignore
-        created_domains = dict()  # type: ignore
+        created_domains = {}  # type: ignore
 
         for node in node_mappings.new_nodes:
             # can't use cipher parameters due to the dynamic map keys in filtering
