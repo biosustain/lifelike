@@ -59,7 +59,7 @@ def session(app, request):
     """ Creates a new database session """
     connection = db.engine.connect()
     transaction = connection.begin()
-    options = dict(bind=connection, binds={})
+    options = {'bind': connection, 'binds': {}}
     session = db.create_scoped_session(options=options)
     db.session = session
 
@@ -613,7 +613,7 @@ def gas_gangrene_vis_node(gas_gangrene):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
     )
 
@@ -635,7 +635,7 @@ def gas_gangrene_duplicate_vis_node(gas_gangrene):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
         duplicate_of=node_as_graph_node.id
     )
@@ -658,7 +658,7 @@ def oxygen_duplicate_vis_node(oxygen):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
         duplicate_of=node_as_graph_node.id
     )
@@ -681,7 +681,7 @@ def penicillins_vis_node(penicillins):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
     )
 
@@ -703,7 +703,7 @@ def penicillins_duplicate_vis_node(penicillins):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
         duplicate_of=node_as_graph_node.id
     )
@@ -726,7 +726,7 @@ def pomc_vis_node(pomc):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
     )
 
@@ -748,7 +748,7 @@ def pomc_duplicate_vis_node(pomc):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
         duplicate_of=node_as_graph_node.id
     )
