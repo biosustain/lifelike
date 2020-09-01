@@ -1,6 +1,6 @@
 from py2neo import cypher
 import re
-from typing import List
+from typing import Any, Dict, List
 
 from neo4japp.data_transfer_objects import (
     FTSQueryRecord,
@@ -210,11 +210,23 @@ class SearchService(GraphBaseDao):
             ))
         return formatted_results
 
-    def visualizer_search_temp(self, term: str, page: int = 1,
-                               limit: int = 100, filter: str = 'labels()') -> FTSResult:
+    def visualizer_search_temp(
+        self,
+        term: str,
+        organism: str,
+        page: int = 1,
+        limit: int = 10,
+        filter: str = 'labels(node)'
+    ) -> FTSResult:
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:
             return FTSResult(query_term, [], 0, page, limit)
+
+        if organism:
+            organism_match_string = 'MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy {id: $organism})'
+        else:
+            organism_match_string = 'OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)'
+
         cypher_query = f"""
             CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
             YIELD node, score
@@ -222,7 +234,7 @@ class SearchService(GraphBaseDao):
             WHERE {filter}
             WITH score, n
             ORDER BY score DESC
-            OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)
+            {organism_match_string}
             WITH MAX(score) as score, collect(DISTINCT [n, t.id, t.name, n.namespace]) AS nodes
             UNWIND nodes as node
             RETURN score, node[0] AS node, node[1] AS taxonomy_id, node[2] AS taxonomy_name,
@@ -233,10 +245,13 @@ class SearchService(GraphBaseDao):
 
         results = self.graph.run(
             cypher_query,
-            parameters={'amount': (page - 1) * limit,
-                        'limit': limit,
-                        'search_term': query_term,
-                        }).data()
+            parameters={
+                'organism': organism,
+                'amount': (page - 1) * limit,
+                'limit': limit,
+                'search_term': query_term,
+            }
+        ).data()
 
         records = self._visualizer_search_temp_result_formatter(results)
 
@@ -245,10 +260,94 @@ class SearchService(GraphBaseDao):
             YIELD node
             MATCH (node)-[]-(n)
             WHERE {filter}
-            OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)
+            {organism_match_string}
             RETURN COUNT(DISTINCT n) as total
         """
         total_results = self.graph.run(
-            total_query, parameters={'search_term': query_term}).evaluate()
+            total_query,
+            parameters={
+                'search_term': query_term,
+                'organism': organism
+            }
+        ).evaluate()
 
         return FTSResult(term, records, total_results, page, limit)
+
+    def get_organism_with_tax_id(self, tax_id):
+        query = """
+            MATCH (t:Taxonomy {id: $tax_id})
+            RETURN t.id AS tax_id, t.name AS organism_name
+        """
+
+        result = self.graph.run(
+            query,
+            {
+                'tax_id': tax_id,
+            }
+        ).data()
+
+        return result[0] if len(result) else None
+
+    def get_organisms(self, term: str, limit: int) -> Dict[str, Any]:
+        query_term = self._fulltext_query_sanitizer(term)
+        if not query_term:
+            return {
+                'limit': limit,
+                'nodes': [],
+                'query': query_term,
+                'total': 0,
+            }
+
+        cypher_query = """
+            CALL db.index.fulltext.queryNodes("synonymIdx", $term)
+            YIELD node, score
+            MATCH (node)-[]-(t:Taxonomy)
+            RETURN t.id AS tax_id, t.name AS organism_name, node.name AS synonym
+            LIMIT $limit
+        """
+
+        nodes = self.graph.run(
+            cypher_query,
+            parameters={
+                'limit': limit,
+                'term': query_term,
+            }
+        ).data()
+
+        return {
+            'limit': limit,
+            'nodes': nodes,
+            'query': query_term,
+            'total': len(nodes),
+        }
+
+    def search_genes_filtering_by_organism_and_others(self, term: str, organism_id: str,
+                                                      filters: str = 'labels(node)') -> FTSResult:
+        query_term = self._fulltext_query_sanitizer(term)
+        if not query_term:
+            return FTSResult(query_term, [], 0, 1, 0)
+
+        cypher_query = '''
+            CALL db.index.fulltext.queryNodes('synonymIdx', $gene_term)
+            YIELD node, score
+            MATCH (node)-[]-(n:Gene)-[:HAS_TAXONOMY]-(t)-[:HAS_PARENT*0..2]-(p)
+            WHERE p.id = $taxonomy_id AND %s
+            RETURN
+                n as node,
+                score,
+                t.id AS taxonomy_id,
+                t.name AS taxonomy_name,
+                n.namespace as go_class
+        ''' % filters
+
+        nodes = self.graph.run(
+            cypher_query,
+            parameters={
+                'gene_term': query_term,
+                'taxonomy_id': organism_id,
+            }
+        ).data()
+
+        nodes = self._simple_fulltext_result_formatter(nodes)
+
+        return FTSResult(query_term, nodes, len(nodes), 1, 0)

@@ -42,6 +42,10 @@ export class Container<T> {
               readonly component: Type<T>) {
   }
 
+  get attached(): boolean {
+    return this.viewContainerRef != null;
+  }
+
   /**
    * Create the component if necessary and attach it to the given ref. If
    * this component has already been attached to a ref, then an error
@@ -116,6 +120,7 @@ export class Container<T> {
  * Represents a tab with a title and possibly a component inside.
  */
 export class Tab {
+  workspaceManager: WorkspaceManager;
   url: string;
   defaultsSet = false;
   title = 'New Tab';
@@ -130,6 +135,7 @@ export class Tab {
 
   constructor(private readonly injector: Injector,
               private readonly componentFactoryResolver: ComponentFactoryResolver) {
+    this.workspaceManager = this.injector.get<WorkspaceManager>(WorkspaceManager);
   }
 
   queuePropertyChange(properties: ModuleProperties) {
@@ -143,6 +149,7 @@ export class Tab {
       this.badge = this.pendingProperties.badge;
       this.loading = !!this.pendingProperties.loading;
       this.pendingProperties = null;
+      this.workspaceManager.save();
     }
   }
 
@@ -556,51 +563,65 @@ export class WorkspaceManager {
   navigateByUrl(url: string | UrlTree, extras?: NavigationExtras & WorkspaceNavigationExtras): Promise<boolean> {
     extras = extras || {};
 
-    let targetPane = this.focusedPane || this.panes.getFirstOrCreate();
+    if (this.router.url === this.workspaceUrl) {
+      let targetPane = this.focusedPane || this.panes.getFirstOrCreate();
 
-    if (extras.newTab) {
-      if (extras.sideBySide) {
-        let sideBySidePane = null;
-        for (const otherPane of this.panes.panes) {
-          if (targetPane.id !== otherPane.id) {
-            sideBySidePane = otherPane;
-            break;
+      if (extras.newTab) {
+        if (extras.sideBySide) {
+          let sideBySidePane = null;
+          for (const otherPane of this.panes.panes) {
+            if (targetPane.id !== otherPane.id) {
+              sideBySidePane = otherPane;
+              break;
+            }
+          }
+
+          if (sideBySidePane == null) {
+            if (targetPane.id === 'left') {
+              targetPane = this.panes.create('right');
+            } else {
+              targetPane = this.panes.create('left');
+            }
+          } else {
+            targetPane = sideBySidePane;
           }
         }
 
-        if (sideBySidePane == null) {
-          if (targetPane.id === 'left') {
-            targetPane = this.panes.create('right');
-          } else {
-            targetPane = this.panes.create('left');
+        if (extras.matchExistingTab != null) {
+          let foundTab = false;
+
+          for (const tab of targetPane.tabs) {
+            if (tab.url.match(extras.matchExistingTab)) {
+              targetPane.activeTab = tab;
+              foundTab = true;
+
+              // This mechanism allows us to update an existing tab in a one-way data coupling
+              if (extras.shouldReplaceTab != null) {
+                const component = tab.getComponent();
+                if (component != null) {
+                  if (!extras.shouldReplaceTab(component)) {
+                    return;
+                  }
+                }
+              }
+
+              break;
+            }
+          }
+
+          if (!foundTab) {
+            targetPane.createTab();
           }
         } else {
-          targetPane = sideBySidePane;
-        }
-      }
-
-      if (extras.replaceTabIfMatch != null) {
-        let foundTab = false;
-
-        for (const tab of targetPane.tabs) {
-          if (tab.url.match(extras.replaceTabIfMatch)) {
-            targetPane.activeTab = tab;
-            foundTab = true;
-            break;
-          }
-        }
-
-        if (!foundTab) {
           targetPane.createTab();
         }
-      } else {
-        targetPane.createTab();
+
+        this.focusedPane = targetPane;
       }
 
-      this.focusedPane = targetPane;
+      this.interceptNextRoute = true;
     }
 
-    this.interceptNextRoute = true;
     return this.router.navigateByUrl(url, extras);
   }
 
@@ -700,7 +721,8 @@ export class WorkspaceManager {
 export interface WorkspaceNavigationExtras {
   newTab?: boolean;
   sideBySide?: boolean;
-  replaceTabIfMatch?: string | RegExp;
+  matchExistingTab?: string | RegExp;
+  shouldReplaceTab?: (component: any) => boolean;
 }
 
 function getQueryString(params: { [key: string]: string }) {

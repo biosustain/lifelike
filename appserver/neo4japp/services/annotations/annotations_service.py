@@ -4,9 +4,12 @@ import requests
 
 from collections import deque
 from math import inf
-from typing import cast, Dict, List, Optional, Set, Tuple, Union
+from functools import partial
+from itertools import starmap
+from typing import cast, Any, Dict, List, Optional, Set, Tuple, Union
 from uuid import uuid4
 
+from flask import current_app
 from pdfminer.layout import LTAnno, LTChar
 from sqlalchemy import and_
 
@@ -20,6 +23,7 @@ from .constants import (
     EntityColor,
     EntityIdStr,
     EntityType,
+    ManualAnnotationType,
     OrganismCategory,
     # exclusion lists
     # CHEMICAL_EXCLUSION,
@@ -35,15 +39,24 @@ from .constants import (
     COMMON_TYPOS,
     UNIPROT_LINK,
     WIKIPEDIA_LINK,
-    # LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH,
     NLP_ENDPOINT,
 )
 from .lmdb_dao import LMDBDao
-from .util import normalize_str
+from .util import (
+    create_chemical_for_ner,
+    create_compound_for_ner,
+    create_disease_for_ner,
+    create_gene_for_ner,
+    create_phenotype_for_ner,
+    create_protein_for_ner,
+    create_species_for_ner,
+    normalize_str,
+)
 
 from neo4japp.data_transfer_objects import (
     Annotation,
     GeneAnnotation,
+    LMDBMatch,
     OrganismAnnotation,
     PDFParsedCharacters,
     PDFTokenPositions,
@@ -51,6 +64,7 @@ from neo4japp.data_transfer_objects import (
 )
 from neo4japp.exceptions import AnnotationError
 from neo4japp.models import AnnotationStopWords, GlobalList
+from neo4japp.utils.logger import EventLog
 
 
 class AnnotationsService:
@@ -65,18 +79,25 @@ class AnnotationsService:
         # for word tokens that are typos
         self.correct_spellings: Dict[str, str] = {}
 
-        # custom annotations should be init when needed
-        # TODO: different entity types?
-        self._custom_species = None
+        # for the global and local, structured the same as LMDB
+        self.local_species_inclusion: Dict[str, List[dict]] = {}
+        self.global_chemical_inclusion: Dict[str, List[dict]] = {}
+        self.global_compound_inclusion: Dict[str, List[dict]] = {}
+        self.global_disease_inclusion: Dict[str, List[dict]] = {}
+        self.global_gene_inclusion: Dict[str, List[dict]] = {}
+        self.global_phenotype_inclusion: Dict[str, List[dict]] = {}
+        self.global_protein_inclusion: Dict[str, List[dict]] = {}
+        self.global_species_inclusion: Dict[str, List[dict]] = {}
 
-        self.matched_genes: Dict[str, List[PDFTokenPositions]] = {}
-        self.matched_chemicals: Dict[str, List[PDFTokenPositions]] = {}
-        self.matched_compounds: Dict[str, List[PDFTokenPositions]] = {}
-        self.matched_proteins: Dict[str, List[PDFTokenPositions]] = {}
-        self.matched_species: Dict[str, List[PDFTokenPositions]] = {}
-        self.matched_custom_species: Dict[str, List[PDFTokenPositions]] = {}
-        self.matched_diseases: Dict[str, List[PDFTokenPositions]] = {}
-        self.matched_phenotypes: Dict[str, List[PDFTokenPositions]] = {}
+        self.matched_genes: Dict[str, LMDBMatch] = {}
+        self.matched_chemicals: Dict[str, LMDBMatch] = {}
+        self.matched_compounds: Dict[str, LMDBMatch] = {}
+        self.matched_proteins: Dict[str, LMDBMatch] = {}
+        self.matched_species: Dict[str, LMDBMatch] = {}
+        self.matched_diseases: Dict[str, LMDBMatch] = {}
+        self.matched_phenotypes: Dict[str, LMDBMatch] = {}
+
+        self.matched_local_species_inclusion: Dict[str, List[PDFTokenPositions]] = {}
 
         self.organism_frequency: Dict[str, int] = {}
         self.organism_locations: Dict[str, List[Tuple[int, int]]] = {}
@@ -90,70 +111,207 @@ class AnnotationsService:
             result.word for result in self.annotation_neo4j.session.query(
                 AnnotationStopWords).all())
 
-        self.annotations_to_exclude = [
+        self.global_annotations_to_exclude = [
             exclusion for exclusion, in self.annotation_neo4j.session.query(
                 GlobalList.annotation).filter(
                     and_(
-                        GlobalList.type == 'exclusion',
+                        GlobalList.type == ManualAnnotationType.Exclusion.value,
                         # TODO: Uncomment once feature to review is there
                         # GlobalList.reviewed.is_(True),
                     )
                 )
             ]
 
-    @property
-    def custom_species(self):
-        return self._custom_species
+        self.global_annotations_to_include = [
+            inclusion for inclusion, in self.annotation_neo4j.session.query(
+                GlobalList.annotation).filter(
+                    and_(
+                        GlobalList.type == ManualAnnotationType.Inclusion.value,
+                        # TODO: Uncomment once feature to review is there
+                        # GlobalList.reviewed.is_(True),
+                    )
+                )
+            ]
 
-    @custom_species.setter
-    def custom_species(self, value):
-        self._custom_species = value
-
-    def get_chemical_annotations_to_exclude(self):
+    def _get_chemical_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Chemical.value and exclusion.get('text'))  # noqa
 
-    def get_compound_annotations_to_exclude(self):
+    def _get_compound_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Compound.value and exclusion.get('text'))  # noqa
 
-    def get_disease_annotations_to_exclude(self):
+    def _get_disease_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Disease.value and exclusion.get('text'))  # noqa
 
-    def get_gene_annotations_to_exclude(self):
+    def _get_gene_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Gene.value and exclusion.get('text'))  # noqa
 
-    def get_phenotype_annotations_to_exclude(self):
+    def _get_phenotype_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Phenotype.value and exclusion.get('text'))  # noqa
 
-    def get_protein_annotations_to_exclude(self):
+    def _get_protein_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Protein.value and exclusion.get('text'))  # noqa
 
-    def get_species_annotations_to_exclude(self):
+    def _get_species_annotations_to_exclude(self):
         return set(
-            exclusion.get('text') for exclusion in self.annotations_to_exclude if
+            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
                 exclusion.get('type') == EntityType.Species.value and exclusion.get('text'))  # noqa
 
-    def validate_chemicals_lmdb(
+    def _get_global_inclusion_pairs(self) -> List[Tuple[str, str, Any, Any]]:
+        return [
+            (EntityType.Chemical.value, EntityIdStr.Chemical.value, self.global_chemical_inclusion, create_chemical_for_ner),  # noqa
+            (EntityType.Compound.value, EntityIdStr.Compound.value, self.global_compound_inclusion, create_compound_for_ner),  # noqa
+            (EntityType.Disease.value, EntityIdStr.Disease.value, self.global_disease_inclusion, create_disease_for_ner),  # noqa
+            (EntityType.Gene.value, EntityIdStr.Gene.value, self.global_gene_inclusion, create_gene_for_ner),  # noqa
+            (EntityType.Phenotype.value, EntityIdStr.Phenotype.value, self.global_phenotype_inclusion, create_phenotype_for_ner),  # noqa
+            (EntityType.Protein.value, EntityIdStr.Protein.value, self.global_protein_inclusion, create_protein_for_ner),  # noqa
+            (EntityType.Species.value, EntityIdStr.Species.value, self.global_species_inclusion, create_species_for_ner),  # noqa
+        ]
+
+    def _set_local_species_inclusion(self, custom_annotations: List[dict]) -> None:
+        """Creates a dictionary structured very similar to LMDB.
+        Used for local species custom annotation lookups.
+        """
+        for custom in custom_annotations:
+            if custom.get('meta', None):
+                if custom['meta'].get('type', None) == EntityType.Species.value:
+                    species_id = custom['meta'].get('id', None)
+                    species_name = custom['meta'].get('allText', None)
+                    normalized_species_name = normalize_str(species_name)
+
+                    if species_id and species_name:
+                        if normalized_species_name in self.local_species_inclusion:
+                            unique = all(
+                                [
+                                    entity['tax_id'] != species_id for
+                                    entity in self.local_species_inclusion[normalized_species_name]
+                                ]
+                            )
+                            # need to check unique because a custom annotation
+                            # can have multiple of the same entity
+                            if unique:
+                                self.local_species_inclusion[normalized_species_name].append(
+                                    create_species_for_ner(
+                                        id_=species_id,
+                                        name=species_name,
+                                        synonym=species_name,
+                                    )
+                                )
+                        else:
+                            self.local_species_inclusion[normalized_species_name] = [
+                                create_species_for_ner(
+                                    id_=species_id,
+                                    name=species_name,
+                                    synonym=species_name,
+                                )
+                            ]
+
+    def _set_global_inclusions(
+        self,
+        entity_type: str,
+        entity_id_str: str,
+        global_inclusion: Dict[str, List[dict]],
+        create_entity_ner_func,
+    ) -> None:
+        """Creates a dictionary structured very similar to LMDB.
+        Used for global entity custom annotation lookups.
+        """
+        current_app.logger.info(
+            f'Creating global inclusion lookup for {entity_type}',
+            extra=EventLog(event_type='annotations').to_dict()
+        )
+        for inclusion in self.global_annotations_to_include:
+            if inclusion.get('meta', None):
+                if inclusion['meta'].get('type', None) == entity_type:
+                    entity_id = inclusion['meta'].get('id', None)
+                    entity_name = inclusion['meta'].get('allText', None)
+                    normalized_entity_name = normalize_str(entity_name)
+
+                    if entity_id and entity_name:
+                        unique = all(
+                            [
+                                entity[entity_id_str] != entity_id for
+                                entity in global_inclusion.get(normalized_entity_name, [])  # noqa
+                            ]
+                        )
+                        # need to check unique because a custom annotation
+                        # can have multiple of the same entity
+                        if unique:
+                            entity = {}  # to avoid UnboundLocalError
+                            if entity_type in {
+                                EntityType.Chemical.value,
+                                EntityType.Compound.value,
+                                EntityType.Disease.value,
+                                EntityType.Phenotype.value,
+                                EntityType.Species.value
+                            }:
+                                entity = create_entity_ner_func(
+                                    id_=entity_id,
+                                    name=entity_name,
+                                    synonym=entity_name
+                                )
+                            else:
+                                if entity_type == EntityType.Gene.value:
+                                    # the word manually annotated by user
+                                    # will not be in the KG
+                                    # otherwise it would've been annotated
+                                    # so we use the gene_id to query the KG to get
+                                    # the correct gene name and use that gene name
+                                    # as the synonym too for gene/organism matching
+                                    gene_name = self.annotation_neo4j.get_genes_from_gene_ids(gene_ids=[entity_id])  # noqa
+                                    if gene_name:
+                                        entity = create_entity_ner_func(
+                                            name=gene_name.pop(),
+                                            synonym=entity_name
+                                        )
+
+                                        # gene doesn't have id in LMDB
+                                        # but we need to add it here for global inclusions
+                                        # because the user could add a gene id
+                                        # which we use to check for unique above
+                                        entity[entity_id_str] = entity_id
+                                    else:
+                                        current_app.logger.info(
+                                            f'Did not find a gene match with id {entity_id}.',
+                                            extra=EventLog(event_type='annotations').to_dict()
+                                        )
+                                        current_app.logger.debug(
+                                            f'<_set_global_inclusions()>: Failed to find a gene match in ' +  # noqa
+                                            f'the knowledge graph with id {entity_id}.',
+                                            extra=EventLog(event_type='annotations').to_dict()
+                                        )
+                                else:
+                                    entity = create_entity_ner_func(
+                                        name=entity_name,
+                                        synonym=entity_name
+                                    )
+
+                            # differentiate between LMDB
+                            entity['inclusion'] = True
+
+                            if normalized_entity_name in global_inclusion:
+                                global_inclusion[normalized_entity_name].append(entity)
+                            else:
+                                global_inclusion[normalized_entity_name] = [entity]
+
+    def entity_lookup_for_chemicals(
         self,
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
-        """Validate the lookup key exists in chemicals LMDB. If it
-        does, then add it as a match.
-
-        A key could have multiple values, but just need to check
-        if one value exists because just validating if in lmdb.
+        """Do entity lookups for chemical. First check in LMDB,
+        if nothing was found, then check in global inclusions.
 
         Args:
             token: the token with pdf text and it's positions
@@ -166,39 +324,67 @@ class AnnotationsService:
             nlp_predicted_type = token.token_type
 
         if synonym:
-            lookup_key = normalize_str(synonym).encode('utf-8')
+            lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword).encode('utf-8')
-
-        lowered_word = token.keyword.lower()
+            lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            # check chemical
-            if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Chemical.value and lowered_word not in self.exclusion_words:  # noqa
-                    chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
-            else:
-                if lowered_word not in self.exclusion_words:
-                    chem_val = self.lmdb_session.chemicals_txn.get(lookup_key)
+            if nlp_predicted_type == EntityType.Chemical.value:
+                chem_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.chemicals_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Chemical.value
+                )
+            elif nlp_predicted_type is None:
+                chem_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.chemicals_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Chemical.value
+                )
 
-            if chem_val and token.keyword not in self.get_chemical_annotations_to_exclude():  # noqa
-                if token.keyword in self.matched_chemicals:
-                    self.matched_chemicals[token.keyword].append(token)
+            if not chem_val:
+                # didn't find in LMDB so look in global inclusion
+                chem_val = self.global_chemical_inclusion.get(lookup_key, [])
+
+            lowered_word = token.keyword.lower()
+            global_exclusion = self._get_chemical_annotations_to_exclude()
+
+            if chem_val:
+                if token.keyword in global_exclusion:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<entity_lookup_for_chemicals()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <_get_chemical_annotations_to_exclude()>.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                elif lowered_word in self.exclusion_words:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<entity_lookup_for_chemicals()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
                 else:
-                    self.matched_chemicals[token.keyword] = [token]
+                    if token.keyword in self.matched_chemicals:
+                        self.matched_chemicals[token.keyword].tokens.append(token)
+                    else:
+                        self.matched_chemicals[token.keyword] = LMDBMatch(entities=chem_val, tokens=[token])  # noqa
 
-            return chem_val
+        return chem_val
 
-    def validate_compounds_lmdb(
+    def entity_lookup_for_compounds(
         self,
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
-        """Validate the lookup key exists in compounds LMDB. If it
-        does, then add it as a match.
-
-        A key could have multiple values, but just need to check
-        if one value exists because just validating if in lmdb.
+        """Do entity lookups for compound. First check in LMDB,
+        if nothing was found, then check in global inclusions.
 
         Args:
             token: the token with pdf text and it's positions
@@ -211,39 +397,67 @@ class AnnotationsService:
             nlp_predicted_type = token.token_type
 
         if synonym:
-            lookup_key = normalize_str(synonym).encode('utf-8')
+            lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword).encode('utf-8')
-
-        lowered_word = token.keyword.lower()
+            lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            # check compound
-            if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Compound.value and lowered_word not in self.exclusion_words:  # noqa
-                    comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
-            else:
-                if lowered_word not in self.exclusion_words:
-                    comp_val = self.lmdb_session.compounds_txn.get(lookup_key)
+            if nlp_predicted_type == EntityType.Compound.value:
+                comp_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.compounds_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Compound.value
+                )
+            elif nlp_predicted_type is None:
+                comp_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.compounds_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Compound.value
+                )
 
-            if comp_val and token.keyword not in self.get_compound_annotations_to_exclude():  # noqa
-                if token.keyword in self.matched_compounds:
-                    self.matched_compounds[token.keyword].append(token)
+            if not comp_val:
+                # didn't find in LMDB so look in global inclusion
+                comp_val = self.global_compound_inclusion.get(lookup_key, [])
+
+            lowered_word = token.keyword.lower()
+            global_exclusion = self._get_compound_annotations_to_exclude()
+
+            if comp_val:
+                if token.keyword in global_exclusion:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<entity_lookup_for_compounds()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <_get_compound_annotations_to_exclude()>.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                elif lowered_word in self.exclusion_words:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<entity_lookup_for_compounds()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
                 else:
-                    self.matched_compounds[token.keyword] = [token]
+                    if token.keyword in self.matched_compounds:
+                        self.matched_compounds[token.keyword].tokens.append(token)
+                    else:
+                        self.matched_compounds[token.keyword] = LMDBMatch(entities=comp_val, tokens=[token])  # noqa
 
-            return comp_val
+        return comp_val
 
-    def validate_diseases_lmdb(
+    def entity_lookup_for_diseases(
         self,
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
-        """Validate the lookup key exists in diseases LMDB. If it
-        does, then add it as a match.
-
-        A key could have multiple values, but just need to check
-        if one value exists because just validating if in lmdb.
+        """Do entity lookups for disease. First check in LMDB,
+        if nothing was found, then check in global inclusions.
 
         Args:
             token: the token with pdf text and it's positions
@@ -256,39 +470,67 @@ class AnnotationsService:
             nlp_predicted_type = token.token_type
 
         if synonym:
-            lookup_key = normalize_str(synonym).encode('utf-8')
+            lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword).encode('utf-8')
-
-        lowered_word = token.keyword.lower()
+            lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            # check disease
-            if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Disease.value and lowered_word not in self.exclusion_words:  # noqa
-                    diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
-            else:
-                if lowered_word not in self.exclusion_words:
-                    diseases_val = self.lmdb_session.diseases_txn.get(lookup_key)
+            if nlp_predicted_type == EntityType.Disease.value:
+                diseases_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.diseases_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Disease.value
+                )
+            elif nlp_predicted_type is None:
+                diseases_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.diseases_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Disease.value
+                )
 
-            if diseases_val and token.keyword not in self.get_disease_annotations_to_exclude():  # noqa
-                if token.keyword in self.matched_diseases:
-                    self.matched_diseases[token.keyword].append(token)
+            if not diseases_val:
+                # didn't find in LMDB so look in global inclusion
+                diseases_val = self.global_disease_inclusion.get(lookup_key, [])
+
+            lowered_word = token.keyword.lower()
+            global_exclusion = self._get_disease_annotations_to_exclude()
+
+            if diseases_val:
+                if token.keyword in global_exclusion:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<entity_lookup_for_diseases()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <_get_disease_annotations_to_exclude()>.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                elif lowered_word in self.exclusion_words:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<entity_lookup_for_diseases()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
                 else:
-                    self.matched_diseases[token.keyword] = [token]
+                    if token.keyword in self.matched_diseases:
+                        self.matched_diseases[token.keyword].tokens.append(token)
+                    else:
+                        self.matched_diseases[token.keyword] = LMDBMatch(entities=diseases_val, tokens=[token])  # noqa
 
-            return diseases_val
+        return diseases_val
 
-    def validate_genes_lmdb(
+    def entity_lookup_for_genes(
         self,
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
-        """Validate the lookup key exists in genes LMDB. If it
-        does, then add it as a match.
-
-        A key could have multiple values, but just need to check
-        if one value exists because just validating if in lmdb.
+        """Do entity lookups for gene. First check in LMDB,
+        if nothing was found, then check in global inclusions.
 
         Args:
             token: the token with pdf text and it's positions
@@ -301,39 +543,67 @@ class AnnotationsService:
             nlp_predicted_type = token.token_type
 
         if synonym:
-            lookup_key = normalize_str(synonym).encode('utf-8')
+            lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword).encode('utf-8')
-
-        lowered_word = token.keyword.lower()
+            lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            # check gene
-            if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Gene.value and lowered_word not in self.exclusion_words:  # noqa
-                    gene_val = self.lmdb_session.genes_txn.get(lookup_key)
-            else:
-                if lowered_word not in self.exclusion_words:
-                    gene_val = self.lmdb_session.genes_txn.get(lookup_key)
+            if nlp_predicted_type == EntityType.Gene.value:
+                gene_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.genes_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Gene.value
+                )
+            elif nlp_predicted_type is None:
+                gene_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.genes_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Gene.value
+                )
 
-            if gene_val and token.keyword not in self.get_gene_annotations_to_exclude():  # noqa
-                if token.keyword in self.matched_genes:
-                    self.matched_genes[token.keyword].append(token)
+            if not gene_val:
+                # didn't find in LMDB so look in global inclusion
+                gene_val = self.global_gene_inclusion.get(lookup_key, [])
+
+            lowered_word = token.keyword.lower()
+            global_exclusion = self._get_gene_annotations_to_exclude()
+
+            if gene_val:
+                if token.keyword in global_exclusion:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<entity_lookup_for_genes()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <_get_gene_annotations_to_exclude()>.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                elif lowered_word in self.exclusion_words:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<entity_lookup_for_genes()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
                 else:
-                    self.matched_genes[token.keyword] = [token]
+                    if token.keyword in self.matched_genes:
+                        self.matched_genes[token.keyword].tokens.append(token)
+                    else:
+                        self.matched_genes[token.keyword] = LMDBMatch(entities=gene_val, tokens=[token])  # noqa
 
-            return gene_val
+        return gene_val
 
     def validate_phenotypes_lmdb(
         self,
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
-        """Validate the lookup key exists in phenotypes LMDB. If it
-        does, then add it as a match.
-
-        A key could have multiple values, but just need to check
-        if one value exists because just validating if in lmdb.
+        """Do entity lookups for phenotype. First check in LMDB,
+        if nothing was found, then check in global inclusions.
 
         Args:
             token: the token with pdf text and it's positions
@@ -346,39 +616,67 @@ class AnnotationsService:
             nlp_predicted_type = token.token_type
 
         if synonym:
-            lookup_key = normalize_str(synonym).encode('utf-8')
+            lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword).encode('utf-8')
-
-        lowered_word = token.keyword.lower()
+            lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            # check phenotype
-            if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Phenotype.value and lowered_word not in self.exclusion_words:  # noqa
-                    phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
-            else:
-                if lowered_word not in self.exclusion_words:
-                    phenotype_val = self.lmdb_session.phenotypes_txn.get(lookup_key)
+            if nlp_predicted_type == EntityType.Phenotype.value:
+                phenotype_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.phenotypes_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Phenotype.value
+                )
+            elif nlp_predicted_type is None:
+                phenotype_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.phenotypes_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Phenotype.value
+                )
 
-            if phenotype_val and token.keyword not in self.get_phenotype_annotations_to_exclude():  # noqa
-                if token.keyword in self.matched_phenotypes:
-                    self.matched_phenotypes[token.keyword].append(token)
+            if not phenotype_val:
+                # didn't find in LMDB so look in global inclusion
+                phenotype_val = self.global_phenotype_inclusion.get(lookup_key, [])
+
+            lowered_word = token.keyword.lower()
+            global_exclusion = self._get_phenotype_annotations_to_exclude()
+
+            if phenotype_val:
+                if token.keyword in global_exclusion:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<validate_phenotypes_lmdb()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <_get_phenotype_annotations_to_exclude()>.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                elif lowered_word in self.exclusion_words:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<validate_phenotypes_lmdb()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
                 else:
-                    self.matched_phenotypes[token.keyword] = [token]
+                    if token.keyword in self.matched_phenotypes:
+                        self.matched_phenotypes[token.keyword].tokens.append(token)
+                    else:
+                        self.matched_phenotypes[token.keyword] = LMDBMatch(entities=phenotype_val, tokens=[token])  # noqa
 
-            return phenotype_val
+        return phenotype_val
 
-    def validate_proteins_lmdb(
+    def entity_lookup_for_proteins(
         self,
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
-        """Validate the lookup key exists in proteins LMDB. If it
-        does, then add it as a match.
-
-        A key could have multiple values, but just need to check
-        if one value exists because just validating if in lmdb.
+        """Do entity lookups for protein. First check in LMDB,
+        if nothing was found, then check in global inclusions.
 
         Args:
             token: the token with pdf text and it's positions
@@ -391,39 +689,72 @@ class AnnotationsService:
             nlp_predicted_type = token.token_type
 
         if synonym:
-            lookup_key = normalize_str(synonym).encode('utf-8')
+            lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword).encode('utf-8')
-
-        lowered_word = token.keyword.lower()
+            lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            # check protein
-            if nlp_predicted_type:
-                if nlp_predicted_type == EntityType.Protein.value and lowered_word not in self.exclusion_words:  # noqa
-                    protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
-            else:
-                if lowered_word not in self.exclusion_words:
-                    protein_val = self.lmdb_session.proteins_txn.get(lookup_key)
+            if nlp_predicted_type == EntityType.Protein.value:
+                protein_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.proteins_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Protein.value
+                )
+            elif nlp_predicted_type is None:
+                protein_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.proteins_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Protein.value
+                )
 
-            if protein_val and token.keyword not in self.get_protein_annotations_to_exclude():  # noqa
-                if token.keyword in self.matched_proteins:
-                    self.matched_proteins[token.keyword].append(token)
+            if protein_val:
+                entities_to_use = [entity for entity in protein_val if entity['synonym'] == token.keyword]  # noqa
+                if entities_to_use:
+                    protein_val = entities_to_use
+
+            if not protein_val:
+                # didn't find in LMDB so look in global inclusion
+                protein_val = self.global_protein_inclusion.get(lookup_key, [])
+
+            lowered_word = token.keyword.lower()
+            global_exclusion = self._get_protein_annotations_to_exclude()
+
+            if protein_val:
+                if token.keyword in global_exclusion:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<entity_lookup_for_proteins()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <_get_protein_annotations_to_exclude()>.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                elif lowered_word in self.exclusion_words:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<entity_lookup_for_proteins()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
                 else:
-                    self.matched_proteins[token.keyword] = [token]
+                    if token.keyword in self.matched_proteins:
+                        self.matched_proteins[token.keyword].tokens.append(token)
+                    else:
+                        self.matched_proteins[token.keyword] = LMDBMatch(entities=protein_val, tokens=[token])  # noqa
 
-            return protein_val
+        return protein_val
 
-    def validate_species_lmdb(
+    def entity_lookup_for_species(
         self,
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
-        """Validate the lookup key exists in species LMDB. If it
-        does, then add it as a match. Also validate in custom species.
-
-        A key could have multiple values, but just need to check
-        if one value exists because just validating if in lmdb.
+        """Do entity lookups for species. First check in LMDB,
+        if nothing was found, then check in global inclusions.
 
         Args:
             token: the token with pdf text and it's positions
@@ -436,62 +767,100 @@ class AnnotationsService:
             nlp_predicted_type = token.token_type
 
         if synonym:
-            lookup_key = normalize_str(synonym).encode('utf-8')
+            lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword).encode('utf-8')
-
-        lowered_word = token.keyword.lower()
+            lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
             # check species
-            if nlp_predicted_type:
-                # TODO: Bacteria because for now NLP has that instead of
-                # generic `Species`
-                if ((nlp_predicted_type == EntityType.Species.value or
-                    nlp_predicted_type == 'Bacteria') and
-                        lowered_word not in SPECIES_EXCLUSION):  # noqa
-                    species_val = self.lmdb_session.species_txn.get(lookup_key)
-            else:
-                if lowered_word not in SPECIES_EXCLUSION:
-                    species_val = self.lmdb_session.species_txn.get(lookup_key)
+            # TODO: Bacteria because for now NLP has that instead of
+            # generic `Species`
+            if nlp_predicted_type == EntityType.Species.value or nlp_predicted_type == 'Bacteria':  # noqa
+                species_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.species_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Species.value
+                )
+            elif nlp_predicted_type is None:
+                species_val = self.lmdb_session.get_lmdb_values(
+                    txn=self.lmdb_session.species_txn,
+                    key=lookup_key,
+                    token_type=EntityType.Species.value
+                )
 
-            if species_val and token.keyword not in self.get_species_annotations_to_exclude():  # noqa
-                if token.keyword in self.matched_species:
-                    self.matched_species[token.keyword].append(token)
+            if not species_val:
+                # didn't find in LMDB so look in global inclusion
+                species_val = self.global_species_inclusion.get(lookup_key, [])
+
+            lowered_word = token.keyword.lower()
+            global_exclusion = self._get_species_annotations_to_exclude()
+
+            if species_val or lookup_key in self.local_species_inclusion:  # noqa
+                if token.keyword in global_exclusion:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<entity_lookup_for_species()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <_get_species_annotations_to_exclude()>.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                elif lowered_word in SPECIES_EXCLUSION:
+                    current_app.logger.info(
+                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
+                    current_app.logger.debug(
+                        f'<entity_lookup_for_species()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'But token "{token.keyword}" is in <{SPECIES_EXCLUSION}>.',  # noqa
+                        extra=EventLog(event_type='annotations').to_dict()
+                    )
                 else:
-                    self.matched_species[token.keyword] = [token]
-            else:
-                if token.keyword not in self.get_species_annotations_to_exclude():
-                    if (self.custom_species and
-                        lowered_word not in SPECIES_EXCLUSION and
-                        token.keyword in self.custom_species):  # noqa
-                        if token.keyword in self.matched_custom_species:
-                            self.matched_custom_species[token.keyword].append(token)
+                    # for LMDB and global inclusions, add to same dict
+                    # for local inclusions use separate
+                    #
+                    # TODO: can it be both?
+                    if lookup_key in self.local_species_inclusion:
+                        if token.keyword in self.matched_local_species_inclusion:
+                            self.matched_local_species_inclusion[token.keyword].append(token)
                         else:
-                            self.matched_custom_species[token.keyword] = [token]
+                            self.matched_local_species_inclusion[token.keyword] = [token]
+                    else:
+                        if token.keyword in self.matched_species:
+                            self.matched_species[token.keyword].tokens.append(token)
+                        else:
+                            self.matched_species[token.keyword] = LMDBMatch(
+                                entities=species_val,  # type: ignore
+                                tokens=[token]
+                            )
 
-            return species_val
+        return species_val
 
-    def _find_lmdb_match(self, token: PDFTokenPositions, check_entities: Dict[str, bool]) -> None:
-        if check_entities[EntityType.Chemical.value]:
+    def _find_lmdb_match(
+        self,
+        token: PDFTokenPositions,
+        check_entities: Dict[str, bool],
+    ) -> None:
+        if check_entities.get(EntityType.Chemical.value, False):
             self._find_chemical_match(token)
 
-        if check_entities[EntityType.Compound.value]:
+        if check_entities.get(EntityType.Compound.value, False):
             self._find_compound_match(token)
 
-        if check_entities[EntityType.Disease.value]:
+        if check_entities.get(EntityType.Disease.value, False):
             self._find_disease_match(token)
 
-        if check_entities[EntityType.Gene.value]:
+        if check_entities.get(EntityType.Gene.value, False):
             self._find_gene_match(token)
 
-        if check_entities[EntityType.Phenotype.value]:
+        if check_entities.get(EntityType.Phenotype.value, False):
             self._find_phenotype_match(token)
 
-        if check_entities[EntityType.Protein.value]:
+        if check_entities.get(EntityType.Protein.value, False):
             self._find_protein_match(token)
 
-        if check_entities[EntityType.Species.value]:
+        if check_entities.get(EntityType.Species.value, False):
             self._find_species_match(token)
 
     def _find_chemical_match(self, token: PDFTokenPositions) -> None:
@@ -499,18 +868,16 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    exist = self.validate_chemicals_lmdb(
+                    exist = self.entity_lookup_for_chemicals(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
-                    # so save the correct spelling
                     if exist is not None:
-                        self.correct_spellings[word] = correct_spelling
                         break
             else:
-                self.validate_chemicals_lmdb(
+                self.entity_lookup_for_chemicals(
                     token=token,
                 )
 
@@ -519,18 +886,16 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    exist = self.validate_compounds_lmdb(
+                    exist = self.entity_lookup_for_compounds(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
-                    # so save the correct spelling
                     if exist is not None:
-                        self.correct_spellings[word] = correct_spelling
                         break
             else:
-                self.validate_compounds_lmdb(
+                self.entity_lookup_for_compounds(
                     token=token,
                 )
 
@@ -539,18 +904,16 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    exist = self.validate_diseases_lmdb(
+                    exist = self.entity_lookup_for_diseases(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
-                    # so save the correct spelling
                     if exist is not None:
-                        self.correct_spellings[word] = correct_spelling
                         break
             else:
-                self.validate_diseases_lmdb(
+                self.entity_lookup_for_diseases(
                     token=token,
                 )
 
@@ -559,18 +922,16 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    exist = self.validate_genes_lmdb(
+                    exist = self.entity_lookup_for_genes(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
-                    # so save the correct spelling
                     if exist is not None:
-                        self.correct_spellings[word] = correct_spelling
                         break
             else:
-                self.validate_genes_lmdb(
+                self.entity_lookup_for_genes(
                     token=token,
                 )
 
@@ -585,9 +946,7 @@ class AnnotationsService:
                     )
 
                     # if any that means there was a match
-                    # so save the correct spelling
                     if exist is not None:
-                        self.correct_spellings[word] = correct_spelling
                         break
             else:
                 self.validate_phenotypes_lmdb(
@@ -599,18 +958,16 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    exist = self.validate_proteins_lmdb(
+                    exist = self.entity_lookup_for_proteins(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
-                    # so save the correct spelling
                     if exist is not None:
-                        self.correct_spellings[word] = correct_spelling
                         break
             else:
-                self.validate_proteins_lmdb(
+                self.entity_lookup_for_proteins(
                     token=token,
                 )
 
@@ -619,18 +976,16 @@ class AnnotationsService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    exist = self.validate_species_lmdb(
+                    exist = self.entity_lookup_for_species(
                         token=token,
                         synonym=correct_spelling,
                     )
 
                     # if any that means there was a match
-                    # so save the correct spelling
                     if exist is not None:
-                        self.correct_spellings[word] = correct_spelling
                         break
             else:
-                self.validate_species_lmdb(
+                self.entity_lookup_for_species(
                     token=token,
                 )
 
@@ -721,9 +1076,12 @@ class AnnotationsService:
                                 end_upper_x = upper_x
 
                             keyword += curr_page_coor_obj[pos_idx].get_text()
-            except Exception as exc:
+            except IndexError:
                 raise AnnotationError(
-                    'Unexpected error when creating annotation keyword objects', [str(exc)])
+                    'An indexing error occurred when creating annotation keyword objects.')
+            except Exception:
+                raise AnnotationError(
+                    'Unexpected error when creating annotation keyword objects')
 
         start_lower_x += cropbox[0]  # type: ignore
         end_upper_x += cropbox[0]  # type: ignore
@@ -746,9 +1104,8 @@ class AnnotationsService:
         token_type: str,
         entity: dict,
         entity_id: str,
-        entity_category: Optional[str],
+        entity_category: str,
         color: str,
-        correct_spellings: Dict[str, str],
     ) -> Annotation:
         curr_page_coor_obj = char_coord_objs_in_pdf
         cropbox = cropbox_in_pdf
@@ -763,6 +1120,8 @@ class AnnotationsService:
             cropbox=cropbox,
         )
 
+        # entity here is data structure from LMDB
+        # see services/annotations/util.py for definition
         keyword_starting_idx = char_indexes[0]
         keyword_ending_idx = char_indexes[-1]
         link_search_term = entity['synonym']
@@ -779,7 +1138,7 @@ class AnnotationsService:
 
         if token_type == EntityType.Species.value:
             organism_meta = OrganismAnnotation.OrganismMeta(
-                category=entity_category or '',
+                category=entity_category,
                 type=token_type,
                 color=color,
                 id=entity_id,
@@ -811,7 +1170,7 @@ class AnnotationsService:
             )
         elif token_type == EntityType.Gene.value:
             gene_meta = GeneAnnotation.GeneMeta(
-                category=entity_category or '',
+                category=entity_category,
                 type=token_type,
                 color=color,
                 id=entity_id,
@@ -868,12 +1227,10 @@ class AnnotationsService:
 
     def _get_annotation(
         self,
-        tokens: Dict[str, List[PDFTokenPositions]],
+        tokens: Dict[str, LMDBMatch],
         token_type: str,
         color: str,
-        transaction,
         id_str: str,
-        correct_spellings: Dict[str, str],
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
@@ -903,27 +1260,11 @@ class AnnotationsService:
         matches: List[Annotation] = []
         tokens_lowercased = set([normalize_str(s) for s in list(tokens.keys())])
 
-        for word, token_positions_list in tokens.items():
-            for token_positions in token_positions_list:
-                if word in correct_spellings:
-                    lookup_key = correct_spellings[word]
-                else:
-                    lookup_key = word
-
-                lookup_key = normalize_str(lookup_key)
-                entities = self.lmdb_session.get_lmdb_values(
-                    txn=transaction, key=lookup_key, token_type=token_type)
-
-                if token_type == EntityType.Protein.value:
-                    # for proteins we can be more strict and check for exact match
-                    # if there are exact matches we want those and ignore the others
-                    entities_to_use = [entity for entity in entities if entity['synonym'] == word]
-                    if entities_to_use:
-                        entities = entities_to_use
-
+        for word, lmdb_match in tokens.items():
+            for token_positions in lmdb_match.tokens:
                 synonym_common_names_dict: Dict[str, Set[str]] = {}
 
-                for entity in entities:
+                for entity in lmdb_match.entities:
                     entity_synonym = entity['synonym']
                     entity_common_name = entity['name']
                     if entity_synonym in synonym_common_names_dict:
@@ -931,7 +1272,7 @@ class AnnotationsService:
                     else:
                         synonym_common_names_dict[entity_synonym] = {normalize_str(entity_common_name)}  # noqa
 
-                for entity in entities:
+                for entity in lmdb_match.entities:
                     entity_synonym = entity['synonym']
                     common_names_referenced_by_synonym = synonym_common_names_dict[entity_synonym]
                     if len(common_names_referenced_by_synonym) > 1:
@@ -953,9 +1294,8 @@ class AnnotationsService:
                         token_type=token_type,
                         entity=entity,
                         entity_id=entity[id_str],
-                        entity_category=entity.get('category', None),
+                        entity_category=entity.get('category', ''),
                         color=color,
-                        correct_spellings=correct_spellings,
                     )
                     matches.append(annotation)
         return matches
@@ -980,27 +1320,28 @@ class AnnotationsService:
 
         closest_dist = inf
         curr_closest_organism = None
+
         for organism in organism_matches:
+            if self.organism_locations.get(organism, None) is None and self.organism_frequency.get(organism, None) is None:  # noqa
+                raise AnnotationError(f'Organism ID {organism} does not exist, potential key error.')  # noqa
+
             if curr_closest_organism is None:
                 curr_closest_organism = organism
 
             min_organism_dist = inf
 
             # Get the closest instance of this organism
-            if self.organism_locations.get(organism, None):
-                for organism_pos in self.organism_locations[organism]:
-                    organism_location_lo = organism_pos[0]
-                    organism_location_hi = organism_pos[1]
+            for organism_pos in self.organism_locations[organism]:
+                organism_location_lo = organism_pos[0]
+                organism_location_hi = organism_pos[1]
 
-                    if gene_location_lo > organism_location_hi:
-                        new_organism_dist = gene_location_lo - organism_location_hi
-                    else:
-                        new_organism_dist = organism_location_lo - gene_location_hi
+                if gene_location_lo > organism_location_hi:
+                    new_organism_dist = gene_location_lo - organism_location_hi
+                else:
+                    new_organism_dist = organism_location_lo - gene_location_hi
 
-                    if new_organism_dist < min_organism_dist:
-                        min_organism_dist = new_organism_dist
-            else:
-                print(f'Organism ID {organism} in organism_matches not found in: {self.organism_locations}.')  # noqa
+                if new_organism_dist < min_organism_dist:
+                    min_organism_dist = new_organism_dist
 
             # If this organism is closer than the current closest, update
             if min_organism_dist < closest_dist:
@@ -1028,7 +1369,6 @@ class AnnotationsService:
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
-        organisms_from_custom_annotations: Set[str],
     ) -> List[Annotation]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
         except that we check genes against the matched organisms found in the
@@ -1049,54 +1389,33 @@ class AnnotationsService:
 
         Returns list of matched annotations
         """
-        tokens: Dict[str, List[PDFTokenPositions]] = self.matched_genes
-        transaction = self.lmdb_session.genes_txn
-        correct_spellings: Dict[str, str] = self.correct_spellings
+        tokens: Dict[str, LMDBMatch] = self.matched_genes
 
         matches: List[Annotation] = []
 
         entity_tokenpos_pairs = []
         gene_names: Set[str] = set()
-        for word, token_positions_list in tokens.items():
-            for token_positions in token_positions_list:
-                if word in correct_spellings:
-                    lookup_key = correct_spellings[word]
-                else:
-                    lookup_key = word
+        for word, lmdb_match in tokens.items():
+            for token_positions in lmdb_match.tokens:
 
-                lookup_key = normalize_str(lookup_key)
-                entities = self.lmdb_session.get_lmdb_values(
-                    txn=transaction, key=lookup_key, token_type=EntityType.Gene.value)
-
-                # for genes we can be more strict and check for exact match
-                # if there are exact matches we want those and ignore the others
-                entities_to_use = [entity for entity in entities if entity['synonym'] == word]
-
-                if len(entities_to_use) == 0:
-                    entities_to_use = entities
-
-                for entity in entities_to_use:
-                    entity_synonym = entity['synonym']
+                for entity in lmdb_match.entities:
+                    entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
                     gene_names.add(entity_synonym)
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
-        organism_ids_from_custom_annotations = self.annotation_neo4j.get_organisms_from_tax_ids(
-            tax_ids=list(organisms_from_custom_annotations))
-
-        organism_ids_to_query = organism_ids_from_custom_annotations + list(self.organism_frequency.keys())  # noqa
-
         gene_organism_matches = \
             self.annotation_neo4j.get_gene_to_organism_match_result(
                 genes=list(gene_names),
-                matched_organism_ids=organism_ids_to_query,
+                matched_organism_ids=list(self.organism_frequency.keys()),
             )
 
         for entity, token_positions in entity_tokenpos_pairs:
-            if entity['name'] in gene_organism_matches:
+            entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
+            if entity_synonym in gene_organism_matches:
                 gene_id, organism_id = self._get_closest_gene_organism_pair(
                     gene_position=token_positions,
-                    organism_matches=gene_organism_matches[entity['name']]
+                    organism_matches=gene_organism_matches[entity_synonym]
                 )
 
                 category = self.organism_categories[organism_id]
@@ -1110,7 +1429,6 @@ class AnnotationsService:
                     entity_id=gene_id,
                     entity_category=category,
                     color=EntityColor.Gene.value,
-                    correct_spellings=correct_spellings,
                 )
                 matches.append(annotation)
         return matches
@@ -1125,9 +1443,7 @@ class AnnotationsService:
             tokens=self.matched_chemicals,
             token_type=EntityType.Chemical.value,
             color=EntityColor.Chemical.value,
-            transaction=self.lmdb_session.chemicals_txn,
             id_str=entity_id_str,
-            correct_spellings=self.correct_spellings,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
         )
@@ -1142,9 +1458,7 @@ class AnnotationsService:
             tokens=self.matched_compounds,
             token_type=EntityType.Compound.value,
             color=EntityColor.Compound.value,
-            transaction=self.lmdb_session.compounds_txn,
             id_str=entity_id_str,
-            correct_spellings=self.correct_spellings,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
         )
@@ -1159,43 +1473,44 @@ class AnnotationsService:
             tokens=self.matched_proteins,
             token_type=EntityType.Protein.value,
             color=EntityColor.Protein.value,
-            transaction=self.lmdb_session.proteins_txn,
             id_str=entity_id_str,
-            correct_spellings=self.correct_spellings,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-    def _annotate_custom_species(
+    def _annotate_local_species_inclusions(
         self,
-        entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
-        tokens = self.matched_custom_species
+        """Similar to self._get_annotation() but for creating
+        annotations of custom species.
+
+        However, does not check if a synonym is used by multiple
+        common names that all appear in the document, as assume
+        user wants these custom species annotations to be
+        annotated.
+        """
+        tokens = self.matched_local_species_inclusion
 
         custom_annotations: List[Annotation] = []
 
         for word, token_list in tokens.items():
+            entities = self.local_species_inclusion.get(normalize_str(word), None) or []
             for token_positions in token_list:
-                # only care about entity id type for these custom
-                # species annotations
-                # as won't be keeping them as they're only used
-                # to help with gene organism matching
-                entity = {'synonym': word, 'id_type': DatabaseType.Ncbi.value}
-                annotation = self._create_annotation_object(
-                    char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                    cropbox_in_pdf=cropbox_in_pdf,
-                    token_positions=token_positions,
-                    token_type=EntityType.Species.value,
-                    entity=entity,
-                    entity_id=self.custom_species[word],
-                    entity_category=entity.get('category', None),
-                    color=EntityColor.Species.value,
-                    correct_spellings=self.correct_spellings,
-                )
+                for entity in entities:
+                    annotation = self._create_annotation_object(
+                        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                        cropbox_in_pdf=cropbox_in_pdf,
+                        token_positions=token_positions,
+                        token_type=EntityType.Species.value,
+                        entity=entity,
+                        entity_id=entity[EntityIdStr.Species.value],
+                        entity_category=entity.get('category', ''),
+                        color=EntityColor.Species.value,
+                    )
 
-                custom_annotations.append(annotation)
+                    custom_annotations.append(annotation)
         return custom_annotations
 
     def _annotate_species(
@@ -1209,15 +1524,12 @@ class AnnotationsService:
             tokens=self.matched_species,
             token_type=EntityType.Species.value,
             color=EntityColor.Species.value,
-            transaction=self.lmdb_session.species_txn,
             id_str=entity_id_str,
-            correct_spellings=self.correct_spellings,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-        custom_species_annotations = self._annotate_custom_species(
-            entity_id_str=entity_id_str,
+        species_inclusions = self._annotate_local_species_inclusions(
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
         )
@@ -1246,16 +1558,20 @@ class AnnotationsService:
         # of its occurrences annotated as a custom annotation
         filtered_custom_species_annotations: List[Annotation] = []
         for custom in organisms_from_custom_annotations:
-            for custom_anno in custom_species_annotations:
-                if len(custom['rects']) == len(custom_anno.rects):
-                    # check if center point for each rect in custom_anno.rects
-                    # is in the corresponding rectangle from custom annotations
-                    valid = all(list(map(has_center_point, custom['rects'], custom_anno.rects)))
+            for custom_anno in species_inclusions:
+                if custom.get('rects', None):
+                    if len(custom['rects']) == len(custom_anno.rects):
+                        # check if center point for each rect in custom_anno.rects
+                        # is in the corresponding rectangle from custom annotations
+                        valid = all(list(map(has_center_point, custom['rects'], custom_anno.rects)))
 
-                    # if center point is in custom annotation rectangle
-                    # then add it to list
-                    if valid:
-                        filtered_custom_species_annotations.append(custom_anno)
+                        # if center point is in custom annotation rectangle
+                        # then add it to list
+                        if valid:
+                            filtered_custom_species_annotations.append(custom_anno)
+                else:
+                    raise AnnotationError(
+                        'Manual annotations unexpectedly missing attribute "rects".')
 
         self.organism_frequency, self.organism_locations, self.organism_categories = \
             self._get_entity_frequency_location_and_category(
@@ -1275,9 +1591,7 @@ class AnnotationsService:
             tokens=self.matched_diseases,
             token_type=EntityType.Disease.value,
             color=EntityColor.Disease.value,
-            transaction=self.lmdb_session.diseases_txn,
             id_str=entity_id_str,
-            correct_spellings=self.correct_spellings,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
         )
@@ -1292,9 +1606,7 @@ class AnnotationsService:
             tokens=self.matched_phenotypes,
             token_type=EntityType.Phenotype.value,
             color=EntityColor.Phenotype.value,
-            transaction=self.lmdb_session.phenotypes_txn,
             id_str=entity_id_str,
-            correct_spellings=self.correct_spellings,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
         )
@@ -1318,15 +1630,7 @@ class AnnotationsService:
         }
 
         annotate_entities = funcs[annotation_type]
-        if annotation_type == EntityType.Gene.value:
-            return annotate_entities(
-                entity_id_str=entity_id_str,
-                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                cropbox_in_pdf=cropbox_in_pdf,
-                organisms_from_custom_annotations={
-                    organism['meta']['id'] for organism in organisms_from_custom_annotations},
-            )  # type: ignore
-        elif annotation_type == EntityType.Species.value:
+        if annotation_type == EntityType.Species.value:
             return annotate_entities(
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
@@ -1456,34 +1760,28 @@ class AnnotationsService:
                         fixed_annotations.append(annotation)
             elif isinstance(annotation, GeneAnnotation):
                 text_in_document = text_in_document[0]  # type: ignore
-                # if the matched keyword from LMDB is all caps
-                # check if the text from document is also all caps
-                # e.g `impact` matching to `IMPACT`
-                if annotation.keyword.isupper():
-                    if text_in_document == annotation.keyword:
-                        fixed_annotations.append(annotation)
-                # len(text_in_document) == LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH
-                # does this only apply to genes with specific length?
-                elif isinstance(annotation.meta, GeneAnnotation.GeneMeta) and \
-                        annotation.meta.category == OrganismCategory.Bacteria.value:
-                    # bacteria genes are in the from of cysB, algA, deaD, etc
-                    # there are also bacterial genes that do not end
-                    # with an uppercase, e.g apt - these will not be annotated
-                    if text_in_document[0].islower() and text_in_document[-1].isupper():  # noqa
-                        fixed_annotations.append(annotation)
-                else:
+                if text_in_document == annotation.keyword:
                     fixed_annotations.append(annotation)
             else:
                 fixed_annotations.append(annotation)
 
         return fixed_annotations
 
-    def _create_annotations(
+    def _process_inclusions_and_lmdb(
         self,
         tokens: List[PDFTokenPositions],
+        check_entities_in_lmdb: Dict[str, bool],
+        global_inclusions: List[Tuple[str, str, Any, Any]],
+    ):
+        deque(starmap(self._set_global_inclusions, global_inclusions), maxlen=0)
+
+        # find matches in lmdb
+        deque(map(partial(self._find_lmdb_match, check_entities=check_entities_in_lmdb), tokens), maxlen=0)  # noqa
+
+    def _create_annotations(
+        self,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
-        check_entities_in_lmdb: Dict[str, bool],
         types_to_annotate: List[Tuple[str, str]],
         organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
@@ -1505,10 +1803,6 @@ class AnnotationsService:
                     ...
                 ]
         """
-        # find matches in lmdb
-        from functools import partial
-        deque(map(partial(self._find_lmdb_match, check_entities=check_entities_in_lmdb), tokens), maxlen=0)  # noqa
-
         unified_annotations: List[Annotation] = []
 
         for entity_type, entity_id_str in types_to_annotate:
@@ -1529,13 +1823,14 @@ class AnnotationsService:
         custom_annotations: List[dict],
     ) -> List[Annotation]:
         entity_type_and_id_pairs = [
+            # TODO: move this to a getter function since it's used multiple times
             # Order is IMPORTANT here, Species should always be annotated before Genes
-            (EntityType.Species.value, EntityIdStr.Species.value),
             (EntityType.Chemical.value, EntityIdStr.Chemical.value),
             (EntityType.Compound.value, EntityIdStr.Compound.value),
             (EntityType.Protein.value, EntityIdStr.Protein.value),
             (EntityType.Disease.value, EntityIdStr.Disease.value),
             (EntityType.Phenotype.value, EntityIdStr.Phenotype.value),
+            (EntityType.Species.value, EntityIdStr.Species.value),
             (EntityType.Gene.value, EntityIdStr.Gene.value),
         ]
 
@@ -1550,16 +1845,16 @@ class AnnotationsService:
             EntityType.Species.value: True,
         }
 
-        self.custom_species = {
-            custom['meta']['allText']: custom['meta']['id'] for custom in custom_annotations
-            if custom['meta']['type'] == EntityType.Species.value
-        }
+        self._set_local_species_inclusion(custom_annotations)
+        self._process_inclusions_and_lmdb(
+            tokens=tokens.token_positions,
+            check_entities_in_lmdb=entities_to_check,
+            global_inclusions=self._get_global_inclusion_pairs()
+        )
 
         annotations = self._create_annotations(
-            tokens=tokens.token_positions,
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
-            check_entities_in_lmdb=entities_to_check,
             types_to_annotate=entity_type_and_id_pairs,
             organisms_from_custom_annotations=custom_annotations,
         )
@@ -1643,7 +1938,10 @@ class AnnotationsService:
                 raise AnnotationError(
                     'An unexpected error occurred with the NLP service.')
 
-        print(f'NLP Response Output: {json.dumps(cumm_nlp_resp)}')
+        current_app.logger.info(
+            f'NLP Response Output: {json.dumps(cumm_nlp_resp)}',
+            extra=EventLog(event_type='annotations').to_dict()
+        )
 
         if req:
             req.close()
@@ -1655,26 +1953,18 @@ class AnnotationsService:
         ]
 
         # TODO: hard coding for now until UI is done
-        entities_to_check = {
-            EntityType.Chemical.value: False,
-            EntityType.Compound.value: False,
-            EntityType.Disease.value: False,
-            EntityType.Gene.value: False,
-            EntityType.Phenotype.value: False,
-            EntityType.Protein.value: False,
-            EntityType.Species.value: True,
-        }
+        entities_to_check = {EntityType.Species.value: True}
 
-        self.custom_species = {
-            custom['meta']['allText']: custom['meta']['id'] for custom in custom_annotations
-            if custom['meta']['type'] == EntityType.Species.value
-        }
+        self._set_local_species_inclusion(custom_annotations)
+        self._process_inclusions_and_lmdb(
+            tokens=tokens.token_positions,
+            check_entities_in_lmdb=entities_to_check,
+            global_inclusions=self._get_global_inclusion_pairs()
+        )
 
         species_annotations = self._create_annotations(
-            tokens=tokens.token_positions,
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
-            check_entities_in_lmdb=entities_to_check,
             types_to_annotate=entity_type_and_id_pairs,
             organisms_from_custom_annotations=custom_annotations,
         )
@@ -1697,14 +1987,17 @@ class AnnotationsService:
             EntityType.Gene.value: True,
             EntityType.Phenotype.value: True,
             EntityType.Protein.value: True,
-            EntityType.Species.value: False,
         }
 
-        nlp_annotations = self._create_annotations(
+        self._process_inclusions_and_lmdb(
             tokens=nlp_tokens,
+            check_entities_in_lmdb=entities_to_check,
+            global_inclusions=self._get_global_inclusion_pairs()
+        )
+
+        nlp_annotations = self._create_annotations(
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
-            check_entities_in_lmdb=entities_to_check,
             types_to_annotate=entity_type_and_id_pairs,
             organisms_from_custom_annotations=custom_annotations,
         )
@@ -1731,7 +2024,10 @@ class AnnotationsService:
 
         not_matched = predicted_set - matched
 
-        print(f'NLP TOKENS NOT MATCHED TO LMDB {not_matched}')
+        current_app.logger.info(
+            f'NLP TOKENS NOT MATCHED TO LMDB {not_matched}',
+            extra=EventLog(event_type='annotations').to_dict()
+        )
         return self._clean_annotations(annotations=unified_annotations)
 
     def _clean_annotations(

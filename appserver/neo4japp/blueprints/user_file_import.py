@@ -21,24 +21,24 @@ bp = Blueprint('user-file-import-api', __name__, url_prefix='/user-file-import')
 @bp.route('/get-db-labels', methods=['GET'])
 @jsonify_with_class()
 def get_db_labels():
-    neo4j = get_kg_service()
-    labels = neo4j.get_db_labels()
+    kg = get_kg_service()
+    labels = kg.get_db_labels()
     return SuccessResponse(result=labels, status_code=200)
 
 
 @bp.route('/get-db-relationship-types', methods=['GET'])
 @jsonify_with_class()
 def get_db_relationship_types():
-    neo4j = get_kg_service()
-    relationship_types = neo4j.get_db_relationship_types()
+    kg = get_kg_service()
+    relationship_types = kg.get_db_relationship_types()
     return SuccessResponse(result=relationship_types, status_code=200)
 
 
 @bp.route('/get-node-properties', methods=['GET'])
 @jsonify_with_class(NodePropertiesRequest)
 def get_node_properties(req: NodePropertiesRequest):
-    neo4j = get_kg_service()
-    props = neo4j.get_node_properties(req.node_label)
+    kg = get_kg_service()
+    props = kg.get_node_properties(req.node_label)
     return SuccessResponse(result=props, status_code=200)
 
 

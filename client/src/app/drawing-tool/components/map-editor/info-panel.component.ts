@@ -8,6 +8,7 @@ import { WorkspaceManager } from '../../../shared/workspace-manager';
 import { GraphAction } from '../../../graph-viewer/actions/actions';
 import { MessageDialog } from '../../../shared/services/message-dialog.service';
 import { MessageType } from '../../../interfaces/message-dialog.interface';
+import { FileViewComponent } from '../../../file-browser/components/file-view.component';
 
 @Component({
   selector: 'app-info-panel',
@@ -54,10 +55,17 @@ export class InfoPanelComponent {
       this.workspaceManager.navigateByUrl(source, {
         newTab: true,
         sideBySide: true,
-        // Only replace tab if it's a file
-        ...(m[1] === 'files' ? {
-          replaceTabIfMatch: source.replace(/#.*$/g, ''),
-        } : {}),
+        matchExistingTab: source.replace(/#.*$/g, ''),
+        shouldReplaceTab: component => {
+          if (m[1] === 'files') {
+            const fileViewComponent = component as FileViewComponent;
+            const fragmentMatch = source.match(/^[^#]+#(.+)$/);
+            if (fragmentMatch) {
+              fileViewComponent.scrollInPdf(fileViewComponent.parseLocationFromUrl(fragmentMatch[1]));
+            }
+          }
+          return false;
+        },
       });
       return;
     }
@@ -76,7 +84,7 @@ export class InfoPanelComponent {
       this.workspaceManager.navigateByUrl(url, {
         newTab: true,
         sideBySide: true,
-        replaceTabIfMatch: `^/projects/beta-project/files/${fileId}`,
+        matchExistingTab: `^/projects/beta-project/files/${fileId}`,
       });
       return;
     }
@@ -86,7 +94,7 @@ export class InfoPanelComponent {
       this.workspaceManager.navigateByUrl(`/dt/map/${m[1]}`, {
         newTab: true,
         sideBySide: true,
-        replaceTabIfMatch: `/maps/${m[1]}`,
+        matchExistingTab: `/maps/${m[1]}`,
       });
       return;
     }
