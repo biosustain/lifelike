@@ -99,11 +99,11 @@ def test_can_set_user_role(session, role):
 
     session.execute(
         projects_collaborator_role.insert(),
-        [dict(
-            appuser_id=test_user.id,
-            app_role_id=app_role.id,
-            projects_id=new_projects.id,
-        )]
+        [{
+            'appuser_id': test_user.id,
+            'app_role_id': app_role.id,
+            'projects_id': new_projects.id,
+        }]
     )
     session.flush()
 

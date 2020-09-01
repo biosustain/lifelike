@@ -117,11 +117,11 @@ def fix_project(test_user, session):
 
     session.execute(
         projects_collaborator_role.insert(),
-        [dict(
-            appuser_id=test_user.id,
-            app_role_id=role.id,
-            projects_id=project.id,
-        )]
+        [{
+            'appuser_id': test_user.id,
+            'app_role_id': role.id,
+            'projects_id': project.id,
+        }]
     )
     session.flush()
     return project
@@ -201,7 +201,7 @@ def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
 
 def login_as_user(self, email, password):
     """ Returns the authenticated JWT tokens """
-    credentials = dict(email=email, password=password)
+    credentials = {'email': email, 'password': password}
     login_resp = self.post(
         '/auth/login',
         data=json.dumps(credentials),
