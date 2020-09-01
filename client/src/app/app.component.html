@@ -10,13 +10,13 @@
         <i class="far fa-window-restore"></i>
       </a>
       <div class="button-divider"></div>
-      <a routerLink="/projects" placement="right" ngbTooltip="Project Browser">
+      <a routerLink="/projects" placement="right" ngbTooltip="File Browser">
         <i class="fa fa-folder"></i>
       </a>
       <a routerLink="/kg-import" placement="right" ngbTooltip="Knowledge Graph Import">
         <i class="fa fa-cloud-upload"></i>
       </a>
-      <a routerLink="/kg-visualizer" placement="right" ngbTooltip="Knowledge Graph Browser">
+      <a routerLink="/kg-visualizer" placement="right" ngbTooltip="Visualizer">
         <i class="fa fa-search"></i>
       </a>
       <a routerLink="kg-statistics" placement="right" ngbTooltip="Knowledge Graph Statistics">
@@ -29,6 +29,10 @@
     <div class="d-flex flex-column mt-auto">
       <a href="https://main.biosustain.dtu.dk" target="_blank" placement="right" ngbTooltip="Main Menu">
         <i class="fa fa-grip-vertical"></i>
+      </a>
+
+      <a [href]="helpDeskUrl" target="_blank" placement="right" triggers="hover" ngbTooltip="Feedback and Questions">
+        <i class="fa fa-comment"></i>
       </a>
 
       <ng-container *ngIf="(loggedIn$ | async); else loggedOut">

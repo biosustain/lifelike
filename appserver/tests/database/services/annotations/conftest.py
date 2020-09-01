@@ -4,9 +4,13 @@ import pytest
 
 from os import path, remove, walk
 
+from neo4japp.models import FileContent, GlobalList
+
 from neo4japp.services.annotations import AnnotationsService, AnnotationsNeo4jService, LMDBDao
 from neo4japp.services.annotations.constants import (
     DatabaseType,
+    EntityType,
+    ManualAnnotationType,
     OrganismCategory,
     CHEMICALS_CHEBI_LMDB,
     COMPOUNDS_BIOCYC_LMDB,
@@ -603,19 +607,7 @@ def mock_get_gene_to_organism_match_result(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'serpina1': {'9606': '5265'}}
-
-    monkeypatch.setattr(
-        AnnotationsNeo4jService,
-        'get_gene_to_organism_match_result',
-        get_match_result,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_get_gene_to_organism_serpina1_match_result_all_caps(monkeypatch):
-    def get_match_result(*args, **kwargs):
-        return {'SERPINA1': {'9606': '5265'}}
+        return {'serpina1': {'9606': '5265'}, 'SERPINA1': {'9606': '5265'}}
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
@@ -685,7 +677,7 @@ def mock_global_compound_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_compound_annotations_to_exclude',
+        '_get_compound_annotations_to_exclude',
         get_exclusions,
     )
 
@@ -697,7 +689,7 @@ def mock_global_chemical_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_chemical_annotations_to_exclude',
+        '_get_chemical_annotations_to_exclude',
         get_exclusions,
     )
 
@@ -709,7 +701,7 @@ def mock_global_disease_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_disease_annotations_to_exclude',
+        '_get_disease_annotations_to_exclude',
         get_exclusions,
     )
 
@@ -721,7 +713,7 @@ def mock_global_gene_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_gene_annotations_to_exclude',
+        '_get_gene_annotations_to_exclude',
         get_exclusions,
     )
 
@@ -733,7 +725,7 @@ def mock_global_phenotype_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_phenotype_annotations_to_exclude',
+        '_get_phenotype_annotations_to_exclude',
         get_exclusions,
     )
 
@@ -745,7 +737,7 @@ def mock_global_protein_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_protein_annotations_to_exclude',
+        '_get_protein_annotations_to_exclude',
         get_exclusions,
     )
 
@@ -757,9 +749,203 @@ def mock_global_species_exclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsService,
-        'get_species_annotations_to_exclude',
+        '_get_species_annotations_to_exclude',
         get_exclusions,
     )
+
+
+@pytest.fixture(scope='function')
+def mock_get_gene_ace2_for_global_gene_inclusion(monkeypatch):
+    def get_exclusions(*args, **kwargs):
+        return {'ACE2'}
+
+    monkeypatch.setattr(
+        AnnotationsNeo4jService,
+        'get_genes_from_gene_ids',
+        get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_global_chemical_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'CHEBI:Fake',
+            'type': EntityType.Chemical.value,
+            'allText': 'fake-chemical-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_compound_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'BIOC:Fake',
+            'type': EntityType.Compound.value,
+            'allText': 'compound-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_gene_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': '59272',
+            'type': EntityType.Gene.value,
+            'allText': 'gene-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_disease_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'Ncbi:Fake',
+            'type': EntityType.Disease.value,
+            'allText': 'disease-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_phenotype_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'Ncbi:Fake',
+            'type': EntityType.Phenotype.value,
+            'allText': 'phenotype-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_protein_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'Ncbi:Fake',
+            'type': EntityType.Protein.value,
+            'allText': 'protein-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_species_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'Ncbi:Fake',
+            'type': EntityType.Species.value,
+            'allText': 'species-(12345)'
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.Inclusion.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
 
 
 @pytest.fixture(scope='function')

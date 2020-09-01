@@ -12,6 +12,9 @@ export interface DirectoryObject {
   type: 'dir' | 'file' | 'map';
   name: string;
   description?: string;
+  annotationDate?: string;
+  creationDate?: string;
+  modificationDate?: string;
   creator?: {
     id: number,
     name: string;

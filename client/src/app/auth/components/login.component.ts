@@ -1,3 +1,4 @@
+import { Platform } from '@angular/cdk/platform';
 import { Component } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 
@@ -18,10 +19,14 @@ export class LoginComponent {
     password: new FormControl('', [Validators.required]),
   });
 
+  unsupportedBrowser: boolean;
+
   constructor(
     private store: Store<State>,
     private readonly messageDialog: MessageDialog,
+    private readonly platform: Platform,
   ) {
+    this.unsupportedBrowser = this.platform.SAFARI; // Add additional browsers here as necessary
   }
 
   submit() {
@@ -34,6 +39,7 @@ export class LoginComponent {
 
       this.form.get('password').reset('');
     } else {
+      this.form.markAsDirty();
       this.messageDialog.display({
         title: 'Invalid Input',
         message: 'There are some errors with your input.',
