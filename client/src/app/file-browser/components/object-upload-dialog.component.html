@@ -43,11 +43,12 @@
         <div *ngFor="let method of annotationMethods">
           <div class="custom-control custom-checkbox">
             <input type="checkbox" class="custom-control-input"
-                   id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
-                   (change)="onAnnotationMethodPick(method, $event.target.checked)"
-                   [checked]="form.get('annotationMethod').value === method">
+                  id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
+                  (change)="onAnnotationMethodPick(method, $event.target.checked)"
+                  [checked]="form.get('annotationMethod').value === method"
+                  [disabled]="method === 'NLP'">
             <label class="custom-control-label d-flex align-items-center"
-                   for="annotation-type-{{method.replace(' ', '-') | lowercase}}">
+                  for="annotation-type-{{method.replace(' ', '-') | lowercase}}">
               {{ method }}
             </label>
           </div>
