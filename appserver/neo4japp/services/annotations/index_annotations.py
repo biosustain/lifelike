@@ -109,7 +109,7 @@ def seed_exclusions():
     app = create_app('Functional Test Flask App', config='config.Testing')
     with app.app_context():
         exclusions = db.session.query(
-            GlobalList.annotation['meta']['allText']
+            GlobalList.annotation['text']
         ).filter(
             GlobalList.type == ManualAnnotationType.Exclusion.value
         ).all()
