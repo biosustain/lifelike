@@ -89,13 +89,13 @@ def data_upgrades():
             if existing_hyperlink == '':
                 node_data['hyperlinks'] = []
             else:
-                node_data['hyperlinks'] = [existing_hyperlink]
+                node_data['hyperlinks'] = [dict(domain='', url=existing_hyperlink)]
         except KeyError:
             # Captures an edge case where we have these type of hyperlinks
             # hyperlinks: [{"domain": "", "url": ""}]
             existing_hyperlinks = node_data.get('hyperlinks')
             if existing_hyperlinks and type(existing_hyperlinks) is list:
-                links = [l.get('url') for l in existing_hyperlinks]
+                links = [dict(domain='', url=l.get('url')) for l in existing_hyperlinks]
                 node_data['hyperlinks'] = links
             else:
                 node_data['hyperlinks'] = []
@@ -106,7 +106,7 @@ def data_upgrades():
             if existing_src == '':
                 node_data['sources'] = []
             else:
-                node_data['sources'] = [existing_src]
+                node_data['sources'] = [dict(type='', domain='', url=existing_src)]
         except KeyError:
             # No sources key, make one
             node_data['sources'] = []
@@ -117,9 +117,13 @@ def data_upgrades():
         (1) Add empty hyperlinks array to data structure
         (2) Add empty sources array to data structure
         """
-        edge_data = e['data']
-        edge_data['hyperlinks'] = []
-        edge_data['sources'] = []
+        if 'data' in e:
+            edge_data = e['data']
+            edge_data['hyperlinks'] = []
+            edge_data['sources'] = []
+        else:
+            # If no data attribute, add one
+            e['data'] = dict(hyperlinks=[], sources=[])
         return e
 
     for proj_id, graph in projs:
