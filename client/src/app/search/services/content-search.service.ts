@@ -7,6 +7,8 @@ import { Observable } from 'rxjs';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { AuthenticationService } from '../../auth/services/authentication.service';
 import { HttpClient } from '@angular/common/http';
+import {map} from 'rxjs/operators';
+import {PDFResult} from '../../interfaces';
 
 @Injectable()
 export class ContentSearchService extends AbstractService {
@@ -30,6 +32,19 @@ export class ContentSearchService extends AbstractService {
         } as Record<keyof ContentSearchOptions, string>,
       },
     );
+  }
+
+  snippetSearch(query: string, offset: number = 0, limit: number = 20) {
+    const options = {
+      headers: this.getAuthHeader(),
+    };
+    return this.http.post<{ result: PDFResult }>(
+      `${this.SEARCH_BASE_URL}/pdf-search`, {query, offset, limit}, options
+    ).pipe(map(resp => resp.result));
+  }
+
+  private getAuthHeader() {
+    return {Authorization: `Bearer ${this.auth.getAccessToken()}`};
   }
 
 }

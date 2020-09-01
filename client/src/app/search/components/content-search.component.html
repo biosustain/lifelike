@@ -65,14 +65,15 @@
             </div>
           </ng-container>
 
-          <ng-container *ngIf="status.resultsShown">
-            <ng-container *ngIf="results.length; else noResults">
+          <ng-container *ngIf="status.resultsShown || (fileResults.total > 0 && snippetFilter)">
+            <ng-container *ngIf="results.length || (fileResults.total > 0 && snippetFilter); else noResults">
               <div class="module-body text-muted">
                 <div class="mb-3">
                   <app-results-summary
                       [page]="params.page"
                       [pageSize]="params.limit"
-                      [collectionSize]="collectionSize"></app-results-summary>
+                      [collectionSize]="!(fileResults.total > 0 && snippetFilter) ? collectionSize
+                      : collectionSize + fileResults.total"></app-results-summary>
                 </div>
 
                 <div class="search-results search-results-selectable">
@@ -92,7 +93,13 @@
                     </div>
                   </div>
                 </div>
-
+                <ng-container>
+                  <div class="search-results" *ngIf="snippetFilter">
+                    <app-file-records
+                        [results]="fileResults">
+                    </app-file-records>
+                  </div>
+                </ng-container>
                 <div class="mt-4">
                   <ngb-pagination
                       [page]="params.page"
