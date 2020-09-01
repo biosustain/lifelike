@@ -1,41 +1,24 @@
 import base64
 import itertools
-import json
 import logging
-import os
 
-from elasticsearch import Elasticsearch
 from elasticsearch.helpers import parallel_bulk
 from sqlalchemy.orm import joinedload
 
 from neo4japp.database import db
 from neo4japp.models import Files, Directory
+from neo4japp.services.indexing.common import ElasticIndex, elastic_client
 
 FRAGMENT_SIZE = 2147483647
-PDF_MAPPING = '/home/n4j/neo4japp/services/indexing/mappings/pdf_snippets.json'
-ATTACHMENT_PIPELINE = '/home/n4j/neo4japp/services/indexing/pipelines/attachments_pipeline.json'
-ATTACHMENT_PIPELINE_NAME = 'attachment'
 
 logger = logging.getLogger(__name__)
 
-elastic_client = Elasticsearch(timeout=180, hosts=[os.environ.get('ELASTICSEARCH_HOSTS')])
-
-
-def create_ingest_pipeline():
-    with open(ATTACHMENT_PIPELINE) as f:
-        pipeline_definition = f.read()
-    pipeline_definition_json = json.loads(pipeline_definition)
-    elastic_client.ingest.put_pipeline(id='attachment', body=pipeline_definition_json)
-    print('Ingest Pipeline created.')
-
-
-def create_index_and_mappings():
-    if not elastic_client.indices.exists('pdf'):
-        with open(PDF_MAPPING) as f:
-            index_definition = f.read()
-        index_definition_json = json.loads(index_definition)
-        elastic_client.indices.create(index='pdf', body=index_definition_json)
-        print('Index created')
+pdf_index = ElasticIndex(
+    index_id='pdf',
+    index_definition_file='/home/n4j/neo4japp/services/indexing/mappings/pdf_snippets.json',
+    pipeline_id='attachment',
+    pipeline_definition_file='/home/n4j/neo4japp/services/indexing/pipelines/attachments_pipeline.json'
+)
 
 
 def populate_index(pk: int = None, batch_size=100):
@@ -60,7 +43,7 @@ def populate_index(pk: int = None, batch_size=100):
         for file in batch:  # type: Files
             documents.append({
                 '_index': 'pdf',
-                'pipeline': ATTACHMENT_PIPELINE_NAME,
+                'pipeline': pdf_index.pipeline_id,
                 '_id': file.file_id,
                 '_source': {
                     'id': file.file_id,
@@ -86,13 +69,9 @@ def populate_single_index(fid: int):
     populate_index(fid)
 
 
-def populate_all_indexes():
-    populate_index(None)
-
-
 def seed_elasticsearch():
     """ Seeds elasticsearch with existing file metadata """
-    create_ingest_pipeline()
-    create_index_and_mappings()
-    populate_all_indexes()
-    elastic_client.indices.refresh('pdf')
+    pdf_index.create_or_update_pipeline()
+    pdf_index.create_or_update_index()
+    populate_index()
+    pdf_index.refresh()
