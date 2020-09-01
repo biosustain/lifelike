@@ -1,14 +1,14 @@
 import { OperatingSystems } from 'app/interfaces/shared.interface';
 
 export function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
+  const letters = '0123456789ABCDEF';
+  let color = '#';
 
-    [...Array(6).keys()].forEach(
-        _ => color += letters[Math.floor(Math.random() * 16)]
-    );
+  [...Array(6).keys()].forEach(
+    _ => color += letters[Math.floor(Math.random() * 16)],
+  );
 
-    return color;
+  return color;
 }
 
 /**
@@ -34,17 +34,17 @@ export function stringToHex(s: string) {
  * @param hex hex code to turn into rgba value
  */
 export function hexToRGBA(hex: string, opacity: number) {
-    let c;
-    if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
-        c = hex.substring(1).split('');
-        if (c.length === 3) {
-            c = [c[0], c[0], c[1], c[1], c[2], c[2]];
-        }
-        c = '0x' + c.join('');
-        /* tslint:disable:no-bitwise*/
-        return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + `,${opacity})`;
+  let c;
+  if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+    c = hex.substring(1).split('');
+    if (c.length === 3) {
+      c = [c[0], c[0], c[1], c[1], c[2], c[2]];
     }
-    throw new Error('Bad Hex');
+    c = '0x' + c.join('');
+    /* tslint:disable:no-bitwise*/
+    return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + `,${opacity})`;
+  }
+  throw new Error('Bad Hex');
 }
 
 /**
@@ -54,7 +54,7 @@ export function uuidv4(): string {
   // @ts-ignore
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
     /* tslint:disable:no-bitwise*/
-    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16),
   );
 }
 
@@ -95,18 +95,10 @@ export function getClientOS() {
 export function keyCodeRepresentsCopyEvent(event: any) {
   const clientOS = getClientOS();
   switch (clientOS) {
-    case OperatingSystems.MAC: {
-      if (event.code === 'KeyC' && event.metaKey === true) {
-        return true;
-      }
-      return false;
-    }
+    case OperatingSystems.MAC:
     case OperatingSystems.LINUX:
     case OperatingSystems.WINDOWS: {
-      if (event.code === 'KeyC' && event.ctrlKey === true) {
-        return true;
-      }
-      return false;
+      return event.code === 'KeyC' && event.ctrlKey === true;
     }
     default: {
       return false;
@@ -114,7 +106,15 @@ export function keyCodeRepresentsCopyEvent(event: any) {
   }
 }
 
-export function isCtrlOrMetaPressed(event: KeyboardEvent) {
+export function isAltOrOptionPressed(event: KeyboardEvent | MouseEvent) {
+  return event.altKey;
+}
+
+export function isShiftPressed(event: KeyboardEvent | MouseEvent) {
+  return event.shiftKey;
+}
+
+export function isCtrlOrMetaPressed(event: KeyboardEvent | MouseEvent) {
   const os = getClientOS();
   switch (os) {
     case OperatingSystems.MAC:

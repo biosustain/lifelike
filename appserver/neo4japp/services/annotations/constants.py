@@ -16,7 +16,6 @@ SPECIES_NCBI_LMDB = 'species_ncbi'
 # NLP endpoint
 NLP_ENDPOINT = 'http://nlpapi:5001/infer/v1'
 
-LOWERCASE_FIRST_LETTER_UPPERCASE_LAST_LETTER_GENE_LENGTH = 4
 PDF_NEW_LINE_THRESHOLD = .30
 PDF_CHARACTER_SPACING_THRESHOLD = .325
 COMMON_TWO_LETTER_WORDS = {
@@ -141,10 +140,15 @@ class AnnotationMethod(Enum):
     Rules = 'Rules Based'
 
 
+class ManualAnnotationType(Enum):
+    Inclusion = 'inclusion'
+    Exclusion = 'exclusion'
+
+
 # these links are used in annotations and custom annotations
 # first are search links
 # then entity hyperlinks
-NCBI_LINK = 'https://www.ncbi.nlm.nih.gov/gene/?query='
+NCBI_LINK = 'https://www.ncbi.nlm.nih.gov/gene/?term='
 UNIPROT_LINK = 'https://www.uniprot.org/uniprot/?sort=score&query='
 WIKIPEDIA_LINK = 'https://www.google.com/search?q=site:+wikipedia.org+'
 GOOGLE_LINK = 'https://www.google.com/search?q='

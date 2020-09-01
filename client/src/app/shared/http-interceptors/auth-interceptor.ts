@@ -18,8 +18,10 @@ import { ApiHttpError } from 'app/interfaces';
 import { AuthActions } from 'app/auth/store';
 import { SnackbarActions } from 'app/shared/store';
 import {
-    JWT_REFRESH_TOKEN_EXPIRED,
-    JWT_REFRESH_TOKEN_INVALID,
+  JWT_AUTH_TOKEN_EXPIRED,
+  JWT_AUTH_TOKEN_INVALID,
+  JWT_REFRESH_TOKEN_EXPIRED,
+  JWT_REFRESH_TOKEN_INVALID,
 } from 'app/shared/constants';
 
 
@@ -43,12 +45,13 @@ export class AuthenticationInterceptor implements HttpInterceptor {
                 const statusCode = res.status;
                 const error: ApiHttpError = res.error.apiHttpError;
                 if (statusCode === 401) {
-                    if (error.message === JWT_REFRESH_TOKEN_EXPIRED || error.message === JWT_REFRESH_TOKEN_INVALID) {
+                    if (error.message === JWT_REFRESH_TOKEN_EXPIRED || error.message === JWT_REFRESH_TOKEN_INVALID ||
+                        error.message === JWT_AUTH_TOKEN_INVALID) {
                         // Clear any previous login state which forces users to log out
                         // and log in again if token has been expired or invalid
                         this.store.dispatch(AuthActions.loginReset());
                         this.store.dispatch(SnackbarActions.displaySnackbar({payload: {
-                            message: 'Session expired. Please login again',
+                            message: 'Session expired. Please login again.',
                             action: 'Dismiss',
                             config: { duration: 10000 },
                         }}));

@@ -1,28 +1,49 @@
 import * as d3 from 'd3';
 
-import { GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { Arrowhead } from '../../../utils/canvas/line-heads/arrow';
 import { EdgeCreation } from '../../../actions/edges';
-import { isCtrlOrMetaPressed } from '../../../../shared/utils';
+
+const HELPER_BEHAVIOR_KEY = '_interactive-edge-creation/helper';
 
 export class InteractiveEdgeCreation extends AbstractCanvasBehavior {
+  private readonly DISTANCE_MOVE_THRESHOLD = 5;
+  private dragFrom: { x: number, y: number };
+
   constructor(private readonly graphView: CanvasGraphView) {
     super();
   }
 
-  doubleClick(event: MouseEvent): BehaviorResult {
-    const subject = this.graphView.getEntityAtMouse();
-    if (subject && subject.type === GraphEntityType.Node) {
-      const node = subject.entity as UniversalGraphNode;
-      this.graphView.behaviors.add('interactive-edge', new ActiveEdgeCreation(this.graphView, node), 10);
-    }
+  dragStart(event: MouseEvent): BehaviorResult {
+    const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
+    this.dragFrom = {x: mouseX, y: mouseY};
     return BehaviorResult.Continue;
+  }
+
+  drag(event: MouseEvent): BehaviorResult {
+    const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
+    const subject: GraphEntity | undefined = d3.event.subject;
+
+    const mouseDistanceMoved = Math.sqrt(
+      Math.pow(this.dragFrom.x - mouseX, 2) + Math.pow(this.dragFrom.y - mouseY, 2));
+
+    if (mouseDistanceMoved > this.DISTANCE_MOVE_THRESHOLD
+      && subject != null
+      && subject.type === GraphEntityType.Node
+      && !this.graphView.selection.getEntitySet().has(subject.entity)) {
+      this.graphView.behaviors.delete(HELPER_BEHAVIOR_KEY);
+      this.graphView.behaviors.add(HELPER_BEHAVIOR_KEY,
+        new ActiveEdgeCreationHelper(this.graphView, subject.entity as UniversalGraphNode), 10);
+      return BehaviorResult.Stop;
+    } else {
+      return BehaviorResult.Continue;
+    }
   }
 }
 
-class ActiveEdgeCreation extends AbstractCanvasBehavior {
+class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
   private to: {
     data: {
       x, y
@@ -43,30 +64,7 @@ class ActiveEdgeCreation extends AbstractCanvasBehavior {
     }
   }
 
-  click(event: MouseEvent): BehaviorResult {
-    const subject = this.graphView.getEntityAtMouse(); // TODO: Cache
-
-    if (subject && subject.type === GraphEntityType.Node) {
-      const node = subject.entity as UniversalGraphNode;
-      if (node !== this.from) {
-        this.graphView.execute(new EdgeCreation('Create connection', {
-          from: this.from.hash,
-          to: node.hash,
-          label: null,
-        }));
-        this.graphView.requestRender();
-        return BehaviorResult.RemoveAndContinue;
-      }
-    } else {
-      return BehaviorResult.RemoveAndContinue;
-    }
-  }
-
-  doubleClick(event: MouseEvent): BehaviorResult {
-    return BehaviorResult.Stop;
-  }
-
-  mouseMove(event: MouseEvent): BehaviorResult {
+  drag(event: MouseEvent): BehaviorResult {
     // TODO: Cache
     const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
     const graphX = this.graphView.transform.invertX(mouseX);
@@ -80,11 +78,24 @@ class ActiveEdgeCreation extends AbstractCanvasBehavior {
     };
 
     this.graphView.requestRender();
-    return BehaviorResult.Continue;
+    return BehaviorResult.Stop;
   }
 
-  drag(event: MouseEvent): BehaviorResult {
-    return BehaviorResult.Stop;
+  dragEnd(event: MouseEvent): BehaviorResult {
+    const subject = this.graphView.getEntityAtMouse(); // TODO: Cache
+
+    if (subject && subject.type === GraphEntityType.Node) {
+      const node = subject.entity as UniversalGraphNode;
+      if (node !== this.from) {
+        this.graphView.execute(new EdgeCreation('Create connection', {
+          from: this.from.hash,
+          to: node.hash,
+          label: null,
+        }, true));
+        this.graphView.requestRender();
+      }
+    }
+    return BehaviorResult.RemoveAndStop;
   }
 
   draw(ctx: CanvasRenderingContext2D, transform: any) {

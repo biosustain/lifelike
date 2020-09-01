@@ -23,6 +23,7 @@
         id="max-cluster-rows-input"
         [ngClass]="'form-control w-50' + (settingsForm.get('maxClusterShownRows').invalid ? ' invalid-input' : '')"
         type="number"
+        min="1"
         step="1"
         formControlName="maxClusterShownRows"
         name="firstName"

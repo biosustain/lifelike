@@ -23,6 +23,7 @@ export class AppComponent {
   readonly appUser$: Observable<AppUser>;
   readonly userRoles$: Observable<string[]>;
   readonly loggedIn$: Observable<boolean>;
+  helpDeskUrl = 'https://sbrgsoftware.atlassian.net/servicedesk/customer/portal/1/group/1/create/9';
 
   constructor(
     private readonly store: Store<State>,

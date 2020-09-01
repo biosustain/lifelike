@@ -1,4 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  AfterViewChecked,
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 
 import { cloneDeep } from 'lodash';
 import { UniversalGraphNode } from '../../services/interfaces';
@@ -13,7 +22,8 @@ import { isNullOrUndefined } from 'util';
   selector: 'app-node-form',
   templateUrl: './node-form.component.html',
 })
-export class NodeFormComponent {
+export class NodeFormComponent implements AfterViewInit {
+  @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
 
   nodeTypeChoices = annotationTypes;
   lineTypeChoices = [
@@ -35,6 +45,10 @@ export class NodeFormComponent {
   @Output() sourceOpen = new EventEmitter<string>();
 
   activeTab: string;
+
+  ngAfterViewInit() {
+    setTimeout(() => this.focus(), 10);
+  }
 
   get nodeSubtypeChoices() {
     const type = annotationTypesMap.get(this.node.label);
@@ -61,6 +75,8 @@ export class NodeFormComponent {
 
     this.updatedNode = cloneDeep(node);
     this.updatedNode.style = this.updatedNode.style || {};
+
+    setTimeout(() => this.focus(), 10);
   }
 
   checkSubtype() {
@@ -82,7 +98,6 @@ export class NodeFormComponent {
     this.save.next({
       originalData: {
         data: {
-          hyperlink: this.originalNode.data.hyperlink,
           hyperlinks: this.originalNode.data.hyperlinks,
           detail: this.originalNode.data.detail,
           subtype: this.originalNode.data.subtype,
@@ -100,7 +115,6 @@ export class NodeFormComponent {
       },
       updatedData: {
         data: {
-          hyperlink: this.updatedNode.data.hyperlink,
           hyperlinks: this.updatedNode.data.hyperlinks,
           detail: this.updatedNode.data.detail,
           subtype: this.updatedNode.data.subtype,
@@ -164,5 +178,13 @@ export class NodeFormComponent {
 
   mayShowDetailText() {
     return this.node.label === 'note';
+  }
+
+  focus() {
+    if (this.displayNameRef != null) {
+      const element = this.displayNameRef.nativeElement;
+      element.focus();
+      element.select();
+    }
   }
 }

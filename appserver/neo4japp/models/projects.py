@@ -1,19 +1,21 @@
 import enum
 import re
-from neo4japp.database import db
+
 from sqlalchemy import event
 from sqlalchemy.orm import validates
 from sqlalchemy.orm.query import Query
-from .common import RDBMSBase
+from sqlalchemy.types import TIMESTAMP
 
-from .auth import (
+from neo4japp.database import db
+from neo4japp.models.auth import (
     AccessActionType,
     AccessControlPolicy,
     AccessRuleType,
     AppRole,
     AppUser,
 )
-from .files import Directory
+from neo4japp.models.common import RDBMSBase
+from neo4japp.models.files import Directory
 
 
 projects_collaborator_role = db.Table(
@@ -47,7 +49,8 @@ class Projects(RDBMSBase):  # type: ignore
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     project_name = db.Column(db.String(250), unique=True, nullable=False)
     description = db.Column(db.Text)
-    creation_date = db.Column(db.DateTime, default=db.func.now())
+    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
+    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
     users = db.Column(db.ARRAY(db.Integer), nullable=False)
 
     directories = db.relationship('Directory')
@@ -82,10 +85,8 @@ def init_default_access(mapper, connection, target):
     read_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-read'
     )).fetchone()
-    # read_role = AppRole.query.filter(AppRole.name == 'project-read').one_or_none()
     if read_role is None:
         connection.execute(AppRole.__table__.insert().values(name='project-read'))
-        # read_role = AppRole.query.filter(AppRole.name == 'project-read').one()
         read_role = connection.execute(AppRole.__table__.select().where(
             AppRole.__table__.c.name == 'project-read'
         )).fetchone()
@@ -111,10 +112,8 @@ def init_default_access(mapper, connection, target):
     write_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-write'
     )).fetchone()
-    # write_role = AppRole.query.filter(AppRole.name == 'project-write').one_or_none()
     if write_role is None:
         connection.execute(AppRole.__table__.insert().values(name='project-write'))
-        # write_role = AppRole.query.filter(AppRole.name == 'project-write').one()
         write_role = connection.execute(AppRole.__table__.select().where(
             AppRole.__table__.c.name == 'project-write'
         )).fetchone()
@@ -140,7 +139,6 @@ def init_default_access(mapper, connection, target):
     admin_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-admin'
     )).fetchone()
-    # admin_role = AppRole.query.filter(AppRole.name == 'project-admin').one_or_none()
     if admin_role is None:
         connection.execute(AppRole.__table__.insert().values(name='project-admin'))
         admin_role = connection.execute(AppRole.__table__.select().where(
