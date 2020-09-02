@@ -59,9 +59,10 @@ class PDFSearchResult:
         new_preview_text = preview_text
         for annotation in annotations:
             keyword = annotation['keyword']
-            replace_string = f'<span style="background:{annotation["meta"]["color"]}">{keyword}</span>'
+            replace_string = \
+                f'<span style="background:{annotation["meta"]["color"]}">{keyword}</span>'
             re_data = re.compile(re.escape(keyword), re.IGNORECASE)
-            new_preview_text= re_data.sub(replace_string, new_preview_text)
+            new_preview_text = re_data.sub(replace_string, new_preview_text)
         return new_preview_text
 
     def parse_highlight(self, field, data):
@@ -85,7 +86,7 @@ class PDFSearchResult:
             data = bkp_data
 
         first_highlight = data.find('<strong')
-        data = '...' + data[first_highlight - 20:first_highlight + self.preview_text_size] \
+        data = '...' + data[first_highlight - 5:first_highlight + self.preview_text_size] \
             if first_highlight < len(data) - self.preview_text_size \
             else '...' + data[-self.preview_text_size:]
         return data
@@ -95,14 +96,13 @@ class PDFSearchResult:
             'filename': self.filename,
             'file_id': self.file_id,
             'doi': self.doi,
-            'preview_text': self.preview_text,
             'uploaded_date': self.uploaded_date,
             'external_url': self.external_url,
             'email': self.email,
             'description': self.description,
             'project_directory': self.project_directory,
             'annotations': self.annotations,
-            'preview_text_with_annotations': self.preview_text_with_annotations
+            'preview_text': self.preview_text_with_annotations
         }
 
     def __str__(self):
