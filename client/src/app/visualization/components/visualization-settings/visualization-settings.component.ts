@@ -3,8 +3,8 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { Subscription } from 'rxjs';
 
-import { DEFAULT_CLUSTER_ROWS } from 'app/shared/constants';
 import { SettingsFormValues, SettingsFormControl } from 'app/interfaces';
+import { DEFAULT_CLUSTER_ROWS } from 'app/shared/constants';
 import { uuidv4 } from 'app/shared/utils';
 
 @Component({
