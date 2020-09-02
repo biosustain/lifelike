@@ -17,4 +17,10 @@
       </button>
     </form>
   </div>
+  <div *ngIf="unsupportedBrowser" class="alert alert-warning m-0">
+    <p>
+      You seem to be using a browser which might provide a diminished experience within Lifelike.
+      For the best experience, please use <a target="_blank" href="https://www.google.com/chrome/">Google Chrome</a>.
+    </p>
+  </div>
 </div>

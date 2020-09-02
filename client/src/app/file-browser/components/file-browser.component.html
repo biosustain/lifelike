@@ -58,9 +58,9 @@
 
         <!-- Toolbar -->
         <div class="module-toolbar mt-2">
-          <div class="d-flex align-items-center">
-            <div>
-              <div ngbDropdown class="d-inline-block">
+          <div class="d-flex align-items-center flex-spaced-wrap">
+            <div class="flex-grow-1 text-nowrap overflow-x-hidden">
+              <div ngbDropdown class="d-inline-block" container="body">
                 <button class="btn btn-primary" ngbDropdownToggle>
                   <i class="fa fa-fw fa-plus-circle"></i>
                   New
@@ -92,7 +92,7 @@
               </button>
             </div>
 
-            <div class="ml-auto d-flex">
+            <div class="ml-auto d-flex flex-grow-1">
               <div class="input-group" [class.bg-highlight]="results.filter != null">
                 <div class="input-group-prepend">
                   <div class="input-group-text bg-transparent border-right-0">

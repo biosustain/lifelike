@@ -686,14 +686,6 @@ export class CanvasGraphView extends GraphView {
    * Update the current mouse cursor.
    */
   updateMouseCursor() {
-    const canvas = this.canvas;
-    if (this.dragging.get().length) {
-      canvas.style.cursor = 'grabbing';
-    } else if (this.panningOrZooming) {
-      canvas.style.cursor = 'move';
-    } else {
-      canvas.style.cursor = 'default';
-    }
   }
 
   /**
