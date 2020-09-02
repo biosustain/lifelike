@@ -12,6 +12,7 @@ import {getObjectCommands} from 'app/file-browser/utils/objects';
 import {ModuleProperties} from '../../shared/modules';
 import {PDFResult, PDFSnippets} from '../../interfaces';
 import {ProjectSpaceService} from '../../file-browser/services/project-space.service';
+import {DomSanitizer} from '@angular/platform-browser';
 
 @Component({
   selector: 'app-content-search',
@@ -31,7 +32,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   constructor(route: ActivatedRoute,
               workspaceManager: WorkspaceManager,
               protected readonly contentSearchService: ContentSearchService,
-              protected readonly projectSpaceService: ProjectSpaceService) {
+              protected readonly projectSpaceService: ProjectSpaceService,
+              protected readonly sanitizer: DomSanitizer) {
     super(route, workspaceManager);
   }
 
@@ -83,16 +85,18 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
   getSnippetResults(params) {
     this.contentSearchService.snippetSearch(params.q)
-      .subscribe(results => {
-        results.hits.forEach((snippetResult, index) => {
-          this.projectSpaceService.getCollaborators(snippetResult.project_directory)
-            .subscribe(result => {
-            }, error => {
-              results.hits.splice(index, 1);
-              results.total = results.hits.length;
-            });
+        .subscribe(results => {
+          results.hits.forEach((snippetResult, index) => {
+            this.projectSpaceService.getCollaborators(snippetResult.project_directory)
+                .subscribe(result => {
+                  snippetResult.preview_text_with_annotations =
+                      this.sanitizer.bypassSecurityTrustHtml(snippetResult.preview_text_with_annotations) as string;
+                }, error => {
+                  results.hits.splice(index, 1);
+                  results.total = results.hits.length;
+                });
+          });
+          this.fileResults = results as PDFResult;
         });
-        this.fileResults = results as PDFResult;
-      });
   }
 }

@@ -16,4 +16,6 @@ export interface PDFSnippets {
   uploaded_date: string;
   preview_text: string;
   project_directory: string;
+  annotations: [any];
+  preview_text_with_annotations: string;
 }
