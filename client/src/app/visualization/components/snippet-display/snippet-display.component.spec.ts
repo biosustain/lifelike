@@ -171,7 +171,7 @@ describe('SnippetDisplayComponentComponent', () => {
 
         const confidenceScoreContainer = confidenceScoreContainers[0];
 
-        expect(confidenceScoreContainer.textContent).toEqual('Snippet Confidence Score:1.000');
+        expect(confidenceScoreContainer.textContent).toEqual('Snippet Score:1.000');
     });
 
     it('should show "Showing 0 - 0" of 0" and no page limit selector if there are no results', () => {
