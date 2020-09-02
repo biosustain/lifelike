@@ -57,7 +57,7 @@ describe('VisualizationSettingsComponent', () => {
     });
 
     it('should show the max cluster rows input', () => {
-        const maxClusterRowsInputElement = document.getElementById('max-cluster-rows-input') as HTMLInputElement;
+        const maxClusterRowsInputElement = document.getElementById(instance.maxClusterRowsInputId) as HTMLInputElement;
         expect(maxClusterRowsInputElement).toBeTruthy();
         expect(maxClusterRowsInputElement.value).toEqual(DEFAULT_CLUSTER_ROWS.toString());
     });

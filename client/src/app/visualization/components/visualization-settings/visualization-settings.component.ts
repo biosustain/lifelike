@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 
 import { DEFAULT_CLUSTER_ROWS } from 'app/shared/constants';
 import { SettingsFormValues, SettingsFormControl } from 'app/interfaces';
+import { uuidv4 } from 'app/shared/utils';
 
 @Component({
   selector: 'app-visualization-settings',
@@ -21,7 +22,11 @@ export class VisualizationSettingsComponent implements OnInit {
 
     navbarCollapsed: boolean;
 
+    uniqueId: string;
+    animationToggleInputId: string;
+    maxClusterRowsInputId: string;
     maxClusterRowsInputClass: string;
+    expandEntityInputIdPrefix: string;
 
     constructor() {
         this.navbarCollapsed = false;
@@ -35,7 +40,11 @@ export class VisualizationSettingsComponent implements OnInit {
 
         this.settingsFormChanges = new EventEmitter<any>();
 
+        this.uniqueId = uuidv4();
         this.maxClusterRowsInputClass = 'form-control w-50';
+        this.animationToggleInputId = `animation-toggle-${this.uniqueId}`;
+        this.maxClusterRowsInputId = `max-cluster-rows-input-${this.uniqueId}`;
+        this.expandEntityInputIdPrefix = `legend-label-${this.uniqueId}-`;
     }
 
     ngOnInit() {
