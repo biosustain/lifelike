@@ -7,6 +7,7 @@ export interface MessageArguments {
   title: string;
   message: string;
   detail?: string;
+  transactionId?: string;
   type: MessageType;
 }
 
@@ -27,5 +28,6 @@ export class MessageDialog {
     modalRef.componentInstance.message = args.message;
     modalRef.componentInstance.detail = args.detail;
     modalRef.componentInstance.type = args.type;
+    modalRef.componentInstance.transactionId = args.transactionId;
   }
 }
