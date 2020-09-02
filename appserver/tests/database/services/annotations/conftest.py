@@ -766,7 +766,7 @@ def mock_get_gene_ace2_for_global_gene_inclusion(monkeypatch):
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
-        'get_genes_from_ids',
+        'get_genes_from_gene_ids',
         get_exclusions,
     )
 
@@ -959,9 +959,8 @@ def annotations_setup(app):
 
 
 @pytest.fixture(scope='function')
-def get_annotation_n4j(neo4j_service_dao, session):
-    return AnnotationsNeo4jService(
-        neo4j_service=neo4j_service_dao, session=session)
+def get_annotation_n4j(graph, session):
+    return AnnotationsNeo4jService(graph=graph, session=session)
 
 
 @pytest.fixture(scope='function')

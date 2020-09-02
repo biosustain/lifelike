@@ -1,19 +1,13 @@
-#node-relationship-container > div {
-    display: inline-block;
-}
-
-#relationship-container {
-    border: 1px solid white;
-}
-
-#relationship-container > div {
-    display: inline-block;
-}
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+@import 'src/scss/variables';
 
 .material-icons {
     vertical-align: middle;
 }
 
-.node-detail-container {
-    text-align: center;
+.invalid-msg {
+  margin-top: .25rem;
+  font-size: 80%;
+  color: #dc3545;
 }
