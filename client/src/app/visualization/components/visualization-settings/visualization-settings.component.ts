@@ -3,7 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { Subscription } from 'rxjs';
 
-import { MAX_CLUSTER_ROWS } from 'app/shared/constants';
+import { DEFAULT_CLUSTER_ROWS } from 'app/shared/constants';
 import { SettingsFormValues, SettingsFormControl } from 'app/interfaces';
 
 @Component({
@@ -21,17 +21,21 @@ export class VisualizationSettingsComponent implements OnInit {
 
     navbarCollapsed: boolean;
 
+    maxClusterRowsInputClass: string;
+
     constructor() {
         this.navbarCollapsed = false;
 
         this.settingsForm = new FormGroup({
             animation: new FormControl(true),
             maxClusterShownRows: new FormControl(
-                MAX_CLUSTER_ROWS, [Validators.required, Validators.min(1), Validators.pattern(/^-?[0-9][^\.]*$/)]
+                DEFAULT_CLUSTER_ROWS, [Validators.required, Validators.min(1), Validators.pattern(/^-?[0-9][^\.]*$/)]
             ),
         });
 
         this.settingsFormChanges = new EventEmitter<any>();
+
+        this.maxClusterRowsInputClass = 'form-control w-50';
     }
 
     ngOnInit() {
@@ -45,6 +49,7 @@ export class VisualizationSettingsComponent implements OnInit {
         this.settingsFormChanges.emit(this.getSettingsFormValuesObject());
 
         this.settingsFormValueChangesSub = this.settingsForm.valueChanges.subscribe(() => {
+            this.setMaxClusterRowsStyle();
             this.settingsFormChanges.emit(this.getSettingsFormValuesObject());
         });
     }
@@ -72,5 +77,15 @@ export class VisualizationSettingsComponent implements OnInit {
         });
 
         return settingsFormValues;
+    }
+
+    setMaxClusterRowsStyle() {
+      if (this.settingsForm.get('maxClusterShownRows').invalid) {
+        this.maxClusterRowsInputClass = 'form-control w-50 invalid-input';
+      } else if (this.settingsForm.get('maxClusterShownRows').value > 50) {
+        this.maxClusterRowsInputClass = 'form-control w-50 input-warning';
+      } else {
+        this.maxClusterRowsInputClass = 'form-control w-50';
+      }
     }
 }

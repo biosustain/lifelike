@@ -3,7 +3,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
 
-import { MAX_CLUSTER_ROWS } from 'app/shared/constants';
+import { DEFAULT_CLUSTER_ROWS } from 'app/shared/constants';
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -49,7 +49,7 @@ describe('VisualizationSettingsComponent', () => {
         const labelCheckbox1 = instance.settingsForm.get('MockNode1');
         const labelCheckbox2 = instance.settingsForm.get('MockNode2');
 
-        expect(maxClusterRowsControl.value).toEqual(MAX_CLUSTER_ROWS);
+        expect(maxClusterRowsControl.value).toEqual(DEFAULT_CLUSTER_ROWS);
         expect(labelCheckbox1.value).toEqual(true);
         expect(labelCheckbox2.value).toEqual(true);
 
@@ -59,7 +59,7 @@ describe('VisualizationSettingsComponent', () => {
     it('should show the max cluster rows input', () => {
         const maxClusterRowsInputElement = document.getElementById('max-cluster-rows-input') as HTMLInputElement;
         expect(maxClusterRowsInputElement).toBeTruthy();
-        expect(maxClusterRowsInputElement.value).toEqual(MAX_CLUSTER_ROWS.toString());
+        expect(maxClusterRowsInputElement.value).toEqual(DEFAULT_CLUSTER_ROWS.toString());
     });
 
     it('should show checkboxes for each label provided by the parent', () => {

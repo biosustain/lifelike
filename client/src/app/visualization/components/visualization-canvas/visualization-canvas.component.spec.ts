@@ -1,5 +1,4 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { configureTestSuite } from 'ng-bullet';
@@ -10,7 +9,7 @@ import { of } from 'rxjs';
 
 import { DataSet } from 'vis-network';
 
-import { MAX_CLUSTER_ROWS } from 'app/shared/constants';
+import { DEFAULT_CLUSTER_ROWS } from 'app/shared/constants';
 import {
     ClusterData,
     Direction,
@@ -262,7 +261,7 @@ describe('VisualizationCanvasComponent', () => {
                 valid: true,
             },
             maxClusterShownRows: {
-                value: MAX_CLUSTER_ROWS,
+                value: DEFAULT_CLUSTER_ROWS,
                 valid: true,
             },
             'Mock Node': {
@@ -308,7 +307,7 @@ describe('VisualizationCanvasComponent', () => {
                 valid: true,
             },
             maxClusterShownRows: {
-                value: 10,
+                value: 5,
                 valid: true,
             },
             'Mock Node': {

@@ -1,6 +1,7 @@
 <div *ngIf="legendLabels" id="settings-container" class="floating-toolbar" [ngClass]="navbarCollapsed ? 'unexpanded' : 'expanded'">
   <div
     id="canvas-settings-button"
+    class="pointer-on-hover"
     (click)="navbarCollapsed = !navbarCollapsed"
     [attr.aria-expanded]="!navbarCollapsed"
     aria-controls="navbarContent"
@@ -10,43 +11,48 @@
   </div>
   <div id="settings-content" [ngClass]="navbarCollapsed ? 'unexpanded' : 'expanded'">
     <form [formGroup]="settingsForm" class="d-flex flex-column justify-content-between">
+      <fieldset class="fieldset-properties">
+        <legend>Canvas Settings</legend>
+        <!-- Animation toggle -->
+        <div class="custom-control custom-switch">
+          <input type="checkbox" formControlName="animation" class="custom-control-input pointer-on-hover" id="animation-toggle">
+          <label class="custom-control-label pointer-on-hover" for="animation-toggle">Animation</label>
+        </div>
 
-      <!-- Animation toggle -->
-      <div class="custom-control custom-switch">
-        <input type="checkbox" formControlName="animation" class="custom-control-input" id="animation-toggle">
-        <label class="custom-control-label" for="animation-toggle">Animation</label>
-      </div>
+        <!-- Max cluster rows input -->
+        <label class="mt-2" for="max-cluster-rows-input">Max rows shown in clusters:</label>
+        <input
+          id="max-cluster-rows-input"
+          [ngClass]="maxClusterRowsInputClass"
+          type="number"
+          min="1"
+          step="1"
+          formControlName="maxClusterShownRows"
+          name="firstName"
+        />
+        <div class="warning-msg" *ngIf="settingsForm.get('maxClusterShownRows').value > 50">
+          Large clusters may render slowly.
+        </div>
+        <div class="invalid-msg" *ngIf="settingsForm.get('maxClusterShownRows').hasError('required')">
+          Max rows cannot be empty!
+        </div>
+        <div class="invalid-msg" *ngIf="settingsForm.get('maxClusterShownRows').hasError('min')">
+          Max rows cannot be less than 1!
+        </div>
+        <div class="invalid-msg" *ngIf="settingsForm.get('maxClusterShownRows').hasError('pattern')">
+          Max rows must be a whole number!
+        </div>
 
-      <!-- Max cluster rows input -->
-      <label class="mt-2" for="max-cluster-rows-input">Max rows shown in clusters:</label>
-      <input
-        id="max-cluster-rows-input"
-        [ngClass]="'form-control w-50' + (settingsForm.get('maxClusterShownRows').invalid ? ' invalid-input' : '')"
-        type="number"
-        min="1"
-        step="1"
-        formControlName="maxClusterShownRows"
-        name="firstName"
-      />
-      <div class="invalid-msg" *ngIf="settingsForm.get('maxClusterShownRows').hasError('required')">
-        Max rows cannot be empty!
-      </div>
-      <div class="invalid-msg" *ngIf="settingsForm.get('maxClusterShownRows').hasError('min')">
-        Max rows cannot be less than 1!
-      </div>
-      <div class="invalid-msg" *ngIf="settingsForm.get('maxClusterShownRows').hasError('pattern')">
-        Max rows must be a whole number!
-      </div>
-
-      <!-- Labels to include in expand result checkboxes -->
-      <label class="mt-2">Include in Expanded Nodes:</label>
-      <div
-        class="custom-control custom-checkbox"
-        *ngFor="let label of legendLabels; index as i"
-      >
-        <input type="checkbox" [formControlName]="label" class="custom-control-input" [id]="'legend-label-' + i">
-        <label class="custom-control-label" [for]="'legend-label-' + i">{{ label }}</label>
-      </div>
+        <!-- Labels to include in expand result checkboxes -->
+        <label class="mt-2 mb-0">When Node is Expanded Include:</label>
+        <div
+          class="custom-control custom-checkbox mt-1"
+          *ngFor="let label of legendLabels; index as i"
+        >
+          <input type="checkbox" [formControlName]="label" class="custom-control-input pointer-on-hover" [id]="'legend-label-' + i">
+          <label class="custom-control-label pointer-on-hover" [for]="'legend-label-' + i">{{ label }}</label>
+        </div>
+      </fieldset>
     </form>
   </div>
 </div>
