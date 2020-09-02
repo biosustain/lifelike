@@ -103,20 +103,20 @@ class ActiveEdgeCreationHandle extends AbstractNodeHandleBehavior<Handle> {
   }
 
   drawHandle(ctx: CanvasRenderingContext2D, transform: any, {minX, minY, maxX, maxY}: Handle) {
-    const noZoomScale = 1 / this.graphView.transform.scale(1).k;
-
-    const nodeRadius = this.size / 2 * noZoomScale;
-    const x = (maxX - minX) / 2 + minX;
-    const y = (maxY - minY) / 2 + minY;
-    ctx.moveTo(x, y);
-    ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
+    // Draw Handle
+    const noZoomScaleHandle = 1 / this.graphView.transform.scale(1).k;
+    const nodeRadiusHandle = this.size / 2 * noZoomScaleHandle;
+    const xHandle = (maxX - minX) / 2 + minX;
+    const yHandle = (maxY - minY) / 2 + minY;
+    ctx.moveTo(xHandle, yHandle);
+    ctx.arc(xHandle, yHandle, nodeRadiusHandle, 0, 2 * Math.PI);
     ctx.strokeStyle = '#2B7CE9';
     ctx.stroke();
     ctx.fillStyle = '#97C2FC';
     ctx.fill();
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
-    ctx.fillText('+', x, y + 4, this.size * 2);
+    ctx.fillText('+', xHandle, yHandle + 4, this.size * 2);
 
     const from = this.target;
     const to = this.to;
@@ -158,17 +158,18 @@ class ActiveEdgeCreationHandle extends AbstractNodeHandleBehavior<Handle> {
   }
 
   dragEnd(event: MouseEvent): BehaviorResult {
-    const subject = this.graphView.getEntityAtMouse(); // TODO: Cache
-    
-    if (subject && subject.type === GraphEntityType.Node) {
-      const node = subject.entity as UniversalGraphNode;
-      if (node !== this.target) {
-        this.graphView.execute(new EdgeCreation('Create connection', {
-          from: this.target.hash,
-          to: node.hash,
-          label: null,
-        }, true));
-        this.graphView.requestRender();
+    if (this.to != null) {
+      const subject = this.graphView.getEntityAtPosition(this.to.data.x, this.to.data.y); // TODO: Cache
+      if (subject && subject.type === GraphEntityType.Node) {
+        const node = subject.entity as UniversalGraphNode;
+        if (node !== this.target) {
+          this.graphView.execute(new EdgeCreation('Create connection', {
+            from: this.target.hash,
+            to: node.hash,
+            label: null,
+          }, true));
+          this.graphView.requestRender();
+        }
       }
     }
     return BehaviorResult.RemoveAndStop;
