@@ -49,7 +49,7 @@ class PDFSearchResult:
         annotations = annotator.create_rules_based_annotations(tokens=tokens, custom_annotations=[])
         bioc = bioc_service.read(text=preview_text, file_uri="my_path")
         bioc_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-        return  bioc_json['documents'][0]['passages'][0]['annotations']
+        return bioc_json['documents'][0]['passages'][0]['annotations']
 
     def parse_highlight(self, field, data):
         start_tag = '<highlight>'
