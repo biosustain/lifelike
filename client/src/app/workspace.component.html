@@ -87,10 +87,18 @@
                     </div>
                   </div>
                   <div class="mx-2" *ngIf="pane.id === 'right'">
-                    <button type="button" class="btn btn-secondary" (click)="closeRightPane()"
-                            ngbTooltip="Collapse this pane">
-                      <i class="fa fa-caret-right"></i><br>
-                      <i class="fa fa-caret-right"></i>
+                    <button type="button" class="btn btn-secondary" (click)="closeRightPane()">
+                      <div class="d-flex flex-column align-items-center">
+                        <div>
+                          <i class="fa fa-caret-right"></i>
+                        </div>
+                        <div class="side-pane-close-text">
+                          Hide Side Pane
+                        </div>
+                        <div>
+                          <i class="fa fa-caret-right"></i>
+                        </div>
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -100,11 +108,13 @@
         </as-split-area>
       </as-split>
     </div>
-    <div *ngIf="canAddPane()" class="workspace-split-pane-placeholder" (click)="addPane()"
-         ngbTooltip="Open side pane" placement="left">
-      <div>
+    <div *ngIf="canAddPane()" class="workspace-split-pane-placeholder" (click)="addPane()">
+      <div class="d-flex flex-column align-items-center">
         <div>
           <i class="fa fa-caret-left"></i>
+        </div>
+        <div class="side-pane-open-text">
+          Open Side Pane
         </div>
         <div>
           <i class="fa fa-caret-left"></i>

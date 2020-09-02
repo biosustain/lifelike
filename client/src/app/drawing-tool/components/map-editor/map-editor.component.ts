@@ -31,7 +31,6 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
-  connectionHintShown = false;
 
   ngOnInit() {
     this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
@@ -150,13 +149,6 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
           },
         }, true,
       ));
-
-      if (!this.connectionHintShown) {
-        this.snackBar.open('Double click a node to connect it to another node.', null, {
-          duration: 3000,
-        });
-        this.connectionHintShown = true;
-      }
     }
   }
 }

@@ -8,7 +8,8 @@
             <label for="label">
               Node Label:
             </label>
-            <input [(ngModel)]="node.display_name" class="form-control" (change)="doSave()" id="label" maxlength="2000">
+            <input [(ngModel)]="node.display_name" class="form-control" (change)="doSave()" id="label" maxlength="2000"
+                   #displayName>
           </div>
 
           <div class="form-group">
@@ -48,13 +49,6 @@
                     {{choice | titlecase}}
                   </option>
                 </select>
-              </div>
-              <div class="mt-1" *ngIf="node.label !== 'link'">
-                <button type="button" class="btn btn-secondary btn-block"
-                        ngbTooltip="Make this node show as a note with a link back to the source"
-                        (click)="node.label = 'link'; doSave()">
-                  Change to Link
-                </button>
               </div>
             </div>
           </div>
