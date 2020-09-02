@@ -79,6 +79,7 @@ def elasticindexes():
     index_pdf.pdf_index.create_or_update_pipeline()
     index_pdf.pdf_index.create_or_update_index()
 
+
 @pytest.fixture(scope='function')
 def account_service(app, session):
     return AccountService(session)
@@ -110,6 +111,7 @@ def graph(request, app):
 
     return graph
 
+
 # Begin DAO Fixtures #
 @pytest.fixture(scope='function')
 def base_dao(graph):
@@ -127,6 +129,7 @@ def neo4j_service_dao(graph):
 def search_service_dao(graph):
     """SearchService using the test graph"""
     return SearchService(graph)
+
 
 # End DAO Fixtures #
 
@@ -184,6 +187,7 @@ def pomc(graph):
 
     return pomc
 
+
 # End Entity Nodes Fixtures #
 
 # Begin Entity -> Entity Relationship Fixtures #
@@ -197,9 +201,9 @@ def pomc(graph):
 
 @pytest.fixture(scope='function')
 def pomc_to_gas_gangrene_pathogenesis_edge(
-    graph,
-    gas_gangrene,
-    pomc,
+        graph,
+        gas_gangrene,
+        pomc,
 ):
     """Creates an ASSOCIATED relationship from pomc to gas gangrene and
     adds it to the graph."""
@@ -218,9 +222,9 @@ def pomc_to_gas_gangrene_pathogenesis_edge(
 
 @pytest.fixture(scope='function')
 def penicillins_to_gas_gangrene_alleviates_edge(
-    graph,
-    gas_gangrene,
-    penicillins,
+        graph,
+        gas_gangrene,
+        penicillins,
 ):
     """Creates an ASSOCIATED relationship from penicillins to gas
     gangrene and adds it to the graph."""
@@ -239,9 +243,9 @@ def penicillins_to_gas_gangrene_alleviates_edge(
 
 @pytest.fixture(scope='function')
 def oxygen_to_gas_gangrene_treatment_edge(
-    graph,
-    gas_gangrene,
-    oxygen,
+        graph,
+        gas_gangrene,
+        oxygen,
 ):
     """Creates an ASSOCIATED relationship from oxygen to gas
     gangrene and adds it to the graph."""
@@ -249,7 +253,12 @@ def oxygen_to_gas_gangrene_treatment_edge(
     tx = graph.begin()
 
     oxygen_to_gas_gangrene_treatment_edge = Relationship(
-        oxygen, 'ASSOCIATED', gas_gangrene, assoc_type='Pa', description='treatment/therapy (including investigatory)',  # noqa
+        oxygen,
+        'ASSOCIATED',
+        gas_gangrene,
+        assoc_type='Pa',
+        description='treatment/therapy (including investigatory)',
+        # noqa
     )
 
     tx.create(oxygen_to_gas_gangrene_treatment_edge)
@@ -260,9 +269,9 @@ def oxygen_to_gas_gangrene_treatment_edge(
 
 @pytest.fixture(scope='function')
 def penicillins_to_gas_gangrene_treatment_edge(
-    graph,
-    gas_gangrene,
-    penicillins,
+        graph,
+        gas_gangrene,
+        penicillins,
 ):
     """Creates an ASSOCIATED relationship from penicillins to gas
     gangrene and adds it to the graph."""
@@ -270,7 +279,8 @@ def penicillins_to_gas_gangrene_treatment_edge(
     tx = graph.begin()
 
     penicillins_to_gas_gangrene_treatment_edge = Relationship(
-        penicillins, 'ASSOCIATED', gas_gangrene, assoc_type='J', description='treatment/therapy (including investigatory)',  # noqa
+        penicillins, 'ASSOCIATED', gas_gangrene, assoc_type='J',
+        description='treatment/therapy (including investigatory)',  # noqa
     )
 
     tx.create(penicillins_to_gas_gangrene_treatment_edge)
@@ -278,20 +288,21 @@ def penicillins_to_gas_gangrene_treatment_edge(
 
     return penicillins_to_gas_gangrene_treatment_edge
 
+
 # End Entity -> Entity Relationship Fixtures #
 
 # Start Misc. Fixtures #
 @pytest.fixture(scope='function')
 def gas_gangrene_with_associations_and_references(
-    graph,
-    gas_gangrene,
-    oxygen,
-    oxygen_to_gas_gangrene_treatment_edge,
-    penicillins,
-    pomc,
-    pomc_to_gas_gangrene_pathogenesis_edge,
-    penicillins_to_gas_gangrene_alleviates_edge,
-    penicillins_to_gas_gangrene_treatment_edge,
+        graph,
+        gas_gangrene,
+        oxygen,
+        oxygen_to_gas_gangrene_treatment_edge,
+        penicillins,
+        pomc,
+        pomc_to_gas_gangrene_pathogenesis_edge,
+        penicillins_to_gas_gangrene_alleviates_edge,
+        penicillins_to_gas_gangrene_treatment_edge,
 ):
     tx = graph.begin()
 
@@ -441,12 +452,12 @@ def gas_gangrene_with_associations_and_references(
     )
 
     penicillins_treatment_association_to_snippet_edge = Relationship(
-        penicillins_to_gas_gangrene_snippet_node2, 'PREDICTS', penicillins_to_gas_gangrene_association_node2,   # noqa
+        penicillins_to_gas_gangrene_snippet_node2, 'PREDICTS', penicillins_to_gas_gangrene_association_node2,  # noqa
         raw_score=1, normalized_score=0.222
     )
 
     penicillins_treatment_association_to_snippet_edge2 = Relationship(
-        penicillins_to_gas_gangrene_snippet_node4, 'PREDICTS', penicillins_to_gas_gangrene_association_node2,   # noqa
+        penicillins_to_gas_gangrene_snippet_node4, 'PREDICTS', penicillins_to_gas_gangrene_association_node2,  # noqa
         raw_score=3, normalized_score=0.456
     )
 
@@ -494,7 +505,7 @@ def gas_gangrene_with_associations_and_references(
 
 @pytest.fixture(scope='function')
 def example4_pdf_gene_and_organism_network(
-    graph,
+        graph,
 ):
     tx = graph.begin()
 
@@ -568,7 +579,7 @@ def example4_pdf_gene_and_organism_network(
 
 @pytest.fixture(scope='function')
 def human_gene_pdf_gene_and_organism_network(
-    graph,
+        graph,
 ):
     tx = graph.begin()
 
@@ -594,6 +605,7 @@ def human_gene_pdf_gene_and_organism_network(
     tx.commit()
 
     return graph
+
 
 # End Graph Data Fixtures #
 
@@ -761,7 +773,7 @@ def pomc_duplicate_vis_node(pomc):
 
 @pytest.fixture(scope='function')
 def oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge(
-    oxygen_to_gas_gangrene_treatment_edge,
+        oxygen_to_gas_gangrene_treatment_edge,
 ):
     """Creates a DuplicateVisEdge from the oxygen to gas_gangrene
     alleviates/reduces relationship."""
@@ -788,7 +800,7 @@ def oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge(
 
 @pytest.fixture(scope='function')
 def pomc_to_gas_gangrene_pathogenesis_as_vis_edge(
-    pomc_to_gas_gangrene_pathogenesis_edge,
+        pomc_to_gas_gangrene_pathogenesis_edge,
 ):
     """Creates a VisEdge from the pomc to gas gangrene
     role in disease pathogenesis relationship."""
@@ -812,7 +824,7 @@ def pomc_to_gas_gangrene_pathogenesis_as_vis_edge(
 
 @pytest.fixture(scope='function')
 def pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge(
-    pomc_to_gas_gangrene_pathogenesis_edge,
+        pomc_to_gas_gangrene_pathogenesis_edge,
 ):
     """Creates a DuplicateVisEdge from the pomc to gas_gangrene
     role in disease pathogenesis relationship."""
@@ -839,7 +851,7 @@ def pomc_to_gas_gangrene_pathogenesis_as_duplicate_vis_edge(
 
 @pytest.fixture(scope='function')
 def penicillins_to_gas_gangrene_alleviates_as_vis_edge(
-    penicillins_to_gas_gangrene_alleviates_edge,
+        penicillins_to_gas_gangrene_alleviates_edge,
 ):
     """Creates a VisEdge from the penicillins to gas gangrene
     alleviates/reduces relationship."""
@@ -863,7 +875,7 @@ def penicillins_to_gas_gangrene_alleviates_as_vis_edge(
 
 @pytest.fixture(scope='function')
 def penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge(
-    penicillins_to_gas_gangrene_alleviates_edge,
+        penicillins_to_gas_gangrene_alleviates_edge,
 ):
     """Creates a DuplicateVisEdge from the penicillins to gas_gangrene
     alleviates/reduces relationship."""
@@ -890,7 +902,7 @@ def penicillins_to_gas_gangrene_alleviates_as_duplicate_vis_edge(
 
 @pytest.fixture(scope='function')
 def penicillins_to_gas_gangrene_treatment_as_vis_edge(
-    penicillins_to_gas_gangrene_treatment_edge,
+        penicillins_to_gas_gangrene_treatment_edge,
 ):
     """Creates a VisEdge from the penicillins to gas_gangrene
     treatment/therapy relationship."""
@@ -914,7 +926,7 @@ def penicillins_to_gas_gangrene_treatment_as_vis_edge(
 
 @pytest.fixture(scope='function')
 def penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge(
-    penicillins_to_gas_gangrene_treatment_edge,
+        penicillins_to_gas_gangrene_treatment_edge,
 ):
     """Creates a DuplicateVisEdge from the penicillins to gas_gangrene
     treatment/therapy relationship."""
@@ -941,10 +953,10 @@ def penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge(
 
 @pytest.fixture(scope='function')
 def gas_gangrene_treatment_cluster_node_edge_pairs(
-    oxygen_duplicate_vis_node,
-    oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge,
-    penicillins_duplicate_vis_node,
-    penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge
+        oxygen_duplicate_vis_node,
+        oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge,
+        penicillins_duplicate_vis_node,
+        penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge
 ):
     """Creates a list of DuplicateNodeEdgePairs. Used for testing the
     reference table endpoints and services."""
@@ -978,7 +990,7 @@ def gas_gangrene_treatment_cluster_node_edge_pairs(
 
 @pytest.fixture(scope='function')
 def gas_gangrene_treatement_edge_data(
-    penicillins_to_gas_gangrene_treatment_edge
+        penicillins_to_gas_gangrene_treatment_edge
 ):
     edge_as_graph_relationship = GraphRelationship.from_py2neo(
         penicillins_to_gas_gangrene_treatment_edge,
@@ -995,7 +1007,7 @@ def gas_gangrene_treatement_edge_data(
 
 @pytest.fixture(scope='function')
 def gas_gangrene_alleviates_edge_data(
-    penicillins_to_gas_gangrene_alleviates_edge
+        penicillins_to_gas_gangrene_alleviates_edge
 ):
     edge_as_graph_relationship = GraphRelationship.from_py2neo(
         penicillins_to_gas_gangrene_alleviates_edge,
@@ -1012,44 +1024,45 @@ def gas_gangrene_alleviates_edge_data(
 
 @pytest.fixture(scope='function')
 def gas_gangrene_treatement_duplicate_edge_data(
-    penicillins_to_gas_gangrene_treatment_edge
+        penicillins_to_gas_gangrene_treatment_edge
 ):
     edge_as_graph_relationship = GraphRelationship.from_py2neo(
         penicillins_to_gas_gangrene_treatment_edge,
     )
 
     return [
-            DuplicateEdgeConnectionData(
-                label=edge_as_graph_relationship.data['description'],
-                to=f'duplicateNode:{edge_as_graph_relationship.to}',
-                from_=f'duplicateNode:{edge_as_graph_relationship._from}',
-                to_label='Disease',
-                from_label='Chemical',
-                original_from=edge_as_graph_relationship._from,
-                original_to=edge_as_graph_relationship.to,
-            )
+        DuplicateEdgeConnectionData(
+            label=edge_as_graph_relationship.data['description'],
+            to=f'duplicateNode:{edge_as_graph_relationship.to}',
+            from_=f'duplicateNode:{edge_as_graph_relationship._from}',
+            to_label='Disease',
+            from_label='Chemical',
+            original_from=edge_as_graph_relationship._from,
+            original_to=edge_as_graph_relationship.to,
+        )
     ]
 
 
 @pytest.fixture(scope='function')
 def gas_gangrene_alleviates_duplicate_edge_data(
-    penicillins_to_gas_gangrene_alleviates_edge
+        penicillins_to_gas_gangrene_alleviates_edge
 ):
     edge_as_graph_relationship = GraphRelationship.from_py2neo(
         penicillins_to_gas_gangrene_alleviates_edge,
     )
 
     return [
-            DuplicateEdgeConnectionData(
-                label=edge_as_graph_relationship.data['description'],
-                to=f'duplicateNode:{edge_as_graph_relationship.to}',
-                from_=f'duplicateNode:{edge_as_graph_relationship._from}',
-                to_label='Disease',
-                from_label='Chemical',
-                original_from=edge_as_graph_relationship._from,
-                original_to=edge_as_graph_relationship.to,
-            )
+        DuplicateEdgeConnectionData(
+            label=edge_as_graph_relationship.data['description'],
+            to=f'duplicateNode:{edge_as_graph_relationship.to}',
+            from_=f'duplicateNode:{edge_as_graph_relationship._from}',
+            to_label='Disease',
+            from_label='Chemical',
+            original_from=edge_as_graph_relationship._from,
+            original_to=edge_as_graph_relationship.to,
+        )
     ]
+
 
 # End DTO Fixtures #
 
