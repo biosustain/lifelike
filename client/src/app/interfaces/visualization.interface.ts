@@ -119,6 +119,7 @@ export interface SidenavNodeEntity {
 export interface NodeDisplayInfo {
     primaryLabel: string;
     displayName: string;
+    url: string;
 }
 
 export interface SidenavSnippetData {
