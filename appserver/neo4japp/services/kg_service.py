@@ -16,6 +16,7 @@ from neo4japp.constants import (
     TYPE_DISEASE,
 )
 from neo4japp.util import get_first_known_label_from_node
+from neo4japp.utils.logger import EventLog
 
 from py2neo import (
     Node,
@@ -36,6 +37,10 @@ class KgService(HybridDBDao):
 
         # Can't get the URI of the node if there is no 'id' property, so return None
         if entity_id is None:
+            current_app.logger.warning(
+                f'Node with ID {node.identity} does not have a URI.',
+                extra=EventLog(event_type='node does not have a URI').to_dict()
+            )
             return None
 
         url = None
@@ -55,10 +60,13 @@ class KgService(HybridDBDao):
             elif label == TYPE_GENE:
                 url = url_map['NCBI_Gene'].format(entity_id)
         except KeyError:
-            current_app.logger.error(
-                f'Input value url_map did not contain the expected key values:\n' +
-                '\n'.join(['\t' + f'{key}: {value}' for key, value in url_map.items()]) + '\n' +
-                'There may be something wrong in the database.'
+            current_app.logger.warning(
+                f'url_map did not contain the expected key value for node with:\n' +
+                f'\tID: {node.identity}\n'
+                f'\tLabel: {label}\n' +
+                f'\tURI: {entity_id}\n'
+                'There may be something wrong in the database.',
+                extra=EventLog(event_type='node domain does not exist in postgres').to_dict()
             )
         finally:
             return url
