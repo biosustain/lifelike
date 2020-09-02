@@ -434,44 +434,44 @@ class AnnotationsService:
         curr_closest_organism = None
 
         for organism in organism_matches:
-            if self.organism_locations.get(organism, None) is None and self.organism_frequency.get(organism, None) is None:  # noqa
-                raise AnnotationError(f'Organism ID {organism} does not exist, potential key error.')  # noqa
-
-            if curr_closest_organism is None:
-                curr_closest_organism = organism
-
-            min_organism_dist = inf
-
-            # Get the closest instance of this organism
-            for organism_pos in self.organism_locations[organism]:
-                organism_location_lo = organism_pos[0]
-                organism_location_hi = organism_pos[1]
-
-                if gene_location_lo > organism_location_hi:
-                    new_organism_dist = gene_location_lo - organism_location_hi
-                else:
-                    new_organism_dist = organism_location_lo - gene_location_hi
-
-                if new_organism_dist < min_organism_dist:
-                    min_organism_dist = new_organism_dist
-
-            # If this organism is closer than the current closest, update
-            if min_organism_dist < closest_dist:
-                curr_closest_organism = organism
-                closest_dist = min_organism_dist
-            # If this organism is equidistant to the current closest, check frequency instead
-            elif min_organism_dist == closest_dist:
-                # If the frequency of this organism is greater, update
-                if self.organism_frequency[organism] > self.organism_frequency[curr_closest_organism]:  # noqa
+            try:
+                if curr_closest_organism is None:
                     curr_closest_organism = organism
-                elif self.organism_frequency[organism] == self.organism_frequency[curr_closest_organism]:  # noqa
-                    # If the organisms are equidistant and equal frequency,
-                    # check if the new organism is human, and if so update
-                    if organism == HOMO_SAPIENS_TAX_ID:
+
+                min_organism_dist = inf
+
+                # Get the closest instance of this organism
+                for organism_pos in self.organism_locations[organism]:
+                    organism_location_lo = organism_pos[0]
+                    organism_location_hi = organism_pos[1]
+
+                    if gene_location_lo > organism_location_hi:
+                        new_organism_dist = gene_location_lo - organism_location_hi
+                    else:
+                        new_organism_dist = organism_location_lo - gene_location_hi
+
+                    if new_organism_dist < min_organism_dist:
+                        min_organism_dist = new_organism_dist
+
+                # If this organism is closer than the current closest, update
+                if min_organism_dist < closest_dist:
+                    curr_closest_organism = organism
+                    closest_dist = min_organism_dist
+                # If this organism is equidistant to the current closest, check frequency instead
+                elif min_organism_dist == closest_dist:
+                    # If the frequency of this organism is greater, update
+                    if self.organism_frequency[organism] > self.organism_frequency[curr_closest_organism]:  # noqa
                         curr_closest_organism = organism
+                    elif self.organism_frequency[organism] == self.organism_frequency[curr_closest_organism]:  # noqa
+                        # If the organisms are equidistant and equal frequency,
+                        # check if the new organism is human, and if so update
+                        if organism == HOMO_SAPIENS_TAX_ID:
+                            curr_closest_organism = organism
+            except KeyError:
+                raise AnnotationError(f'Organism ID {organism} does not exist.')  # noqa
 
         if curr_closest_organism is None:
-            raise ValueError('Cannot get gene ID with empty organism match dict.')
+            raise AnnotationError('Cannot get gene ID with empty organism match dict.')
 
         # Return the gene id of the organism with the highest priority
         return organism_matches[curr_closest_organism], curr_closest_organism
