@@ -29,6 +29,9 @@
           "doi": {
             "type": "text"
           },
+          "project_id": {
+            "type": "integer"
+          },
           "project_directory": {
             "type": "text"
           },
