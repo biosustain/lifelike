@@ -72,7 +72,7 @@ def populate_all_indexes():
         FileContent.id == Files.content_id
     )
     for filename, description, file_id, doi, creation_date, \
-        uploaded_url, user_id, file, project in entries.all():
+            uploaded_url, user_id, file, project in entries.all():
         encoded_pdf = base64.b64encode(file)
         data = encoded_pdf.decode('utf-8')
         email = db.session.query(AppUser.email).filter(user_id == AppUser.id).one_or_none()
