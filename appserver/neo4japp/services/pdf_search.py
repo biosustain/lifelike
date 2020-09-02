@@ -31,7 +31,7 @@ class PDFSearchResult:
         self.uploaded_date = source['uploaded_date']
         self.external_url = source['external_link']
         self.email = source['email']
-        self.project_directory = source['project_directory'][0]
+        self.project_directory = source['project_directory']
         self.description = source['description']
         self.filename = source['filename']
 
