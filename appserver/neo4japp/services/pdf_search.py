@@ -60,7 +60,7 @@ class PDFSearchResult:
         for annotation in annotations:
             keyword = annotation['keyword']
             replace_string = \
-                f'<span style="background:{annotation["meta"]["color"]}">{keyword}</span>'
+                f'<span style="background:{annotation["meta"]["color"]}">{keyword} </span>'
             re_data = re.compile(re.escape(keyword), re.IGNORECASE)
             new_preview_text = re_data.sub(replace_string, new_preview_text)
         return new_preview_text
