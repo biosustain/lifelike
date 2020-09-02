@@ -3,6 +3,8 @@ import os
 from typing import Dict, List, Union
 from elasticsearch import Elasticsearch
 
+from neo4japp.database import get_lmdb_dao, get_annotations_service, get_annotations_pdf_parser, \
+    get_bioc_document_service
 from neo4japp.utils.queries import parse_query_terms
 
 
@@ -20,6 +22,7 @@ class PDFSearchResult:
         self.email = ''
         self.description = ''
         self.project_directory = ''
+        self.annotations = ''
         self.parse_pdf_entries(data)
 
     def parse_pdf_entries(self, data):
@@ -34,6 +37,19 @@ class PDFSearchResult:
         self.project_directory = source['project_directory']
         self.description = source['description']
         self.filename = source['filename']
+        self.annotations = self.annotate_preview_text(self.preview_text)
+
+    def annotate_preview_text(self, preview_text):
+        lmdb_dao = get_lmdb_dao()
+        annotator = get_annotations_service(lmdb_dao=lmdb_dao)
+        parser = get_annotations_pdf_parser()
+        bioc_service = get_bioc_document_service()
+        parsed_text = parser.parse_text(preview_text)
+        tokens = parser.extract_tokens(parsed_text)
+        annotations = annotator.create_rules_based_annotations(tokens=tokens, custom_annotations=[])
+        bioc = bioc_service.read(text=preview_text, file_uri="my_path")
+        bioc_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+        return  bioc_json['documents'][0]['passages'][0]['annotations']
 
     def parse_highlight(self, field, data):
         start_tag = '<highlight>'
@@ -71,7 +87,8 @@ class PDFSearchResult:
             'external_url': self.external_url,
             'email': self.email,
             'description': self.description,
-            'project_directory': self.project_directory
+            'project_directory': self.project_directory,
+            'annotations': self.annotations
         }
 
     def __str__(self):
