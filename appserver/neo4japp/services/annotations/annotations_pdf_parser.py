@@ -181,8 +181,8 @@ class AnnotationsPDFParser:
     def parse_pdf_high_level(self, pdf) -> str:
         return high_level.extract_text(pdf)
 
-    def parse_pubtator(self, pubtator) -> PDFParsedCharacters:
-        """Parse a Pubtator file and produces similar results to
+    def parse_text(self, text) -> PDFParsedCharacters:
+        """Parse a string text and produces similar results to
         self.parse_pdf(). The only difference would be the LTChar
         objects will not actual PDF coordinates.
         """
@@ -201,26 +201,22 @@ class AnnotationsPDFParser:
         cropbox_in_pdf = (1, 1)
         min_idx_in_page = {1: 1}
 
-        next(pubtator)
-        for line in pubtator:
-            abstract = line.split('|')[2]
-
-            for c in abstract:
-                # create a fake LTChar
-                lt_chars.append(
-                    LTChar(
-                        text=c,
-                        matrix=(0, 0, 0, 0, 0, 0),
-                        font=Font(fontname=''),
-                        fontsize=0,
-                        scaling=0,
-                        rise=0,
-                        textwidth=0,
-                        textdisp=None,
-                        ncs=None,
-                        graphicstate=None,
-                    )
+        for c in text:
+            # create a fake LTChar
+            lt_chars.append(
+                LTChar(
+                    text=c,
+                    matrix=(0, 0, 0, 0, 0, 0),
+                    font=Font(fontname=''),
+                    fontsize=0,
+                    scaling=0,
+                    rise=0,
+                    textwidth=0,
+                    textdisp=None,
+                    ncs=None,
+                    graphicstate=None,
                 )
+            )
 
         for lt_char in lt_chars:
             chars_in_abstract.append(lt_char.get_text())
