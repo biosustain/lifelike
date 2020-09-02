@@ -4,7 +4,7 @@
 
 #settings-container {
   margin: $spacer $spacer 0 0;
-  padding: 1rem;
+  padding: .75rem;
   position: absolute;
   right: 0;
   z-index: 1;
@@ -19,7 +19,6 @@
 }
 
 #canvas-settings-button:hover{
-  cursor: pointer;
   color: #6c757d
 }
 
@@ -60,4 +59,21 @@
   margin-top: .25rem;
   font-size: 80%;
   color: #dc3545;
+}
+
+.input-warning {
+  border-color: $warning;
+}
+.input-warning:focus {
+  box-shadow: 0 0 0 0.2rem rgba(220, 217, 53, 0.25);
+}
+
+.pointer-on-hover:hover {
+  cursor: pointer;
+}
+
+.warning-msg {
+  margin-top: .25rem;
+  font-size: 80%;
+  color: $warning;
 }
