@@ -24,9 +24,11 @@
       [leftNodeName]="result.from.displayName"
       [leftNodeLabel]="result.from.primaryLabel"
       [leftNodeColor]="legend.get(result.from.primaryLabel)[0]"
+      [leftNodeUrl]="result.from.url"
       [rightNodeColor]="legend.get(result.to.primaryLabel)[0]"
       [rightNodeName]="result.to.displayName"
       [rightNodeLabel]="result.to.primaryLabel"
+      [rightNodeUrl]="result.to.url"
       [edge]="result.association"
     ></app-node-relationship>
 

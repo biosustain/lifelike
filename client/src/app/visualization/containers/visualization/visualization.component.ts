@@ -24,7 +24,6 @@ import {
   VisEdge,
   VisNode,
 } from 'app/interfaces';
-import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
