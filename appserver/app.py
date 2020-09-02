@@ -3,6 +3,9 @@ import json
 import logging
 import os
 import click
+import sentry_sdk
+
+from flask import request
 
 from sqlalchemy import func, MetaData, inspect, Table
 from sqlalchemy.sql.expression import text
@@ -27,6 +30,9 @@ def home():
 
 @app.before_request
 def request_navigator_log():
+    with sentry_sdk.configure_scope() as scope:
+        scope.set_tag(
+            'transaction_id', request.headers.get('X-Transaction-Id'))
     app.logger.info(
         EventLog(event_type='user navigate').to_dict())
 

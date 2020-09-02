@@ -152,6 +152,9 @@ def handle_error(code: int, ex: BaseException):
     reterr = {'apiHttpError': ex.to_dict()}
     current_app.logger.error(f'Request caused {type(ex)} error', exc_info=ex)
     reterr['version'] = GITHUB_HASH
+
+    transaction_id = request.headers.get('X-Transaction-Id', '')
+    reterr['transactionId'] = transaction_id
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
@@ -162,6 +165,9 @@ def handle_generic_error(code: int, ex: Exception):
     reterr = {'apiHttpError': str(ex)}
     current_app.logger.error('Request caused unhandled exception', exc_info=ex)
     reterr['version'] = GITHUB_HASH
+
+    transaction_id = request.headers.get('X-Transaction-Id', '')
+    reterr['transactionId'] = transaction_id
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
@@ -173,6 +179,9 @@ def handle_webargs_error(code, error):
     reterr = {'apiHttpError': error.data['messages']}
     current_app.logger.error('Request caused UnprocessableEntity error', exc_info=error)
     reterr['version'] = GITHUB_HASH
+
+    transaction_id = request.headers.get('X-Transaction-Id', '')
+    reterr['transactionId'] = transaction_id
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(error), value=error, tb=error.__traceback__))
