@@ -79,48 +79,45 @@ def data_upgrades():
 
     def process_node(n):
         """ Reformat node data structure
-        (1) Changes hyperlink -> hyperlinks
-        (2) Changes source -> sources
+        (1) Adds the hyperlinks key
+        (2) Adds the sources key
         """
         node_data = n['data']
-        try:
-            existing_hyperlink = node_data['hyperlink']
-            del node_data['hyperlink']
-            if existing_hyperlink == '':
-                node_data['hyperlinks'] = []
-            else:
-                node_data['hyperlinks'] = [dict(domain='', url=existing_hyperlink)]
-        except KeyError:
-            # Captures an edge case where we have these type of hyperlinks
-            # hyperlinks: [{"domain": "", "url": ""}]
-            existing_hyperlinks = node_data.get('hyperlinks')
-            if existing_hyperlinks and type(existing_hyperlinks) is list:
-                links = [dict(domain='', url=l.get('url')) for l in existing_hyperlinks]
-                node_data['hyperlinks'] = links
+        # Add the hyperlinks key and transfer any existing hyperlink over if it exists
+        if 'hyperlinks' not in node_data:
+            # Reformat existing hyperlink if it exists
+            if node_data.get('hyperlink'):
+                node_data['hyperlinks'] = [dict(domain='', url=node_data['hyperlink'])]
             else:
                 node_data['hyperlinks'] = []
 
-        try:
-            existing_src = node_data['source']
-            del node_data['source']
-            if existing_src == '':
-                node_data['sources'] = []
+        # Add the sources key and transfer any existing source over if it exists
+        if 'sources' not in node_data:
+            # Reformat existing source if it exists
+            if node_data.get('source'):
+                node_data['sources'] = [dict(type='', domain='', url=node_data['source'])]
             else:
-                node_data['sources'] = [dict(type='', domain='', url=existing_src)]
-        except KeyError:
-            # No sources key, make one
-            node_data['sources'] = []
+                node_data['sources'] = []
         return n
 
     def process_edge(e):
         """ Reformat edge data structure
-        (1) Add empty hyperlinks array to data structure
-        (2) Add empty sources array to data structure
+        (1) Adds the hyperlinks key
+        (2) Adds the sources key
         """
         if 'data' in e:
             edge_data = e['data']
-            edge_data['hyperlinks'] = []
-            edge_data['sources'] = []
+            if 'hyperlinks' not in e['data']:
+                if edge_data.get('hyperlink'):
+                    edge_data['hyperlinks'] = [dict(domain='', url=edge_data['hyperlink'])]
+                else:
+                    edge_data['hyperlinks'] = []
+
+            if 'sources' not in e['data']:
+                if edge_data.get('source'):
+                    edge_data['sources'] = [dict(type='', domain='', url=edge_data['source'])]
+                else:
+                    edge_data['sources'] = []
         else:
             # If no data attribute, add one
             e['data'] = dict(hyperlinks=[], sources=[])
