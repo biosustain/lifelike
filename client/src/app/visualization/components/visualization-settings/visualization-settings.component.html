@@ -1,7 +1,6 @@
-<div *ngIf="legendLabels" id="settings-container" class="floating-toolbar" [ngClass]="navbarCollapsed ? 'unexpanded' : 'expanded'">
+<div *ngIf="legendLabels" class="floating-toolbar settings-container" [ngClass]="navbarCollapsed ? 'unexpanded' : 'expanded'">
   <div
-    id="canvas-settings-button"
-    class="pointer-on-hover"
+    class="pointer-on-hover canvas-settings-button"
     (click)="navbarCollapsed = !navbarCollapsed"
     [attr.aria-expanded]="!navbarCollapsed"
     aria-controls="navbarContent"
@@ -9,26 +8,25 @@
     aria-label="Toggle settings">
     <i class="fa fa-fw fa-cog"></i>
   </div>
-  <div id="settings-content" [ngClass]="navbarCollapsed ? 'unexpanded' : 'expanded'">
+  <div [ngClass]="navbarCollapsed ? 'settings-content unexpanded' : 'settings-content expanded'">
     <form [formGroup]="settingsForm" class="d-flex flex-column justify-content-between">
       <fieldset class="fieldset-properties">
         <legend>Canvas Settings</legend>
         <!-- Animation toggle -->
         <div class="custom-control custom-switch">
-          <input type="checkbox" formControlName="animation" class="custom-control-input pointer-on-hover" id="animation-toggle">
-          <label class="custom-control-label pointer-on-hover" for="animation-toggle">Animation</label>
+          <input type="checkbox" formControlName="animation" class="custom-control-input pointer-on-hover" [id]="animationToggleInputId">
+          <label class="custom-control-label pointer-on-hover" [for]="animationToggleInputId">Animation</label>
         </div>
 
         <!-- Max cluster rows input -->
-        <label class="mt-2" for="max-cluster-rows-input">Max rows shown in clusters:</label>
+        <label class="mt-2" [for]="maxClusterRowsInputId">Max rows shown in clusters:</label>
         <input
-          id="max-cluster-rows-input"
+          [id]="maxClusterRowsInputId"
           [ngClass]="maxClusterRowsInputClass"
           type="number"
           min="1"
           step="1"
           formControlName="maxClusterShownRows"
-          name="firstName"
         />
         <div class="warning-msg" *ngIf="settingsForm.get('maxClusterShownRows').value > 50">
           Large clusters may render slowly.
@@ -49,8 +47,8 @@
           class="custom-control custom-checkbox mt-1"
           *ngFor="let label of legendLabels; index as i"
         >
-          <input type="checkbox" [formControlName]="label" class="custom-control-input pointer-on-hover" [id]="'legend-label-' + i">
-          <label class="custom-control-label pointer-on-hover" [for]="'legend-label-' + i">{{ label }}</label>
+          <input type="checkbox" [formControlName]="label" class="custom-control-input pointer-on-hover" [id]="expandEntityInputIdPrefix + i">
+          <label class="custom-control-label pointer-on-hover" [for]="expandEntityInputIdPrefix + i">{{ label }}</label>
         </div>
       </fieldset>
     </form>
