@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from typing import Dict, List, Union
 from elasticsearch import Elasticsearch
 
@@ -23,6 +24,7 @@ class PDFSearchResult:
         self.description = ''
         self.project_directory = ''
         self.annotations = ''
+        self.preview_text_with_annotations = ''
         self.parse_pdf_entries(data)
 
     def parse_pdf_entries(self, data):
@@ -37,9 +39,11 @@ class PDFSearchResult:
         self.project_directory = source['project_directory']
         self.description = source['description']
         self.filename = source['filename']
-        self.annotations = self.annotate_preview_text(self.preview_text)
+        self.annotations = self.get_annotations(self.preview_text)
+        self.preview_text_with_annotations = self.annotate_preview_text(
+            self.preview_text, self.annotations)
 
-    def annotate_preview_text(self, preview_text):
+    def get_annotations(self, preview_text):
         lmdb_dao = get_lmdb_dao()
         annotator = get_annotations_service(lmdb_dao=lmdb_dao)
         parser = get_annotations_pdf_parser()
@@ -50,6 +54,15 @@ class PDFSearchResult:
         bioc = bioc_service.read(text=preview_text, file_uri="my_path")
         bioc_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
         return bioc_json['documents'][0]['passages'][0]['annotations']
+
+    def annotate_preview_text(self, preview_text, annotations):
+        new_preview_text = preview_text
+        for annotation in annotations:
+            keyword = annotation['keyword']
+            replace_string = f'<span style="background:{annotation["meta"]["color"]}">{keyword}</span>'
+            re_data = re.compile(re.escape(keyword), re.IGNORECASE)
+            new_preview_text= re_data.sub(replace_string, new_preview_text)
+        return new_preview_text
 
     def parse_highlight(self, field, data):
         start_tag = '<highlight>'
@@ -88,7 +101,8 @@ class PDFSearchResult:
             'email': self.email,
             'description': self.description,
             'project_directory': self.project_directory,
-            'annotations': self.annotations
+            'annotations': self.annotations,
+            'preview_text_with_annotations': self.preview_text_with_annotations
         }
 
     def __str__(self):
