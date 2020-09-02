@@ -2091,6 +2091,7 @@ class AnnotationsService:
     def get_matching_manual_annotations(
         self,
         keyword: str,
+        keyword_type: str,
         tokens: PDFTokenPositionsList
     ):
         """Returns coordinate positions and page numbers
@@ -2098,7 +2099,10 @@ class AnnotationsService:
         """
         matches = []
         for token in tokens.token_positions:
-            if standardize_str(token.keyword) != standardize_str(keyword):
+            if keyword_type == EntityType.Gene.value:
+                if token.keyword != keyword:
+                    continue
+            elif standardize_str(token.keyword) != standardize_str(keyword):
                 continue
             keyword_positions: List[Annotation.TextPosition] = []
             self._create_keyword_objects(
