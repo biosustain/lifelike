@@ -89,8 +89,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
           results.hits.forEach((snippetResult, index) => {
             this.projectSpaceService.getCollaborators(snippetResult.project_directory)
                 .subscribe(result => {
-                  snippetResult.preview_text_with_annotations =
-                      this.sanitizer.bypassSecurityTrustHtml(snippetResult.preview_text_with_annotations) as string;
+                  snippetResult.preview_text =
+                      this.sanitizer.bypassSecurityTrustHtml(snippetResult.preview_text) as string;
                 }, error => {
                   results.hits.splice(index, 1);
                   results.total = results.hits.length;
