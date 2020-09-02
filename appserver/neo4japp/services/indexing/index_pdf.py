@@ -9,11 +9,14 @@ from neo4japp.services.indexing.common import ElasticIndex, elastic_client
 
 logger = logging.getLogger(__name__)
 
+INGEST_PIPELINE_MAPPING = '/home/n4j/neo4japp/services/indexing/pipelines/attachments_pipeline.json'
+SNIPPET_INDEX_MAPPING = '/home/n4j/neo4japp/services/indexing/mappings/pdf_snippets.json'
+
 pdf_index = ElasticIndex(
     index_id='pdf',
-    index_definition_file='/home/n4j/neo4japp/services/indexing/mappings/pdf_snippets.json',
+    index_definition_file=SNIPPET_INDEX_MAPPING,
     pipeline_id='attachment',
-    pipeline_definition_file='/home/n4j/neo4japp/services/indexing/pipelines/attachments_pipeline.json'
+    pipeline_definition_file=INGEST_PIPELINE_MAPPING
 )
 
 
