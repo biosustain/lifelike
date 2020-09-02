@@ -82,6 +82,7 @@ describe('VisualizationCanvasComponent', () => {
             primaryLabel: 'Mock Node',
             color: null,
             font: null,
+            entityUrl: null,
         } as VisNode;
     }
 
@@ -380,10 +381,12 @@ describe('VisualizationCanvasComponent', () => {
                 to: {
                     displayName: toNode.displayName,
                     primaryLabel: toNode.primaryLabel,
+                    url: toNode.entityUrl,
                 } as NodeDisplayInfo,
                 from: {
                     displayName: fromNode.displayName,
                     primaryLabel: fromNode.primaryLabel,
+                    url: fromNode.entityUrl,
                 } as NodeDisplayInfo,
                 association: mockGetEdgeSnippetsResult.snippetData.association,
                 snippets: mockGetEdgeSnippetsResult.snippetData.snippets,
@@ -426,10 +429,12 @@ describe('VisualizationCanvasComponent', () => {
                 to: {
                     displayName: toNode.displayName,
                     primaryLabel: toNode.primaryLabel,
+                    url: toNode.entityUrl,
                 } as NodeDisplayInfo,
                 from: {
                     displayName: fromNode.displayName,
                     primaryLabel: fromNode.primaryLabel,
+                    url: fromNode.entityUrl,
                 } as NodeDisplayInfo,
                 association: snippetResult.association,
                 snippets: snippetResult.snippets,
