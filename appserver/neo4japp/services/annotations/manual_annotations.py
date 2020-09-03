@@ -17,8 +17,8 @@ from neo4japp.models import (
     Files,
     FileContent,
     GlobalList,
-    InclusionExclusionType,
 )
+from neo4japp.services.annotations.constants import ManualAnnotationType
 
 
 class ManualAnnotationsService:
@@ -99,7 +99,7 @@ class ManualAnnotationsService:
         if annotation_to_add['meta']['includeGlobally']:
             self.add_to_global_list(
                 annotation_to_add,
-                InclusionExclusionType.INCLUSION.value,
+                ManualAnnotationType.Inclusion.value,
                 file.content_id
             )
 
@@ -165,7 +165,7 @@ class ManualAnnotationsService:
         if excluded_annotation['excludeGlobally']:
             self.add_to_global_list(
                 excluded_annotation,
-                InclusionExclusionType.EXCLUSION.value,
+                ManualAnnotationType.Exclusion.value,
                 file.content_id
             )
 
@@ -210,6 +210,9 @@ class ManualAnnotationsService:
                         annotation['textInDocument'] == exclusion['text']:
                     return True
             return False
+
+        if len(file.annotations) == 0:
+            return file.custom_annotations
 
         annotations = file.annotations['documents'][0]['passages'][0]['annotations']
         filtered_annotations = [

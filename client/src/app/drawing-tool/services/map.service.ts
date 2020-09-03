@@ -1,12 +1,14 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+
+import { Observable } from 'rxjs';
 
 import { KnowledgeMap } from './interfaces';
-import { AbstractService } from '../../shared/services/abstract-service';
-import { AuthenticationService } from '../../auth/services/authentication.service';
-import { AppUser } from 'app/interfaces';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { Project } from 'app/file-browser/services/project-space.service';
+import { AppUser } from 'app/interfaces';
+import { PaginatedRequestOptions, ResultList } from 'app/interfaces/shared.interface';
+import { AbstractService } from 'app/shared/services/abstract-service';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',
@@ -23,10 +25,12 @@ export class MapService extends AbstractService {
   // Listing
   // ========================================
 
-  getCommunityMaps(): Observable<KnowledgeMap[]> {
-    return this.http.get<KnowledgeMap[]>(
-      `/api/drawing-tool/community`,
-      this.getHttpOptions(true)
+  getCommunityMaps(options: PaginatedRequestOptions = {}): Observable<ResultList<PublicMap>> {
+    return this.http.get<ResultList<PublicMap>>(
+      `${this.MAPS_BASE_URL}/community`, {
+        ...this.getHttpOptions(true),
+        params: options as any,
+      },
     );
   }
 
@@ -62,13 +66,11 @@ export class MapService extends AbstractService {
     );
   }
 
-  updateMap(projectName: string, map: KnowledgeMap): Observable<any> {
+  updateMap(projectName: string, target: KnowledgeMap): Observable<any> {
     return this.http.patch(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
-        projectName
-      )}/map/${encodeURIComponent(map.hash_id)}`,
-      map,
-      this.getHttpOptions(true)
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(target.hash_id)}`,
+      target,
+      this.getHttpOptions(true),
     );
   }
 
@@ -126,27 +128,6 @@ export class MapService extends AbstractService {
     );
   }
 
-  /**
-   * @deprecated use {@link generateExport}
-   */
-  generatePDF(projectName: string, hashId: string): Observable<any> {
-    return this.generateExport(projectName, hashId, 'pdf');
-  }
-
-  /**
-   * @deprecated use {@link generateExport}
-   */
-  generateSVG(projectName: string, hashId: string): Observable<any> {
-    return this.generateExport(projectName, hashId, 'svg');
-  }
-
-  /**
-   * @deprecated use {@link generateExport}
-   */
-  generatePNG(projectName: string, hashId: string): Observable<any> {
-    return this.generateExport(projectName, hashId, 'png');
-  }
-
   // ========================================
   // Backup
   // ========================================
@@ -158,17 +139,15 @@ export class MapService extends AbstractService {
     );
   }
 
-  createOrUpdateBackup(
-    projectName: string,
-    map: KnowledgeMap
-  ): Observable<any> {
-    map.description =
-      map.description && map.description.length ? map.description : '';
+  createOrUpdateBackup(projectName: string, target: KnowledgeMap): Observable<any> {
+    target.description = target.description && target.description.length ?
+      target.description :
+      '';
 
     return this.http.post(
-      `${this.MAPS_BASE_URL}/map/${encodeURIComponent(map.hash_id)}/backup`,
-      map,
-      this.getHttpOptions(true)
+      `${this.MAPS_BASE_URL}/map/${encodeURIComponent(target.hash_id)}/backup`,
+      target,
+      this.getHttpOptions(true),
     );
   }
 
@@ -189,4 +168,10 @@ export class MapService extends AbstractService {
       this.getHttpOptions(true)
     );
   }
+}
+
+export interface PublicMap {
+  map: KnowledgeMap;
+  user: AppUser;
+  project: Project;
 }

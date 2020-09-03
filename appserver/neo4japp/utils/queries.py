@@ -1,12 +1,12 @@
 import string
-from typing import List
+from typing import List, Tuple
 
 from neo4japp.utils.stopwords import StopWords
 
 WILDCARD_MIN_LEN = 3
 
 
-def parse_query_terms(user_query: str) -> (List[str], List[str], List[str]):
+def parse_query_terms(user_query: str) -> Tuple[List[str], List[str], List[str]]:
     """Takes a user query and returns a list of individual query terms
     """
     query_string = user_query.lower()
@@ -37,7 +37,7 @@ def parse_query_terms(user_query: str) -> (List[str], List[str], List[str]):
     return terms, wildcards, phrases
 
 
-def _find_start_end_quote(query_string: str, start=0) -> (int, int):
+def _find_start_end_quote(query_string: str, start=0) -> Tuple[int, int]:
     """
     find valid start quote location in given string
     :param query_string: input string to analyze

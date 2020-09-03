@@ -48,6 +48,11 @@ def _connect_to_neo4j():
     return Graph(
         host=current_app.config.get("NEO4J_HOST"),
         auth=current_app.config.get('NEO4J_AUTH').split('/'),
+        # max time in seconds to keep connection in pool
+        # good for long processing before querying the graph
+        # as the connection could be stale and the pool
+        # is maxed out so new connections can't be added
+        max_age=60,
     )
 
 
@@ -58,12 +63,26 @@ def get_neo4j():
     return g.neo4j
 
 
-def get_neo4j_service_dao():
-    if 'neo4j_service_dao' not in g:
-        from neo4japp.services import Neo4JService
+def get_kg_service():
+    if 'kg_service' not in g:
+        from neo4japp.services import KgService
         graph = _connect_to_neo4j()
-        g.neo4j_service_dao = Neo4JService(graph=graph)
-    return g.neo4j_service_dao
+        g.kg_service = KgService(
+            graph=graph,
+            session=db.session,
+        )
+    return g.kg_service
+
+
+def get_visualizer_service():
+    if 'visualizer_service' not in g:
+        from neo4japp.services import VisualizerService
+        graph = _connect_to_neo4j()
+        g.visualizer_service = VisualizerService(
+            graph=graph,
+            session=db.session,
+        )
+    return g.visualizer_service
 
 
 def get_user_file_import_service():
@@ -119,10 +138,10 @@ def close_lmdb(e=None):
 def get_annotation_neo4j():
     if 'annotation_neo4j' not in g:
         from neo4japp.services.annotations import AnnotationsNeo4jService
-        neo4j = get_neo4j_service_dao()
+        graph = _connect_to_neo4j()
         g.annotation_neo4j = AnnotationsNeo4jService(
             session=db.session,
-            neo4j_service=neo4j,
+            graph=graph,
         )
     return g.annotation_neo4j
 
@@ -162,7 +181,7 @@ def reset_dao():
     handy for production later.
     """
     for dao in [
-        'neo4j_service_dao',
+        'kg_service',
         'user_file_import_service',
         'search_dao',
         'authorization_service',
@@ -170,6 +189,7 @@ def reset_dao():
         'projects_service',
         'lmdb_dao',
         'annotation_neo4j',
+        'visualizer_service',
     ]:
         if dao in g:
             g.pop(dao)

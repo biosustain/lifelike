@@ -8,6 +8,12 @@ from neo4japp.util import CamelDictMixin
 
 
 @attr.s(frozen=True)
+class AnnotationRequest(CamelDictMixin):
+    annotation_method: str = attr.ib()
+    file_ids: List[str] = attr.ib(default=attr.Factory(list))
+
+
+@attr.s(frozen=True)
 class PDFParsedCharacters(CamelDictMixin):
     chars_in_pdf: List[str] = attr.ib()
     char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
@@ -100,3 +106,9 @@ class GeneAnnotation(Annotation):
     @attr.s(frozen=True)
     class GeneMeta(Annotation.Meta):
         category: str = attr.ib(default='')
+
+
+@attr.s(frozen=False)
+class LMDBMatch(CamelDictMixin):
+    entities: List[dict] = attr.ib()
+    tokens: List[PDFTokenPositions] = attr.ib()
