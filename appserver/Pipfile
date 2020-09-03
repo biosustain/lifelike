@@ -31,7 +31,6 @@ lmdb = "==0.98"
 ipython = "==7.3.0"
 PyPDF4 = "==1.27.0"
 sqlalchemy-searchable = "*"
-intervaltree = "==3.0.2"
 unidecode = "==1.1.1"
 elasticsearch = "==7.6.0"
 sentry-sdk = {extras = ["flask"],version = "==0.14.3"}
@@ -42,6 +41,7 @@ requests = "*"
 pandas = "~=1.0.5"
 xlsxwriter = "~=1.2.9"
 python-json-logger = "*"
+intervaltree = "==3.1.0"
 
 [requires]
 python_version = "3.8.2"

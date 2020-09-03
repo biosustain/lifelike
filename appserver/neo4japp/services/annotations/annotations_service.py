@@ -608,7 +608,7 @@ class AnnotationsService:
         custom_annotations: List[Annotation] = []
 
         for word, token_list in tokens.items():
-            entities = self.local_species_inclusion.get(normalize_str(word), None) or []
+            entities = self.local_species_inclusion.get(normalize_str(word), [])
             for token_positions in token_list:
                 for entity in entities:
                     annotation = self._create_annotation_object(
@@ -892,15 +892,14 @@ class AnnotationsService:
             tokens: list of PDFTokenPositions
             char_coord_objs_in_pdf: list of char objects from pdfminer
             cropbox_in_pdf: the mediabox/cropbox offset from pdfminer
-            check_entities_in_lmdb: a dictionary of entity types and boolean
                 - boolean determines whether to check lmdb for that entity
             types_to_annotate: list of entity types to create annotations of
-                - NOTE: IMPORTANT: should always match with `check_entities_in_lmdb`
+                - NOTE: IMPORTANT: should always match with `EntityRecognition.identify_entities()`
                 - NOTE: IMPORTANT: Species should always be before Genes
                     - because species is used to do gene organism matching
                 - e.g [
                     (EntityType.Species.value, EntityIdStr.Species.value),
-                    (EntityType.Chemical.value, EntityIdStr.Chemical.value),
+                    (EntityType.Gene.value, EntityIdStr.Gene.value),
                     ...
                 ]
         """
@@ -1088,7 +1087,6 @@ class AnnotationsService:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=annotations,
         )
-
         fixed_unified_annotations = self.fix_conflicting_annotations(
             unified_annotations=fixed_unified_annotations,
         )
@@ -1137,16 +1135,13 @@ class AnnotationsService:
         self,
         annotations: List[Annotation],
     ) -> AnnotationIntervalTree:
-        tree = AnnotationIntervalTree()
-        for annotation in annotations:
-            tree.add(
-                AnnotationInterval(
-                    begin=annotation.lo_location_offset,
-                    end=annotation.hi_location_offset,
-                    data=annotation,
-                ),
-            )
-        return tree
+        return AnnotationIntervalTree(
+            [AnnotationInterval(
+                begin=anno.lo_location_offset,
+                end=anno.hi_location_offset,
+                data=anno
+            ) for anno in annotations]
+        )
 
     def determine_entity_precedence(
         self,
