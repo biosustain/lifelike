@@ -42,6 +42,7 @@ export interface TaskStatus {
   retryInProgressShown: boolean;
   failedErrorShown: boolean;
   resultsShown: boolean;
+  error: any;
 }
 
 /**
@@ -68,8 +69,10 @@ export class BackgroundTask<T, R> {
     retryInProgressShown: false,
     failedErrorShown: false,
     resultsShown: false,
+    error: null,
   });
   public results$ = new Subject<TaskResult<T, R>>();
+  public errors$ = new Subject<any>();
 
   private started = false;
   private currentState: TaskState = TaskState.Idle;
@@ -81,6 +84,7 @@ export class BackgroundTask<T, R> {
   public latestSuccessfulValue: T = null;
   private initialRunCompleted = false;
   private error = false;
+  private latestError: any;
 
   private delayedRunning = false;
   private delayedRunningStartTime: number | undefined;
@@ -134,6 +138,7 @@ export class BackgroundTask<T, R> {
       emptyResultsShown: !running,
       failedErrorShown: this.state === TaskState.RetryLimitExceeded,
       retryInProgressShown: this.error && this.state !== TaskState.RetryLimitExceeded,
+      error: this.latestError,
     });
   }
 
@@ -229,6 +234,8 @@ export class BackgroundTask<T, R> {
           setTimeout(this.startRun.bind(this), delay);
         } else {
           this.state = TaskState.RetryLimitExceeded;
+          this.errors$.next(error);
+          this.latestError = error;
           this.nextStatus();
         }
       },

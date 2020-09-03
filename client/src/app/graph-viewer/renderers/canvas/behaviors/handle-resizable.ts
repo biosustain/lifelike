@@ -1,11 +1,11 @@
 import { cloneDeep } from 'lodash';
-import * as d3 from 'd3';
 
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { AbstractCanvasBehavior } from '../../behaviors';
 import { GraphEntityUpdate } from '../../../actions/graph';
+import { AbstractNodeHandleBehavior, Handle } from '../../../utils/behaviors/abstract-node-handle-behavior';
 
 const BEHAVIOR_KEY = '_handle-resizable/active';
 
@@ -38,54 +38,35 @@ export class HandleResizable extends AbstractCanvasBehavior {
 /**
  * Holds the state of an active resize.
  */
-export class ActiveResize extends AbstractCanvasBehavior {
+export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
   private originalSize: { width: number, height: number } | undefined;
   private dragStartPosition: { x: number, y: number } = {x: 0, y: 0};
-  private handle: DragHandle | undefined;
   private originalTarget: UniversalGraphNode;
 
-  constructor(private readonly graphView: CanvasGraphView,
-              private readonly target: UniversalGraphNode,
+  constructor(graphView: CanvasGraphView,
+              target: UniversalGraphNode,
               private size = 10) {
-    super();
+    super(graphView, target);
     this.originalTarget = cloneDeep(this.target);
   }
 
-  dragStart(event: MouseEvent): BehaviorResult {
-    const transform = this.graphView.transform;
-    const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
-    const graphX = transform.invertX(mouseX);
-    const graphY = transform.invertY(mouseY);
-    const subject: GraphEntity | undefined = d3.event.subject;
-
-    if (subject.type === GraphEntityType.Node) {
-      this.handle = this.getHandleIntersected(this.graphView.placeNode(this.target), graphX, graphY);
-      this.originalSize = this.getCurrentNodeSize();
-      this.dragStartPosition = {x: graphX, y: graphY};
-    }
-
-    return BehaviorResult.Continue;
+  isPointIntersectingNode(placedNode: PlacedNode, x: number, y: number): boolean {
+    // Consider ourselves still intersecting if we have a handle
+    return (!!this.handle || !!this.getHandleIntersected(placedNode, x, y)) ? true : undefined;
   }
 
-  drag(event: MouseEvent): BehaviorResult {
-    if (this.handle) {
-      const transform = this.graphView.transform;
-      const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
-      const graphX = transform.invertX(mouseX);
-      const graphY = transform.invertY(mouseY);
-
-      this.handle.execute(this.target, this.originalSize, this.dragStartPosition, {x: graphX, y: graphY});
-      this.graphView.invalidateNode(this.target);
-      this.graphView.requestRender();
-      return BehaviorResult.Stop;
-    } else {
-      return BehaviorResult.Continue;
-    }
+  protected activeDragStart(event: MouseEvent, graphX: number, graphY: number, subject: GraphEntity | undefined) {
+    this.originalSize = this.getCurrentNodeSize();
+    this.dragStartPosition = {x: graphX, y: graphY};
   }
 
-  dragEnd(event: MouseEvent): BehaviorResult {
-    this.drag(event);
-    this.handle = null;
+  protected activeDrag(event: MouseEvent, graphX: number, graphY: number) {
+    this.handle.execute(this.target, this.originalSize, this.dragStartPosition, {x: graphX, y: graphY});
+    this.graphView.invalidateNode(this.target);
+    this.graphView.requestRender();
+  }
+
+  protected activeDragEnd(event: MouseEvent) {
     if (this.target.data.width !== this.originalTarget.data.width ||
       this.target.data.height !== this.originalTarget.data.height) {
       this.graphView.execute(new GraphEntityUpdate('Resize node', {
@@ -95,61 +76,15 @@ export class ActiveResize extends AbstractCanvasBehavior {
         data: {
           width: this.target.data.width,
           height: this.target.data.height,
-        }
+        },
       } as Partial<UniversalGraphNode>, {
         data: {
           width: this.originalTarget.data.width,
           height: this.originalTarget.data.height,
-        }
+        },
       } as Partial<UniversalGraphNode>));
       this.originalTarget = cloneDeep(this.target);
     }
-    return BehaviorResult.Continue;
-  }
-
-  draw(ctx: CanvasRenderingContext2D, transform: any) {
-    const placedNode = this.graphView.placeNode(this.target);
-
-    ctx.beginPath();
-    ctx.fillStyle = '#000';
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
-    for (const {minX, minY, maxX, maxY} of Object.values(this.getHandleBoundingBoxes(placedNode))) {
-      ctx.rect(minX, minY, maxX - minX, maxY - minY);
-      ctx.fill();
-      ctx.stroke();
-    }
-  }
-
-  getCurrentNodeSize(): { width: number, height: number } {
-    let width = this.target.data.width;
-    let height = this.target.data.height;
-
-    if (width == null || height == null) {
-      const bbox = this.graphView.placeNode(this.target).getBoundingBox();
-
-      if (width == null) {
-        width = bbox.maxX - bbox.minX + 1;
-      }
-      if (height == null) {
-        height = bbox.maxY - bbox.minY + 1;
-      }
-    }
-
-    return {width, height};
-  }
-
-  isPointIntersectingNode(placedNode: PlacedNode, x: number, y: number): boolean {
-    return !!this.handle || !!this.getHandleIntersected(placedNode, x, y);
-  }
-
-  getHandleIntersected(placedNode: PlacedNode, x: number, y: number): DragHandle | undefined {
-    for (const handle of this.getHandleBoundingBoxes(placedNode)) {
-      if (x >= handle.minX && x <= handle.maxX && y >= handle.minY && y <= handle.maxY) {
-        return handle;
-      }
-    }
-    return null;
   }
 
   getHandleBoundingBoxes(placedNode: PlacedNode): DragHandle[] {
@@ -206,13 +141,9 @@ export class ActiveResize extends AbstractCanvasBehavior {
   }
 }
 
-interface DragHandle {
+interface DragHandle extends Handle {
   execute: (target: UniversalGraphNode,
             originalSize: { width: number, height: number },
             dragStartPosition: { x: number, y: number },
             graphPosition: { x: number, y: number }) => void;
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
 }

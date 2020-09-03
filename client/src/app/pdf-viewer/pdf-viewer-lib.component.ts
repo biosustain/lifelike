@@ -175,9 +175,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         (window as any).pdfViewerRef.openExclusionPanel(annExclusion);
       });
     }
-    (window as any).removeAnnotationExclusion = (id, text) => {
+    (window as any).removeAnnotationExclusion = (annExclusion) => {
       (window as any).pdfViewerRef.zone.run(() => {
-        (window as any).pdfViewerRef.removeAnnotationExclusion(id, text);
+        (window as any).pdfViewerRef.removeAnnotationExclusion(annExclusion);
       });
     }
     (window as any).pdfViewerRef = {
@@ -186,7 +186,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       copySelectedText: () => this.copySelectedText(),
       removeCustomAnnotation: (uuid) => this.removeCustomAnnotation(uuid),
       openExclusionPanel: (annExclusion) => this.openExclusionPanel(annExclusion),
-      removeAnnotationExclusion: (id, text) => this.removeAnnotationExclusion(id, text),
+      removeAnnotationExclusion: (annExclusion) => this.removeAnnotationExclusion(annExclusion),
       component: this,
     };
   }
@@ -441,7 +441,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         type: an.meta.type,
         rects: an.rects,
         pageNumber: an.pageNumber
-      }).replace(/"/g, '&quot;');
+      }).replace(/"/g, '\\&quot;').replace(/'/g, '\\&apos;');
       base.push(`
         <div class="mt-1">
           <button type="button" class="btn btn-primary btn-block" onclick="openExclusionPanel('${annExclusion}')">
@@ -452,6 +452,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       `)
     }
     if (an.meta.isExcluded) {
+      const annExclusion = JSON.stringify({
+        text: an.textInDocument,
+        type: an.meta.type
+      }).replace(/"/g, '\\&quot;').replace(/'/g, '\\&apos;');
       base.push(`
         <div class="mt-2">
           <div>
@@ -460,7 +464,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
             ${an.meta.exclusionComment ? `<span style="line-height: 16px"><i>comment: </i>${an.meta.exclusionComment}</span>` : ''}
           </div>
           <div class="mt-1">
-            <button type="button" class="btn btn-primary btn-block" onclick="removeAnnotationExclusion('${an.meta.type}', '${an.textInDocument}')">
+            <button type="button" class="btn btn-primary btn-block" onclick="removeAnnotationExclusion('${annExclusion}')">
               <i class="fas fa-fw fa-undo"></i>
               <span>Unmark Exclusion</span>
             </button>
@@ -495,7 +499,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  @HostListener('window:mouseup', ['$event'])
   mouseUp = event => {
     const targetTagName = event.target.tagName;
     if (targetTagName === 'INPUT') {
@@ -748,9 +751,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  removeAnnotationExclusion(type, text) {
+  removeAnnotationExclusion(annExclusion) {
     jQuery('.system-annotation').qtip('hide');
-    this.annotationExclusionRemoved.emit({type, text});
+    this.annotationExclusionRemoved.emit(JSON.parse(annExclusion));
   }
 
   clearSelection() {
@@ -772,6 +775,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   incrementZoom(amount: number) {
     this.zoom += amount;
+  }
+
+  setZoom(amount: number) {
+    this.zoom = amount;
   }
 
   rotate(angle: number) {
@@ -878,9 +885,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     const overlayContainer = pdfPageView.div;
     const overlayDiv = document.createElement('div');
     overlayDiv.setAttribute('style', `border: 2px solid red; position:absolute;` +
-      'left:' + (left - 2) + 'px;top:' + (top + 2) + 'px;width:' + (width + 2) + 'px;height:' + (height + 2) + 'px;');
+      'left:' + (left - 4) + 'px;top:' + (top - 4) + 'px;width:' + (width + 8) + 'px;height:' + (height + 8) + 'px;');
     overlayContainer.appendChild(overlayDiv);
-    overlayDiv.scrollIntoView();
+    overlayDiv.scrollIntoView({block: 'center'});
     jQuery(overlayDiv).effect('highlight', {}, 1000);
     setTimeout(() => {
       jQuery(overlayDiv).remove();

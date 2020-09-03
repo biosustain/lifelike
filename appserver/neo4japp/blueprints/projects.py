@@ -34,9 +34,11 @@ from neo4japp.models import (
     Directory,
     Project,
     Projects,
-    projects_collaborator_role, ProjectSchema,
+    projects_collaborator_role,
 )
+from neo4japp.models.schema import ProjectSchema
 from neo4japp.util import jsonify_with_class, SuccessResponse, CasePreservedDict
+from neo4japp.utils.logger import UserEventLog
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
 
@@ -59,7 +61,7 @@ def get_project(name):
         **projects.to_dict(),
         "directory": dir.to_dict()
     }
-    return jsonify(dict(results=results)), 200
+    return jsonify({'results': results}), 200
 
 
 @bp.route('/', methods=['GET'])
@@ -70,7 +72,7 @@ def get_projects():
 
     proj_service = get_projects_service()
     projects_list = proj_service.projects_users_have_access_2(user)
-    return jsonify(dict(results=[p.to_dict() for p in projects_list])), 200
+    return jsonify({'results': [p.to_dict() for p in projects_list]}), 200
 
 
 @bp.route('/', methods=['POST'])
@@ -89,22 +91,22 @@ def add_projects():
     )
 
     current_app.logger.info(
-        f'User created projects: <{g.current_user.email}:{projects.project_name}>')
+        f'User created projects: <{projects.project_name}>',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='projects create').to_dict())
 
     proj_service = get_projects_service()
     try:
         proj_service.create_projects(user, projects)
     except NameUnavailableError:
         raise DuplicateRecord('There is a project with that name already.')
-    return jsonify(dict(results=projects.to_dict())), 200
+    return jsonify({'results': projects.to_dict()}), 200
 
 
 @bp.route('/<string:project_name>/collaborators', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
 def get_project_collaborators(project_name: str):
-    proj_service = get_projects_service()
-
     projects = Projects.query.filter(
         Projects.project_name == project_name
     ).one_or_none()
@@ -131,11 +133,13 @@ def get_project_collaborators(project_name: str):
         AppRole
     ).all()  # TODO: paginate
 
-    yield jsonify(dict(results=[{
-        'id': id,
-        'username': username,
-        'role': role,
-    } for id, username, role in collaborators])), 200
+    yield jsonify({
+        'results': [{
+            'id': id,
+            'username': username,
+            'role': role,
+        } for id, username, role in collaborators]
+    }), 200
 
 
 @bp.route('/<string:project_name>/collaborators/<string:username>', methods=['POST'])
@@ -173,7 +177,7 @@ def add_collaborator(username: str, project_name: str):
     new_role = AppRole.query.filter(AppRole.name == project_role).one()
     proj_service.add_collaborator(new_collaborator, new_role, projects)
 
-    yield jsonify(dict(result='success')), 200
+    yield jsonify({'result': 'success'}), 200
 
 
 @bp.route('/<string:project_name>/collaborators/<string:username>', methods=['PUT'])
@@ -207,7 +211,7 @@ def edit_collaborator(username: str, project_name: str):
     new_role = AppRole.query.filter(AppRole.name == project_role).one()
     proj_service.edit_collaborator(new_collaborator, new_role, projects)
 
-    yield jsonify(dict(result='success')), 200
+    yield jsonify({'result': 'success'}), 200
 
 
 @bp.route('/<string:project_name>/collaborators/<string:username>', methods=['DELETE'])
@@ -235,7 +239,7 @@ def remove_collaborator(username: str, project_name: str):
 
     proj_service.remove_collaborator(new_collaborator, projects)
 
-    yield jsonify(dict(result='success')), 200
+    yield jsonify({'result': 'success'}), 200
 
 
 @bp.route('/<string:project_name>/directories', methods=['POST'])
@@ -260,7 +264,7 @@ def add_directory(project_name: str):
 
     yield user, projects
     new_dir = proj_service.add_directory(projects, dir_name, user, parent_dir)
-    yield jsonify(dict(results=new_dir.to_dict()))
+    yield jsonify({'results': new_dir.to_dict()})
 
 
 @bp.route('/<string:project_name>/directories/move', methods=['POST'])
@@ -427,33 +431,39 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'name': c.name,
                 'creator': {
                     'id': c.user_id,
-                    'name': username
+                    'name': c.username
                 },
-                'data': c.to_dict(),
-            } for (c, username) in child_dirs],
+                'annotation_date': None,
+                'creation_date': None,
+                'modification_date': None,
+                'data': c.__dict__.to_dict(snake_to_camel_transform=True),
+            } for c in child_dirs],
             *[{
                 'type': 'file',
                 'name': f.filename,
                 'creator': {
                     'id': f.user_id,
-                    'name': username
+                    'name': f.username
                 },
                 'description': f.description,
-                'data': CasePreservedDict(
-                    f.to_dict(exclude=[
-                        'annotations', 'custom_annotations',
-                        'excluded_annotations'], keyfn=lambda x: x)),
-            } for (f, username) in files],
+                'annotation_date': f.annotations_date,
+                'creation_date': f.creation_date,
+                'modification_date': None,
+                'data': CasePreservedDict(f.__dict__)
+            } for f in files],
             *[{
                 'type': 'map',
                 'name': m.label,
+                'annotation_date': None,
+                'creation_date': None,
+                'modification_date': m.date_modified,
                 'creator': {
                     'id': m.user_id,
-                    'name': username
+                    'name': m.username
                 },
                 'description': m.description,
-                'data': CasePreservedDict(m.to_dict(exclude=['graph'], keyfn=lambda x: x)),
-            } for (m, username) in maps],
+                'data': CasePreservedDict(m.__dict__),
+            } for m in maps],
         ],
     )
-    yield jsonify(dict(result=contents.to_dict()))
+    yield jsonify({'result': contents.to_dict()})

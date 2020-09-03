@@ -24,7 +24,6 @@ import {
   VisEdge,
   VisNode,
 } from 'app/interfaces';
-import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
@@ -263,23 +262,25 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   }
 
   convertNodeToVisJSFormat(n: GraphNode) {
+    const color = this.legend.get(n.label) ? this.legend.get(n.label)[0] : '#000000';
+    const border = this.legend.get(n.label) ? this.legend.get(n.label)[1] : '#000000';
     return {
       ...n,
       expanded: false,
       primaryLabel: n.label,
       font: {
-        color: this.legend.get(n.label)[0],
+        color,
       },
       color: {
         background: '#FFFFFF',
-        border: this.legend.get(n.label)[1],
+        border,
         hover: {
           background: '#FFFFFF',
-          border: this.legend.get(n.label)[1],
+          border,
         },
         highlight: {
           background: '#FFFFFF',
-          border: this.legend.get(n.label)[1],
+          border,
         },
       },
       label: n.displayName.length > 64 ? n.displayName.slice(0, 64) + '...' : n.displayName,

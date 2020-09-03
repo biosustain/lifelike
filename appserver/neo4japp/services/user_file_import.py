@@ -15,8 +15,10 @@ from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.session import Session
 
 from py2neo import (
+    Graph,
     Node,
     Transaction,
     Relationship,
@@ -48,7 +50,11 @@ from neo4japp.util import compute_hash
 
 
 class UserFileImportService(HybridDBDao):
-    def __init__(self, graph, session):
+    def __init__(
+        self,
+        graph: Graph,
+        session: Session
+    ):
         super().__init__(graph=graph, session=session)
 
     # def strip_leading_and_trailing_spaces(self, current_ws: Worksheet) -> Worksheet:
@@ -349,7 +355,7 @@ class UserFileImportService(HybridDBDao):
         # needed because haven't committed yet
         # so the match would not return a node
         created_nodes = set()  # type: ignore
-        created_domains = dict()  # type: ignore
+        created_domains = {}  # type: ignore
 
         for node in node_mappings.new_nodes:
             # can't use cipher parameters due to the dynamic map keys in filtering

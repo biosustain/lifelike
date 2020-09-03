@@ -1,33 +1,19 @@
 import attr
 from flask import Blueprint
 from neo4japp.blueprints.auth import auth
-from neo4japp.database import get_search_service_dao, get_neo4j_service_dao
+from neo4japp.database import get_search_service_dao
 from neo4japp.services.pdf_search import PDFSearch, PDFSearchResult
 from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
+from neo4japp.data_transfer_objects import (
+    GeneFilteredRequest,
+    OrganismRequest,
+    PDFSearchRequest,
+    SearchRequest,
+    SimpleSearchRequest,
+    VizSearchRequest
+)
 
 bp = Blueprint('search', __name__, url_prefix='/search')
-
-
-@attr.s(frozen=True)
-class SearchRequest(CamelDictMixin):
-    query: str = attr.ib()
-    page: int = attr.ib()
-    limit: int = attr.ib()
-
-
-@attr.s(frozen=True)
-class SimpleSearchRequest(CamelDictMixin):
-    query: str = attr.ib()
-    page: int = attr.ib()
-    limit: int = attr.ib()
-    filter: str = attr.ib()
-
-
-@attr.s(frozen=True)
-class PDFSearchRequest(CamelDictMixin):
-    query: str = attr.ib()
-    offset: int = attr.ib()
-    limit: int = attr.ib()
 
 
 @bp.route('/search', methods=['POST'])
@@ -50,10 +36,16 @@ def simple_full_text_search(req: SimpleSearchRequest):
 # search service consistent with both the visualizer and the drawing tool.
 # This will need tests if we decide to maintain it as a standalone service.
 @bp.route('/viz-search-temp', methods=['POST'])
-@jsonify_with_class(SimpleSearchRequest)
-def visualizer_search_temp(req: SimpleSearchRequest):
+@jsonify_with_class(VizSearchRequest)
+def visualizer_search_temp(req: VizSearchRequest):
     search_dao = get_search_service_dao()
-    results = search_dao.visualizer_search_temp(req.query, req.page, req.limit, req.filter)
+    results = search_dao.visualizer_search_temp(
+        term=req.query,
+        organism=req.organism,
+        page=req.page,
+        limit=req.limit,
+        filter=req.filter
+    )
     return SuccessResponse(result=results, status_code=200)
 
 
@@ -78,3 +70,28 @@ def search(req: PDFSearchRequest):
     else:
         res = {'hits': [], 'max_score': None, 'total': 0}
     return SuccessResponse(result=res, status_code=200)
+
+
+@bp.route('/organism/<string:organism_tax_id>', methods=['GET'])
+@jsonify_with_class()
+def get_organism(organism_tax_id: str):
+    search_dao = get_search_service_dao()
+    result = search_dao.get_organism_with_tax_id(organism_tax_id)
+    return SuccessResponse(result=result, status_code=200)
+
+
+@bp.route('/organisms', methods=['POST'])
+@jsonify_with_class(OrganismRequest)
+def get_organisms(req: OrganismRequest):
+    search_dao = get_search_service_dao()
+    results = search_dao.get_organisms(req.query, req.limit)
+    return SuccessResponse(result=results, status_code=200)
+
+
+@bp.route('/genes_filtered_by_organism_and_others', methods=['POST'])
+@jsonify_with_class(GeneFilteredRequest)
+def get_genes_filtering_by_organism(req: GeneFilteredRequest):
+    search_dao = get_search_service_dao()
+    results = search_dao.search_genes_filtering_by_organism_and_others(
+        req.query, req.organism_id, req.filters)
+    return SuccessResponse(result=results, status_code=200)

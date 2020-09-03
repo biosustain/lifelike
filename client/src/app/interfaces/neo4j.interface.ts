@@ -12,6 +12,7 @@ export interface GraphNode {
   data: {[key: string]: any};
   subLabels: Array<string>;
   displayName: string;
+  entityUrl: string;
 }
 
 /** Edge represenattion from the backend */
@@ -100,6 +101,7 @@ export interface SearchParameters {
   query: string;
   domains?: Domain[];
   entityTypes?: EntityType[];
+  organism?: string | null;
   page: number;
   limit: number;
 }
@@ -110,6 +112,19 @@ export interface SearchRecord {
   subLabels: Array<string>;
   data: string;
   dataId: string;
+}
+
+export interface OrganismsResult {
+  limit: number;
+  nodes: OrganismAutocomplete;
+  query: string;
+  total: number;
+}
+
+export interface OrganismAutocomplete {
+  organism_name: string;
+  synonym: string;
+  tax_id: string;
 }
 
 export interface Domain {

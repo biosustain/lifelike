@@ -24,6 +24,8 @@ import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
 import { FriendlyDateStrPipe, TruncatePipe } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
+import { OrganismAutocompleteComponent } from './components/organism-autocomplete.component';
+import { SharedSearchService } from './services/shared-search.service';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { SortLegendComponent } from './components/sort-legend.component';
 import { ConfirmDialogComponent } from './components/dialog/confirm-dialog.component';
@@ -43,6 +45,9 @@ import { QuickSearchComponent } from './components/quick-search.component';
 import { CollapsibleWindowComponent } from './components/collapsible-window.component';
 import { GenericFileUploadComponent } from './components/generic-file-upload/generic-file-upload.component';
 import { SourcesComponent } from './components/sources/sources.component';
+import { ModuleErrorComponent } from './components/module-error.component';
+import { ModuleProgressComponent } from './components/module-progress.component';
+import { ShareDialogComponent } from './components/dialog/share-dialog.component';
 
 const components = [
   MessageDialogComponent,
@@ -53,6 +58,7 @@ const components = [
   TooltipComponent,
   SortLegendComponent,
   ConfirmDialogComponent,
+  OrganismAutocompleteComponent,
   FormInputFeedbackComponent,
   BackgroundTaskProgressComponent,
   FormRowComponent,
@@ -68,13 +74,17 @@ const components = [
   QuickSearchComponent,
   CollapsibleWindowComponent,
   GenericFileUploadComponent,
-  SourcesComponent
+  SourcesComponent,
+  ModuleErrorComponent,
+  ModuleProgressComponent,
+  ShareDialogComponent,
 ];
 
 @NgModule({
   entryComponents: [
     MessageDialogComponent,
     ProgressDialogComponent,
+    ShareDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -97,7 +107,10 @@ const components = [
     FriendlyDateStrPipe,
     NodeTextStylePipe,
   ],
-  providers: [SharedNgrxEffects],
+  providers: [
+    SharedNgrxEffects,
+    SharedSearchService,
+  ],
   // exported modules are visible to modules that import this one
   exports: [
     // Modules
