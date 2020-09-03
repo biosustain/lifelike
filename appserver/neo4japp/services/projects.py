@@ -91,11 +91,11 @@ class ProjectsService(RDBMSBaseDao):
 
         self.session.execute(
             projects_collaborator_role.insert(),
-            [dict(
-                appuser_id=user.id,
-                app_role_id=role.id,
-                projects_id=projects.id,
-            )]
+            [{
+                'appuser_id': user.id,
+                'app_role_id': role.id,
+                'projects_id': projects.id,
+            }]
         )
 
         self.session.commit()

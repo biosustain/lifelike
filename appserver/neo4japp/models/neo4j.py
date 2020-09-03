@@ -5,12 +5,13 @@ from neo4japp.util import snake_to_camel_dict
 
 
 class GraphNode(NEO4JBase):
-    def __init__(self, id, label, data, sub_labels, display_name):
+    def __init__(self, id, label, data, sub_labels, display_name, url):
         self.id = id
         self.label = label
         self.data = data
         self.sub_labels = sub_labels
         self.display_name = display_name
+        self.entity_url = url
 
     def property_filter(self, properties, only=None, include=None, exclude=None, keyfn=None):
         if only:
@@ -27,14 +28,22 @@ class GraphNode(NEO4JBase):
         return retval
 
     @classmethod
-    def from_py2neo(cls, node: Node, prop_filter_fn=None, primary_label_fn=None, display_fn=None):
+    def from_py2neo(
+        cls,
+        node: Node,
+        prop_filter_fn=None,
+        primary_label_fn=None,
+        display_fn=None,
+        url_fn=None
+    ):
         labels = [l for l in node.labels]
         prop_filter_fn = prop_filter_fn or (lambda x: x)
         primary_label = labels[0] if not primary_label_fn else primary_label_fn(node)
         data = prop_filter_fn({k: v for k, v in dict(node).items()})
         data = snake_to_camel_dict(data, {})
         display_name = None if not display_fn else display_fn(node)
-        return cls(node.identity, primary_label, data, labels, display_name)
+        url = None if not url_fn else url_fn(node)
+        return cls(node.identity, primary_label, data, labels, display_name, url)
 
 
 class GraphRelationship(NEO4JBase):

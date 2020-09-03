@@ -269,7 +269,7 @@ class AnnotationsService:
                                     # so we use the gene_id to query the KG to get
                                     # the correct gene name and use that gene name
                                     # as the synonym too for gene/organism matching
-                                    gene_name = self.annotation_neo4j.get_genes_from_ids(gene_ids=[entity_id])  # noqa
+                                    gene_name = self.annotation_neo4j.get_genes_from_gene_ids(gene_ids=[entity_id])  # noqa
                                     if gene_name:
                                         entity = create_entity_ner_func(
                                             name=gene_name.pop(),
