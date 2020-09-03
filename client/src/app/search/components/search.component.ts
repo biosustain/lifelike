@@ -22,6 +22,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   readonly loadTask: BackgroundTask<SearchParameters, FTSResult> = new BackgroundTask(params => {
     return this.searchService.visualizerSearchTemp(
       params.query,
+      params.organism,
       params.page,
       params.limit,
       this.createFilterQuery(params.domains, params.entityTypes),

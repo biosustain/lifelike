@@ -396,12 +396,12 @@ def generate_jwt_token(
         algorithm - jwt.encode compatible algorithms (see docs)
     """
     time_now = datetime.utcnow()
-    return jwt.encode(dict(
-        iat=time_now,
-        sub=sub,
-        exp=time_now + timedelta(**{time_unit: time_offset}),
-        type=token_type,
-    ), secret, algorithm=algorithm)
+    return jwt.encode({
+        'iat': time_now,
+        'sub': sub,
+        'exp': time_now + timedelta(**{time_unit: time_offset}),
+        'type': token_type,
+    }, secret, algorithm=algorithm)
 
 
 def get_first_known_label_from_node(node: Node):
@@ -415,3 +415,24 @@ def get_first_known_label_from_list(labels: List[str]):
             return label
 
     raise ValueError('Detected node label of an unknown type!')
+
+
+class AttrDict(dict):
+    """ Wrap a python dictionary into an object
+    """
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+    def to_dict(self, exclude=[], snake_to_camel_transform=False):
+        new_dict = {}
+
+        if len(exclude):
+            new_dict = {key: self.__dict__[key] for key in self.__dict__ if key not in exclude}
+        else:
+            new_dict = self.__dict__
+
+        if snake_to_camel_transform:
+            return snake_to_camel_dict(new_dict, {})
+        else:
+            return new_dict

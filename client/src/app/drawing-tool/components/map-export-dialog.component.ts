@@ -10,7 +10,7 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 })
 export class MapExportDialogComponent extends CommonFormDialogComponent {
   readonly form: FormGroup = new FormGroup({
-    format: new FormControl('', Validators.required),
+    format: new FormControl('pdf', Validators.required),
   });
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {

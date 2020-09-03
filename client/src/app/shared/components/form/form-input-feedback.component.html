@@ -1,4 +1,4 @@
-<div class="invalid-feedback d-block" *ngIf="control?.touched && control?.invalid">
+<div class="invalid-feedback d-block" *ngIf="dirty && control?.invalid">
   <div *ngIf="control.hasError('required')">
     This field is required.
   </div>

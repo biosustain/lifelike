@@ -1,5 +1,9 @@
+import * as d3 from 'd3';
+
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { GraphEntity, UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
+import { isCtrlOrMetaPressed, isShiftPressed } from '../../../../shared/utils';
 
 export class SelectableEntity extends AbstractCanvasBehavior {
   constructor(private readonly graphView: CanvasGraphView) {
@@ -7,8 +11,41 @@ export class SelectableEntity extends AbstractCanvasBehavior {
   }
 
   click(event: MouseEvent): BehaviorResult {
-    const subject = this.graphView.getEntityAtMouse(); // TODO: Cache
-    this.graphView.selection.replace(subject ? [subject] : []);
+    const subject = this.graphView.getEntityAtMouse();
+    if (subject == null) {
+      this.graphView.selection.replace([]);
+      this.graphView.requestRender(); // TODO: Don't call unless needed
+    }
+    return BehaviorResult.Continue;
+  }
+
+  dragEnd(event: MouseEvent): BehaviorResult {
+    const subject: GraphEntity | undefined = d3.event.subject;
+    if (isCtrlOrMetaPressed(event) || isShiftPressed(event)) {
+      if (subject != null) {
+        const selection = [...this.graphView.selection.get()];
+        let found = false;
+        for (let i = 0; i < selection.length; i++) {
+          if (selection[i].entity === subject.entity) {
+            found = true;
+            selection.splice(i, 1);
+            break;
+          }
+        }
+        if (!found) {
+          selection.push(subject);
+        }
+        this.graphView.selection.replace(selection);
+        this.graphView.dragging.replace(selection);
+        this.graphView.invalidateEntity(subject);
+      }
+    } else {
+      this.graphView.selection.replace(subject ? [subject] : []);
+      this.graphView.dragging.replace(subject ? [subject] : []);
+      if (subject != null) {
+        this.graphView.invalidateEntity(subject);
+      }
+    }
     this.graphView.requestRender(); // TODO: Don't call unless needed
     return BehaviorResult.Continue;
   }

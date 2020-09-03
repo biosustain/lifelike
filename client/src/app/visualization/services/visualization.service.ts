@@ -13,11 +13,10 @@ import {
     NewEdgeSnippetsPageRequest,
     ReferenceTableDataRequest,
 } from 'app/interfaces';
-import { NODE_EXPANSION_LIMIT } from 'app/shared/constants';
 
 @Injectable()
 export class VisualizationService {
-    readonly visApi = '/api/neo4j';
+    readonly visApi = '/api/visualizer';
 
     constructor(private http: HttpClient) {}
 

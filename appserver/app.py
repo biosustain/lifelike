@@ -2,9 +2,12 @@ import importlib
 import json
 import logging
 import os
-
 import click
-from sqlalchemy import MetaData, inspect, Table
+import sentry_sdk
+
+from flask import request
+
+from sqlalchemy import func, MetaData, inspect, Table
 from sqlalchemy.sql.expression import text
 
 from neo4japp.database import db, get_account_service
@@ -13,6 +16,7 @@ from neo4japp.models import (
     AppUser,
     OrganismGeneMatch,
 )
+from neo4japp.utils.logger import EventLog
 
 app_config = os.environ['FLASK_APP_CONFIG']
 app = create_app(config=f'config.{app_config}')
@@ -22,6 +26,15 @@ logger = logging.getLogger(__name__)
 @app.route('/')
 def home():
     return 'Ouch! You hit me.'
+
+
+@app.before_request
+def request_navigator_log():
+    with sentry_sdk.configure_scope() as scope:
+        scope.set_tag(
+            'transaction_id', request.headers.get('X-Transaction-Id'))
+    app.logger.info(
+        EventLog(event_type='user navigate').to_dict())
 
 
 @app.cli.command("seed")
@@ -70,8 +83,10 @@ def seed():
             if isinstance(model, Table):
                 logger.info(f"Creating fixtures for {class_name}...")
                 db.session.execute(model.insert(), fixture['records'])
+                table = model
             else:
                 model_meta = inspect(model)
+                table = model.__table__
                 relationships = model_meta.relationships
                 logger.info(f"Creating fixtures for {class_name}...")
 
@@ -90,6 +105,17 @@ def seed():
                         else:
                             setattr(instance, key, record[key])
                     db.session.add(instance)
+
+            db.session.flush()
+            db.session.commit()
+
+            if 'id' in table.columns:
+                logger.info(f"Updating sequence for {table.name}...")
+                conn.execute(f'SELECT pg_catalog.setval('
+                             f'pg_get_serial_sequence(\'{table.name}\', \'id\'), '
+                             f'MAX(id) + 1) FROM {table.name};')
+            else:
+                logger.info(f"No ID column for {class_name}")
 
             db.session.flush()
             db.session.commit()
@@ -194,3 +220,69 @@ def seed_elasticsearch():
     from neo4japp.services.indexing import index_pdf
     print('Seeds elasticsearch with PDF indexes')
     index_pdf.seed_elasticsearch()
+
+
+@app.cli.command('fix-projects')
+def fix_project_acl():
+    # TODO: Deprecate me after production release
+    # Used for a staging fix
+    from neo4japp.models import (
+        AppRole,
+        AccessControlPolicy,
+        AccessActionType,
+        AccessRuleType,
+        Projects,
+    )
+
+    # Each project should have 6 ACP
+    # 2 ACP (READ + WRITE) x 3 Roles (read, write, admin) = 6 combinations
+    q = db.session.query(
+        AccessControlPolicy.asset_id,
+        func.count(AccessControlPolicy.action),
+    ).filter(
+        AccessControlPolicy.asset_type == Projects.__tablename__
+    ).group_by(
+        AccessControlPolicy.asset_id,
+    ).having(
+        func.count(AccessControlPolicy.asset_id) == 6
+    )
+
+    project_ids = db.session.query(Projects).all()
+    project_ids = [p.id for p in project_ids]
+
+    # Projects with correct ACP settings
+    acp_projects = [i for i, _ in q.all()]
+
+    # Projects that do not have the correct ACP settings
+    projs_to_fix = set(project_ids) - set(acp_projects)
+
+    project_admin = db.session.query(AppRole).filter_by(name='project-admin').one()
+    project_read = db.session.query(AppRole).filter_by(name='project-read').one()
+    project_write = db.session.query(AppRole).filter_by(name='project-write').one()
+
+    acp_rules = [
+        (project_admin.id, AccessActionType.READ, AccessRuleType.ALLOW),
+        (project_admin.id, AccessActionType.WRITE, AccessRuleType.ALLOW),
+        (project_read.id, AccessActionType.READ, AccessRuleType.ALLOW),
+        (project_read.id, AccessActionType.WRITE, AccessRuleType.DENY),
+        (project_write.id, AccessActionType.READ, AccessRuleType.ALLOW),
+        (project_write.id, AccessActionType.WRITE, AccessRuleType.ALLOW),
+    ]
+
+    try:
+        for pid in projs_to_fix:
+            for principal_id, action, rule in acp_rules:
+                db.session.execute(AccessControlPolicy.__table__.insert().values(
+                    action=action,
+                    asset_type=Projects.__tablename__,
+                    asset_id=pid,
+                    principal_type=AppRole.__tablename__,
+                    principal_id=principal_id,
+                    rule_type=rule,
+                ))
+        db.session.commit()
+    except Exception as ex:
+        db.session.rollback()
+        db.session.close()
+        print('error: ', ex)
+    print('Completed ACP fix.')
