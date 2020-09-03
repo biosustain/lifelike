@@ -16,6 +16,7 @@ import { Progress } from '../../interfaces/common-dialog.interface';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { MapComponent } from './map.component';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 
 @Component({
   selector: 'app-map-view',
@@ -224,5 +225,11 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     } else {
       this.workspaceManager.navigateByUrl(this.returnUrl);
     }
+  }
+
+  displayShareDialog() {
+    const modalRef = this.modalService.open(ShareDialogComponent);
+    modalRef.componentInstance.url = `${window.location.origin}/projects/`
+      + `${this.locator.projectName}/maps/${this.locator.hashId}?fromWorkspace`;
   }
 }

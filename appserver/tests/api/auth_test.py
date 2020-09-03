@@ -7,13 +7,13 @@ from neo4japp.util import generate_jwt_token
 
 
 def user_factory(uid):
-    return dict(
-        username=f'AppUser-{uid}',
-        firstName=f'firstname-{uid}',
-        lastName=f'lastname-{uid}',
-        email=f'appuser-{uid}@***ARANGO_DB_NAME***.bio',
-        roles=['user'],
-    )
+    return {
+        'username': f'AppUser-{uid}',
+        'firstName': f'firstname-{uid}',
+        'lastName': f'lastname-{uid}',
+        'email': f'appuser-{uid}@***ARANGO_DB_NAME***.bio',
+        'roles': ['user'],
+    }
 
 
 @pytest.mark.parametrize('password, login_password', [
@@ -28,7 +28,7 @@ def test_can_authenticate_user(client, session, password, login_password):
     session.add(user)
     session.flush()
 
-    data = json.dumps(dict(email=user.email, password=login_password))
+    data = json.dumps({'email': user.email, 'password': login_password})
 
     response = client.post(
         '/auth/login',
@@ -50,7 +50,7 @@ def test_can_authenticate_with_auth_token(client, session):
     session.add(user)
     session.flush()
 
-    data = json.dumps(dict(email=user.email, password='password'))
+    data = json.dumps({'email': user.email, 'password': 'password'})
 
     response = client.post(
         '/auth/login',

@@ -166,7 +166,7 @@ def upload_map(projects_name: str):
     drawing_map.set_hash_id()
     db.session.commit()
 
-    yield jsonify(result=dict(hashId=drawing_map.hash_id)), 200
+    yield jsonify(result={'hashId': drawing_map.hash_id}), 200
 
 
 @bp.route('/community', methods=['GET'])
@@ -268,7 +268,7 @@ def add_project(projects_name: str):
         description=data.get("description", ""),
         date_modified=date_modified,
         public=data.get("public", False),
-        graph=data.get("graph", dict(nodes=[], edges=[])),
+        graph=data.get("graph", {'nodes': [], 'edges': []}),
         user_id=user.id,
         dir_id=dir_id,
     )
