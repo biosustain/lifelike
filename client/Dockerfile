@@ -1,3 +1,35 @@
+# ========================================
+# Landing page
+# ========================================
+
+FROM node:13.10.1 as landing
+
+RUN apt-get update
+
+# Clean up the image cache (see the Docker best practices guide: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run)
+RUN apt-get autoclean && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV N4J_USER node
+ENV N4J_HOME /home/$N4J_USER
+ENV N4J_LANDING $N4J_HOME/client/landing
+
+ENV PATH $N4J_LANDING/node_modules/.bin:$PATH
+
+WORKDIR $N4J_LANDING
+
+COPY --chown=$N4J_USER:$N4J_USER landing/package.json .
+COPY --chown=$N4J_USER:$N4J_USER landing/yarn.lock .
+RUN yarn install && chown -R $N4J_USER:$N4J_USER node_modules
+
+COPY landing .
+RUN yarn build
+
+# ========================================
+# Angular app
+# ========================================
+
 # TODO: Consider using a smaller image for deployment, using the base image to
 # enable installing Chrome for Karma testing
 FROM node:13.10.1 as build
@@ -32,9 +64,15 @@ RUN yarn install && chown -R $N4J_USER:$N4J_USER node_modules
 COPY . $N4J_CLIENT
 RUN yarn build --configuration=staging --output-path=dist
 
+# ========================================
+# nginx
+# ========================================
+
 FROM nginx:latest
 RUN mkdir -p /home/node/client/dist && chown $N4J_USER:$N4J_USER /home/node/client/dist
+RUN mkdir -p /home/node/client/landing/dist && chown $N4J_USER:$N4J_USER /home/node/client/landing/dist
 COPY --from=build /home/node/client/dist /usr/share/nginx/html
+COPY --from=landing /home/node/client/landing/dist /usr/share/nginx/html
 RUN rm /etc/nginx/conf.d/default.conf
 COPY --from=build /home/node/client/nginx/dev.conf /etc/nginx/conf.d/default.conf
 
