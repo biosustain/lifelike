@@ -1,10 +1,13 @@
 import hashlib
 
+from datetime import datetime
+
 from sqlalchemy_utils.types import TSVectorType
 from sqlalchemy.types import TIMESTAMP
 
-from neo4japp.database import db
-from neo4japp.models.common import RDBMSBase
+from neo4japp.constants import TIMEZONE
+from neo4japp.database import db, ma
+from neo4japp.models.common import ModelConverter, RDBMSBase
 
 
 class Project(RDBMSBase):
@@ -24,6 +27,7 @@ class Project(RDBMSBase):
     dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), index=True, nullable=False)
     dir = db.relationship('Directory', foreign_keys=dir_id)
     hash_id = db.Column(db.String(50), unique=True)
+    versions = db.relationship('ProjectVersion', backref='project', lazy=True)
     search_vector = db.Column(TSVectorType('label'), index=True)
 
     def set_hash_id(self):
@@ -35,6 +39,23 @@ class Project(RDBMSBase):
             "{} {}".format(self.id, salt).encode()
         )
         self.hash_id = h.hexdigest()
+
+
+class ProjectVersion(RDBMSBase):
+    """ Model representation of a version of a project drawing in a
+        network graph networking tool
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String(250), nullable=False)
+    description = db.Column(db.Text)
+    date_modified = db.Column(db.DateTime, onupdate=datetime.now(TIMEZONE))
+    graph = db.Column(db.JSON)
+    public = db.Column(db.Boolean, default=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=False)
+    dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    search_vector = db.Column(TSVectorType('label'))
+    creation_date = db.Column(db.DateTime, default=datetime.now(TIMEZONE))
 
 
 class ProjectBackup(RDBMSBase):
