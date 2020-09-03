@@ -240,7 +240,6 @@ class AnnotationsPDFParser:
         interpreter = PDFPageInterpreter(rsrcmgr=rsrcmgr, device=device)
 
         min_idx_in_page: Dict[int, int] = {}
-        chars_in_pdf: List[str] = []
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = []
         cropbox_in_pdf: Tuple[int, int] = None  # type: ignore
 
@@ -270,12 +269,9 @@ class AnnotationsPDFParser:
                 compiled_regex=compiled_regex,
             )
 
-        for lt_char in char_coord_objs_in_pdf:
-            chars_in_pdf.append(lt_char.get_text())
-
         return PDFParsedCharacters(
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            chars_in_pdf=chars_in_pdf,
+            chars_in_pdf=[lt_char.get_text() for lt_char in char_coord_objs_in_pdf],
             cropbox_in_pdf=cropbox_in_pdf,
             min_idx_in_page=min_idx_in_page,
         )
@@ -535,7 +531,8 @@ class AnnotationsPDFParser:
                 last_char_idx_in_curr_keyword = list(curr_char_idx_mappings)[-1]
 
                 page_idx = -1
-                for min_page_idx in list(min_idx_in_page):
+                min_idx_list = list(min_idx_in_page)
+                for min_page_idx in min_idx_list:
                     if last_char_idx_in_curr_keyword <= min_page_idx:
                         # reminder: can break here because dict in python 3.8+ are
                         # insertion order
