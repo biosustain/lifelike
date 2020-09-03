@@ -1,0 +1,179 @@
+@import "./_variables.scss";
+@import "./bootstrap";
+
+body {
+  overflow-x: hidden;
+}
+
+.site-header-container {
+  padding: ($spacer * 2) 0;
+  background: $primary;
+  color: #fff;
+
+  a {
+    &:link, &:visited {
+      color: #fff;
+    }
+
+    &:hover, &:active {
+      color: #ccc;
+    }
+  }
+}
+
+.site-logo {
+  h1 {
+    font-family: $font-logo;
+    font-weight: normal;
+    font-size: 24pt;
+  }
+}
+
+.intro {
+  position: relative;
+  margin: 0 0 ($spacer * 18) 0;
+  padding: ($spacer * 4) 0 0 0;
+  color: #fff;
+
+  &:after {
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    bottom: -50%;
+    right: 0;
+    z-index: -1;
+    content: '';
+    background: $primary;
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 0 100%);
+  }
+}
+
+.intro-title {
+  font-family: $font-intro;
+  font-weight: normal;
+  font-size: 280%;
+}
+
+.intro-left {
+  width: 50%;
+}
+
+.intro-right {
+  position: relative;
+
+  img {
+    position: absolute;
+    top: -20px;
+    left: 100px;
+    border-radius: ($border-radius * 2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.intro-title {
+  margin-bottom: ($spacer * 1);
+}
+
+.intro-subtitle {
+  width: 80%;
+  opacity: 0.8;
+  margin-bottom: ($spacer * 2);
+  font-size: 120%;
+}
+
+.btn-intro {
+  background: #fff;
+
+  &, &:link, &:visited {
+    color: #222;
+  }
+}
+
+.btn-intro-primary {
+  background: $secondary;
+
+  &, &:link, &:visited {
+    color: #fff;
+  }
+}
+
+.btn-intro, .btn-intro-primary {
+  border-radius: ($border-radius * 4);
+  padding: $btn-padding-y-lg ($btn-padding-x-lg * 2);
+
+  @include hover() {
+    background: $black;
+    color: $white;
+  }
+}
+
+.section-spotlight {
+  padding: ($spacer * 5);
+}
+
+.spotlight-title {
+  margin: 0 0 ($spacer * 1);
+  font-weight: bold;
+  font-size: 180%;
+  color: $secondary;
+}
+
+.spotlight-text {
+  margin: 0 0 ($spacer * 3);
+  max-width: 60%;
+  font-size: 105%;
+}
+
+.spotlight-video {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border-radius: ($border-radius * 2);
+}
+
+.section-features {
+  border-top: 1px solid $gray-200;
+  border-bottom: 1px solid $gray-200;
+}
+
+.feature-icon {
+  margin: 0 0 ($spacer * 1.5) 0;
+  color: $primary;
+}
+
+.feature-title {
+  margin: 0 0 ($spacer * 1) 0;
+  font-size: 150%;
+}
+
+.feature-item {
+  border-right: 1px solid $gray-200;
+  padding: $spacer * 3;
+  flex: 1 1 33%;
+
+  &:last-child {
+    border: 0;
+  }
+}
+
+.section-catcher {
+  background: $gray-100;
+  clip-path: polygon(0 0, 100% 40%, 100% 100%, 0 100%);
+  padding: ($spacer * 6) 0 ($spacer * 4) 0;
+}
+
+.catcher-title {
+  color: $primary;
+  font-size: 180%;
+}
+
+
+.catcher-subtitle {
+  color: $gray-500;
+  font-size: 140%;
+}
+
+.site-footer {
+  background: $primary;
+  margin-top: ($spacer * 4);
+  padding: ($spacer * 6) 0;
+}
