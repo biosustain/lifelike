@@ -22,7 +22,7 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
     if (subject.type === GraphEntityType.Node) {
       this.handle = this.getHandleIntersected(this.graphView.placeNode(this.target), graphX, graphY);
       if (this.handle != null) {
-        this.activeDragStart(event, graphX, graphY);
+        this.activeDragStart(event, graphX, graphY, subject);
       }
     }
 
@@ -68,7 +68,7 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
   }
 
   isPointIntersectingNode(placedNode: PlacedNode, x: number, y: number): boolean {
-    return (!!this.handle || !!this.getHandleIntersected(placedNode, x, y)) ? true : undefined;
+    return this.getHandleIntersected(placedNode, x, y) ? true : undefined;
   }
 
   getHandleIntersected(placedNode: PlacedNode, x: number, y: number): T | undefined {
@@ -100,7 +100,7 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
 
   abstract getHandleBoundingBoxes(placedNode: PlacedNode): T[];
 
-  protected activeDragStart(event: MouseEvent, graphX: number, graphY: number) {
+  protected activeDragStart(event: MouseEvent, graphX: number, graphY: number, subject: GraphEntity | undefined) {
   }
 
   protected activeDrag(event: MouseEvent, graphX: number, graphY: number) {
