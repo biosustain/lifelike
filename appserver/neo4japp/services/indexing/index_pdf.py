@@ -2,8 +2,12 @@ import base64
 import json
 import os
 
+from collections import deque
+from typing import List
+
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import parallel_bulk
+
 from neo4japp.database import db
 from neo4japp.models import Files, FileContent, AppUser
 
@@ -49,6 +53,15 @@ def populate_single_index(fid: int):
             'doi': fi.doi
         }
     elastic_client.create('pdf', id=fi.file_id, body=document, pipeline=ATTACHMENT_PIPELINE_NAME)
+    elastic_client.indices.refresh('pdf')
+
+
+def delete_indices(file_ids: List[str]):
+    deque(parallel_bulk(
+        elastic_client,
+        ({'_op_type': 'delete', '_index': 'pdf', '_id': f_id} for f_id in file_ids)),
+        maxlen=0
+    )
     elastic_client.indices.refresh('pdf')
 
 
