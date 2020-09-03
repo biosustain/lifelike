@@ -8,10 +8,12 @@ import { Component, Input } from '@angular/core';
 export class NodeRelationshipComponent {
     @Input() leftNodeName: string;
     @Input() leftNodeLabel: string;
+    @Input() leftNodeColor = 'automatic';
+    @Input() leftNodeUrl: string;
     @Input() rightNodeName: string;
     @Input() rightNodeLabel: string;
-    @Input() leftNodeColor = 'automatic';
     @Input() rightNodeColor = 'automatic';
+    @Input() rightNodeUrl: string;
     @Input() edge: string;
 
     tooltipPosition = 'above';

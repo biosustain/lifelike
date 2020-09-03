@@ -4,12 +4,13 @@ from flask import Blueprint, request, jsonify, g
 from sqlalchemy.orm import aliased
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.database import get_search_service_dao
 from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.database import get_search_service_dao, db
 from neo4japp.exceptions import InvalidArgumentsException
 from neo4japp.models import AppUser, Directory, Projects, AppRole, \
     projects_collaborator_role, Files, Project
-from neo4japp.services.pdf_search import PDFSearch
+from neo4japp.services.pdf_search import PDFSearch, PDFSearchResult
 from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
 from neo4japp.data_transfer_objects import (
     GeneFilteredRequest,

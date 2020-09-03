@@ -31,6 +31,7 @@ import { KnowledgeMap, UniversalGraphNode } from '../../drawing-tool/services/in
 import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
 import moment from 'moment';
 import { getObjectCommands } from '../utils/objects';
+import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { nullCoalesce } from '../../shared/utils/types';
 
 interface PathLocator {
@@ -540,6 +541,13 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   getDateShown(object: DirectoryObject) {
     return nullCoalesce(object.modificationDate, object.creationDate);
+  }
+
+  displayShareDialog() {
+    const modalRef = this.modalService.open(ShareDialogComponent);
+    modalRef.componentInstance.url = `${window.location.origin}/projects/`
+      + `${this.locator.projectName}` + (this.locator.directoryId ? `/folders/${this.locator.directoryId}` : '')
+      + '?fromWorkspace';
   }
 }
 
