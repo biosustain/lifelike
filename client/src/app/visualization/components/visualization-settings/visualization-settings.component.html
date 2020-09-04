@@ -28,16 +28,16 @@
           step="1"
           formControlName="maxClusterShownRows"
         />
-        <div class="warning-msg" *ngIf="settingsForm.get('maxClusterShownRows').value > 50">
+        <div class="mt-1 text-warning small-font" *ngIf="settingsForm.get('maxClusterShownRows').value > 50">
           Large clusters may render slowly.
         </div>
-        <div class="invalid-msg" *ngIf="settingsForm.get('maxClusterShownRows').hasError('required')">
+        <div class="mt-1 text-danger small-font" *ngIf="settingsForm.get('maxClusterShownRows').hasError('required')">
           Max rows cannot be empty!
         </div>
-        <div class="invalid-msg" *ngIf="settingsForm.get('maxClusterShownRows').hasError('min')">
+        <div class="mt-1 text-danger small-font" *ngIf="settingsForm.get('maxClusterShownRows').hasError('min')">
           Max rows cannot be less than 1!
         </div>
-        <div class="invalid-msg" *ngIf="settingsForm.get('maxClusterShownRows').hasError('pattern')">
+        <div class="mt-1 text-danger small-font" *ngIf="settingsForm.get('maxClusterShownRows').hasError('pattern')">
           Max rows must be a whole number!
         </div>
 
