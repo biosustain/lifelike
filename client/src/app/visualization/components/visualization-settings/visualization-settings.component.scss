@@ -9,29 +9,22 @@
   text-align: center;
   color: $primary;
 }
-
 .canvas-settings-button:hover{
-  color: #6c757d
+  color: $gray-600
 }
 
 .invalid-input {
-  border-color: #dc3545;
+  border-color: $danger;
 }
 .invalid-input:focus {
-  box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25);
-}
-
-.invalid-msg {
-  margin-top: .25rem;
-  font-size: 80%;
-  color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba($danger, 0.25);
 }
 
 .input-warning {
   border-color: $warning;
 }
 .input-warning:focus {
-  box-shadow: 0 0 0 0.2rem rgba(220, 217, 53, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba($warning, 0.25);
 }
 
 .pointer-on-hover:hover {
@@ -46,14 +39,12 @@
   z-index: 1;
   white-space: nowrap;
 }
-
 .settings-container.expanded {
   width: auto;
   height: auto;
   background-color: $white;
   transition: all .25s linear;
 }
-
 .settings-container.unexpanded {
   width: 2rem;
   height: 2rem;
@@ -67,14 +58,11 @@
   opacity: 1;
   transition: opacity .25s linear;
 }
-
 .settings-content.unexpanded {
   visibility: hidden;
   opacity: 0;
 }
 
-.warning-msg {
-  margin-top: .25rem;
-  font-size: 80%;
-  color: $warning;
+.small-font {
+  font-size: $font-size-sm;
 }
