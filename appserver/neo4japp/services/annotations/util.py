@@ -85,3 +85,9 @@ def create_species_for_ner(
         'name': name,
         'synonym': synonym,
     }
+
+
+def standardize_str(s) -> str:
+    standardized = clean_char(s)
+    standardized = standardized.translate(str.maketrans('', '', punctuation))
+    return " ".join(standardized.split())
