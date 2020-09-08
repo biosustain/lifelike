@@ -74,7 +74,10 @@ class ManualAnnotationsService:
             fp.close()
             tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
             annotator = get_annotations_service()
-            matches = annotator.get_matching_manual_annotations(keyword=term, tokens=tokens)
+            keyword_type = custom_annotation['meta']['type']
+            matches = annotator.get_matching_manual_annotations(
+                keyword=term, keyword_type=keyword_type, tokens=tokens
+            )
 
             def add_annotation(new_annotation):
                 return {
