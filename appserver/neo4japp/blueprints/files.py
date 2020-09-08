@@ -97,6 +97,32 @@ def search_doi(content: bytes) -> Optional[str]:
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
+@newbp.route('/directory/<int:directory_id>/<string:filename>', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
+def validate_filename(
+    directory_id: int,
+    filename: str,
+):
+    user = g.current_user
+
+    try:
+        directory = Directory.query.get(directory_id)
+        projects = Projects.query.get(directory.projects_id)
+    except NoResultFound as err:
+        raise RecordNotFoundException(f'No record found: {err}.')
+
+    yield user, projects
+
+    q = db.session.query(Files.id).filter(
+        Files.filename == filename,
+        Files.dir_id == directory_id,
+        Files.project == projects.id
+    )
+    exist = db.session.query(q.exists()).scalar()
+    yield jsonify({'result': not exist}), 200
+
+
 @bp.route('/upload', methods=['POST'])
 @newbp.route('/<string:project_name>/files', methods=['POST'])  # TODO: use this once LL-415 done
 @auth.login_required
@@ -219,6 +245,7 @@ def download(file_content_id: int):
     yield res
 
 
+# TODO: Is this used???
 @newbp.route('/<string:project_name>/files', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)

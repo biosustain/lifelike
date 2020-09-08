@@ -12,19 +12,24 @@ import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from '../file-browser.module';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
 import { ObjectUploadDialogComponent } from './object-upload-dialog.component';
+import { of } from 'rxjs';
 
 describe('FileUploadDialogComponent', () => {
     let component: ObjectUploadDialogComponent;
     let fixture: ComponentFixture<ObjectUploadDialogComponent>;
     let mockStore: MockStore<State>;
+    let service: PdfFilesService;
+    let spy: jasmine.Spy;
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
             providers: [
                 MessageDialog,
                 NgbActiveModal,
+                PdfFilesService,
                 provideMockStore(),
             ],
             imports: [
@@ -46,6 +51,8 @@ describe('FileUploadDialogComponent', () => {
         let userAuthRoleSelector: MemoizedSelector<State, string[]>;
         userAuthRoleSelector = mockStore.overrideSelector(
             AuthSelectors.selectRoles, ['admin']);
+
+        service = fixture.debugElement.injector.get(PdfFilesService);
     });
 
     it('should create', () => {
@@ -70,6 +77,20 @@ describe('FileUploadDialogComponent', () => {
 
         component.form.get('files').setValue(new File([new Blob()], 'blah'));
         component.form.get('filename').setValue('blah.pdf');
+        expect(component.form.valid).toBeFalse();
+    });
+
+    it('should mark form as invalid if filename is not valid', () => {
+        component.form.get('filename').setValue('blah.pdf');
+        spy = spyOn(service, 'validateFilename');
+        spy.and.returnValue(of(false));
+        expect(component.form.valid).toBeFalse();
+    });
+
+    it('should mark form as valid if filename is valid', () => {
+        component.form.get('filename').setValue('blah.pdf');
+        spy = spyOn(service, 'validateFilename');
+        spy.and.returnValue(of(true));
         expect(component.form.valid).toBeFalse();
     });
 });

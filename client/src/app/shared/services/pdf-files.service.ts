@@ -44,6 +44,12 @@ export class PdfFilesService extends AbstractService {
   // ========================================
   // CRUD
   // ========================================
+  validateFilename(parentDirId, filename): Observable<boolean> {
+    return this.http.get<{result: boolean}>(
+      `${this.PROJECTS_BASE_URL}/directory/${parentDirId}/${filename}`,
+      this.getHttpOptions(true)
+    ).pipe(map(resp => resp.result));
+  }
 
   uploadFile(projectName, parentDir, data: UploadPayload): Observable<PdfFileUpload> {
     const formData: FormData = new FormData();
