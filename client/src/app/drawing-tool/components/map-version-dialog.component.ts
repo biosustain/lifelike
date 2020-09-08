@@ -9,13 +9,11 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { Project } from 'app/file-browser/services/project-space.service';
 import { Subscription, Observable } from 'rxjs';
 import { MapService } from '../services/map.service';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
-import { map } from 'rxjs/internal/operators/map';
-import { flatMap } from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-map-version-dialog',
@@ -41,6 +39,7 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   > = new BackgroundTask(() => this.mapService.getMapVersions(this.projectName, this.currentMap.hash_id));
   private loadTaskSubscription: Subscription;
   versionChoices: string[];
+  versionIDs: number[];
   mapToPreview: KnowledgeMap;
   graphCanvas: CanvasGraphView;
   isMapVisible = false;
@@ -58,7 +57,9 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   ngOnInit() {
     this.loadTaskSubscription = this.loadTask.results$.subscribe(
       ({ result: versions}) => {
-        this.versionChoices = versions.versions.map((version) => 'Version ' + version.id + '. Date Modified: ' + version.date_modified);
+        this.versionIDs = versions.versions.map((version) => (version.id as number));
+        this.versionChoices = versions.versions.reverse().map(
+          (version) => 'Version ' + (this.versionIDs.indexOf(version.id as number) + 1) + '. Date Modified: ' + version.date_modified);
         this.versionChoices.unshift('');
       }
     );
@@ -106,7 +107,7 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
   }
 
   findVersion() {
-    const versionId = this.form.value.version.split('.')[0].substring(8);
+    const versionId = this.versionIDs[this.form.value.version.split('.')[0].substring(8) - 1];
     return this.mapService.getMapVersionbyID(this.projectName, this.currentMap.hash_id, versionId);
   }
 }

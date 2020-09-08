@@ -131,6 +131,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
           duration: 3000,
         });
       });
+    }, () => {
     });
   }
 
