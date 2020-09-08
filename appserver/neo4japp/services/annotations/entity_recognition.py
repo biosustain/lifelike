@@ -623,7 +623,7 @@ class EntityRecognitionService:
 
         return gene_val
 
-    def validate_phenotypes_lmdb(
+    def entity_lookup_for_phenotypes(
         self,
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
@@ -673,7 +673,7 @@ class EntityRecognitionService:
                         extra=EventLog(event_type='annotations').to_dict()
                     )
                     current_app.logger.debug(
-                        f'<validate_phenotypes_lmdb()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'<entity_lookup_for_phenotypes()> Found a match in entity lookup for "{token.keyword}". '  # noqa
                         f'But token "{token.keyword}" is in <_get_phenotype_annotations_to_exclude()>.',  # noqa
                         extra=EventLog(event_type='annotations').to_dict()
                     )
@@ -683,7 +683,7 @@ class EntityRecognitionService:
                         extra=EventLog(event_type='annotations').to_dict()
                     )
                     current_app.logger.debug(
-                        f'<validate_phenotypes_lmdb()> Found a match in entity lookup for "{token.keyword}". '  # noqa
+                        f'<entity_lookup_for_phenotypes()> Found a match in entity lookup for "{token.keyword}". '  # noqa
                         f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
                         extra=EventLog(event_type='annotations').to_dict()
                     )
@@ -964,7 +964,7 @@ class EntityRecognitionService:
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
-                    exist = self.validate_phenotypes_lmdb(
+                    exist = self.entity_lookup_for_phenotypes(
                         token=token,
                         synonym=correct_spelling,
                     )
@@ -973,7 +973,7 @@ class EntityRecognitionService:
                     if exist is not None:
                         break
             else:
-                self.validate_phenotypes_lmdb(
+                self.entity_lookup_for_phenotypes(
                     token=token,
                 )
 
