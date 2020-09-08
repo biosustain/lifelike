@@ -12,6 +12,7 @@ from typing import Dict, List, Optional
 from urllib.error import URLError
 
 from flask import Blueprint, current_app, request, jsonify, g, make_response
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
@@ -24,6 +25,7 @@ from neo4japp.constants import TIMEZONE
 from neo4japp.database import db, get_manual_annotations_service
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
+    DatabaseError,
     FileUploadError,
     RecordNotFoundException,
     NotAuthorizedException,
@@ -490,18 +492,26 @@ def delete_files(project_name: str):
         else:
             files_to_delete.append(f)
 
-    for deleted in files_to_delete:
-        current_app.logger.info(
-            'User deleted file: <{deleted.filename}>',
-            extra=UserEventLog(
-                username=g.current_user.username, event_type='file delete').to_dict())
-        outcome[deleted.file_id] = DeletionOutcome.DELETED.value
-
     # low level fast bulk operation
-    delete_query = Files.__table__.delete().where(
-        Files.file_id.in_(set(to_delete.file_id for to_delete in files_to_delete)))
-    db.session.execute(delete_query)
-    db.session.commit()
+    deleted_file_ids = [to_delete.file_id for to_delete in files_to_delete]
+    deleted_file_names = [to_delete.filename for to_delete in files_to_delete]
+
+    try:
+        delete_query = Files.__table__.delete().where(
+            Files.file_id.in_(set(deleted_file_ids)))
+        db.session.execute(delete_query)
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise DatabaseError('Failed to delete file(s).')
+    else:
+        db.session.commit()
+        index_pdf.delete_indices(file_ids=deleted_file_ids)
+        for deleted in deleted_file_names:
+            current_app.logger.info(
+                f'User deleted file: <{deleted}>',
+                extra=UserEventLog(
+                    username=g.current_user.username, event_type='file delete').to_dict())
+            outcome[deleted] = DeletionOutcome.DELETED.value
 
     yield jsonify(outcome)
 
