@@ -28,7 +28,7 @@ import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wi
 // TODO: Add an unprotected home page
 const routes: Routes = [
   {
-    path: '',
+    path: 'dashboard',
     component: DashboardComponent,
     data: {
       title: 'Dashboard',

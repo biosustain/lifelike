@@ -2,10 +2,16 @@ import base64
 import json
 import os
 
+from typing import List
+
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import parallel_bulk
+
+from flask import current_app
+
 from neo4japp.database import db
 from neo4japp.models import Files, FileContent, AppUser
+from neo4japp.utils.logger import EventLog
 
 FRAGMENT_SIZE = 2147483647
 PDF_MAPPING = '/home/n4j/neo4japp/services/indexing/mappings/pdf_snippets.json'
@@ -49,6 +55,17 @@ def populate_single_index(fid: int):
             'doi': fi.doi
         }
     elastic_client.create('pdf', id=fi.file_id, body=document, pipeline=ATTACHMENT_PIPELINE_NAME)
+    elastic_client.indices.refresh('pdf')
+
+
+def delete_indices(file_ids: List[str]):
+    for success, info in parallel_bulk(
+        elastic_client,
+        ({'_op_type': 'delete', '_index': 'pdf', '_id': f_id} for f_id in file_ids)):  # noqa
+        if not success:
+            current_app.logger.error(
+                info,
+                extra=EventLog(event_type='elastic indexing').to_dict())
     elastic_client.indices.refresh('pdf')
 
 

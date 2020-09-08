@@ -30,3 +30,4 @@ sudo docker pull gcr.io/$PROJECT_ID/kg-appserver-demo:latest
 sudo docker-compose -f docker-compose.kibana.yml up -d
 
 sudo docker-compose -f docker-compose.kibana.yml exec appserver python neo4japp/services/annotations/index_annotations.py -a
+sudo docker-compose -f docker-compose.kibana.yml exec appserver python neo4japp/services/annotations/index_annotations.py -e

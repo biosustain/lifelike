@@ -1,6 +1,6 @@
 import { cloneDeep } from 'lodash';
 
-import { GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { PlacedNode } from 'app/graph-viewer/styles/styles';
 import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior } from '../../behaviors';
@@ -50,7 +50,12 @@ export class ActiveResize extends AbstractNodeHandleBehavior<DragHandle> {
     this.originalTarget = cloneDeep(this.target);
   }
 
-  protected activeDragStart(event: MouseEvent, graphX: number, graphY: number) {
+  isPointIntersectingNode(placedNode: PlacedNode, x: number, y: number): boolean {
+    // Consider ourselves still intersecting if we have a handle
+    return (!!this.handle || !!this.getHandleIntersected(placedNode, x, y)) ? true : undefined;
+  }
+
+  protected activeDragStart(event: MouseEvent, graphX: number, graphY: number, subject: GraphEntity | undefined) {
     this.originalSize = this.getCurrentNodeSize();
     this.dragStartPosition = {x: graphX, y: graphY};
   }
