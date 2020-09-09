@@ -16,8 +16,16 @@ import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
 import { ObjectUploadDialogComponent } from './object-upload-dialog.component';
 import { of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 describe('FileUploadDialogComponent', () => {
+    class MockHttpClient {
+        get() {
+            return of({result: true});
+        }
+        post() {}
+    }
+
     let component: ObjectUploadDialogComponent;
     let fixture: ComponentFixture<ObjectUploadDialogComponent>;
     let mockStore: MockStore<State>;
@@ -31,6 +39,7 @@ describe('FileUploadDialogComponent', () => {
                 NgbActiveModal,
                 PdfFilesService,
                 provideMockStore(),
+                { provide: HttpClient, useClass: MockHttpClient }
             ],
             imports: [
                 FileBrowserModule,
