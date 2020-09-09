@@ -1,3 +1,4 @@
+// @ts-ignore
 import * as d3 from 'd3';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../renderers/behaviors';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../../drawing-tool/services/interfaces';
