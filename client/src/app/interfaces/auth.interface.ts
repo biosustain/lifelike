@@ -7,6 +7,8 @@ export interface AppUser {
     roles: string[];
 }
 
+export type User = Pick<AppUser, 'id' | 'username'>;
+
 export interface UpdateUserRequest extends AppUser {
     password: string;
     newPassword: string;
