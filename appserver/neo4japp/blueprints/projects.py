@@ -82,7 +82,7 @@ def add_projects():
     user = g.current_user
 
     if not re.match('^[A-Za-z0-9-]{1,50}$', data['projectName']):
-        raise ValueError('incorrect project name format')
+        raise ValueError('Incorrect project name format.')
 
     projects = Projects(
         project_name=data['projectName'],
@@ -112,7 +112,7 @@ def get_project_collaborators(project_name: str):
     ).one_or_none()
 
     if projects is None:
-        raise RecordNotFoundException(f'No such projects: {project_name}')
+        raise RecordNotFoundException(f'No such projects: {project_name}.')
 
     user = g.current_user
 
@@ -120,6 +120,7 @@ def get_project_collaborators(project_name: str):
 
     collaborators = db.session.query(
         AppUser.id,
+        AppUser.email,
         AppUser.username,
         AppRole.name,
     ).join(
@@ -136,16 +137,17 @@ def get_project_collaborators(project_name: str):
     yield jsonify({
         'results': [{
             'id': id,
+            'email': email,
             'username': username,
             'role': role,
-        } for id, username, role in collaborators]
+        } for id, email, username, role in collaborators]
     }), 200
 
 
-@bp.route('/<string:project_name>/collaborators/<string:username>', methods=['POST'])
+@bp.route('/<string:project_name>/collaborators/<string:email>', methods=['POST'])
 @auth.login_required
 @requires_project_role('project-admin')
-def add_collaborator(username: str, project_name: str):
+def add_collaborator(email: str, project_name: str):
     proj_service = get_projects_service()
 
     data = request.get_json()
@@ -157,14 +159,14 @@ def add_collaborator(username: str, project_name: str):
     ).one_or_none()
 
     if projects is None:
-        raise RecordNotFoundException(f'No such projects: {project_name}')
+        raise RecordNotFoundException(f'No such projects: {project_name}.')
 
     new_collaborator = AppUser.query.filter(
-        AppUser.username == username
+        AppUser.email == email
     ).one_or_none()
 
     if new_collaborator is None:
-        raise RecordNotFoundException(f'No such username {username}')
+        raise RecordNotFoundException(f'No such email {email}.')
 
     user = g.current_user
 
@@ -176,6 +178,13 @@ def add_collaborator(username: str, project_name: str):
 
     new_role = AppRole.query.filter(AppRole.name == project_role).one()
     proj_service.add_collaborator(new_collaborator, new_role, projects)
+
+    current_app.logger.info(
+        f'Collaborator <{new_collaborator.email}> added to project <{projects.project_name}>.',  # noqa
+        extra=UserEventLog(
+            username=g.current_user.username,
+            event_type='project collaborator'
+        ).to_dict())
 
     yield jsonify({'result': 'success'}), 200
 

@@ -105,7 +105,7 @@ def test_only_admins_can_add_collaborators_and_not_themselves(
     headers = generate_headers(login_resp['access_jwt'])
 
     response = client.post(
-        f'/projects/{fix_project.project_name}/collaborators/{username}',
+        f'/projects/{fix_project.project_name}/collaborators/{email}',
         data=json.dumps({'role': 'project-read'}),
         headers=headers,
         content_type='application/json',

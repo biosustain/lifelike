@@ -7,7 +7,11 @@ from .auth import (
     AppUser,
     AppUserSchema,
 )
-from .drawing_tool import Project, ProjectBackup
+from .drawing_tool import (
+    Project,
+    ProjectVersion,
+    ProjectBackup,
+)
 from .neo4j import GraphNode, GraphRelationship
 from .files import Directory, Files, FileContent, LMDBsDates, Worksheet
 from .projects import Projects, projects_collaborator_role

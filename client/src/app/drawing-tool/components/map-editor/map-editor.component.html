@@ -75,12 +75,20 @@
               <i class="fa fa-fw fa-share-square"></i> Share
             </button>
           </div>
+
+          <div class="btn-group ml-2">
+            <button type="button" class="btn btn-secondary" container="body"
+                    ngbTooltip="Map Version History" placement="bottom"
+                    (click)="mapVersionDialog()">
+              Version History
+            </button>
+          </div>
         </div>
       </div>
 
       <div class="position-relative overflow-hidden flex-fill">
         <div class="graph-container">
-          <canvas #canvas class="graph-view" (dragover)="dragOver($event)" (drop)="drop($event)"></canvas>
+          <canvas #canvas class="graph-view"></canvas>
         </div>
 
         <div class="palette-panel">
