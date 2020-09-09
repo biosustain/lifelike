@@ -8,7 +8,9 @@
       {{message}}
     </div>
 
-    <div class="mt-4 text-muted">
+    <!-- This is only empty if its a client side error only
+    TODO: Make mandatory once JS SentrySDK integrated -->
+    <div *ngIf="transactionId" class="mt-4 text-muted">
       Transaction Id: {{transactionId}}
     </div>
 
