@@ -145,7 +145,7 @@ export class KgStatisticsComponent {
     this.chartColorsEntitiesByDomain = {};
     for (const [domain, domainData] of Object.entries(statisticsData)) {
       this.chartLabelsEntitiesByDomain[domain] = [];
-      const dataset = { data: [], barPercentage: 0.12 * Object.keys(domainData).length };
+      const dataset = { data: [], maxBarThickness: 50 };
       const colors = { backgroundColor: [] };
       for (const [entity, count] of Object.entries(domainData)) {
         dataset.data.push(count);
