@@ -441,7 +441,6 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'name': c.name,
                 'creator': {
                     'id': c.user_id,
-                    'name': c.username,
                     'username': c.username,
                 },
                 'project': {
