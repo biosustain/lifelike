@@ -12,6 +12,7 @@ export interface GraphNode {
   data: {[key: string]: any};
   subLabels: Array<string>;
   displayName: string;
+  entityUrl: string;
 }
 
 /** Edge represenattion from the backend */
@@ -92,15 +93,6 @@ export interface FTSResult {
   query: string;
   nodes: Array<FTSQueryRecord>;
   total: number;
-  page: number;
-  limit: number;
-}
-
-export interface SearchParameters {
-  query: string;
-  domains?: Domain[];
-  entityTypes?: EntityType[];
-  organism?: string | null;
   page: number;
   limit: number;
 }

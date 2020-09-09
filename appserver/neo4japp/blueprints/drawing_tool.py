@@ -3,6 +3,7 @@ import json
 import os
 import re
 from datetime import datetime
+from neo4japp.constants import TIMEZONE
 
 import graphviz as gv
 import sqlalchemy
@@ -38,6 +39,7 @@ from neo4japp.exceptions import (
 from neo4japp.models import (
     AccessActionType,
     Project,
+    ProjectVersion,
     Projects,
     Directory,
     ProjectBackup,
@@ -45,7 +47,7 @@ from neo4japp.models import (
     AppRole,
     projects_collaborator_role,
 )
-from neo4japp.models.schema import ProjectSchema
+from neo4japp.models.schema import ProjectSchema, ProjectVersionSchema
 from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
 from neo4japp.util import CasePreservedDict
 from neo4japp.utils.logger import UserEventLog
@@ -159,6 +161,7 @@ def upload_map(projects_name: str):
         graph=map_data,
         user_id=user.id,
         dir_id=dir_id,
+        creation_date=datetime.now(TIMEZONE),
     )
 
     db.session.add(drawing_map)
@@ -166,7 +169,7 @@ def upload_map(projects_name: str):
     drawing_map.set_hash_id()
     db.session.commit()
 
-    yield jsonify(result=dict(hashId=drawing_map.hash_id)), 200
+    yield jsonify(result={'hashId': drawing_map.hash_id}), 200
 
 
 @bp.route('/community', methods=['GET'])
@@ -255,22 +258,23 @@ def add_project(projects_name: str):
     yield user, projects
 
     date_modified = datetime.strptime(
-        data.get("date_modified", ""),
-        "%Y-%m-%dT%H:%M:%S.%fZ"
+        data.get('date_modified', ''),
+        '%Y-%m-%dT%H:%M:%S.%fZ'
     ) if data.get(
-        "date_modified"
+        'date_modified'
     ) is not None else datetime.now()
 
     # Create new project
     project = Project(
-        author=f"{user.first_name} {user.last_name}",
-        label=data.get("label", ""),
-        description=data.get("description", ""),
+        author=f'{user.first_name} {user.last_name}',
+        label=data.get('label', ''),
+        description=data.get('description', ''),
         date_modified=date_modified,
         public=data.get("public", False),
-        graph=data.get("graph", dict(nodes=[], edges=[])),
+        graph=data.get("graph", {'nodes': [], 'edges': []}),
         user_id=user.id,
         dir_id=dir_id,
+        creation_date=datetime.now(TIMEZONE),
     )
 
     current_app.logger.info(
@@ -324,6 +328,18 @@ def update_project(hash_id: str, projects_name: str):
         f'User updated map: <{project.label}>',
         extra=UserEventLog(username=g.current_user.username, event_type='map update').to_dict())
 
+    # Create new project version
+    project_version = ProjectVersion(
+        label=project.label,
+        description=project.description,
+        date_modified=datetime.now(),
+        public=project.public,
+        graph=project.graph,
+        user_id=user.id,
+        dir_id=project.dir_id,
+        project_id=project.id,
+    )
+
     # Update project's attributes
     if 'description' in data:
         project.description = data['description']
@@ -339,6 +355,7 @@ def update_project(hash_id: str, projects_name: str):
 
     # Commit to db
     db.session.add(project)
+    db.session.add(project_version)
     db.session.commit()
 
     yield jsonify({'status': 'success'}), 200
@@ -374,6 +391,74 @@ def delete_project(hash_id: str, projects_name: str):
     db.session.commit()
 
     yield jsonify({'status': 'success'}), 200
+
+
+@bp.route('/<string:projects_name>/map/<string:hash_id>/version/', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_versions(projects_name: str, hash_id: str):
+    """ Return a list of all map versions underneath map """
+    user = g.current_user
+
+    try:
+        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Project not found')
+
+    try:
+        target_map = Project.query.filter(Project.hash_id == hash_id).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Target Map not found')
+
+    yield user, projects
+
+    try:
+        project_versions = ProjectVersion.query.with_entities(
+            ProjectVersion.id, ProjectVersion.date_modified).filter(
+            ProjectVersion.project_id == target_map.id
+        ).join(
+            Directory,
+            Directory.id == ProjectVersion.dir_id,
+        ).filter(
+            Directory.projects_id == projects.id,
+        ).all()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :-( ')
+
+    version_schema = ProjectVersionSchema(many=True)
+
+    yield jsonify({'versions': version_schema.dump(project_versions)}), 200
+
+
+@bp.route('/<string:projects_name>/map/<string:hash_id>/version/<version_id>', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_version(projects_name: str, hash_id: str, version_id):
+    """ Return a list of all map versions underneath map """
+    user = g.current_user
+
+    try:
+        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Project not found')
+
+    yield user, projects
+
+    try:
+        project_version = ProjectVersion.query.filter(
+            ProjectVersion.id == version_id
+        ).join(
+            Directory,
+            Directory.id == ProjectVersion.dir_id,
+        ).filter(
+            Directory.projects_id == projects.id,
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :-( ')
+
+    version_schema = ProjectVersionSchema()
+
+    yield jsonify({'version': version_schema.dump(project_version)}), 200
 
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/pdf', methods=['GET'])
@@ -523,33 +608,6 @@ def process(data_source, format='pdf'):
         )
 
     return graph.pipe()
-
-
-@bp.route('/search', methods=['POST'])
-@auth.login_required
-def find_maps():
-    # TODO: LL-415, what do we do with this now that we have projects?
-    user = g.current_user
-    data = request.get_json()
-    query = search(Project.query, data['term'], sort=True)
-    conditions = []
-
-    filters = data.get('filters', {
-        'personal': True,
-        'community': True,
-    })
-    if filters.get('personal', True):
-        conditions.append(Project.user_id == user.id)
-    if filters.get('community', True):
-        conditions.append(Project.public)
-
-    if len(conditions):
-        projects = query.filter(or_(*conditions)).all()
-        project_schema = ProjectSchema(many=True)
-
-        return {'projects': project_schema.dump(projects)}, 200
-    else:
-        return {'projects': []}, 200
 
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/<string:format>', methods=['GET'])

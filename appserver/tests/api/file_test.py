@@ -9,7 +9,13 @@ def generate_headers(jwt_token):
     return {'Authorization': f'Bearer {jwt_token}'}
 
 
-def test_user_can_delete_own_pdf(client, fix_project, test_user_with_pdf, test_user):
+def test_user_can_delete_own_pdf(
+    client,
+    fix_project,
+    test_user_with_pdf,
+    test_user,
+    mock_delete_elastic_indices
+):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.file_id
@@ -319,7 +325,13 @@ def test_user_can_remove_matching_custom_annotations(
     assert uuid_2 in remove_resp.get_json()
 
 
-def test_can_delete_files(client, test_user, test_user_with_pdf, fix_project):
+def test_can_delete_files(
+    client,
+    test_user,
+    test_user_with_pdf,
+    fix_project,
+    mock_delete_elastic_indices
+):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.file_id

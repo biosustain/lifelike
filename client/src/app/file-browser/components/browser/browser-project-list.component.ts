@@ -1,18 +1,17 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Project, ProjectSpaceService } from '../../services/project-space.service';
 
+// @ts-ignore
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { ProjectCreateDialogComponent } from '../project-create-dialog.component';
 import { ProjectEditDialogComponent } from '../project-edit-dialog.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { combineLatest, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
 import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
 import { CollectionModal } from '../../../shared/utils/collection-modal';
 import { MapService } from '../../../drawing-tool/services';
-import { ResultList, StandardRequestOptions } from '../../../interfaces/shared.interface';
-import { PublicMap } from '../../../drawing-tool/services/map.service';
+import { StandardRequestOptions } from '../../../interfaces/shared.interface';
 import { FormControl, FormGroup } from '@angular/forms';
 
 @Component({

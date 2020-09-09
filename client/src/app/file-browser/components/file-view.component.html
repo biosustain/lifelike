@@ -124,10 +124,17 @@
               </div>
             </div>
           </div>
+
+          <div class="btn-group ml-2">
+            <button type="button" class="btn btn-secondary"
+                    (click)="displayShareDialog()">
+              <i class="fa fa-fw fa-share-square"></i> Share
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="flex-fill overflow-auto">
+      <div class="flex-fill overflow-auto" id="pdf-viewer-lib-wrapper">
         <div *ngIf="ready">
           <!-- PDF Viewer -->
           <lib-pdf-viewer-lib

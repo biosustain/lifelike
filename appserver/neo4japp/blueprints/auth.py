@@ -1,4 +1,5 @@
 import jwt
+import sentry_sdk
 from datetime import datetime, timedelta
 from flask import current_app, request, Response, json, Blueprint, g
 from flask_httpauth import HTTPTokenAuth
@@ -34,6 +35,8 @@ def verify_token(token):
         if decoded['type'] == 'access':
             user = pullUserFromAuthHead()
             g.current_user = user
+            with sentry_sdk.configure_scope() as scope:
+                scope.set_tag('user_email', user.email)
             return True
         else:
             raise NotAuthorizedException('no access found')

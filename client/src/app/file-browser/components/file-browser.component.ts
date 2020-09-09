@@ -30,7 +30,9 @@ import { ModuleProperties } from '../../shared/modules';
 import { KnowledgeMap, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
 import moment from 'moment';
-import { nullCoalesce } from '../../graph-viewer/utils/types';
+import { getObjectCommands } from '../utils/objects';
+import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
+import { nullCoalesce } from '../../shared/utils/types';
 
 interface PathLocator {
   projectName?: string;
@@ -483,20 +485,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   getObjectCommands(object: AnnotatedDirectoryObject): any[] {
-    switch (object.type) {
-      case 'dir':
-        const directory = object.data as Directory;
-        // TODO: Convert to hash ID
-        return ['/projects', this.locator.projectName, 'folders', directory.id];
-      case 'file':
-        const file = object.data as PdfFile;
-        return ['/projects', this.locator.projectName, 'files', file.file_id];
-      case 'map':
-        const _map = object.data as KnowledgeMap;
-        return ['/projects', this.locator.projectName, 'maps', _map.hash_id, 'edit'];
-      default:
-        throw new Error(`unknown directory object type: ${object.type}`);
-    }
+    return getObjectCommands(object);
   }
 
   getObjectQueryParams() {
@@ -552,6 +541,13 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   getDateShown(object: DirectoryObject) {
     return nullCoalesce(object.modificationDate, object.creationDate);
+  }
+
+  displayShareDialog() {
+    const modalRef = this.modalService.open(ShareDialogComponent);
+    modalRef.componentInstance.url = `${window.location.origin}/projects/`
+      + `${this.locator.projectName}` + (this.locator.directoryId ? `/folders/${this.locator.directoryId}` : '')
+      + '?fromWorkspace';
   }
 }
 

@@ -34,7 +34,7 @@
             </small>
           </div>
           <div class="input-group mb-3">
-            <input [matAutocomplete]='autoUsers' formControlName='username' placeholder="Username" type="text" class="form-control" aria-label="Text input with segmented dropdown button">
+            <input [matAutocomplete]='autoUsers' formControlName='email' placeholder="Email" type="text" class="form-control" aria-label="Text input with segmented dropdown button">
             <select formControlName='role' class="custom-select input-group-prepend" id="inputGroupSelect04" aria-label="Example select with button addon">
               <option
                 *ngFor="let r of userRoles"
@@ -51,7 +51,10 @@
               <div class='bg-blue white avatar'>
                 <p>{{ userCollab?.username | projectTitleAcronym : 1}}</p>
               </div>
-              {{ userCollab?.username }}
+              <div fxLayout="column">
+                <div>{{ userCollab?.username }}</div>
+                <div><small>{{ userCollab?.email }}</small></div>
+              </div>
               <small class='ml-auto'>Admin</small>
             </li>
             <li
@@ -61,7 +64,10 @@
               <div class='bg-blue white avatar'>
                 <p>{{ collabs[i]?.username | projectTitleAcronym : 1 }}</p>
               </div>
-              {{ collabs[i]?.username }}
+              <div fxLayout="column">
+                <div>{{ collabs[i]?.username }}</div>
+                <div><small>{{ collabs[i]?.email }}</small></div>
+              </div>
               <div [formGroupName]='i' class="ml-auto">
                 <select
                   formControlName='role'
@@ -81,7 +87,10 @@
               <div class='bg-blue white avatar'>
                 <p>{{ c?.username | projectTitleAcronym : 1}}</p>
               </div>
-              {{ c?.username }}
+              <div fxLayout="column">
+                <div>{{ c?.username }}</div>
+                <div><small>{{ c?.email }}</small></div>
+              </div>
               <small [ngSwitch]="c.role" class='ml-auto'>
                 <span *ngSwitchCase="'project-read'">Read</span>
                 <span *ngSwitchCase="'project-write'">Write</span>
