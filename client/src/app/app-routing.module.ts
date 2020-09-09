@@ -29,7 +29,7 @@ import { ContentSearchComponent } from './search/components/content-search.compo
 // TODO: Add an unprotected home page
 const routes: Routes = [
   {
-    path: '',
+    path: 'dashboard',
     component: DashboardComponent,
     data: {
       title: 'Dashboard',

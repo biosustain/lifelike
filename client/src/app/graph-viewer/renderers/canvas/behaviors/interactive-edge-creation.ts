@@ -5,15 +5,41 @@ import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { Arrowhead } from '../../../utils/canvas/line-heads/arrow';
 import { EdgeCreation } from '../../../actions/edges';
+import { asLiteral } from '@angular/compiler/src/render3/view/util';
+import { AbstractNodeHandleBehavior, Handle } from 'app/graph-viewer/utils/behaviors/abstract-node-handle-behavior';
+import { PlacedNode } from 'app/graph-viewer/styles/styles';
+import { isAltOrOptionPressed } from '../../../../shared/utils';
+import { TestCtx } from 'ng-bullet';
+import { min } from 'rxjs/operators';
 
+const HANDLE_BEHAVIOR_KEY = '_interactive-edge-creation/handle';
 const HELPER_BEHAVIOR_KEY = '_interactive-edge-creation/helper';
 
 export class InteractiveEdgeCreation extends AbstractCanvasBehavior {
   private readonly DISTANCE_MOVE_THRESHOLD = 5;
   private dragFrom: { x: number, y: number };
+  /**
+   * Subscription for when the selection changes.
+   */
+  private selectionChangeSubscription;
 
   constructor(private readonly graphView: CanvasGraphView) {
     super();
+  }
+
+  setup() {
+    this.selectionChangeSubscription = this.graphView.selection.changeObservable.subscribe(
+      ([newSelection, oldSelection]) => {
+        if (newSelection.length === 1 && newSelection[0].type === GraphEntityType.Node) {
+          this.graphView.behaviors.delete(HANDLE_BEHAVIOR_KEY);
+
+          this.graphView.behaviors.add(HANDLE_BEHAVIOR_KEY,
+            new ActiveEdgeCreationHandle(this.graphView, newSelection[0].entity as UniversalGraphNode), 2);
+        } else {
+          this.graphView.behaviors.delete(HANDLE_BEHAVIOR_KEY);
+        }
+      },
+    );
   }
 
   dragStart(event: MouseEvent): BehaviorResult {
@@ -40,6 +66,63 @@ export class InteractiveEdgeCreation extends AbstractCanvasBehavior {
     } else {
       return BehaviorResult.Continue;
     }
+  }
+}
+
+class ActiveEdgeCreationHandle extends AbstractNodeHandleBehavior<Handle> {
+  protected topOffset = 0;
+  protected leftOffset = 0;
+  protected size = 20;
+
+  constructor(graphView: CanvasGraphView,
+              target: UniversalGraphNode) {
+    super(graphView, target);
+  }
+
+  protected activeDragStart(event: MouseEvent, graphX: number, graphY: number, subject: GraphEntity | undefined) {
+    if (subject != null && subject.type === GraphEntityType.Node) {
+      this.graphView.behaviors.delete(HELPER_BEHAVIOR_KEY);
+      this.graphView.behaviors.add(HELPER_BEHAVIOR_KEY,
+        new ActiveEdgeCreationHelper(this.graphView, subject.entity as UniversalGraphNode), 10);
+      return BehaviorResult.Stop;
+    } else {
+      return BehaviorResult.Continue;
+    }
+  }
+
+  drawHandle(ctx: CanvasRenderingContext2D, transform: any, {minX, minY, maxX, maxY}: Handle) {
+    // Draw Handle
+    const noZoomScaleHandle = 1 / this.graphView.transform.scale(1).k;
+    const nodeRadiusHandle = this.size / 2 * noZoomScaleHandle;
+    const xHandle = (maxX - minX) / 2 + minX;
+    const yHandle = (maxY - minY) / 2 + minY;
+    ctx.moveTo(xHandle, yHandle);
+    ctx.arc(xHandle, yHandle, nodeRadiusHandle, 0, 2 * Math.PI);
+    ctx.strokeStyle = '#2B7CE9';
+    ctx.stroke();
+    ctx.fillStyle = '#97C2FC';
+    ctx.fill();
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.fillText('+', xHandle, yHandle + 4, this.size * 2);
+  }
+
+  getHandleBoundingBoxes(placedNode: PlacedNode): Handle[] {
+    const bbox = placedNode.getBoundingBox();
+    const noZoomScale = 1 / this.graphView.transform.scale(1).k;
+    const size = this.size * noZoomScale;
+    const halfSize = size / 2;
+    const x = (bbox.maxX - bbox.minX) / 2 + bbox.minX;
+    const y = bbox.minY;
+    return [
+      // Top left
+      {
+        minX: x - halfSize + this.leftOffset,
+        minY: y - halfSize + this.topOffset,
+        maxX: x + halfSize + this.leftOffset,
+        maxY: y + halfSize + this.topOffset,
+      },
+    ];
   }
 }
 

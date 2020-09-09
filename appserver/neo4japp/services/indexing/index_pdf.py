@@ -1,11 +1,15 @@
 import base64
 import itertools
 import logging
+from typing import List
+
 from elasticsearch.helpers import parallel_bulk
+from flask import current_app
 from sqlalchemy.orm import joinedload
 from neo4japp.database import db
 from neo4japp.models import Files, Directory
 from neo4japp.services.indexing.common import ElasticIndex, elastic_client
+from neo4japp.utils import EventLog
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +70,17 @@ def populate_index(pk: int = None, batch_size=100):
 
 def populate_single_index(fid: int):
     populate_index(fid)
+
+
+def delete_indices(file_ids: List[str]):
+    for success, info in parallel_bulk(
+            elastic_client,
+            ({'_op_type': 'delete', '_index': 'pdf', '_id': f_id} for f_id in file_ids)):  # noqa
+        if not success:
+            current_app.logger.error(
+                info,
+                extra=EventLog(event_type='elastic indexing').to_dict())
+    elastic_client.indices.refresh('pdf')
 
 
 def seed_elasticsearch():
