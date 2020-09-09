@@ -19,9 +19,74 @@ from neo4japp.models import (
     DomainURLsMap,
     AnnotationStyle
 )
-from neo4japp.services import Neo4JService
-from neo4japp.services.annotations import ManualAnnotationsService
+from neo4japp.services.indexing import index_pdf
+from neo4japp.services.annotations import AnnotationsNeo4jService, ManualAnnotationsService
 from neo4japp.services.annotations.constants import EntityType
+
+
+#################
+# Service mocks
+################
+
+@pytest.fixture(scope='function')
+def mock_get_combined_annotations_result(monkeypatch):
+    def get_combined_annotations_result(*args, **kwargs):
+        return [
+            {
+                'meta': {
+                    'type': EntityType.Gene.value,
+                    'id': '59272',
+                    'allText': 'ace2'
+                }
+            },
+            {
+                'meta': {
+                    'type': EntityType.Species.value,
+                    'id': '9606',
+                    'allText': 'human'
+                }
+            },
+        ]
+
+    monkeypatch.setattr(
+        ManualAnnotationsService,
+        'get_combined_annotations',
+        get_combined_annotations_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_get_organisms_from_gene_ids_result(monkeypatch):
+    def get_organisms_from_gene_ids_result(*args, **kwargs):
+        return [
+            {
+                'gene_id': '59272',
+                'gene_name': 'ACE2',
+                'taxonomy_id': '9606',
+                'species_name': 'Homo sapiens',
+            }
+        ]
+
+    monkeypatch.setattr(
+        AnnotationsNeo4jService,
+        'get_organisms_from_gene_ids',
+        get_organisms_from_gene_ids_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_delete_elastic_indices(monkeypatch):
+    def delete_indices(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(
+        index_pdf,
+        'delete_indices',
+        delete_indices,
+    )
+####################
+# End service mocks
+####################
 
 
 @pytest.fixture(scope='function')
@@ -118,11 +183,11 @@ def fix_project(test_user, session):
 
     session.execute(
         projects_collaborator_role.insert(),
-        [dict(
-            appuser_id=test_user.id,
-            app_role_id=role.id,
-            projects_id=project.id,
-        )]
+        [{
+            'appuser_id': test_user.id,
+            'app_role_id': role.id,
+            'projects_id': project.id,
+        }]
     )
     session.flush()
     return project
@@ -202,7 +267,7 @@ def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
 
 def login_as_user(self, email, password):
     """ Returns the authenticated JWT tokens """
-    credentials = dict(email=email, password=password)
+    credentials = {'email': email, 'password': password}
     login_resp = self.post(
         '/auth/login',
         data=json.dumps(credentials),
@@ -239,49 +304,3 @@ def uri_fixture(client, session):
 
 
 # TODO: Need to create actual mock data for these
-
-
-@pytest.fixture(scope='function')
-def mock_get_combined_annotations_result(monkeypatch):
-    def get_combined_annotations_result(*args, **kwargs):
-        return [
-            {
-                'meta': {
-                    'type': EntityType.Gene.value,
-                    'id': '59272',
-                    'allText': 'ace2'
-                }
-            },
-            {
-                'meta': {
-                    'type': EntityType.Species.value,
-                    'id': '9606',
-                    'allText': 'human'
-                }
-            },
-        ]
-
-    monkeypatch.setattr(
-        ManualAnnotationsService,
-        'get_combined_annotations',
-        get_combined_annotations_result,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_get_organisms_from_gene_ids_result(monkeypatch):
-    def get_organisms_from_gene_ids_result(*args, **kwargs):
-        return [
-            {
-                'gene_id': '59272',
-                'gene_name': 'ACE2',
-                'taxonomy_id': '9606',
-                'species_name': 'Homo sapiens',
-            }
-        ]
-
-    monkeypatch.setattr(
-        Neo4JService,
-        'get_organisms_from_gene_ids',
-        get_organisms_from_gene_ids_result,
-    )

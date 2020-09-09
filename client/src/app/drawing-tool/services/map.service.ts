@@ -1,14 +1,14 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+
+import { Observable } from 'rxjs';
 
 import { KnowledgeMap } from './interfaces';
-import { AbstractService } from '../../shared/services/abstract-service';
-import { AuthenticationService } from '../../auth/services/authentication.service';
-import { map } from 'rxjs/operators';
-import { PaginatedRequestOptions, ResultList } from '../../interfaces/shared.interface';
-import { Project } from '../../file-browser/services/project-space.service';
-import { AppUser } from '../../interfaces';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
+import { Project } from 'app/file-browser/services/project-space.service';
+import { AppUser } from 'app/interfaces';
+import { PaginatedRequestOptions, ResultList } from 'app/interfaces/shared.interface';
+import { AbstractService } from 'app/shared/services/abstract-service';
 
 @Injectable({
   providedIn: 'root',
@@ -38,21 +38,31 @@ export class MapService extends AbstractService {
   // CRUD
   // ========================================
 
-  createMap(projectName: string, directoryId: number, label: string, description: string, publicMap = false): Observable<any> {
+  createMap(
+    projectName: string,
+    directoryId: number,
+    label: string,
+    description: string,
+    publicMap = false
+  ): Observable<any> {
     return this.http.post<any>(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map`, {
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map`,
+      {
         label,
         description,
         directoryId,
         public: publicMap,
-      }, this.getHttpOptions(true),
+      },
+      this.getHttpOptions(true)
     );
   }
 
   getMap(projectName: string, hashId: string) {
     return this.http.get(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}`,
-      this.getHttpOptions(true),
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
+        projectName
+      )}/map/${encodeURIComponent(hashId)}`,
+      this.getHttpOptions(true)
     );
   }
 
@@ -66,8 +76,35 @@ export class MapService extends AbstractService {
 
   deleteMap(projectName: string, hashId: string): Observable<any> {
     return this.http.delete(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}`,
-      this.getHttpOptions(true),
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
+        projectName
+      )}/map/${encodeURIComponent(hashId)}`,
+      this.getHttpOptions(true)
+    );
+  }
+
+  getMapVersions(
+    projectName: string,
+    hashId: string,
+  ): Observable<any> {
+    return this.http.get(
+      `${this.MAPS_BASE_URL}/${encodeURIComponent(
+        projectName
+      )}/map/${encodeURIComponent(hashId)}/version/`,
+      this.getHttpOptions(true)
+    );
+  }
+
+  getMapVersionbyID(
+    projectName: string,
+    hashId: string,
+    versionID: number
+  ): Observable<{version: KnowledgeMap}> {
+    return this.http.get<{version: KnowledgeMap}>(
+      `${this.MAPS_BASE_URL}/${encodeURIComponent(
+        projectName
+      )}/map/${encodeURIComponent(hashId)}/version/${encodeURIComponent(versionID)}`,
+      this.getHttpOptions(true)
     );
   }
 
@@ -75,12 +112,19 @@ export class MapService extends AbstractService {
   // Export
   // ========================================
 
-  generateExport(projectName: string, hashId: string, format: 'pdf' | 'svg' | 'png'): Observable<any> {
+  generateExport(
+    projectName: string,
+    hashId: string,
+    format: 'pdf' | 'svg' | 'png'
+  ): Observable<any> {
     return this.http.get(
-      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(hashId)}/${encodeURIComponent(format)}`, {
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
+        projectName
+      )}/map/${encodeURIComponent(hashId)}/${encodeURIComponent(format)}`,
+      {
         ...this.getHttpOptions(true),
         responseType: 'blob',
-      },
+      }
     );
   }
 
@@ -91,7 +135,7 @@ export class MapService extends AbstractService {
   getBackup(projectName: string, hashId: string): Observable<any> {
     return this.http.get(
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/backup`,
-      this.getHttpOptions(true),
+      this.getHttpOptions(true)
     );
   }
 
@@ -110,7 +154,7 @@ export class MapService extends AbstractService {
   deleteBackup(projectName: string, hashId: string): Observable<any> {
     return this.http.delete(
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/backup`,
-      this.getHttpOptions(true),
+      this.getHttpOptions(true)
     );
   }
 
@@ -121,7 +165,7 @@ export class MapService extends AbstractService {
   isEditableByUser(projectName: string, hashId: string): Observable<any> {
     return this.http.get(
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/meta`,
-      this.getHttpOptions(true),
+      this.getHttpOptions(true)
     );
   }
 }

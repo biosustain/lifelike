@@ -13,7 +13,7 @@ import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
 import { isStopResult } from '../behaviors';
 import { LineEdge } from '../../utils/canvas/graph-edges/line-edge';
 import { SolidLine } from '../../utils/canvas/lines/solid';
-import { nullCoalesce } from '../../utils/types';
+import { nullCoalesce } from '../../../shared/utils/types';
 
 export interface CanvasGraphViewOptions {
   nodeRenderStyle: NodeRenderStyle;
@@ -686,14 +686,6 @@ export class CanvasGraphView extends GraphView {
    * Update the current mouse cursor.
    */
   updateMouseCursor() {
-    const canvas = this.canvas;
-    if (this.dragging.get().length) {
-      canvas.style.cursor = 'grabbing';
-    } else if (this.panningOrZooming) {
-      canvas.style.cursor = 'move';
-    } else {
-      canvas.style.cursor = 'default';
-    }
   }
 
   /**
