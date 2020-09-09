@@ -49,10 +49,10 @@ def list_users():
        of fields and filters align into key, val pair
     """
 
-    fields = request.args.getlist("fields")
-    fields = fields if len(fields) else ["username"]
-    filters = request.args.getlist("filters")
-    filters = filters if len(filters) else [""]
+    fields = request.args.getlist('fields')
+    fields = fields if len(fields) else ['email']
+    filters = request.args.getlist('filters')
+    filters = filters if len(filters) else ['']
 
     query_dict = dict(zip(fields, filters))
 
