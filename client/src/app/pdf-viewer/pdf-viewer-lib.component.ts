@@ -730,7 +730,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
     const dialogRef = this.modalService.open(AnnotationEditDialogComponent);
     dialogRef.componentInstance.allText = this.allText;
-    dialogRef.componentInstance.text = this.selectedText;
+    dialogRef.componentInstance.keywords = this.selectedText;
     dialogRef.componentInstance.coords = this.selectedTextCoords;
     dialogRef.componentInstance.pageNumber = this.currentPage;
     dialogRef.result.then(annotation => {
