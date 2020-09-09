@@ -906,7 +906,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.isLoadCompleted = true;
       setTimeout(() => {
         this.loadCompleted.emit(true);
-        const tagName = (this.pdfComponent as any).element.nativeElement.tagName.toLowerCase();
+        // #pdfViewerContainer should be scrollable for search functionality to work properly
+        let parent = (this.pdfComponent as any).element.nativeElement;
+        while (parent.id != 'pdf-viewer-lib-wrapper') {
+          jQuery(parent).addClass('h-100 overflow-hidden');
+          parent = parent.parentElement;
+        }
       }, 1000);
     }
     const pageNum = (e as any).pageNumber;
