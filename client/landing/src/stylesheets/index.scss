@@ -19,39 +19,19 @@ body {
   background: $site-main-bg;
 }
 
+// ========================================
+// Navbar
+// ========================================
+
 .site-top {
   position: relative;
   z-index: 1;
-
-  &:after {
-    position: absolute;
-    display: block;
-    top: 0;
-    left: 0;
-    bottom: -80px;
-    right: 0;
-    z-index: -1;
-    content: '';
-    background: url(/assets/img/intro_bg.jpg);
-    background-position: center center;
-    background-size: cover;
-    clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
-    margin-bottom: $spacer * 3;
-  }
-
-  @include media-breakpoint-up(sm) {
-    &:after {
-      margin-bottom: $spacer * 3;
-      clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
-    }
-  }
-
-  @include media-breakpoint-up(md) {
-    &:after {
-      margin-bottom: $spacer * 2;
-      clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
-    }
-  }
+  margin-bottom: -$edge-angle-size;
+  padding-bottom: $edge-angle-size + 5px;
+  background: url(/assets/img/intro_bg.jpg);
+  background-position: center center;
+  background-size: cover;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - #{$edge-angle-size}), 0 100%);
 }
 
 .site-header-container {
@@ -76,6 +56,10 @@ body {
     font-size: 24pt;
   }
 }
+
+// ========================================
+// Intro
+// ========================================
 
 .section-intro {
   padding: ($spacer * 2) 0;
@@ -135,6 +119,10 @@ body {
   }
 }
 
+// ========================================
+// Spotlight
+// ========================================
+
 .section-spotlight {
   padding: ($spacer * 5);
 }
@@ -157,6 +145,10 @@ body {
   border-radius: ($border-radius * 2);
 }
 
+// ========================================
+// Features
+// ========================================
+
 .section-features {
 }
 
@@ -177,7 +169,11 @@ body {
     padding: ($spacer * 3) $wrapper-padding-x;
 
     &:first-child {
-      padding-top: $spacer * 4;
+      padding-top: calc(#{$spacer * 3} + #{$edge-angle-size});
+    }
+
+    &:last-child {
+      padding-bottom: calc(#{$spacer * 3} + #{$edge-angle-size});
     }
 
     &:not(:last-child):before {
@@ -206,7 +202,7 @@ body {
 
   @include media-breakpoint-up(lg) {
     border-right: 1px solid $gray-300;
-    padding: ($spacer * 5) $wrapper-padding-x-lg;
+    padding: ($spacer * 7) $wrapper-padding-x-lg;
 
     &:not(:last-child):before {
       content: '\f111';
@@ -260,10 +256,15 @@ body {
   margin: auto;
 }
 
+// ========================================
+// Catcher
+// ========================================
+
 .section-catcher {
   background: $gray-100;
-  clip-path: polygon(0 0, 100% 40%, 100% 100%, 0 100%);
-  padding: ($spacer * 6) 0 ($spacer * 4) 0;
+  margin-top: -$edge-angle-size;
+  clip-path: polygon(0 0, 100% #{$edge-angle-size}, 100% 100%, 0 100%);
+  padding: ($spacer * 7) 0 ($spacer * 4) 0;
 }
 
 .catcher-title {
@@ -276,9 +277,34 @@ body {
   font-size: 140%;
 }
 
-.site-footer {
-  padding: ($spacer * 6) 0;
+.catcher-body {
+  max-width: 20rem;
+  margin: auto;
 }
+
+// ========================================
+// Footer
+// ========================================
+
+.site-footer {
+  color: $gray-600;
+  font-size: $font-size-sm;
+  background: $body-bg;
+  margin-top: -$edge-angle-size;
+  clip-path: polygon(0 0, 100% #{$edge-angle-size}, 100% 100%, 0 100%);
+  padding: ($spacer * 7) 0 ($spacer * 4) 0;
+}
+
+.footer-logos {
+  img {
+    margin: 20px;
+    max-width: 100%;
+  }
+}
+
+// ========================================
+// Utilities
+// ========================================
 
 .flex-spaced-wrap {
   flex-wrap: wrap;
