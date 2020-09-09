@@ -187,7 +187,7 @@ def create_annotations_from_text(doc):
                     text = line_split[-1]
 
             if title and text:
-                parsed_text = parser.parse_text(text=text)
+                parsed_text = parser.parse_text(abstract=text)
 
                 tokens = parser.extract_tokens(parsed_chars=parsed_text)
                 entity_service.set_entity_inclusions(custom_annotations=[])
