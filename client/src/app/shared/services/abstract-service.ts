@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthenticationService } from '../../auth/services/authentication.service';
 
-export class AbstractService {
+export abstract class AbstractService {
   constructor(
     readonly auth: AuthenticationService,
     readonly http: HttpClient,

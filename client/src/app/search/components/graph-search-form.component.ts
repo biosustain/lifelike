@@ -1,21 +1,21 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Domain, EntityType, SearchParameters } from '../../interfaces';
+import { Domain, EntityType } from '../../interfaces';
 import { DOMAINS, ENTITY_TYPES } from '../../shared/database';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { nonEmptyList } from '../../shared/validators';
+import { GraphSearchParameters } from '../graph-search';
 import { OrganismAutocomplete } from 'app/interfaces';
 
 @Component({
-  selector: 'app-search-bar',
-  templateUrl: './search-form.component.html',
+  selector: 'app-graph-search-form',
+  templateUrl: './graph-search-form.component.html',
 })
-export class SearchFormComponent {
-  @Output() search = new EventEmitter<SearchParameters>();
-
+export class GraphSearchFormComponent {
   domainChoices: Domain[] = DOMAINS.concat().sort((a, b) => a.name.localeCompare(b.name));
   entityTypeChoices: EntityType[] = ENTITY_TYPES.concat().sort((a, b) => a.name.localeCompare(b.name));
+  @Output() search = new EventEmitter<GraphSearchParameters>();
   organismChoice: string;
 
   form = new FormGroup({
@@ -35,7 +35,7 @@ export class SearchFormComponent {
   }
 
   @Input()
-  set params(params: SearchParameters) {
+  set params(params: GraphSearchParameters) {
     if (params) {
       this.organismChoice = params.organism;
       this.form.patchValue({
