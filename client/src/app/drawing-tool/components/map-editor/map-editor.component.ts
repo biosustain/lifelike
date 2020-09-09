@@ -39,6 +39,16 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
         this.saveBackup();
       }
     });
+
+    this.ngZone.runOutsideAngular(() => {
+      this.canvasChild.nativeElement.addEventListener('dragover', e => {
+        this.dragOver(e);
+      });
+
+      this.canvasChild.nativeElement.addEventListener('drop', e => {
+        this.drop(e);
+      });
+    });
   }
 
   ngOnDestroy() {
