@@ -436,11 +436,15 @@ def get_child_directories(current_dir_id: int, project_name: str):
         } for d in reversed(parents)],
         objects=[
             *[{
+                'id': c.id,
                 'type': 'dir',
                 'name': c.name,
                 'creator': {
                     'id': c.user_id,
-                    'name': c.username
+                    'username': c.username,
+                },
+                'project': {
+                    'project_name': project_name,
                 },
                 'annotation_date': None,
                 'creation_date': None,
@@ -448,11 +452,16 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'data': c.__dict__.to_dict(snake_to_camel_transform=True),
             } for c in child_dirs],
             *[{
+                'id': f.file_id,
                 'type': 'file',
                 'name': f.filename,
                 'creator': {
                     'id': f.user_id,
-                    'name': f.username
+                    'name': f.username,
+                    'username': f.username
+                },
+                'project': {
+                    'project_name': project_name,
                 },
                 'description': f.description,
                 'annotation_date': f.annotations_date,
@@ -461,6 +470,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'data': CasePreservedDict(f.__dict__)
             } for f in files],
             *[{
+                'id': m.hash_id,
                 'type': 'map',
                 'name': m.label,
                 'annotation_date': None,
@@ -468,7 +478,11 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'modification_date': m.date_modified,
                 'creator': {
                     'id': m.user_id,
-                    'name': m.username
+                    'name': m.username,
+                    'username': m.username
+                },
+                'project': {
+                    'project_name': project_name,
                 },
                 'description': m.description,
                 'data': CasePreservedDict(m.__dict__),

@@ -93,8 +93,8 @@ def graph(request, app):
 @pytest.fixture(scope='function')
 def elasticindexes():
     """ Sets up the elastic indexes and pipelines """
-    index_pdf.create_ingest_pipeline()
-    index_pdf.create_index_and_mappings()
+    index_pdf.pdf_index.create_or_update_pipeline()
+    index_pdf.pdf_index.create_or_update_index()
 
 
 @pytest.fixture(scope='function')

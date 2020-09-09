@@ -6,16 +6,16 @@
           <ng-container *ngIf="params; else noQuery">
             Visualizer Results for "{{ params.query }}"
           </ng-container>
-          <ng-template #noQuery>Visualizer Search</ng-template>
+          <ng-template #noQuery>Visualizer</ng-template>
         </h1>
       </div>
 
       <div class="module-toolbar mt-2">
-        <app-search-bar
+        <app-graph-search-form
           class="w-100"
           [params]="params"
           (search)="search($event)">
-        </app-search-bar>
+        </app-graph-search-form>
       </div>
     </div>
 

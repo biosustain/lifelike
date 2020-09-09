@@ -6,6 +6,7 @@ import { LinkWithHrefDirective, LinkWithoutHrefDirective } from './link.directiv
 import { FormInputDirective } from './form-input.directive';
 import { AutoFocusDirective } from './auto-focus.directive';
 import { ContainerBreakpointsDirective } from './container-breakpoints.directive';
+import { TabSelectableDirective } from './tab-selectable.directive';
 
 const directives = [
   DebounceClickDirective,
@@ -16,6 +17,7 @@ const directives = [
   FormInputDirective,
   AutoFocusDirective,
   ContainerBreakpointsDirective,
+  TabSelectableDirective,
 ];
 
 @NgModule({
