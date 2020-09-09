@@ -87,9 +87,12 @@ $displays: none, inline, inline-block, block, table, table-row, table-cell, flex
 
 @import '~bootstrap/scss/variables';
 
+$active-bg: rgba($component-active-bg, .1);
+$focus-box-shadow: inset 0 0 0 $input-btn-focus-width $input-btn-focus-color;
+
 $table-border-color: $gray-200;
-$table-row-active-bg: rgba($component-active-bg, .1);
-$table-row-focus-box-shadow: inset 0 0 0 $input-btn-focus-width $input-btn-focus-color;
+$table-row-active-bg: $active-bg;
+$table-row-focus-box-shadow: $focus-box-shadow;
 
 $window-spacer: 1.2rem; // Spacing between the edge of container and the window
 $window-background: $white;
@@ -123,6 +126,13 @@ $module-section-title-font-weight: bold;
 $module-section-title-font-weight-lg: bold;
 $module-section-title-color: $gray-700;
 $module-back-button-padding: 0.15rem;
+
+$search-results-padding-y: $spacer;
+$search-results-padding-x: $spacer;
+$search-results-margin-bottom: $spacer;
+$search-results-border-width: 1px;
+$search-results-border-color: $card-border-color;
+$search-results-border-radius: $border-radius;
 
 $toolbar-padding: $window-spacer;
 $toolbar-border-width: 1px;

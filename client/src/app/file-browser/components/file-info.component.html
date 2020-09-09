@@ -1,0 +1,37 @@
+<div class="d-flex flex-column h-100">
+  <div class="flex-grow-1 position-relative" *ngIf="object.type === 'map'">
+    <div class="border-bottom h-100">
+      <ng-container *ngIf="object.type === 'map'">
+        <app-map [locator]="{projectName: object.project.projectName, hashId: object.id}"></app-map>
+      </ng-container>
+    </div>
+  </div>
+  <div class="module-body">
+    <div class="mb-3">
+      <app-file-type-label [object]="object"></app-file-type-label>
+    </div>
+
+    <h5 (click)="objectEdit.emit(object)">{{ object.name }}</h5>
+
+    <div class="paragraph-truncate-3 mt-3" *ngIf="object.description" (click)="objectEdit.emit(object)">
+      {{ object.description }}
+    </div>
+
+    <hr class="my-3">
+
+    <ul class="list-unstyled mt-3 mb-0">
+      <li *ngIf="object.annotationDate">
+        <strong>Annotated:</strong> {{ object.annotationDate | date: 'short' }}
+      </li>
+      <li *ngIf="object.modificationDate">
+        <strong>Modified:</strong> {{ object.modificationDate | date: 'short' }}
+      </li>
+      <li *ngIf="object.creationDate">
+        <strong>Created:</strong> {{ object.creationDate | date: 'short' }}
+      </li>
+      <li *ngIf="object.creator">
+        <strong>Author:</strong> {{ object.creator.username }}
+      </li>
+    </ul>
+  </div>
+</div>

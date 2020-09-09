@@ -26,7 +26,10 @@ import { MapVersionDialogComponent } from '../map-version-dialog.component';
 @Component({
   selector: 'app-drawing-tool',
   templateUrl: './map-editor.component.html',
-  styleUrls: ['./map-editor.component.scss'],
+  styleUrls: [
+    '../map.component.scss',
+    './map-editor.component.scss',
+  ],
 })
 export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implements OnInit, OnDestroy {
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
@@ -141,6 +144,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
           duration: 3000,
         });
       });
+    }, () => {
     });
   }
 

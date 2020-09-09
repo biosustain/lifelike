@@ -1,25 +1,29 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
 
-import { Domain, EntityType, FTSQueryRecord, FTSResult, SearchParameters } from 'app/interfaces';
+import { Domain, EntityType, FTSQueryRecord, FTSResult } from 'app/interfaces';
 import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
-import { SearchService } from '../services/search.service';
+import { GraphSearchService } from '../services/graph-search.service';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { tap } from 'rxjs/operators';
 import { createSearchParamsFromQuery, getQueryParams } from '../utils/search';
+import { GraphSearchParameters } from '../graph-search';
+import { ModuleProperties } from '../../shared/modules';
 
 @Component({
-  selector: 'app-search',
-  templateUrl: './search.component.html',
+  selector: 'app-graph-search',
+  templateUrl: './graph-search.component.html',
 })
-export class SearchComponent implements OnInit, OnDestroy {
+export class GraphSearchComponent implements OnInit, OnDestroy {
   @ViewChild('body', {static: false}) body: ElementRef;
 
-  readonly loadTask: BackgroundTask<SearchParameters, FTSResult> = new BackgroundTask(params => {
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+
+  readonly loadTask: BackgroundTask<GraphSearchParameters, FTSResult> = new BackgroundTask(params => {
     return this.searchService.visualizerSearchTemp(
       params.query,
       params.organism,
@@ -29,24 +33,32 @@ export class SearchComponent implements OnInit, OnDestroy {
     );
   });
 
-  params: SearchParameters | undefined;
+  params: GraphSearchParameters | undefined;
   collectionSize = 0;
   results: FTSQueryRecord[] = [];
 
   legend: Map<string, string> = new Map();
 
+  private valuesSubscription: Subscription;
   routerParamSubscription: Subscription;
   loadTaskSubscription: Subscription;
 
   constructor(
     private route: ActivatedRoute,
-    private searchService: SearchService,
+    private searchService: GraphSearchService,
     private legendService: LegendService,
     private workspaceManager: WorkspaceManager,
   ) {
   }
 
   ngOnInit() {
+    this.valuesSubscription = this.loadTask.values$.subscribe(value => {
+      this.modulePropertiesChange.emit({
+        title: value.query != null && value.query.length ? `Visualizer: ${value.query}` : 'Visualizer Search',
+        fontAwesomeIcon: 'search',
+      });
+    });
+
     this.loadTaskSubscription = this.loadTask.results$.subscribe(({result}) => {
       const {nodes, total} = result;
       this.results = nodes;
@@ -81,15 +93,16 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.loadTaskSubscription.unsubscribe();
     this.routerParamSubscription.unsubscribe();
+    this.loadTaskSubscription.unsubscribe();
+    this.valuesSubscription.unsubscribe();
   }
 
   refresh() {
     this.loadTask.update(this.params);
   }
 
-  search(params: SearchParameters) {
+  search(params: GraphSearchParameters) {
     this.workspaceManager.navigate(['/search'], {
       queryParams: {
         ...getQueryParams(params),

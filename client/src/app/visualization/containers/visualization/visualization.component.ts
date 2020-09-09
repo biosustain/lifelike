@@ -20,7 +20,6 @@ import {
   Neo4jResults,
   NewClusterSnippetsPageRequest,
   NewEdgeSnippetsPageRequest,
-  SearchParameters,
   VisEdge,
   VisNode,
 } from 'app/interfaces';
@@ -33,6 +32,7 @@ import { ProgressDialog } from '../../../shared/services/progress-dialog.service
 import { MessageDialog } from '../../../shared/services/message-dialog.service';
 import { MessageType } from '../../../interfaces/message-dialog.interface';
 import { Progress } from '../../../interfaces/common-dialog.interface';
+import { GraphSearchParameters } from '../../../search/graph-search';
 
 @Component({
   selector: 'app-visualization',
@@ -40,7 +40,7 @@ import { Progress } from '../../../interfaces/common-dialog.interface';
 })
 export class VisualizationComponent implements OnInit, OnDestroy {
 
-  params: SearchParameters;
+  params: GraphSearchParameters;
 
   // Shows/Hide the component
   hideDisplay = false;
