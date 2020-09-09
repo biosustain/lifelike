@@ -19,3 +19,15 @@
     scrollbar-track-color: $background-color;
   }
 }
+
+@mixin module-breakpoint-up($breakpoint) {
+  $parent: &;
+
+  @at-***ARANGO_USERNAME*** {
+    .module.cbp-#{$breakpoint} {
+      #{$parent} {
+        @content;
+      }
+    }
+  }
+}

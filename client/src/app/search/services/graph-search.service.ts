@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 import { FTSResult } from 'app/interfaces';
 
 @Injectable()
-export class SearchService {
+export class GraphSearchService {
   readonly searchApi = '/api/search';
 
   constructor(private http: HttpClient) {

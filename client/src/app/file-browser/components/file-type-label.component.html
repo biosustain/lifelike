@@ -1,0 +1,5 @@
+<div [ngSwitch]="object.type" class="text-muted">
+  <div *ngSwitchCase="'dir'"><i class="fa fa-fw fa-folder text-icon"></i> Folder</div>
+  <div *ngSwitchCase="'file'"><i class="fa fa-fw fa-file text-icon"></i> Document</div>
+  <div *ngSwitchCase="'map'"><i class="fa fa-fw fa-project-diagram text-icon"></i> Map</div>
+</div>

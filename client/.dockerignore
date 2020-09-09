@@ -4,3 +4,4 @@ Dockerfile.staging
 node_modules/**/*
 node_modules
 .gitignore
+landing/dist

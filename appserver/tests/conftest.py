@@ -8,6 +8,7 @@ from py2neo import (
     Relationship,
 )
 
+from neo4japp.services.common import GraphBaseDao
 from neo4japp.constants import DISPLAY_NAME_MAP
 from neo4japp.database import db, reset_dao
 from neo4japp.data_transfer_objects.visualization import (
@@ -27,9 +28,9 @@ from neo4japp.models.neo4j import (
 from neo4japp.services import (
     AccountService,
     AuthService,
-    GraphBaseDao,
-    Neo4JService,
+    KgService,
     SearchService,
+    VisualizerService,
 )
 from neo4japp.services.indexing import index_pdf
 from neo4japp.util import (
@@ -58,7 +59,7 @@ def session(app, request):
     """ Creates a new database session """
     connection = db.engine.connect()
     transaction = connection.begin()
-    options = dict(bind=connection, binds={})
+    options = {'bind': connection, 'binds': {}}
     session = db.create_scoped_session(options=options)
     db.session = session
 
@@ -70,28 +71,6 @@ def session(app, request):
 
     request.addfinalizer(teardown)
     return session
-
-
-@pytest.fixture(scope='function')
-def elasticindexes():
-    """ Sets up the elastic indexes and pipelines """
-    index_pdf.create_ingest_pipeline()
-    index_pdf.create_index_and_mappings()
-
-
-@pytest.fixture(scope='function')
-def account_service(app, session):
-    return AccountService(session)
-
-
-@pytest.fixture(scope='function')
-def auth_service(app, session):
-    return AuthService(session)
-
-
-@pytest.fixture(scope='function')
-def account_user(app, session):
-    return AccountService(session)
 
 
 @pytest.fixture(scope='function')
@@ -110,25 +89,43 @@ def graph(request, app):
 
     return graph
 
-# Begin DAO Fixtures #
-@pytest.fixture(scope='function')
-def base_dao(graph):
-    """For testing methods in GraphBaseDao"""
-    return GraphBaseDao(graph)
-
 
 @pytest.fixture(scope='function')
-def neo4j_service_dao(graph):
-    """Neo4JService using the test graph"""
-    return Neo4JService(graph)
+def elasticindexes():
+    """ Sets up the elastic indexes and pipelines """
+    index_pdf.pdf_index.create_or_update_pipeline()
+    index_pdf.pdf_index.create_or_update_index()
 
 
 @pytest.fixture(scope='function')
-def search_service_dao(graph):
-    """SearchService using the test graph"""
-    return SearchService(graph)
+def account_service(app, session):
+    return AccountService(session)
 
-# End DAO Fixtures #
+
+@pytest.fixture(scope='function')
+def auth_service(app, session):
+    return AuthService(session)
+
+
+@pytest.fixture(scope='function')
+def account_user(app, session):
+    return AccountService(session)
+
+
+@pytest.fixture(scope='function')
+def kg_service(graph, session):
+    return KgService(
+        graph=graph,
+        session=session
+    )
+
+
+@pytest.fixture(scope='function')
+def visualizer_service(app, graph, session):
+    return VisualizerService(
+        graph=graph,
+        session=session
+    )
 
 # Begin Graph Data Fixtures #
 
@@ -616,7 +613,7 @@ def gas_gangrene_vis_node(gas_gangrene):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
     )
 
@@ -638,7 +635,7 @@ def gas_gangrene_duplicate_vis_node(gas_gangrene):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
         duplicate_of=node_as_graph_node.id
     )
@@ -661,7 +658,7 @@ def oxygen_duplicate_vis_node(oxygen):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
         duplicate_of=node_as_graph_node.id
     )
@@ -684,7 +681,7 @@ def penicillins_vis_node(penicillins):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
     )
 
@@ -706,7 +703,7 @@ def penicillins_duplicate_vis_node(penicillins):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
         duplicate_of=node_as_graph_node.id
     )
@@ -729,7 +726,7 @@ def pomc_vis_node(pomc):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
     )
 
@@ -751,7 +748,7 @@ def pomc_duplicate_vis_node(pomc):
         sub_labels=node_as_graph_node.sub_labels,
         display_name=node_as_graph_node.display_name,
         primary_label=node_as_graph_node.sub_labels[0],
-        color=dict(),
+        color={},
         expanded=False,
         duplicate_of=node_as_graph_node.id
     )

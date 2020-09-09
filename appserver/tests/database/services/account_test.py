@@ -5,13 +5,13 @@ from neo4japp.util import camel_to_snake_dict
 
 
 def user_factory(uid):
-    return dict(
-        username=f'appuser-{uid}',
-        firstName=f'firstname-{uid}',
-        lastName=f'lastname-{uid}',
-        email=f'appuser{uid}@***ARANGO_DB_NAME***.bio',
-        roles=['user'],
-    )
+    return {
+        'username': f'appuser-{uid}',
+        'firstName': f'firstname-{uid}',
+        'lastName': f'lastname-{uid}',
+        'email': f'appuser{uid}@***ARANGO_DB_NAME***.bio',
+        'roles': ['user'],
+    }
 
 
 @pytest.mark.parametrize('user_attribute, new_value', [

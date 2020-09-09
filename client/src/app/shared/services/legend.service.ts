@@ -9,7 +9,7 @@ import {
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class LegendService {
-    readonly visApi = '/api/neo4j';
+    readonly visApi = '/api/visualizer';
 
     constructor(private http: HttpClient) {}
 

@@ -21,11 +21,15 @@ import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { MapEditDialogComponent } from '../map-edit-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
+import { MapVersionDialogComponent } from '../map-version-dialog.component';
 
 @Component({
   selector: 'app-drawing-tool',
   templateUrl: './map-editor.component.html',
-  styleUrls: ['./map-editor.component.scss'],
+  styleUrls: [
+    '../map.component.scss',
+    './map-editor.component.scss',
+  ],
 })
 export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implements OnInit, OnDestroy {
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
@@ -37,6 +41,16 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
       if (changed) {
         this.saveBackup();
       }
+    });
+
+    this.ngZone.runOutsideAngular(() => {
+      this.canvasChild.nativeElement.addEventListener('dragover', e => {
+        this.dragOver(e);
+      });
+
+      this.canvasChild.nativeElement.addEventListener('drop', e => {
+        this.drop(e);
+      });
     });
   }
 
@@ -115,6 +129,21 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
         },
       ));
       this.unsavedChanges$.next(true);
+    }, () => {
+    });
+  }
+
+  mapVersionDialog() {
+    const dialogRef = this.modalService.open(MapVersionDialogComponent);
+    dialogRef.componentInstance.map = cloneDeep(this.map);
+    dialogRef.componentInstance.projectName = this.locator.projectName;
+    dialogRef.result.then((newMap: Observable<{version: KnowledgeMap}>) => {
+      newMap.subscribe(result => {
+        this.graphCanvas.setGraph(result.version.graph);
+        this.snackBar.open('Map reverted to Version from ' + result.version.date_modified, null, {
+          duration: 3000,
+        });
+      });
     }, () => {
     });
   }
