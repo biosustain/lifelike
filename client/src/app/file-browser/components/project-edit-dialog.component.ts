@@ -62,7 +62,7 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
    * Manages existing and pending collabs
    */
   form: FormGroup = new FormGroup({
-    username: new FormControl(),
+    email: new FormControl(),
     role: new FormControl('project-read'),
     currentCollabs: new FormArray([])
   });
@@ -102,18 +102,18 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
   }
 
   ngOnInit() {
-    this.form.get('username').valueChanges
+    this.form.get('email').valueChanges
       .pipe(
         // Make sure a value is being pushed
-        filter(val => val.length >= 1),
+        filter(val => !isNullOrUndefined(val) && val.length >= 1),
         // 750 ms between each input refresh
         debounceTime(750),
         switchMap(val => this.acc.listOfUsers(val))
       ).subscribe(users => {
         if (isArray(users)) {
-          this.userOptions = users.map(u => u.username);
+          this.userOptions = users.map(u => u.email);
         } else {
-          this.userOptions = [(users as AppUser).username];
+          this.userOptions = [(users as AppUser).email];
         }
       });
 
@@ -186,18 +186,18 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
    */
   addCollaborator() {
     const {
-      username,
+      email,
       role
     } = this.form.value;
 
-    if (isNullOrUndefined(username) || username.length === 0) {
+    if (isNullOrUndefined(email) || email.length === 0) {
       this.hasError = true;
-      this.errorMsg = 'Enter an username';
+      this.errorMsg = 'Enter an email.';
       return;
     }
 
     // check if that collab is already added
-    if (this.collabs.filter(c => c.username === username).length) {
+    if (this.collabs.filter(c => c.email === email).length) {
       this.hasError = true;
       this.errorMsg = 'This user is already added. You can modify their privilege below.';
       return;
@@ -205,15 +205,15 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
 
     this.projSpace.addCollaborator(
       this.project.projectName,
-      username,
+      email,
       role
     ).subscribe(resp => {
-      this.snackBar.open('Collaborator added!.', null, {
+      this.snackBar.open('Collaborator added!', null, {
         duration: 2000,
       });
 
       this.refresh();
-      this.form.get('username').reset();
+      this.form.get('email').reset();
 
     }, (err: HttpErrorResponse) => {
       interface Error {
@@ -257,7 +257,7 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
         this.project.projectName,
         username
       ).subscribe(resp => {
-        this.snackBar.open('Collaborator removed!.', null, {
+        this.snackBar.open('Collaborator removed!', null, {
           duration: 2000,
         });
         this.refresh();
@@ -269,7 +269,7 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
         role
       ).subscribe(resp => {
         this.refresh();
-        this.snackBar.open('Collaborator updated!.', null, {
+        this.snackBar.open('Collaborator updated!', null, {
           duration: 2000,
         });
       });
