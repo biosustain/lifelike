@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link
     href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Patua+One&family=Playfair+Display&display=swap"
     rel="stylesheet">
@@ -9,72 +10,66 @@
 </head>
 <body>
 
-<header class="site-header-container">
-  <div class="site-header container d-flex align-items-center">
-    <div class="site-logo mr-4">
-      <h1>Lifelike</h1>
-    </div>
+<div class="site-main">
+  <div class="site-top">
+    <header class="site-header-container">
+      <div class="site-header wrapper d-flex align-items-center flex-wrap">
+        <div class="site-logo mr-4">
+          <h1>Lifelike</h1>
+        </div>
 
-    <nav class="site-nav flex-fill">
-      <a href="#" class="btn btn-link">TODO</a>
-      <a href="#" class="btn btn-link">TODO</a>
-      <a href="#" class="btn btn-link">TODO</a>
-    </nav>
-
-    <nav class="site-header-buttons d-flex">
-      <a class="btn btn-link mr-2" href="/workspaces/local">Sign in</a>
-      <a class="btn btn-outline-light" href="#">TODO</a>
-    </nav>
-  </div>
-</header>
-
-<section class="intro">
-  <div class="container d-flex">
-    <div class="intro-left">
-      <h2 class="intro-title">
-        From Big Data to Big Picture
-      </h2>
-
-      <div class="intro-subtitle">
-        Lifelike's mission is to turn big data into contextualized knowledge, creating a big
-        picture understanding and augmenting our intelligence in solving complex problems.
+        <nav class="site-header-buttons d-flex ml-auto">
+          <a class="btn btn-outline-light" href="/workspaces/local">Sign in</a>
+        </nav>
       </div>
+    </header>
 
-      <div class="intro-buttons d-flex">
-        <input type="email" class="form-control form-control-lg" placeholder="your@email.com"
-               style="width: 280px">
-        <a href="#" class="btn btn-intro-primary btn-lg ml-3">TODO</a>
+    <section class="section-intro">
+      <div class="wrapper d-lg-flex">
+        <div class="intro-left">
+          <h2 class="intro-title">
+            From Big Data to Big Picture
+          </h2>
+
+          <div class="intro-subtitle">
+            Turn big data into contextualized knowledge, creating a 360-degree view and big picture
+            understanding, augmenting our intelligence in solving complex problems.
+          </div>
+
+          <form action="mailto:***ARANGO_DB_NAME***@biosustain.dtu.dk?body=I am interested in demoing Lifelike." method="post"
+                class="intro-buttons d-flex flex-wrap flex-spaced-wrap align-items-start">
+            <input name="from" type="email" class="form-control form-control-lg mr-3 mb-2 mw-100"
+                   placeholder="your@email.com"
+                   style="width: 280px">
+            <a href="#" class="btn btn-intro-primary btn-lg">Request Demo</a>
+          </form>
+        </div>
       </div>
-    </div>
-    <div class="intro-right">
-      <img src="assets/img/main_screenshot.jpg" style="max-width: 700px">
-    </div>
+    </section>
   </div>
-</section>
 
-<section class="section-features">
-  <div class="container">
-    <div class="feature-table d-flex">
+  <section class="section-features">
+    <div class="feature-table">
       <div class="feature-item">
         <div class="feature-icon">
-          <i class="fa fa-database fa-3x"></i>
+          <img src="assets/img/workflow_step_1.png" alt="Screenshot of document on left and knowledge graph on right">
         </div>
         <h2 class="feature-title">
-          Accelerate data curation
+          Extract concepts easily
         </h2>
         <div class="feature-description">
-          Upload any PDF, auto-annotate, create new annotations on the fly and associate them with identifiers. ​
-          Quickly understand unstructured text, extract key information in a visual format and cross-connect
-          it with other sources of knowledge.​
+          Upload any PDF, auto-annotate, create new annotations on the fly and associate them
+          with identifiers. Quickly understand unstructured text, extract key information
+          in a visual format and cross-connect it with other sources of knowledge.
         </div>
       </div>
 
       <div class="feature-item">
         <div class="feature-icon">
-          <i class="fa fa-file-invoice fa-3x"></i>
+          <img src="assets/img/workflow_step_2.png" alt="Documents being collected">
         </div>
         <h2 class="feature-title">
-          Generate dynamic overviews
+          Make new connections
         </h2>
         <div class="feature-description">
           Drag annotated entities onto a canvas and draw relationships between nodes to capture new knowledge.
@@ -84,21 +79,24 @@
 
       <div class="feature-item">
         <div class="feature-icon">
-          <i class="fa fa-hat-wizard fa-3x"></i>
+          <img src="assets/img/workflow_step_3.png" alt="Picture of human head with a directed graph inside">
         </div>
         <h2 class="feature-title">
           Leap beyond traditional research
         </h2>
         <div class="feature-description">
           Upload experimental data and perform deep analytics against a
-          knowledge graph or extract features for machine learning models.​
+          knowledge graph. Extract enriched data or additional features for machine
+          learning mdels.
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+</div>
 
 <footer class="site-footer">
+  <div class="wrapper">
+  </div>
 </footer>
 
 <script src="https://kit.fontawesome.com/5d9e8add78.js" crossorigin="anonymous"></script>
