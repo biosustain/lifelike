@@ -4,8 +4,12 @@ import re
 from typing import Dict, List, Union
 from elasticsearch import Elasticsearch
 
-from neo4japp.database import get_lmdb_dao, get_annotations_service, get_annotations_pdf_parser, \
-    get_bioc_document_service
+from neo4japp.database import (
+    get_annotations_service,
+    get_annotations_pdf_parser,
+    get_bioc_document_service,
+    get_entity_recognition
+)
 from neo4japp.utils.queries import parse_query_terms
 
 
@@ -44,13 +48,26 @@ class PDFSearchResult:
             self.preview_text, self.annotations)
 
     def get_annotations(self, preview_text):
-        lmdb_dao = get_lmdb_dao()
-        annotator = get_annotations_service(lmdb_dao=lmdb_dao)
+        annotator = get_annotations_service()
         parser = get_annotations_pdf_parser()
         bioc_service = get_bioc_document_service()
+        entity_service = get_entity_recognition()
+
         parsed_text = parser.parse_text(preview_text)
         tokens = parser.extract_tokens(parsed_text)
-        annotations = annotator.create_rules_based_annotations(tokens=tokens, custom_annotations=[])
+
+        entity_service.set_entity_inclusions(custom_annotations=[])
+        entity_service.identify_entities(
+            tokens=tokens.token_positions,
+            check_entities_in_lmdb=entity_service.get_entities_to_identify()
+        )
+
+        annotations = annotator.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotator.get_entities_to_annotate()
+        )
         bioc = bioc_service.read(text=preview_text, file_uri="my_path")
         bioc_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
         return bioc_json['documents'][0]['passages'][0]['annotations']

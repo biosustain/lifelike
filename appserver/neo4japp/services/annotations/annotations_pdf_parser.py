@@ -181,53 +181,6 @@ class AnnotationsPDFParser:
     def parse_pdf_high_level(self, pdf) -> str:
         return high_level.extract_text(pdf)
 
-    def parse_text(self, text) -> PDFParsedCharacters:
-        """Parse a string text and produces similar results to
-        self.parse_pdf(). The only difference would be the LTChar
-        objects will not actual PDF coordinates.
-        """
-        @attr.s(frozen=True)
-        class Font():
-            fontname: str = attr.ib()
-
-            def is_vertical(self):
-                return False
-
-            def get_descent(self):
-                return 0
-
-        chars_in_abstract: List[str] = []
-        lt_chars: List[LTChar] = []
-        cropbox_in_pdf = (1, 1)
-        min_idx_in_page = {1: 1}
-
-        for c in text:
-            # create a fake LTChar
-            lt_chars.append(
-                LTChar(
-                    text=c,
-                    matrix=(0, 0, 0, 0, 0, 0),
-                    font=Font(fontname=''),
-                    fontsize=0,
-                    scaling=0,
-                    rise=0,
-                    textwidth=0,
-                    textdisp=None,
-                    ncs=None,
-                    graphicstate=None,
-                )
-            )
-
-        for lt_char in lt_chars:
-            chars_in_abstract.append(lt_char.get_text())
-
-        return PDFParsedCharacters(
-            char_coord_objs_in_pdf=lt_chars,
-            chars_in_pdf=chars_in_abstract,
-            cropbox_in_pdf=cropbox_in_pdf,
-            min_idx_in_page=min_idx_in_page,
-        )
-
     def parse_text(self, abstract: str) -> PDFParsedCharacters:
         """Parse a Pubtator file and produces similar results to
         self.parse_pdf(). The only difference would be the LTChar
