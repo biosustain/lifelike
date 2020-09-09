@@ -53,9 +53,7 @@ COMMON_WORDS = set.union(*[
     COMMON_MISC_WORDS,
 ])
 
-# CHEMICAL_EXCLUSION = {'aa', 'same'}
-# COMPOUND_EXCLUSION = {'aa', 'same'}  # should this be the same as chemical?
-SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial', 'aa', 'pigs', 'electron'}
+SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial', 'pigs', 'electron'}
 
 # utf-32 unicode
 # can search these up here: https://www.fileformat.info/info/unicode/index.htm

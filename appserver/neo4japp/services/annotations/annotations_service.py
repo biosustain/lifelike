@@ -353,7 +353,6 @@ class AnnotationsService:
                 (1) this means a common name will have itself as a synonym
 
         Algorithm:
-            - Normalize the tokens and consider correct spelling
             - Handle common synonyms across multiple common names, because
               cannot infer entity.
                 (1) if none of the common names appears, then ignore synonym
@@ -365,7 +364,7 @@ class AnnotationsService:
 
             - TODO: Considerations:
                 (1) A synonym that is also a common name, and the other common name appears
-                    (1a) how to handle? Currently ignore synonym because can't infer (?)
+                    (1a) how to handle? Currently apply above as well (?)
 
         Returns list of matched annotations
         """
