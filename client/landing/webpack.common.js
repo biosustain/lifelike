@@ -9,7 +9,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({
-      filename: "[name].[contenthash].css",
+      filename: "[name].[contenthash].css"
     }),
   ],
   module: {
@@ -24,7 +24,10 @@ module.exports = {
         test: /\.s[ac]ss$/,
         use: [
           MiniCssExtractPlugin.loader,
-          "css-loader",
+          {
+            loader: "css-loader",
+            options: {url: false}
+          },
           "sass-loader",
         ]
       },

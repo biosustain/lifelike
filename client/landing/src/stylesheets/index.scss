@@ -5,9 +5,57 @@ body {
   overflow-x: hidden;
 }
 
+.wrapper {
+  max-width: $wrapper-width;
+  margin: auto;
+  padding: 0 $wrapper-padding-x-lg;
+
+  @include media-breakpoint-down(sm) {
+    padding: 0 $wrapper-padding-x;
+  }
+}
+
+.site-main {
+  background: $site-main-bg;
+}
+
+.site-top {
+  position: relative;
+  z-index: 1;
+
+  &:after {
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    bottom: -80px;
+    right: 0;
+    z-index: -1;
+    content: '';
+    background: url(/assets/img/intro_bg.jpg);
+    background-position: center center;
+    background-size: cover;
+    clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+    margin-bottom: $spacer * 3;
+  }
+
+  @include media-breakpoint-up(sm) {
+    &:after {
+      margin-bottom: $spacer * 3;
+      clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+    }
+  }
+
+  @include media-breakpoint-up(md) {
+    &:after {
+      margin-bottom: $spacer * 2;
+      clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+    }
+  }
+}
+
 .site-header-container {
   padding: ($spacer * 2) 0;
-  background: $primary;
   color: #fff;
 
   a {
@@ -29,23 +77,12 @@ body {
   }
 }
 
-.intro {
-  position: relative;
-  margin: 0 0 ($spacer * 18) 0;
-  padding: ($spacer * 4) 0 0 0;
+.section-intro {
+  padding: ($spacer * 2) 0;
   color: #fff;
 
-  &:after {
-    position: absolute;
-    display: block;
-    top: 0;
-    left: 0;
-    bottom: -50%;
-    right: 0;
-    z-index: -1;
-    content: '';
-    background: $primary;
-    clip-path: polygon(0 0, 100% 0, 100% 80%, 0 100%);
+  @include media-breakpoint-down(sm) {
+    padding-top: 0;
   }
 }
 
@@ -56,18 +93,8 @@ body {
 }
 
 .intro-left {
-  width: 50%;
-}
-
-.intro-right {
-  position: relative;
-
-  img {
-    position: absolute;
-    top: -20px;
-    left: 100px;
-    border-radius: ($border-radius * 2);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  @include media-breakpoint-up(lg) {
+    width: 80%;
   }
 }
 
@@ -131,28 +158,106 @@ body {
 }
 
 .section-features {
-  border-top: 1px solid $gray-200;
-  border-bottom: 1px solid $gray-200;
+}
+
+.feature-table {
+  max-width: $wrapper-width;
+  margin: auto;
+
+  @include media-breakpoint-up(lg) {
+    display: flex;
+  }
+}
+
+.feature-item {
+  position: relative;
+
+  @include media-breakpoint-down(md) {
+    border-bottom: 1px solid $gray-300;
+    padding: ($spacer * 3) $wrapper-padding-x;
+
+    &:first-child {
+      padding-top: $spacer * 4;
+    }
+
+    &:not(:last-child):before {
+      content: '\f111';
+      font-family: "Font Awesome 5 Free", sans-serif;
+      font-size: 200%;
+      position: absolute;
+      bottom: -0.8em;
+      left: calc(50% - 0.5em);
+      font-weight: 900;
+      color: #fff;
+      z-index: 1;
+    }
+
+    &:not(:last-child):after {
+      content: '\f0ab';
+      font-family: FontAwesome, sans-serif;
+      font-size: 200%;
+      position: absolute;
+      bottom: -0.8em;
+      left: calc(50% - 0.5em);
+      color: $primary;
+      z-index: 2;
+    }
+  }
+
+  @include media-breakpoint-up(lg) {
+    border-right: 1px solid $gray-300;
+    padding: ($spacer * 5) $wrapper-padding-x-lg;
+
+    &:not(:last-child):before {
+      content: '\f111';
+      font-family: "Font Awesome 5 Free", sans-serif;
+      font-size: 200%;
+      position: absolute;
+      top: 50%;
+      right: -0.5em;
+      font-weight: 900;
+      color: #fff;
+      z-index: 1;
+    }
+
+    &:not(:last-child):after {
+      content: '\f138';
+      font-family: FontAwesome, sans-serif;
+      font-size: 200%;
+      position: absolute;
+      top: 50%;
+      right: -0.5em;
+      color: $primary;
+      z-index: 2;
+    }
+  }
+
+  &:last-child {
+    border: 0;
+  }
 }
 
 .feature-icon {
   margin: 0 0 ($spacer * 1.5) 0;
   color: $primary;
+
+  img {
+    display: block;
+    margin: auto;
+    max-width: 100%;
+    max-height: 190px;
+  }
 }
 
 .feature-title {
-  margin: 0 0 ($spacer * 1) 0;
+  max-width: 400px;
+  margin: 0 auto ($spacer * 1);
   font-size: 150%;
 }
 
-.feature-item {
-  border-right: 1px solid $gray-200;
-  padding: $spacer * 3;
-  flex: 1 1 33%;
-
-  &:last-child {
-    border: 0;
-  }
+.feature-description {
+  max-width: 400px;
+  margin: auto;
 }
 
 .section-catcher {
@@ -166,14 +271,21 @@ body {
   font-size: 180%;
 }
 
-
 .catcher-subtitle {
   color: $gray-500;
   font-size: 140%;
 }
 
 .site-footer {
-  background: $primary;
-  margin-top: ($spacer * 4);
   padding: ($spacer * 6) 0;
 }
+
+.flex-spaced-wrap {
+  flex-wrap: wrap;
+  margin-top: $spacer * -0.25;
+
+  & > * {
+    margin-top: $spacer * 0.25;
+  }
+}
+
