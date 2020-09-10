@@ -69,7 +69,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
     return {
       pageNumber: this.pageNumber,
-      keywords: this.getCorrectKeywords(text, this.keywords),
+      keywords: this.keywords.map(keyword => keyword.trim()),
       rects: this.coords.map((coord) => {
         return [coord[0], coord[3], coord[2], coord[1]];
       }),
@@ -102,7 +102,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   }
 
   getTextOptions(text: string) {
-    // text = '(gene)' => textOptions = ['(gene), 'gene)', '(gene', 'gene']
+    // text = '(gene)' => textOptions = ['(gene)', 'gene)', '(gene', 'gene']
     text = text.trim();
     const textOptions = [text];
     const punctuation = '[.,\/#!$%\^&\*;:{}=\-_`~()]';
@@ -120,24 +120,5 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
       }
     });
     return textOptions;
-  }
-
-  getCorrectKeywords(text: string, keywords: string[]) {
-    // make sure keywords are aligned with the text chosen by the user
-    keywords = keywords.map(keyword => keyword.trim());
-    let start = 0;
-    while (text[0] !== keywords[0][start]) {
-      start++;
-    }
-    keywords[0] = keywords[0].substring(start);
-
-    const keywordsLength = keywords.length;
-    const textLength = text.length;
-    let end = keywords[keywordsLength - 1].length - 1;
-    while (text[textLength - 1] !== keywords[keywordsLength - 1][end]) {
-      end--;
-    }
-    keywords[keywordsLength - 1] = keywords[keywordsLength - 1].substring(0, end + 1);
-    return keywords;
   }
 }
