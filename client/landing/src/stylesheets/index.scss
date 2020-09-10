@@ -39,7 +39,7 @@ body {
 }
 
 .site-header-container {
-  padding: ($spacer * 2) 0;
+  padding: ($spacer * 1.8) 0 ($spacer);
   color: #fff;
 
   a {
@@ -66,7 +66,7 @@ body {
 // ========================================
 
 .section-intro {
-  padding: ($spacer * 2) 0;
+  padding: ($spacer * 1) 0;
   color: #fff;
 
   @include media-breakpoint-down(sm) {
@@ -170,14 +170,14 @@ body {
 
   @include media-breakpoint-down(md) {
     border-bottom: 1px solid $gray-300;
-    padding: ($spacer * 3) $wrapper-padding-x;
+    padding: ($spacer * 2) $wrapper-padding-x;
 
     &:first-child {
-      padding-top: calc(#{$spacer * 3} + #{$edge-angle-size});
+      padding-top: calc(#{$spacer * 2} + #{$edge-angle-size});
     }
 
     &:last-child {
-      padding-bottom: calc(#{$spacer * 3} + #{$edge-angle-size});
+      padding-bottom: calc(#{$spacer * 2} + #{$edge-angle-size});
     }
 
     &:not(:last-child):before {
@@ -206,7 +206,11 @@ body {
 
   @include media-breakpoint-up(lg) {
     border-right: 1px solid $gray-300;
-    padding: ($spacer * 7) $wrapper-padding-x-lg;
+    padding: ($spacer * 5) $wrapper-padding-x-lg;
+
+    img {
+      max-height: 180px;
+    }
 
     &:last-child {
       position: relative;
@@ -214,7 +218,9 @@ body {
       // Move the head up more
       img {
         position: relative;
-        top: -20px;
+        margin-top: -20px;
+        margin-bottom: 34px;
+        max-height: 190px;
       }
     }
 
@@ -255,7 +261,6 @@ body {
     display: block;
     margin: auto;
     max-width: 100%;
-    max-height: 190px;
   }
 }
 
@@ -280,7 +285,7 @@ body {
   background: $gray-100;
   margin-top: -$edge-angle-size;
   clip-path: polygon(0 0, 100% #{$edge-angle-size}, 100% 100%, 0 100%);
-  padding: ($spacer * 7) 0 ($spacer * 4) 0;
+  padding: ($spacer * 5) 0 ($spacer * 1) 0;
 }
 
 .catcher-title {
