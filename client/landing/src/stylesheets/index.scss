@@ -28,10 +28,14 @@ body {
   z-index: 1;
   margin-bottom: -$edge-angle-size;
   padding-bottom: $edge-angle-size + 5px;
-  background: url(/assets/img/intro_bg.jpg);
-  background-position: center center;
+  background: url(/assets/img/intro_people_bg.jpg);
+  background-position: center top;
   background-size: cover;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - #{$edge-angle-size}), 0 100%);
+
+  @include media-breakpoint-down(sm) {
+    background-position: left top;
+  }
 }
 
 .site-header-container {
@@ -77,8 +81,8 @@ body {
 }
 
 .intro-left {
-  @include media-breakpoint-up(lg) {
-    width: 80%;
+  @include media-breakpoint-up(md) {
+    width: 50%;
   }
 }
 
@@ -278,8 +282,7 @@ body {
 }
 
 .catcher-body {
-  max-width: 20rem;
-  margin: auto;
+  padding: ($spacer * 2) 0;
 }
 
 // ========================================
@@ -289,9 +292,7 @@ body {
 .site-footer {
   color: $gray-600;
   font-size: $font-size-sm;
-  background: $body-bg;
   margin-top: -$edge-angle-size;
-  clip-path: polygon(0 0, 100% #{$edge-angle-size}, 100% 100%, 0 100%);
   padding: ($spacer * 7) 0 ($spacer * 4) 0;
 }
 
