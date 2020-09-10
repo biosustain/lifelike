@@ -208,6 +208,16 @@ body {
     border-right: 1px solid $gray-300;
     padding: ($spacer * 7) $wrapper-padding-x-lg;
 
+    &:last-child {
+      position: relative;
+
+      // Move the head up more
+      img {
+        position: relative;
+        top: -20px;
+      }
+    }
+
     &:not(:last-child):before {
       content: '\f111';
       font-family: "Font Awesome 5 Free", sans-serif;
