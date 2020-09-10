@@ -19,43 +19,27 @@ body {
   background: $site-main-bg;
 }
 
+// ========================================
+// Navbar
+// ========================================
+
 .site-top {
   position: relative;
   z-index: 1;
+  margin-bottom: -$edge-angle-size;
+  padding-bottom: $edge-angle-size + 5px;
+  background: url(/assets/img/intro_people_bg.jpg);
+  background-position: center top;
+  background-size: cover;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - #{$edge-angle-size}), 0 100%);
 
-  &:after {
-    position: absolute;
-    display: block;
-    top: 0;
-    left: 0;
-    bottom: -80px;
-    right: 0;
-    z-index: -1;
-    content: '';
-    background: url(/assets/img/intro_bg.jpg);
-    background-position: center center;
-    background-size: cover;
-    clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
-    margin-bottom: $spacer * 3;
-  }
-
-  @include media-breakpoint-up(sm) {
-    &:after {
-      margin-bottom: $spacer * 3;
-      clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
-    }
-  }
-
-  @include media-breakpoint-up(md) {
-    &:after {
-      margin-bottom: $spacer * 2;
-      clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
-    }
+  @include media-breakpoint-down(sm) {
+    background-position: left top;
   }
 }
 
 .site-header-container {
-  padding: ($spacer * 2) 0;
+  padding: ($spacer * 1.8) 0 ($spacer);
   color: #fff;
 
   a {
@@ -77,8 +61,12 @@ body {
   }
 }
 
+// ========================================
+// Intro
+// ========================================
+
 .section-intro {
-  padding: ($spacer * 2) 0;
+  padding: ($spacer * 1) 0;
   color: #fff;
 
   @include media-breakpoint-down(sm) {
@@ -93,8 +81,8 @@ body {
 }
 
 .intro-left {
-  @include media-breakpoint-up(lg) {
-    width: 80%;
+  @include media-breakpoint-up(md) {
+    width: 50%;
   }
 }
 
@@ -135,6 +123,10 @@ body {
   }
 }
 
+// ========================================
+// Spotlight
+// ========================================
+
 .section-spotlight {
   padding: ($spacer * 5);
 }
@@ -157,6 +149,10 @@ body {
   border-radius: ($border-radius * 2);
 }
 
+// ========================================
+// Features
+// ========================================
+
 .section-features {
 }
 
@@ -174,10 +170,14 @@ body {
 
   @include media-breakpoint-down(md) {
     border-bottom: 1px solid $gray-300;
-    padding: ($spacer * 3) $wrapper-padding-x;
+    padding: ($spacer * 2) $wrapper-padding-x;
 
     &:first-child {
-      padding-top: $spacer * 4;
+      padding-top: calc(#{$spacer * 2} + #{$edge-angle-size});
+    }
+
+    &:last-child {
+      padding-bottom: calc(#{$spacer * 2} + #{$edge-angle-size});
     }
 
     &:not(:last-child):before {
@@ -207,6 +207,22 @@ body {
   @include media-breakpoint-up(lg) {
     border-right: 1px solid $gray-300;
     padding: ($spacer * 5) $wrapper-padding-x-lg;
+
+    img {
+      max-height: 180px;
+    }
+
+    &:last-child {
+      position: relative;
+
+      // Move the head up more
+      img {
+        position: relative;
+        margin-top: -20px;
+        margin-bottom: 34px;
+        max-height: 190px;
+      }
+    }
 
     &:not(:last-child):before {
       content: '\f111';
@@ -245,14 +261,15 @@ body {
     display: block;
     margin: auto;
     max-width: 100%;
-    max-height: 190px;
   }
 }
 
 .feature-title {
   max-width: 400px;
   margin: 0 auto ($spacer * 1);
-  font-size: 150%;
+  font-size: 105%;
+  line-height: 1.5;
+  font-weight: bold;
 }
 
 .feature-description {
@@ -260,10 +277,15 @@ body {
   margin: auto;
 }
 
+// ========================================
+// Catcher
+// ========================================
+
 .section-catcher {
   background: $gray-100;
-  clip-path: polygon(0 0, 100% 40%, 100% 100%, 0 100%);
-  padding: ($spacer * 6) 0 ($spacer * 4) 0;
+  margin-top: -$edge-angle-size;
+  clip-path: polygon(0 0, 100% #{$edge-angle-size}, 100% 100%, 0 100%);
+  padding: ($spacer * 5) 0 ($spacer * 1) 0;
 }
 
 .catcher-title {
@@ -276,9 +298,31 @@ body {
   font-size: 140%;
 }
 
-.site-footer {
-  padding: ($spacer * 6) 0;
+.catcher-body {
+  padding: ($spacer * 2) 0;
 }
+
+// ========================================
+// Footer
+// ========================================
+
+.site-footer {
+  color: $gray-600;
+  font-size: $font-size-sm;
+  margin-top: -$edge-angle-size;
+  padding: ($spacer * 7) 0 ($spacer * 4) 0;
+}
+
+.footer-logos {
+  img {
+    margin: 20px;
+    max-width: 100%;
+  }
+}
+
+// ========================================
+// Utilities
+// ========================================
 
 .flex-spaced-wrap {
   flex-wrap: wrap;
