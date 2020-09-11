@@ -4,6 +4,9 @@
   </app-modal-header>
 
   <app-modal-body>
+    <div class="text-muted mb-3" *ngIf="!form.controls.text.disabled">
+      <i class="fas fa-info-circle"></i> Please select the correct text to annotate from the dropdown:
+    </div>
     <app-form-row for="text" label="Text" [control]="form.get('text')">
       <select formControlName="text" class="custom-select w-100" id="text">
         <option *ngFor="let option of allTextOptions" [value]="option">
