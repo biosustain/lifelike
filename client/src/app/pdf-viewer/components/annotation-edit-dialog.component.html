@@ -8,7 +8,7 @@
       <i class="fas fa-info-circle"></i> Please select the correct text to annotate from the dropdown:
     </div>
     <app-form-row for="text" label="Text" [control]="form.get('text')">
-      <select formControlName="text" class="custom-select w-100" id="text">
+      <select formControlName="text" class="custom-select w-100" id="text" appAutoFocus [setFocus]="!form.controls.text.disabled">
         <option *ngFor="let option of allTextOptions" [value]="option">
           {{option}}
         </option>
@@ -16,7 +16,7 @@
     </app-form-row>
 
     <app-form-row for="entity-type" label="Type" [control]="form.get('entityType')">
-      <select formControlName="entityType" class="custom-select w-100" id="entity-type" appAutoFocus>
+      <select formControlName="entityType" class="custom-select w-100" id="entity-type" appAutoFocus [setFocus]="form.controls.text.disabled">
         <option *ngFor="let choice of entityTypeChoices" [value]="choice.name">
           {{choice.name | titlecase}}
         </option>
