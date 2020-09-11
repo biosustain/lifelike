@@ -321,6 +321,10 @@ class EntityRecognitionService:
                                             f'the knowledge graph with id {entity_id}.',
                                             extra=EventLog(event_type='annotations').to_dict()
                                         )
+                                        # continue here, otherwise will reach
+                                        # entity['inclusion'] = True below and
+                                        # we don't want that, get KeyError entity['name'] later
+                                        continue
                                 else:
                                     entity = create_entity_ner_func(
                                         name=entity_name,
