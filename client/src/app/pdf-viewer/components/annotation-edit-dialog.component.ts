@@ -37,7 +37,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
   readonly form: FormGroup = new FormGroup({
     text: new FormControl('', Validators.required),
-    entityType: new FormControl('', Validators.required),
+    entityType: new FormControl(this.entityTypeChoices[0].name, Validators.required),
     id: new FormControl(''),
     links: new FormArray([]),
     includeGlobally: new FormControl(false),
