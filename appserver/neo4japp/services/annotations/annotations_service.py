@@ -508,7 +508,6 @@ class AnnotationsService:
         gene_names: Set[str] = set()
         for word, lmdb_match in tokens.items():
             for token_positions in lmdb_match.tokens:
-
                 for entity in lmdb_match.entities:
                     entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
                     gene_names.add(entity_synonym)
