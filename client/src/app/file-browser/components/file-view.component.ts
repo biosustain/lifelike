@@ -29,7 +29,7 @@ import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { catchError } from 'rxjs/operators';
-import { error } from 'util';
+import { ApiHttpError } from 'app/interfaces';
 import { HttpErrorResponse } from '@angular/common/http';
 import { UserError } from '../../shared/exceptions';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
@@ -123,12 +123,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         this.pdf.getFileMeta(file.file_id, this.projectName),
         this.pdf.getFile(file.file_id, this.projectName),
         this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName).pipe(
-          catchError(err => {
-            // There have been so many issues with annotations that let's explicitly mention
-            // a problem with annotation loading
+          catchError((err: HttpErrorResponse) => {
+            const error: ApiHttpError = err.error.apiHttpError;
             return throwError(new UserError(
-              'Annotation Data Failed to Load',
-              'This document cannot be loaded because the annotation data for this file has a problem. ' +
+              'File Failed to Load',
+              `This document cannot be loaded because: ${error.message} ` +
               'You may try to re-annotate this file or re-upload it.',
               null,
               err,
