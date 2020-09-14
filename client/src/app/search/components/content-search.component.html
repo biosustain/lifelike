@@ -83,8 +83,8 @@
                     <div class="mb-1">
                       <app-file-type-label [object]="result.item"></app-file-type-label>
                     </div>
-                    <div class="search-results-item-header">
-                      <h5>
+                    <div class="search-results-item-header text-truncate">
+                      <h5 class="text-truncate">
                         <a [appLink]="getObjectCommands(result.item)" [newTab]="true">{{ result.item.name }}</a>
                       </h5>
                     </div>
