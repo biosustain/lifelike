@@ -926,7 +926,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.pdfComponent.pdfFindController.executeCommand('find', {
         query: this.pdfQuery,
         highlightAll: true,
-        entireWord: true,
         phraseSearch: true,
         findPrevious: newQuery.findPrevious,
       });
@@ -934,7 +933,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.pdfComponent.pdfFindController.executeCommand('findagain', {
         query: this.pdfQuery,
         highlightAll: true,
-        entireWord: true,
         phraseSearch: true,
         findPrevious: newQuery.findPrevious,
       });
