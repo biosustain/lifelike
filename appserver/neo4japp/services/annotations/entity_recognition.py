@@ -6,16 +6,16 @@ from typing import Any, Dict, List, Optional, Tuple
 from flask import current_app
 from sqlalchemy import and_
 
-from .annotations_neo4j_service import AnnotationsNeo4jService
-from .constants import (
+from neo4japp.services.annotations.annotations_neo4j_service import AnnotationsNeo4jService
+from neo4japp.services.annotations.constants import (
     COMMON_TYPOS,
     EntityType,
     EntityIdStr,
     ManualAnnotationType,
     SPECIES_EXCLUSION
 )
-from .lmdb_dao import LMDBDao
-from .util import (
+from neo4japp.services.annotations.lmdb_dao import LMDBDao
+from neo4japp.services.annotations.lmdb_util import (
     create_chemical_for_ner,
     create_compound_for_ner,
     create_disease_for_ner,
@@ -23,8 +23,8 @@ from .util import (
     create_phenotype_for_ner,
     create_protein_for_ner,
     create_species_for_ner,
-    normalize_str,
 )
+from neo4japp.services.annotations.util import normalize_str
 
 from neo4japp.data_transfer_objects import (
     EntityResults,

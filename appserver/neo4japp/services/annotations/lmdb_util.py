@@ -1,0 +1,71 @@
+from neo4japp.services.annotations.constants import DatabaseType, EntityIdStr
+
+
+def create_chemical_for_ner(id_: str, name: str, synonym: str) -> dict:
+    return {
+        EntityIdStr.Chemical.value: id_,
+        'id_type': DatabaseType.Chebi.value,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
+def create_compound_for_ner(id_: str, name: str, synonym: str) -> dict:
+    return {
+        EntityIdStr.Compound.value: id_,
+        'id_type': DatabaseType.Biocyc.value,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
+def create_disease_for_ner(id_: str, name: str, synonym: str) -> dict:
+    return {
+        EntityIdStr.Disease.value: id_,
+        'id_type': DatabaseType.Mesh.value,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
+def create_gene_for_ner(name: str, synonym: str) -> dict:
+    return {
+        'id_type': DatabaseType.Ncbi.value,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
+def create_phenotype_for_ner(id_: str, name: str, synonym: str) -> dict:
+    return {
+        EntityIdStr.Phenotype.value: id_,
+        'id_type': DatabaseType.Mesh.value,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
+def create_protein_for_ner(name: str, synonym: str) -> dict:
+    # changed protein_id to protein_name for now (JIRA LL-671)
+    # will eventually change back to protein_id
+    return {
+        EntityIdStr.Protein.value: name,
+        'id_type': DatabaseType.Uniprot.value,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
+def create_species_for_ner(
+    id_: str,
+    name: str,
+    synonym: str,
+    category: str = 'Uncategorized',
+) -> dict:
+    return {
+        EntityIdStr.Species.value: id_,
+        'id_type': DatabaseType.Ncbi.value,
+        'category': category,
+        'name': name,
+        'synonym': synonym,
+    }
