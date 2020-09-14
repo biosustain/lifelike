@@ -58,6 +58,7 @@ export class BackgroundTask<T, R> {
   readonly delayedRunningInitialDelay = 0;
   readonly delayedRunningMinimumLength = 500;
 
+  public values$ = new Subject<T>();
   public status$ = new BehaviorSubject<TaskStatus>({
     state: TaskState.Idle,
     running: false,
@@ -246,6 +247,8 @@ export class BackgroundTask<T, R> {
     this.futureValue = this.reducer(value, this.futureValue);
     this.futureRunQueued = true;
     this.retryCount = 0;
+
+    this.values$.next(this.futureValue);
 
     switch (this.state) {
       case TaskState.RetryLimitExceeded:
