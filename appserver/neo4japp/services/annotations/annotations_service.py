@@ -116,7 +116,7 @@ class AnnotationsService:
             exclusion for exclusion, in self.annotation_neo4j.session.query(
                 GlobalList.annotation).filter(
                     and_(
-                        GlobalList.type == ManualAnnotationType.Exclusion.value,
+                        GlobalList.type == ManualAnnotationType.EXCLUSION.value,
                         # TODO: Uncomment once feature to review is there
                         # GlobalList.reviewed.is_(True),
                     )
@@ -127,7 +127,7 @@ class AnnotationsService:
             inclusion for inclusion, in self.annotation_neo4j.session.query(
                 GlobalList.annotation).filter(
                     and_(
-                        GlobalList.type == ManualAnnotationType.Inclusion.value,
+                        GlobalList.type == ManualAnnotationType.INCLUSION.value,
                         # TODO: Uncomment once feature to review is there
                         # GlobalList.reviewed.is_(True),
                     )
@@ -137,47 +137,47 @@ class AnnotationsService:
     def _get_chemical_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Chemical.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.CHEMICAL.value and exclusion.get('text'))  # noqa
 
     def _get_compound_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Compound.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.COMPOUND.value and exclusion.get('text'))  # noqa
 
     def _get_disease_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Disease.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.DISEASE.value and exclusion.get('text'))  # noqa
 
     def _get_gene_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Gene.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.GENE.value and exclusion.get('text'))  # noqa
 
     def _get_phenotype_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Phenotype.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.PHENOTYPE.value and exclusion.get('text'))  # noqa
 
     def _get_protein_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Protein.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.PROTEIN.value and exclusion.get('text'))  # noqa
 
     def _get_species_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Species.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.SPECIES.value and exclusion.get('text'))  # noqa
 
     def _get_global_inclusion_pairs(self) -> List[Tuple[str, str, Any, Any]]:
         return [
-            (EntityType.Chemical.value, EntityIdStr.Chemical.value, self.global_chemical_inclusion, create_chemical_for_ner),  # noqa
-            (EntityType.Compound.value, EntityIdStr.Compound.value, self.global_compound_inclusion, create_compound_for_ner),  # noqa
-            (EntityType.Disease.value, EntityIdStr.Disease.value, self.global_disease_inclusion, create_disease_for_ner),  # noqa
-            (EntityType.Gene.value, EntityIdStr.Gene.value, self.global_gene_inclusion, create_gene_for_ner),  # noqa
-            (EntityType.Phenotype.value, EntityIdStr.Phenotype.value, self.global_phenotype_inclusion, create_phenotype_for_ner),  # noqa
-            (EntityType.Protein.value, EntityIdStr.Protein.value, self.global_protein_inclusion, create_protein_for_ner),  # noqa
-            (EntityType.Species.value, EntityIdStr.Species.value, self.global_species_inclusion, create_species_for_ner),  # noqa
+            (EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value, self.global_chemical_inclusion, create_chemical_for_ner),  # noqa
+            (EntityType.COMPOUND.value, EntityIdStr.COMPOUND.value, self.global_compound_inclusion, create_compound_for_ner),  # noqa
+            (EntityType.DISEASE.value, EntityIdStr.DISEASE.value, self.global_disease_inclusion, create_disease_for_ner),  # noqa
+            (EntityType.GENE.value, EntityIdStr.GENE.value, self.global_gene_inclusion, create_gene_for_ner),  # noqa
+            (EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value, self.global_phenotype_inclusion, create_phenotype_for_ner),  # noqa
+            (EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value, self.global_protein_inclusion, create_protein_for_ner),  # noqa
+            (EntityType.SPECIES.value, EntityIdStr.SPECIES.value, self.global_species_inclusion, create_species_for_ner),  # noqa
         ]
 
     def _set_local_species_inclusion(self, custom_annotations: List[dict]) -> None:
@@ -186,7 +186,7 @@ class AnnotationsService:
         """
         for custom in custom_annotations:
             if custom.get('meta', None):
-                if custom['meta'].get('type', None) == EntityType.Species.value:
+                if custom['meta'].get('type', None) == EntityType.SPECIES.value:
                     species_id = custom['meta'].get('id', None)
                     species_name = custom['meta'].get('allText', None)
                     normalized_species_name = normalize_str(species_name)
@@ -251,11 +251,11 @@ class AnnotationsService:
                         if unique:
                             entity = {}  # to avoid UnboundLocalError
                             if entity_type in {
-                                EntityType.Chemical.value,
-                                EntityType.Compound.value,
-                                EntityType.Disease.value,
-                                EntityType.Phenotype.value,
-                                EntityType.Species.value
+                                EntityType.CHEMICAL.value,
+                                EntityType.COMPOUND.value,
+                                EntityType.DISEASE.value,
+                                EntityType.PHENOTYPE.value,
+                                EntityType.SPECIES.value
                             }:
                                 entity = create_entity_ner_func(
                                     id_=entity_id,
@@ -263,7 +263,7 @@ class AnnotationsService:
                                     synonym=entity_name
                                 )
                             else:
-                                if entity_type == EntityType.Gene.value:
+                                if entity_type == EntityType.GENE.value:
                                     # the word manually annotated by user
                                     # will not be in the KG
                                     # otherwise it would've been annotated
@@ -334,17 +334,17 @@ class AnnotationsService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.Chemical.value:
+            if nlp_predicted_type == EntityType.CHEMICAL.value:
                 chem_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.chemicals_txn,
                     key=lookup_key,
-                    token_type=EntityType.Chemical.value
+                    token_type=EntityType.CHEMICAL.value
                 )
             elif nlp_predicted_type is None:
                 chem_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.chemicals_txn,
                     key=lookup_key,
-                    token_type=EntityType.Chemical.value
+                    token_type=EntityType.CHEMICAL.value
                 )
 
             if not chem_val:
@@ -407,17 +407,17 @@ class AnnotationsService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.Compound.value:
+            if nlp_predicted_type == EntityType.COMPOUND.value:
                 comp_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.compounds_txn,
                     key=lookup_key,
-                    token_type=EntityType.Compound.value
+                    token_type=EntityType.COMPOUND.value
                 )
             elif nlp_predicted_type is None:
                 comp_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.compounds_txn,
                     key=lookup_key,
-                    token_type=EntityType.Compound.value
+                    token_type=EntityType.COMPOUND.value
                 )
 
             if not comp_val:
@@ -480,17 +480,17 @@ class AnnotationsService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.Disease.value:
+            if nlp_predicted_type == EntityType.DISEASE.value:
                 diseases_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.diseases_txn,
                     key=lookup_key,
-                    token_type=EntityType.Disease.value
+                    token_type=EntityType.DISEASE.value
                 )
             elif nlp_predicted_type is None:
                 diseases_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.diseases_txn,
                     key=lookup_key,
-                    token_type=EntityType.Disease.value
+                    token_type=EntityType.DISEASE.value
                 )
 
             if not diseases_val:
@@ -553,17 +553,17 @@ class AnnotationsService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.Gene.value:
+            if nlp_predicted_type == EntityType.GENE.value:
                 gene_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.genes_txn,
                     key=lookup_key,
-                    token_type=EntityType.Gene.value
+                    token_type=EntityType.GENE.value
                 )
             elif nlp_predicted_type is None:
                 gene_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.genes_txn,
                     key=lookup_key,
-                    token_type=EntityType.Gene.value
+                    token_type=EntityType.GENE.value
                 )
 
             if not gene_val:
@@ -626,17 +626,17 @@ class AnnotationsService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.Phenotype.value:
+            if nlp_predicted_type == EntityType.PHENOTYPE.value:
                 phenotype_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.phenotypes_txn,
                     key=lookup_key,
-                    token_type=EntityType.Phenotype.value
+                    token_type=EntityType.PHENOTYPE.value
                 )
             elif nlp_predicted_type is None:
                 phenotype_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.phenotypes_txn,
                     key=lookup_key,
-                    token_type=EntityType.Phenotype.value
+                    token_type=EntityType.PHENOTYPE.value
                 )
 
             if not phenotype_val:
@@ -699,17 +699,17 @@ class AnnotationsService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.Protein.value:
+            if nlp_predicted_type == EntityType.PROTEIN.value:
                 protein_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.proteins_txn,
                     key=lookup_key,
-                    token_type=EntityType.Protein.value
+                    token_type=EntityType.PROTEIN.value
                 )
             elif nlp_predicted_type is None:
                 protein_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.proteins_txn,
                     key=lookup_key,
-                    token_type=EntityType.Protein.value
+                    token_type=EntityType.PROTEIN.value
                 )
 
             if protein_val:
@@ -780,17 +780,17 @@ class AnnotationsService:
             # check species
             # TODO: Bacteria because for now NLP has that instead of
             # generic `Species`
-            if nlp_predicted_type == EntityType.Species.value or nlp_predicted_type == 'Bacteria':  # noqa
+            if nlp_predicted_type == EntityType.SPECIES.value or nlp_predicted_type == 'Bacteria':  # noqa
                 species_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.species_txn,
                     key=lookup_key,
-                    token_type=EntityType.Species.value
+                    token_type=EntityType.SPECIES.value
                 )
             elif nlp_predicted_type is None:
                 species_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.species_txn,
                     key=lookup_key,
-                    token_type=EntityType.Species.value
+                    token_type=EntityType.SPECIES.value
                 )
 
             if not species_val:
@@ -847,25 +847,25 @@ class AnnotationsService:
         token: PDFTokenPositions,
         check_entities: Dict[str, bool],
     ) -> None:
-        if check_entities.get(EntityType.Chemical.value, False):
+        if check_entities.get(EntityType.CHEMICAL.value, False):
             self._find_chemical_match(token)
 
-        if check_entities.get(EntityType.Compound.value, False):
+        if check_entities.get(EntityType.COMPOUND.value, False):
             self._find_compound_match(token)
 
-        if check_entities.get(EntityType.Disease.value, False):
+        if check_entities.get(EntityType.DISEASE.value, False):
             self._find_disease_match(token)
 
-        if check_entities.get(EntityType.Gene.value, False):
+        if check_entities.get(EntityType.GENE.value, False):
             self._find_gene_match(token)
 
-        if check_entities.get(EntityType.Phenotype.value, False):
+        if check_entities.get(EntityType.PHENOTYPE.value, False):
             self._find_phenotype_match(token)
 
-        if check_entities.get(EntityType.Protein.value, False):
+        if check_entities.get(EntityType.PROTEIN.value, False):
             self._find_protein_match(token)
 
-        if check_entities.get(EntityType.Species.value, False):
+        if check_entities.get(EntityType.SPECIES.value, False):
             self._find_species_match(token)
 
     def _find_chemical_match(self, token: PDFTokenPositions) -> None:
@@ -1130,18 +1130,18 @@ class AnnotationsService:
         keyword_starting_idx = char_indexes[0]
         keyword_ending_idx = char_indexes[-1]
         link_search_term = entity['synonym']
-        if entity['id_type'] != DatabaseType.Ncbi.value:
+        if entity['id_type'] != DatabaseType.NCBI.value:
             hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
         else:
             # type ignore, see https://github.com/python/mypy/issues/8277
             hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
 
-        if entity['id_type'] == DatabaseType.Mesh.value:
+        if entity['id_type'] == DatabaseType.MESH.value:
             hyperlink += entity_id[5:]  # type: ignore
         else:
             hyperlink += entity_id  # type: ignore
 
-        if token_type == EntityType.Species.value:
+        if token_type == EntityType.SPECIES.value:
             organism_meta = OrganismAnnotation.OrganismMeta(
                 category=entity_category,
                 type=token_type,
@@ -1173,7 +1173,7 @@ class AnnotationsService:
                 meta=organism_meta,
                 uuid=str(uuid4()),
             )
-        elif token_type == EntityType.Gene.value:
+        elif token_type == EntityType.GENE.value:
             gene_meta = GeneAnnotation.GeneMeta(
                 category=entity_category,
                 type=token_type,
@@ -1428,11 +1428,11 @@ class AnnotationsService:
                     char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                     cropbox_in_pdf=cropbox_in_pdf,
                     token_positions=token_positions,
-                    token_type=EntityType.Gene.value,
+                    token_type=EntityType.GENE.value,
                     entity=entity,
                     entity_id=gene_id,
                     entity_category=category,
-                    color=EntityColor.Gene.value,
+                    color=EntityColor.GENE.value,
                 )
                 matches.append(annotation)
         return matches
@@ -1445,8 +1445,8 @@ class AnnotationsService:
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_chemicals,
-            token_type=EntityType.Chemical.value,
-            color=EntityColor.Chemical.value,
+            token_type=EntityType.CHEMICAL.value,
+            color=EntityColor.CHEMICAL.value,
             id_str=entity_id_str,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
@@ -1460,8 +1460,8 @@ class AnnotationsService:
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_compounds,
-            token_type=EntityType.Compound.value,
-            color=EntityColor.Compound.value,
+            token_type=EntityType.COMPOUND.value,
+            color=EntityColor.COMPOUND.value,
             id_str=entity_id_str,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
@@ -1475,8 +1475,8 @@ class AnnotationsService:
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_proteins,
-            token_type=EntityType.Protein.value,
-            color=EntityColor.Protein.value,
+            token_type=EntityType.PROTEIN.value,
+            color=EntityColor.PROTEIN.value,
             id_str=entity_id_str,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
@@ -1507,11 +1507,11 @@ class AnnotationsService:
                         char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                         cropbox_in_pdf=cropbox_in_pdf,
                         token_positions=token_positions,
-                        token_type=EntityType.Species.value,
+                        token_type=EntityType.SPECIES.value,
                         entity=entity,
-                        entity_id=entity[EntityIdStr.Species.value],
+                        entity_id=entity[EntityIdStr.SPECIES.value],
                         entity_category=entity.get('category', ''),
-                        color=EntityColor.Species.value,
+                        color=EntityColor.SPECIES.value,
                     )
 
                     custom_annotations.append(annotation)
@@ -1526,8 +1526,8 @@ class AnnotationsService:
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
             tokens=self.matched_species,
-            token_type=EntityType.Species.value,
-            color=EntityColor.Species.value,
+            token_type=EntityType.SPECIES.value,
+            color=EntityColor.SPECIES.value,
             id_str=entity_id_str,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
@@ -1593,8 +1593,8 @@ class AnnotationsService:
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_diseases,
-            token_type=EntityType.Disease.value,
-            color=EntityColor.Disease.value,
+            token_type=EntityType.DISEASE.value,
+            color=EntityColor.DISEASE.value,
             id_str=entity_id_str,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
@@ -1608,8 +1608,8 @@ class AnnotationsService:
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_phenotypes,
-            token_type=EntityType.Phenotype.value,
-            color=EntityColor.Phenotype.value,
+            token_type=EntityType.PHENOTYPE.value,
+            color=EntityColor.PHENOTYPE.value,
             id_str=entity_id_str,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
@@ -1624,17 +1624,17 @@ class AnnotationsService:
         organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
         funcs = {
-            EntityType.Chemical.value: self._annotate_chemicals,
-            EntityType.Compound.value: self._annotate_compounds,
-            EntityType.Protein.value: self._annotate_proteins,
-            EntityType.Species.value: self._annotate_species,
-            EntityType.Disease.value: self._annotate_diseases,
-            EntityType.Phenotype.value: self._annotate_phenotypes,
-            EntityType.Gene.value: self._annotate_genes,
+            EntityType.CHEMICAL.value: self._annotate_chemicals,
+            EntityType.COMPOUND.value: self._annotate_compounds,
+            EntityType.PROTEIN.value: self._annotate_proteins,
+            EntityType.SPECIES.value: self._annotate_species,
+            EntityType.DISEASE.value: self._annotate_diseases,
+            EntityType.PHENOTYPE.value: self._annotate_phenotypes,
+            EntityType.GENE.value: self._annotate_genes,
         }
 
         annotate_entities = funcs[annotation_type]
-        if annotation_type == EntityType.Species.value:
+        if annotation_type == EntityType.SPECIES.value:
             return annotate_entities(
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
@@ -1660,7 +1660,7 @@ class AnnotationsService:
             entity_frequency[entity_id] = 1
 
         # If this annotation is a virus then we also have to update the homo sapiens frequency
-        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
             if entity_frequency.get(HOMO_SAPIENS_TAX_ID, None) is not None:
                 entity_frequency[HOMO_SAPIENS_TAX_ID] += 1
             else:
@@ -1684,7 +1684,7 @@ class AnnotationsService:
 
         # If the annotation represents a virus, then also mark this location as a human
         # annotation
-        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
             if matched_entity_locations.get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
                 matched_entity_locations[HOMO_SAPIENS_TAX_ID].append(  # noqa
                     (annotation.lo_location_offset, annotation.hi_location_offset)
@@ -1724,8 +1724,8 @@ class AnnotationsService:
 
             # Need to add an entry for humans if we annotated a virus
             if isinstance(annotation, OrganismAnnotation) and isinstance(annotation.meta, OrganismAnnotation.OrganismMeta):  # noqa
-                if annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
-                    entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.Eukaryota.value
+                if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+                    entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.EUKARYOTA.value
 
         return entity_frequency, matched_entity_locations, entity_categories
 
@@ -1802,8 +1802,8 @@ class AnnotationsService:
                 - NOTE: IMPORTANT: Species should always be before Genes
                     - because species is used to do gene organism matching
                 - e.g [
-                    (EntityType.Species.value, EntityIdStr.Species.value),
-                    (EntityType.Chemical.value, EntityIdStr.Chemical.value),
+                    (EntityType.SPECIES.value, EntityIdStr.SPECIES.value),
+                    (EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value),
                     ...
                 ]
         """
@@ -1829,24 +1829,24 @@ class AnnotationsService:
         entity_type_and_id_pairs = [
             # TODO: move this to a getter function since it's used multiple times
             # Order is IMPORTANT here, Species should always be annotated before Genes
-            (EntityType.Chemical.value, EntityIdStr.Chemical.value),
-            (EntityType.Compound.value, EntityIdStr.Compound.value),
-            (EntityType.Protein.value, EntityIdStr.Protein.value),
-            (EntityType.Disease.value, EntityIdStr.Disease.value),
-            (EntityType.Phenotype.value, EntityIdStr.Phenotype.value),
-            (EntityType.Species.value, EntityIdStr.Species.value),
-            (EntityType.Gene.value, EntityIdStr.Gene.value),
+            (EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value),
+            (EntityType.COMPOUND.value, EntityIdStr.COMPOUND.value),
+            (EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value),
+            (EntityType.DISEASE.value, EntityIdStr.DISEASE.value),
+            (EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value),
+            (EntityType.SPECIES.value, EntityIdStr.SPECIES.value),
+            (EntityType.GENE.value, EntityIdStr.GENE.value),
         ]
 
         # TODO: hard coding for now until UI is done
         entities_to_check = {
-            EntityType.Chemical.value: True,
-            EntityType.Compound.value: True,
-            EntityType.Disease.value: True,
-            EntityType.Gene.value: True,
-            EntityType.Phenotype.value: True,
-            EntityType.Protein.value: True,
-            EntityType.Species.value: True,
+            EntityType.CHEMICAL.value: True,
+            EntityType.COMPOUND.value: True,
+            EntityType.DISEASE.value: True,
+            EntityType.GENE.value: True,
+            EntityType.PHENOTYPE.value: True,
+            EntityType.PROTEIN.value: True,
+            EntityType.SPECIES.value: True,
         }
 
         self._set_local_species_inclusion(custom_annotations)
@@ -1953,11 +1953,11 @@ class AnnotationsService:
         # match species using rules based approach
         # TODO: possibly until nlp gets better at identifying species
         entity_type_and_id_pairs = [
-            (EntityType.Species.value, EntityIdStr.Species.value),
+            (EntityType.SPECIES.value, EntityIdStr.SPECIES.value),
         ]
 
         # TODO: hard coding for now until UI is done
-        entities_to_check = {EntityType.Species.value: True}
+        entities_to_check = {EntityType.SPECIES.value: True}
 
         self._set_local_species_inclusion(custom_annotations)
         self._process_inclusions_and_lmdb(
@@ -1975,22 +1975,22 @@ class AnnotationsService:
 
         # now annotate what nlp found
         entity_type_and_id_pairs = [
-            (EntityType.Chemical.value, EntityIdStr.Chemical.value),
-            (EntityType.Compound.value, EntityIdStr.Compound.value),
-            (EntityType.Protein.value, EntityIdStr.Protein.value),
-            (EntityType.Disease.value, EntityIdStr.Disease.value),
-            (EntityType.Phenotype.value, EntityIdStr.Phenotype.value),
-            (EntityType.Gene.value, EntityIdStr.Gene.value),
+            (EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value),
+            (EntityType.COMPOUND.value, EntityIdStr.COMPOUND.value),
+            (EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value),
+            (EntityType.DISEASE.value, EntityIdStr.DISEASE.value),
+            (EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value),
+            (EntityType.GENE.value, EntityIdStr.GENE.value),
         ]
 
         # TODO: hard coding for now until UI is done
         entities_to_check = {
-            EntityType.Chemical.value: True,
-            EntityType.Compound.value: True,
-            EntityType.Disease.value: True,
-            EntityType.Gene.value: True,
-            EntityType.Phenotype.value: True,
-            EntityType.Protein.value: True,
+            EntityType.CHEMICAL.value: True,
+            EntityType.COMPOUND.value: True,
+            EntityType.DISEASE.value: True,
+            EntityType.GENE.value: True,
+            EntityType.PHENOTYPE.value: True,
+            EntityType.PROTEIN.value: True,
         }
 
         self._process_inclusions_and_lmdb(
@@ -2109,14 +2109,25 @@ class AnnotationsService:
         key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.type]
         key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.type]
 
+        # if custom phenotype and MESH phenotype
+        # then choose MESH
+        if ((anno1.meta.type == EntityType.PHENOTYPE.value and
+                anno1.meta.type == EntityType.PHENOTYPE.value) and
+            (anno1.lo_location_offset == anno2.lo_location_offset and
+                anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
+            if anno1.meta.id_type == DatabaseType.MESH.value:
+                return anno1
+            elif anno2.meta.id_type == DatabaseType.MESH.value:
+                return anno2
+
         # only do special gene vs protein comparison if they have
         # exact intervals
         # because that means the same normalized text was matched
         # to both
-        if ((anno1.meta.type == EntityType.Protein.value or
-                anno1.meta.type == EntityType.Gene.value) and
-            (anno2.meta.type == EntityType.Protein.value or
-                anno2.meta.type == EntityType.Gene.value) and
+        if ((anno1.meta.type == EntityType.PROTEIN.value or
+                anno1.meta.type == EntityType.GENE.value) and
+            (anno2.meta.type == EntityType.PROTEIN.value or
+                anno2.meta.type == EntityType.GENE.value) and
             (anno1.lo_location_offset == anno2.lo_location_offset and
                 anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
             if anno1.meta.type != anno2.meta.type:
@@ -2210,7 +2221,7 @@ class AnnotationsService:
         """
         matches = []
         for token in tokens.token_positions:
-            if keyword_type == EntityType.Gene.value:
+            if keyword_type == EntityType.GENE.value:
                 if token.keyword != keyword:
                     continue
             elif standardize_str(token.keyword) != standardize_str(keyword):
