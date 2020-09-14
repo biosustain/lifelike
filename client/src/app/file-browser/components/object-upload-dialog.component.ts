@@ -31,8 +31,8 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent imple
   // select annotation method
   readonly annotationMethods = ['NLP', 'Rules Based'];
 
-  hasError = false;
   errorMsg = '';
+  validFilename = true;
 
   readonly form: FormGroup = new FormGroup({
     type: new FormControl(''),
@@ -41,7 +41,7 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent imple
     filename: new FormControl('', [
       (control: AbstractControl): { [key: string]: any } | null => { // Validate against whitespace-only strings
         const filename = control.value;
-        const forbidden = filename.trim().length <= 0;
+        const forbidden = filename.trim().length <= 0 && this.validFilename;
         return forbidden ? {required: {value: filename}} : null;
       },
     ]),
@@ -94,11 +94,11 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent imple
         switchMap(filename => this.pdfService.validateFilename(this.directoryId, filename))
       ).subscribe(validFilename => {
         if (validFilename) {
-          this.hasError = false;
+          this.validFilename = true;
           this.errorMsg = '';
           this.form.get('filename').setErrors(null);
         } else {
-          this.hasError = true;
+          this.validFilename = false;
           this.errorMsg = 'Filename already exists, please choose a different one.';
           this.form.get('filename').setErrors({valid: validFilename});
         }
