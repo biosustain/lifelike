@@ -1,8 +1,11 @@
 import json
 import os
+import re
 from typing import Dict, List, Union
 from elasticsearch import Elasticsearch
 
+from neo4japp.database import get_lmdb_dao, get_annotations_service, get_annotations_pdf_parser, \
+    get_bioc_document_service
 from neo4japp.utils.queries import parse_query_terms
 
 
@@ -19,6 +22,9 @@ class PDFSearchResult:
         self.external_url = ''
         self.email = ''
         self.description = ''
+        self.project_directory = ''
+        self.annotations = ''
+        self.preview_text_with_annotations = ''
         self.parse_pdf_entries(data)
 
     def parse_pdf_entries(self, data):
@@ -30,8 +36,34 @@ class PDFSearchResult:
         self.uploaded_date = source['uploaded_date']
         self.external_url = source['external_link']
         self.email = source['email']
+        self.project_directory = source['project_directory']
         self.description = source['description']
         self.filename = source['filename']
+        self.annotations = self.get_annotations(self.preview_text)
+        self.preview_text_with_annotations = self.annotate_preview_text(
+            self.preview_text, self.annotations)
+
+    def get_annotations(self, preview_text):
+        lmdb_dao = get_lmdb_dao()
+        annotator = get_annotations_service(lmdb_dao=lmdb_dao)
+        parser = get_annotations_pdf_parser()
+        bioc_service = get_bioc_document_service()
+        parsed_text = parser.parse_text(preview_text)
+        tokens = parser.extract_tokens(parsed_text)
+        annotations = annotator.create_rules_based_annotations(tokens=tokens, custom_annotations=[])
+        bioc = bioc_service.read(text=preview_text, file_uri="my_path")
+        bioc_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+        return bioc_json['documents'][0]['passages'][0]['annotations']
+
+    def annotate_preview_text(self, preview_text, annotations):
+        new_preview_text = preview_text
+        for annotation in annotations:
+            keyword = annotation['keyword']
+            replace_string = \
+                f'<span style="background:{annotation["meta"]["color"]}">{keyword} </span>'
+            re_data = re.compile(re.escape(keyword), re.IGNORECASE)
+            new_preview_text = re_data.sub(replace_string, new_preview_text)
+        return new_preview_text
 
     def parse_highlight(self, field, data):
         start_tag = '<highlight>'
@@ -45,8 +77,8 @@ class PDFSearchResult:
             untagged = highlight.replace(start_tag, '').replace(end_tag, '')
             tagged = highlight.replace(
                 start_tag,
-                '<strong class="highlight">'
-            ).replace(end_tag, '</strong>')
+                '<strong class="highlight"> '
+            ).replace(end_tag, ' </strong>')
             bkp_data = '<br>'.join((bkp_data, tagged)) if bkp_data else tagged
             data = data.replace(untagged, tagged)
 
@@ -54,7 +86,7 @@ class PDFSearchResult:
             data = bkp_data
 
         first_highlight = data.find('<strong')
-        data = '...' + data[first_highlight - 20:first_highlight + self.preview_text_size] \
+        data = '...' + data[first_highlight - 5:first_highlight + self.preview_text_size] \
             if first_highlight < len(data) - self.preview_text_size \
             else '...' + data[-self.preview_text_size:]
         return data
@@ -64,11 +96,13 @@ class PDFSearchResult:
             'filename': self.filename,
             'file_id': self.file_id,
             'doi': self.doi,
-            'preview_text': self.preview_text,
             'uploaded_date': self.uploaded_date,
             'external_url': self.external_url,
             'email': self.email,
-            'description': self.description
+            'description': self.description,
+            'project_directory': self.project_directory,
+            'annotations': self.annotations,
+            'preview_text': self.preview_text_with_annotations
         }
 
     def __str__(self):

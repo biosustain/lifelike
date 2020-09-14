@@ -26,17 +26,21 @@ class Files(RDBMSBase):  # type: ignore
                            db.ForeignKey('files_content.id', ondelete='CASCADE'),
                            index=True,
                            nullable=False)
+    content = db.relationship('FileContent', foreign_keys=content_id)
     user_id = db.Column(db.Integer,
                         db.ForeignKey('appuser.id', ondelete='CASCADE'),
                         index=True,
                         nullable=False)
+    user = db.relationship('AppUser', foreign_keys=user_id)
     creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
     modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
     annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), index=True, nullable=False)
+    project_ = db.relationship('Projects', foreign_keys=project)
     custom_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), index=True, nullable=False)
+    dir = db.relationship('Directory', foreign_keys=dir_id)
     doi = db.Column(db.String(1024), nullable=True)
     upload_url = db.Column(db.String(2048), nullable=True)
     excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
