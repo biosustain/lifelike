@@ -26,6 +26,7 @@ from neo4japp.database import db, get_manual_annotations_service
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
     DatabaseError,
+    DuplicateRecord,
     FileUploadError,
     RecordNotFoundException,
     NotAuthorizedException,
@@ -114,12 +115,10 @@ def validate_filename(
 
     yield user, projects
 
-    q = db.session.query(Files.id).filter(
-        Files.filename == filename,
-        Files.dir_id == directory_id,
-        Files.project == projects.id
-    )
-    exist = db.session.query(q.exists()).scalar()
+    exist = files_queries.filename_exist(
+        filename=filename,
+        directory_id=directory_id,
+        project_id=projects.id)
     yield jsonify({'result': not exist}), 200
 
 
@@ -191,6 +190,16 @@ def upload_pdf(request, project_name: str):
         doi = extract_doi(pdf_content, file_id, filename)
         upload_url = request.url
 
+        # check if filename already exists in directory/project
+        # this is needed in case the API is called directly
+        exist = files_queries.filename_exist(
+            filename=filename,
+            directory_id=directory.id,
+            project_id=projects.id)
+
+        if exist:
+            raise DuplicateRecord('Filename already exists, please choose a different one.')
+
         file = Files(
             file_id=file_id,
             filename=filename,
@@ -211,6 +220,8 @@ def upload_pdf(request, project_name: str):
             extra=UserEventLog(
                 username=g.current_user.username, event_type='file upload').to_dict())
         index_pdf.populate_single_index(file.id)
+    except DuplicateRecord:
+        raise
     except Exception:
         raise FileUploadError('Your file could not be saved. Please try uploading again.')
 

@@ -90,16 +90,24 @@ describe('FileUploadDialogComponent', () => {
     });
 
     it('should mark form as invalid if filename is not valid', () => {
-        component.form.get('filename').setValue('blah.pdf');
+        fixture.detectChanges();
         spy = spyOn(service, 'validateFilename');
         spy.and.returnValue(of(false));
-        expect(component.form.valid).toBeFalse();
+
+        component.form.get('filename').setValue('blah.pdf');
+        fixture.whenStable().then(() => {
+            expect(component.form.valid).toBeFalse();
+        });
     });
 
     it('should mark form as valid if filename is valid', () => {
-        component.form.get('filename').setValue('blah.pdf');
+        fixture.detectChanges();
         spy = spyOn(service, 'validateFilename');
         spy.and.returnValue(of(true));
-        expect(component.form.valid).toBeFalse();
+
+        component.form.get('filename').setValue('blah.pdf');
+        fixture.whenStable().then(() => {
+            expect(component.form.valid).toBeTrue();
+        });
     });
 });
