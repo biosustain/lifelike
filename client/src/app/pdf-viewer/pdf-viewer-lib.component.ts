@@ -349,6 +349,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           position: {
             my: 'top center',
             at: 'bottom center',
+            viewport: true,
             target: this,
           },
           style: {
