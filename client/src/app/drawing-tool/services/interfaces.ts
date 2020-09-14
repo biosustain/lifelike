@@ -156,7 +156,7 @@ export interface KnowledgeMap {
   /** JSON representation of graph */
   graph: UniversalGraph;
   /** ISO-8601 timestamp of when project was last updated */
-  date_modified?: string;
+  modified_date?: string;
   /** Whether or not project is public to userbase */
   public?: boolean;
   /** URI for project */
