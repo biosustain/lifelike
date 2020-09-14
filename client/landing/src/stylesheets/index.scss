@@ -5,9 +5,41 @@ body {
   overflow-x: hidden;
 }
 
+.wrapper {
+  max-width: $wrapper-width;
+  margin: auto;
+  padding: 0 $wrapper-padding-x-lg;
+
+  @include media-breakpoint-down(sm) {
+    padding: 0 $wrapper-padding-x;
+  }
+}
+
+.site-main {
+  background: $site-main-bg;
+}
+
+// ========================================
+// Navbar
+// ========================================
+
+.site-top {
+  position: relative;
+  z-index: 1;
+  margin-bottom: -$edge-angle-size;
+  padding-bottom: $edge-angle-size + 5px;
+  background: url(/assets/img/intro_people_bg.jpg);
+  background-position: center top;
+  background-size: cover;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - #{$edge-angle-size}), 0 100%);
+
+  @include media-breakpoint-down(sm) {
+    background-position: left top;
+  }
+}
+
 .site-header-container {
-  padding: ($spacer * 2) 0;
-  background: $primary;
+  padding: ($spacer * 1.8) 0 ($spacer);
   color: #fff;
 
   a {
@@ -29,23 +61,16 @@ body {
   }
 }
 
-.intro {
-  position: relative;
-  margin: 0 0 ($spacer * 18) 0;
-  padding: ($spacer * 4) 0 0 0;
+// ========================================
+// Intro
+// ========================================
+
+.section-intro {
+  padding: ($spacer * 1) 0;
   color: #fff;
 
-  &:after {
-    position: absolute;
-    display: block;
-    top: 0;
-    left: 0;
-    bottom: -50%;
-    right: 0;
-    z-index: -1;
-    content: '';
-    background: $primary;
-    clip-path: polygon(0 0, 100% 0, 100% 80%, 0 100%);
+  @include media-breakpoint-down(sm) {
+    padding-top: 0;
   }
 }
 
@@ -56,18 +81,8 @@ body {
 }
 
 .intro-left {
-  width: 50%;
-}
-
-.intro-right {
-  position: relative;
-
-  img {
-    position: absolute;
-    top: -20px;
-    left: 100px;
-    border-radius: ($border-radius * 2);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  @include media-breakpoint-up(md) {
+    width: 50%;
   }
 }
 
@@ -108,6 +123,10 @@ body {
   }
 }
 
+// ========================================
+// Spotlight
+// ========================================
+
 .section-spotlight {
   padding: ($spacer * 5);
 }
@@ -130,35 +149,143 @@ body {
   border-radius: ($border-radius * 2);
 }
 
+// ========================================
+// Features
+// ========================================
+
 .section-features {
-  border-top: 1px solid $gray-200;
-  border-bottom: 1px solid $gray-200;
 }
 
-.feature-icon {
-  margin: 0 0 ($spacer * 1.5) 0;
-  color: $primary;
-}
+.feature-table {
+  max-width: $wrapper-width;
+  margin: auto;
 
-.feature-title {
-  margin: 0 0 ($spacer * 1) 0;
-  font-size: 150%;
+  @include media-breakpoint-up(lg) {
+    display: flex;
+  }
 }
 
 .feature-item {
-  border-right: 1px solid $gray-200;
-  padding: $spacer * 3;
-  flex: 1 1 33%;
+  position: relative;
+
+  @include media-breakpoint-down(md) {
+    border-bottom: 1px solid $gray-300;
+    padding: ($spacer * 2) $wrapper-padding-x;
+
+    &:first-child {
+      padding-top: calc(#{$spacer * 2} + #{$edge-angle-size});
+    }
+
+    &:last-child {
+      padding-bottom: calc(#{$spacer * 2} + #{$edge-angle-size});
+    }
+
+    &:not(:last-child):before {
+      content: '\f111';
+      font-family: "Font Awesome 5 Free", sans-serif;
+      font-size: 200%;
+      position: absolute;
+      bottom: -0.8em;
+      left: calc(50% - 0.5em);
+      font-weight: 900;
+      color: #fff;
+      z-index: 1;
+    }
+
+    &:not(:last-child):after {
+      content: '\f0ab';
+      font-family: FontAwesome, sans-serif;
+      font-size: 200%;
+      position: absolute;
+      bottom: -0.8em;
+      left: calc(50% - 0.5em);
+      color: $primary;
+      z-index: 2;
+    }
+  }
+
+  @include media-breakpoint-up(lg) {
+    border-right: 1px solid $gray-300;
+    padding: ($spacer * 5) $wrapper-padding-x-lg;
+
+    img {
+      max-height: 180px;
+    }
+
+    &:last-child {
+      position: relative;
+
+      // Move the head up more
+      img {
+        position: relative;
+        margin-top: -20px;
+        margin-bottom: 34px;
+        max-height: 190px;
+      }
+    }
+
+    &:not(:last-child):before {
+      content: '\f111';
+      font-family: "Font Awesome 5 Free", sans-serif;
+      font-size: 200%;
+      position: absolute;
+      top: 50%;
+      right: -0.5em;
+      font-weight: 900;
+      color: #fff;
+      z-index: 1;
+    }
+
+    &:not(:last-child):after {
+      content: '\f138';
+      font-family: FontAwesome, sans-serif;
+      font-size: 200%;
+      position: absolute;
+      top: 50%;
+      right: -0.5em;
+      color: $primary;
+      z-index: 2;
+    }
+  }
 
   &:last-child {
     border: 0;
   }
 }
 
+.feature-icon {
+  margin: 0 0 ($spacer * 1.5) 0;
+  color: $primary;
+
+  img {
+    display: block;
+    margin: auto;
+    max-width: 100%;
+  }
+}
+
+.feature-title {
+  max-width: 400px;
+  margin: 0 auto ($spacer * 1);
+  font-size: 105%;
+  line-height: 1.5;
+  font-weight: bold;
+}
+
+.feature-description {
+  max-width: 400px;
+  margin: auto;
+}
+
+// ========================================
+// Catcher
+// ========================================
+
 .section-catcher {
   background: $gray-100;
-  clip-path: polygon(0 0, 100% 40%, 100% 100%, 0 100%);
-  padding: ($spacer * 6) 0 ($spacer * 4) 0;
+  margin-top: -$edge-angle-size;
+  clip-path: polygon(0 0, 100% #{$edge-angle-size}, 100% 100%, 0 100%);
+  padding: ($spacer * 5) 0 ($spacer * 1) 0;
 }
 
 .catcher-title {
@@ -166,14 +293,43 @@ body {
   font-size: 180%;
 }
 
-
 .catcher-subtitle {
   color: $gray-500;
   font-size: 140%;
 }
 
-.site-footer {
-  background: $primary;
-  margin-top: ($spacer * 4);
-  padding: ($spacer * 6) 0;
+.catcher-body {
+  padding: ($spacer * 2) 0;
 }
+
+// ========================================
+// Footer
+// ========================================
+
+.site-footer {
+  color: $gray-600;
+  font-size: $font-size-sm;
+  margin-top: -$edge-angle-size;
+  padding: ($spacer * 7) 0 ($spacer * 4) 0;
+}
+
+.footer-logos {
+  img {
+    margin: 20px;
+    max-width: 100%;
+  }
+}
+
+// ========================================
+// Utilities
+// ========================================
+
+.flex-spaced-wrap {
+  flex-wrap: wrap;
+  margin-top: $spacer * -0.25;
+
+  & > * {
+    margin-top: $spacer * 0.25;
+  }
+}
+
