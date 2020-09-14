@@ -22,7 +22,7 @@ from neo4japp.services.annotations.constants import (
     SPECIES_NCBI_LMDB,
     DatabaseType,
 )
-from neo4japp.services.annotations.util import (
+from neo4japp.services.annotations.lmdb_util import (
     create_chemical_for_ner,
     create_compound_for_ner,
     create_disease_for_ner,
@@ -30,8 +30,8 @@ from neo4japp.services.annotations.util import (
     create_phenotype_for_ner,
     create_protein_for_ner,
     create_species_for_ner,
-    normalize_str,
 )
+from neo4japp.services.annotations.util import normalize_str
 
 
 # reference to this directory
