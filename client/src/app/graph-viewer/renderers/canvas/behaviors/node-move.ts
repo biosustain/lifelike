@@ -5,6 +5,7 @@ import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { GraphEntityUpdate } from '../../../actions/graph';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
+import { isCtrlOrMetaPressed, isShiftPressed } from '../../../../shared/utils';
 
 export class MovableNode extends AbstractCanvasBehavior {
   /**
@@ -48,26 +49,35 @@ export class MovableNode extends AbstractCanvasBehavior {
       const shiftX = transform.invertX(mouseX) - this.startMousePosition[0];
       const shiftY = transform.invertY(mouseY) - this.startMousePosition[1];
 
-      const targets = new Set<UniversalGraphNode>();
+      const selectedNodes = new Set<UniversalGraphNode>();
 
       for (const entity of this.graphView.selection.get()) {
         if (entity.type === GraphEntityType.Node) {
           const node = entity.entity as UniversalGraphNode;
-          targets.add(node);
+          selectedNodes.add(node);
         }
       }
 
-      if (!targets.has(this.target)) {
-        targets.clear();
-        targets.add(this.target);
+      // If the user is moving a node that isn't selected, then we either (a) want to
+      // deselect everything, select just the target node, and then move only the target
+      // node, or (b) if the user is holding down the multiple selection modifier key
+      // (CTRL or CMD), then we add the target node to the selection and move the whole group
+      if (!selectedNodes.has(this.target)) {
+        // Case (a)
+        if (!isCtrlOrMetaPressed(event) && !isShiftPressed(event)) {
+          selectedNodes.clear();
+        }
 
-        this.graphView.selection.replace([{
+        selectedNodes.add(this.target);
+
+        // Update the selection
+        this.graphView.selection.replace([...selectedNodes].map(node => ({
           type: GraphEntityType.Node,
-          entity: this.target,
-        }]);
+          entity: node,
+        })));
       }
 
-      for (const node of targets) {
+      for (const node of selectedNodes) {
         if (!this.originalNodePositions.has(node)) {
           this.originalNodePositions.set(node, [node.data.x, node.data.y]);
         }
