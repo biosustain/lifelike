@@ -82,7 +82,7 @@ const routes: Routes = [
     path: 'search/graph',
     component: GraphSearchComponent,
     data: {
-      title: 'Visualizer Search',
+      title: 'Visualizer',
       fontAwesomeIcon: 'search',
     },
   },
