@@ -2112,7 +2112,7 @@ class AnnotationsService:
         # if custom phenotype and MESH phenotype
         # then choose MESH
         if ((anno1.meta.type == EntityType.PHENOTYPE.value and
-                anno1.meta.type == EntityType.PHENOTYPE.value) and
+                anno2.meta.type == EntityType.PHENOTYPE.value) and
             (anno1.lo_location_offset == anno2.lo_location_offset and
                 anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
             if anno1.meta.id_type == DatabaseType.MESH.value:
