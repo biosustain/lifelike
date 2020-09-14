@@ -17,10 +17,6 @@ from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
     get_annotation_neo4j,
-    get_annotations_service,
-    get_annotations_pdf_parser,
-    get_bioc_document_service,
-    get_entity_recognition,
     get_excel_export_service,
     get_manual_annotations_service,
     get_kg_service,
@@ -43,6 +39,7 @@ from neo4japp.services.annotations.constants import (
     EntityType,
     ManualAnnotationType,
 )
+from neo4japp.services.annotations.service_util import create_annotations
 from neo4japp.util import jsonify_with_class, SuccessResponse
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
@@ -52,84 +49,13 @@ def annotate(
     doc: Files,
     annotation_method: str = AnnotationMethod.Rules.value,  # default to Rules Based
 ):
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = get_entity_recognition()
-    annotator = get_annotations_service()
-    bioc_service = get_bioc_document_service()
-
     fp = FileStorage(io.BytesIO(doc.raw_file), doc.filename)
 
-    try:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=fp)
-        fp.close()
-    except AnnotationError:
-        raise AnnotationError(
-            'Your file could not be imported. Please check if it is a valid PDF.'
-            'If it is a valid PDF, please try uploading again.')
-
-    tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-    pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
-
-    entity_service.set_entity_inclusions(custom_annotations=doc.custom_annotations)
-
-    if annotation_method == AnnotationMethod.Rules.value:
-        entity_service.identify_entities(
-            tokens=tokens.token_positions,
-            check_entities_in_lmdb=entity_service.get_entities_to_identify()
-        )
-
-        annotations = annotator.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=doc.custom_annotations,
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotator.get_entities_to_annotate()
-        )
-    elif annotation_method == AnnotationMethod.NLP.value:
-        nlp_tokens, nlp_resp = annotator.get_nlp_entities(
-            page_index=parsed_pdf_chars.min_idx_in_page,
-            text=pdf_text,
-            tokens=tokens,
-        )
-
-        # for NLP first annotate species using rules based
-        # with tokens from PDF
-        entity_service.identify_entities(
-            tokens=tokens.token_positions,
-            check_entities_in_lmdb=entity_service.get_entities_to_identify(
-                chemical=False, compound=False, disease=False,
-                gene=False, phenotype=False, protein=False
-            )
-        )
-
-        species_annotations = annotator.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=doc.custom_annotations,
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotator.get_entities_to_annotate(
-                chemical=False, compound=False, disease=False,
-                gene=False, phenotype=False, protein=False
-            )
-        )
-
-        # now annotate using results from NLP
-        entity_service.identify_entities(
-            tokens=nlp_tokens,
-            check_entities_in_lmdb=entity_service.get_entities_to_identify(species=False)
-        )
-
-        annotations = annotator.create_nlp_annotations(
-            nlp_resp=nlp_resp,
-            species_annotations=species_annotations,
-            char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
-            cropbox_in_pdf=tokens.cropbox_in_pdf,
-            custom_annotations=doc.custom_annotations,
-            entity_type_and_id_pairs=annotator.get_entities_to_annotate(species=False)
-        )
-    else:
-        raise AnnotationError(f'Your file {doc.filename} could not be annotated.')
-    bioc = bioc_service.read(text=pdf_text, file_uri=doc.filename)
-    annotations_json = bioc_service.generate_bioc_json(
-        annotations=annotations, bioc=bioc)
+    annotations_json = create_annotations(
+        annotation_method=annotation_method,
+        document=doc,
+        source=fp
+    )
 
     current_app.logger.debug(
         f'File successfully annotated: {doc.file_id}, {doc.filename}')
