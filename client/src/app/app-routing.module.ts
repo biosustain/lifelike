@@ -99,7 +99,7 @@ const routes: Routes = [
         path: 'graph',
         component: VisualizationComponent,
         data: {
-          title: 'KG Visualizer',
+          title: 'Visualizer',
           fontAwesomeIcon: 'search',
         },
       },
