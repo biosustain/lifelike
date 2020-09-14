@@ -27,8 +27,7 @@ export class MovableNode extends AbstractCanvasBehavior {
     const transform = this.graphView.transform;
     const subject: GraphEntity | undefined = d3.event.subject;
 
-    if (subject.type === GraphEntityType.Node
-      && this.graphView.selection.getEntitySet().has(subject.entity)) {
+    if (subject.type === GraphEntityType.Node) {
       const node = subject.entity as UniversalGraphNode;
 
       this.startMousePosition = [transform.invertX(mouseX), transform.invertY(mouseY)];
@@ -48,19 +47,36 @@ export class MovableNode extends AbstractCanvasBehavior {
     if (this.target) {
       const shiftX = transform.invertX(mouseX) - this.startMousePosition[0];
       const shiftY = transform.invertY(mouseY) - this.startMousePosition[1];
+
+      const targets = new Set<UniversalGraphNode>();
+
       for (const entity of this.graphView.selection.get()) {
         if (entity.type === GraphEntityType.Node) {
           const node = entity.entity as UniversalGraphNode;
-          if (!this.originalNodePositions.has(node)) {
-            this.originalNodePositions.set(node, [node.data.x, node.data.y]);
-          }
-          const [originalX, originalY] = this.originalNodePositions.get(node);
-          node.data.x = originalX + shiftX;
-          node.data.y = originalY + shiftY;
-          this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
-          this.graphView.invalidateNode(node);
-          // TODO: Store this in history as ONE object
+          targets.add(node);
         }
+      }
+
+      if (!targets.has(this.target)) {
+        targets.clear();
+        targets.add(this.target);
+
+        this.graphView.selection.replace([{
+          type: GraphEntityType.Node,
+          entity: this.target,
+        }]);
+      }
+
+      for (const node of targets) {
+        if (!this.originalNodePositions.has(node)) {
+          this.originalNodePositions.set(node, [node.data.x, node.data.y]);
+        }
+        const [originalX, originalY] = this.originalNodePositions.get(node);
+        node.data.x = originalX + shiftX;
+        node.data.y = originalY + shiftY;
+        this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
+        this.graphView.invalidateNode(node);
+        // TODO: Store this in history as ONE object
       }
     }
 
@@ -70,11 +86,11 @@ export class MovableNode extends AbstractCanvasBehavior {
   dragEnd(event: MouseEvent): BehaviorResult {
     if (this.target) {
       if (this.target.data.x !== this.originalTarget.data.x ||
-        this.target.data.y !== this.originalTarget.data.y) {
+          this.target.data.y !== this.originalTarget.data.y) {
         const actions: GraphAction[] = [];
 
         for (const [node, [originalX, originalY]] of
-          this.originalNodePositions.entries()) {
+            this.originalNodePositions.entries()) {
           actions.push(new GraphEntityUpdate('Move node', {
             type: GraphEntityType.Node,
             entity: node,
