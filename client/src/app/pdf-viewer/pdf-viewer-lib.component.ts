@@ -349,6 +349,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           position: {
             my: 'top center',
             at: 'bottom center',
+            viewport: true,
             target: this,
           },
           style: {
@@ -925,7 +926,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.pdfComponent.pdfFindController.executeCommand('find', {
         query: this.pdfQuery,
         highlightAll: true,
-        entireWord: true,
         phraseSearch: true,
         findPrevious: newQuery.findPrevious,
       });
@@ -933,7 +933,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.pdfComponent.pdfFindController.executeCommand('findagain', {
         query: this.pdfQuery,
         highlightAll: true,
-        entireWord: true,
         phraseSearch: true,
         findPrevious: newQuery.findPrevious,
       });
