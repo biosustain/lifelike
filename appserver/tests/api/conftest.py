@@ -34,14 +34,14 @@ def mock_get_combined_annotations_result(monkeypatch):
         return [
             {
                 'meta': {
-                    'type': EntityType.Gene.value,
+                    'type': EntityType.GENE.value,
                     'id': '59272',
                     'allText': 'ace2'
                 }
             },
             {
                 'meta': {
-                    'type': EntityType.Species.value,
+                    'type': EntityType.SPECIES.value,
                     'id': '9606',
                     'allText': 'human'
                 }
