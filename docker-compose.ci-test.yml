@@ -15,7 +15,8 @@ services:
             -  ./postgres/db:/var/lib/postgresql/data
 
     appserver:
-        image: gcr.io/able-goods-221820}/kg-appserver-prod:${GITHUB_HASH:-latest}
+        container_name: appserver
+        image: gcr.io/able-goods-221820/kg-appserver:${GITHUB_HASH:-latest}
         ports:
             - "5000:5000"
         environment:
@@ -32,6 +33,8 @@ services:
             - POSTGRES_PASSWORD=postgres
             - POSTGRES_DB=postgres
             - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+        volumes:
+            - ./appserver/neo4japp/tests/database/services/annotations/lmdb:/home/n4j/tests/database/services/annotations/lmdb
         networks:
             - frontend
             - backend
@@ -49,6 +52,10 @@ services:
             - "7687:7687"
         networks:
             - backend
+        volumes:
+            - ./db/data:/data
+            - ./db/logs:/logs
+            - ./db/plugins:/plugins
 
     elasticsearch:
         container_name: elasticsearch
