@@ -72,24 +72,24 @@ def write_to_file(
         keyword_type = annotation.meta.type
         id = annotation.meta.id
 
-        if keyword_type == EntityType.Chemical.value:
+        if keyword_type == EntityType.CHEMICAL.value:
             print(
                 f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
                 file=chemical_pubtator,
             )
-        elif keyword_type == EntityType.Gene.value:
+        elif keyword_type == EntityType.GENE.value:
             print(
                 f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
                 file=gene_pubtator,
             )
-        elif keyword_type == EntityType.Disease.value:
+        elif keyword_type == EntityType.DISEASE.value:
             print(
                 f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
                 file=disease_pubtator,
             )
-        elif keyword_type == EntityType.Species.value:
+        elif keyword_type == EntityType.SPECIES.value:
             # only Bacteria for now
-            if annotation.meta.category == OrganismCategory.Bacteria.value:
+            if annotation.meta.category == OrganismCategory.BACTERIA.value:
                 print(
                     f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
                     file=species_pubtator,

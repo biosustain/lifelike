@@ -74,73 +74,74 @@ LIGATURES = {
 
 
 class EntityType(Enum):
-    Chemical = 'Chemical'
-    Compound = 'Compound'
-    Disease = 'Disease'
-    Gene = 'Gene'
-    Protein = 'Protein'
-    Species = 'Species'
-    Phenotype = 'Phenotype'
+    CHEMICAL = 'Chemical'
+    COMPOUND = 'Compound'
+    DISEASE = 'Disease'
+    GENE = 'Gene'
+    PROTEIN = 'Protein'
+    SPECIES = 'Species'
+    PHENOTYPE = 'Phenotype'
 
 
 ENTITY_TYPE_PRECEDENCE = {
     # larger value takes precedence
-    EntityType.Chemical.value: 3,
-    EntityType.Compound.value: 2,
-    EntityType.Disease.value: 1,
-    EntityType.Gene.value: 6,
-    EntityType.Protein.value: 5,
-    EntityType.Species.value: 7,
-    EntityType.Phenotype.value: 4,
+    EntityType.CHEMICAL.value: 3,
+    EntityType.COMPOUND.value: 2,
+    EntityType.DISEASE.value: 1,
+    EntityType.GENE.value: 6,
+    EntityType.PROTEIN.value: 5,
+    EntityType.SPECIES.value: 7,
+    EntityType.PHENOTYPE.value: 4,
 }
 
 HOMO_SAPIENS_TAX_ID = '9606'
 
 
 class OrganismCategory(Enum):
-    Archaea = 'Archaea'
-    Bacteria = 'Bacteria'
-    Eukaryota = 'Eukaryota'
-    Viruses = 'Viruses'
-    Uncategorized = 'Uncategorized'
+    ARCHAEA = 'Archaea'
+    BACTERIA = 'Bacteria'
+    EUKARYOTA = 'Eukaryota'
+    VIRUSES = 'Viruses'
+    UNCATEGORIZED = 'Uncategorized'
 
 
 class EntityColor(Enum):
-    Chemical = ANNOTATION_STYLES_DICT['chemical']['color']
-    Compound = ANNOTATION_STYLES_DICT['compound']['color']
-    Disease = ANNOTATION_STYLES_DICT['disease']['color']
-    Gene = ANNOTATION_STYLES_DICT['gene']['color']
-    Protein = ANNOTATION_STYLES_DICT['protein']['color']
-    Species = ANNOTATION_STYLES_DICT['species']['color']
-    Phenotype = ANNOTATION_STYLES_DICT['phenotype']['color']
+    CHEMICAL = ANNOTATION_STYLES_DICT['chemical']['color']
+    COMPOUND = ANNOTATION_STYLES_DICT['compound']['color']
+    DISEASE = ANNOTATION_STYLES_DICT['disease']['color']
+    GENE = ANNOTATION_STYLES_DICT['gene']['color']
+    PROTEIN = ANNOTATION_STYLES_DICT['protein']['color']
+    SPECIES = ANNOTATION_STYLES_DICT['species']['color']
+    PHENOTYPE = ANNOTATION_STYLES_DICT['phenotype']['color']
 
 
 class EntityIdStr(Enum):
-    Chemical = 'chemical_id'
-    Compound = 'compound_id'
-    Disease = 'disease_id'
-    Gene = 'gene_id'
-    Protein = 'protein_id'
-    Species = 'tax_id'
-    Phenotype = 'phenotype_id'
+    CHEMICAL = 'chemical_id'
+    COMPOUND = 'compound_id'
+    DISEASE = 'disease_id'
+    GENE = 'gene_id'
+    PROTEIN = 'protein_id'
+    SPECIES = 'tax_id'
+    PHENOTYPE = 'phenotype_id'
 
 
 class DatabaseType(Enum):
-    Chebi = 'CHEBI'
-    Mesh = 'MESH'
-    Uniprot = 'UNIPROT'
-    Ncbi = 'NCBI'
-    Biocyc = 'BIOCYC'
+    CHEBI = 'CHEBI'
+    CUSTOM = 'CUSTOM'
+    MESH = 'MESH'
+    UNIPROT = 'UNIPROT'
+    NCBI = 'NCBI'
+    BIOCYC = 'BIOCYC'
 
 
 class AnnotationMethod(Enum):
     NLP = 'NLP'
-    Rules = 'Rules Based'
+    RULES = 'Rules Based'
 
 
 class ManualAnnotationType(Enum):
-    Inclusion = 'inclusion'
-    Exclusion = 'exclusion'
+    INCLUSION = 'inclusion'
+    EXCLUSION = 'exclusion'
 
 
 # these links are used in annotations and custom annotations
@@ -151,12 +152,13 @@ UNIPROT_LINK = 'https://www.uniprot.org/uniprot/?sort=score&query='
 WIKIPEDIA_LINK = 'https://www.google.com/search?q=site:+wikipedia.org+'
 GOOGLE_LINK = 'https://www.google.com/search?q='
 ENTITY_HYPERLINKS = {
-    DatabaseType.Chebi.value: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
-    DatabaseType.Mesh.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
-    DatabaseType.Uniprot.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',
-    DatabaseType.Ncbi.value: {
-        EntityType.Gene.value: 'https://www.ncbi.nlm.nih.gov/gene/',
-        EntityType.Species.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
+    DatabaseType.CHEBI.value: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
+    DatabaseType.MESH.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
+    DatabaseType.UNIPROT.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',
+    DatabaseType.NCBI.value: {
+        EntityType.GENE.value: 'https://www.ncbi.nlm.nih.gov/gene/',
+        EntityType.SPECIES.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
     },
-    DatabaseType.Biocyc.value: 'https://biocyc.org/compound?orgid=META&id=',
+    DatabaseType.BIOCYC.value: 'https://biocyc.org/compound?orgid=META&id=',
+    DatabaseType.CUSTOM.value: GOOGLE_LINK
 }
