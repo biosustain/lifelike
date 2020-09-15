@@ -102,7 +102,7 @@ class ManualAnnotationsService:
         if annotation_to_add['meta']['includeGlobally']:
             self.add_to_global_list(
                 annotation_to_add,
-                ManualAnnotationType.Inclusion.value,
+                ManualAnnotationType.INCLUSION.value,
                 file.content_id
             )
 
@@ -168,7 +168,7 @@ class ManualAnnotationsService:
         if excluded_annotation['excludeGlobally']:
             self.add_to_global_list(
                 excluded_annotation,
-                ManualAnnotationType.Exclusion.value,
+                ManualAnnotationType.EXCLUSION.value,
                 file.content_id
             )
 

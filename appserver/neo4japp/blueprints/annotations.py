@@ -52,7 +52,7 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 def annotate(
     doc: Files,
-    annotation_method: str = AnnotationMethod.Rules.value,  # default to Rules Based
+    annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
 ):
     lmdb_dao = get_lmdb_dao()
     pdf_parser = get_annotations_pdf_parser()
@@ -72,7 +72,7 @@ def annotate(
     tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
     pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
 
-    if annotation_method == AnnotationMethod.Rules.value:
+    if annotation_method == AnnotationMethod.RULES.value:
         annotations = annotator.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=doc.custom_annotations,
@@ -193,7 +193,7 @@ def export_global_inclusions():
     yield g.current_user
 
     inclusions = GlobalList.query.filter_by(
-        type=ManualAnnotationType.Inclusion.value,
+        type=ManualAnnotationType.INCLUSION.value,
         reviewed=False
     ).all()
 
@@ -243,7 +243,7 @@ def export_global_exclusions():
     yield g.current_user
 
     exclusions = GlobalList.query.filter_by(
-        type=ManualAnnotationType.Exclusion.value,
+        type=ManualAnnotationType.EXCLUSION.value,
         reviewed=False,
     ).all()
 
@@ -358,7 +358,7 @@ def get_gene_list_from_file(project_name, file_id):
     combined_annotations = manual_annotations_service.get_combined_annotations(project.id, file_id)
     gene_ids = {}
     for annotation in combined_annotations:
-        if annotation['meta']['type'] == EntityType.Gene.value:
+        if annotation['meta']['type'] == EntityType.GENE.value:
             gene_id = annotation['meta']['id']
             if gene_ids.get(gene_id, None) is not None:
                 gene_ids[gene_id] += 1
