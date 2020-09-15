@@ -32,7 +32,7 @@
         </div>
 
         <div class="module-toolbar d-flex align-items-center mt-2">
-          <div class="btn-group">
+          <div class="btn-group mr-2">
             <button type="button" class="btn btn-secondary"
                     [disabled]="(unsavedChanges$ | async) == null"
                     ngbTooltip="Save" placement="bottom" container="body"
@@ -46,7 +46,7 @@
             </button>
           </div>
 
-          <div class="btn-group ml-2">
+          <div class="btn-group mr-2">
             <button type="button" class="btn btn-secondary"
                     ngbTooltip="Undo" placement="bottom" container="body"
                     (click)="undo()"
@@ -61,7 +61,7 @@
             </button>
           </div>
 
-          <div class="btn-group ml-2">
+          <div class="btn-group mr-2">
             <button type="button" class="btn btn-secondary" container="body"
                     ngbTooltip="Make map fit on screen" placement="bottom"
                     (click)="zoomToFit()">
@@ -69,14 +69,14 @@
             </button>
           </div>
 
-          <div class="btn-group ml-2">
+          <div class="btn-group mr-2">
             <button type="button" class="btn btn-secondary"
                     (click)="displayShareDialog()">
               <i class="fa fa-fw fa-share-square"></i> Share
             </button>
           </div>
 
-          <div class="btn-group ml-2">
+          <div class="btn-group">
             <button type="button" class="btn btn-secondary" container="body"
                     ngbTooltip="Map Version History" placement="bottom"
                     (click)="mapVersionDialog()">

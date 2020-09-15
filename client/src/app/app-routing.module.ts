@@ -29,6 +29,14 @@ import { ContentSearchComponent } from './search/components/content-search.compo
 // TODO: Add an unprotected home page
 const routes: Routes = [
   {
+    path: '',
+    component: DashboardComponent,
+    data: {
+      title: 'Dashboard',
+      fontAwesomeIcon: 'home',
+    },
+  },
+  {
     path: 'dashboard',
     component: DashboardComponent,
     data: {
@@ -74,7 +82,7 @@ const routes: Routes = [
     path: 'search/graph',
     component: GraphSearchComponent,
     data: {
-      title: 'Visualizer Search',
+      title: 'Visualizer',
       fontAwesomeIcon: 'search',
     },
   },
@@ -99,7 +107,7 @@ const routes: Routes = [
         path: 'graph',
         component: VisualizationComponent,
         data: {
-          title: 'KG Visualizer',
+          title: 'Visualizer',
           fontAwesomeIcon: 'search',
         },
       },

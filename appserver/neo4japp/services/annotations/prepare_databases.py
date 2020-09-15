@@ -294,7 +294,7 @@ def prepare_lmdb_diseases_database(filename: str):
                     continue
 
 
-def prepare_lmdb_phenotypes_database(filename: str):
+def prepare_lmdb_phenotypes_database(filename: str, custom: bool = False):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/phenotypes'), map_size=map_size, max_dbs=2)
@@ -306,16 +306,16 @@ def prepare_lmdb_phenotypes_database(filename: str):
             # line,mesh_id,name,synonym,tree
             headers = next(reader)
             for line in reader:
-                line_id = line[0]
                 phenotype_id = line[1]
                 phenotype_name = line[2]
                 # turn string repr list into list
-                synonyms = literal_eval(line[3])
+                synonyms = literal_eval(line[3]) if line[3] else None
 
                 phenotype = create_phenotype_for_ner(
                     id_=phenotype_id,
                     name=phenotype_name,
                     synonym=phenotype_name,
+                    custom=custom,
                 )
 
                 try:
@@ -332,6 +332,7 @@ def prepare_lmdb_phenotypes_database(filename: str):
                                 id_=phenotype_id,
                                 name=phenotype_name,
                                 synonym=synonym_term,
+                                custom=custom,
                             )
 
                             transaction.put(
@@ -381,3 +382,6 @@ if __name__ == '__main__':
     prepare_lmdb_species_database(filename='datasets/pseudomonas_aerug_taxonomy.tsv')
     prepare_lmdb_species_database(filename='datasets/staph_aureus_taxonomy.tsv')
     prepare_lmdb_species_database(filename='datasets/yeast_taxonomy.tsv')
+
+    prepare_lmdb_phenotypes_database(
+        filename='datasets/microbial_phenotype.csv', custom=True)
