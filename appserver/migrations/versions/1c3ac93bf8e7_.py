@@ -88,6 +88,12 @@ t_project = sa.Table(
     sa.Column('search_vector', TSVectorType('label'))
 )
 
+t_project_version = sa.Table(
+    'project_version',
+    sa.MetaData(),
+    sa.Column('dir_id', sa.Integer, sa.ForeignKey(t_directory.c.id)),
+)
+
 t_projects = sa.Table(
     'projects',
     sa.MetaData(),
@@ -182,7 +188,11 @@ def pdf_source_conversion(source, projects_id, projects_name, user_id, dir_id, n
 
     src_split = source.split('/')
     coordinates = f'coords={",".join(src_split[5:])}'
-    page = src_split[4]
+    try:
+        page = src_split[4]
+    except Exception:
+        # This is a staging data edge case, so we just ignore it
+        print(f'Failed for {source}')
 
     # Check if the map owner is the same as the PDF owner
     if user_id == query_user_id:
@@ -235,7 +245,9 @@ def pdf_source_conversion(source, projects_id, projects_name, user_id, dir_id, n
 def convert_source(component, projects_id, projects_name, user_id, dir_id):
     """ Perform conversions if a map source is found """
     component_copy = copy.deepcopy(component)
-    data = component_copy['data']
+    data = component_copy.get('data')
+    if data is None:
+        return component
     source = data.get('source')
     sources = data.get('sources')
 
@@ -265,10 +277,19 @@ def data_upgrades():
         edges = [convert_source(edge, projects_id, projects_name, user_id, dir_id) for edge in edges]
         graph['nodes'] = nodes
         graph['edges'] = edges
-        conn.execute(t_project.update().where(t_project.c.id == proj_id).values(graph=graph))
+        query = t_project.update().where(t_project.c.id == proj_id).values(graph=graph)
+        conn.execute(query)
 
     # drop 'beta-project'
     (projects_id,) = conn.execute(sa.select([t_projects.c.id])).fetchone()
+    # get all related directories for the projects
+    dir_ids = conn.execute(sa.select([t_directory.c.id]).where(t_directory.c.projects_id == projects_id)).fetchall()
+    dir_ids = [d_id[0] for d_id in dir_ids]
+    # delete all assets in the directories
+    for dir_id in dir_ids:
+        conn.execute(t_files.delete().where(t_files.c.dir_id == dir_id))
+        conn.execute(t_project_version.delete().where(t_project_version.c.dir_id == dir_id))
+        conn.execute(t_project.delete().where(t_project.c.dir_id == dir_id))
     conn.execute(t_directory.delete().where(t_directory.c.projects_id == projects_id))
     conn.execute(t_projects.delete().where(t_projects.c.id == projects_id))
 
