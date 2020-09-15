@@ -4,7 +4,6 @@ import re
 from sqlalchemy import event
 from sqlalchemy.orm import validates
 from sqlalchemy.orm.query import Query
-from sqlalchemy.types import TIMESTAMP
 
 from neo4japp.database import db
 from neo4japp.models.auth import (
@@ -14,7 +13,7 @@ from neo4japp.models.auth import (
     AppRole,
     AppUser,
 )
-from neo4japp.models.common import RDBMSBase
+from neo4japp.models.common import RDBMSBase, TimestampMixin
 from neo4japp.models.files import Directory
 
 
@@ -44,13 +43,11 @@ projects_collaborator_role = db.Table(
 )
 
 
-class Projects(RDBMSBase):  # type: ignore
+class Projects(RDBMSBase, TimestampMixin):  # type: ignore
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     project_name = db.Column(db.String(250), unique=True, nullable=False)
     description = db.Column(db.Text)
-    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
-    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
     users = db.Column(db.ARRAY(db.Integer), nullable=False)
 
     directories = db.relationship('Directory')

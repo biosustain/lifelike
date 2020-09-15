@@ -475,7 +475,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'name': m.label,
                 'annotation_date': None,
                 'creation_date': None,
-                'modification_date': m.date_modified,
+                'modification_date': m.modified_date,
                 'creator': {
                     'id': m.user_id,
                     'name': m.username,
