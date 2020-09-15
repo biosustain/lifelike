@@ -4,7 +4,7 @@ import re
 from typing import Dict, List, Union
 from elasticsearch import Elasticsearch
 
-from neo4japp.services.annotations.service_util import create_annotations
+from neo4japp.services.annotations.service_helpers import create_annotations
 from neo4japp.utils.queries import parse_query_terms
 
 
