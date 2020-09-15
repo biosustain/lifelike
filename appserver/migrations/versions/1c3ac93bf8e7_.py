@@ -145,7 +145,6 @@ def is_new_format(source):
 def map_source_conversion(source, projects_name, new_structure=False):
     if is_new_format(source):
         return source
-    print('Converting map source')
     hash_id = get_src_hash_id(source)
     link = f'/projects/{projects_name}/maps/{hash_id}/edit'
     if new_structure:
@@ -167,7 +166,6 @@ def pdf_source_conversion(source, projects_id, projects_name, user_id, dir_id, n
     """
     if is_new_format(source):
         return source
-    print('Converting pdf source')
 
     hash_id = get_src_hash_id(source)
     files_query = conn.execute(
