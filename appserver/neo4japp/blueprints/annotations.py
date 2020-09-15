@@ -39,7 +39,7 @@ from neo4japp.services.annotations.constants import (
     EntityType,
     ManualAnnotationType,
 )
-from neo4japp.services.annotations.service_util import create_annotations
+from neo4japp.services.annotations.service_helpers import create_annotations
 from neo4japp.util import jsonify_with_class, SuccessResponse
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')

@@ -1,6 +1,4 @@
-import json
 import re
-import requests
 
 from math import inf
 from typing import cast, Dict, List, Optional, Set, Tuple, Union
@@ -29,7 +27,6 @@ from .constants import (
     COMMON_TYPOS,
     UNIPROT_LINK,
     WIKIPEDIA_LINK,
-    NLP_ENDPOINT,
 )
 from .lmdb_dao import LMDBDao
 from .util import normalize_str, standardize_str
@@ -940,98 +937,6 @@ class AnnotationsService:
             organisms_from_custom_annotations=custom_annotations,
         )
         return self._clean_annotations(annotations=annotations)
-
-    def get_nlp_entities(
-        self,
-        page_index: Dict[int, int],
-        text: str,
-        tokens: PDFTokenPositionsList,
-    ) -> Tuple[List[PDFTokenPositions], List[dict]]:
-        """Makes a call to the NLP service.
-        There is a memory issue with the NLP service, so for now
-        the REST call is broken into one per PDF page.
-
-        Returns the NLP tokens and combined NLP response.
-        """
-        combined_nlp_resp = []
-        nlp_tokens: List[PDFTokenPositions] = []
-        req = None
-        pages_to_index = {v: k for k, v in page_index.items()}
-        pages = list(pages_to_index)
-        text_in_page: List[Tuple[int, str]] = []
-
-        # TODO: Breaking the request into pages
-        # because doing the entire PDF seem to cause
-        # the NLP service container to crash with no
-        # errors and exit code of 247... (memory related)
-        length = len(pages) - 1
-        for i, page in enumerate(pages):
-            if i == length:
-                text_in_page.append((page, text[pages_to_index[page]:]))
-            else:
-                text_in_page.append((page, text[pages_to_index[page]:pages_to_index[page+1]]))
-
-        for page, page_text in text_in_page:
-            try:
-                req = requests.post(NLP_ENDPOINT, json={'text': page_text}, timeout=30)
-                nlp_resp = req.json()
-
-                for predicted in nlp_resp:
-                    # TODO: nlp only checks for Bacteria right now
-                    # replace with Species in the future
-                    if predicted['type'] != 'Bacteria':
-                        # need to do offset here because index resets
-                        # after each text string for page
-                        offset = pages_to_index[page]
-                        curr_char_idx_mappings = {
-                            i+offset: char for i, char in zip(
-                                range(predicted['low_index'], predicted['high_index']),
-                                predicted['item'],
-                            )
-                        }
-
-                        # determine page keyword is on
-                        page_idx = -1
-                        min_page_idx_list = list(tokens.min_idx_in_page)
-                        for min_page_idx in min_page_idx_list:
-                            # include offset here, see above
-                            if predicted['high_index']+offset <= min_page_idx:
-                                # reminder: can break here because dict in python 3.8+ are
-                                # insertion order
-                                break
-                            else:
-                                page_idx = min_page_idx
-                        token = PDFTokenPositions(
-                            page_number=tokens.min_idx_in_page[page_idx],
-                            keyword=predicted['item'],
-                            char_positions=curr_char_idx_mappings,
-                            token_type=predicted['type'],
-                        )
-                        nlp_tokens.append(token)
-
-                        offset_predicted = {k: v for k, v in predicted.items()}
-                        offset_predicted['high_index'] += offset
-                        offset_predicted['low_index'] += offset
-
-                        combined_nlp_resp.append(offset_predicted)
-            except requests.exceptions.ConnectTimeout:
-                raise AnnotationError(
-                    'The request timed out while trying to connect to the NLP service.')
-            except requests.exceptions.Timeout:
-                raise AnnotationError(
-                    'The request to the NLP service timed out.')
-            except requests.exceptions.RequestException:
-                raise AnnotationError(
-                    'An unexpected error occurred with the NLP service.')
-
-        current_app.logger.info(
-            f'NLP Response Output: {json.dumps(combined_nlp_resp)}',
-            extra=EventLog(event_type='annotations').to_dict()
-        )
-
-        if req:
-            req.close()
-        return nlp_tokens, combined_nlp_resp
 
     def create_nlp_annotations(
         self,
