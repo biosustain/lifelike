@@ -63,7 +63,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -82,7 +82,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -103,7 +103,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -122,7 +122,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -143,7 +143,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -162,7 +162,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -183,7 +183,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -202,7 +202,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -223,7 +223,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -244,7 +244,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -263,7 +263,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -282,7 +282,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -304,7 +304,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -323,7 +323,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -345,7 +345,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -364,7 +364,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -463,22 +463,22 @@ def test_escherichia_coli_pdf(
     keywords = {o.keyword: o.meta.type for o in annotations}
 
     assert 'Escherichia coli' in keywords
-    assert keywords['Escherichia coli'] == EntityType.Species.value
+    assert keywords['Escherichia coli'] == EntityType.SPECIES.value
 
     assert 'purA' in keywords
-    assert keywords['purA'] == EntityType.Gene.value
+    assert keywords['purA'] == EntityType.GENE.value
 
     assert 'purB' in keywords
-    assert keywords['purB'] == EntityType.Gene.value
+    assert keywords['purB'] == EntityType.GENE.value
 
     assert 'purC' in keywords
-    assert keywords['purC'] == EntityType.Gene.value
+    assert keywords['purC'] == EntityType.GENE.value
 
     assert 'purD' in keywords
-    assert keywords['purD'] == EntityType.Gene.value
+    assert keywords['purD'] == EntityType.GENE.value
 
     assert 'purF' in keywords
-    assert keywords['purF'] == EntityType.Gene.value
+    assert keywords['purF'] == EntityType.GENE.value
 
 
 def test_custom_annotations_gene_organism_matching_has_match(
@@ -549,13 +549,13 @@ def test_human_gene_pdf(
     keywords = {o.keyword: o.meta.type for o in annotations}
 
     assert 'COVID-19' in keywords
-    assert keywords['COVID-19'] == EntityType.Disease.value
+    assert keywords['COVID-19'] == EntityType.DISEASE.value
 
     assert 'MERS-CoV' in keywords
-    assert keywords['MERS-CoV'] == EntityType.Species.value
+    assert keywords['MERS-CoV'] == EntityType.SPECIES.value
 
     assert 'ACE2' in keywords
-    assert keywords['ACE2'] == EntityType.Gene.value
+    assert keywords['ACE2'] == EntityType.GENE.value
 
 
 @pytest.mark.parametrize(
@@ -615,16 +615,16 @@ def test_tokens_gene_vs_protein(
 
     assert len(annotations) == 4
     assert annotations[0].keyword == 'hyp27'
-    assert annotations[0].meta.type == EntityType.Gene.value
+    assert annotations[0].meta.type == EntityType.GENE.value
 
     assert annotations[1].keyword == 'Moniliophthora roreri'
-    assert annotations[1].meta.type == EntityType.Species.value
+    assert annotations[1].meta.type == EntityType.SPECIES.value
 
     assert annotations[2].keyword == 'Hyp27'
-    assert annotations[2].meta.type == EntityType.Protein.value
+    assert annotations[2].meta.type == EntityType.PROTEIN.value
 
     assert annotations[3].keyword == 'human'
-    assert annotations[3].meta.type == EntityType.Species.value
+    assert annotations[3].meta.type == EntityType.SPECIES.value
 
 
 @pytest.mark.parametrize(
@@ -746,24 +746,24 @@ def test_tokens_gene_vs_protein_serpina1_cases(
     if index == 1 or index == 2 or index == 5:
         assert len(annotations) == 2
         assert annotations[0].keyword == 'Serpin A1'
-        assert annotations[0].meta.type == EntityType.Protein.value
+        assert annotations[0].meta.type == EntityType.PROTEIN.value
 
         assert annotations[1].keyword == 'human'
-        assert annotations[1].meta.type == EntityType.Species.value
+        assert annotations[1].meta.type == EntityType.SPECIES.value
     elif index == 3:
         assert len(annotations) == 2
         assert annotations[0].keyword == 'serpina1'
-        assert annotations[0].meta.type == EntityType.Gene.value
+        assert annotations[0].meta.type == EntityType.GENE.value
 
         assert annotations[1].keyword == 'human'
-        assert annotations[1].meta.type == EntityType.Species.value
+        assert annotations[1].meta.type == EntityType.SPECIES.value
     elif index == 4:
         assert len(annotations) == 2
         assert annotations[0].keyword == 'SERPINA1'
-        assert annotations[0].meta.type == EntityType.Gene.value
+        assert annotations[0].meta.type == EntityType.GENE.value
 
         assert annotations[1].keyword == 'human'
-        assert annotations[1].meta.type == EntityType.Species.value
+        assert annotations[1].meta.type == EntityType.SPECIES.value
 
 
 @pytest.mark.parametrize(
@@ -780,13 +780,13 @@ def test_tokens_gene_vs_protein_serpina1_cases(
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
-                    category=OrganismCategory.Bacteria.value,
+                    category=OrganismCategory.BACTERIA.value,
                 ),
                 uuid='',
             ),
@@ -802,13 +802,13 @@ def test_tokens_gene_vs_protein_serpina1_cases(
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
-                    category=OrganismCategory.Eukaryota.value,
+                    category=OrganismCategory.EUKARYOTA.value,
                 ),
                 uuid='',
             ),
@@ -824,13 +824,13 @@ def test_tokens_gene_vs_protein_serpina1_cases(
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
-                    category=OrganismCategory.Bacteria.value,
+                    category=OrganismCategory.BACTERIA.value,
                 ),
                 uuid='',
             ),
@@ -866,13 +866,13 @@ def test_fix_false_positive_gene_annotations(get_annotations_service, index, ann
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='102353780',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
-                    category=OrganismCategory.Eukaryota.value,
+                    category=OrganismCategory.EUKARYOTA.value,
                 ),
                 uuid='',
             ),
@@ -886,7 +886,7 @@ def test_fix_false_positive_gene_annotations(get_annotations_service, index, ann
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Protein.value,
+                    type=EntityType.PROTEIN.value,
                     color='',
                     id='12379999999',
                     id_type='',
@@ -907,13 +907,13 @@ def test_fix_false_positive_gene_annotations(get_annotations_service, index, ann
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='10235378012123',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
-                    category=OrganismCategory.Eukaryota.value,
+                    category=OrganismCategory.EUKARYOTA.value,
                 ),
                 uuid='',
             ),
@@ -927,7 +927,7 @@ def test_fix_false_positive_gene_annotations(get_annotations_service, index, ann
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Protein.value,
+                    type=EntityType.PROTEIN.value,
                     color='',
                     id='12379999999',
                     id_type='',
@@ -1577,7 +1577,7 @@ def test_global_excluded_annotations_does_not_interfere_with_other_entities(
     assert len(annotations) == 2
     assert tokens[2].keyword not in set([anno.keyword for anno in annotations])
     assert annotations[0].keyword == 'adenosine'
-    assert annotations[0].meta.type == EntityType.Compound.value
+    assert annotations[0].meta.type == EntityType.COMPOUND.value
 
 
 @pytest.mark.parametrize(
