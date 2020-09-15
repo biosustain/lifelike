@@ -76,7 +76,7 @@ class EntityRecognitionService:
             exclusion for exclusion, in self.annotation_neo4j.session.query(
                 GlobalList.annotation).filter(
                     and_(
-                        GlobalList.type == ManualAnnotationType.Exclusion.value,
+                        GlobalList.type == ManualAnnotationType.EXCLUSION.value,
                         # TODO: Uncomment once feature to review is there
                         # GlobalList.reviewed.is_(True),
                     )
@@ -87,7 +87,7 @@ class EntityRecognitionService:
             inclusion for inclusion, in self.annotation_neo4j.session.query(
                 GlobalList.annotation).filter(
                     and_(
-                        GlobalList.type == ManualAnnotationType.Inclusion.value,
+                        GlobalList.type == ManualAnnotationType.INCLUSION.value,
                         # TODO: Uncomment once feature to review is there
                         # GlobalList.reviewed.is_(True),
                     )
@@ -141,13 +141,13 @@ class EntityRecognitionService:
         species: bool = True,
     ) -> Dict[str, bool]:
         return {
-            EntityType.Chemical.value: chemical,
-            EntityType.Compound.value: compound,
-            EntityType.Disease.value: disease,
-            EntityType.Gene.value: gene,
-            EntityType.Phenotype.value: phenotype,
-            EntityType.Protein.value: protein,
-            EntityType.Species.value: species,
+            EntityType.CHEMICAL.value: chemical,
+            EntityType.COMPOUND.value: compound,
+            EntityType.DISEASE.value: disease,
+            EntityType.GENE.value: gene,
+            EntityType.PHENOTYPE.value: phenotype,
+            EntityType.PROTEIN.value: protein,
+            EntityType.SPECIES.value: species,
         }
 
     def get_entity_match_results(self) -> EntityResults:
@@ -166,47 +166,47 @@ class EntityRecognitionService:
     def _get_chemical_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Chemical.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.CHEMICAL.value and exclusion.get('text'))  # noqa
 
     def _get_compound_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Compound.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.COMPOUND.value and exclusion.get('text'))  # noqa
 
     def _get_disease_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Disease.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.DISEASE.value and exclusion.get('text'))  # noqa
 
     def _get_gene_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Gene.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.GENE.value and exclusion.get('text'))  # noqa
 
     def _get_phenotype_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Phenotype.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.PHENOTYPE.value and exclusion.get('text'))  # noqa
 
     def _get_protein_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Protein.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.PROTEIN.value and exclusion.get('text'))  # noqa
 
     def _get_species_annotations_to_exclude(self):
         return set(
             exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
-                exclusion.get('type') == EntityType.Species.value and exclusion.get('text'))  # noqa
+                exclusion.get('type') == EntityType.SPECIES.value and exclusion.get('text'))  # noqa
 
     def _get_global_inclusion_pairs(self) -> List[Tuple[str, str, Any, Any]]:
         return [
-            (EntityType.Chemical.value, EntityIdStr.Chemical.value, self.global_chemical_inclusion, create_chemical_for_ner),  # noqa
-            (EntityType.Compound.value, EntityIdStr.Compound.value, self.global_compound_inclusion, create_compound_for_ner),  # noqa
-            (EntityType.Disease.value, EntityIdStr.Disease.value, self.global_disease_inclusion, create_disease_for_ner),  # noqa
-            (EntityType.Gene.value, EntityIdStr.Gene.value, self.global_gene_inclusion, create_gene_for_ner),  # noqa
-            (EntityType.Phenotype.value, EntityIdStr.Phenotype.value, self.global_phenotype_inclusion, create_phenotype_for_ner),  # noqa
-            (EntityType.Protein.value, EntityIdStr.Protein.value, self.global_protein_inclusion, create_protein_for_ner),  # noqa
-            (EntityType.Species.value, EntityIdStr.Species.value, self.global_species_inclusion, create_species_for_ner),  # noqa
+            (EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value, self.global_chemical_inclusion, create_chemical_for_ner),  # noqa
+            (EntityType.COMPOUND.value, EntityIdStr.COMPOUND.value, self.global_compound_inclusion, create_compound_for_ner),  # noqa
+            (EntityType.DISEASE.value, EntityIdStr.DISEASE.value, self.global_disease_inclusion, create_disease_for_ner),  # noqa
+            (EntityType.GENE.value, EntityIdStr.GENE.value, self.global_gene_inclusion, create_gene_for_ner),  # noqa
+            (EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value, self.global_phenotype_inclusion, create_phenotype_for_ner),  # noqa
+            (EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value, self.global_protein_inclusion, create_protein_for_ner),  # noqa
+            (EntityType.SPECIES.value, EntityIdStr.SPECIES.value, self.global_species_inclusion, create_species_for_ner),  # noqa
         ]
 
     def _set_local_species_inclusion(self, custom_annotations: List[dict]) -> None:
@@ -215,7 +215,7 @@ class EntityRecognitionService:
         """
         for custom in custom_annotations:
             if custom.get('meta', None):
-                if custom['meta'].get('type', None) == EntityType.Species.value:
+                if custom['meta'].get('type', None) == EntityType.SPECIES.value:
                     species_id = custom['meta'].get('id', None)
                     species_name = custom['meta'].get('allText', None)
                     normalized_species_name = normalize_str(species_name)
@@ -280,11 +280,11 @@ class EntityRecognitionService:
                         if unique:
                             entity = {}  # to avoid UnboundLocalError
                             if entity_type in {
-                                EntityType.Chemical.value,
-                                EntityType.Compound.value,
-                                EntityType.Disease.value,
-                                EntityType.Phenotype.value,
-                                EntityType.Species.value
+                                EntityType.CHEMICAL.value,
+                                EntityType.COMPOUND.value,
+                                EntityType.DISEASE.value,
+                                EntityType.PHENOTYPE.value,
+                                EntityType.SPECIES.value
                             }:
                                 entity = create_entity_ner_func(
                                     id_=entity_id,
@@ -292,7 +292,7 @@ class EntityRecognitionService:
                                     synonym=entity_name
                                 )
                             else:
-                                if entity_type == EntityType.Gene.value:
+                                if entity_type == EntityType.GENE.value:
                                     # the word manually annotated by user
                                     # will not be in the KG
                                     # otherwise it would've been annotated
@@ -363,17 +363,17 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.Chemical.value:
+            if nlp_predicted_type == EntityType.CHEMICAL.value:
                 chem_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.chemicals_txn,
                     key=lookup_key,
-                    token_type=EntityType.Chemical.value
+                    token_type=EntityType.CHEMICAL.value
                 )
             elif nlp_predicted_type is None:
                 chem_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.chemicals_txn,
                     key=lookup_key,
-                    token_type=EntityType.Chemical.value
+                    token_type=EntityType.CHEMICAL.value
                 )
 
             if not chem_val:
@@ -435,17 +435,17 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.Compound.value:
+            if nlp_predicted_type == EntityType.COMPOUND.value:
                 comp_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.compounds_txn,
                     key=lookup_key,
-                    token_type=EntityType.Compound.value
+                    token_type=EntityType.COMPOUND.value
                 )
             elif nlp_predicted_type is None:
                 comp_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.compounds_txn,
                     key=lookup_key,
-                    token_type=EntityType.Compound.value
+                    token_type=EntityType.COMPOUND.value
                 )
 
             if not comp_val:
@@ -507,17 +507,17 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.Disease.value:
+            if nlp_predicted_type == EntityType.DISEASE.value:
                 diseases_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.diseases_txn,
                     key=lookup_key,
-                    token_type=EntityType.Disease.value
+                    token_type=EntityType.DISEASE.value
                 )
             elif nlp_predicted_type is None:
                 diseases_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.diseases_txn,
                     key=lookup_key,
-                    token_type=EntityType.Disease.value
+                    token_type=EntityType.DISEASE.value
                 )
 
             if not diseases_val:
@@ -579,17 +579,17 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.Gene.value:
+            if nlp_predicted_type == EntityType.GENE.value:
                 gene_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.genes_txn,
                     key=lookup_key,
-                    token_type=EntityType.Gene.value
+                    token_type=EntityType.GENE.value
                 )
             elif nlp_predicted_type is None:
                 gene_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.genes_txn,
                     key=lookup_key,
-                    token_type=EntityType.Gene.value
+                    token_type=EntityType.GENE.value
                 )
 
             if not gene_val:
@@ -651,17 +651,17 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.Phenotype.value:
+            if nlp_predicted_type == EntityType.PHENOTYPE.value:
                 phenotype_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.phenotypes_txn,
                     key=lookup_key,
-                    token_type=EntityType.Phenotype.value
+                    token_type=EntityType.PHENOTYPE.value
                 )
             elif nlp_predicted_type is None:
                 phenotype_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.phenotypes_txn,
                     key=lookup_key,
-                    token_type=EntityType.Phenotype.value
+                    token_type=EntityType.PHENOTYPE.value
                 )
 
             if not phenotype_val:
@@ -723,17 +723,17 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.Protein.value:
+            if nlp_predicted_type == EntityType.PROTEIN.value:
                 protein_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.proteins_txn,
                     key=lookup_key,
-                    token_type=EntityType.Protein.value
+                    token_type=EntityType.PROTEIN.value
                 )
             elif nlp_predicted_type is None:
                 protein_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.proteins_txn,
                     key=lookup_key,
-                    token_type=EntityType.Protein.value
+                    token_type=EntityType.PROTEIN.value
                 )
 
             if protein_val:
@@ -803,17 +803,17 @@ class EntityRecognitionService:
             # check species
             # TODO: Bacteria because for now NLP has that instead of
             # generic `Species`
-            if nlp_predicted_type == EntityType.Species.value or nlp_predicted_type == 'Bacteria':  # noqa
+            if nlp_predicted_type == EntityType.SPECIES.value or nlp_predicted_type == 'Bacteria':  # noqa
                 species_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.species_txn,
                     key=lookup_key,
-                    token_type=EntityType.Species.value
+                    token_type=EntityType.SPECIES.value
                 )
             elif nlp_predicted_type is None:
                 species_val = self.lmdb_session.get_lmdb_values(
                     txn=self.lmdb_session.species_txn,
                     key=lookup_key,
-                    token_type=EntityType.Species.value
+                    token_type=EntityType.SPECIES.value
                 )
 
             if not species_val:
@@ -870,25 +870,25 @@ class EntityRecognitionService:
         token: PDFTokenPositions,
         check_entities: Dict[str, bool],
     ) -> None:
-        if check_entities.get(EntityType.Chemical.value, False):
+        if check_entities.get(EntityType.CHEMICAL.value, False):
             self._find_chemical_match(token)
 
-        if check_entities.get(EntityType.Compound.value, False):
+        if check_entities.get(EntityType.COMPOUND.value, False):
             self._find_compound_match(token)
 
-        if check_entities.get(EntityType.Disease.value, False):
+        if check_entities.get(EntityType.DISEASE.value, False):
             self._find_disease_match(token)
 
-        if check_entities.get(EntityType.Gene.value, False):
+        if check_entities.get(EntityType.GENE.value, False):
             self._find_gene_match(token)
 
-        if check_entities.get(EntityType.Phenotype.value, False):
+        if check_entities.get(EntityType.PHENOTYPE.value, False):
             self._find_phenotype_match(token)
 
-        if check_entities.get(EntityType.Protein.value, False):
+        if check_entities.get(EntityType.PROTEIN.value, False):
             self._find_protein_match(token)
 
-        if check_entities.get(EntityType.Species.value, False):
+        if check_entities.get(EntityType.SPECIES.value, False):
             self._find_species_match(token)
 
     def _find_chemical_match(self, token: PDFTokenPositions) -> None:

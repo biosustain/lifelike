@@ -41,7 +41,7 @@ def create_annotations(
 
     entity_recog.set_entity_inclusions(custom_annotations=document.custom_annotations)
 
-    if annotation_method == AnnotationMethod.Rules.value:
+    if annotation_method == AnnotationMethod.RULES.value:
         entity_recog.identify_entities(
             tokens=tokens.token_positions,
             check_entities_in_lmdb=entity_recog.get_entities_to_identify()
