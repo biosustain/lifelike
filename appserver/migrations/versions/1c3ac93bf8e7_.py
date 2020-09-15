@@ -267,6 +267,11 @@ def data_upgrades():
         graph['edges'] = edges
         conn.execute(t_project.update().where(t_project.c.id == proj_id).values(graph=graph))
 
+    # drop 'beta-project'
+    (projects_id,) = conn.execute(sa.select([t_projects.c.id])).fetchone()
+    conn.execute(t_directory.delete().where(t_directory.c.projects_id == projects_id))
+    conn.execute(t_projects.delete().where(t_projects.c.id == projects_id))
+
 
 def data_downgrades():
     """Add optional data downgrade migrations here"""
