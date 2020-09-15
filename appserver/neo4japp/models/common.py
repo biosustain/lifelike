@@ -166,4 +166,5 @@ class ModelConverter(BaseModelConverter):
 class TimestampMixin:
     """ Tables that need a created/updated """
     creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
-    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False, onupdate=db.func.now())
+    modified_date = db.Column(
+        TIMESTAMP(timezone=True), default=db.func.now(), nullable=False, onupdate=db.func.now())
