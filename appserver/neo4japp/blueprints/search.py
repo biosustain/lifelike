@@ -136,7 +136,7 @@ def search_content():
                                      Project.label.label('name'),
                                      Project.description.label('description'),
                                      Project.creation_date.label('creation_date'),
-                                     Project.date_modified.label('modification_date'),
+                                     Project.modified_date.label('modification_date'),
                                      t_owner.id.label('owner_id'),
                                      t_owner.username.label('owner_username'),
                                      t_owner.first_name.label('owner_first_name'),
