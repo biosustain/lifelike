@@ -122,19 +122,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       return combineLatest(
         this.pdf.getFileMeta(file.file_id, this.projectName),
         this.pdf.getFile(file.file_id, this.projectName),
-        this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName).pipe(
-          catchError((err: HttpErrorResponse) => {
-            const error: ApiHttpError = err.error.apiHttpError;
-            return throwError(new UserError(
-              'File Failed to Load',
-              `This document cannot be loaded because: ${error.message} ` +
-              'You may try to re-annotate this file or re-upload it.',
-              null,
-              err,
-            ));
-          }),
-        ),
-      );
+        this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName));
     });
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
