@@ -349,6 +349,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
           position: {
             my: 'top center',
             at: 'bottom center',
+            viewport: true,
             target: this,
           },
           style: {
@@ -730,7 +731,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
     const dialogRef = this.modalService.open(AnnotationEditDialogComponent);
     dialogRef.componentInstance.allText = this.allText;
-    dialogRef.componentInstance.text = this.selectedText;
+    dialogRef.componentInstance.keywords = this.selectedText;
     dialogRef.componentInstance.coords = this.selectedTextCoords;
     dialogRef.componentInstance.pageNumber = this.currentPage;
     dialogRef.result.then(annotation => {
@@ -925,7 +926,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.pdfComponent.pdfFindController.executeCommand('find', {
         query: this.pdfQuery,
         highlightAll: true,
-        entireWord: true,
         phraseSearch: true,
         findPrevious: newQuery.findPrevious,
       });
@@ -933,7 +933,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       this.pdfComponent.pdfFindController.executeCommand('findagain', {
         query: this.pdfQuery,
         highlightAll: true,
-        entireWord: true,
         phraseSearch: true,
         findPrevious: newQuery.findPrevious,
       });

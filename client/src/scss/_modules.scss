@@ -45,6 +45,15 @@
   }
 }
 
+.module-toolbar {
+  flex-wrap: wrap;
+  margin-top: $spacer * -0.25;
+
+  & > * {
+    margin-top: $spacer * 0.25;
+  }
+}
+
 .module-body {
   padding: $module-body-padding-x;
 

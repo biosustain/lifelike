@@ -16,10 +16,19 @@ import { url } from '../../shared/validators';
 })
 export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   @Input() pageNumber: number;
-  @Input() text: string[];
+  @Input() keywords: string[];
   @Input() coords: number[];
-  @Input() allText: string;
+  @Input() set allText(allText: string) {
+    this.allTextOptions = this.getTextOptions(allText);
+    this.form.patchValue({
+      text: this.allTextOptions[0]
+    });
+    if (this.allTextOptions.length === 1) {
+      this.form.controls.text.disable();
+    }
+  }
   linkTemplates: Hyperlink[] = cloneDeep(SEARCH_LINKS);
+  allTextOptions: string[];
 
   readonly entityTypeChoices = ENTITY_TYPES;
   readonly errors = {
@@ -27,7 +36,8 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   };
 
   readonly form: FormGroup = new FormGroup({
-    entityType: new FormControl('', Validators.required),
+    text: new FormControl('', Validators.required),
+    entityType: new FormControl(this.entityTypeChoices[0].name, Validators.required),
     id: new FormControl(''),
     links: new FormArray([]),
     includeGlobally: new FormControl(false),
@@ -43,10 +53,11 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   }
 
   getValue(): Annotation {
+    const text = this.form.getRawValue().text;
     const links = {};
     this.form.value.links.forEach((value, i) => {
       const domain = this.linkTemplates[i].domain.toLowerCase();
-      links[domain] = value || this.substituteLink(this.linkTemplates[i].url, this.allText);
+      links[domain] = value || this.substituteLink(this.linkTemplates[i].url, text);
     });
 
     let primaryLink = '';
@@ -58,7 +69,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
     return {
       pageNumber: this.pageNumber,
-      keywords: this.text.map(keyword => keyword.trim()),
+      keywords: this.keywords.map(keyword => keyword.trim()),
       rects: this.coords.map((coord) => {
         return [coord[0], coord[3], coord[2], coord[1]];
       }),
@@ -68,7 +79,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         color: ENTITY_TYPE_MAP[this.form.value.entityType].color,
         links,
         isCustom: true,
-        allText: this.allText.trim(),
+        allText: text,
         primaryLink,
         includeGlobally: this.form.value.includeGlobally,
       },
@@ -88,5 +99,26 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
       this.form.controls.id.setValidators(null);
       this.form.controls.id.updateValueAndValidity();
     }
+  }
+
+  getTextOptions(text: string) {
+    // text = '(gene)' => textOptions = ['(gene)', 'gene)', '(gene', 'gene']
+    text = text.trim();
+    const textOptions = [text];
+    const punctuation = '[.,\/#!$%\^&\*;:{}=\-_`~()]';
+    let start = 0;
+    while (punctuation.includes(text[start]) && start < text.length) {
+      start++;
+      textOptions.push(text.substring(start));
+    }
+
+    textOptions.forEach(textOption => {
+      let end = textOption.length - 1;
+      while (punctuation.includes(textOption[end]) && end > 0) {
+        textOptions.push(textOption.substring(0, end));
+        end--;
+      }
+    });
+    return textOptions;
   }
 }
