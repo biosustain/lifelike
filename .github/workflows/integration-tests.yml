@@ -7,20 +7,46 @@ on:
     tags-ignore:
       - demo
 
+env:
+  PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+  GITHUB_HASH: ${{ github.sha }}
+  GCE_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
+
 jobs:
+    build-images:
+      name: build and push appserver into container registry
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+
+        - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+          with:
+            version: '286.0.0'
+            service_account_key: ${{ secrets.GCE_SA_KEY }}
+            project_id: ${{ secrets.GCE_PROJECT }}
+
+        - run: |-
+            gcloud --quiet auth configure-docker
+
+        - name: Build appserver image
+          uses: whoan/docker-build-with-cache-action@v5
+          with:
+            username: _json_key
+            password: {{ secrets.GCE_SA_KEY }}
+            registry: gcr.io
+            image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
+            image_tag: ${{ github.sha }},latest
+            context: ./appserver
+            dockerfile: ./Dockerfile
+
     appserver-integration-checks:
 
         name: Pytest, Linting, Migration Integrity
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v2
-
-            - name: Create Docker Image
-              run: |-
-                docker-compose -f docker-compose.ci-test.yml up --build -d
-                ./appserver/bin/wait-for-flask
-
             - name: Appserver Linting Checks
               run: |-
                 docker-compose exec -T appserver mypy .
@@ -28,7 +54,7 @@ jobs:
 
             - name: Pytests
               run: |-
-                docker-compose exec -T appserver pytest tests
+                docker-compose exec -T -u root appserver pytest tests
 
             - name: Migration Integrity Check
               run: |-
