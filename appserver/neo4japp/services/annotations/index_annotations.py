@@ -111,7 +111,7 @@ def seed_exclusions():
         exclusions = db.session.query(
             GlobalList.annotation['text']
         ).filter(
-            GlobalList.type == ManualAnnotationType.Exclusion.value
+            GlobalList.type == ManualAnnotationType.EXCLUSION.value
         ).all()
 
         es.indices.delete(index='annotation_exclusion', ignore=[404])
