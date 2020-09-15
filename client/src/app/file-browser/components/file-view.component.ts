@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, from, throwError, Subject, Subscription, BehaviorSubject } from 'rxjs';
+import { combineLatest, Subject, Subscription, BehaviorSubject } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, DatabaseType, AnnotationType } from 'app/shared/constants';
 
@@ -28,10 +28,6 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
-import { catchError } from 'rxjs/operators';
-import { ApiHttpError } from 'app/interfaces';
-import { HttpErrorResponse } from '@angular/common/http';
-import { UserError } from '../../shared/exceptions';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 
 class DummyFile implements PdfFile {
