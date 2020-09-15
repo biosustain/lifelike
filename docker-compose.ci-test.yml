@@ -15,25 +15,14 @@ services:
             -  ./postgres/db:/var/lib/postgresql/data
 
     appserver:
-        container_name: n4j-appserver
-        command: [
-            'bin/wait-for-postgres',
-            'bin/wait-for-neo4j',
-            'bin/start-dev',
-        ]
-        build:
-            # use different Dockerfile for ci because
-            # we change user with USER cmd
-            # only ***ARANGO_USERNAME*** has write permission in GITHUB_WORKSPACE
-            # which is used by github actions
-            context: ./appserver
-            dockerfile: Dockerfile.test
+        image: gcr.io/able-goods-221820}/kg-appserver-prod:${GITHUB_HASH:-latest}
         ports:
             - "5000:5000"
         environment:
             - NEO4J_HOST=n4j-database
             - NEO4J_AUTH=neo4j/password
             - FLASK_DEBUG=1
+            - FLASK_ENV=development
             - FLASK_APP=app
             - FLASK_APP_CONFIG=Development
             - POSTGRES_HOST=pgdatabase
@@ -46,13 +35,9 @@ services:
         networks:
             - frontend
             - backend
-        volumes:
-            - ./appserver:/home/n4j
         depends_on:
             - database
             - pgdatabase
-        stdin_open: true
-        tty: true
 
     database:
         container_name: n4j-database
@@ -64,10 +49,6 @@ services:
             - "7687:7687"
         networks:
             - backend
-        volumes:
-            - ./db/data:/data
-            - ./db/logs:/logs
-            - ./db/plugins:/plugins
 
     elasticsearch:
         container_name: elasticsearch

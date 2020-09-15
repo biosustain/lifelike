@@ -32,13 +32,6 @@ services:
     appserver:
         container_name: appserver
         build: ./appserver
-        command: [
-            '/usr/bin/env',
-            'bash',
-            'bin/wait-for-postgres',
-            'bin/wait-for-neo4j',
-            'bin/start-dev'
-        ]
         ports:
             - "5000:5000"
         environment:
