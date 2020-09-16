@@ -47,12 +47,14 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 def annotate(
     doc: Files,
+    specified_organism: str = '',
     annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
 ):
     fp = FileStorage(io.BytesIO(doc.raw_file), doc.filename)
 
     annotations_json = create_annotations(
         annotation_method=annotation_method,
+        specified_organism=specified_organism,
         document=doc,
         source=fp
     )
@@ -90,6 +92,7 @@ def annotate_file(req: AnnotationRequest, project_name: str, file_id: str):
         annotate(
             doc=doc,
             annotation_method=req.annotation_method,
+            specified_organism=req.organism
         )
     )
 
