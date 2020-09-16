@@ -160,7 +160,8 @@ def map_sources_conversion(source, projects_name):
     source_url = source
     if type(source_url) is dict:
         source_url = source['url']
-        if is_new_format(source_url):
+    if is_new_format(source_url):
+        if source.get('domain'):
             return source
     hash_id = get_src_hash_id(source_url)
     link = f'/projects/{projects_name}/maps/{hash_id}/edit'
