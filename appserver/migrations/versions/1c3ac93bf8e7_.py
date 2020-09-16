@@ -145,17 +145,27 @@ def get_projects(dir_id):
 
 def is_new_format(source):
     """ Checks if node/edge data already contains new format """
-    return source.find('/projects/') != -1
+    return source.find('/projects/') != -1 or source.find('doi') != 1
 
 
-def map_source_conversion(source, projects_name, new_structure=False):
+def map_source_conversion(source, projects_name):
     if is_new_format(source):
         return source
     hash_id = get_src_hash_id(source)
     link = f'/projects/{projects_name}/maps/{hash_id}/edit'
-    if new_structure:
-        return {'type': '', 'domain': 'File Source', 'url': link}
     return link
+
+
+def map_sources_conversion(source, projects_name):
+    source_url = source
+    if type(source_url) is dict:
+        source_url = source['url']
+    if is_new_format(source_url):
+        if source.get('domain'):
+            return source
+    hash_id = get_src_hash_id(source_url)
+    link = f'/projects/{projects_name}/maps/{hash_id}/edit'
+    return {'type': '', 'domain': 'File Source', 'url': link}
 
 
 # already generated pdf copies
@@ -170,10 +180,18 @@ def pdf_source_conversion(source, projects_id, projects_name, user_id, dir_id, n
     New Format
     /projects/Christine-Personal-Project/files/90d450a9-ac99-4c49-b074-badfcd161bc6#page=1&coords=49.5,603.7295,67.075,613.2295
     """
-    if is_new_format(source):
+    source_url = source
+    if type(source) is dict:
+        source_url = source['url']
+
+    if is_new_format(source_url) and type(source) is not dict:
         return source
 
-    hash_id = get_src_hash_id(source)
+    if is_new_format(source_url) and type(source) is dict:
+        if source.get('domain'):
+            return source
+
+    hash_id = get_src_hash_id(source_url)
     files_query = conn.execute(
         sa.select(
             [t_files]
@@ -186,13 +204,13 @@ def pdf_source_conversion(source, projects_id, projects_name, user_id, dir_id, n
     else:
         query_user_id = None
 
-    src_split = source.split('/')
+    src_split = source_url.split('/')
     coordinates = f'coords={",".join(src_split[5:])}'
     try:
         page = src_split[4]
     except Exception:
         # This is a staging data edge case, so we just ignore it
-        print(f'Failed for {source}')
+        print(f'Failed for {source_url}')
 
     # Check if the map owner is the same as the PDF owner
     if user_id == query_user_id:
@@ -258,9 +276,9 @@ def convert_source(component, projects_id, projects_name, user_id, dir_id):
             pdf_source_conversion(source, projects_id, projects_name, user_id, dir_id)
     if sources:
         data['sources'] = [
-            map_source_conversion(s['url'], projects_name, True)
+            map_sources_conversion(s, projects_name)
             if get_src_type(s['url']) == 'map'
-            else pdf_source_conversion(s['url'], projects_id, projects_name, user_id, dir_id, True)
+            else pdf_source_conversion(s, projects_id, projects_name, user_id, dir_id, True)
             for s in sources
         ]
     return component_copy
@@ -279,19 +297,6 @@ def data_upgrades():
         graph['edges'] = edges
         query = t_project.update().where(t_project.c.id == proj_id).values(graph=graph)
         conn.execute(query)
-
-    # drop 'beta-project'
-    (projects_id,) = conn.execute(sa.select([t_projects.c.id])).fetchone()
-    # get all related directories for the projects
-    dir_ids = conn.execute(sa.select([t_directory.c.id]).where(t_directory.c.projects_id == projects_id)).fetchall()
-    dir_ids = [d_id[0] for d_id in dir_ids]
-    # delete all assets in the directories
-    for dir_id in dir_ids:
-        conn.execute(t_files.delete().where(t_files.c.dir_id == dir_id))
-        conn.execute(t_project_version.delete().where(t_project_version.c.dir_id == dir_id))
-        conn.execute(t_project.delete().where(t_project.c.dir_id == dir_id))
-    conn.execute(t_directory.delete().where(t_directory.c.projects_id == projects_id))
-    conn.execute(t_projects.delete().where(t_projects.c.id == projects_id))
 
 
 def data_downgrades():
