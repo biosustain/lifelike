@@ -35,6 +35,15 @@
       <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
                 rows="5" maxlength="2048"></textarea>
       </app-form-row>
+
+      <app-form-row
+        for="organism"
+        label="Organism"
+        [control]="form.get('organism')"
+        ngbTooltip="If you know the specific organism strain related to the paper, you may optionally enter the id here."
+      >
+        <input type="text" formControlName="organism" id="organism" [appFormInput]="form.get('organism')">
+      </app-form-row>
     </div>
 
     <div class="mt-2" *ngIf="(userRoles$ | async)?.includes('admin')">

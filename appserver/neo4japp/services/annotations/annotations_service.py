@@ -517,6 +517,14 @@ class AnnotationsService:
                 matched_organism_ids=list(self.organism_frequency.keys()),
             )
 
+        gene_organism_matches = {
+            **gene_organism_matches,
+            **self.annotation_neo4j.get_gene_to_organism_match_result(
+                genes=list(gene_names - set(gene_organism_matches.keys())),
+                matched_organism_ids=[self.specified_organism],
+            )
+        }
+
         for entity, token_positions in entity_tokenpos_pairs:
             entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
             if entity_synonym in gene_organism_matches:
@@ -918,6 +926,7 @@ class AnnotationsService:
         custom_annotations: List[dict],
         entity_results: EntityResults,
         entity_type_and_id_pairs: List[Tuple[str, str]],
+        specified_organism: str,
     ) -> List[Annotation]:
         """Create annotations based on semantic rules."""
         self.local_species_inclusion = entity_results.local_species_inclusion
@@ -929,6 +938,8 @@ class AnnotationsService:
         self.matched_phenotypes = entity_results.matched_phenotypes
         self.matched_proteins = entity_results.matched_proteins
         self.matched_species = entity_results.matched_species
+
+        self.specified_organism = specified_organism
 
         annotations = self._create_annotations(
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
