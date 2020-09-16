@@ -23,8 +23,8 @@ from .constants import (
     GOOGLE_LINK,
     HOMO_SAPIENS_TAX_ID,
     NCBI_LINK,
+    ORGANISM_DISTANCE_THRESHOLD,
     PDF_NEW_LINE_THRESHOLD,
-    COMMON_TYPOS,
     UNIPROT_LINK,
     WIKIPEDIA_LINK,
 )
@@ -412,7 +412,7 @@ class AnnotationsService:
         self,
         gene_position: PDFTokenPositions,
         organism_matches: Dict[str, str],
-    ) -> Tuple[str, str]:
+    ) -> Tuple[str, str, float]:
         """Gets the correct gene/organism pair for a given gene and its list of matching organisms.
 
         A gene name may match multiple organisms. To choose which organism to use, we first
@@ -470,7 +470,7 @@ class AnnotationsService:
             raise AnnotationError('Cannot get gene ID with empty organism match dict.')
 
         # Return the gene id of the organism with the highest priority
-        return organism_matches[curr_closest_organism], curr_closest_organism
+        return organism_matches[curr_closest_organism], curr_closest_organism, closest_dist
 
     def _annotate_genes(
         self,
@@ -517,21 +517,24 @@ class AnnotationsService:
                 matched_organism_ids=list(self.organism_frequency.keys()),
             )
 
-        gene_organism_matches = {
-            **gene_organism_matches,
-            **self.annotation_neo4j.get_gene_to_organism_match_result(
-                genes=list(gene_names - set(gene_organism_matches.keys())),
-                matched_organism_ids=[self.specified_organism],
-            )
-        }
-
         for entity, token_positions in entity_tokenpos_pairs:
             entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
             if entity_synonym in gene_organism_matches:
-                gene_id, organism_id = self._get_closest_gene_organism_pair(
+                gene_id, organism_id, closest_distance = self._get_closest_gene_organism_pair(
                     gene_position=token_positions,
                     organism_matches=gene_organism_matches[entity_synonym]
                 )
+
+                if self.specified_organism and closest_distance > ORGANISM_DISTANCE_THRESHOLD:
+                    fallback_organism_match = \
+                        self.annotation_neo4j.get_gene_to_organism_match_result(
+                            genes=[entity_synonym],
+                            matched_organism_ids=[self.specified_organism],
+                        )
+
+                    if fallback_organism_match:
+                        # if matched in KG then set to fallback strain
+                        organism_id = self.specified_organism
 
                 category = self.organism_categories[organism_id]
 
