@@ -132,7 +132,6 @@ services:
 
     redis:
         container_name: redis
-        image: redis:6.0.3-alpine
         networks:
             - backend
 
