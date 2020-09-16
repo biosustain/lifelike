@@ -143,6 +143,7 @@ def get_nlp_entities(
 
 def create_annotations(
     annotation_method,
+    specified_organism,
     document,
     source
 ):
@@ -177,7 +178,8 @@ def create_annotations(
             tokens=tokens,
             custom_annotations=document.custom_annotations,
             entity_results=entity_recog.get_entity_match_results(),
-            entity_type_and_id_pairs=annotator.get_entities_to_annotate()
+            entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
+            specified_organism=specified_organism
         )
     elif annotation_method == AnnotationMethod.NLP.value:
         nlp_tokens, nlp_resp = get_nlp_entities(

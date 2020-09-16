@@ -40,6 +40,7 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent {
     ]),
     description: new FormControl(''),
     annotationMethod: new FormControl(this.annotationMethods[1], [Validators.required]),
+    organism: new FormControl('')
   }, [
     (form: FormGroup) => {
       if (form.value.type === UploadType.Files) {
