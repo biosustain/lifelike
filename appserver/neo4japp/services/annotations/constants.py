@@ -16,8 +16,10 @@ SPECIES_NCBI_LMDB = 'species_ncbi'
 # NLP endpoint
 NLP_ENDPOINT = 'http://nlpapi:5001/infer/v1'
 
+ORGANISM_DISTANCE_THRESHOLD = 20
 PDF_NEW_LINE_THRESHOLD = .30
 PDF_CHARACTER_SPACING_THRESHOLD = .325
+
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',
     'so', 'we', 'he', 'by', 'or', 'on', 'do', 'if',
