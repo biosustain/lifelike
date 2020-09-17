@@ -880,6 +880,10 @@ class AnnotationsService:
                 text_in_document = text_in_document[0]  # type: ignore
                 if text_in_document == annotation.keyword:
                     fixed_annotations.append(annotation)
+            elif annotation.meta.type == EntityType.PROTEIN.value:
+                text_in_document = text_in_document[0]  # type: ignore
+                if text_in_document == annotation.keyword:
+                    fixed_annotations.append(annotation)
             else:
                 fixed_annotations.append(annotation)
 

@@ -1,5 +1,5 @@
 export const utiProject = {
-    date_modified: '2020-01-30T23:29:52.329Z',
+    modified_date: '2020-01-30T23:29:52.329Z',
     id: '8d05c82a-7eec-4954-9999-c36e3ecf6703',
     label: 'Urinary Tract Infection',
     description: 'Upregulation of PBP1B and LpoB in cysB Mutant Confers Mecillinam (Amdinocillin) Resistance in Escherichia Coli',
