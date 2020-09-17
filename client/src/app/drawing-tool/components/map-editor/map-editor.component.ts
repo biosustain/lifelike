@@ -105,7 +105,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
   saveBackup() {
     if (this.map) {
       this.map.graph = this.graphCanvas.getGraph();
-      this.map.date_modified = new Date().toISOString();
+      this.map.modified_date = new Date().toISOString();
       const observable = this.mapService.createOrUpdateBackup(this.locator.projectName, cloneDeep(this.map));
       observable.subscribe();
       return observable;
@@ -140,7 +140,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     dialogRef.result.then((newMap: Observable<{version: KnowledgeMap}>) => {
       newMap.subscribe(result => {
         this.graphCanvas.setGraph(result.version.graph);
-        this.snackBar.open('Map reverted to Version from ' + result.version.date_modified, null, {
+        this.snackBar.open('Map reverted to Version from ' + result.version.modified_date, null, {
           duration: 3000,
         });
       });

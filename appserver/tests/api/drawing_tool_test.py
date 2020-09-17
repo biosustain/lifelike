@@ -136,7 +136,7 @@ def test_can_add_map(client, fix_api_owner, fix_project, fix_directory):
             'directoryId': f'{fix_directory.id}',
             'graph': {"graph": [], "edges": []},
             'label': 'my-map',
-            'date_modified': datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            'modified_date': datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         }),
         content_type='application/json'
     )
