@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { SelectionModel } from '@angular/cdk/collections';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -11,6 +10,7 @@ import { Observable } from 'rxjs';
 import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 
+import { OrganismAutocomplete } from '../../interfaces/neo4j.interface';
 import { UploadPayload, UploadType } from '../../interfaces/pdf-files.interface';
 
 import { AuthSelectors } from 'app/auth/store';
@@ -23,6 +23,7 @@ import { AuthSelectors } from 'app/auth/store';
 export class ObjectUploadDialogComponent extends CommonFormDialogComponent {
   readonly uploadType = UploadType;
   readonly userRoles$: Observable<string[]>;
+  organismChoice: string;
 
   // select annotation method
   readonly annotationMethods = ['NLP', 'Rules Based'];
@@ -110,5 +111,9 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent {
     return {
       ...this.form.value,
     };
+  }
+
+  setOrganism(organism: OrganismAutocomplete | null) {
+    this.form.get('organism').setValue(organism ? organism.tax_id : null);
   }
 }
