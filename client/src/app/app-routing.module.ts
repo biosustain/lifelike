@@ -25,6 +25,7 @@ import { BrowserComponent } from './file-browser/components/browser/browser.comp
 import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
 import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
+import { WorksheetViewerComponent } from './file-browser/components/worksheet-viewer.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -84,6 +85,14 @@ const routes: Routes = [
     data: {
       title: 'File Search',
       fontAwesomeIcon: 'search',
+    },
+  },
+  {
+    path: 'worksheet-viewer',
+    component: WorksheetViewerComponent,
+    data: {
+      title: 'Worksheet Viewer',
+      fontAwesomeIcon: 'sign-in-alt',
     },
   },
   {

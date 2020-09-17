@@ -85,6 +85,17 @@ def get_visualizer_service():
     return g.visualizer_service
 
 
+def get_worksheet_viewer_service():
+    if 'worksheet_viewer_service' not in g:
+        from neo4japp.services import WorksheetViewerService
+        graph = _connect_to_neo4j()
+        g.worksheet_viewer_service = WorksheetViewerService(
+            graph=graph,
+            session=db.session,
+        )
+    return g.worksheet_viewer_service
+
+
 def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
