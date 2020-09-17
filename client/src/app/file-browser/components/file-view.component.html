@@ -95,11 +95,11 @@
                   <div *ngFor="let entityTypeEntry of sortedEntityTypeEntries"
                        [style.opacity]="entityTypeEntry.annotations.length ? '' : '0.2'">
                     <div class="custom-control custom-checkbox">
-                      <input class="custom-control-input" type="checkbox" [id]="'filter-' + entityTypeEntry.type.id"
+                      <input class="custom-control-input" type="checkbox" [id]="id + 'filter-' + entityTypeEntry.type.id"
                              value="1"
                              [checked]="isEntityTypeVisible(entityTypeEntry.type)"
                              (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
-                      <label class="custom-control-label" [for]="'filter-' + entityTypeEntry.type.id">
+                      <label class="custom-control-label" [for]="id + 'filter-' + entityTypeEntry.type.id">
                   <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color}">
                 </span> {{entityTypeEntry.type.name}} <span *ngIf="!!entityTypeEntry.annotations.length">
                   ({{entityTypeEntry.annotations.length}})
@@ -126,7 +126,7 @@
           </div>
 
           <div class="btn-group ml-2">
-            <button type="button" class="btn btn-secondary"
+            <button type="button" class="btn btn-secondary text-nowrap"
                     (click)="displayShareDialog()">
               <i class="fa fa-fw fa-share-square"></i> Share
             </button>

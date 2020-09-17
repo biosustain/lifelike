@@ -1,3 +1,4 @@
+import { uniqueId } from 'lodash';
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
 import { combineLatest, Subject, Subscription, BehaviorSubject } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
@@ -56,6 +57,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
+
+  id = uniqueId('FileViewComponent-');
 
   paramsSubscription: Subscription;
   returnUrl: string;
