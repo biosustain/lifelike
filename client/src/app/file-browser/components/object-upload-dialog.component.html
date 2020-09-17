@@ -36,13 +36,23 @@
                 rows="5" maxlength="2048"></textarea>
       </app-form-row>
 
-      <app-form-row
+      <!-- <app-form-row
         for="organism"
         label="Organism"
         [control]="form.get('organism')"
         ngbTooltip="If you know the specific organism strain related to the paper, you may optionally enter the id here."
       >
         <input type="text" formControlName="organism" id="organism" [appFormInput]="form.get('organism')">
+      </app-form-row> -->
+      <app-form-row
+        label="Organism"
+        ngbTooltip="If you know the specific organism strain related to the paper, you may optionally enter the id here."
+      >
+        <app-organism-autocomplete
+          formId="organism"
+          [organismTaxId]="organismChoice"
+          (organismPicked)="setOrganism($event)"
+        ></app-organism-autocomplete>
       </app-form-row>
     </div>
 
