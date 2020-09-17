@@ -385,3 +385,5 @@ if __name__ == '__main__':
 
     prepare_lmdb_phenotypes_database(
         filename='datasets/microbial_phenotype.csv', custom=True)
+
+    prepare_lmdb_proteins_database(filename='datasets/sprot2syn_gene.tsv')
