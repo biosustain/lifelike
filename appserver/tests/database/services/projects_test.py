@@ -236,7 +236,7 @@ def test_cannot_delete_nonempty_dir(session, fix_owner, fix_nested_dir):
         label='&heartbreaks',
         description='beforecr8zy',
         author='yeezy',
-        date_modified=str(date.today()),
+        modified_date=str(date.today()),
         graph=json.dumps({}),
         user_id=fix_owner.id,
         dir_id=fix_nested_dir.id,

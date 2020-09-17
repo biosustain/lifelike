@@ -5,7 +5,7 @@ from sqlalchemy.orm.query import Query
 from sqlalchemy.types import TIMESTAMP
 
 from neo4japp.database import db
-from neo4japp.models.common import RDBMSBase
+from neo4japp.models.common import RDBMSBase, TimestampMixin
 
 
 class FileContent(RDBMSBase):
@@ -16,7 +16,7 @@ class FileContent(RDBMSBase):
     creation_date = db.Column(db.DateTime, nullable=False, default=db.func.now())
 
 
-class Files(RDBMSBase):  # type: ignore
+class Files(RDBMSBase, TimestampMixin):  # type: ignore
     __tablename__ = 'files'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     file_id = db.Column(db.String(36), unique=True, nullable=False)
@@ -32,8 +32,6 @@ class Files(RDBMSBase):  # type: ignore
                         index=True,
                         nullable=False)
     user = db.relationship('AppUser', foreign_keys=user_id)
-    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
-    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
     annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), index=True, nullable=False)
@@ -52,7 +50,7 @@ class LMDBsDates(RDBMSBase):
     date = db.Column(TIMESTAMP(timezone=True), nullable=False)
 
 
-class Directory(RDBMSBase):
+class Directory(RDBMSBase, TimestampMixin):
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     name = db.Column(db.String(200), nullable=False)
     directory_parent_id = db.Column(
@@ -71,8 +69,6 @@ class Directory(RDBMSBase):
     project = db.relationship('Projects', foreign_keys=projects_id)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), index=True, nullable=True)
     user = db.relationship('AppUser', foreign_keys=user_id)
-    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
-    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
 
     @classmethod
     def query_child_directories(cls, dir_id: int) -> Query:
@@ -100,14 +96,12 @@ class Directory(RDBMSBase):
 # TODO: Adding the _bare minimum_ columns to this table for now. I imagine that eventually
 # we will want to manage permissions on worksheets, just as we do for pdf files. However,
 # we also don't currently have a home in the UI for managing these worksheets.
-class Worksheet(RDBMSBase):  # type: ignore
+class Worksheet(RDBMSBase, TimestampMixin):  # type: ignore
     __tablename__ = 'worksheets'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     filename = db.Column(db.String(200), nullable=False)
     sheetname = db.Column(db.String(200), nullable=False)
     neo4j_node_id = db.Column(db.Integer, nullable=False)
-    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
-    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
     content_id = db.Column(db.Integer,
                            db.ForeignKey('files_content.id', ondelete='CASCADE'),
                            index=True,

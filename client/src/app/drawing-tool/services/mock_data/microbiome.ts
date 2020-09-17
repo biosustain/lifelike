@@ -297,5 +297,5 @@ export const microbiomeProject = {
         }
       ]
     },
-    date_modified: '2020-01-30T23:48:32.794Z'
+    modified_date: '2020-01-30T23:48:32.794Z'
   };
