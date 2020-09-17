@@ -447,8 +447,8 @@ def get_child_directories(current_dir_id: int, project_name: str):
                     'project_name': project_name,
                 },
                 'annotation_date': None,
-                'creation_date': None,
-                'modification_date': None,
+                'creation_date': c.creation_date,
+                'modification_date': c.modified_date,
                 'data': c.__dict__.to_dict(snake_to_camel_transform=True),
             } for c in child_dirs],
             *[{
@@ -466,7 +466,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'description': f.description,
                 'annotation_date': f.annotations_date,
                 'creation_date': f.creation_date,
-                'modification_date': None,
+                'modification_date': f.modified_date,
                 'data': CasePreservedDict(f.__dict__)
             } for f in files],
             *[{
@@ -474,7 +474,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'type': 'map',
                 'name': m.label,
                 'annotation_date': None,
-                'creation_date': None,
+                'creation_date': m.creation_date,
                 'modification_date': m.modified_date,
                 'creator': {
                     'id': m.user_id,
