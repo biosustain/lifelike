@@ -242,6 +242,7 @@ def list_files(project_name: str):
         'description': row.description,
         'username': row.username,
         'creation_date': row.creation_date,
+        'modified_date': row.modified_date,
         'doi': row.doi,
         'upload_url': row.upload_url
     } for row in db.session.query(
@@ -253,6 +254,7 @@ def list_files(project_name: str):
         Files.user_id,
         AppUser.username,
         Files.creation_date,
+        Files.modified_date,
         Files.doi,
         Files.upload_url)
         .join(AppUser, Files.user_id == AppUser.id)
@@ -284,6 +286,7 @@ def get_file_info(id: str, project_name: str):
                 Files.user_id,
                 AppUser.username,
                 Files.creation_date,
+                Files.modified_date,
                 Files.doi,
                 Files.upload_url
             ).join(
@@ -303,6 +306,7 @@ def get_file_info(id: str, project_name: str):
         'description': row.description,
         'username': row.username,
         'creation_date': row.creation_date,
+        'modified_date': row.modified_date,
         'doi': row.doi,
         'upload_url': row.upload_url
     })
