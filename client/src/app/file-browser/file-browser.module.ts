@@ -19,6 +19,7 @@ import { BrowserContextComponent } from './components/browser/browser-context.co
 import { FileInfoComponent } from './components/file-info.component';
 import { DrawingToolModule } from '../drawing-tool/drawing-tool.module';
 import { FileTypeLabelComponent } from './components/file-type-label.component';
+import { WorksheetViewerComponent } from './components/worksheet-viewer.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +40,7 @@ import { FileTypeLabelComponent } from './components/file-type-label.component';
     CommunityBrowserComponent,
     FileInfoComponent,
     FileTypeLabelComponent,
+    WorksheetViewerComponent
   ],
   imports: [
     SharedModule,
