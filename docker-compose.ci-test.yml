@@ -16,7 +16,7 @@ services:
 
     appserver:
         container_name: appserver
-        image: gcr.io/able-goods-221820/kg-appserver:${GITHUB_HASH:-latest}
+        image: gcr.io/able-goods-221820/kg-appserver:${GITHUB_HASH}
         ports:
             - "5000:5000"
         environment:

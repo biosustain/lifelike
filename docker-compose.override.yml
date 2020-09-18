@@ -99,6 +99,10 @@ services:
         build:
             context: ./client
             dockerfile: Dockerfile
+            target: compile
+            args:
+                build_environment: dev
+                nginx_conf: dev.conf
         ports:
             - "80:80"
         networks:
