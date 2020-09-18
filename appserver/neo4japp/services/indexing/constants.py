@@ -1,7 +1,14 @@
+import os
+
+directory = os.path.realpath(os.path.dirname(__file__))
+
 FILE_INDEX_ID = 'file'
-FILE_INDEX_DEFINITION_PATH = '/home/n4j/neo4japp/services/indexing/mappings/document_idx.json'
+FILE_INDEX_DEFINITION_PATH = os.path.join(directory, './mappings/document_idx.json')
 ATTACHMENT_PIPELINE_ID = 'attachment'
-ATTACHMENT_PIPELINE_DEFINITION_PATH = '/home/n4j/neo4japp/services/indexing/pipelines/attachments_pipeline.json'  # noqa
+ATTACHMENT_PIPELINE_DEFINITION_PATH = os.path.join(
+    directory,
+    './pipelines/attachments_pipeline.json'
+)
 
 ELASTIC_INDEX_SEED_PAIRS = [
     (FILE_INDEX_ID, FILE_INDEX_DEFINITION_PATH),
