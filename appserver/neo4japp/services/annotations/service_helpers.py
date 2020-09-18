@@ -16,8 +16,10 @@ from neo4japp.exceptions import AnnotationError
 from neo4japp.data_transfer_objects import (
     PDFTokenPositions,
     PDFTokenPositionsList,
+    SpecifiedOrganismStrain
 )
 from neo4japp.services.annotations.constants import AnnotationMethod, NLP_ENDPOINT
+from neo4japp.services.annotations.util import normalize_str
 from neo4japp.utils.logger import EventLog
 
 
@@ -174,12 +176,25 @@ def create_annotations(
             check_entities_in_lmdb=entity_recog.get_entities_to_identify()
         )
 
+        entity_synonym = ''
+        entity_id = ''
+        entity_category = ''
+
+        if specified_organism:
+            split = specified_organism.split('#')
+            entity_synonym = normalize_str(split[0])
+            entity_id = split[1]
+            entity_category = json.loads(
+                entity_recog.lmdb_session.species_txn.get(
+                    entity_synonym.encode('utf-8')))['category']
+
         annotations = annotator.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=document.custom_annotations,
             entity_results=entity_recog.get_entity_match_results(),
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
-            specified_organism=specified_organism
+            specified_organism=SpecifiedOrganismStrain(
+                synonym=entity_synonym, organism_id=entity_id, category=entity_category)
         )
     elif annotation_method == AnnotationMethod.NLP.value:
         nlp_tokens, nlp_resp = get_nlp_entities(
