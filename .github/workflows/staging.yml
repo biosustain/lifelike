@@ -52,16 +52,16 @@ jobs:
             - run: |-
                 gcloud --quiet auth configure-docker
 
-            - name: Build Appserver Image
+            - name: Build appserver image
               uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-staging
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
                 image_tag: ${{ github.sha }},latest
                 context: ./appserver
-                dockerfile: ./Dockerfile.prod
+                dockerfile: ./Dockerfile
 
             - name: Build Client and Nginx Image
               uses: whoan/docker-build-with-cache-action@v5
@@ -69,10 +69,11 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-staging
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
                 image_tag: ${{ github.sha }},latest
                 context: ./client
-                dockerfile: ./Dockerfile.staging
+                dockerfile: ./Dockerfile
+                build_extra_args: "--build-arg=build_environment=staging nginx_conf=staging.conf"
 
             - name: Build Redis
               uses: whoan/docker-build-with-cache-action@v5
@@ -80,7 +81,7 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-staging
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
                 image_tag: ${{ github.sha }},latest
                 context: ./cache-invalidator
                 dockerfile: ./Dockerfile
@@ -91,7 +92,7 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-staging
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
                 image_tag: ${{ github.sha }},latest
                 context: ./nlp
                 dockerfile: ./Dockerfile

@@ -7,11 +7,6 @@ on:
     tags-ignore:
       - demo
 
-env:
-  PROJECT_ID: ${{ secrets.GCE_PROJECT }}
-  GITHUB_HASH: ${{ github.sha }}
-  GCE_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
-
 jobs:
 
     appserver-integration-checks:
@@ -39,7 +34,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
-                image_tag: ${{ github.sha }},latest
+                image_tag: ${{ github.sha }}
                 context: ./appserver
                 dockerfile: ./Dockerfile
 

@@ -57,10 +57,10 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-demo
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
                 image_tag: ${{ github.sha }},latest
                 context: ./appserver
-                dockerfile: ./Dockerfile.prod
+                dockerfile: ./Dockerfile
 
             - name: Build Client and Nginx Image
               uses: whoan/docker-build-with-cache-action@v5
@@ -68,10 +68,11 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-demo
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
                 image_tag: ${{ github.sha }},latest
                 context: ./client
-                dockerfile: ./Dockerfile.demo
+                dockerfile: ./Dockerfile
+                build_extra_args: "--build-arg=build_environment=staging nginx_conf=demo.conf"
 
             - name: Build Redis
               uses: whoan/docker-build-with-cache-action@v5
@@ -79,7 +80,7 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-demo
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
                 image_tag: ${{ github.sha }},latest
                 context: ./cache-invalidator
                 dockerfile: ./Dockerfile
@@ -90,53 +91,7 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-demo
+                repository: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
                 tags: ${{ github.sha }},latest
                 path: ./nlp
                 dockerfile: ./nlp/Dockerfile
-
-            - name: Deploy Setup
-              run: |-
-                echo "ELASTICSEARCH_HOSTS=$ELASTICSEARCH_HOSTS" >> demo.env
-                echo "POSTGRES_HOST=$POSTGRES_HOST" >> demo.env
-                echo "POSTGRES_PORT=$POSTGRES_PORT" >> demo.env
-                echo "POSTGRES_USER=$POSTGRES_USER" >> demo.env
-                echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> demo.env
-                echo "POSTGRES_DB=$POSTGRES_DB" >> demo.env
-                echo "NEO4J_HOST=$NEO4J_HOST" >> demo.env
-                echo "NEO4J_AUTH=$NEO4J_AUTH" >> demo.env
-                echo "FLASK_APP=$FLASK_APP" >> demo.env
-                echo "FLASK_APP_CONFIG=$FLASK_APP_CONFIG" >> demo.env
-                echo "FLASK_ENV=$FLASK_ENV" >> demo.env
-                echo "DOCKER_USER=_json_key" >> demo.env
-                echo "PROJECT_ID=$PROJECT_ID" >> demo.env
-                echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> demo.env
-                echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET" >> demo.env
-                GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
-                echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> demo.env
-                echo "GITHUB_HASH=$GITHUB_HASH" >> demo.env
-                echo "SENTRY_KEY=$SENTRY_KEY" >> demo.env
-                echo "REDIS_HOST=$REDIS_HOST" >> demo.env
-                echo "REDIS_PORT=$REDIS_PORT" >> demo.env
-                echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
-                gsutil cp demo.env gs://kg-secrets
-                gcloud compute scp demo.env $GCE_INSTANCE:/srv/.env --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp keyfile.json $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp docker-compose.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp docker-compose.demo.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp ./deployment/bin/startup.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp ./deployment/bin/migration-manager.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/startup.sh';
-                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/migration-manager.sh';
-
-            - name: Deploy
-              run: |-
-                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo /srv/startup.sh -t demo';
-
-            - name: Applying database migrations
-              run: |-
-                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo /srv/migration-manager.sh -t demo';
-
-            - name: Clean up images
-              run: |-
-                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune -f';
