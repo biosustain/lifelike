@@ -39,6 +39,7 @@ from neo4japp.data_transfer_objects import (
     OrganismAnnotation,
     PDFTokenPositions,
     PDFTokenPositionsList,
+    SpecifiedOrganismStrain
 )
 from neo4japp.exceptions import AnnotationError
 from neo4japp.utils.logger import EventLog
@@ -525,18 +526,20 @@ class AnnotationsService:
                     organism_matches=gene_organism_matches[entity_synonym]
                 )
 
-                if self.specified_organism and closest_distance > ORGANISM_DISTANCE_THRESHOLD:
+                specified_organism_id = None
+                if self.specified_organism.synonym and closest_distance > ORGANISM_DISTANCE_THRESHOLD:  # noqa
                     fallback_organism_match = \
                         self.annotation_neo4j.get_gene_to_organism_match_result(
                             genes=[entity_synonym],
-                            matched_organism_ids=[self.specified_organism],
+                            matched_organism_ids=[self.specified_organism.organism_id],
                         )
 
                     if fallback_organism_match:
                         # if matched in KG then set to fallback strain
-                        organism_id = self.specified_organism
+                        gene_id = fallback_organism_match[entity_synonym][self.specified_organism.organism_id]  # noqa
+                        specified_organism_id = self.specified_organism.organism_id
 
-                category = self.organism_categories[organism_id]
+                category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
 
                 annotation = self._create_annotation_object(
                     char_coord_objs_in_pdf=char_coord_objs_in_pdf,
@@ -929,7 +932,7 @@ class AnnotationsService:
         custom_annotations: List[dict],
         entity_results: EntityResults,
         entity_type_and_id_pairs: List[Tuple[str, str]],
-        specified_organism: str,
+        specified_organism: SpecifiedOrganismStrain,
     ) -> List[Annotation]:
         """Create annotations based on semantic rules."""
         self.local_species_inclusion = entity_results.local_species_inclusion
