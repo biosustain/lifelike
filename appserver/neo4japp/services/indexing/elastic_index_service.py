@@ -150,12 +150,8 @@ class ElasticIndexService():
     # this might be difficult because to _get_ the data we want to index we
     # typically have to do joins across multiple tables.
 
-    def index_files(self, file_ids: List[int] = None, batch_size: int = None):
+    def index_files(self, file_ids: List[int] = None, batch_size: int = 100):
         """Adds the files with the given ids to Elastic. If no ids are given, adds all files."""
-
-        if batch_size is None:
-            batch_size = 100
-
         query = db.session.query(
             Files
         ).options(
@@ -218,12 +214,8 @@ class ElasticIndexService():
                         extra=EventLog(event_type='elastic indexing').to_dict()
                     )
 
-    def index_maps(self, map_ids: List[int] = None, batch_size: int = None):
+    def index_maps(self, map_ids: List[int] = None, batch_size: int = 100):
         """Adds the maps with the given ids to Elastic. If no ids are given, adds all maps."""
-
-        if batch_size is None:
-            batch_size = 100
-
         query = db.session.query(
             Project
         ).options(
