@@ -10,7 +10,7 @@ from flask import request
 from sqlalchemy import func, MetaData, inspect, Table
 from sqlalchemy.sql.expression import text
 
-from neo4japp.database import db, get_account_service
+from neo4japp.database import db, get_account_service, get_elastic_index_service
 from neo4japp.factory import create_app
 from neo4japp.models import (
     AppUser,
@@ -217,9 +217,20 @@ def seed_organism_gene_match_table():
 
 @app.cli.command('seed-elastic')
 def seed_elasticsearch():
-    from neo4japp.services.indexing import index_pdf
-    print('Seeds elasticsearch with PDF indexes')
-    index_pdf.seed_elasticsearch()
+    """Seeds Elastic with all pipelines and indices. Typically should be used when a new Elastic DB
+    is first created, but will also update/re-index the entire database if run later."""
+    elastic_index_service = get_elastic_index_service()
+    elastic_index_service.recreate_indices_and_pipelines()
+
+
+@app.cli.command('recreate-elastic-index')
+@click.argument('index_id', nargs=1)
+@click.argument('index_mapping_file', nargs=1)
+def update_or_create_index(index_id, index_mapping_file):
+    """Given an index id and mapping file, creates a new elastic index. If the index already exists,
+    we recreate it and re-index all documents."""
+    elastic_index_service = get_elastic_index_service()
+    elastic_index_service.update_or_create_index(index_id, index_mapping_file)
 
 
 @app.cli.command('fix-projects')
