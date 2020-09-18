@@ -17,20 +17,9 @@ from neo4japp.models import (
     Files,
     Project
 )
-from neo4japp.services.indexing.common import ElasticIndex, elastic_client
 from neo4japp.utils import EventLog
 
 logger = logging.getLogger(__name__)
-
-INGEST_PIPELINE_MAPPING = '/home/n4j/neo4japp/services/indexing/pipelines/attachments_pipeline.json'
-SNIPPET_INDEX_MAPPING = '/home/n4j/neo4japp/services/indexing/mappings/pdf_snippets.json'
-
-pdf_index = ElasticIndex(
-    index_id='pdf',
-    index_definition_file=SNIPPET_INDEX_MAPPING,
-    pipeline_id='attachment',
-    pipeline_definition_file=INGEST_PIPELINE_MAPPING
-)
 
 ELASTIC_INDEX_SEED_PAIRS = [
     ('file', '/home/n4j/neo4japp/services/indexing/mappings/document_idx.json'),
@@ -150,7 +139,7 @@ class ElasticIndexService():
                         'project_id': file.project,
                         'project_name': file.project_.project_name,
                         'doi': file.doi,
-                        'public': False,  # TODO: Once we can determine if a file is public, we need to change this
+                        'public': False,  # TODO: Change this once we can know if a file is public
                         'id': file.file_id,
                         'type': 'pdf'
                     }
@@ -223,7 +212,7 @@ class ElasticIndexService():
                         'project_id': map.dir.projects_id,
                         'project_name': map.dir.project.project_name,
                         'doi': None,
-                        'public': False,  # TODO: Once we can determine if a file is public, we need to change this
+                        'public': False,  # TODO: Change this once we can know if a file is public
                         'id': map.hash_id,
                         'type': 'map'
                     }
@@ -236,70 +225,3 @@ class ElasticIndexService():
     def reindex_all_documents(self):
         self.index_files()
         self.index_maps()
-
-
-def populate_index(pk: int = None, batch_size=100):
-    query = db.session.query(Files) \
-        .options(joinedload(Files.content),
-                 joinedload(Files.user),
-                 joinedload(Files.dir).joinedload(Directory.project)) \
-        .enable_eagerloads(False)
-
-    if pk is not None:
-        query = query.filter(Files.id == pk)
-
-    results = iter(query.yield_per(batch_size))
-
-    while True:
-        batch = list(itertools.islice(results, batch_size))
-        if not batch:
-            break
-
-        documents = []
-
-        for file in batch:  # type: Files
-            documents.append({
-                '_index': 'pdf',
-                'pipeline': pdf_index.pipeline_id,
-                '_id': file.file_id,
-                '_source': {
-                    'id': file.file_id,
-                    'data': base64.b64encode(file.content.raw_file).decode('utf-8'),
-                    'filename': file.filename,
-                    'description': file.description,
-                    'internal_link': file.file_id,
-                    'uploaded_date': file.creation_date,
-                    'external_link': file.upload_url,
-                    'email': file.user.email,
-                    'doi': file.doi,
-                    'project_id': file.project_.id,
-                    'project_directory': file.project_.project_name,
-                }
-            })
-
-        for success, info in parallel_bulk(elastic_client, documents):
-            if not success:
-                logger.warning('Failed to index document in ES: {}'.format(info))
-
-
-def populate_single_index(fid: int):
-    populate_index(fid)
-
-
-def delete_indices(file_ids: List[str]):
-    for success, info in parallel_bulk(
-            elastic_client,
-            ({'_op_type': 'delete', '_index': 'pdf', '_id': f_id} for f_id in file_ids)):  # noqa
-        if not success:
-            current_app.logger.error(
-                info,
-                extra=EventLog(event_type='elastic indexing').to_dict())
-    elastic_client.indices.refresh('pdf')
-
-
-def seed_elasticsearch():
-    ''' Seeds elasticsearch with existing file metadata '''
-    pdf_index.create_or_update_pipeline()
-    pdf_index.create_or_update_index()
-    populate_index()
-    pdf_index.refresh()
