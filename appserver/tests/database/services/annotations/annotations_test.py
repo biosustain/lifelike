@@ -765,7 +765,10 @@ def test_tokens_gene_vs_protein_serpina1_cases(
         assert annotations[1].keyword == 'human'
         assert annotations[1].meta.type == EntityType.SPECIES.value
     elif index == 5:
-        assert len(annotations) == 1
+        assert len(annotations) == 2
+        assert annotations[0].keyword == 'Serpin A1'
+        assert annotations[0].meta.type == EntityType.PROTEIN.value
+
         assert annotations[0].keyword == 'human'
         assert annotations[0].meta.type == EntityType.SPECIES.value
 
