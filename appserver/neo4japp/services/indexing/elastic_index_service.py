@@ -3,7 +3,7 @@ import itertools
 import json
 import logging
 
-from elasticsearch.helpers import parallel_bulk
+from elasticsearch.helpers import parallel_bulk, BulkIndexError
 from flask import current_app
 from sqlalchemy.orm import joinedload
 from typing import (
@@ -17,16 +17,15 @@ from neo4japp.models import (
     Files,
     Project
 )
+from neo4japp.services.indexing import (
+    ATTACHMENT_PIPELINE_ID,
+    ELASTIC_INDEX_SEED_PAIRS,
+    ELASTIC_PIPELINE_SEED_PAIRS,
+    FILE_INDEX_ID,
+)
 from neo4japp.utils import EventLog
 
 logger = logging.getLogger(__name__)
-
-ELASTIC_INDEX_SEED_PAIRS = [
-    ('file', '/home/n4j/neo4japp/services/indexing/mappings/document_idx.json'),
-]
-ELASTIC_PIPELINE_SEED_PAIRS = [
-    ('attachment', '/home/n4j/neo4japp/services/indexing/pipelines/attachments_pipeline.json'),
-]
 
 
 class ElasticIndexService():
@@ -83,9 +82,18 @@ class ElasticIndexService():
         NOTE: These ids are NOT the ids of the postgres rows! They are typically the id the
         user has visibility on, e.g. `file_id` or `hash_id`.
         """
-        for success, info in parallel_bulk(
+        try:
+            results = parallel_bulk(
                 self.elastic_client,
-                ({'_op_type': 'delete', '_index': index_id, '_id': f_id} for f_id in file_ids)):  # noqa
+                ({'_op_type': 'delete', '_index': index_id, '_id': f_id} for f_id in file_ids)
+            )
+        except BulkIndexError as e:
+            current_app.logger.error(
+                e,
+                extra=EventLog(event_type='elastic indexing').to_dict()
+            )
+
+        for success, info in results:
             if not success:
                 current_app.logger.error(
                     info,
@@ -125,9 +133,11 @@ class ElasticIndexService():
 
             for file in batch:
                 documents.append({
-                    '_index': 'file',
-                    'pipeline': 'attachment',
-                    # '_type': 'doc',
+                    '_index': FILE_INDEX_ID,
+                    'pipeline': ATTACHMENT_PIPELINE_ID,
+                    # TODO Might be able to make this the postgres ID once maps/files are combined.
+                    # We can't right now because this has to be a unique value, and the postgres
+                    # IDs aren't (i.e. we might have a map with ID 1 and a file with ID 1).
                     '_id': file.file_id,
                     '_source': {
                         'filename': file.filename,
@@ -145,7 +155,15 @@ class ElasticIndexService():
                     }
                 })
 
-            for success, info in parallel_bulk(self.elastic_client, documents):
+            try:
+                results = parallel_bulk(self.elastic_client, documents)
+            except BulkIndexError as e:
+                current_app.logger.error(
+                    e,
+                    extra=EventLog(event_type='elastic indexing').to_dict()
+                )
+
+            for success, info in results:
                 if not success:
                     logger.warning('Failed to index document in ES: {}'.format(info))
 
@@ -198,9 +216,8 @@ class ElasticIndexService():
                 map_data_bstr = json.dumps(map_data).encode('utf-8')
 
                 documents.append({
-                    '_index': 'file',
-                    # '_type': 'doc',
-                    'pipeline': 'attachment',
+                    '_index': FILE_INDEX_ID,
+                    'pipeline': ATTACHMENT_PIPELINE_ID,
                     '_id': map.hash_id,
                     '_source': {
                         'filename': map.label,
@@ -218,7 +235,15 @@ class ElasticIndexService():
                     }
                 })
 
-            for success, info in parallel_bulk(self.elastic_client, documents):
+            try:
+                results = parallel_bulk(self.elastic_client, documents)
+            except BulkIndexError as e:
+                current_app.logger.error(
+                    e,
+                    extra=EventLog(event_type='elastic indexing').to_dict()
+                )
+
+            for success, info in results:
                 if not success:
                     logger.warning('Failed to index document in ES: {}'.format(info))
 

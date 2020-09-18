@@ -10,7 +10,7 @@ from py2neo import (
 
 from neo4japp.services.common import GraphBaseDao
 from neo4japp.constants import DISPLAY_NAME_MAP
-from neo4japp.database import db, reset_dao
+from neo4japp.database import db, reset_dao, get_elastic_index_service
 from neo4japp.data_transfer_objects.visualization import (
     DuplicateEdgeConnectionData,
     DuplicateVisEdge,
@@ -32,7 +32,6 @@ from neo4japp.services import (
     SearchService,
     VisualizerService,
 )
-from neo4japp.services.indexing import elastic_index_service
 from neo4japp.util import (
     get_first_known_label_from_node,
 )
@@ -93,8 +92,8 @@ def graph(request, app):
 @pytest.fixture(scope='function')
 def elasticindexes():
     """ Sets up the elastic indexes and pipelines """
-    elastic_index_service.pdf_index.create_or_update_pipeline()  # TODO LL-1639
-    elastic_index_service.pdf_index.create_or_update_index()  # TODO LL-1639
+    elastic_index_service = get_elastic_index_service()
+    elastic_index_service.recreate_indices_and_pipelines()
 
 
 @pytest.fixture(scope='function')
