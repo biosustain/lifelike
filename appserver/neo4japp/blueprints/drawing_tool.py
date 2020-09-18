@@ -32,7 +32,12 @@ from neo4japp.constants import ANNOTATION_STYLES_DICT
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.data_transfer_objects import PublicMap
 from neo4japp.data_transfer_objects.common import ResultList
-from neo4japp.database import db, get_authorization_service, get_projects_service
+from neo4japp.database import (
+    db,
+    get_authorization_service,
+    get_elastic_index_service,
+    get_projects_service,
+)
 from neo4japp.exceptions import (
     InvalidFileNameException, RecordNotFoundException, NotAuthorizedException
 )
@@ -169,6 +174,9 @@ def upload_map(projects_name: str):
     drawing_map.set_hash_id()
     db.session.commit()
 
+    # elastic_index_service = get_elastic_index_service()  # TODO LL-1639
+    # elastic_index_service.index_maps([drawing_map.id])
+
     yield jsonify(result={'hashId': drawing_map.hash_id}), 200
 
 
@@ -289,6 +297,9 @@ def add_project(projects_name: str):
     project.set_hash_id()
 
     db.session.commit()
+
+    # elastic_index_service = get_elastic_index_service()  # TODO LL-1639
+    # elastic_index_service.index_maps([project.id])
 
     project_schema = ProjectSchema()
 

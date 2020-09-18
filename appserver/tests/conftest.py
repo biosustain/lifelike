@@ -32,7 +32,7 @@ from neo4japp.services import (
     SearchService,
     VisualizerService,
 )
-from neo4japp.services.indexing import index_pdf
+from neo4japp.services.indexing import elastic_index_service
 from neo4japp.util import (
     get_first_known_label_from_node,
 )
@@ -93,8 +93,8 @@ def graph(request, app):
 @pytest.fixture(scope='function')
 def elasticindexes():
     """ Sets up the elastic indexes and pipelines """
-    index_pdf.pdf_index.create_or_update_pipeline()
-    index_pdf.pdf_index.create_or_update_index()
+    elastic_index_service.pdf_index.create_or_update_pipeline()  # TODO LL-1639
+    elastic_index_service.pdf_index.create_or_update_index()  # TODO LL-1639
 
 
 @pytest.fixture(scope='function')
