@@ -19,7 +19,7 @@ from neo4japp.models import (
     DomainURLsMap,
     AnnotationStyle
 )
-from neo4japp.services.indexing import index_pdf
+from neo4japp.services.indexing import elastic_index_service
 from neo4japp.services.annotations import AnnotationsNeo4jService, ManualAnnotationsService
 from neo4japp.services.annotations.constants import EntityType
 
@@ -79,8 +79,8 @@ def mock_delete_elastic_indices(monkeypatch):
     def delete_indices(*args, **kwargs):
         return None
 
-    monkeypatch.setattr(
-        index_pdf,
+    monkeypatch.setattr(  # TODO LL-1639
+        elastic_index_service,
         'delete_indices',
         delete_indices,
     )
