@@ -19,9 +19,9 @@ from neo4japp.models import (
     DomainURLsMap,
     AnnotationStyle
 )
-from neo4japp.services.indexing import elastic_index_service
 from neo4japp.services.annotations import AnnotationsNeo4jService, ManualAnnotationsService
 from neo4japp.services.annotations.constants import EntityType
+from neo4japp.services.indexing import ElasticIndexService
 
 
 #################
@@ -75,14 +75,38 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_delete_elastic_indices(monkeypatch):
-    def delete_indices(*args, **kwargs):
+def mock_index_files(monkeypatch):
+    def index_files(*args, **kwargs):
         return None
 
-    monkeypatch.setattr(  # TODO LL-1639
-        elastic_index_service,
-        'delete_indices',
-        delete_indices,
+    monkeypatch.setattr(
+        ElasticIndexService,
+        'index_files',
+        index_files,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_index_maps(monkeypatch):
+    def index_maps(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(
+        ElasticIndexService,
+        'index_maps',
+        index_maps,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_delete_elastic_documents(monkeypatch):
+    def delete_documents_with_index(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(
+        ElasticIndexService,
+        'delete_documents_with_index',
+        delete_documents_with_index,
     )
 ####################
 # End service mocks

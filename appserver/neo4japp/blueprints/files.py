@@ -46,6 +46,7 @@ from neo4japp.request_schemas.annotations import (
     AnnotationRemovalSchema,
     AnnotationExclusionSchema,
 )
+from neo4japp.services.indexing import FILE_INDEX_ID
 from neo4japp.utils.network import read_url
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog
@@ -183,8 +184,10 @@ def upload_pdf(request, project_name: str):
             f'User uploaded file: <{filename}>',
             extra=UserEventLog(
                 username=g.current_user.username, event_type='file upload').to_dict())
-        # elastic_index_service = get_elastic_index_service()  # TODO LL-1639
-        # elastic_index_service.index_files([file.id])
+
+        # Add the new file as a elasticsearch document
+        elastic_index_service = get_elastic_index_service()
+        elastic_index_service.index_files([file.id])
     except Exception:
         raise FileUploadError('Your file could not be saved. Please try uploading again.')
 
@@ -505,7 +508,14 @@ def delete_files(project_name: str):
         raise DatabaseError('Failed to delete file(s).')
     else:
         db.session.commit()
-        # elastic_index_service.delete_indices(file_ids=deleted_file_ids)  # TODO LL-1639
+
+        # Delete this file from elasticsearch
+        elastic_index_service = get_elastic_index_service()
+        elastic_index_service.delete_documents_with_index(
+            file_ids=deleted_file_ids,
+            index_id=FILE_INDEX_ID
+        )
+
         for deleted in deleted_file_names:
             current_app.logger.info(
                 f'User deleted file: <{deleted}>',

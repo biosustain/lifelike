@@ -54,6 +54,7 @@ from neo4japp.models import (
 )
 from neo4japp.models.schema import ProjectSchema, ProjectVersionSchema
 from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
+from neo4japp.services.indexing import FILE_INDEX_ID
 from neo4japp.util import CasePreservedDict
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.request import paginate_from_args
@@ -174,8 +175,9 @@ def upload_map(projects_name: str):
     drawing_map.set_hash_id()
     db.session.commit()
 
-    # elastic_index_service = get_elastic_index_service()  # TODO LL-1639
-    # elastic_index_service.index_maps([drawing_map.id])
+    # Add this map as an elasticsearch document
+    elastic_index_service = get_elastic_index_service()
+    elastic_index_service.index_maps([drawing_map.id])
 
     yield jsonify(result={'hashId': drawing_map.hash_id}), 200
 
@@ -298,8 +300,9 @@ def add_project(projects_name: str):
 
     db.session.commit()
 
-    # elastic_index_service = get_elastic_index_service()  # TODO LL-1639
-    # elastic_index_service.index_maps([project.id])
+    # Add this map as an elasticsearch document
+    elastic_index_service = get_elastic_index_service()
+    elastic_index_service.index_maps([project.id])
 
     project_schema = ProjectSchema()
 
@@ -369,6 +372,14 @@ def update_project(hash_id: str, projects_name: str):
     db.session.add(project_version)
     db.session.commit()
 
+    # Delete the old version of the map from our elastic documents, then reindex
+    elastic_index_service = get_elastic_index_service()
+    elastic_index_service.delete_documents_with_index(
+        file_ids=[project.hash_id],
+        index_id=FILE_INDEX_ID
+    )
+    elastic_index_service.index_maps([project.id])
+
     yield jsonify({'status': 'success'}), 200
 
 
@@ -397,9 +408,18 @@ def delete_project(hash_id: str, projects_name: str):
     except NoResultFound:
         raise RecordNotFoundException('not found :-( ')
 
+    project_hash_id = project.hash_id
+
     # Commit to db
     db.session.delete(project)
     db.session.commit()
+
+    # Delete this map from elasticsearch
+    elastic_index_service = get_elastic_index_service()
+    elastic_index_service.delete_documents_with_index(
+        file_ids=[project_hash_id],
+        index_id=FILE_INDEX_ID
+    )
 
     yield jsonify({'status': 'success'}), 200
 
