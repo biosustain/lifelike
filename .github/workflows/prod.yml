@@ -72,7 +72,7 @@ jobs:
                 image_tag: ${{ github.sha }},latest
                 context: ./client
                 dockerfile: ./Dockerfile.prod
-                build_extra_args: "--build-arg=build_environment=production nginx_conf=prod.conf"
+                build_extra_args: "--build-arg=build_environment=production --build-arg=nginx_conf=prod.conf"
 
             - name: Build Redis
               uses: whoan/docker-build-with-cache-action@v5
