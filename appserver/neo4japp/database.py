@@ -130,12 +130,12 @@ def get_projects_service():
     return g.projects_service
 
 
-def get_elastic_index_service():
-    if 'elastic_index_service' not in g:
-        from neo4japp.services.indexing import ElasticIndexService
+def get_elastic_service():
+    if 'elastic_service' not in g:
+        from neo4japp.services.elastic import ElasticService
         elastic = _connect_to_elastic()
-        g.elastic_index_service = ElasticIndexService(elastic=elastic)
-    return g.elastic_index_service
+        g.elastic_service = ElasticService(elastic=elastic)
+    return g.elastic_service
 
 
 def get_lmdb_dao():

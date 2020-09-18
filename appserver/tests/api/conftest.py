@@ -21,7 +21,7 @@ from neo4japp.models import (
 )
 from neo4japp.services.annotations import AnnotationsNeo4jService, ManualAnnotationsService
 from neo4japp.services.annotations.constants import EntityType
-from neo4japp.services.indexing import ElasticIndexService
+from neo4japp.services.elastic import ElasticService
 
 
 #################
@@ -80,7 +80,7 @@ def mock_index_files(monkeypatch):
         return None
 
     monkeypatch.setattr(
-        ElasticIndexService,
+        ElasticService,
         'index_files',
         index_files,
     )
@@ -92,7 +92,7 @@ def mock_index_maps(monkeypatch):
         return None
 
     monkeypatch.setattr(
-        ElasticIndexService,
+        ElasticService,
         'index_maps',
         index_maps,
     )
@@ -104,7 +104,7 @@ def mock_delete_elastic_documents(monkeypatch):
         return None
 
     monkeypatch.setattr(
-        ElasticIndexService,
+        ElasticService,
         'delete_documents_with_index',
         delete_documents_with_index,
     )

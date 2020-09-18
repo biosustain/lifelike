@@ -22,7 +22,7 @@ from neo4japp.blueprints.permissions import requires_project_permission, require
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import TIMEZONE
-from neo4japp.database import db, get_manual_annotations_service, get_elastic_index_service
+from neo4japp.database import db, get_manual_annotations_service, get_elastic_service
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
     DatabaseError,
@@ -46,7 +46,7 @@ from neo4japp.request_schemas.annotations import (
     AnnotationRemovalSchema,
     AnnotationExclusionSchema,
 )
-from neo4japp.services.indexing import FILE_INDEX_ID
+from neo4japp.services.elastic import FILE_INDEX_ID
 from neo4japp.utils.network import read_url
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog
@@ -186,8 +186,8 @@ def upload_pdf(request, project_name: str):
                 username=g.current_user.username, event_type='file upload').to_dict())
 
         # Add the new file as a elasticsearch document
-        elastic_index_service = get_elastic_index_service()
-        elastic_index_service.index_files([file.id])
+        elastic_service = get_elastic_service()
+        elastic_service.index_files([file.id])
     except Exception:
         raise FileUploadError('Your file could not be saved. Please try uploading again.')
 
@@ -510,8 +510,8 @@ def delete_files(project_name: str):
         db.session.commit()
 
         # Delete this file from elasticsearch
-        elastic_index_service = get_elastic_index_service()
-        elastic_index_service.delete_documents_with_index(
+        elastic_service = get_elastic_service()
+        elastic_service.delete_documents_with_index(
             file_ids=deleted_file_ids,
             index_id=FILE_INDEX_ID
         )
