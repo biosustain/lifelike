@@ -51,16 +51,16 @@ jobs:
             - run: |-
                 gcloud --quiet auth configure-docker
 
-            - name: Build Appserver Image
+            - name: Build appserver image
               uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-prod
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
                 image_tag: ${{ github.sha }},latest
                 context: ./appserver
-                dockerfile: ./Dockerfile.prod
+                dockerfile: ./Dockerfile
 
             - name: Build Client and Nginx Image
               uses: whoan/docker-build-with-cache-action@v5
@@ -68,10 +68,11 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-prod
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
                 image_tag: ${{ github.sha }},latest
                 context: ./client
                 dockerfile: ./Dockerfile.prod
+                build_extra_args: "--build-arg=build_environment=production nginx_conf=prod.conf"
 
             - name: Build Redis
               uses: whoan/docker-build-with-cache-action@v5
@@ -79,7 +80,7 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-prod
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
                 image_tag: ${{ github.sha }},latest
                 context: ./cache-invalidator
                 dockerfile: ./Dockerfile
@@ -90,7 +91,7 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-prod
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
                 image_tag: ${{ github.sha }},latest
                 context: ./nlp
                 dockerfile: ./Dockerfile
