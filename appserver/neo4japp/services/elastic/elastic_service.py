@@ -16,7 +16,7 @@ from neo4japp.models import (
     Files,
     Project
 )
-from neo4japp.services.indexing import (
+from neo4japp.services.elastic import (
     ATTACHMENT_PIPELINE_ID,
     ELASTIC_INDEX_SEED_PAIRS,
     ELASTIC_PIPELINE_SEED_PAIRS,
@@ -25,7 +25,7 @@ from neo4japp.services.indexing import (
 from neo4japp.utils import EventLog
 
 
-class ElasticIndexService():
+class ElasticService():
     def __init__(self, elastic):
         self.elastic_client = elastic
 
@@ -45,13 +45,13 @@ class ElasticIndexService():
                 self.elastic_client.indices.delete(index=index_id)
                 current_app.logger.info(
                     f'Deleted ElasticSearch index {index_id}',
-                    extra=EventLog(event_type='elastic indexing').to_dict()
+                    extra=EventLog(event_type='elastic').to_dict()
                 )
             except Exception as e:
                 current_app.logger.error(
                     f'Failed to delete ElasticSearch index {index_id}',
                     exc_info=e,
-                    extra=EventLog(event_type='elastic indexing').to_dict()
+                    extra=EventLog(event_type='elastic').to_dict()
                 )
                 return
 
@@ -59,13 +59,13 @@ class ElasticIndexService():
                 self.elastic_client.indices.create(index=index_id, body=index_definition)
                 current_app.logger.info(
                     f'Created ElasticSearch index {index_id}',
-                    extra=EventLog(event_type='elastic indexing').to_dict()
+                    extra=EventLog(event_type='elastic').to_dict()
                 )
             except Exception as e:
                 current_app.logger.error(
                     f'Failed to create ElasticSearch index {index_id}',
                     exc_info=e,
-                    extra=EventLog(event_type='elastic indexing').to_dict()
+                    extra=EventLog(event_type='elastic').to_dict()
                 )
                 return
 
@@ -78,13 +78,13 @@ class ElasticIndexService():
                 self.elastic_client.indices.create(index=index_id, body=index_definition)
                 current_app.logger.info(
                     f'Created new ElasticSearch index {index_id}',
-                    extra=EventLog(event_type='elastic indexing').to_dict()
+                    extra=EventLog(event_type='elastic').to_dict()
                 )
             except Exception as e:
                 current_app.logger.error(
                     f'Failed to create ElasticSearch index {index_id}',
                     exc_info=e,
-                    extra=EventLog(event_type='elastic indexing').to_dict()
+                    extra=EventLog(event_type='elastic').to_dict()
                 )
 
     def update_or_create_pipeline(self, pipeline_id, pipeline_definition_file):
@@ -100,12 +100,12 @@ class ElasticIndexService():
             current_app.logger.error(
                 f'Failed to create or update ElasticSearch pipeline {pipeline_id}',
                 exc_info=e,
-                extra=EventLog(event_type='elastic indexing').to_dict()
+                extra=EventLog(event_type='elastic').to_dict()
             )
 
         current_app.logger.info(
             f'Created or updated ElasticSearch pipeline {pipeline_id}',
-            extra=EventLog(event_type='elastic indexing').to_dict()
+            extra=EventLog(event_type='elastic').to_dict()
         )
 
     def recreate_indices_and_pipelines(self):
@@ -133,7 +133,7 @@ class ElasticIndexService():
             current_app.logger.error(
                 f'Failed to bulk delete one or more documents with ids {file_ids} from elastic',
                 exc_info=e,
-                extra=EventLog(event_type='elastic indexing').to_dict()
+                extra=EventLog(event_type='elastic').to_dict()
             )
             return
 
@@ -141,7 +141,7 @@ class ElasticIndexService():
             if not success:
                 current_app.logger.warning(
                     'Failed to delete document in ES: {}'.format(info),
-                    extra=EventLog(event_type='elastic indexing').to_dict()
+                    extra=EventLog(event_type='elastic').to_dict()
                 )
         self.elastic_client.indices.refresh(index_id)
 
@@ -203,7 +203,7 @@ class ElasticIndexService():
                     f'Failed to bulk insert one or more files with ids {file_ids} and index' +
                     f'{FILE_INDEX_ID} into elastic',
                     exc_info=e,
-                    extra=EventLog(event_type='elastic indexing').to_dict()
+                    extra=EventLog(event_type='elastic').to_dict()
                 )
                 return
 
@@ -211,7 +211,7 @@ class ElasticIndexService():
                 if not success:
                     current_app.logger.warning(
                         'Failed to index document in ES: {}'.format(info),
-                        extra=EventLog(event_type='elastic indexing').to_dict()
+                        extra=EventLog(event_type='elastic').to_dict()
                     )
 
     def index_maps(self, map_ids: List[int] = None, batch_size: int = 100):
@@ -285,7 +285,7 @@ class ElasticIndexService():
                     f'Failed to bulk insert one or more files with ids {map_ids} and index' +
                     f'{FILE_INDEX_ID} into elastic',
                     exc_info=e,
-                    extra=EventLog(event_type='elastic indexing').to_dict()
+                    extra=EventLog(event_type='elastic').to_dict()
                 )
                 return
 
@@ -293,7 +293,7 @@ class ElasticIndexService():
                 if not success:
                     current_app.logger.warning(
                         'Failed to index document in ES: {}'.format(info),
-                        extra=EventLog(event_type='elastic indexing').to_dict()
+                        extra=EventLog(event_type='elastic').to_dict()
                     )
 
     def reindex_all_documents(self):
