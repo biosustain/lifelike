@@ -17,6 +17,8 @@ from neo4japp.database import db
 from neo4japp.factory import create_app
 from neo4japp.models import Files
 
+from neo4japp.data_transfer_objects import SpecifiedOrganismStrain
+
 
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
@@ -67,7 +69,8 @@ def create_annotations(
             tokens=tokens,
             custom_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotator.get_entities_to_annotate()
+            entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain('', '', '')
         )
 
         pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed)

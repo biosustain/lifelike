@@ -114,6 +114,6 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent {
   }
 
   setOrganism(organism: OrganismAutocomplete | null) {
-    this.form.get('organism').setValue(organism ? organism.tax_id : null);
+    this.form.get('organism').setValue(organism ? `${organism.synonym}#${organism.tax_id}` : null);
   }
 }
