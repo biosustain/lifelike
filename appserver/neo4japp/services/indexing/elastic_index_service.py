@@ -1,7 +1,6 @@
 import base64
 import itertools
 import json
-import logging
 
 from elasticsearch.helpers import parallel_bulk, BulkIndexError
 from flask import current_app
@@ -25,8 +24,6 @@ from neo4japp.services.indexing import (
 )
 from neo4japp.utils import EventLog
 
-logger = logging.getLogger(__name__)
-
 
 class ElasticIndexService():
     def __init__(self, elastic):
@@ -44,18 +41,51 @@ class ElasticIndexService():
             # we update the type of a field in the index, elastic will complain and fail to update
             # the index. So to prevent this from happening, we just trash the index and re-create
             # it.
-            logging.info(f'Deleting and re-creating ElasticSearch index {index_id}')
-            self.elastic_client.indices.delete(index=index_id)
-            self.elastic_client.indices.create(index=index_id, body=index_definition)
+            try:
+                self.elastic_client.indices.delete(index=index_id)
+                current_app.logger.info(
+                    f'Deleted ElasticSearch index {index_id}',
+                    extra=EventLog(event_type='elastic indexing').to_dict()
+                )
+            except Exception as e:
+                current_app.logger.error(
+                    f'Failed to delete ElasticSearch index {index_id}',
+                    exc_info=e,
+                    extra=EventLog(event_type='elastic indexing').to_dict()
+                )
+                return
+
+            try:
+                self.elastic_client.indices.create(index=index_id, body=index_definition)
+                current_app.logger.info(
+                    f'Created ElasticSearch index {index_id}',
+                    extra=EventLog(event_type='elastic indexing').to_dict()
+                )
+            except Exception as e:
+                current_app.logger.error(
+                    f'Failed to create ElasticSearch index {index_id}',
+                    exc_info=e,
+                    extra=EventLog(event_type='elastic indexing').to_dict()
+                )
+                return
 
             # But, if we trash the index we also need to re-index all the documents that used it.
             # Currently we take the safe route and simply re-index ALL documents, regardless of
             # which index was actually re-created.
-            logging.info(f'Re-indexing documents with ElasticSearch index {index_id}')
             self.reindex_all_documents()
         else:
-            logging.info(f'Created new ElasticSearch index {index_id}')
-            self.elastic_client.indices.create(index=index_id, body=index_definition)
+            try:
+                self.elastic_client.indices.create(index=index_id, body=index_definition)
+                current_app.logger.info(
+                    f'Created new ElasticSearch index {index_id}',
+                    extra=EventLog(event_type='elastic indexing').to_dict()
+                )
+            except Exception as e:
+                current_app.logger.error(
+                    f'Failed to create ElasticSearch index {index_id}',
+                    exc_info=e,
+                    extra=EventLog(event_type='elastic indexing').to_dict()
+                )
 
     def update_or_create_pipeline(self, pipeline_id, pipeline_definition_file):
         """Creates a pipeline with the given pipeline id and definition file. If the pipeline
@@ -63,8 +93,20 @@ class ElasticIndexService():
         with open(pipeline_definition_file) as f:
             pipeline_definition = f.read()
         pipeline_definition_json = json.loads(pipeline_definition)
-        self.elastic_client.ingest.put_pipeline(id=pipeline_id, body=pipeline_definition_json)
-        logging.info(f'Created or updated ElasticSearch pipeline {pipeline_id}')
+
+        try:
+            self.elastic_client.ingest.put_pipeline(id=pipeline_id, body=pipeline_definition_json)
+        except Exception as e:
+            current_app.logger.error(
+                f'Failed to create or update ElasticSearch pipeline {pipeline_id}',
+                exc_info=e,
+                extra=EventLog(event_type='elastic indexing').to_dict()
+            )
+
+        current_app.logger.info(
+            f'Created or updated ElasticSearch pipeline {pipeline_id}',
+            extra=EventLog(event_type='elastic indexing').to_dict()
+        )
 
     def recreate_indices_and_pipelines(self):
         """Recreates all currently defined Elastic pipelines and indices. If any indices/pipelines
@@ -89,15 +131,18 @@ class ElasticIndexService():
             )
         except BulkIndexError as e:
             current_app.logger.error(
-                e,
+                f'Failed to bulk delete one or more documents with ids {file_ids} from elastic',
+                exc_info=e,
                 extra=EventLog(event_type='elastic indexing').to_dict()
             )
+            return
 
         for success, info in results:
             if not success:
-                current_app.logger.error(
-                    info,
-                    extra=EventLog(event_type='elastic indexing').to_dict())
+                current_app.logger.warning(
+                    'Failed to delete document in ES: {}'.format(info),
+                    extra=EventLog(event_type='elastic indexing').to_dict()
+                )
         self.elastic_client.indices.refresh(index_id)
 
     # TODO: Eventually `index_files` and `index_maps` will be the same service.
@@ -159,13 +204,19 @@ class ElasticIndexService():
                 results = parallel_bulk(self.elastic_client, documents)
             except BulkIndexError as e:
                 current_app.logger.error(
-                    e,
+                    f'Failed to bulk insert one or more files with ids {file_ids} and index' +
+                    f'{FILE_INDEX_ID} into elastic',
+                    exc_info=e,
                     extra=EventLog(event_type='elastic indexing').to_dict()
                 )
+                return
 
             for success, info in results:
                 if not success:
-                    logger.warning('Failed to index document in ES: {}'.format(info))
+                    current_app.logger.warning(
+                        'Failed to index document in ES: {}'.format(info),
+                        extra=EventLog(event_type='elastic indexing').to_dict()
+                    )
 
     def index_maps(self, map_ids: List[int] = None, batch_size: int = None):
         """Adds the maps with the given ids to Elastic. If no ids are given, adds all maps."""
@@ -239,13 +290,19 @@ class ElasticIndexService():
                 results = parallel_bulk(self.elastic_client, documents)
             except BulkIndexError as e:
                 current_app.logger.error(
-                    e,
+                    f'Failed to bulk insert one or more files with ids {map_ids} and index' +
+                    f'{FILE_INDEX_ID} into elastic',
+                    exc_info=e,
                     extra=EventLog(event_type='elastic indexing').to_dict()
                 )
+                return
 
             for success, info in results:
                 if not success:
-                    logger.warning('Failed to index document in ES: {}'.format(info))
+                    current_app.logger.warning(
+                        'Failed to index document in ES: {}'.format(info),
+                        extra=EventLog(event_type='elastic indexing').to_dict()
+                    )
 
     def reindex_all_documents(self):
         self.index_files()
