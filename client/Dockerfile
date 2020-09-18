@@ -77,6 +77,7 @@ RUN yarn build --configuration="${build_environment:-staging}" --output-path=dis
 # nginx
 # ========================================
 # Set the nginx conf file to use
+FROM nginx:latest
 ARG nginx_conf
 RUN mkdir -p /home/node/client/dist
 RUN mkdir -p /home/node/client/landing/dist
