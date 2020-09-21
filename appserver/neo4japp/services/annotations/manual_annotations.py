@@ -96,7 +96,8 @@ class ManualAnnotationsService:
             ]
 
             if not inclusions:
-                raise AnnotationError(f'Could not find "{term}" term in the document.')
+                raise AnnotationError(f'There was a problem annotating "{term}", please select '
+                                      'option to annotate only one occurrence of this term.')
         else:
             if not annotation_exists(annotation_to_add):
                 inclusions = [annotation_to_add]

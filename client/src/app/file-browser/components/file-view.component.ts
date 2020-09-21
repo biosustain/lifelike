@@ -276,7 +276,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           },
           err => {
             progressDialogRef.close();
-            this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
+            const {message, name} = err.error.apiHttpError;
+            this.snackBar.open(`${name}: ${message}`, 'Close');
           },
         );
     }, () => {
