@@ -178,15 +178,21 @@ def upload_pdf(request, project_name: str):
         )
 
         db.session.add(file)
-        db.session.commit()
 
         current_app.logger.info(
             f'User uploaded file: <{filename}>',
             extra=UserEventLog(
                 username=g.current_user.username, event_type='file upload').to_dict())
         index_pdf.populate_single_index(file.id)
-    except Exception:
+    except (SQLAlchemyError, Exception):
+        # if index_pdf fail then do not save file
+        # otherwise creates a false representation for the user
+        # since they will see the file uploaded, but
+        # cannot search for the file
+        db.session.rollback()
         raise FileUploadError('Your file could not be saved. Please try uploading again.')
+    else:
+        db.session.commit()
 
     yield SuccessResponse(
         result={
@@ -242,6 +248,7 @@ def list_files(project_name: str):
         'description': row.description,
         'username': row.username,
         'creation_date': row.creation_date,
+        'modified_date': row.modified_date,
         'doi': row.doi,
         'upload_url': row.upload_url
     } for row in db.session.query(
@@ -253,6 +260,7 @@ def list_files(project_name: str):
         Files.user_id,
         AppUser.username,
         Files.creation_date,
+        Files.modified_date,
         Files.doi,
         Files.upload_url)
         .join(AppUser, Files.user_id == AppUser.id)
@@ -284,6 +292,7 @@ def get_file_info(id: str, project_name: str):
                 Files.user_id,
                 AppUser.username,
                 Files.creation_date,
+                Files.modified_date,
                 Files.doi,
                 Files.upload_url
             ).join(
@@ -303,6 +312,7 @@ def get_file_info(id: str, project_name: str):
         'description': row.description,
         'username': row.username,
         'creation_date': row.creation_date,
+        'modified_date': row.modified_date,
         'doi': row.doi,
         'upload_url': row.upload_url
     })

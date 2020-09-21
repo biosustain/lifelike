@@ -131,10 +131,12 @@ services:
             - frontend
 
     redis:
+        container_name: redis
         networks:
             - backend
 
     cache-invalidator:
+        container_name: cache-invalidator
         build: ./cache-invalidator
         volumes:
             - ./cache-invalidator:/app
@@ -146,6 +148,8 @@ services:
         depends_on:
             - database
             - redis
+        networks:
+            - backend
 
     elasticsearch:
         container_name: elasticsearch

@@ -54,7 +54,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.valuesSubscription = this.loadTask.values$.subscribe(value => {
       this.modulePropertiesChange.emit({
-        title: value.query != null && value.query.length ? `Visualizer: ${value.query}` : 'Visualizer Search',
+        title: value.query != null && value.query.length ? `Visualizer: ${value.query}` : 'Visualizer',
         fontAwesomeIcon: 'search',
       });
     });

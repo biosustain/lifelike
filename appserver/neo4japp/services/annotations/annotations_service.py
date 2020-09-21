@@ -1,6 +1,4 @@
-import json
 import re
-import requests
 
 from math import inf
 from typing import cast, Dict, List, Optional, Set, Tuple, Union
@@ -25,11 +23,10 @@ from .constants import (
     GOOGLE_LINK,
     HOMO_SAPIENS_TAX_ID,
     NCBI_LINK,
+    ORGANISM_DISTANCE_THRESHOLD,
     PDF_NEW_LINE_THRESHOLD,
-    COMMON_TYPOS,
     UNIPROT_LINK,
     WIKIPEDIA_LINK,
-    NLP_ENDPOINT,
 )
 from .lmdb_dao import LMDBDao
 from .util import normalize_str, standardize_str
@@ -42,6 +39,7 @@ from neo4japp.data_transfer_objects import (
     OrganismAnnotation,
     PDFTokenPositions,
     PDFTokenPositionsList,
+    SpecifiedOrganismStrain
 )
 from neo4japp.exceptions import AnnotationError
 from neo4japp.utils.logger import EventLog
@@ -72,32 +70,32 @@ class AnnotationsService:
 
         if chemical:
             entity_type_and_id_pairs.append(
-                (EntityType.Chemical.value, EntityIdStr.Chemical.value))
+                (EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value))
 
         if compound:
             entity_type_and_id_pairs.append(
-                (EntityType.Compound.value, EntityIdStr.Compound.value))
+                (EntityType.COMPOUND.value, EntityIdStr.COMPOUND.value))
 
         if disease:
             entity_type_and_id_pairs.append(
-                (EntityType.Disease.value, EntityIdStr.Disease.value))
+                (EntityType.DISEASE.value, EntityIdStr.DISEASE.value))
 
         if phenotype:
             entity_type_and_id_pairs.append(
-                (EntityType.Phenotype.value, EntityIdStr.Phenotype.value))
+                (EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value))
 
         if protein:
             entity_type_and_id_pairs.append(
-                (EntityType.Protein.value, EntityIdStr.Protein.value))
+                (EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value))
 
         if species:
             # Order is IMPORTANT here, Species should always be annotated before Genes
             entity_type_and_id_pairs.append(
-                (EntityType.Species.value, EntityIdStr.Species.value))
+                (EntityType.SPECIES.value, EntityIdStr.SPECIES.value))
 
         if gene:
             entity_type_and_id_pairs.append(
-                (EntityType.Gene.value, EntityIdStr.Gene.value))
+                (EntityType.GENE.value, EntityIdStr.GENE.value))
 
         return entity_type_and_id_pairs
 
@@ -237,18 +235,18 @@ class AnnotationsService:
         keyword_starting_idx = char_indexes[0]
         keyword_ending_idx = char_indexes[-1]
         link_search_term = entity['synonym']
-        if entity['id_type'] != DatabaseType.Ncbi.value:
+        if entity['id_type'] != DatabaseType.NCBI.value:
             hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
         else:
             # type ignore, see https://github.com/python/mypy/issues/8277
             hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
 
-        if entity['id_type'] == DatabaseType.Mesh.value:
+        if entity['id_type'] == DatabaseType.MESH.value:
             hyperlink += entity_id[5:]  # type: ignore
         else:
             hyperlink += entity_id  # type: ignore
 
-        if token_type == EntityType.Species.value:
+        if token_type == EntityType.SPECIES.value:
             organism_meta = OrganismAnnotation.OrganismMeta(
                 category=entity_category,
                 type=token_type,
@@ -280,7 +278,7 @@ class AnnotationsService:
                 meta=organism_meta,
                 uuid=str(uuid4()),
             )
-        elif token_type == EntityType.Gene.value:
+        elif token_type == EntityType.GENE.value:
             gene_meta = GeneAnnotation.GeneMeta(
                 category=entity_category,
                 type=token_type,
@@ -415,7 +413,7 @@ class AnnotationsService:
         self,
         gene_position: PDFTokenPositions,
         organism_matches: Dict[str, str],
-    ) -> Tuple[str, str]:
+    ) -> Tuple[str, str, float]:
         """Gets the correct gene/organism pair for a given gene and its list of matching organisms.
 
         A gene name may match multiple organisms. To choose which organism to use, we first
@@ -473,7 +471,7 @@ class AnnotationsService:
             raise AnnotationError('Cannot get gene ID with empty organism match dict.')
 
         # Return the gene id of the organism with the highest priority
-        return organism_matches[curr_closest_organism], curr_closest_organism
+        return organism_matches[curr_closest_organism], curr_closest_organism, closest_dist
 
     def _annotate_genes(
         self,
@@ -523,22 +521,35 @@ class AnnotationsService:
         for entity, token_positions in entity_tokenpos_pairs:
             entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
             if entity_synonym in gene_organism_matches:
-                gene_id, organism_id = self._get_closest_gene_organism_pair(
+                gene_id, organism_id, closest_distance = self._get_closest_gene_organism_pair(
                     gene_position=token_positions,
                     organism_matches=gene_organism_matches[entity_synonym]
                 )
 
-                category = self.organism_categories[organism_id]
+                specified_organism_id = None
+                if self.specified_organism.synonym and closest_distance > ORGANISM_DISTANCE_THRESHOLD:  # noqa
+                    fallback_organism_match = \
+                        self.annotation_neo4j.get_gene_to_organism_match_result(
+                            genes=[entity_synonym],
+                            matched_organism_ids=[self.specified_organism.organism_id],
+                        )
+
+                    if fallback_organism_match:
+                        # if matched in KG then set to fallback strain
+                        gene_id = fallback_organism_match[entity_synonym][self.specified_organism.organism_id]  # noqa
+                        specified_organism_id = self.specified_organism.organism_id
+
+                category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
 
                 annotation = self._create_annotation_object(
                     char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                     cropbox_in_pdf=cropbox_in_pdf,
                     token_positions=token_positions,
-                    token_type=EntityType.Gene.value,
+                    token_type=EntityType.GENE.value,
                     entity=entity,
                     entity_id=gene_id,
                     entity_category=category,
-                    color=EntityColor.Gene.value,
+                    color=EntityColor.GENE.value,
                 )
                 matches.append(annotation)
         return matches
@@ -551,8 +562,8 @@ class AnnotationsService:
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_chemicals,
-            token_type=EntityType.Chemical.value,
-            color=EntityColor.Chemical.value,
+            token_type=EntityType.CHEMICAL.value,
+            color=EntityColor.CHEMICAL.value,
             id_str=entity_id_str,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
@@ -566,8 +577,8 @@ class AnnotationsService:
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_compounds,
-            token_type=EntityType.Compound.value,
-            color=EntityColor.Compound.value,
+            token_type=EntityType.COMPOUND.value,
+            color=EntityColor.COMPOUND.value,
             id_str=entity_id_str,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
@@ -581,8 +592,8 @@ class AnnotationsService:
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_proteins,
-            token_type=EntityType.Protein.value,
-            color=EntityColor.Protein.value,
+            token_type=EntityType.PROTEIN.value,
+            color=EntityColor.PROTEIN.value,
             id_str=entity_id_str,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
@@ -613,11 +624,11 @@ class AnnotationsService:
                         char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                         cropbox_in_pdf=cropbox_in_pdf,
                         token_positions=token_positions,
-                        token_type=EntityType.Species.value,
+                        token_type=EntityType.SPECIES.value,
                         entity=entity,
-                        entity_id=entity[EntityIdStr.Species.value],
+                        entity_id=entity[EntityIdStr.SPECIES.value],
                         entity_category=entity.get('category', ''),
-                        color=EntityColor.Species.value,
+                        color=EntityColor.SPECIES.value,
                     )
 
                     custom_annotations.append(annotation)
@@ -632,8 +643,8 @@ class AnnotationsService:
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
             tokens=self.matched_species,
-            token_type=EntityType.Species.value,
-            color=EntityColor.Species.value,
+            token_type=EntityType.SPECIES.value,
+            color=EntityColor.SPECIES.value,
             id_str=entity_id_str,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
@@ -699,8 +710,8 @@ class AnnotationsService:
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_diseases,
-            token_type=EntityType.Disease.value,
-            color=EntityColor.Disease.value,
+            token_type=EntityType.DISEASE.value,
+            color=EntityColor.DISEASE.value,
             id_str=entity_id_str,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
@@ -714,8 +725,8 @@ class AnnotationsService:
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_phenotypes,
-            token_type=EntityType.Phenotype.value,
-            color=EntityColor.Phenotype.value,
+            token_type=EntityType.PHENOTYPE.value,
+            color=EntityColor.PHENOTYPE.value,
             id_str=entity_id_str,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
@@ -730,17 +741,17 @@ class AnnotationsService:
         organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
         funcs = {
-            EntityType.Chemical.value: self._annotate_chemicals,
-            EntityType.Compound.value: self._annotate_compounds,
-            EntityType.Protein.value: self._annotate_proteins,
-            EntityType.Species.value: self._annotate_species,
-            EntityType.Disease.value: self._annotate_diseases,
-            EntityType.Phenotype.value: self._annotate_phenotypes,
-            EntityType.Gene.value: self._annotate_genes,
+            EntityType.CHEMICAL.value: self._annotate_chemicals,
+            EntityType.COMPOUND.value: self._annotate_compounds,
+            EntityType.PROTEIN.value: self._annotate_proteins,
+            EntityType.SPECIES.value: self._annotate_species,
+            EntityType.DISEASE.value: self._annotate_diseases,
+            EntityType.PHENOTYPE.value: self._annotate_phenotypes,
+            EntityType.GENE.value: self._annotate_genes,
         }
 
         annotate_entities = funcs[annotation_type]
-        if annotation_type == EntityType.Species.value:
+        if annotation_type == EntityType.SPECIES.value:
             return annotate_entities(
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
@@ -766,7 +777,7 @@ class AnnotationsService:
             entity_frequency[entity_id] = 1
 
         # If this annotation is a virus then we also have to update the homo sapiens frequency
-        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
             if entity_frequency.get(HOMO_SAPIENS_TAX_ID, None) is not None:
                 entity_frequency[HOMO_SAPIENS_TAX_ID] += 1
             else:
@@ -790,7 +801,7 @@ class AnnotationsService:
 
         # If the annotation represents a virus, then also mark this location as a human
         # annotation
-        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
+        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
             if matched_entity_locations.get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
                 matched_entity_locations[HOMO_SAPIENS_TAX_ID].append(  # noqa
                     (annotation.lo_location_offset, annotation.hi_location_offset)
@@ -830,8 +841,8 @@ class AnnotationsService:
 
             # Need to add an entry for humans if we annotated a virus
             if isinstance(annotation, OrganismAnnotation) and isinstance(annotation.meta, OrganismAnnotation.OrganismMeta):  # noqa
-                if annotation.meta.category == OrganismCategory.Viruses.value:  # noqa
-                    entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.Eukaryota.value
+                if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+                    entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.EUKARYOTA.value
 
         return entity_frequency, matched_entity_locations, entity_categories
 
@@ -896,8 +907,8 @@ class AnnotationsService:
                 - NOTE: IMPORTANT: Species should always be before Genes
                     - because species is used to do gene organism matching
                 - e.g [
-                    (EntityType.Species.value, EntityIdStr.Species.value),
-                    (EntityType.Gene.value, EntityIdStr.Gene.value),
+                    (EntityType.SPECIES.value, EntityIdStr.SPECIES.value),
+                    (EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value),
                     ...
                 ]
         """
@@ -921,6 +932,7 @@ class AnnotationsService:
         custom_annotations: List[dict],
         entity_results: EntityResults,
         entity_type_and_id_pairs: List[Tuple[str, str]],
+        specified_organism: SpecifiedOrganismStrain,
     ) -> List[Annotation]:
         """Create annotations based on semantic rules."""
         self.local_species_inclusion = entity_results.local_species_inclusion
@@ -933,6 +945,8 @@ class AnnotationsService:
         self.matched_proteins = entity_results.matched_proteins
         self.matched_species = entity_results.matched_species
 
+        self.specified_organism = specified_organism
+
         annotations = self._create_annotations(
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
@@ -940,98 +954,6 @@ class AnnotationsService:
             organisms_from_custom_annotations=custom_annotations,
         )
         return self._clean_annotations(annotations=annotations)
-
-    def get_nlp_entities(
-        self,
-        page_index: Dict[int, int],
-        text: str,
-        tokens: PDFTokenPositionsList,
-    ) -> Tuple[List[PDFTokenPositions], List[dict]]:
-        """Makes a call to the NLP service.
-        There is a memory issue with the NLP service, so for now
-        the REST call is broken into one per PDF page.
-
-        Returns the NLP tokens and combined NLP response.
-        """
-        combined_nlp_resp = []
-        nlp_tokens: List[PDFTokenPositions] = []
-        req = None
-        pages_to_index = {v: k for k, v in page_index.items()}
-        pages = list(pages_to_index)
-        text_in_page: List[Tuple[int, str]] = []
-
-        # TODO: Breaking the request into pages
-        # because doing the entire PDF seem to cause
-        # the NLP service container to crash with no
-        # errors and exit code of 247... (memory related)
-        length = len(pages) - 1
-        for i, page in enumerate(pages):
-            if i == length:
-                text_in_page.append((page, text[pages_to_index[page]:]))
-            else:
-                text_in_page.append((page, text[pages_to_index[page]:pages_to_index[page+1]]))
-
-        for page, page_text in text_in_page:
-            try:
-                req = requests.post(NLP_ENDPOINT, json={'text': page_text}, timeout=30)
-                nlp_resp = req.json()
-
-                for predicted in nlp_resp:
-                    # TODO: nlp only checks for Bacteria right now
-                    # replace with Species in the future
-                    if predicted['type'] != 'Bacteria':
-                        # need to do offset here because index resets
-                        # after each text string for page
-                        offset = pages_to_index[page]
-                        curr_char_idx_mappings = {
-                            i+offset: char for i, char in zip(
-                                range(predicted['low_index'], predicted['high_index']),
-                                predicted['item'],
-                            )
-                        }
-
-                        # determine page keyword is on
-                        page_idx = -1
-                        min_page_idx_list = list(tokens.min_idx_in_page)
-                        for min_page_idx in min_page_idx_list:
-                            # include offset here, see above
-                            if predicted['high_index']+offset <= min_page_idx:
-                                # reminder: can break here because dict in python 3.8+ are
-                                # insertion order
-                                break
-                            else:
-                                page_idx = min_page_idx
-                        token = PDFTokenPositions(
-                            page_number=tokens.min_idx_in_page[page_idx],
-                            keyword=predicted['item'],
-                            char_positions=curr_char_idx_mappings,
-                            token_type=predicted['type'],
-                        )
-                        nlp_tokens.append(token)
-
-                        offset_predicted = {k: v for k, v in predicted.items()}
-                        offset_predicted['high_index'] += offset
-                        offset_predicted['low_index'] += offset
-
-                        combined_nlp_resp.append(offset_predicted)
-            except requests.exceptions.ConnectTimeout:
-                raise AnnotationError(
-                    'The request timed out while trying to connect to the NLP service.')
-            except requests.exceptions.Timeout:
-                raise AnnotationError(
-                    'The request to the NLP service timed out.')
-            except requests.exceptions.RequestException:
-                raise AnnotationError(
-                    'An unexpected error occurred with the NLP service.')
-
-        current_app.logger.info(
-            f'NLP Response Output: {json.dumps(combined_nlp_resp)}',
-            extra=EventLog(event_type='annotations').to_dict()
-        )
-
-        if req:
-            req.close()
-        return nlp_tokens, combined_nlp_resp
 
     def create_nlp_annotations(
         self,
@@ -1149,14 +1071,25 @@ class AnnotationsService:
         key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.type]
         key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.type]
 
+        # if custom phenotype and MESH phenotype
+        # then choose MESH
+        if ((anno1.meta.type == EntityType.PHENOTYPE.value and
+                anno2.meta.type == EntityType.PHENOTYPE.value) and
+            (anno1.lo_location_offset == anno2.lo_location_offset and
+                anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
+            if anno1.meta.id_type == DatabaseType.MESH.value:
+                return anno1
+            elif anno2.meta.id_type == DatabaseType.MESH.value:
+                return anno2
+
         # only do special gene vs protein comparison if they have
         # exact intervals
         # because that means the same normalized text was matched
         # to both
-        if ((anno1.meta.type == EntityType.Protein.value or
-                anno1.meta.type == EntityType.Gene.value) and
-            (anno2.meta.type == EntityType.Protein.value or
-                anno2.meta.type == EntityType.Gene.value) and
+        if ((anno1.meta.type == EntityType.PROTEIN.value or
+                anno1.meta.type == EntityType.GENE.value) and
+            (anno2.meta.type == EntityType.PROTEIN.value or
+                anno2.meta.type == EntityType.GENE.value) and
             (anno1.lo_location_offset == anno2.lo_location_offset and
                 anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
             if anno1.meta.type != anno2.meta.type:
@@ -1250,7 +1183,7 @@ class AnnotationsService:
         """
         matches = []
         for token in tokens.token_positions:
-            if keyword_type == EntityType.Gene.value:
+            if keyword_type == EntityType.GENE.value:
                 if token.keyword != keyword:
                     continue
             elif standardize_str(token.keyword) != standardize_str(keyword):
