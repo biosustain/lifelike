@@ -38,6 +38,10 @@ jobs:
                 context: ./appserver
                 dockerfile: ./Dockerfile
 
+            - name: Create environmental variable to pass in GitHub hash for Docker Compose
+              run: |-
+                echo "GITHUB_HASH=${{ github.sha }}" >> .env
+
             - name: Start docker
               run: |-
                 docker-compose -f docker-compose.ci-test.yml up -d
