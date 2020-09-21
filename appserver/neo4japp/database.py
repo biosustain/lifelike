@@ -66,7 +66,7 @@ def get_neo4j():
 def get_kg_service():
     if 'kg_service' not in g:
         from neo4japp.services import KgService
-        graph = _connect_to_neo4j()
+        graph = get_neo4j()
         g.kg_service = KgService(
             graph=graph,
             session=db.session,
@@ -77,7 +77,7 @@ def get_kg_service():
 def get_visualizer_service():
     if 'visualizer_service' not in g:
         from neo4japp.services import VisualizerService
-        graph = _connect_to_neo4j()
+        graph = get_neo4j()
         g.visualizer_service = VisualizerService(
             graph=graph,
             session=db.session,
@@ -88,7 +88,7 @@ def get_visualizer_service():
 def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
-        graph = _connect_to_neo4j()
+        graph = get_neo4j()
         g.current_user_file_import_service = UserFileImportService(graph=graph, session=db.session)
     return g.current_user_file_import_service
 
@@ -96,7 +96,7 @@ def get_user_file_import_service():
 def get_search_service_dao():
     if 'search_dao' not in g:
         from neo4japp.services import SearchService
-        graph = _connect_to_neo4j()
+        graph = get_neo4j()
         g.search_service_dao = SearchService(graph=graph)
     return g.search_service_dao
 
@@ -129,6 +129,13 @@ def get_lmdb_dao():
     return g.lmdb_dao
 
 
+def close_graph(e=None):
+    graph = g.pop('neo4j_graph', None)
+    if graph:
+        # close all graph connections to neo4j
+        graph.service.forget_all()
+
+
 def close_lmdb(e=None):
     lmdb_dao = g.pop('lmdb_dao', None)
     if lmdb_dao:
@@ -138,7 +145,7 @@ def close_lmdb(e=None):
 def get_annotation_neo4j():
     if 'annotation_neo4j' not in g:
         from neo4japp.services.annotations import AnnotationsNeo4jService
-        graph = _connect_to_neo4j()
+        graph = get_neo4j()
         g.annotation_neo4j = AnnotationsNeo4jService(
             session=db.session,
             graph=graph,
@@ -197,6 +204,7 @@ def reset_dao():
         'lmdb_dao',
         'annotation_neo4j',
         'visualizer_service',
+        'neo4j',
     ]:
         if dao in g:
             g.pop(dao)

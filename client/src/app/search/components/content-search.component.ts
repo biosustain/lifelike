@@ -43,7 +43,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
   valueChanged(value: ContentSearchOptions) {
     this.modulePropertiesChange.emit({
-      title: value.q.length ? `Files: ${value.q}` : 'File Search',
+      title: value.q.length ? `Search: ${value.q}` : 'Search',
       fontAwesomeIcon: 'search',
     });
   }

@@ -83,13 +83,16 @@ class AnnotationsNeo4jService(KgService):
         gene_to_organism_map: Dict[str, Dict[str, str]] = {}
 
         query = self.get_gene_to_organism_query()
-        result = self.graph.run(
+        cursor = self.graph.run(
             query,
             {
                 'genes': genes,
                 'organisms': organisms,
             }
-        ).data()
+        )
+
+        result = cursor.data()
+        cursor.close()
 
         for row in result:
             gene_name: str = row['gene']
