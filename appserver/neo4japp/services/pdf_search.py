@@ -38,15 +38,15 @@ class PDFSearchResult:
         self.project_directory = source['project_directory']
         self.description = source['description']
         self.filename = source['filename']
-        self.annotations = self.get_annotations(self.preview_text)
+        self.annotations = self.get_annotations(self.preview_text, self.filename)
         self.preview_text_with_annotations = self.annotate_preview_text(
             self.preview_text, self.annotations)
 
-    def get_annotations(self, preview_text):
+    def get_annotations(self, preview_text, filename):
         bioc_json = create_annotations(
             annotation_method=annotation_method,
-            document=doc,
-            source=preview_text
+            document=preview_text,
+            filename=filename
         )
         return bioc_json['documents'][0]['passages'][0]['annotations']
 

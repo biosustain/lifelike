@@ -2,8 +2,10 @@ import json
 import multiprocessing as mp
 import requests
 
+from io import BytesIO
 from flask import current_app
 from typing import Dict, List, Tuple
+from werkzeug.datastructures import FileStorage
 
 from neo4japp.database import (
     get_annotations_service,
@@ -147,19 +149,23 @@ def create_annotations(
     annotation_method,
     specified_organism,
     document,
-    source
+    filename
 ):
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
     entity_recog = get_entity_recognition()
     parser = get_annotations_pdf_parser()
 
+    custom_annotations = []
+
     try:
-        if type(source) is str:
-            parsed = parser.parse_text(abstract=source)
+        if type(document) is str:
+            parsed = parser.parse_text(abstract=document)
         else:
-            parsed = parser.parse_pdf(pdf=source)
-            source.close()
+            fp = FileStorage(BytesIO(document.raw_file), filename)
+            parsed = parser.parse_pdf(pdf=fp)
+            fp.close()
+            custom_annotations = document.custom_annotations
     except AnnotationError:
         raise AnnotationError(
             'Your file could not be parsed. Please check if it is a valid PDF.'
@@ -168,7 +174,7 @@ def create_annotations(
     tokens = parser.extract_tokens(parsed_chars=parsed)
     pdf_text = parser.combine_all_chars(parsed_chars=parsed)
 
-    entity_recog.set_entity_inclusions(custom_annotations=document.custom_annotations)
+    entity_recog.set_entity_inclusions(custom_annotations=custom_annotations)
 
     if annotation_method == AnnotationMethod.RULES.value:
         entity_recog.identify_entities(
@@ -190,7 +196,7 @@ def create_annotations(
 
         annotations = annotator.create_rules_based_annotations(
             tokens=tokens,
-            custom_annotations=document.custom_annotations,
+            custom_annotations=custom_annotations,
             entity_results=entity_recog.get_entity_match_results(),
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -215,7 +221,7 @@ def create_annotations(
 
         species_annotations = annotator.create_rules_based_annotations(
             tokens=tokens,
-            custom_annotations=document.custom_annotations,
+            custom_annotations=custom_annotations,
             entity_results=entity_recog.get_entity_match_results(),
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(
                 chemical=False, compound=False, disease=False,
@@ -234,10 +240,10 @@ def create_annotations(
             species_annotations=species_annotations,
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
-            custom_annotations=document.custom_annotations,
+            custom_annotations=custom_annotations,
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(species=False)
         )
     else:
-        raise AnnotationError(f'Your file {document.filename} could not be annotated.')
-    bioc = bioc_service.read(text=pdf_text, file_uri=document.filename)
+        raise AnnotationError(f'Your file {filename} could not be annotated.')
+    bioc = bioc_service.read(text=pdf_text, file_uri=filename)
     return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
