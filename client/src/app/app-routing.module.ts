@@ -90,7 +90,7 @@ const routes: Routes = [
     path: 'search/content',
     component: ContentSearchComponent,
     data: {
-      title: 'File Search',
+      title: 'Search',
       fontAwesomeIcon: 'search',
     },
   },
