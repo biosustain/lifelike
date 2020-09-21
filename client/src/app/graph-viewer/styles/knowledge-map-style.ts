@@ -44,8 +44,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
     const styleData: UniversalNodeStyle = nullCoalesce(d.style, {});
     const labelFontSizeScale = nullCoalesce(styleData.fontSizeScale, 1);
-    const labelFont = (placementOptions.highlighted || placementOptions.selected ? 'bold ' : '') +
-      (16 * labelFontSizeScale) + 'px ' + this.font;
+    const labelFont = (16 * labelFontSizeScale) + 'px ' + this.font;
     const forceHighDetailLevel = placementOptions.selected || placementOptions.highlighted;
 
     let textColor = '#000';
@@ -176,11 +175,10 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         textbox,
         stroke: this.createLine(
           nullCoalesce(styleData.lineType, 'solid'),
-          nullCoalesce(styleData.lineWidthScale, 1) *
-          (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
+          nullCoalesce(styleData.lineWidthScale, 1),
           strokeColor,
         ),
-        shapeFillColor: (placementOptions.highlighted ? '#E4EFFF' : (placementOptions.selected ? '#efefef' : bgColor)),
+        shapeFillColor: bgColor,
         forceHighDetailLevel,
       });
     }
@@ -197,8 +195,9 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     const fontSizeScale = nullCoalesce(styleData.fontSizeScale, 1);
     const strokeColor = nullCoalesce(styleData.strokeColor, '#2B7CE9');
     const lineType = nullCoalesce(styleData.lineType, 'solid');
+    // noinspection UnnecessaryLocalVariableJS
     const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
-    const lineWidth = lineWidthScale * (placementOptions.highlighted ? 1.5 : 1);
+    const lineWidth = lineWidthScale;
     const sourceHeadType = styleData.sourceHeadType;
     const targetHeadType = styleData.targetHeadType;
 

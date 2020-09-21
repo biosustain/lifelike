@@ -11,6 +11,7 @@ from neo4japp.util import CamelDictMixin
 class AnnotationRequest(CamelDictMixin):
     annotation_method: str = attr.ib()
     file_ids: List[str] = attr.ib(default=attr.Factory(list))
+    organism: str = attr.ib(default='')
 
 
 @attr.s(frozen=True)
@@ -125,3 +126,10 @@ class EntityResults(CamelDictMixin):
     matched_species: Dict[str, LMDBMatch] = attr.ib()
     matched_diseases: Dict[str, LMDBMatch] = attr.ib()
     matched_phenotypes: Dict[str, LMDBMatch] = attr.ib()
+
+
+@attr.s(frozen=True)
+class SpecifiedOrganismStrain(CamelDictMixin):
+    synonym: str = attr.ib()
+    organism_id: str = attr.ib()
+    category: str = attr.ib()

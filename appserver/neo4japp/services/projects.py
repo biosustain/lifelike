@@ -265,6 +265,8 @@ class ProjectsService(RDBMSBaseDao):
             Directory.directory_parent_id,
             Directory.projects_id,
             Directory.user_id,
+            Directory.creation_date,
+            Directory.modified_date,
             AppUser.username,
         ).join(
             AppUser, Directory.user_id == AppUser.id
@@ -279,6 +281,8 @@ class ProjectsService(RDBMSBaseDao):
                 'directory_parent_id',
                 'projects_id',
                 'user_id',
+                'creation_date',
+                'modified_date',
                 'username'
             )
 
@@ -297,6 +301,7 @@ class ProjectsService(RDBMSBaseDao):
             Files.content_id,
             Files.user_id,
             Files.creation_date,
+            Files.modified_date,
             Files.annotations_date,
             Files.project,
             Files.dir_id,
@@ -318,6 +323,7 @@ class ProjectsService(RDBMSBaseDao):
                 'content_id',
                 'user_id',
                 'creation_date',
+                'modified_date',
                 'annotations_date',
                 'project',
                 'dir_id',
@@ -337,7 +343,8 @@ class ProjectsService(RDBMSBaseDao):
             Project.id,
             Project.label,
             Project.description,
-            Project.date_modified,
+            Project.creation_date,
+            Project.modified_date,
             Project.author,
             Project.public,
             Project.user_id,
@@ -355,7 +362,8 @@ class ProjectsService(RDBMSBaseDao):
                 'id',
                 'label',
                 'description',
-                'date_modified',
+                'creation_date',
+                'modified_date',
                 'author',
                 'public',
                 'user_id',
