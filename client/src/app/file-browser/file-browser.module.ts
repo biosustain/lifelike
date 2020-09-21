@@ -20,7 +20,7 @@ import { FileInfoComponent } from './components/file-info.component';
 import { DrawingToolModule } from '../drawing-tool/drawing-tool.module';
 import { FileTypeLabelComponent } from './components/file-type-label.component';
 import { WorksheetViewerComponent } from './components/worksheet-viewer.component';
-
+import { GenericTableComponent } from './components/generic-table.component';
 @NgModule({
   declarations: [
     FileEditDialogComponent,
@@ -40,7 +40,8 @@ import { WorksheetViewerComponent } from './components/worksheet-viewer.componen
     CommunityBrowserComponent,
     FileInfoComponent,
     FileTypeLabelComponent,
-    WorksheetViewerComponent
+    WorksheetViewerComponent,
+    GenericTableComponent
   ],
   imports: [
     SharedModule,
