@@ -1,16 +1,26 @@
 import base64
 import itertools
 import json
+import os
+import re
 
 from elasticsearch.helpers import parallel_bulk, BulkIndexError
 from flask import current_app
 from sqlalchemy.orm import joinedload
 from typing import (
     Dict,
-    List
+    List,
+    Optional,
+    Union
 )
 
-from neo4japp.database import db
+from neo4japp.database import (
+    db,
+    get_lmdb_dao,
+    get_annotations_service,
+    get_annotations_pdf_parser,
+    get_bioc_document_service
+)
 from neo4japp.models import (
     Directory,
     Files,
@@ -21,13 +31,18 @@ from neo4japp.services.elastic import (
     ELASTIC_INDEX_SEED_PAIRS,
     ELASTIC_PIPELINE_SEED_PAIRS,
     FILE_INDEX_ID,
+    FRAGMENT_SIZE,
+    WILDCARD_MIN_LEN
 )
 from neo4japp.utils import EventLog
+from neo4japp.utils.queries import parse_query_terms
 
 
 class ElasticService():
     def __init__(self, elastic):
         self.elastic_client = elastic
+
+    # Begin indexing methods
 
     def update_or_create_index(self, index_id, index_mapping_file):
         """Creates an index with the given index id and mapping file. If the index already exists,
@@ -124,6 +139,7 @@ class ElasticService():
         NOTE: These ids are NOT the ids of the postgres rows! They are typically the id the
         user has visibility on, e.g. `file_id` or `hash_id`.
         """
+        # TODO LL-1639: Probably don't need this try-except here since we have the loop below
         try:
             results = parallel_bulk(
                 self.elastic_client,
@@ -196,6 +212,7 @@ class ElasticService():
                     }
                 })
 
+            # TODO LL-1639: Probably don't need this try-except here since we have the loop below
             try:
                 results = parallel_bulk(self.elastic_client, documents)
             except BulkIndexError as e:
@@ -278,6 +295,7 @@ class ElasticService():
                     }
                 })
 
+            # TODO LL-1639: Probably don't need this try-except here since we have the loop below
             try:
                 results = parallel_bulk(self.elastic_client, documents)
             except BulkIndexError as e:
@@ -299,3 +317,100 @@ class ElasticService():
     def reindex_all_documents(self):
         self.index_files()
         self.index_maps()
+
+    # End indexing methods
+
+    # Begin search methods
+
+    # TODO Will be improving this in the future
+    def _build_query_clause(
+        self,
+        user_query: str,
+        match_fields: Optional[List[str]] = None,
+        boost_fields: Optional[List[str]] = None,
+        query_filter=None,
+        mode: str = 'AND'
+    ):
+        if boost_fields is None:
+            boost_fields = []
+        if match_fields is None:
+            match_fields = []
+        terms, wildcards, phrases = parse_query_terms(user_query)
+
+        if len(terms) == 0 and len(wildcards) == 0 and len(phrases) == 0:
+            return None
+
+        should_query = []
+        if len(terms) > 0:
+            all_terms = ' '.join(terms)
+            multi_match_fields = boost_fields + match_fields
+            multi_match_dict = {'query': all_terms, 'fields': multi_match_fields, 'operator': mode}
+            should_query.append({'multi_match': multi_match_dict})
+        if len(wildcards) > 0:
+            for field in match_fields:
+                match_wildcards = [{'wildcard': {f'{field}': t}} for t in wildcards]
+                should_query += match_wildcards  # type: ignore
+        if len(phrases) > 0:
+            for field in match_fields:
+                match_phrases = [{'match_phrase': {f'{field}': t}} for t in phrases]
+                should_query += match_phrases  # type: ignore
+
+        predicates = [
+            {'bool': {'should': should_query}}
+        ]
+
+        return {'bool': {'must': predicates, 'filter': query_filter}}
+
+    def _build_es_query(
+        self,
+        user_query: str,
+        match_fields: Optional[List[str]] = None,
+        boost_fields: Optional[List[str]] = None,
+        query_filter=None,
+        highlight=None
+    ):
+        """Returns a dictionary representing the elastic search query object"""
+
+        query = self._build_query_clause(
+            user_query,
+            match_fields,
+            boost_fields,
+            query_filter,
+        )
+        return {
+            'query': query,
+            'highlight': highlight,
+        } if query else None
+
+    def search(
+        self,
+        index_id: str,
+        user_query: str,
+        offset: int = 0,
+        limit: int = 10,
+        match_fields: Optional[List[str]] = None,
+        boost_fields: Optional[List[str]] = None,
+        query_filter=None,
+        highlight=None
+    ):
+        es_query = self._build_es_query(
+            user_query=user_query,
+            match_fields=match_fields,
+            boost_fields=boost_fields,
+            highlight=highlight,
+            query_filter=query_filter,
+        )
+        if es_query is None:
+            return {'hits': {'hits': [], 'max_score': None, 'total': 0}}
+
+        es_response = self.elastic_client.search(
+            index=index_id,
+            body=es_query,
+            from_=offset,
+            size=limit,
+            rest_total_hits_as_int=True,
+        )
+        es_response['hits']['hits'] = [doc for doc in es_response['hits']['hits']]
+        return es_response
+
+    # End search methods
