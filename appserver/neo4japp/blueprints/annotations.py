@@ -1,4 +1,3 @@
-import io
 import os
 
 from datetime import datetime
@@ -6,7 +5,6 @@ from enum import Enum
 from typing import Dict, List
 
 from flask import Blueprint, current_app, g, make_response
-from werkzeug.datastructures import FileStorage
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import (
@@ -19,7 +17,6 @@ from neo4japp.database import (
     get_annotation_neo4j,
     get_excel_export_service,
     get_manual_annotations_service,
-    get_kg_service,
 )
 from neo4japp.data_transfer_objects import AnnotationRequest
 from neo4japp.exceptions import (
@@ -50,13 +47,11 @@ def annotate(
     specified_organism: str = '',
     annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
 ):
-    fp = FileStorage(io.BytesIO(doc.raw_file), doc.filename)
-
     annotations_json = create_annotations(
         annotation_method=annotation_method,
         specified_organism=specified_organism,
         document=doc,
-        source=fp
+        filename=doc.filename
     )
 
     current_app.logger.debug(
