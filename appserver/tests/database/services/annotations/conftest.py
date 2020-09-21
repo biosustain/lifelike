@@ -333,6 +333,63 @@ def default_lmdb_setup(app, request):
 
 
 @pytest.fixture(scope='function')
+def bola_human_monkey_gene(app, request):
+    # Create gene data
+    bola3 = lmdb_gene_factory(
+        gene_id='388962',
+        id_type=DatabaseType.NCBI.value,
+        name='BOLA3',
+        synonym='BOLA3',
+        category=OrganismCategory.EUKARYOTA.value,
+    )
+
+    bola3_monkey = lmdb_gene_factory(
+        gene_id='101099627',
+        id_type=DatabaseType.NCBI.value,
+        name='BOLA3',
+        synonym='BOLA3',
+        category=OrganismCategory.EUKARYOTA.value,
+    )
+
+    # Create species data
+    human = lmdb_species_factory(
+        tax_id='9606',
+        category=OrganismCategory.EUKARYOTA.value,
+        id_type=DatabaseType.NCBI.value,
+        name='Homo sapiens',
+        synonym='Homo sapiens',
+    )
+
+    monkey = lmdb_species_factory(
+        tax_id='37293',
+        category=OrganismCategory.EUKARYOTA.value,
+        id_type=DatabaseType.NCBI.value,
+        name='Aotus nancymai',
+        synonym='Aotus nancymai',
+    )
+
+    entities = [
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (GENES_NCBI_LMDB, 'genes', [bola3, bola3_monkey]),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [human, monkey]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+
+@pytest.fixture(scope='function')
 def human_gene_pdf_lmdb_setup(app, request):
     # Create gene data
     ace2 = lmdb_gene_factory(
@@ -768,6 +825,22 @@ def mock_get_gene_ace2_for_global_gene_inclusion(monkeypatch):
         AnnotationsNeo4jService,
         'get_genes_from_gene_ids',
         get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_get_gene_specified_strain(monkeypatch):
+    result = [{'BOLA3': {'9606': '388962'}}, {'BOLA3': {'37293': '101099627'}}]
+
+    def get_match_result(*args, **kwargs):
+        # simulate service being called twice
+        # TODO: not working as expected...
+        return result.pop()
+
+    monkeypatch.setattr(
+        AnnotationsNeo4jService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
     )
 
 
