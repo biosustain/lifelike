@@ -50,6 +50,9 @@ export class TextElement {
    */
   constructor(private ctx: CanvasRenderingContext2D, options: TextboxOptions) {
     Object.assign(this, options);
+    if (this.text == null) {
+      this.text = '';
+    }
 
     ctx.font = this.font;
 
