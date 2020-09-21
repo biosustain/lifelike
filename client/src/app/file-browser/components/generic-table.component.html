@@ -1,0 +1,38 @@
+<table
+  class="table module-body-table"
+  style="
+    border: 1px solid #919497;
+    width: 95%;
+    margin-left: 2.5%;
+    margin-right: 2.5%;
+    margin-top: 2.5%;
+  "
+>
+  <ng-container *ngIf="numColumns">
+    <colgroup>
+      <col *ngFor="let col of numColumns" />
+    </colgroup>
+  </ng-container>
+  <thead>
+    <ng-container *ngIf="HEADER">
+      <tr class="table-header" *ngFor="let row of HEADER">
+        <th
+          class="text-truncate"
+          *ngFor="let col of row"
+          [attr.colspan]="col.span"
+        >
+          {{ col.name }}
+        </th>
+      </tr>
+    </ng-container>
+  </thead>
+
+  <tbody>
+    <ng-container *ngIf="entries">
+      <tr *ngFor="let row of entries">
+        <td *ngFor="let entry of row"><div class="entry">{{ entry }}</div></td>
+      </tr>
+    </ng-container>
+    <tr></tr>
+  </tbody>
+</table>
