@@ -121,11 +121,11 @@ def search_content():
     t_project_role_user = aliased(AppUser)
 
     # Role table used to check if we have permission
-    project_role_sq = db.session.query(projects_collaborator_role) \
+    project_role_sq = db.session.query(projects_collaborator_role.c.projects_id,
+                                       projects_collaborator_role.c.appuser_id,
+                                       t_project_role_role.name) \
         .join(t_project_role_role,
               t_project_role_role.id == projects_collaborator_role.c.app_role_id) \
-        .join(t_project_role_user,
-              t_project_role_user.id == projects_collaborator_role.c.appuser_id) \
         .subquery()
 
     queries = []
@@ -148,8 +148,9 @@ def search_content():
             .join(t_project, t_project.id == t_directory.projects_id) \
             .outerjoin(project_role_sq, project_role_sq.c.projects_id == t_project.id) \
             .filter(sqlalchemy.or_(Project.public.is_(True),
-                                   sqlalchemy.and_(t_project_role_user.id == user_id,
-                                                   t_project_role_role.name == 'project-read')))
+                                   sqlalchemy.and_(project_role_sq.c.appuser_id == user_id,
+                                                   sqlalchemy.or_(project_role_sq.c.name == 'project-read',
+                                                                  project_role_sq.c.name == 'project-admin'))))
         map_query = ft_search(map_query, q)
         queries.append(map_query)
 
@@ -171,8 +172,9 @@ def search_content():
             .join(t_directory, t_directory.id == Files.dir_id) \
             .join(t_project, t_project.id == t_directory.projects_id) \
             .outerjoin(project_role_sq, project_role_sq.c.projects_id == t_project.id) \
-            .filter(sqlalchemy.and_(t_project_role_user.id == user_id,
-                                    t_project_role_role.name == 'project-read'))
+            .filter(sqlalchemy.and_(project_role_sq.c.appuser_id == user_id,
+                                    sqlalchemy.or_(project_role_sq.c.name == 'project-read',
+                                                   project_role_sq.c.name == 'project-admin')))
         file_query = file_query.filter(
             sqlalchemy.func.lower(Files.filename).like(f'%{q.lower()}%')
         )  # TODO: Make FT
