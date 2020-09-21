@@ -1,0 +1,17 @@
+td {
+  overflow: auto;
+  border: 1px solid #919497;
+}
+
+col, tr {
+  border: 1px solid #919497;
+}
+
+.table-header {
+  background-color: #ced4da;
+}
+
+.entry {
+  resize: both;
+  overflow: auto;
+}
