@@ -139,23 +139,14 @@ class ElasticService():
         NOTE: These ids are NOT the ids of the postgres rows! They are typically the id the
         user has visibility on, e.g. `file_id` or `hash_id`.
         """
-        # TODO LL-1639: Probably don't need this try-except here since we have the loop below
-        try:
-            results = parallel_bulk(
-                self.elastic_client,
-                ({'_op_type': 'delete', '_index': index_id, '_id': f_id} for f_id in file_ids)
-            )
-        except BulkIndexError as e:
-            current_app.logger.error(
-                f'Failed to bulk delete one or more documents with ids {file_ids} from elastic',
-                exc_info=e,
-                extra=EventLog(event_type='elastic').to_dict()
-            )
-            return
+        results = parallel_bulk(
+            self.elastic_client,
+            ({'_op_type': 'delete', '_index': index_id, '_id': f_id} for f_id in file_ids)
+        )
 
         for success, info in results:
             if not success:
-                current_app.logger.warning(
+                current_app.logger.error(
                     'Failed to delete document in ES: {}'.format(info),
                     extra=EventLog(event_type='elastic').to_dict()
                 )
@@ -212,21 +203,11 @@ class ElasticService():
                     }
                 })
 
-            # TODO LL-1639: Probably don't need this try-except here since we have the loop below
-            try:
-                results = parallel_bulk(self.elastic_client, documents)
-            except BulkIndexError as e:
-                current_app.logger.error(
-                    f'Failed to bulk insert one or more files with ids {file_ids} and index' +
-                    f'{FILE_INDEX_ID} into elastic',
-                    exc_info=e,
-                    extra=EventLog(event_type='elastic').to_dict()
-                )
-                return
+            results = parallel_bulk(self.elastic_client, documents)
 
             for success, info in results:
                 if not success:
-                    current_app.logger.warning(
+                    current_app.logger.error(
                         'Failed to index document in ES: {}'.format(info),
                         extra=EventLog(event_type='elastic').to_dict()
                     )
@@ -295,21 +276,11 @@ class ElasticService():
                     }
                 })
 
-            # TODO LL-1639: Probably don't need this try-except here since we have the loop below
-            try:
-                results = parallel_bulk(self.elastic_client, documents)
-            except BulkIndexError as e:
-                current_app.logger.error(
-                    f'Failed to bulk insert one or more files with ids {map_ids} and index' +
-                    f'{FILE_INDEX_ID} into elastic',
-                    exc_info=e,
-                    extra=EventLog(event_type='elastic').to_dict()
-                )
-                return
+            results = parallel_bulk(self.elastic_client, documents)
 
             for success, info in results:
                 if not success:
-                    current_app.logger.warning(
+                    current_app.logger.error(
                         'Failed to index document in ES: {}'.format(info),
                         extra=EventLog(event_type='elastic').to_dict()
                     )
