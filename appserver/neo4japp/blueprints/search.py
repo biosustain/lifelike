@@ -149,8 +149,9 @@ def search_content():
             .outerjoin(project_role_sq, project_role_sq.c.projects_id == t_project.id) \
             .filter(sqlalchemy.or_(Project.public.is_(True),
                                    sqlalchemy.and_(project_role_sq.c.appuser_id == user_id,
-                                                   sqlalchemy.or_(project_role_sq.c.name == 'project-read',
-                                                                  project_role_sq.c.name == 'project-admin'))))
+                                                   sqlalchemy.or_(
+                                                       project_role_sq.c.name == 'project-read',
+                                                       project_role_sq.c.name == 'project-admin'))))
         map_query = ft_search(map_query, q)
         queries.append(map_query)
 
