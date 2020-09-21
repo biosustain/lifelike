@@ -74,6 +74,7 @@ def visualizer_search_temp(req: VizSearchRequest):
 #     results = search_dao.predictive_search(req.query)
 #     return SuccessResponse(result=results, status_code=200)
 
+# TODO: Probably should rename this to something else...not sure what though
 @bp.route('/pdf-search', methods=['POST'])
 @auth.login_required
 @jsonify_with_class(PDFSearchRequest)
