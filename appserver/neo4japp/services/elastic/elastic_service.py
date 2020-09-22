@@ -133,6 +133,17 @@ class ElasticService():
         for (index_id, index_mapping_file) in ELASTIC_INDEX_SEED_PAIRS:
             self.update_or_create_index(index_id, index_mapping_file)
 
+    def parallel_bulk_documents(self, documents):
+        """Performs a series of bulk operations in elastic, determined by the `documents` input."""
+        results = parallel_bulk(self.elastic_client, documents)
+
+        for success, info in results:
+            if not success:
+                current_app.logger.error(
+                    f'Elastic search bulk operation failed: {info}',
+                    extra=EventLog(event_type='elastic').to_dict()
+                )
+
     def delete_documents_with_index(self, file_ids: List[str], index_id: str):
         """
         Deletes all documents with the given ids from Elastic.
@@ -140,17 +151,13 @@ class ElasticService():
         NOTE: These ids are NOT the ids of the postgres rows! They are typically the id the
         user has visibility on, e.g. `file_id` or `hash_id`.
         """
-        results = parallel_bulk(
-            self.elastic_client,
-            ({'_op_type': 'delete', '_index': index_id, '_id': f_id} for f_id in file_ids)
+        self.parallel_bulk_documents((
+            {
+                '_op_type': 'delete',
+                '_index': index_id,
+                '_id': f_id
+            } for f_id in file_ids)
         )
-
-        for success, info in results:
-            if not success:
-                current_app.logger.error(
-                    'Failed to delete document in ES: {}'.format(info),
-                    extra=EventLog(event_type='elastic').to_dict()
-                )
         self.elastic_client.indices.refresh(index_id)
 
     # TODO: Eventually `index_files` and `index_maps` will be the same service.
@@ -204,14 +211,7 @@ class ElasticService():
                     }
                 })
 
-            results = parallel_bulk(self.elastic_client, documents)
-
-            for success, info in results:
-                if not success:
-                    current_app.logger.error(
-                        'Failed to index document in ES: {}'.format(info),
-                        extra=EventLog(event_type='elastic').to_dict()
-                    )
+            self.parallel_bulk_documents(documents)
 
     def index_maps(self, map_ids: List[int] = None, batch_size: int = 100):
         """Adds the maps with the given ids to Elastic. If no ids are given, adds all maps."""
@@ -277,14 +277,7 @@ class ElasticService():
                     }
                 })
 
-            results = parallel_bulk(self.elastic_client, documents)
-
-            for success, info in results:
-                if not success:
-                    current_app.logger.error(
-                        'Failed to index document in ES: {}'.format(info),
-                        extra=EventLog(event_type='elastic').to_dict()
-                    )
+            self.parallel_bulk_documents(documents)
 
     def reindex_all_documents(self):
         self.index_files()
