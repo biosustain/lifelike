@@ -55,6 +55,7 @@
           SENTRY_KEY={{ SENTRY_KEY }}
           REDIS_HOST={{ REDIS_HOST }}
           REDIS_PORT={{ REDIS_PORT }}
+          DOMAIN={{ DOMAIN }}
           GITHUB_HASH={{ docker_img_hash }}
         dest: "{{ deploy_dir }}/.env"
         owner: "{{ deploy_user }}"
