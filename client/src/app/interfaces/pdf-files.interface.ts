@@ -10,6 +10,7 @@ export interface PdfFile {
   upload_url?: string;
   filename?: string;
   creation_date?: string;
+  modified_date?: string;
   description?: string;
   username?: string;
   annotations_date?: string;
