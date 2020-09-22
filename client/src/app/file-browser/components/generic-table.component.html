@@ -1,28 +1,8 @@
-<table
-  class="table module-body-table"
-  style="
-    border: 1px solid #919497;
-    width: 95%;
-    margin-left: 2.5%;
-    margin-right: 2.5%;
-    margin-top: 2.5%;
-  "
->
-  <ng-container *ngIf="numColumns">
-    <colgroup>
-      <col *ngFor="let col of numColumns" />
-    </colgroup>
-  </ng-container>
+<table class="table table-bordered module-body-table">
   <thead>
     <ng-container *ngIf="HEADER">
-      <tr class="table-header" *ngFor="let row of HEADER">
-        <th
-          class="text-truncate"
-          *ngFor="let col of row"
-          [attr.colspan]="col.span"
-        >
-          {{ col.name }}
-        </th>
+      <tr class="table-secondary" *ngFor="let row of HEADER">
+        <th *ngFor="let col of row" class="border-top text-center text-truncate" [attr.colspan]="col.span">{{ col.name }}</th>
       </tr>
     </ng-container>
   </thead>
@@ -30,7 +10,9 @@
   <tbody>
     <ng-container *ngIf="entries">
       <tr *ngFor="let row of entries">
-        <td *ngFor="let entry of row"><div class="entry">{{ entry }}</div></td>
+        <td *ngFor="let entry of row" class="overflow-auto entry">
+          <div>{{ entry }}</div>
+        </td>
       </tr>
     </ng-container>
     <tr></tr>
