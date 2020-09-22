@@ -52,7 +52,7 @@ class ElasticService():
         index_definition = json.loads(index_definition_data)
 
         if self.elastic_client.indices.exists(index_id):
-            # Here, we actually delete the index and re-create it. The reason for this is that, if
+            # Here, we delete the index and re-create it. The reason for this is that, if
             # we update the type of a field in the index, elastic will complain and fail to update
             # the index. So to prevent this from happening, we just trash the index and re-create
             # it.
@@ -70,37 +70,25 @@ class ElasticService():
                 )
                 return
 
-            try:
-                self.elastic_client.indices.create(index=index_id, body=index_definition)
-                current_app.logger.info(
-                    f'Created ElasticSearch index {index_id}',
-                    extra=EventLog(event_type='elastic').to_dict()
-                )
-            except Exception as e:
-                current_app.logger.error(
-                    f'Failed to create ElasticSearch index {index_id}',
-                    exc_info=e,
-                    extra=EventLog(event_type='elastic').to_dict()
-                )
-                return
+        try:
+            self.elastic_client.indices.create(index=index_id, body=index_definition)
+            current_app.logger.info(
+                f'Created ElasticSearch index {index_id}',
+                extra=EventLog(event_type='elastic').to_dict()
+            )
+        except Exception as e:
+            current_app.logger.error(
+                f'Failed to create ElasticSearch index {index_id}',
+                exc_info=e,
+                extra=EventLog(event_type='elastic').to_dict()
+            )
+            return
 
-            # But, if we trash the index we also need to re-index all the documents that used it.
-            # Currently we take the safe route and simply re-index ALL documents, regardless of
-            # which index was actually re-created.
-            self.reindex_all_documents()
-        else:
-            try:
-                self.elastic_client.indices.create(index=index_id, body=index_definition)
-                current_app.logger.info(
-                    f'Created new ElasticSearch index {index_id}',
-                    extra=EventLog(event_type='elastic').to_dict()
-                )
-            except Exception as e:
-                current_app.logger.error(
-                    f'Failed to create ElasticSearch index {index_id}',
-                    exc_info=e,
-                    extra=EventLog(event_type='elastic').to_dict()
-                )
+        # If we trash the index we also need to re-index all the documents that used it.
+        # Currently we take the safe route and simply re-index ALL documents, regardless of
+        # which index was actually re-created.
+        self.reindex_all_documents()
+
 
     def update_or_create_pipeline(self, pipeline_id, pipeline_definition_file):
         """Creates a pipeline with the given pipeline id and definition file. If the pipeline
