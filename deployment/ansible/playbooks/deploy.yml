@@ -8,6 +8,8 @@
       tags: ["docker"]
     - role: gcloud-auth
       tags: ["gcloud-auth"]
+    - role: lmdb
+      tags: ["lmdb"]
 
   tasks:
     - name: Allow Docker to access Google Cloud Registry
