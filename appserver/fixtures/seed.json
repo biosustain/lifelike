@@ -1004,7 +1004,7 @@
             }
           ]
         },
-        "date_modified": "2020-01-30T23:48:32.794Z"
+        "modified_date": "2020-01-30T23:48:32.794Z"
       },
       {
         "hash_id": "c04d0ae7508d1f05a7365d31476898ef",
@@ -1014,7 +1014,7 @@
         "dir_id": 1,
         "description": "This illustrate the potential solutions that exists out there in treating the coronavirus currently plaguing our reality.",
         "public": true,
-        "date_modified": "2020-01-30T23:48:32.794Z",
+        "modified_date": "2020-01-30T23:48:32.794Z",
         "graph": {
           "edges": [
             {

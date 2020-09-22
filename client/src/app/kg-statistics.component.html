@@ -52,8 +52,7 @@
         </div>
 
         <div class="graph-card-deck mt-4">
-          <ng-container *ngFor="let data of chartDataEntitiesByDomain | keyvalue" fxLayout="column"
-                        fxLayoutAlign="center center">
+          <ng-container *ngFor="let data of chartDataEntitiesByDomain | keyvalue">
             <div class="card mt-4">
               <div class="card-header">
                 {{data.key}}
