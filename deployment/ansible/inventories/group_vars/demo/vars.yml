@@ -1,0 +1,16 @@
+server_name: demo.lifelike.bio
+
+deploy_user: ansible
+deploy_group: ansible
+deploy_dir: /home/ansible
+
+nginx_image: nginx:1.19.1-alpine
+nginx_hostname: ng01
+nginx_conf_dir: /home/ansible/nginx
+
+certbot_image: certbot/certbot
+certbot_hostname: cb01
+certbot_conf_dir: /home/ansible/certbot
+certbot_email: dbour@eng.ucsd.edu
+
+dh_param_dir: /home/ansible/dh-param

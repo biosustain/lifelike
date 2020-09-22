@@ -7,7 +7,7 @@ services:
         env_file:
             - ./.env
         volumes:
-            - ${ LMDB_DIR:-/home/ansible/lmdb }:/home/n4j/neo4japp/services/annotations/lmdb
+            - ${LMDB_DIR:-/home/ansible/lmdb}:/home/n4j/neo4japp/services/annotations/lmdb
         networks:
             - frontend
             - backend
@@ -17,9 +17,9 @@ services:
             - 80:80
             - 443:443
         volumes:
-            - ${ DH_PARAM_FILE:-/home/ansible/dh-param/dhparam-2048.pem }:/etc/ssl/certs/dhparam-2048.pem
-            - ${ CERTBOT_CERT_DIR:-/home/ansible/certbot/live }/${{ domain }}/fullchain.pem:/etc/letsencrypt/live/${{ domain }}/fullchain.pem
-            - ${ CERTBOT_CERT_DIR:-/home/ansible/certbot/live }/${{ domain }}/privkey.pem:/etc/letsencrypt/live/${{ domain }}/privkey.pem
+            - ${DH_PARAM_FILE:-/home/ansible/dh-param/dhparam-2048.pem}:/etc/ssl/certs/dhparam-2048.pem
+            - ${CERTBOT_CERT_DIR:-/home/ansible/certbot/live}/${domain}/fullchain.pem:/etc/letsencrypt/live/${domain}/fullchain.pem
+            - ${CERTBOT_CERT_DIR:-/home/ansible/certbot/live}/${domain}/privkey.pem:/etc/letsencrypt/live/${domain}/privkey.pem
         networks:
             - frontend
 
@@ -29,7 +29,7 @@ services:
         env_file:
             - ./.env
         volumes:
-            - ${ NLP_DIR:-/home/ansible/models }:/models
+            - ${NLP_DIR:-/home/ansible/models}:/models
         networks:
             - backend
 
