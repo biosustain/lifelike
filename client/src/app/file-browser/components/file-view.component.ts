@@ -1,5 +1,6 @@
+import { uniqueId } from 'lodash';
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, from, throwError, Subject, Subscription, BehaviorSubject } from 'rxjs';
+import { combineLatest, Subject, Subscription, BehaviorSubject } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, DatabaseType, AnnotationType } from 'app/shared/constants';
 
@@ -28,10 +29,6 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
-import { catchError } from 'rxjs/operators';
-import { error } from 'util';
-import { HttpErrorResponse } from '@angular/common/http';
-import { UserError } from '../../shared/exceptions';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 
 class DummyFile implements PdfFile {
@@ -60,6 +57,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
+
+  id = uniqueId('FileViewComponent-');
 
   paramsSubscription: Subscription;
   returnUrl: string;
@@ -122,20 +121,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       return combineLatest(
         this.pdf.getFileMeta(file.file_id, this.projectName),
         this.pdf.getFile(file.file_id, this.projectName),
-        this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName).pipe(
-          catchError(err => {
-            // There have been so many issues with annotations that let's explicitly mention
-            // a problem with annotation loading
-            return throwError(new UserError(
-              'Annotation Data Failed to Load',
-              'This document cannot be loaded because the annotation data for this file has a problem. ' +
-              'You may try to re-annotate this file or re-upload it.',
-              null,
-              err,
-            ));
-          }),
-        ),
-      );
+        this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName));
     });
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {

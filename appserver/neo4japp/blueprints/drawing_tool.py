@@ -157,7 +157,7 @@ def upload_map(projects_name: str):
         author=f'{user.first_name} {user.last_name}',
         label=draw_proj_name,
         description=proj_description,
-        date_modified=datetime.now(),
+        modified_date=datetime.now(),
         graph=map_data,
         user_id=user.id,
         dir_id=dir_id,
@@ -194,7 +194,7 @@ def get_community_projects():
         query,
         request.args,
         columns={
-            'dateModified': Project.date_modified,
+            'dateModified': Project.modified_date,
             'label': Project.label,
         },
         default_sort='label',
@@ -257,11 +257,11 @@ def add_project(projects_name: str):
 
     yield user, projects
 
-    date_modified = datetime.strptime(
-        data.get('date_modified', ''),
+    modified_date = datetime.strptime(
+        data.get('modified_date', ''),
         '%Y-%m-%dT%H:%M:%S.%fZ'
     ) if data.get(
-        'date_modified'
+        'modified_date'
     ) is not None else datetime.now()
 
     # Create new project
@@ -269,7 +269,7 @@ def add_project(projects_name: str):
         author=f'{user.first_name} {user.last_name}',
         label=data.get('label', ''),
         description=data.get('description', ''),
-        date_modified=date_modified,
+        modified_date=modified_date,
         public=data.get("public", False),
         graph=data.get("graph", {'nodes': [], 'edges': []}),
         user_id=user.id,
@@ -332,7 +332,7 @@ def update_project(hash_id: str, projects_name: str):
     project_version = ProjectVersion(
         label=project.label,
         description=project.description,
-        date_modified=datetime.now(),
+        modified_date=datetime.now(),
         public=project.public,
         graph=project.graph,
         user_id=user.id,
@@ -349,7 +349,7 @@ def update_project(hash_id: str, projects_name: str):
         project.graph = data['graph']
     if not project.graph:
         project.graph = {"edges": [], "nodes": []}
-    project.date_modified = datetime.now()
+    project.modified_date = datetime.now()
     if 'public' in data:
         project.public = data['public']
 
@@ -414,7 +414,7 @@ def get_versions(projects_name: str, hash_id: str):
 
     try:
         project_versions = ProjectVersion.query.with_entities(
-            ProjectVersion.id, ProjectVersion.date_modified).filter(
+            ProjectVersion.id, ProjectVersion.modified_date).filter(
             ProjectVersion.project_id == target_map.id
         ).join(
             Directory,
@@ -655,7 +655,7 @@ def project_backup_get(hash_id):
         'id': backup.project_id,
         'label': backup.label,
         'description': backup.description,
-        'date_modified': backup.date_modified,
+        'modified_date': backup.modified_date,
         'graph': backup.graph,
         'author': backup.author,
         'public': backup.public,
@@ -694,7 +694,7 @@ def project_backup_post(hash_id_, **data):
     backup.project_id = data["id"]
     backup.label = data["label"]
     backup.description = data["description"]
-    backup.date_modified = data["date_modified"]
+    backup.modified_date = data["modified_date"]
     backup.graph = data["graph"]
     backup.author = data["author"]
     backup.public = data["public"]
