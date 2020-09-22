@@ -117,6 +117,7 @@ class ElasticService():
                 exc_info=e,
                 extra=EventLog(event_type='elastic').to_dict()
             )
+            return
 
         current_app.logger.info(
             f'Created or updated ElasticSearch pipeline {pipeline_id}',
