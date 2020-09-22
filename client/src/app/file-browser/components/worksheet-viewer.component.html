@@ -21,15 +21,9 @@
         </div>
       </div>
 
-      <div class="position-relative overflow-hidden flex-fill">
-        <div class="module-body-table">
-          <div class="module-body-table">
-            <ng-container *ngIf="entries">
-            <app-generic-table [header]="tableHeader" [columns]="numColumns" [rows]="entries">
-            </app-generic-table>
-          </ng-container>
-            </div>
-          </div>
+      <div *ngIf="entries" class="module-body">
+        <app-generic-table [header]="tableHeader" [columns]="numColumns" [rows]="entries">
+        </app-generic-table>
       </div>
     </div>
   </div>
