@@ -89,7 +89,6 @@ class ElasticService():
         # which index was actually re-created.
         self.reindex_all_documents()
 
-
     def update_or_create_pipeline(self, pipeline_id, pipeline_definition_file):
         """Creates a pipeline with the given pipeline id and definition file. If the pipeline
         already exists, we update it."""
@@ -225,23 +224,38 @@ class ElasticService():
             for map in batch:
                 map_data: Dict[str, List[Dict[str, str]]] = {'nodes': [], 'edges': []}
 
-                for node in map.graph['nodes']:
-                    map_data['nodes'].append(
-                        {
-                            'label': node.get('label', ''),
-                            'display_name': node.get('display_name', ''),
-                            'detail': node.get('detail', ''),
-                        }
-                    )
-
-                for edge in map.graph['edges']:
-                    edge_data = edge.get('data', '')
-                    map_data['edges'].append(
-                        {
-                            'label': edge.get('label', ''),
-                            'detail': edge_data.get('detail', '') if edge_data else '',
-                        }
-                    )
+                for node in map.graph.get('nodes', []):
+                    try:
+                        map_data['nodes'].append(
+                            {
+                                'label': node.get('label', ''),
+                                'display_name': node.get('display_name', ''),
+                                'detail': node.get('detail', ''),
+                            }
+                        )
+                    except KeyError as e:
+                        current_app.logger.error(
+                            f'Error while parsing node for elastic indexing: {node}',
+                            exc_info=e,
+                            extra=EventLog(event_type='elastic').to_dict()
+                        )
+                        # Continue parsing through remaining nodes
+                for edge in map.graph.get('edges', []):
+                    try:
+                        edge_data = edge.get('data', '')
+                        map_data['edges'].append(
+                            {
+                                'label': edge.get('label', ''),
+                                'detail': edge_data.get('detail', '') if edge_data else '',
+                            }
+                        )
+                    except KeyError as e:
+                        current_app.logger.error(
+                            f'Error while parsing edge for elastic indexing: {edge}',
+                            exc_info=e,
+                            extra=EventLog(event_type='elastic').to_dict()
+                        )
+                        # Continue parsing through remaining edges
 
                 map_data_bstr = json.dumps(map_data).encode('utf-8')
 
