@@ -86,12 +86,12 @@ jobs:
                 dockerfile: ./Dockerfile
 
             - name: Build NLP
-              uses: docker/build-push-action@v1
+              uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                repository: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
-                tags: ${{ github.sha }},latest
-                path: ./nlp
-                dockerfile: ./nlp/Dockerfile
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
+                image_tag: ${{ github.sha }},latest
+                context: ./nlp
+                dockerfile: ./Dockerfile
