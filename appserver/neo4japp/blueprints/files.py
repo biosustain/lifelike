@@ -184,10 +184,6 @@ def upload_pdf(request, project_name: str):
             f'User uploaded file: <{filename}>',
             extra=UserEventLog(
                 username=g.current_user.username, event_type='file upload').to_dict())
-
-        # Add the new file as a elasticsearch document
-        elastic_service = get_elastic_service()
-        elastic_service.index_files([file.id])
     except Exception:
         raise FileUploadError('Your file could not be saved. Please try uploading again.')
 
@@ -513,19 +509,20 @@ def delete_files(project_name: str):
     else:
         db.session.commit()
 
-        # Delete this file from elasticsearch
-        elastic_service = get_elastic_service()
-        elastic_service.delete_documents_with_index(
-            file_ids=deleted_file_ids,
-            index_id=FILE_INDEX_ID
-        )
-
         for deleted in deleted_file_names:
             current_app.logger.info(
                 f'User deleted file: <{deleted}>',
                 extra=UserEventLog(
                     username=g.current_user.username, event_type='file delete').to_dict())
             outcome[deleted] = DeletionOutcome.DELETED.value
+
+        # Delete these files from elasticsearch. We have to do this manually here because of the
+        # bulk deletion above.
+        elastic_service = get_elastic_service()
+        elastic_service.delete_documents_with_index(
+            file_ids=deleted_file_ids,
+            index_id=FILE_INDEX_ID
+        )
 
     yield jsonify(outcome)
 
