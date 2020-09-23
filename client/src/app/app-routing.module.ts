@@ -216,7 +216,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'word-cloud',
+    path: 'word-cloud/:project_name/:file_id',
     component: WordCloudComponent,
     data: {
       title: 'Word Cloud',
