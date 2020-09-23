@@ -25,8 +25,7 @@ import {WorkspaceManager} from './shared/workspace-manager';
 import {UnloadConfirmationGuard} from './shared/guards/UnloadConfirmation.guard';
 import {DashboardComponent} from './dashboard.component';
 import {KgImportModule} from './kg-import/kg-import.module';
-import {WordCloudComponent} from './word-cloud/word-cloud.component';
-import {TagCloudModule} from 'angular-tag-cloud-module';
+import {WordCloudModule} from './word-cloud/word-cloud.module';
 
 @NgModule({
   declarations: [
@@ -35,7 +34,6 @@ import {TagCloudModule} from 'angular-tag-cloud-module';
     WorkspaceOutletComponent,
     DashboardComponent,
     KgStatisticsComponent,
-    WordCloudComponent,
   ],
   imports: [
     BrowserModule,
@@ -54,7 +52,7 @@ import {TagCloudModule} from 'angular-tag-cloud-module';
     ChartsModule,
     DrawingToolModule,
     NgbModule,
-    TagCloudModule
+    WordCloudModule,
   ],
   providers: [
     httpInterceptorProviders,
