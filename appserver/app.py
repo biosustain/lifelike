@@ -4,12 +4,12 @@ import logging
 import os
 import click
 import sentry_sdk
-
+from datetime import datetime
 from flask import request
 
 from sqlalchemy import func, MetaData, inspect, Table
 from sqlalchemy.sql.expression import text
-
+from neo4japp.constants import TIMEZONE
 from neo4japp.database import db, get_account_service
 from neo4japp.factory import create_app
 from neo4japp.models import (
@@ -221,6 +221,82 @@ def seed_elasticsearch():
     print('Seeds elasticsearch with PDF indexes')
     index_pdf.seed_elasticsearch()
 
+
+@app.cli.command('reannotate')
+def reannotate_all():
+    """ CAUTION: Master command to reannotate all files
+    in the database. """
+    from neo4japp.blueprints.annotations import annotate
+    from neo4japp.models import Files, FileContent
+    from neo4japp.exceptions import AnnotationError
+    files = db.session.query(
+        Files.id,
+        Files.annotations,
+        Files.custom_annotations,
+        Files.file_id,
+        Files.filename,
+        FileContent.raw_file,
+    ).join(
+        FileContent,
+        FileContent.id == Files.content_id,
+    ).all()
+    updated_files = []
+    for fi in files:
+        try:
+            annotations = annotate(doc=fi)
+        except AnnotationError:
+            logger.info('Failed to annotate: <id:{fi.id}>')
+        else:
+            updated_files.append(annotations)
+    db.session.bulk_update_mappings(Files, updated_files)
+    db.session.commit()
+
+
+@app.cli.command('global-annotation')
+@click.argument('filename', nargs=1)
+def seed_global_annotation_list(filename):
+    """
+    TODO: Make generic
+    * This is used as a temporary stop gap
+    to seed some existing data.
+    Seeds the 'global_list' table with
+    a given exclusion/inclusion list """
+    from neo4japp.models import FileContent, GlobalList
+    FIXTURE_PATH = './fixtures'
+    # Randomly choose a file to associate with.
+    # Make the file_id column nullable if we
+    # don't use it, or refactor this function
+    # to use a "meaningful" file_id
+    random_file = FileContent.query.first()
+    with open(os.path.join(FIXTURE_PATH, filename)) as fi:
+        fix = json.load(fi)
+        inclusions = fix['inclusions']
+        exclusions = fix['exclusions']
+        current_time = datetime.now(TIMEZONE)
+        for new_incl in inclusions:
+            gl = GlobalList(
+                annotation=new_incl,
+                type='inclusion',
+                file_id=random_file.id,
+                reviewed=False,
+                approved=False,
+                creation_date=new_incl.get('inclusion_date', current_time),
+                modified_date=new_incl.get('inclusion_date', current_time),
+            )
+            db.session.add(gl)
+        for new_excl in exclusions:
+            gl = GlobalList(
+                annotation=new_excl,
+                type='exclusion',
+                file_id=random_file.id,
+                reviewed=False,
+                approved=False,
+                creation_date=new_incl.get('exclusion_date', current_time),
+                modified_date=new_incl.get('exclusion_date', current_time),
+            )
+            db.session.add(gl)
+        db.session.commit()
+    print('Completed seeding global inclusion/exclusion list')
 
 @app.cli.command('fix-projects')
 def fix_project_acl():
