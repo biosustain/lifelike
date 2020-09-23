@@ -50,8 +50,6 @@ class Projects(RDBMSBase, TimestampMixin):  # type: ignore
     description = db.Column(db.Text)
     users = db.Column(db.ARRAY(db.Integer), nullable=False)
 
-    directories = db.relationship('Directory')
-
     @validates('project_name')
     def validate_project_name(self, key, name):
         if not re.match('^[A-Za-z0-9-]+$', name):
