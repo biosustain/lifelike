@@ -25,6 +25,7 @@ import { WorkspaceManager } from './shared/workspace-manager';
 import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
 import { DashboardComponent } from './dashboard.component';
 import { KgImportModule } from './kg-import/kg-import.module';
+import { WordCloudComponent } from './word-cloud/word-cloud.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { KgImportModule } from './kg-import/kg-import.module';
     WorkspaceOutletComponent,
     DashboardComponent,
     KgStatisticsComponent,
+    WordCloudComponent,
   ],
   imports: [
     BrowserModule,
