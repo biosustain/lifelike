@@ -69,6 +69,10 @@
         chdir: "{{ deploy_dir }}"
         cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
 
+    - name: Prune unused images
+      shell:
+        "docker image prune -a -f"
+
     - name: Run database migrations and backups
       block:
         - name: Fetch cloud_sql_service_account
