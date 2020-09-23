@@ -1,30 +1,31 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import {NgModule} from '@angular/core';
+import {RouterModule, Routes} from '@angular/router';
 
-import { AdminPanelComponent } from 'app/admin/components/admin-panel.component';
-import { UserFileImportComponent } from 'app/user-file-import/components/user-file-import.component';
-import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
-import { GraphSearchComponent } from 'app/search/components/graph-search.component';
-import { FileBrowserComponent } from 'app/file-browser/components/file-browser.component';
-import { LoginComponent } from 'app/auth/components/login.component';
-import { DashboardComponent } from 'app/dashboard.component';
+import {AdminPanelComponent} from 'app/admin/components/admin-panel.component';
+import {UserFileImportComponent} from 'app/user-file-import/components/user-file-import.component';
+import {VisualizationComponent} from 'app/visualization/containers/visualization/visualization.component';
+import {GraphSearchComponent} from 'app/search/components/graph-search.component';
+import {FileBrowserComponent} from 'app/file-browser/components/file-browser.component';
+import {LoginComponent} from 'app/auth/components/login.component';
+import {DashboardComponent} from 'app/dashboard.component';
 
-import { AdminGuard } from 'app/admin/services/admin-guard.service';
-import { AuthGuard } from 'app/auth/guards/auth-guard.service';
-import { LoginGuard } from 'app/auth/guards/login-guard.service';
-import { FileViewComponent } from 'app/file-browser/components/file-view.component';
-import { UserSettingsComponent } from 'app/users/components/user-settings.component';
-import { KgStatisticsComponent } from './kg-statistics.component';
-import { TermsOfServiceComponent } from './users/components/terms-of-service.component';
-import { WorkspaceComponent } from './workspace.component';
-import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
-import { MapEditorComponent } from './drawing-tool/components/map-editor/map-editor.component';
-import { MapViewComponent } from './drawing-tool/components/map-view.component';
-import { CommunityBrowserComponent } from './file-browser/components/community-browser.component';
-import { BrowserComponent } from './file-browser/components/browser/browser.component';
-import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
-import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
-import { ContentSearchComponent } from './search/components/content-search.component';
+import {AdminGuard} from 'app/admin/services/admin-guard.service';
+import {AuthGuard} from 'app/auth/guards/auth-guard.service';
+import {LoginGuard} from 'app/auth/guards/login-guard.service';
+import {FileViewComponent} from 'app/file-browser/components/file-view.component';
+import {UserSettingsComponent} from 'app/users/components/user-settings.component';
+import {KgStatisticsComponent} from './kg-statistics.component';
+import {TermsOfServiceComponent} from './users/components/terms-of-service.component';
+import {WorkspaceComponent} from './workspace.component';
+import {UnloadConfirmationGuard} from './shared/guards/UnloadConfirmation.guard';
+import {MapEditorComponent} from './drawing-tool/components/map-editor/map-editor.component';
+import {MapViewComponent} from './drawing-tool/components/map-view.component';
+import {CommunityBrowserComponent} from './file-browser/components/community-browser.component';
+import {BrowserComponent} from './file-browser/components/browser/browser.component';
+import {KgImportWizardComponent} from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
+import {GeneImportWizardComponent} from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
+import {ContentSearchComponent} from './search/components/content-search.component';
+import {WordCloudComponent} from './word-cloud/word-cloud.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -212,6 +213,14 @@ const routes: Routes = [
     component: KgStatisticsComponent,
     data: {
       fontAwesomeIcon: 'tachometer-alt',
+    },
+  },
+  {
+    path: 'word-cloud',
+    component: WordCloudComponent,
+    data: {
+      title: 'Word Cloud',
+      fontAwesomeIcon: 'cloud',
     },
   },
   // Old links
