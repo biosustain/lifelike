@@ -92,70 +92,41 @@ def search(req: PDFSearchRequest):
 
         user_id = g.current_user.id
 
-        t_owner = aliased(AppUser)
-        t_directory = aliased(Directory)
         t_project = aliased(Projects)
-        t_project_role_role = aliased(AppRole)
+        t_project_role = aliased(AppRole)
 
         # Role table used to check if we have permission
-        project_role_sq = db.session.query(
-            projects_collaborator_role.c.projects_id,
-            projects_collaborator_role.c.appuser_id,
-            t_project_role_role.name
+        query = db.session.query(
+            t_project.id
         ).join(
-            t_project_role_role,
-            t_project_role_role.id == projects_collaborator_role.c.app_role_id
-        ).subquery()
-
-        # Map subquery
-        map_query = db.session.query(
-            Project.hash_id
-        ).join(
-            t_owner, t_owner.id == Project.user_id
-        ).join(
-            t_directory, t_directory.id == Project.dir_id
-        ).join(
-            t_project, t_project.id == t_directory.projects_id
-        ).outerjoin(
-            project_role_sq, project_role_sq.c.projects_id == t_project.id
-        ).filter(
-            sqlalchemy.or_(
-                Project.public.is_(True),
-                sqlalchemy.and_(
-                    project_role_sq.c.appuser_id == user_id,
-                    sqlalchemy.or_(
-                        project_role_sq.c.name == 'project-read',
-                        project_role_sq.c.name == 'project-admin'
-                    )
-                )
-            )
-        )
-        map_hash_ids = [hash_id[0] for hash_id in map_query.all()]
-
-        # File subquery
-        file_query = db.session.query(
-            Files.file_id
-        ).join(
-            t_owner, t_owner.id == Files.user_id
-        ).join(
-            t_directory, t_directory.id == Files.dir_id
-        ).join(
-            t_project, t_project.id == t_directory.projects_id
-        ).outerjoin(
-            project_role_sq, project_role_sq.c.projects_id == t_project.id
-        ).filter(
+            projects_collaborator_role,
             sqlalchemy.and_(
-                project_role_sq.c.appuser_id == user_id,
+                projects_collaborator_role.c.projects_id == t_project.id,
+                projects_collaborator_role.c.appuser_id == user_id,
+            )
+        ).join(
+            t_project_role,
+            sqlalchemy.and_(
+                t_project_role.id == projects_collaborator_role.c.app_role_id,
                 sqlalchemy.or_(
-                    project_role_sq.c.name == 'project-read',
-                    project_role_sq.c.name == 'project-admin'
+                    t_project_role.name == 'project-read',
+                    t_project_role.name == 'project-admin'
                 )
             )
         )
-        file_ids = [file_id[0] for file_id in file_query.all()]
 
+        accessible_project_ids = [project_id for project_id, in query]
         query_filter = [  # type:ignore
-            {'terms': {'id': map_hash_ids + file_ids}}
+            {
+                'bool': {
+                    'should': [
+                        # If the user has access to the project the document is in...
+                        {'terms': {'project_id': accessible_project_ids}},
+                        # OR if the document is public...
+                        {'term': {'public': True}}
+                    ]
+                }
+            }
         ]
 
         elastic_service = get_elastic_service()
