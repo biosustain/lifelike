@@ -63,8 +63,9 @@ export class WorksheetViewerComponent implements OnInit, OnDestroy {
   loadTaskSubscription: Subscription;
   sheetname: string;
   neo4jId: number;
+  nodes: number[];
 
-  @Input() worksheetId: string = '1';
+  @Input() worksheetId: string = '5';
 
   constructor(private readonly worksheetViewerService: WorksheetViewerService) {}
 
@@ -74,9 +75,15 @@ export class WorksheetViewerComponent implements OnInit, OnDestroy {
     );
     this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: worksheet}) => {
       this.sheetname = worksheet.sheetname;
-      this.neo4jId = worksheet.neo4jID;
+      this.neo4jId = worksheet.neo4jNodeId;
+      this.worksheetViewerService.getNCBINodes(this.neo4jId).subscribe(({result: nodes})=> {
+        this.nodes = nodes;
+      })
     });
+    this.loadTask.update(this.worksheetId);
   }
 
-  ngOnDestroy() {}
+  ngOnDestroy() {
+    this.loadTaskSubscription.unsubscribe();
+  }
 }

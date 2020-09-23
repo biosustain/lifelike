@@ -1,6 +1,6 @@
 import attr
 
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 
 from typing import List
 from sqlalchemy.orm.exc import NoResultFound
@@ -31,13 +31,12 @@ def get_neo4j_worksheet(worksheet_id: str):
     except NoResultFound:
         raise RecordNotFoundException('not found :-( ')
 
-    yield worksheets
-
-    return SuccessResponse(result=worksheets, status_code=200)
+    return jsonify({'result': worksheets.to_dict()}), 200
 
 
 @bp.route('/get-ncbi-nodes/<string:worksheet_node_id>', methods=['GET'])
 def get_ncbi_nodes(worksheet_node_id: str):
     worksheet_viewer = get_worksheet_viewer_service()
     nodes = worksheet_viewer.get_ncbi_genes(worksheet_node_id)
-    return SuccessResponse(result=nodes, status_code=200)
+
+    return jsonify({'result': nodes}), 200

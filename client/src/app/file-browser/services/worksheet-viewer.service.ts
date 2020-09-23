@@ -13,7 +13,7 @@ export interface Worksheet {
   id: number;
   filename: string;
   sheetname: string;
-  neo4jID: number;
+  neo4jNodeId: number;
   creationDate: string;
   modifiedDate: string;
   contentID: number;
@@ -31,7 +31,6 @@ export class WorksheetViewerService extends AbstractService {
   }
 
   getWorksheet(worksheetId): Observable<Worksheet> {
-    console.log('reached');
     return this.http.get<any>(
       `${this.worksheetAPI}/get-neo4j-worksheet/${encodeURIComponent(worksheetId)}`,
       this.getHttpOptions(true),
