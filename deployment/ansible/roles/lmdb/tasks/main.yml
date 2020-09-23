@@ -1,3 +1,5 @@
+- include_vars: gcp_bucket_credentials.yml
+
 - name: Install Python dependencies
   pip:
     name:
@@ -22,7 +24,6 @@
     - species
 
 - name: Fetch 'data.mdb' files
-  become_user: "{{ deploy_user }}"
   gc_storage:
     bucket: lmdb_database
     object: "{{ item }}/data.mdb"
@@ -41,7 +42,6 @@
     - species
 
 - name: Fetch 'lock.mdb' files
-  become_user: "{{ deploy_user }}"
   gc_storage:
     bucket: lmdb_database
     object: "{{ item }}/lock.mdb"
@@ -62,9 +62,7 @@
 - name: Set user permission
   file:
     path: "{{ lmdb_path }}"
-    owner: "{{ deploy_user }}"
-    group: "{{ deploy_user }}"
-    mode: u=rw,g=r,o=r
+    mode: u=rwx,g=rwx,o=rwx
     recurse: yes
     state: directory
 

@@ -65,10 +65,25 @@ def init_database_connection():
 
 def main():
 
+    LMDB_CATEGORIES = [
+        'chemicals',
+        'compounds',
+        'diseases',
+        'genes',
+        'phenotypes',
+        'proteins',
+        'species',
+    ]
+
     session = init_database_connection()
     cloud_sql_results = {
         l.name: l.date for l in session.query(LMDBsDates).all()}
-
+    # New database, initialize the table
+    if len(cloud_sql_results) == 0:
+        for category in LMDB_CATEGORIES:
+            lmdb = LMDBsDates(name=category, date=datetime.utcnow())
+            session.add(lmdb)
+            session.commit()
     gcp_blobs = init_gcp_storage_connection('lmdb_database')
     data_blobs = [b for b in gcp_blobs if b.name.endswith('data.mdb')]
     for gcp_blob in data_blobs:
