@@ -236,60 +236,69 @@ class ElasticService():
             for map in batch:
                 map_data: Dict[str, List[Dict[str, str]]] = {'nodes': [], 'edges': []}
 
-                for node in map.graph.get('nodes', []):
-                    try:
-                        map_data['nodes'].append(
-                            {
-                                'label': node.get('label', ''),
-                                'display_name': node.get('display_name', ''),
-                                'detail': node.get('detail', ''),
-                            }
-                        )
-                    except KeyError as e:
-                        current_app.logger.error(
-                            f'Error while parsing node for elastic indexing: {node}',
-                            exc_info=e,
-                            extra=EventLog(event_type='elastic').to_dict()
-                        )
-                        # Continue parsing through remaining nodes
-                for edge in map.graph.get('edges', []):
-                    try:
-                        edge_data = edge.get('data', '')
-                        map_data['edges'].append(
-                            {
-                                'label': edge.get('label', ''),
-                                'detail': edge_data.get('detail', '') if edge_data else '',
-                            }
-                        )
-                    except KeyError as e:
-                        current_app.logger.error(
-                            f'Error while parsing edge for elastic indexing: {edge}',
-                            exc_info=e,
-                            extra=EventLog(event_type='elastic').to_dict()
-                        )
-                        # Continue parsing through remaining edges
+                # If, for whatever reason, the graph is *not* a dict, skip this map
+                if isinstance(map.graph, dict):
+                    for node in map.graph.get('nodes', []):
+                        try:
+                            map_data['nodes'].append(
+                                {
+                                    'label': node.get('label', ''),
+                                    'display_name': node.get('display_name', ''),
+                                    'detail': node.get('detail', ''),
+                                }
+                            )
+                        except KeyError as e:
+                            current_app.logger.error(
+                                f'Error while parsing node for elastic indexing: {node}',
+                                exc_info=e,
+                                extra=EventLog(event_type='elastic').to_dict()
+                            )
+                            # Continue parsing through remaining nodes
+                    for edge in map.graph.get('edges', []):
+                        try:
+                            edge_data = edge.get('data', '')
+                            map_data['edges'].append(
+                                {
+                                    'label': edge.get('label', ''),
+                                    'detail': edge_data.get('detail', '') if edge_data else '',
+                                }
+                            )
+                        except KeyError as e:
+                            current_app.logger.error(
+                                f'Error while parsing edge for elastic indexing: {edge}',
+                                exc_info=e,
+                                extra=EventLog(event_type='elastic').to_dict()
+                            )
+                            # Continue parsing through remaining edges
 
-                map_data_bstr = json.dumps(map_data).encode('utf-8')
+                    map_data_bstr = json.dumps(map_data).encode('utf-8')
 
-                documents.append({
-                    '_index': FILE_INDEX_ID,
-                    'pipeline': ATTACHMENT_PIPELINE_ID,
-                    '_id': map.hash_id,
-                    '_source': {
-                        'filename': map.label,
-                        'description': map.description,
-                        'uploaded_date': map.creation_date,
-                        'data': base64.b64encode(map_data_bstr).decode('utf-8'),
-                        'user_id': map.user_id,
-                        'username': map.user.username,
-                        'project_id': map.dir.projects_id,
-                        'project_name': map.dir.project.project_name,
-                        'doi': None,
-                        'public': map.public,
-                        'id': map.hash_id,
-                        'type': 'map'
-                    }
-                })
+                    documents.append({
+                        '_index': FILE_INDEX_ID,
+                        'pipeline': ATTACHMENT_PIPELINE_ID,
+                        '_id': map.hash_id,
+                        '_source': {
+                            'filename': map.label,
+                            'description': map.description,
+                            'uploaded_date': map.creation_date,
+                            'data': base64.b64encode(map_data_bstr).decode('utf-8'),
+                            'user_id': map.user_id,
+                            'username': map.user.username,
+                            'project_id': map.dir.projects_id,
+                            'project_name': map.dir.project.project_name,
+                            'doi': None,
+                            'public': map.public,
+                            'id': map.hash_id,
+                            'type': 'map'
+                        }
+                    })
+                else:
+                    current_app.logger.warning(
+                        f'Attempted to add a map with id {map.id} to ElasticSearch ' +
+                        f'with graph of unexpected type {type(map.graph)}, expected ' +
+                        f'{type(dict())}',
+                        extra=EventLog(event_type='elastic').to_dict()
+                    )
 
             self.parallel_bulk_documents(documents)
 
