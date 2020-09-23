@@ -1,5 +1,5 @@
-import {Component, OnInit, SimpleChanges, ViewChild} from '@angular/core';
-import {Observable, of, Subscription} from 'rxjs';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {Subscription} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {CloudData, CloudOptions, TagCloudComponent} from 'angular-tag-cloud-module';
 import {WordCloudService} from './services/word-cloud.service';
@@ -22,12 +22,12 @@ export class WordCloudComponent implements OnInit {
 
   options: CloudOptions = {
     width: 0.98,
-    height: 500,
+    height: 700,
     overflow: false,
     realignOnResize: true,
-    randomizeAngle: true,
-    step: 5,
-    font: 'italic bold 14px "Georgia", cursive'
+    randomizeAngle: false,
+    step: 2,
+    strict: true,
   };
 
   data: CloudData[] = [];
@@ -62,7 +62,7 @@ export class WordCloudComponent implements OnInit {
 
           });
           // NOTE: You can remove the limit to show all words but this make completely unreadable the word cloud
-          this.setData(newData.slice(0, 51));
+          this.setData(newData);
         });
   }
 
