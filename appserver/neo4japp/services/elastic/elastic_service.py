@@ -285,7 +285,7 @@ class ElasticService():
                         'project_id': map.dir.projects_id,
                         'project_name': map.dir.project.project_name,
                         'doi': None,
-                        'public': False,  # TODO: Change this once we can know if a file is public
+                        'public': map.public,
                         'id': map.hash_id,
                         'type': 'map'
                     }
