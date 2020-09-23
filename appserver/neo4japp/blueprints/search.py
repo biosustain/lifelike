@@ -4,6 +4,7 @@ from flask import Blueprint, request, jsonify, g
 from sqlalchemy.orm import aliased
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.database import get_search_service_dao, get_elastic_service
 from neo4japp.data_transfer_objects import (
     GeneFilteredRequest,
@@ -25,7 +26,6 @@ from neo4japp.models import (
     Files,
     Project
 )
-from neo4japp.services.elastic import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
 from neo4japp.utils.request import paginate_from_args
 from neo4japp.utils.sqlalchemy import ft_search

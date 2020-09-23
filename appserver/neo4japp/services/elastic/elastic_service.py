@@ -14,6 +14,7 @@ from typing import (
     Union
 )
 
+from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.database import (
     db,
     get_lmdb_dao,
@@ -30,8 +31,6 @@ from neo4japp.services.elastic import (
     ATTACHMENT_PIPELINE_ID,
     ELASTIC_INDEX_SEED_PAIRS,
     ELASTIC_PIPELINE_SEED_PAIRS,
-    FILE_INDEX_ID,
-    FRAGMENT_SIZE,
     WILDCARD_MIN_LEN
 )
 from neo4japp.utils import EventLog
