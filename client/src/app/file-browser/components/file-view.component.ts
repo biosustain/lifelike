@@ -588,6 +588,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   openWordCloudPane() {
-    this.workSpaceManager.openTabByUrl('left', '/search/graph');
+    this.workSpaceManager.openTabByUrl('left', '/word-cloud');
   }
 }
