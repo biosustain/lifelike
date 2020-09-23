@@ -5,6 +5,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.query import Query
 from sqlalchemy.types import TIMESTAMP
 
+from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.database import db, get_elastic_service
 from neo4japp.models.common import RDBMSBase, TimestampMixin
 
@@ -63,10 +64,7 @@ def files_after_delete(mapper, connection, target):
     elastic_service = get_elastic_service()
     elastic_service.delete_documents_with_index(
         file_ids=[target.file_id],
-        # TODO LL-1639: Using this hard-coded value for now, can't import from the elastic
-        # constants file because of a circular import error. When the files-specific
-        # elastic service is implemented this may not be an issue anymore
-        index_id='file'
+        index_id=FILE_INDEX_ID
     )
 
 
@@ -78,10 +76,7 @@ def files_after_update(mapper, connection, target):
     elastic_service = get_elastic_service()
     elastic_service.delete_documents_with_index(
         file_ids=[target.file_id],
-        # TODO LL-1639: Using this hard-coded value for now, can't import from the elastic
-        # constants file because of a circular import error. When the files-specific
-        # elastic service is implemented this may not be an issue anymore
-        index_id='file'
+        index_id=FILE_INDEX_ID
     )
     elastic_service.index_files([target.id])
 

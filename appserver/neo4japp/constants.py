@@ -238,3 +238,7 @@ ANNOTATION_STYLES_DICT = {
         "label": "phentotype",
     },
 }
+
+# Start shared Elastic constants
+FILE_INDEX_ID = 'file'
+FRAGMENT_SIZE = 2147483647

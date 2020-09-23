@@ -21,7 +21,7 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_permission, requires_role
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
-from neo4japp.constants import TIMEZONE
+from neo4japp.constants import FILE_INDEX_ID, TIMEZONE
 from neo4japp.database import db, get_manual_annotations_service, get_elastic_service
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
@@ -46,7 +46,6 @@ from neo4japp.request_schemas.annotations import (
     AnnotationRemovalSchema,
     AnnotationExclusionSchema,
 )
-from neo4japp.services.elastic import FILE_INDEX_ID
 from neo4japp.utils.network import read_url
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog

@@ -53,7 +53,6 @@ from neo4japp.models import (
 )
 from neo4japp.models.schema import ProjectSchema, ProjectVersionSchema
 from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
-from neo4japp.services.elastic import FILE_INDEX_ID
 from neo4japp.util import CasePreservedDict
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.request import paginate_from_args
