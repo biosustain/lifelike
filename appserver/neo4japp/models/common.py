@@ -1,6 +1,8 @@
 import sqlalchemy as sa
 from decimal import Decimal
 
+from sqlalchemy.ext.declarative import declared_attr
+
 from neo4japp.database import db
 from neo4japp.util import snake_to_camel, camel_to_snake
 from marshmallow import fields
@@ -168,3 +170,29 @@ class TimestampMixin:
     creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
     modified_date = db.Column(
         TIMESTAMP(timezone=True), default=db.func.now(), nullable=False, onupdate=db.func.now())
+
+
+class FullTimestampMixin(TimestampMixin):
+    """ Tables that need a created/updated """
+    deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
+
+    @declared_attr
+    def creator_id(cls):
+        return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+
+    @declared_attr
+    def modifier_id(cls):
+        return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+
+    @declared_attr
+    def deleter_id(cls):
+        return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+
+
+class RecyclableMixin:
+    """ Tables that need a created/updated """
+    recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
+
+    @declared_attr
+    def recycler_id(cls):
+        return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
