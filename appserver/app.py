@@ -298,6 +298,7 @@ def seed_global_annotation_list(filename):
         db.session.commit()
     print('Completed seeding global inclusion/exclusion list')
 
+
 @app.cli.command('fix-projects')
 def fix_project_acl():
     # TODO: Deprecate me after production release
