@@ -1,6 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 
 import { TableHeader } from './generic-table.component';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { DirectoryContent } from 'app/interfaces/projects.interface';
+import { Subscription } from 'rxjs';
+import { Worksheet, WorksheetViewerService } from '../services/worksheet-viewer.service';
 
 @Component({
   selector: 'app-worksheet-viewer',
@@ -30,11 +34,10 @@ export class WorksheetViewerComponent implements OnInit, OnDestroy {
       new TableHeader('', '1'),
     ]
   ];
-  numColumns = 8;
 
   loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vel ex tellus. Fusce vestibulum erat pharetra bibendum malesuada. Suspendisse potenti. Mauris ac metus metus. Nunc non enim vel purus iaculis iaculis. Etiam magna lorem, faucibus eu libero quis, ultrices vestibulum enim. Nam quam lorem, dictum a fermentum non, blandit sed nisl.';
 
-  entries: string[][] = [
+  tableEntries: string[][] = [
     [
       this.loremIpsum,
       this.loremIpsum,
@@ -56,10 +59,24 @@ export class WorksheetViewerComponent implements OnInit, OnDestroy {
       this.loremIpsum,
     ]
   ];
+  loadTask: BackgroundTask<string, Worksheet>;
+  loadTaskSubscription: Subscription;
+  sheetname: string;
+  neo4jId: number;
 
-  constructor() {}
+  @Input() worksheetId: string = '1';
 
-  ngOnInit() {}
+  constructor(private readonly worksheetViewerService: WorksheetViewerService) {}
+
+  ngOnInit() {
+    this.loadTask = new BackgroundTask(
+      (worksheetId: string) => this.worksheetViewerService.getWorksheet(worksheetId),
+    );
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: worksheet}) => {
+      this.sheetname = worksheet.sheetname;
+      this.neo4jId = worksheet.neo4jID;
+    });
+  }
 
   ngOnDestroy() {}
 }

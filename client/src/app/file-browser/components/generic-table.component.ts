@@ -10,7 +10,6 @@ export class GenericTableComponent {
 
   // Number of columns can be inferred from the headers
   numColumns: number[];
-  entries: string[][];
 
   constructor() {}
 
@@ -18,15 +17,10 @@ export class GenericTableComponent {
   @Input()
   set header(header: TableHeader[][]) {
     this.HEADER = header;
+    const num = Math.max.apply(null, header.map(x => x.reduce((a,b) => a + parseInt(b.span), 0)))
+    this.numColumns = new Array(num)
   }
-  @Input()
-  set columns(num: number) {
-    this.numColumns = new Array(num);
-  }
-  @Input()
-  set rows(entries: string[][]) {
-    this.entries = entries;
-  }
+  @Input() entries: string[][];
 }
 
 // Should probably be an interface rather than a class

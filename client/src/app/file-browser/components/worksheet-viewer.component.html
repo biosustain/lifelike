@@ -21,8 +21,8 @@
         </div>
       </div>
 
-      <div *ngIf="entries" class="module-body">
-        <app-generic-table [header]="tableHeader" [columns]="numColumns" [rows]="entries">
+      <div *ngIf="tableEntries" class="module-body">
+        <app-generic-table [header]="tableHeader" [entries]="tableEntries">
         </app-generic-table>
       </div>
     </div>
