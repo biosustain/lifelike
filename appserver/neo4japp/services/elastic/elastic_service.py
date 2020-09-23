@@ -122,10 +122,22 @@ class ElasticService():
 
     def parallel_bulk_documents(self, documents):
         """Performs a series of bulk operations in elastic, determined by the `documents` input."""
-        results = parallel_bulk(self.elastic_client, documents)
+        # `raise_on_exception` set to False so that we don't error out if one of the documents
+        # fails to index
+        results = parallel_bulk(
+            self.elastic_client,
+            documents,
+            raise_on_error=False,
+            raise_on_exception=False
+        )
 
         for success, info in results:
-            if not success:
+            if success:
+                current_app.logger.info(
+                    f'Elastic search bulk operation succeeded: {info}',
+                    extra=EventLog(event_type='elastic').to_dict()
+                )
+            else:
                 current_app.logger.error(
                     f'Elastic search bulk operation failed: {info}',
                     extra=EventLog(event_type='elastic').to_dict()
