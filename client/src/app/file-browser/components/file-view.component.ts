@@ -1,12 +1,12 @@
-import { uniqueId } from 'lodash';
-import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, Subject, Subscription, BehaviorSubject } from 'rxjs';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { Hyperlink, DatabaseType, AnnotationType } from 'app/shared/constants';
+import {uniqueId} from 'lodash';
+import {Component, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
+import {combineLatest, Subject, Subscription, BehaviorSubject, Observable} from 'rxjs';
+import {PdfFilesService} from 'app/shared/services/pdf-files.service';
+import {Hyperlink, DatabaseType, AnnotationType} from 'app/shared/constants';
 
-import { PdfAnnotationsService } from '../../drawing-tool/services';
+import {PdfAnnotationsService} from '../../drawing-tool/services';
 
-import { cloneDeep } from 'lodash';
+import {cloneDeep} from 'lodash';
 import {
   AddedAnnotationExclsuion,
   Annotation,
@@ -16,29 +16,31 @@ import {
   UniversalGraphNode,
 } from '../../drawing-tool/services/interfaces';
 
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
-import { ActivatedRoute } from '@angular/router';
-import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
-import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
-import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { FileEditDialogComponent } from './file-edit-dialog.component';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
-import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {PdfFile} from '../../interfaces/pdf-files.interface';
+import {BackgroundTask} from '../../shared/rxjs/background-task';
+import {PdfViewerLibComponent} from '../../pdf-viewer/pdf-viewer-lib.component';
+import {ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType} from 'app/shared/annotation-types';
+import {ActivatedRoute} from '@angular/router';
+import {ModuleAwareComponent, ModuleProperties} from '../../shared/modules';
+import {ConfirmDialogComponent} from '../../shared/components/dialog/confirm-dialog.component';
+// @ts-ignore
+import {NgbDropdown, NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {ErrorHandler} from '../../shared/services/error-handler.service';
+import {FileEditDialogComponent} from './file-edit-dialog.component';
+import {ProgressDialog} from 'app/shared/services/progress-dialog.service';
+import {Progress} from 'app/interfaces/common-dialog.interface';
+import {ShareDialogComponent} from '../../shared/components/dialog/share-dialog.component';
+import {Pane, WorkspaceManager} from '../../shared/workspace-manager';
 
 class DummyFile implements PdfFile {
   constructor(
-    // tslint:disable-next-line
-    public file_id: string,
-    public filename: string = null,
-    // tslint:disable-next-line
-    public creation_date: string = null,
-    public username: string = null) {
+      // tslint:disable-next-line
+      public file_id: string,
+      public filename: string = null,
+      // tslint:disable-next-line
+      public creation_date: string = null,
+      public username: string = null) {
   }
 }
 
@@ -57,7 +59,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
-
   id = uniqueId('FileViewComponent-');
 
   paramsSubscription: Subscription;
@@ -106,22 +107,23 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
 
   constructor(
-    private readonly filesService: PdfFilesService,
-    private pdfAnnService: PdfAnnotationsService,
-    private pdf: PdfFilesService,
-    private snackBar: MatSnackBar,
-    private readonly modalService: NgbModal,
-    private route: ActivatedRoute,
-    private readonly errorHandler: ErrorHandler,
-    private readonly progressDialog: ProgressDialog,
+      private readonly filesService: PdfFilesService,
+      private pdfAnnService: PdfAnnotationsService,
+      private pdf: PdfFilesService,
+      private snackBar: MatSnackBar,
+      private readonly modalService: NgbModal,
+      private route: ActivatedRoute,
+      private readonly errorHandler: ErrorHandler,
+      private readonly progressDialog: ProgressDialog,
+      private readonly workSpaceManager: WorkspaceManager
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
 
     this.loadTask = new BackgroundTask(([file, loc]) => {
       return combineLatest(
-        this.pdf.getFileMeta(file.file_id, this.projectName),
-        this.pdf.getFile(file.file_id, this.projectName),
-        this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName));
+          this.pdf.getFileMeta(file.file_id, this.projectName),
+          this.pdf.getFile(file.file_id, this.projectName),
+          this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName));
     });
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
@@ -175,16 +177,16 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   updateSortedEntityTypeEntries() {
     this.sortedEntityTypeEntries = ENTITY_TYPES
-      .map(entityType => new EntityTypeEntry(entityType, this.annotationEntityTypeMap.get(entityType.id) || []))
-      .sort((a, b) => {
-        if (a.annotations.length && !b.annotations.length) {
-          return -1;
-        } else if (!a.annotations.length && b.annotations.length) {
-          return 1;
-        } else {
-          return a.type.name.localeCompare(b.type.name);
-        }
-      });
+        .map(entityType => new EntityTypeEntry(entityType, this.annotationEntityTypeMap.get(entityType.id) || []))
+        .sort((a, b) => {
+          if (a.annotations.length && !b.annotations.length) {
+            return -1;
+          } else if (!a.annotations.length && b.annotations.length) {
+            return 1;
+          } else {
+            return a.type.name.localeCompare(b.type.name);
+          }
+        });
   }
 
   isEntityTypeVisible(entityType: EntityType) {
@@ -267,18 +269,18 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       });
 
       this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd, annotateAll, this.projectName)
-        .pipe(this.errorHandler.create())
-        .subscribe(
-          (annotations: Annotation[]) => {
-            progressDialogRef.close();
-            this.addedAnnotations = annotations;
-            this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
-          },
-          err => {
-            progressDialogRef.close();
-            this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
-          },
-        );
+          .pipe(this.errorHandler.create())
+          .subscribe(
+              (annotations: Annotation[]) => {
+                progressDialogRef.close();
+                this.addedAnnotations = annotations;
+                this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
+              },
+              err => {
+                progressDialogRef.close();
+                this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
+              },
+          );
     }, () => {
     });
 
@@ -292,49 +294,49 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     dialogRef.componentInstance.message = 'Do you want to remove all matching annotations from the file as well?';
     dialogRef.result.then((removeAll: boolean) => {
       this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll, this.projectName)
-        .pipe(this.errorHandler.create())
-        .subscribe(
-          response => {
-            this.removedAnnotationIds = response;
-            this.snackBar.open('Removal completed', 'Close', {duration: 10000});
-          },
-          err => {
-            this.snackBar.open(`Error: removal failed`, 'Close', {duration: 10000});
-          },
-        );
+          .pipe(this.errorHandler.create())
+          .subscribe(
+              response => {
+                this.removedAnnotationIds = response;
+                this.snackBar.open('Removal completed', 'Close', {duration: 10000});
+              },
+              err => {
+                this.snackBar.open(`Error: removal failed`, 'Close', {duration: 10000});
+              },
+          );
     }, () => {
     });
   }
 
   annotationExclusionAdded(exclusionData: AddedAnnotationExclsuion) {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
-      this.currentFileId, exclusionData, this.projectName,
+        this.currentFileId, exclusionData, this.projectName,
     )
-      .pipe(this.errorHandler.create())
-      .subscribe(
-        response => {
-          this.addedAnnotationExclusion = exclusionData;
-          this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
-        },
-        err => {
-          this.snackBar.open(`Error: failed to exclude annotation`, 'Close', {duration: 10000});
-        },
-      );
+        .pipe(this.errorHandler.create())
+        .subscribe(
+            response => {
+              this.addedAnnotationExclusion = exclusionData;
+              this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
+            },
+            err => {
+              this.snackBar.open(`Error: failed to exclude annotation`, 'Close', {duration: 10000});
+            },
+        );
   }
 
   annotationExclusionRemoved({type, text}) {
     this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, type, text, this.projectName)
-      .pipe(this.errorHandler.create())
-      .subscribe(
-        response => {
-          this.removedAnnotationExclusion = {type, text};
-          this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
-        },
-        err => {
-          const {message, name} = err.error.apiHttpError;
-          this.snackBar.open(`${name}: ${message}`, 'Close', {duration: 10000});
-        },
-      );
+        .pipe(this.errorHandler.create())
+        .subscribe(
+            response => {
+              this.removedAnnotationExclusion = {type, text};
+              this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
+            },
+            err => {
+              const {message, name} = err.error.apiHttpError;
+              this.snackBar.open(`${name}: ${message}`, 'Close', {duration: 10000});
+            },
+        );
   }
 
   /**
@@ -352,8 +354,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const loc: Location = JSON.parse(nodeDom.getAttribute('location')) as Location;
 
     const source = `/projects/${encodeURIComponent(this.projectName)}`
-      + `/files/${encodeURIComponent(this.currentFileId)}`
-      + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
+        + `/files/${encodeURIComponent(this.currentFileId)}`
+        + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
 
     const sources = [{
       domain: 'File Source',
@@ -541,18 +543,18 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     dialogRef.result.then(newFile => {
       if (newFile) {
         this.filesService.updateFileMeta(
-          this.projectName,
-          this.pdfFile.file_id,
-          newFile.filename,
-          newFile.description,
+            this.projectName,
+            this.pdfFile.file_id,
+            newFile.filename,
+            newFile.description,
         )
-          .pipe(this.errorHandler.create())
-          .subscribe(() => {
-            this.pdfFile.filename = newFile.filename;
-            this.pdfFile.description = newFile.description;
-            this.emitModuleProperties();
-            this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
-          });
+            .pipe(this.errorHandler.create())
+            .subscribe(() => {
+              this.pdfFile.filename = newFile.filename;
+              this.pdfFile.description = newFile.description;
+              this.emitModuleProperties();
+              this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
+            });
       }
     }, () => {
     });
@@ -582,6 +584,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   displayShareDialog() {
     const modalRef = this.modalService.open(ShareDialogComponent);
     modalRef.componentInstance.url = `${window.location.origin}/projects/`
-      + `${this.projectName}/files/${this.currentFileId}?fromWorkspace`;
+        + `${this.projectName}/files/${this.currentFileId}?fromWorkspace`;
+  }
+
+  openWordCloudPane() {
+    this.workSpaceManager.openTabByUrl('left', '/search/graph');
   }
 }
