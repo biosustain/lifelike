@@ -276,8 +276,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           },
           err => {
             progressDialogRef.close();
-            const {message, name} = err.error.apiHttpError;
-            this.snackBar.open(`${name}: ${message}`, 'Close');
           },
         );
     }, () => {
