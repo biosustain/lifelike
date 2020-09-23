@@ -4,31 +4,6 @@ on:
   release:
     types: [published]
 
-
-env:
-    ELASTICSEARCH_HOSTS: ${{ secrets.ELASTICSEARCH_HOSTS }}
-    POSTGRES_HOST: ${{ secrets.PROD_POSTGRES_HOST }}
-    POSTGRES_PORT: ${{ secrets.PROD_POSTGRES_PORT }}
-    POSTGRES_USER: ${{ secrets.PROD_POSTGRES_USER }}
-    POSTGRES_PASSWORD: ${{ secrets.PROD_POSTGRES_PASSWORD }}
-    POSTGRES_DB: ${{ secrets.PROD_POSTGRES_DB }}
-    NEO4J_HOST: ${{ secrets.PROD_NEO4J_HOST }}
-    NEO4J_AUTH: ${{ secrets.PROD_NEO4J_AUTH }}
-    FLASK_APP: ${{ secrets.PROD_FLASK_APP }}
-    FLASK_APP_CONFIG: ${{ secrets.PROD_FLASK_APP_CONFIG }}
-    FLASK_ENV: ${{ secrets.PROD_FLASK_ENV }}
-    PROJECT_ID: ${{ secrets.GCE_PROJECT }}
-    GITHUB_HASH: ${{ github.sha }}
-    GCE_INSTANCE: kg-prod
-    GCE_INSTANCE_ZONE: us-central1-a
-    GCE_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
-    CLOUD_SQL_ALIAS: ${{ secrets.PROD_CLOUD_SQL_ALIAS }}
-    GCE_BACKUP_BUCKET: ${{ secrets.POSTGRES_BACKUP_BUCKET }}
-    SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
-    REDIS_HOST: ${{ secrets.REDIS_HOST }}
-    REDIS_PORT: ${{ secrets.REDIS_PORT }}
-    DOMAIN: https://kg.***ARANGO_DB_NAME***.bio
-
 jobs:
     setup-build-publish-deploy:
 
@@ -95,50 +70,3 @@ jobs:
                 image_tag: ${{ github.sha }},latest
                 context: ./nlp
                 dockerfile: ./Dockerfile
-
-            - name: Deploy Setup
-              run: |-
-                echo "ELASTICSEARCH_HOSTS=$ELASTICSEARCH_HOSTS" >> prod.env
-                echo "POSTGRES_HOST=$POSTGRES_HOST" >> prod.env
-                echo "POSTGRES_PORT=$POSTGRES_PORT" >> prod.env
-                echo "POSTGRES_USER=$POSTGRES_USER" >> prod.env
-                echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> prod.env
-                echo "POSTGRES_DB=$POSTGRES_DB" >> prod.env
-                echo "NEO4J_HOST=$NEO4J_HOST" >> prod.env
-                echo "NEO4J_AUTH=$NEO4J_AUTH" >> prod.env
-                echo "FLASK_APP=$FLASK_APP" >> prod.env
-                echo "FLASK_APP_CONFIG=$FLASK_APP_CONFIG" >> prod.env
-                echo "FLASK_ENV=$FLASK_ENV" >> prod.env
-                echo "DOCKER_USER=_json_key" >> prod.env
-                echo "PROJECT_ID=$PROJECT_ID" >> prod.env
-                echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> prod.env
-                echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET" >> prod.env
-                echo "GITHUB_HASH=$GITHUB_HASH" >> prod.env
-                GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
-                echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> prod.env
-                echo "SENTRY_KEY=$SENTRY_KEY" >> prod.env
-                echo "REDIS_HOST=$REDIS_HOST" >> prod.env
-                echo "REDIS_PORT=$REDIS_PORT" >> prod.env
-                echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
-                gsutil cp prod.env gs://kg-secrets
-                gcloud compute scp prod.env ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv/.env --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp keyfile.json ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp docker-compose.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp docker-compose.prod.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp ./deployment/bin/startup.sh ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp ./deployment/bin/migration-manager.sh ***ARANGO_USERNAME***@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp ./appserver/nlp/fetch-ai-models.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/startup.sh';
-                gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/migration-manager.sh';
-
-            - name: Deploy
-              run: |-
-                gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/startup.sh -t production';
-
-            - name: Applying database migrations
-              run: |-
-                gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/migration-manager.sh -t production';
-
-            - name: Clean up images
-              run: |-
-                gcloud compute ssh ***ARANGO_USERNAME***@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune -f';
