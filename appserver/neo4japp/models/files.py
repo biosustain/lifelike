@@ -1,3 +1,5 @@
+import hashlib
+
 from sqlalchemy import and_, text
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.types import TIMESTAMP
@@ -34,6 +36,15 @@ class FileContent(RDBMSBase):
     raw_file = db.Column(db.LargeBinary, nullable=False)
     checksum_sha256 = db.Column(db.Binary(32), nullable=False, index=True, unique=True)
     creation_date = db.Column(db.DateTime, nullable=False, default=db.func.now())
+
+    @property
+    def raw_file_utf8(self):
+        return self.raw_file.decode('utf-8')
+
+    @raw_file_utf8.setter
+    def raw_file_utf8(self, value):
+        self.raw_file = value.encode('utf-8')
+        self.checksum_sha256 = hashlib.sha256(self.raw_file).digest()
 
 
 class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin):  # type: ignore
