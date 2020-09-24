@@ -32,6 +32,7 @@ t_app_user = sa.Table(
     'appuser',
     sa.MetaData(),
     sa.Column('id'),
+    sa.Column('hash_id'),
     sa.Column('username'),
     sa.Column('email'),
     sa.Column('first_name'),
@@ -42,9 +43,9 @@ t_project = sa.Table(
     'projects',
     sa.MetaData(),
     sa.Column('id', sa.Integer(), primary_key=True),
-    sa.Column('project_name'),
+    sa.Column('hash_id'),
+    sa.Column('name'),
     sa.Column('description'),
-    sa.Column('users'),
     sa.Column('creation_date'),
     sa.Column('modified_date'),
 )
@@ -257,6 +258,50 @@ def upgrade():
     op.drop_constraint('uq_files_file_id', 'files', type_='unique')
     op.alter_column('files', 'file_id', new_column_name='hash_id')
     op.create_unique_constraint(op.f('uq_files_hash_id'), 'files', ['hash_id'])
+
+    # project_name -> name
+    op.drop_constraint('uq_projects_project_name', 'projects', type_='unique')
+    op.alter_column('projects', 'project_name', new_column_name='name')
+    op.create_unique_constraint(op.f('uq_projects_name'), 'projects', ['name'])
+
+    # Remove useless 'users' column on projects
+    op.drop_column('projects', 'users')
+
+    # ========================================
+    # Add hash IDs to users
+    # ========================================
+
+    logger.info("Adding hash IDs to users...")
+
+    op.add_column('appuser', sa.Column('hash_id', sa.String(length=36), nullable=True))
+    op.create_unique_constraint(op.f('uq_appuser_hash_id'), 'appuser', ['hash_id'])
+
+    for user in iter_query(session.query(t_app_user), batch_size=DEFAULT_QUERY_BATCH_SIZE):
+        user = user._asdict()
+        session.execute(t_app_user.update().values(
+            hash_id=create_hash_id()
+        ).where(t_app_user.c.id == user['id']))
+
+    # Make nullable=False
+    op.alter_column('appuser', 'hash_id', existing_type=sa.String(length=36), nullable=False)
+
+    # ========================================
+    # Add hash IDs to projects
+    # ========================================
+
+    logger.info("Adding hash IDs to projects...")
+
+    op.add_column('projects', sa.Column('hash_id', sa.String(length=36), nullable=False))
+    op.create_unique_constraint(op.f('uq_projects_hash_id'), 'projects', ['hash_id'])
+
+    for project in iter_query(session.query(t_project), batch_size=DEFAULT_QUERY_BATCH_SIZE):
+        project = project._asdict()
+        session.execute(t_project.update().values(
+            hash_id=create_hash_id()
+        ).where(t_project.c.id == project['id']))
+
+    # Make nullable=False
+    op.alter_column('projects', 'hash_id', existing_type=sa.String(length=36), nullable=False)
 
     # ========================================
     # Add mime type column
