@@ -1,19 +1,16 @@
+from typing import Iterable, Sequence
+
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 
-from neo4japp.services.common import RDBMSBaseDao
-from neo4japp.models.common import RDBMSBase
-from neo4japp.models.projects import Projects
-from neo4japp.models.drawing_tool import Project
 from neo4japp.models.auth import (
     AccessActionType,
     AccessControlPolicy,
     AccessRuleType,
     AppUser,
-    AppRole,
 )
-
-from typing import Iterable, Sequence, Union
+from neo4japp.models.common import RDBMSBase
+from neo4japp.services.common import RDBMSBaseDao
 
 
 class AuthService(RDBMSBaseDao):
@@ -21,11 +18,11 @@ class AuthService(RDBMSBaseDao):
         super().__init__(session)
 
     def grant(
-        self,
-        permission: AccessActionType,
-        asset: RDBMSBase,
-        user: AppUser,
-        commit_now: bool = True,
+            self,
+            permission: AccessActionType,
+            asset: RDBMSBase,
+            user: AppUser,
+            commit_now: bool = True,
     ) -> Sequence[AccessControlPolicy]:
         """ Grant a permission, or privilege on an asset to a user
 
@@ -77,11 +74,11 @@ class AuthService(RDBMSBaseDao):
         return retval
 
     def revoke(
-        self,
-        permission: AccessActionType,
-        asset: RDBMSBase,
-        user: AppUser,
-        commit_now: bool = True,
+            self,
+            permission: AccessActionType,
+            asset: RDBMSBase,
+            user: AppUser,
+            commit_now: bool = True,
     ) -> None:
         """ Revokes a permission, or privilege on an asset to a user """
         # only removes the write permission on the specific asset
@@ -105,9 +102,9 @@ class AuthService(RDBMSBaseDao):
         self.commit_or_flush(commit_now)
 
     def has_role(
-        self,
-        principal: RDBMSBase,
-        role: str,
+            self,
+            principal: RDBMSBase,
+            role: str,
     ) -> bool:
         # TODO: Add other principal types
         if isinstance(principal, AppUser):
@@ -115,10 +112,10 @@ class AuthService(RDBMSBaseDao):
         raise NotImplementedError
 
     def is_allowed(
-        self,
-        principal: RDBMSBase,
-        action: AccessActionType,
-        asset: RDBMSBase,
+            self,
+            principal: RDBMSBase,
+            action: AccessActionType,
+            asset: RDBMSBase,
     ) -> bool:
         return self.has_allow_and_no_deny(
             AccessControlPolicy.query_acp(
@@ -127,8 +124,8 @@ class AuthService(RDBMSBaseDao):
         )
 
     def has_allow_and_no_deny(
-        self,
-        acp: Iterable[AccessControlPolicy],
+            self,
+            acp: Iterable[AccessControlPolicy],
     ) -> bool:
         """ Return True if there is AT LEAST one 'ALLOW'
         rule and no 'DENY' rule in the list.

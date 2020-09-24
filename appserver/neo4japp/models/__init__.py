@@ -7,14 +7,10 @@ from .auth import (
     AppUser,
     AppUserSchema,
 )
-from .drawing_tool import (
-    Project,
-    ProjectVersion,
-    ProjectBackup,
-)
 from .neo4j import GraphNode, GraphRelationship
-from .files import Directory, Files, FileContent, LMDBsDates, Worksheet
 from .projects import Projects, projects_collaborator_role
 from .organism_match import OrganismGeneMatch
 from .annotations import AnnotationStopWords, GlobalList
 from .entity_resources import DomainURLsMap, AnnotationStyle
+from .files import Files, FileContent, FileVersion, FileBackup, Worksheet, \
+    file_collaborator_role, LMDBsDates
