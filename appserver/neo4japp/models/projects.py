@@ -41,6 +41,14 @@ projects_collaborator_role = db.Table(
 
 
 class Projects(RDBMSBase, FullTimestampMixin):  # type: ignore
+    API_FIELDS = [
+        'hash_id',
+        'name',
+        'description',
+        'creation_date',
+        'modified_date',
+    ]
+
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     hash_id = db.Column(db.String(36), unique=True, nullable=False)
