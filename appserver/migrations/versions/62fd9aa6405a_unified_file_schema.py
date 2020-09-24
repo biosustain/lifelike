@@ -9,8 +9,7 @@ import hashlib
 import itertools
 import json
 import logging
-import uuid
-from datetime import datetime
+import random
 
 import sqlalchemy as sa
 from alembic import op
@@ -28,7 +27,6 @@ depends_on = None
 # Customize these thresholds based on available memory to buffer query results
 CONTENT_QUERY_BATCH_SIZE = 25
 DEFAULT_QUERY_BATCH_SIZE = 200
-
 
 t_app_user = sa.Table(
     'appuser',
@@ -167,17 +165,14 @@ t_app_role = sa.Table(
 )
 
 
-# TODO: fix me
 def create_hash_id():
     """
     Create hash IDs for files.
     """
-    salt = "TODO FIX ME"
-
-    h = hashlib.md5(
-        "{} {}".format(uuid.uuid4(), salt).encode()
-    )
-    return h.hexdigest()
+    # TODO: base it on ID
+    length = 36
+    letters = 'abcdefghkmnoprstwxzABCDEFGHJKLMNPQRTWXY34689'
+    return ''.join(random.choice(letters) for i in range(length))
 
 
 def iter_query(query, *, batch_size):
