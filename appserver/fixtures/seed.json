@@ -37,6 +37,7 @@
     "records": [
       {
         "id": 1,
+        "hash_id": "AHQKkXfnLbbXPzFQxAX3TwWfTLQ9xrbcYwMh",
         "username": "admin",
         "email": "admin@example.com",
         "password": "password",
@@ -50,6 +51,7 @@
       },
       {
         "id": 2,
+        "hash_id": "XG66LsD9rXgKT9TFaKD8AeoNbXoCACe3Ydon",
         "username": "user",
         "email": "user@example.com",
         "password": "password",
@@ -64,19 +66,22 @@
     "records": [
       {
         "id": 1,
-        "project_name": "Example",
+        "hash_id": "R9fxsFaTen9xHd8EoXohhJpTBhX4n9TxfmXs",
+        "name": "Example",
         "description": "This is an example project.",
         "users": []
       },
       {
         "id": 2,
-        "project_name": "COVID-19",
+        "hash_id": "rQrB8EPofrpomCrw4e3WsHnwCgC3gRttpcYr",
+        "name": "COVID-19",
         "description": "This is an example project.",
         "users": []
       },
       {
         "id": 3,
-        "project_name": "Waterways",
+        "hash_id": "6d9m9YXGNGsc9DGLfQaT9KXG8oGYczhMbpWk",
+        "name": "Waterways",
         "description": "This is an example project.",
         "users": []
       }
