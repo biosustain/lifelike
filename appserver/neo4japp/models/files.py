@@ -48,6 +48,19 @@ class FileContent(RDBMSBase):
 
 
 class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin):  # type: ignore
+    API_FIELDS = [
+        'hash_id',
+        'filename',
+        'mime_type',
+        'description',
+        'annotations_date',
+        'doi',
+        'public',
+        'recycled',
+        'creation_date',
+        'modified_date',
+    ]
+
     __tablename__ = 'files'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     hash_id = db.Column(db.String(36), unique=True, nullable=False)
