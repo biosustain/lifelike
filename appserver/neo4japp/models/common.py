@@ -52,7 +52,7 @@ class RDBMSBase(db.Model):  # type: ignore
     def __get_columns(self):
         return {x.name: x.type for x in sa.inspect(self).mapper.columns}
 
-    def to_dict(self, exclude=None, include=None, only=None, keyfn=None):
+    def to_dict(self, exclude=None, include=None, only=None, keyfn=None, valuefn=None):
         """Returns a dictionary of the model object.
 
         Attribute names (exclude, include, only, etc) are in snake_case.
@@ -91,10 +91,11 @@ class RDBMSBase(db.Model):  # type: ignore
                 attrs = [k for k in columns.keys() if k not in exclude]
 
         keyfn = keyfn or snake_to_camel
+        valuefn = valuefn or snake_to_camel
         retval = {}
         for k in attrs:
             key = keyfn(k)
-            retval[key] = getattr(self, k)
+            retval[key] = valuefn(getattr(self, k))
         return retval
 
     def from_dict(self, data, exclude=None, include=None, only=None, keyfn=None):
