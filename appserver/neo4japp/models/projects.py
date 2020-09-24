@@ -43,9 +43,9 @@ projects_collaborator_role = db.Table(
 class Projects(RDBMSBase, TimestampMixin):  # type: ignore
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    project_name = db.Column(db.String(250), unique=True, nullable=False)
+    hash_id = db.Column(db.String(36), unique=True, nullable=False)
+    name = db.Column(db.String(250), unique=True, nullable=False)
     description = db.Column(db.Text)
-    users = db.Column(db.ARRAY(db.Integer), nullable=False)
 
     @validates('project_name')
     def validate_project_name(self, key, name):

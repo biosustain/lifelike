@@ -44,6 +44,7 @@ class AppUser(RDBMSBase, TimestampMixin):
     __tablename__ = 'appuser'
 
     id = db.Column(db.Integer, primary_key=True)
+    hash_id = db.Column(db.String(36), unique=True, nullable=False)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     first_name = db.Column(db.String(120), nullable=False)
