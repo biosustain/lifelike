@@ -12,7 +12,7 @@ from neo4japp.models.auth import (
     AppRole,
     AppUser,
 )
-from neo4japp.models.common import RDBMSBase, TimestampMixin
+from neo4japp.models.common import RDBMSBase, FullTimestampMixin
 
 projects_collaborator_role = db.Table(
     'projects_collaborator_role',
@@ -40,15 +40,15 @@ projects_collaborator_role = db.Table(
 )
 
 
-class Projects(RDBMSBase, TimestampMixin):  # type: ignore
+class Projects(RDBMSBase, FullTimestampMixin):  # type: ignore
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     hash_id = db.Column(db.String(36), unique=True, nullable=False)
     name = db.Column(db.String(250), unique=True, nullable=False)
     description = db.Column(db.Text)
 
-    @validates('project_name')
-    def validate_project_name(self, key, name):
+    @validates('name')
+    def validate_name(self, key, name):
         if not re.match('^[A-Za-z0-9-]+$', name):
             raise ValueError('incorrect project name format')
         return name

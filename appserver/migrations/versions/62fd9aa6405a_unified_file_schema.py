@@ -267,6 +267,15 @@ def upgrade():
     # Remove useless 'users' column on projects
     op.drop_column('projects', 'users')
 
+    # Add soft deletes and lifecycle columns to the projects table
+    op.add_column('projects', sa.Column('creator_id', sa.Integer(), nullable=True))
+    op.add_column('projects', sa.Column('deleter_id', sa.Integer(), nullable=True))
+    op.add_column('projects', sa.Column('deletion_date', sa.TIMESTAMP(timezone=True), nullable=True))
+    op.add_column('projects', sa.Column('modifier_id', sa.Integer(), nullable=True))
+    op.create_foreign_key(op.f('fk_projects_modifier_id_appuser'), 'projects', 'appuser', ['modifier_id'], ['id'])
+    op.create_foreign_key(op.f('fk_projects_creator_id_appuser'), 'projects', 'appuser', ['creator_id'], ['id'])
+    op.create_foreign_key(op.f('fk_projects_deleter_id_appuser'), 'projects', 'appuser', ['deleter_id'], ['id'])
+
     # ========================================
     # Add hash IDs to users
     # ========================================
