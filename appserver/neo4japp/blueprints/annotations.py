@@ -1,6 +1,5 @@
 import io
 import os
-
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List
@@ -8,12 +7,14 @@ from typing import Dict, List
 from flask import Blueprint, current_app, g, make_response
 from werkzeug.datastructures import FileStorage
 
+import neo4japp.models.files_queries as files_queries
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import (
     requires_role,
     requires_project_permission
 )
 from neo4japp.constants import TIMEZONE
+from neo4japp.data_transfer_objects import AnnotationRequest
 from neo4japp.database import (
     db,
     get_annotation_neo4j,
@@ -23,23 +24,18 @@ from neo4japp.database import (
     get_excel_export_service,
     get_lmdb_dao,
     get_manual_annotations_service,
-    get_kg_service,
 )
-from neo4japp.data_transfer_objects import AnnotationRequest
 from neo4japp.exceptions import (
     AnnotationError,
-    DatabaseError,
     RecordNotFoundException
 )
 from neo4japp.models import (
     AccessActionType,
     AppUser,
-    Files,
-    FileContent,
     GlobalList,
     Projects,
+    Files,
 )
-import neo4japp.models.files_queries as files_queries
 from neo4japp.services.annotations.constants import (
     AnnotationMethod,
     EntityType,
@@ -51,8 +47,8 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 
 def annotate(
-    doc: Files,
-    annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
+        doc: Files,
+        annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
 ):
     lmdb_dao = get_lmdb_dao()
     pdf_parser = get_annotations_pdf_parser()

@@ -5,41 +5,34 @@ import os
 import re
 import urllib.request
 import uuid
-
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Optional
 from urllib.error import URLError
 
-from flask import Blueprint, current_app, request, jsonify, g, make_response
-from sqlalchemy.exc import SQLAlchemyError
+from flask import Blueprint, current_app, request, jsonify, g
+from flask_apispec import use_kwargs, marshal_with
+from pdfminer import high_level
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
-from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_project_permission, requires_role
+from neo4japp.blueprints.permissions import requires_project_permission
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
-from neo4japp.constants import TIMEZONE
-from neo4japp.database import db, get_manual_annotations_service
 from neo4japp.data_transfer_objects import FileUpload
+from neo4japp.database import db, get_manual_annotations_service
 from neo4japp.exceptions import (
-    DatabaseError,
     FileUploadError,
     RecordNotFoundException,
-    NotAuthorizedException,
 )
 from neo4japp.models import (
     AccessActionType,
-    AppUser,
     Files,
     FileContent,
-    Directory,
     Projects,
     LMDBsDates
 )
-import neo4japp.models.files_queries as files_queries
 from neo4japp.request_schemas.annotations import (
     AnnotationAdditionSchema,
     AnnotationSchema,
@@ -47,11 +40,9 @@ from neo4japp.request_schemas.annotations import (
     AnnotationExclusionSchema,
 )
 from neo4japp.services.indexing import index_pdf
-from neo4japp.utils.network import read_url
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog
-from flask_apispec import use_kwargs, marshal_with
-from pdfminer import high_level
+from neo4japp.utils.network import read_url
 
 URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
 URL_FETCH_TIMEOUT = 10
@@ -103,7 +94,6 @@ def search_doi(content: bytes) -> Optional[str]:
 @jsonify_with_class(FileUpload, has_file=True)
 @requires_project_permission(AccessActionType.WRITE)
 def upload_pdf(request, project_name: str):
-
     user = g.current_user
     filename = request.filename.strip()
 
@@ -198,173 +188,6 @@ def upload_pdf(request, project_name: str):
     )
 
 
-@bp.route('/download/<int:file_content_id>', methods=['GET'])
-@auth.login_required
-@requires_role('admin')
-def download(file_content_id: int):
-    yield g.current_user
-
-    try:
-        entry = db.session.query(
-            FileContent.raw_file
-        ).filter(
-            FileContent.id == file_content_id,
-        ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('Requested PDF file not found.')
-
-    res = make_response(entry.raw_file)
-    res.headers['Content-Type'] = 'application/pdf'
-
-    yield res
-
-
-@newbp.route('/<string:project_name>/files', methods=['GET'])
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def list_files(project_name: str):
-
-    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-    projects_id = projects.id
-
-    user = g.current_user
-
-    yield user, projects
-
-    # TODO: this needs to be paginated
-    files = [{
-        'annotations_date': row.annotations_date,
-        'id': row.id,  # TODO: is this of any use?
-        'file_id': row.file_id,
-        'filename': row.filename,
-        'description': row.description,
-        'username': row.username,
-        'creation_date': row.creation_date,
-        'modified_date': row.modified_date,
-        'doi': row.doi,
-        'upload_url': row.upload_url
-    } for row in db.session.query(
-        Files.annotations_date,
-        Files.id,
-        Files.file_id,
-        Files.filename,
-        Files.description,
-        Files.user_id,
-        AppUser.username,
-        Files.creation_date,
-        Files.modified_date,
-        Files.doi,
-        Files.upload_url)
-        .join(AppUser, Files.user_id == AppUser.id)
-        .filter(Files.project == projects_id)
-        .order_by(Files.creation_date.desc())
-        .all()]
-    yield jsonify({'files': files})
-
-
-@newbp.route('/<string:project_name>/files/<string:id>/info', methods=['GET', 'PATCH'])
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_file_info(id: str, project_name: str):
-
-    user = g.current_user
-
-    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    yield user, projects
-
-    try:
-        row = db.session.query(
-                Files.id,
-                Files.file_id,
-                Files.filename,
-                Files.description,
-                Files.user_id,
-                AppUser.username,
-                Files.creation_date,
-                Files.modified_date,
-                Files.doi,
-                Files.upload_url
-            ).join(
-                AppUser,
-                Files.user_id == AppUser.id
-            ).filter(
-                Files.file_id == id,
-                Files.project == projects.id
-            ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('Requested PDF file not found.')
-
-    yield jsonify({
-        'id': row.id,  # TODO: is this of any use?
-        'file_id': row.file_id,
-        'filename': row.filename,
-        'description': row.description,
-        'username': row.username,
-        'creation_date': row.creation_date,
-        'modified_date': row.modified_date,
-        'doi': row.doi,
-        'upload_url': row.upload_url
-    })
-
-
-@newbp.route('/<string:project_name>/files/<string:id>', methods=['GET', 'PATCH'])
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_pdf(id: str, project_name: str):
-
-    user = g.current_user
-
-    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    yield user, projects
-
-    if request.method == 'PATCH':
-        filename = request.form['filename'].strip()
-        description = request.form['description'].strip()
-        try:
-            file = Files.query.filter_by(file_id=id).one()
-        except NoResultFound:
-            raise RecordNotFoundException('Requested PDF file not found.')
-        else:
-            update: Dict[str, str] = {}
-            if filename and filename != file.filename:
-                update['filename'] = filename
-
-            if description != file.description:
-                update['description'] = description
-
-            if update:
-                db.session.query(Files).filter(Files.file_id == id).update(update)
-                db.session.commit()
-        yield ''
-
-    try:
-        entry = db.session.query(
-            Files.id,
-            FileContent.raw_file
-        ).join(
-            FileContent,
-            FileContent.id == Files.content_id
-        ).filter(
-            Files.file_id == id,
-            Files.project == projects.id
-        ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('Requested PDF file not found.')
-
-    res = make_response(entry.raw_file)
-    res.headers['Content-Type'] = 'application/pdf'
-
-    yield res
-
-
 # TODO: Convert this? Where is this getting used
 @bp.route('/bioc', methods=['GET'])
 def transform_to_bioc():
@@ -384,7 +207,6 @@ def transform_to_bioc():
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
 def get_annotations(id: str, project_name: str):
-
     projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if projects is None:
         raise RecordNotFoundException(f'Project {project_name} not found')
@@ -457,67 +279,6 @@ def remove_custom_annotation(file_id, uuid, removeAll, project_name):
     )
 
     yield jsonify(removed_annotation_uuids)
-
-
-class DeletionOutcome(Enum):
-    DELETED = 'Deleted'
-    NOT_OWNER = 'Not an owner'
-    NOT_FOUND = 'Not found'
-
-
-@newbp.route('/<string:project_name>/files', methods=['DELETE'])
-@auth.login_required
-@requires_project_permission(AccessActionType.WRITE)
-def delete_files(project_name: str):
-    curr_user = g.current_user
-
-    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    yield curr_user, projects
-
-    user_roles = [r.name for r in curr_user.roles]
-    ids = set(request.get_json())
-    outcome: Dict[str, str] = {}  # file id to deletion outcome
-    files = files_queries.get_all_files_by_id(file_ids=ids, project_id=projects.id)
-
-    files_not_found = ids - set(f.file_id for f in files)
-    for not_found in files_not_found:
-        outcome[not_found] = DeletionOutcome.NOT_FOUND.value
-
-    files_to_delete: List[Files] = []
-
-    for f in files:
-        if 'admin' not in user_roles and curr_user.id != int(f.user_id):
-            current_app.logger.error(
-                'Cannot delete file (not an owner): %s, %s', f.file_id, f.filename)
-            outcome[f.file_id] = DeletionOutcome.NOT_OWNER.value
-        else:
-            files_to_delete.append(f)
-
-    # low level fast bulk operation
-    deleted_file_ids = [to_delete.file_id for to_delete in files_to_delete]
-    deleted_file_names = [to_delete.filename for to_delete in files_to_delete]
-
-    try:
-        delete_query = Files.__table__.delete().where(
-            Files.file_id.in_(set(deleted_file_ids)))
-        db.session.execute(delete_query)
-    except SQLAlchemyError:
-        db.session.rollback()
-        raise DatabaseError('Failed to delete file(s).')
-    else:
-        db.session.commit()
-        index_pdf.delete_indices(file_ids=deleted_file_ids)
-        for deleted in deleted_file_names:
-            current_app.logger.info(
-                f'User deleted file: <{deleted}>',
-                extra=UserEventLog(
-                    username=g.current_user.username, event_type='file delete').to_dict())
-            outcome[deleted] = DeletionOutcome.DELETED.value
-
-    yield jsonify(outcome)
 
 
 @newbp.route(

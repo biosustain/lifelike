@@ -1,4 +1,3 @@
-import enum
 import re
 
 from sqlalchemy import event
@@ -14,8 +13,6 @@ from neo4japp.models.auth import (
     AppUser,
 )
 from neo4japp.models.common import RDBMSBase, TimestampMixin
-from neo4japp.models.files import Directory
-
 
 projects_collaborator_role = db.Table(
     'projects_collaborator_role',
@@ -75,7 +72,6 @@ class Projects(RDBMSBase, TimestampMixin):  # type: ignore
 
 @event.listens_for(Projects, 'after_insert')
 def init_default_access(mapper, connection, target):
-
     # Sets up the "READ" role
     read_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-read'
