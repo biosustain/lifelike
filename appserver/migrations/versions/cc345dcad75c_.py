@@ -6,17 +6,10 @@ Revises: 101b9a60aa29
 Create Date: 2020-07-07 15:13:38.895016
 """
 
+import sqlalchemy as sa
 from alembic import context
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.orm.session import Session
 from sqlalchemy_utils.types import TSVectorType
-
-from neo4japp.database import db
-from app import app
-from neo4japp.models import (
-  Project
-)
 
 # revision identifiers, used by Alembic.
 revision = 'cc345dcad75c'
@@ -42,11 +35,11 @@ t_project = sa.Table(
     sa.Column('description', sa.Text),
     sa.Column('date_modified', sa.DateTime),
     sa.Column('graph', sa.JSON),
-  	sa.Column('author', sa.String(240), nullable=False),
-  	sa.Column('public', sa.Boolean(), default=False),
+    sa.Column('author', sa.String(240), nullable=False),
+    sa.Column('public', sa.Boolean(), default=False),
     sa.Column('user_id', sa.Integer, sa.ForeignKey(t_app_user.c.id)),
     sa.Column('hash_id', sa.String(50), unique=True),
-  	sa.Column('search_vector', TSVectorType('label'))
+    sa.Column('search_vector', TSVectorType('label'))
 )
 
 
@@ -108,9 +101,9 @@ def data_upgrades():
         )
 
         conn.execute(t_project
-                    .update()
-                    .where(t_project.c.id == proj_id)
-                    .values(graph=graph))
+                     .update()
+                     .where(t_project.c.id == proj_id)
+                     .values(graph=graph))
 
 
 def data_downgrades():

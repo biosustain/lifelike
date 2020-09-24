@@ -1,19 +1,13 @@
-import attr
-
 from flask import Blueprint
-from werkzeug.datastructures import FileStorage
 
-from neo4japp.database import db, get_kg_service, get_user_file_import_service
 from neo4japp.data_transfer_objects.user_file_import import (
     ImportGenesRequest,
     Neo4jColumnMapping,
     NodePropertiesRequest,
     UploadFileRequest,
 )
-from neo4japp.models import (
-    Worksheet
-)
-from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
+from neo4japp.database import get_kg_service, get_user_file_import_service
+from neo4japp.util import SuccessResponse, jsonify_with_class
 
 bp = Blueprint('user-file-import-api', __name__, url_prefix='/user-file-import')
 
