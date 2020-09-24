@@ -189,6 +189,10 @@ class FullTimestampMixin(TimestampMixin):
     def deleter_id(cls):
         return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
 
+    @property
+    def deleted(self):
+        return self.deletion_date is not None
+
 
 class RecyclableMixin:
     """ Tables that need a created/updated """
@@ -197,3 +201,7 @@ class RecyclableMixin:
     @declared_attr
     def recycler_id(cls):
         return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+
+    @property
+    def recycled(self):
+        return self.recycling_date is not None
