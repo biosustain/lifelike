@@ -1,0 +1,72 @@
+name: QA Deployment
+
+on:
+  push:
+    tags: [qa]
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # Setup gcloud CLI
+      # https://github.com/GoogleCloudPlatform/github-actions
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: "286.0.0"
+          service_account_key: ${{ secrets.GCE_SA_KEY }}
+          project_id: ${{ secrets.GCE_PROJECT }}
+
+      # Configure Docker to use gcloud command line tool
+      - run: |-
+          gcloud --quiet auth configure-docker
+
+      - name: Build appserver image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
+          image_tag: ${{ github.sha }},latest
+          context: ./appserver
+          dockerfile: ./Dockerfile
+
+      - name: Build Client and Nginx Image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
+          image_tag: ${{ github.sha }},latest
+          context: ./client
+          dockerfile: ./Dockerfile
+          build_extra_args: "--build-arg=build_environment=staging --build-arg=nginx_conf=qa.conf"
+
+      - name: Build Redis
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
+          image_tag: ${{ github.sha }},latest
+          context: ./cache-invalidator
+          dockerfile: ./Dockerfile
+
+      - name: Build NLP
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
+          image_tag: ${{ github.sha }},latest
+          context: ./nlp
+          dockerfile: ./Dockerfile

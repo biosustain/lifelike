@@ -8,8 +8,6 @@
       tags: ["docker"]
     - role: gcloud-auth
       tags: ["gcloud-auth"]
-    - role: lmdb
-      tags: ["lmdb"]
 
   tasks:
     - name: Allow Docker to access Google Cloud Registry
@@ -94,3 +92,9 @@
             chdir: "{{ deploy_dir }}"
             cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver bin/migrate-db --upgrade --data-migrate"
       when: CLOUD_BACKUP|bool
+
+    - name: Create/Update LMDB database
+      include_role:
+        name: lmdb
+      tags:
+        - lmdb
