@@ -27,12 +27,12 @@ class WorksheetViewerService(KgService):
         return self.graph.run(
             query,
             {
-                'worksheet_id': worksheet_id,
+                'worksheet_id': int(worksheet_id),
             }
         ).data()
 
     def get_ncbi_genes_query(self):
         return """
-        MATCH p=(w:Worksheet)<-[:IMPORTED_FROM]-(:UserData)-[:IS_A]-(x:Gene:db_NCBI)
-        WHERE ID(w) = $worksheet_id RETURN x
+        MATCH (w:Worksheet)<-[:IMPORTED_FROM]-(:UserData)-[:IS_A]-(x:Gene:db_NCBI)
+        WHERE ID(w) = $worksheet_id RETURN x, ID(x) as neo4jID
         """
