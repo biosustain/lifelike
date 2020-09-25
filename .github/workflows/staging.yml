@@ -3,7 +3,9 @@ name: Staging Deployment
 on:
   push:
     branches:
-      - master
+      # TODO: refactor this to use ansible
+      # only trigger when branches match refs/heads/staging/
+      - 'staging/**'
 
 env:
     ELASTICSEARCH_HOSTS: ${{ secrets.ELASTICSEARCH_HOSTS }}
