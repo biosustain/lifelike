@@ -8,6 +8,10 @@
       tags: ["docker"]
     - role: gcloud-auth
       tags: ["gcloud-auth"]
+    - role: ssl-cert
+      tags: ["ssl"]
+    - role: dh-params
+      tags: ["dh"]
 
   tasks:
     - name: Allow Docker to access Google Cloud Registry
@@ -22,6 +26,8 @@
         - kg-webserver
         - kg-cache-service
         - kg-nlpapi
+      tags:
+        - deploy
 
     - name: Copy docker-compose files
       copy:
@@ -33,6 +39,8 @@
       with_items:
         - docker-compose.yml
         - docker-compose.prod.yml
+      tags:
+        - deploy
 
     - name: Create .env file
       copy:
@@ -61,15 +69,21 @@
         owner: "{{ deploy_user }}"
         group: "{{ deploy_user }}"
         mode: u=rw,g=r,o=r
+      tags:
+        - deploy
 
     - name: Start docker
       shell:
         chdir: "{{ deploy_dir }}"
         cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
+      tags:
+        - deploy
 
     - name: Prune unused images
       shell:
         "docker image prune -a -f"
+      tags:
+        - deploy
 
     - name: Run database migrations and backups
       block:
@@ -92,9 +106,15 @@
             chdir: "{{ deploy_dir }}"
             cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver bin/migrate-db --upgrade --data-migrate"
       when: CLOUD_BACKUP|bool
+      tags:
+        - deploy
 
     - name: Create/Update LMDB database
       include_role:
         name: lmdb
+        apply:
+          tags:
+            - always
       tags:
         - lmdb
+        - deploy

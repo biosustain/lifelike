@@ -33,7 +33,7 @@ jobs:
           password: ${{ secrets.GCE_SA_KEY }}
           registry: gcr.io
           image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
-          image_tag: ${{ github.sha }},latest
+          image_tag: ${{ github.sha }}
           context: ./appserver
           dockerfile: ./Dockerfile
 
@@ -44,7 +44,7 @@ jobs:
           password: ${{ secrets.GCE_SA_KEY }}
           registry: gcr.io
           image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
-          image_tag: ${{ github.sha }},latest
+          image_tag: ${{ github.sha }}
           context: ./client
           dockerfile: ./Dockerfile
           build_extra_args: "--build-arg=build_environment=staging --build-arg=nginx_conf=qa.conf"
@@ -56,7 +56,7 @@ jobs:
           password: ${{ secrets.GCE_SA_KEY }}
           registry: gcr.io
           image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
-          image_tag: ${{ github.sha }},latest
+          image_tag: ${{ github.sha }}
           context: ./cache-invalidator
           dockerfile: ./Dockerfile
 
@@ -67,6 +67,19 @@ jobs:
           password: ${{ secrets.GCE_SA_KEY }}
           registry: gcr.io
           image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
-          image_tag: ${{ github.sha }},latest
+          image_tag: ${{ github.sha }}
           context: ./nlp
           dockerfile: ./Dockerfile
+
+      - name: Deploy application
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: deploy.yml
+          directory: deployment/ansible/playbooks
+          key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+          inventory: |
+            [demo]
+            demo.lifelike.bio
+          vault_password: ${{ secrets.ANSIBLE_VAULT }}
+          options: |
+            --extra-vars "webserver=qa docker_img_hash=${{ github.sha }}"
