@@ -58,8 +58,8 @@ services:
             # ElasticSearch
             - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
             # Neo4j
-            - NEO4J_HOST=n4j-database
-            - NEO4J_AUTH=neo4j/password
+            - NEO4J_HOST=35.225.248.203
+            - NEO4J_AUTH=neo4j/rcai
             # Redis
             - REDIS_HOST=redis
             - REDIS_PORT=6379

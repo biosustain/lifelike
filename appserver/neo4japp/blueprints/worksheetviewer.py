@@ -35,7 +35,7 @@ def get_neo4j_worksheet(worksheet_id: str):
 
 
 @bp.route('/get-ncbi-nodes/<string:worksheet_node_id>', methods=['GET'])
-def get_ncbi_nodes(worksheet_node_id: str):
+def get_ncbi_nodes(worksheet_node_id: int):
     worksheet_viewer = get_worksheet_viewer_service()
     nodes = worksheet_viewer.get_ncbi_genes(worksheet_node_id)
 

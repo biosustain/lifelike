@@ -1,6 +1,6 @@
 import attr
 
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 
 from typing import List
 from sqlalchemy.orm.exc import NoResultFound
@@ -30,7 +30,7 @@ def get_ncbi_uniprot_nodes():
     node_ids = data['nodeIds']
     kg = get_kg_service()
     nodes = kg.get_uniprot_genes(node_ids)
-    return SuccessResponse(result=nodes, status_code=200)
+    return jsonify({'result': nodes}), 200
 
 
 @bp.route('/get-ncbi-nodes/string', methods=['POST'])
@@ -39,7 +39,7 @@ def get_ncbi_string_nodes():
     node_ids = data['nodeIds']
     kg = get_kg_service()
     nodes = kg.get_string_genes(node_ids)
-    return SuccessResponse(result=nodes, status_code=200)
+    return jsonify({'result': nodes}), 200
 
 
 @bp.route('/get-ncbi-nodes/molecular-go', methods=['POST'])
@@ -48,7 +48,7 @@ def get_ncbi_molecular_go_nodes():
     node_ids = data['nodeIds']
     kg = get_kg_service()
     nodes = kg.get_molecular_go_genes(node_ids)
-    return SuccessResponse(result=nodes, status_code=200)
+    return jsonify({'result': nodes}), 200
 
 
 @bp.route('/get-ncbi-nodes/biological-go', methods=['POST'])
@@ -57,7 +57,7 @@ def get_ncbi_biological_go_nodes():
     node_ids = data['nodeIds']
     kg = get_kg_service()
     nodes = kg.get_biological_go_genes(node_ids)
-    return SuccessResponse(result=nodes, status_code=200)
+    return jsonify({'result': nodes}), 200
 
 
 @bp.route('/get-ncbi-nodes/cellular-go', methods=['POST'])
@@ -66,7 +66,7 @@ def get_ncbi_cellular_go_nodes():
     node_ids = data['nodeIds']
     kg = get_kg_service()
     nodes = kg.get_cellular_go_genes(node_ids)
-    return SuccessResponse(result=nodes, status_code=200)
+    return jsonify({'result': nodes}), 200
 
 
 @bp.route('/get-ncbi-nodes/ecocyc', methods=['POST'])
@@ -75,7 +75,7 @@ def get_ncbi_ecocyc_nodes():
     node_ids = data['nodeIds']
     kg = get_kg_service()
     nodes = kg.get_ecocyc_genes(node_ids)
-    return SuccessResponse(result=nodes, status_code=200)
+    return jsonify({'result': nodes}), 200
 
 
 @bp.route('/get-ncbi-nodes/regulon', methods=['POST'])
@@ -84,4 +84,19 @@ def get_ncbi_regulon_nodes():
     node_ids = data['nodeIds']
     kg = get_kg_service()
     nodes = kg.get_regulon_genes(node_ids)
-    return SuccessResponse(result=nodes, status_code=200)
+    return jsonify({'result': nodes}), 200
+
+@bp.route('/get-ncbi-nodes/enrichment-domains', methods=['POST'])
+def get_ncbi_enrichment_domains():
+    data = request.get_json()
+    node_ids = data['nodeIds']
+    kg = get_kg_service()
+    regulon = kg.get_regulon_genes(node_ids)
+    ecocyc = kg.get_ecocyc_genes(node_ids)
+    cellular = kg.get_cellular_go_genes(node_ids)
+    biological = kg.get_biological_go_genes(node_ids)
+    molecular = kg.get_molecular_go_genes(node_ids)
+    string = kg.get_string_genes(node_ids)
+    uniprot = kg.get_uniprot_genes(node_ids)
+    nodes = list(zip(regulon, uniprot, string, molecular, biological, cellular, ecocyc))
+    return jsonify({'result': nodes}), 200
