@@ -2,7 +2,10 @@ name: QA Deployment
 
 on:
   push:
-    tags: [qa]
+    branches:
+      - master
+    tags:
+      - qa
 
 jobs:
   setup-build-publish-deploy:
