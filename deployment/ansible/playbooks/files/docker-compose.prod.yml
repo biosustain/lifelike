@@ -18,8 +18,8 @@ services:
             - 443:443
         volumes:
             - ${DH_PARAM_FILE:-/home/ansible/dh-param/dhparam-2048.pem}:/etc/ssl/certs/dhparam-2048.pem
-            - ${CERTBOT_CERT_DIR:-/home/ansible/certbot/live}/${DOMAIN}/fullchain.pem:/etc/letsencrypt/live/${DOMAIN}/fullchain.pem
-            - ${CERTBOT_CERT_DIR:-/home/ansible/certbot/live}/${DOMAIN}/privkey.pem:/etc/letsencrypt/live/${DOMAIN}/privkey.pem
+            - ${CERTBOT_CERT_DIR:-/home/ansible/certbot/etc/letsencrypt/live}/${DOMAIN}/fullchain.pem:/etc/letsencrypt/live/${DOMAIN}/fullchain.pem
+            - ${CERTBOT_CERT_DIR:-/home/ansible/certbot/etc/letsencrypt/live}/${DOMAIN}/privkey.pem:/etc/letsencrypt/live/${DOMAIN}/privkey.pem
         networks:
             - frontend
 
