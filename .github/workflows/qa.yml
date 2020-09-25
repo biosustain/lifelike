@@ -81,4 +81,4 @@ jobs:
           options: |
             --extra-vars "webserver=qa docker_img_hash=${{ github.sha }}"
             --user ansible
-            --inventory inventories
+            --inventory ../inventories
