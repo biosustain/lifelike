@@ -54,6 +54,8 @@ class Projects(RDBMSBase, FullTimestampMixin):  # type: ignore
     hash_id = db.Column(db.String(36), unique=True, nullable=False)
     name = db.Column(db.String(250), unique=True, nullable=False)
     description = db.Column(db.Text)
+    ***ARANGO_USERNAME***_id = db.Column(db.Integer, db.ForeignKey('files.id'), nullable=False, index=True)
+    ***ARANGO_USERNAME*** = db.relationship('Files', foreign_keys=***ARANGO_USERNAME***_id)
 
     @validates('name')
     def validate_name(self, key, name):

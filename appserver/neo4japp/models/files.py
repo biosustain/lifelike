@@ -65,8 +65,6 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin):  # type: ignore
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     hash_id = db.Column(db.String(36), unique=True, nullable=False)
     filename = db.Column(db.String(200), nullable=False)
-    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), index=True, nullable=False)
-    project = db.relationship('Projects', foreign_keys=project_id)
     parent_id = db.Column(db.Integer, db.ForeignKey('files.id'), nullable=True, index=True)
     parent = db.relationship('Files', foreign_keys=parent_id)
     mime_type = db.Column(db.String(127), nullable=False)
@@ -87,11 +85,11 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin):  # type: ignore
     deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     __table_args__ = (
-        db.Index('uq_files_unique_filename',
-                 'project_id', 'filename', 'parent_id',
+        db.Index('uq_files_unique_filename', 'filename', 'parent_id',
                  unique=True,
                  postgresql_where=and_(deletion_date.is_(None),
-                                       recycling_date.is_(None))),
+                                       recycling_date.is_(None),
+                                       parent_id.isnot(None))),
     )
 
 

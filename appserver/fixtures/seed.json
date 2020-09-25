@@ -62,52 +62,6 @@
     ]
   },
   {
-    "model": "neo4japp.models.Projects",
-    "records": [
-      {
-        "id": 1,
-        "hash_id": "R9fxsFaTen9xHd8EoXohhJpTBhX4n9TxfmXs",
-        "name": "Example",
-        "description": "This is an example project.",
-        "users": []
-      },
-      {
-        "id": 2,
-        "hash_id": "rQrB8EPofrpomCrw4e3WsHnwCgC3gRttpcYr",
-        "name": "COVID-19",
-        "description": "This is an example project.",
-        "users": []
-      },
-      {
-        "id": 3,
-        "hash_id": "6d9m9YXGNGsc9DGLfQaT9KXG8oGYczhMbpWk",
-        "name": "Waterways",
-        "description": "This is an example project.",
-        "users": []
-      }
-    ]
-  },
-  {
-    "model": "neo4japp.models.projects_collaborator_role",
-    "records": [
-      {
-        "appuser_id": 1,
-        "app_role_id": 4,
-        "projects_id": 1
-      },
-      {
-        "appuser_id": 1,
-        "app_role_id": 4,
-        "projects_id": 2
-      },
-      {
-        "appuser_id": 1,
-        "app_role_id": 4,
-        "projects_id": 3
-      }
-    ]
-  },
-  {
     "model": "neo4japp.models.FileContent",
     "records": [
       {
@@ -128,7 +82,6 @@
         "hash_id": "lazhauxymcrahybaxcvkathnofyissffuidu",
         "filename": "/",
         "mime_type": "vnd.***ARANGO_DB_NAME***.filesystem/directory",
-        "project_id": 1,
         "parent_id": null,
         "user_id": 1,
         "public": false,
@@ -139,7 +92,6 @@
         "hash_id": "34a3w8pPhdJDP9czmKYLQHTdzLX4mkHMgYro",
         "filename": "/",
         "mime_type": "vnd.***ARANGO_DB_NAME***.filesystem/directory",
-        "project_id": 2,
         "parent_id": null,
         "user_id": 1,
         "public": false,
@@ -150,7 +102,6 @@
         "hash_id": "Nehfm8JamxKR9rKT3H6ra9WBJ9H4eFsMFBhN",
         "filename": "/",
         "mime_type": "vnd.***ARANGO_DB_NAME***.filesystem/directory",
-        "project_id": 3,
         "parent_id": null,
         "user_id": 1,
         "public": false,
@@ -162,7 +113,6 @@
         "filename": "Microbiome affect on weight",
         "mime_type": "vnd.***ARANGO_DB_NAME***.document/map",
         "description": "A multi-omics approach to unraveling the Microbiome Mediated effects of Arabinoxylan Oligosaccharides in overweight humans.",
-        "project_id": 2,
         "parent_id": 1,
         "user_id": 1,
         "public": false,
@@ -174,11 +124,58 @@
         "filename": "COVID-19 Vaccine Blueprint",
         "mime_type": "vnd.***ARANGO_DB_NAME***.document/map",
         "description": "This illustrate the potential solutions that exists out there in treating the coronavirus currently plaguing our reality.",
-        "project_id": 2,
         "parent_id": 1,
         "user_id": 1,
         "public": true,
         "content_id": 2
+      }
+    ]
+  },
+  {
+    "model": "neo4japp.models.Projects",
+    "records": [
+      {
+        "id": 1,
+        "hash_id": "R9fxsFaTen9xHd8EoXohhJpTBhX4n9TxfmXs",
+        "name": "Example",
+        "description": "This is an example project.",
+        "***ARANGO_USERNAME***_id": 1
+      },
+      {
+        "id": 2,
+        "hash_id": "rQrB8EPofrpomCrw4e3WsHnwCgC3gRttpcYr",
+        "name": "COVID-19",
+        "description": "This is an example project.",
+        "users": [],
+        "***ARANGO_USERNAME***_id": 2
+      },
+      {
+        "id": 3,
+        "hash_id": "6d9m9YXGNGsc9DGLfQaT9KXG8oGYczhMbpWk",
+        "name": "Waterways",
+        "description": "This is an example project.",
+        "users": [],
+        "***ARANGO_USERNAME***_id": 3
+      }
+    ]
+  },
+  {
+    "model": "neo4japp.models.projects_collaborator_role",
+    "records": [
+      {
+        "appuser_id": 1,
+        "app_role_id": 4,
+        "projects_id": 1
+      },
+      {
+        "appuser_id": 1,
+        "app_role_id": 4,
+        "projects_id": 2
+      },
+      {
+        "appuser_id": 1,
+        "app_role_id": 4,
+        "projects_id": 3
       }
     ]
   },
