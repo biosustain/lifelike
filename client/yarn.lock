@@ -1477,13 +1477,6 @@ angular-split@^3.0.3:
   dependencies:
     tslib "^1.9.0"
 
-angular-tag-cloud-module@^5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/angular-tag-cloud-module/-/angular-tag-cloud-module-5.1.0.tgz#907a51ec35a7efd881df797a1d3140875ed74797"
-  integrity sha512-X7w7LX8dooD386LpuIPF7wsjKhlrb+0cW67AG4JKV1Qn2BO6w2Z+31deE8qNkBuIUTG9pKMpXHlE/3TY9K0prw==
-  dependencies:
-    tslib "^2.0.0"
-
 ansi-colors@4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/ansi-colors/-/ansi-colors-4.1.1.tgz#cbb9ae256bf750af1eab344f229aa27fe94ba348"
@@ -2820,6 +2813,11 @@ d3-contour@1:
   dependencies:
     d3-array "^1.1.1"
 
+d3-dispatch@0.2.x:
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/d3-dispatch/-/d3-dispatch-0.2.6.tgz#e57df25906cdce5badeae79809ec0f73bbb184ab"
+  integrity sha1-5X3yWQbNzlut6ueYCewPc7uxhKs=
+
 d3-dispatch@1, d3-dispatch@^1.0.3:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/d3-dispatch/-/d3-dispatch-1.0.6.tgz#00d37bcee4dd8cd97729dd893a0ac29caaba5d58"
@@ -2984,6 +2982,13 @@ d3-zoom@1:
     d3-interpolate "1"
     d3-selection "1"
     d3-transition "1"
+
+d3.layout.cloud@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/d3.layout.cloud/-/d3.layout.cloud-1.2.0.tgz#bb7a951aac54ec0237f37b2528eb3e0031440bbd"
+  integrity sha1-u3qVGqxU7AI383slKOs+ADFEC70=
+  dependencies:
+    d3-dispatch "0.2.x"
 
 d3@^5.16.0:
   version "5.16.0"
@@ -8031,11 +8036,6 @@ tslib@^1.10.0, tslib@^1.7.1, tslib@^1.8.0, tslib@^1.8.1, tslib@^1.9.0:
   version "1.11.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.11.1.tgz#eb15d128827fbee2841549e171f45ed338ac7e35"
   integrity sha512-aZW88SY8kQbU7gpV19lN24LtXh/yD4ZZg6qieAJDDg+YBsJcSmLGK9QpnUjAKVG/xefmvJGd1WUmfpT/g6AJGA==
-
-tslib@^2.0.0:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.0.1.tgz#410eb0d113e5b6356490eec749603725b021b43e"
-  integrity sha512-SgIkNheinmEBgx1IUNirK0TUD4X9yjjBRTqqjggWCU3pUEqIk3/Uwl3yRixYKT6WjQuGiwDv4NomL3wqRCj+CQ==
 
 tslint@~5.15.0:
   version "5.15.0"
