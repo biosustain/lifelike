@@ -199,7 +199,7 @@ class AnnotationsPDFParser:
         chars_in_abstract: List[str] = []
         lt_chars: List[LTChar] = []
         cropbox_in_pdf = (1, 1)
-        min_idx_in_page = {1: 1}
+        min_idx_in_page = {0: 1}
 
         for c in abstract:
             # create a fake LTChar
@@ -262,6 +262,7 @@ class AnnotationsPDFParser:
             cropbox_in_pdf = (page.mediabox[0], page.mediabox[1])
             interpreter.process_page(page)
             layout = device.get_result()
+            # key is min idx and value is page number
             min_idx_in_page[len(char_coord_objs_in_pdf)] = i+1
             self._get_lt_char(
                 layout=layout,
