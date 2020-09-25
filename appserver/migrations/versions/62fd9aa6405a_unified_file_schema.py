@@ -9,7 +9,9 @@ import hashlib
 import itertools
 import json
 import logging
+import os
 import random
+from datetime import datetime
 
 import sqlalchemy as sa
 from alembic import op
@@ -31,7 +33,7 @@ DEFAULT_QUERY_BATCH_SIZE = 200
 t_app_user = sa.Table(
     'appuser',
     sa.MetaData(),
-    sa.Column('id'),
+    sa.Column('id', sa.Integer(), primary_key=True),
     sa.Column('hash_id'),
     sa.Column('username'),
     sa.Column('email'),
@@ -46,6 +48,7 @@ t_project = sa.Table(
     sa.Column('hash_id'),
     sa.Column('name'),
     sa.Column('description'),
+    sa.Column('root_id'),
     sa.Column('creation_date'),
     sa.Column('modified_date'),
 )
@@ -99,7 +102,6 @@ t_file = sa.Table(
     sa.MetaData(),
     sa.Column('id', sa.Integer(), primary_key=True),
     sa.Column('hash_id'),
-    sa.Column('project_id'),
     sa.Column('parent_id'),
     sa.Column('mime_type'),
     sa.Column('filename'),
@@ -214,6 +216,11 @@ def get_or_create_content_id(session, data, creation_date):
 def upgrade():
     session = Session(op.get_bind())
 
+    if os.environ.get('USE_UNIFIED_FILE_SCHEMA_MIGRATION_SAMPLE'):
+        logger.info("Inserting sample data for testing the migration "
+                    "(due to USE_UNIFIED_FILE_SCHEMA_MIGRATION_SAMPLE flag)...")
+        insert_sample_data(session)
+
     # ========================================
     # Initial column changes
     # ========================================
@@ -223,12 +230,10 @@ def upgrade():
     # Directories have no content
     op.alter_column('files', 'content_id', existing_type=sa.Integer(), nullable=True)
 
-    # FK columns really need an _id suffix
+    # Drop the project column
     op.drop_index('ix_files_project', table_name='files')
     op.drop_constraint('fk_files_project_projects', 'files', type_='foreignkey')
-    op.alter_column('files', 'project', new_column_name='project_id')
-    op.create_foreign_key(op.f('fk_files_project_id_projects'), 'files', 'projects', ['project_id'], ['id'])
-    op.create_index(op.f('ix_files_project_id'), 'files', ['project_id'], unique=False)
+    op.drop_column('files', 'project')
 
     # Add parent_id column
     op.add_column('files', sa.Column('parent_id', sa.Integer(), nullable=True))
@@ -267,6 +272,11 @@ def upgrade():
     # Remove useless 'users' column on projects
     op.drop_column('projects', 'users')
 
+    # Add root_id column to the projects table
+    op.add_column('projects', sa.Column('root_id', sa.Integer(), nullable=True))  # Remove nullable later
+    op.create_index(op.f('ix_projects_root_id'), 'projects', ['root_id'], unique=False)
+    op.create_foreign_key(op.f('fk_projects_root_id_files'), 'projects', 'files', ['root_id'], ['id'])
+
     # Add soft deletes and lifecycle columns to the projects table
     op.add_column('projects', sa.Column('creator_id', sa.Integer(), nullable=True))
     op.add_column('projects', sa.Column('deleter_id', sa.Integer(), nullable=True))
@@ -300,7 +310,7 @@ def upgrade():
 
     logger.info("Adding hash IDs to projects...")
 
-    op.add_column('projects', sa.Column('hash_id', sa.String(length=36), nullable=False))
+    op.add_column('projects', sa.Column('hash_id', sa.String(length=36), nullable=True))
     op.create_unique_constraint(op.f('uq_projects_hash_id'), 'projects', ['hash_id'])
 
     for project in iter_query(session.query(t_project), batch_size=DEFAULT_QUERY_BATCH_SIZE):
@@ -340,7 +350,6 @@ def upgrade():
 
         new_id = session.execute(t_file.insert().values(
             hash_id=map['hash_id'],
-            project_id=map['projects_id'],
             parent_id=None,
             mime_type='vnd.lifelike.document/map',
             filename=map['label'],
@@ -358,7 +367,7 @@ def upgrade():
         logger.debug("-> Project(id=%s) copied to File(id=%s)", map['id'], new_id)
 
     # ========================================
-    # Copy directories to the file table
+    # Copy directories to the file table and update project root_dir
     # ========================================
 
     # New rows won't have this column and we are going to remove it at the end
@@ -372,7 +381,6 @@ def upgrade():
 
         new_id = session.execute(t_file.insert().values(
             hash_id=create_hash_id(),
-            project_id=dir['projects_id'],
             parent_id=None,
             mime_type='vnd.lifelike.filesystem/directory',
             filename=dir['name'],
@@ -383,7 +391,53 @@ def upgrade():
         )).inserted_primary_key[0]
         old_dir_to_new_dir_id[dir['id']] = new_id
 
+        # Update the associated project
+        if dir['directory_parent_id'] is None and dir['projects_id'] is not None:
+            session.execute(t_project.update().values(
+                root_id=new_id,
+            ).where(t_project.c.id == dir['projects_id']))
+
         logger.debug("-> Directory(id=%s) copied to File(id=%s)", dir['id'], new_id)
+
+    dummy_dir_owner_id = None  # The user ID to 'own' directories for projects without a root dir
+
+    logger.info("Making sure all projects have a root directory...")
+    for project in iter_query(session.query(t_project).filter(t_project.c.root_id.is_(None)),
+                              batch_size=DEFAULT_QUERY_BATCH_SIZE):
+        project = project._asdict()
+
+        # Create dummy user
+        if not dummy_dir_owner_id:
+            dummy_dir_owner_id = session.execute(t_app_user.insert().values(
+                hash_id=create_hash_id(),
+                username='_migration_root_dir',
+                email='migration_root_dir@migration.lifelike.bio',
+                first_name='System',
+                last_name='Lifelike'
+            )).inserted_primary_key[0]
+            logger.info("Created a dummy user (_migration_root_dir, #%s) to own the directories "
+                        "of projects without a root directory", dummy_dir_owner_id)
+
+        # Create the root directory
+        dir_id = session.execute(t_file.insert().values(
+            hash_id=create_hash_id(),
+            parent_id=None,
+            mime_type='vnd.lifelike.filesystem/directory',
+            filename='/',
+            user_id=dummy_dir_owner_id,
+            dir_id=None,  # We can make it null now
+            creation_date=project['creation_date'],
+            modified_date=project['modified_date'],
+        )).inserted_primary_key[0]
+
+        # Update the associated project
+        session.execute(t_project.update().values(
+            root_id=dir_id,
+        ).where(t_project.c.id == project['id']))
+
+    # Make root ID non-nullable
+    logger.info("Making the root_id column non-nullable...")
+    op.alter_column('projects', 'root_id', existing_type=sa.Integer(), nullable=False)
 
     # ========================================
     # Set the file parent_id columns based on the to-be-removed (parent_)dir_id column
@@ -611,16 +665,15 @@ def upgrade():
         t_file.c.id,
         t_file.c.filename,
         sa.func.count().over(
-            partition_by=[t_file.c.project_id,
-                          t_file.c.filename,
+            partition_by=[t_file.c.filename,
                           t_file.c.parent_id],
         ).label('count'),
         sa.func.rank().over(
-            partition_by=[t_file.c.project_id,
-                          t_file.c.filename,
+            partition_by=[t_file.c.filename,
                           t_file.c.parent_id],
         ).label('group')
     ) \
+        .filter(t_file.c.parent_id.isnot(None)) \
         .subquery()
 
     # Now we exclude non-duplicate groups
@@ -655,13 +708,216 @@ def upgrade():
     # that would cause the addition of those suffixes, we'll hope for the best
 
     # Now apply the constraint
-    logger.info("Applying database constraint to prevent duplicate filenames..")
-    op.create_index('uq_files_unique_filename', 'files', ['project_id', 'filename', 'parent_id'],
-                    unique=True,
-                    postgresql_where=sa.text('deletion_date IS NULL AND recycling_date IS NULL'))
+    logger.info("Applying database constraint to prevent duplicate filenames...")
+    op.create_index('uq_files_unique_filename', 'files', ['filename', 'parent_id'], unique=True,
+                    postgresql_where=sa.text(
+                        'deletion_date IS NULL AND recycling_date IS NULL AND parent_id IS NOT NULL'))
 
     logger.info("File schema unified")
 
 
 def downgrade():
     raise Exception("downgrade not supported")
+
+
+def insert_sample_data(session):
+    """
+    Insert test data for testing this migration.
+    """
+    t_projects = sa.Table(
+        'projects',
+        sa.MetaData(),
+        sa.Column('id', sa.Integer(), primary_key=True),
+        sa.Column('project_name'),
+        sa.Column('description'),
+        sa.Column('users'),
+        sa.Column('creation_date'),
+        sa.Column('modified_date'),
+    )
+
+    t_map = sa.Table(
+        'project',
+        sa.MetaData(),
+        sa.Column('id', sa.Integer(), primary_key=True),
+        sa.Column('label'),
+        sa.Column('description'),
+        sa.Column('graph'),
+        sa.Column('public'),
+        sa.Column('author'),
+        sa.Column('user_id'),
+        sa.Column('dir_id'),
+        sa.Column('hash_id'),
+        sa.Column('creation_date'),
+        sa.Column('modified_date'),
+    )
+
+    t_map_version = sa.Table(
+        'project_version',
+        sa.MetaData(),
+        sa.Column('id', sa.Integer(), primary_key=True),
+        sa.Column('label'),
+        sa.Column('description'),
+        sa.Column('graph'),
+        sa.Column('public'),
+        sa.Column('user_id'),
+        sa.Column('dir_id'),
+        sa.Column('project_id'),
+        sa.Column('creation_date'),
+        sa.Column('modified_date'),
+    )
+
+    t_map_backup = sa.Table(
+        'project_backup',
+        sa.MetaData(),
+        sa.Column('project_id', sa.Integer(), primary_key=True),
+        sa.Column('label'),
+        sa.Column('description'),
+        sa.Column('graph'),
+        sa.Column('public'),
+        sa.Column('author'),
+        sa.Column('user_id'),
+        sa.Column('hash_id'),
+        sa.Column('creation_date'),
+        sa.Column('modified_date'),
+    )
+
+    t_file_content = sa.Table(
+        'files_content',
+        sa.MetaData(),
+        sa.Column('id', sa.Integer(), primary_key=True),
+        sa.Column('raw_file'),
+        sa.Column('checksum_sha256'),
+        sa.Column('creation_date'),
+    )
+
+    t_files = sa.Table(
+        'files',
+        sa.MetaData(),
+        sa.Column('id', sa.Integer(), primary_key=True),
+        sa.Column('file_id'),
+        sa.Column('project'),
+        sa.Column('dir_id'),
+        sa.Column('filename'),
+        sa.Column('description'),
+        sa.Column('content_id'),
+        sa.Column('user_id'),
+        sa.Column('creation_date'),
+        sa.Column('modified_date'),
+    )
+
+    t_directory = sa.Table(
+        'directory',
+        sa.MetaData(),
+        sa.Column('id', sa.Integer(), primary_key=True),
+        sa.Column('name'),
+        sa.Column('directory_parent_id'),
+        sa.Column('projects_id'),
+        sa.Column('user_id'),
+        sa.Column('creation_date'),
+        sa.Column('modified_date'),
+    )
+
+    session.execute(t_app_user.insert().values(
+        username='joe',
+        first_name='Joe',
+        last_name='Taylor',
+    ))
+
+    session.execute(t_projects.insert().values(
+        project_name='Test',
+        users=[],
+        creation_date=datetime.now()
+    ))
+
+    # No root DIR
+    session.execute(t_projects.insert().values(
+        project_name='No Root Dir',
+        users=[],
+        creation_date=datetime.now()
+    ))
+
+    session.execute(t_directory.insert().values(
+        name='test',
+        projects_id=1,
+        user_id=1,
+    ))
+
+    session.execute(t_directory.insert().values(
+        name='some other folder',
+        projects_id=1,
+        user_id=1,
+    ))
+
+    session.execute(t_directory.insert().values(
+        name='test subfolder',
+        projects_id=1,
+        directory_parent_id=1,
+        user_id=1,
+    ))
+
+    session.execute(t_map.insert().values(
+        label='Test Map',
+        description='Blah',
+        graph='{"nodes": [], "edges": []}',
+        public=True,
+        user_id=1,
+        author='test',
+        dir_id=1,
+        hash_id='maphash',
+        creation_date=datetime.now(),
+        modified_date=datetime.now(),
+    ))
+
+    session.execute(t_map.insert().values(
+        label='Test Map',
+        description='Blah',
+        graph='{"nodes": [], "edges": []}',
+        public=True,
+        user_id=1,
+        author='test',
+        dir_id=1,
+        hash_id='maphash2',
+        creation_date=datetime.now(),
+        modified_date=datetime.now(),
+    ))
+
+    session.execute(t_map_version.insert().values(
+        label='Test Map',
+        description='Blah',
+        graph='{"nodes": [], "edges": []}',
+        public=True,
+        user_id=1,
+        dir_id=1,
+        project_id=1,
+        creation_date=datetime.now(),
+        modified_date=datetime.now(),
+    ))
+
+    session.execute(t_map_backup.insert().values(
+        label='Test Map',
+        description='Blah',
+        graph='{"nodes": [], "edges": []}',
+        public=True,
+        user_id=1,
+        author='test',
+        project_id=1,
+        hash_id='dummy',
+        creation_date=datetime.now(),
+        modified_date=datetime.now(),
+    ))
+
+    session.execute(t_file_content.insert().values(
+        raw_file='test',
+        checksum_sha256='test',
+        creation_date=datetime.now(),
+    ))
+
+    session.execute(t_files.insert().values(
+        file_id='test',
+        project=1,
+        filename='test.txt',
+        content_id=1,
+        dir_id=2,
+        user_id=1,
+        creation_date=datetime.now(),
+    ))

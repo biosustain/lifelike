@@ -54,6 +54,8 @@ class Projects(RDBMSBase, FullTimestampMixin):  # type: ignore
     hash_id = db.Column(db.String(36), unique=True, nullable=False)
     name = db.Column(db.String(250), unique=True, nullable=False)
     description = db.Column(db.Text)
+    root_id = db.Column(db.Integer, db.ForeignKey('files.id'), nullable=False, index=True)
+    root = db.relationship('Files', foreign_keys=root_id)
 
     @validates('name')
     def validate_name(self, key, name):
