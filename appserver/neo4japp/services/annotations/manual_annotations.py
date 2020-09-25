@@ -10,6 +10,7 @@ from neo4japp.database import (
     get_lmdb_dao,
 )
 from neo4japp.exceptions import (
+    AnnotationError,
     RecordNotFoundException,
     DuplicateRecord,
 )
@@ -93,6 +94,10 @@ class ManualAnnotationsService:
             inclusions = [
                 add_annotation(match) for match in matches if not annotation_exists(match)
             ]
+
+            if not inclusions:
+                raise AnnotationError(f'There was a problem annotating "{term}", please select '
+                                      'option to annotate only one occurrence of this term.')
         else:
             if not annotation_exists(annotation_to_add):
                 inclusions = [annotation_to_add]
