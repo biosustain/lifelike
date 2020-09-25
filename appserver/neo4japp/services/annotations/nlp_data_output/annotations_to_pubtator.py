@@ -13,7 +13,7 @@ from neo4japp.database import (
     # get_lmdb_dao,
     get_entity_recognition
 )
-from neo4japp.data_transfer_objects import Annotation
+from neo4japp.data_transfer_objects import Annotation, SpecifiedOrganismStrain
 from neo4japp.factory import create_app
 from neo4japp.services.annotations.constants import EntityType, OrganismCategory
 from neo4japp.util import compute_hash
@@ -114,6 +114,7 @@ def create_annotations(
     annotations = annotations_service.create_rules_based_annotations(
         tokens=pdf_parser.extract_tokens(parsed_chars=parsed),
         custom_annotations=[],
+        specified_organism=SpecifiedOrganismStrain('', '', '')
     )
 
     bioc = bioc_service.read(text=pdf_text, file_uri=filename)
@@ -166,27 +167,29 @@ def pdf_to_pubtator(
                     )
 
 
-def create_annotations_from_text(doc):
+def create_annotations_from_text(doc, title):
     nlp_annotations_list = []
-    title = None
+    # title = None
     text = None
 
     for line in doc:
         app = create_app('Functional Test Flask App', config='config.Testing')
         with app.app_context():
-            bioc_service = get_bioc_document_service()
-            annotator = get_annotations_service()
-            parser = get_annotations_pdf_parser()
-            entity_service = get_entity_recognition()
+            try:
+                bioc_service = get_bioc_document_service()
+                annotator = get_annotations_service()
+                parser = get_annotations_pdf_parser()
+                entity_service = get_entity_recognition()
 
-            line_split = line.split('|')
-            if len(line_split) > 1:
-                if 't' in line_split:
-                    title = line_split[-1]
-                elif 'a' in line_split:
-                    text = line_split[-1]
+                # line_split = line.split('|')
+                # if len(line_split) > 1:
+                #     if 't' in line_split:
+                #         title = line_split[-1]
+                #     elif 'a' in line_split:
+                #         text = line_split[-1]
 
-            if title and text:
+                # if title and text:
+                text = line
                 parsed_text = parser.parse_text(abstract=text)
 
                 tokens = parser.extract_tokens(parsed_chars=parsed_text)
@@ -201,7 +204,8 @@ def create_annotations_from_text(doc):
                     tokens=tokens,
                     custom_annotations=[],
                     entity_results=entity_service.get_entity_match_results(),
-                    entity_type_and_id_pairs=annotator.get_entities_to_annotate()
+                    entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
+                    specified_organism=SpecifiedOrganismStrain('', '', '')
                 )
 
                 bioc = bioc_service.read(text=text, file_uri=title)
@@ -212,8 +216,10 @@ def create_annotations_from_text(doc):
                     annotations=annotations,
                 ), bioc_json))
 
-                text = None
-                title = None
+                # text = None  # indent these once code above is uncommented
+                # title = None  # indent these once code above is uncommented
+            except Exception as ex:
+                raise ex
     return nlp_annotations_list
 
 
@@ -228,10 +234,9 @@ def pubtator_to_pubtator(
             if fn.lower().endswith('.txt'):
                 with open(os.path.join(parent, fn), 'r') as f:
                     try:
-                        results = create_annotations_from_text(doc=f)
+                        results = create_annotations_from_text(doc=f, title=fn)
                     except Exception as ex:
-                        print(f'Failed to annotate PDF {fn}: {str(ex)}')
-                        continue
+                        raise ex
 
                 for (annotations, bioc_json) in results:
                     annotation_file = os.path.join(
