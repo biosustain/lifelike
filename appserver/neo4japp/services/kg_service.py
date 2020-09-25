@@ -181,7 +181,7 @@ class KgService(HybridDBDao):
         """Get all properties of a label."""
         props = self.graph.run(f'match (n: {node_label}) unwind keys(n) as key return distinct key').data()  # noqa
         return {node_label: [prop['key'] for prop in props]}
-  
+
     def get_uniprot_genes(
         self,
         ncbi_gene_ids: List[int],
@@ -268,16 +268,18 @@ class KgService(HybridDBDao):
 
     def get_uniprot_genes_query(self):
         return """
-        MATCH (g:Gene:db_NCBI)-[:HAS_GENE]-(x:db_UniProt)
+        MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:HAS_GENE]-(x:db_UniProt)
         RETURN x
         """
 
     # Unsure what relationship between db_string and ncbi is 
     def get_string_genes_query(self):
         return """
-        MATCH (g:Gene:db_NCBI)-[:HAS_STRING]-(x:db_STRING)
+        MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:HAS_STRING]-(x:db_STRING)
         RETURN x
         """
 

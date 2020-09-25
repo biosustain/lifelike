@@ -6,7 +6,7 @@ NEO4J_STATUS="000"
 
 until [ "$NEO4J_STATUS" = "200" ]
 do
-    NEO4J_STATUS=`curl -s -o /dev/null -I -w "%{http_code}" http://database:7474/`
+    NEO4J_STATUS=`curl -s -o /dev/null -I -w "%{http_code}" http://35.225.248.203:7474/`
     echo "Status of Neo4J: $NEO4J_STATUS"
     sleep 2
 done
