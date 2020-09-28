@@ -20,6 +20,8 @@ services:
             - ${ DH_PARAM_FILE:-/home/ansible/dh-param/dhparam-2048.pem }:/etc/ssl/certs/dhparam-2048.pem
             - ${ CERTBOT_CERT_DIR:-/home/ansible/certbot/live }/${{ domain }}/fullchain.pem:/etc/letsencrypt/live/${{ domain }}/fullchain.pem
             - ${ CERTBOT_CERT_DIR:-/home/ansible/certbot/live }/${{ domain }}/privkey.pem:/etc/letsencrypt/live/${{ domain }}/privkey.pem
+            # Used to renew TLS/SSL certificates
+            - ${ CERTBOT_CERT_DIR:-/home/ansible/certbot/www }:/var/www/certbot
         networks:
             - frontend
 
