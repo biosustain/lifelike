@@ -44,26 +44,68 @@ def get_all_files_by_id(file_ids: Set[str], project_id: int):
     return files
 
 
-def get_file_parent_hierarchy(filter):
+def get_file_parent_hierarchy(filter, max_depth=Files.MAX_DEPTH, files_table=Files, projects_table=Projects):
+    """
+    Build a qurey that will get a hierarchy of one or more files.
+
+    :param filter: WHERE for finding the desired file (i.e. Files.id == X)
+    :param max_depth: a maximum number of parents to return (infinite recursion mitigation)
+    :param files_table: a files table to use, if not the default Files model
+    :param projects_table: a projects table to use, if not the default Projects model
+    :return: a hierarchy CTE query
+    """
+
+    # This CTE gets the child and then joins all parents of the child, getting us
+    # the whole hierarchy. We need the whole hierarchy to (1) determine the
+    # project (projects have one ***ARANGO_USERNAME*** level directory), (2) determine the
+    # permissions assigned by every level above, and the (3) full
+    # filesystem path of the target file or directory
+
     q_hierarchy = db.session.query(
-        Files.id,
-        Files.parent_id,
+        files_table.id,
+        files_table.parent_id,
+        projects_table.id.label('project_id'),
+        # If are querying several files, we need to track what file a
+        # hierarchy is for, so we put the file ID in initial_id
+        files_table.id.label('initial_id'),
+        # The level is a depth counter, which is useful for sorting the results
+        # and also to provide in a basic infinite recursion mitigation
         db.literal(0).label('level')
     ) \
-        .join(Projects, Projects.id == Files.project_id) \
+        .outerjoin(projects_table, projects_table.***ARANGO_USERNAME***_id == files_table.id) \
         .filter(filter) \
         .cte(recursive=True)
 
-    t_parent = db.aliased(q_hierarchy, name="parent")
-    t_children = db.aliased(Files, name="child")
+    t_parent = db.aliased(q_hierarchy, name="parent")  # Names help debug the query
+    t_children = db.aliased(files_table, name="child")
 
-    q_hierarchy = q_hierarchy.union_all(db.session.query(
-        t_children.id,
-        t_children.parent_id,
-        (t_parent.c.level + 1).label("level")
-    ).filter(t_children.id == t_parent.c.parent_id))
+    q_hierarchy = q_hierarchy.union_all(
+        db.session.query(
+            t_children.id,
+            t_children.parent_id,
+            projects_table.id.label('project_id'),
+            t_parent.c.initial_id,
+            (t_parent.c.level + 1).label("level")
+        ) \
+            .outerjoin(projects_table, projects_table.***ARANGO_USERNAME***_id == t_children.id) \
+            .filter(t_children.id == t_parent.c.parent_id,
+                    t_parent.c.level < max_depth))  # len(results) will max at (max_depth + 1)
+
+    # The returned hierarchy doesn't provide any permissions or project information --
+    # it only provides a sequence of file IDs (and related hierarchy information)
+    # that can be joined onto a query
 
     return q_hierarchy
+
+
+def get_projects_from_hierarchy(q_hierarchy):
+    return db.session.query(
+        q_hierarchy.c.initial_id,
+        db.func.max(q_hierarchy.c.project_id).label('project_id'),
+    ) \
+        .select_from(q_hierarchy) \
+        .group_by(q_hierarchy.c.initial_id) \
+        .subquery()
 
 
 def add_project_user_role_columns(query, project_table, role_names, user_id, column_format="has_{}"):
@@ -121,10 +163,18 @@ def add_user_permission_columns(query, project_table, file_table, user_id):
 
 
 class FileHierarchy:
-    def __init__(self, results, file_table):
+    def __init__(self, results, file_table, project_table):
         self.results = list(map(lambda item: item._asdict(), results))
         self.file_table = file_table
+        self.project_table = project_table
         self.file_key = inspect(self.file_table).name
+        self.project_key = inspect(self.project_table).name
+        if self.project_key is None or self.file_key is None:
+            raise RuntimeError("the file_table or project_table need to be aliased")
+
+    @property
+    def project(self) -> Files:
+        return self.results[0][self.project_key]
 
     @property
     def file(self) -> Files:
