@@ -85,6 +85,6 @@ jobs:
           key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
           vault_password: ${{ secrets.ANSIBLE_VAULT }}
           options: |
-            --extra-vars "webserver=qa docker_img_hash=${{ github.sha }} git_timestamp=$GIT_TIMESTAMP"
+            --extra-vars "webserver=qa docker_img_hash=${{ github.sha }} git_timestamp='${GIT_TIMESTAMP}'"
             --user ansible
             --inventory ../inventories
