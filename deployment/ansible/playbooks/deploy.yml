@@ -72,6 +72,11 @@
       tags:
         - deploy
 
+    - name: Stop any previous containers
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml down"
+
     - name: Start docker
       shell:
         chdir: "{{ deploy_dir }}"
