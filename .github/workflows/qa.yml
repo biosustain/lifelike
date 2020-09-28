@@ -17,6 +17,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Set git commit timestamp
+        run: echo ::set-env name=GIT_TIMESTAMP::$(git log -1 --format=%cI)
+
       # Setup gcloud CLI
       # https://github.com/GoogleCloudPlatform/github-actions
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
@@ -82,6 +85,6 @@ jobs:
           key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
           vault_password: ${{ secrets.ANSIBLE_VAULT }}
           options: |
-            --extra-vars "webserver=qa docker_img_hash=${{ github.sha }} git_timestamp=$(git log -1 --format=%cI)"
+            --extra-vars "webserver=qa docker_img_hash=${{ github.sha }} git_timestamp=$GIT_TIMESTAMP"
             --user ansible
             --inventory ../inventories
