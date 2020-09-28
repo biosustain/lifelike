@@ -1,14 +1,15 @@
-import {Component, ViewChild} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import { Component, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { NgbDropdown } from '@ng-bootstrap/ng-bootstrap';
 
 
-import {uniqueId} from 'lodash';
+import { uniqueId } from 'lodash';
 
-import {combineLatest, Subscription} from 'rxjs';
+import { combineLatest, Subscription } from 'rxjs';
 
 import { NodeLegend } from 'app/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
+import { Word } from 'app/interfaces/word-cloud.interface';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { LegendService } from 'app/shared/services/legend.service';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
@@ -37,7 +38,8 @@ export class WordCloudComponent {
 
   wordVisibilityMap: Map<string, boolean>;
   wordVisibilityChanged: boolean;
-  annotationData: any[];
+
+  annotationData: Word[];
 
   legend: Map<string, string>;
 
@@ -91,7 +93,7 @@ export class WordCloudComponent {
           color: this.legend.get(cols[1].toLowerCase()), // Set lowercase to match the legend
           text: cols[2],
           value: parseInt(cols[3], 10),
-        };
+        } as Word;
         this.wordVisibilityMap.set(annotation.text, true);
         this.annotationData.push(annotation);
       });
@@ -103,16 +105,26 @@ export class WordCloudComponent {
     this.getAnnotationsForFile();
   }
 
+  /**
+   * Closes the word cloud term dropdown widget.
+   */
+  closeFilterPopup() {
+    this.dropdownComponent.close();
+  }
+
+  /**
+   * Sends a request to the BackgroundTask object for new annotations data.
+   */
+  getAnnotationsForFile() {
+    this.loadTask.update([]);
+  }
+
   getAnnotationDataDeepCopy() {
-    return JSON.parse(JSON.stringify(this.annotationData));
+    return JSON.parse(JSON.stringify(this.annotationData)) as Word[];
   }
 
   getFilteredAnnotationDeepCopy() {
     return this.getAnnotationDataDeepCopy().filter(annotation => this.wordVisibilityMap.get(annotation.text));
-  }
-
-  closeFilterPopup() {
-    this.dropdownComponent.close();
   }
 
   isWordVisible(word: string) {
@@ -124,6 +136,21 @@ export class WordCloudComponent {
     }
   }
 
+  /**
+   * Changes the filter state of the given word to the given input state.
+   * @param word string representing the word to change the state of
+   * @param event checkbox event object containing the new state
+   */
+  changeWordVisibility(word: string, event) {
+    this.wordVisibilityMap.set(word, event.target.checked);
+    this.invalidateWordVisibility();
+    this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
+  }
+
+  /**
+   * Sets all words in the word visibility map to the input state.
+   * @param state boolean true/false representing a filter state for the word cloud
+   */
   setAllWordsVisibility(state: boolean) {
     for (const annotation of this.annotationData) {
       this.wordVisibilityMap.set(annotation.text, state);
@@ -132,12 +159,10 @@ export class WordCloudComponent {
     this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
   }
 
-  changeWordVisibility(word: string, event) {
-    this.wordVisibilityMap.set(word, event.target.checked);
-    this.invalidateWordVisibility();
-    this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
-  }
-
+  /**
+   * Determines whether any words in the word cloud have been filtered. By default words are not filtered, so if any of them are, then we
+   * know that the user changed the filter. We use this to determine which (if any) of the buttons on the widget to disable/enable.
+   */
   invalidateWordVisibility() {
     // Keep track if the user has some entity types disabled
     let wordVisibilityChanged = false;
@@ -150,11 +175,18 @@ export class WordCloudComponent {
     this.wordVisibilityChanged = wordVisibilityChanged;
   }
 
-  getAnnotationsForFile() {
-    this.loadTask.update([]);
+  /**
+   * Redraws the word cloud with updated dimensions to fit the current window.
+   */
+  fitCloudToWindow() {
+    this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
   }
 
-  private drawWordCloud(data: any[]) {
+  /**
+   * Draws a word cloud with the given Word inputs using the d3.layout.cloud library.
+   * @param data represents a collection of Word data
+   */
+  private drawWordCloud(data: Word[]) {
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
 
     // Set the dimensions and margins of the graph
