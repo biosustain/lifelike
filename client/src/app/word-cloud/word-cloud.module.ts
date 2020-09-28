@@ -1,8 +1,9 @@
-import {NgModule} from '@angular/core';
-import {SharedModule} from '../shared/shared.module';
-import {WordCloudComponent} from './word-cloud.component';
-import {TagCloudModule} from 'angular-tag-cloud-module';
-import {WordCloudService} from './services/word-cloud.service';
+import { NgModule } from '@angular/core';
+
+import { SharedModule } from 'app/shared/shared.module';
+
+import { WordCloudComponent } from './word-cloud.component';
+import { WordCloudService } from './services/word-cloud.service';
 
 
 @NgModule({
@@ -11,7 +12,6 @@ import {WordCloudService} from './services/word-cloud.service';
   ],
   imports: [
     SharedModule,
-    TagCloudModule
   ],
   providers: [
     WordCloudService
