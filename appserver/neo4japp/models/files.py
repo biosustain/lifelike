@@ -48,6 +48,7 @@ class FileContent(RDBMSBase):
 
 
 class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin):  # type: ignore
+    MAX_DEPTH = 50
     API_FIELDS = [
         'hash_id',
         'filename',
