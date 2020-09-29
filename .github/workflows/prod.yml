@@ -5,14 +5,22 @@ on:
     types: [published]
 
 jobs:
-    setup-build-publish-deploy:
+    build:
 
-        name: Setup, Build, Publish, and Deploy
+        name: Setup, Build, Publish
+
         runs-on: ubuntu-latest
+
+        outputs:
+          output1: ${{ steps.timestamp.outputs.commit_timestamp }}
 
         steps:
             - name: Checkout
               uses: actions/checkout@v2
+
+            - name: Set git commit timestamp
+              id: timestamp
+              run: echo ::set-output name=commit_timestamp::$(git log -1 --format=%cI)
 
             # Setup gcloud CLI
             # https://github.com/GoogleCloudPlatform/github-actions
@@ -33,7 +41,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
-                image_tag: ${{ github.sha }},latest
+                image_tag: ${{ github.sha }}
                 context: ./appserver
                 dockerfile: ./Dockerfile
 
@@ -44,7 +52,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
-                image_tag: ${{ github.sha }},latest
+                image_tag: ${{ github.sha }}
                 context: ./client
                 dockerfile: ./Dockerfile
                 build_extra_args: "--build-arg=build_environment=production --build-arg=nginx_conf=prod.conf"
@@ -56,7 +64,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
-                image_tag: ${{ github.sha }},latest
+                image_tag: ${{ github.sha }}
                 context: ./cache-invalidator
                 dockerfile: ./Dockerfile
 
@@ -67,6 +75,29 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
-                image_tag: ${{ github.sha }},latest
+                image_tag: ${{ github.sha }}
                 context: ./nlp
                 dockerfile: ./Dockerfile
+
+    deploy:
+      name: Deploy
+      needs: build
+
+      runs-on: ubuntu-latest
+
+      steps:
+
+        - name: Checkout code
+          uses: actions/checkout@v2
+
+        - name: Deploy application
+          uses: dawidd6/action-ansible-playbook@v2
+          with:
+            playbook: deploy.yml
+            directory: deployment/ansible/playbooks
+            key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+            vault_password: ${{ secrets.ANSIBLE_VAULT }}
+            options: |
+              --extra-vars "webserver=prod docker_img_hash=${{ github.sha }} git_timestamp=${{ needs.build.outputs.output1 }}"
+              --user ansible
+              --inventory ../inventories
