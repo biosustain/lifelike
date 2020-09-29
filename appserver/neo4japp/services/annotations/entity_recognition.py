@@ -164,18 +164,21 @@ class EntityRecognitionService:
         )
 
     def _get_chemical_annotations_to_exclude(self):
+        # case insensitive
         return set(
-            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
+            normalize_str(exclusion.get('text')) for exclusion in self.global_annotations_to_exclude if  # noqa
                 exclusion.get('type') == EntityType.CHEMICAL.value and exclusion.get('text'))  # noqa
 
     def _get_compound_annotations_to_exclude(self):
+        # case insensitive
         return set(
-            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
+            normalize_str(exclusion.get('text')) for exclusion in self.global_annotations_to_exclude if  # noqa
                 exclusion.get('type') == EntityType.COMPOUND.value and exclusion.get('text'))  # noqa
 
     def _get_disease_annotations_to_exclude(self):
+        # case insensitive
         return set(
-            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
+            normalize_str(exclusion.get('text')) for exclusion in self.global_annotations_to_exclude if  # noqa
                 exclusion.get('type') == EntityType.DISEASE.value and exclusion.get('text'))  # noqa
 
     def _get_gene_annotations_to_exclude(self):
@@ -184,8 +187,9 @@ class EntityRecognitionService:
                 exclusion.get('type') == EntityType.GENE.value and exclusion.get('text'))  # noqa
 
     def _get_phenotype_annotations_to_exclude(self):
+        # case insensitive
         return set(
-            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
+            normalize_str(exclusion.get('text')) for exclusion in self.global_annotations_to_exclude if  # noqa
                 exclusion.get('type') == EntityType.PHENOTYPE.value and exclusion.get('text'))  # noqa
 
     def _get_protein_annotations_to_exclude(self):
@@ -194,8 +198,9 @@ class EntityRecognitionService:
                 exclusion.get('type') == EntityType.PROTEIN.value and exclusion.get('text'))  # noqa
 
     def _get_species_annotations_to_exclude(self):
+        # case insensitive
         return set(
-            exclusion.get('text') for exclusion in self.global_annotations_to_exclude if
+            normalize_str(exclusion.get('text')) for exclusion in self.global_annotations_to_exclude if  # noqa
                 exclusion.get('type') == EntityType.SPECIES.value and exclusion.get('text'))  # noqa
 
     def _get_global_inclusion_pairs(self) -> List[Tuple[str, str, Any, Any]]:
@@ -313,12 +318,7 @@ class EntityRecognitionService:
                                         entity[entity_id_str] = entity_id
                                     else:
                                         current_app.logger.info(
-                                            f'Did not find a gene match with id {entity_id}.',
-                                            extra=EventLog(event_type='annotations').to_dict()
-                                        )
-                                        current_app.logger.debug(
-                                            f'<_set_global_inclusions()>: Failed to find a gene match in ' +  # noqa
-                                            f'the knowledge graph with id {entity_id}.',
+                                            f'Failed to find a gene match in the knowledge graph with id {entity_id}.',  # noqa
                                             extra=EventLog(event_type='annotations').to_dict()
                                         )
                                         # continue here, otherwise will reach
@@ -363,47 +363,31 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.CHEMICAL.value:
-                chem_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.chemicals_txn,
-                    key=lookup_key,
-                    token_type=EntityType.CHEMICAL.value
-                )
-            elif nlp_predicted_type is None:
-                chem_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.chemicals_txn,
-                    key=lookup_key,
-                    token_type=EntityType.CHEMICAL.value
-                )
-
-            if not chem_val:
-                # didn't find in LMDB so look in global inclusion
-                chem_val = self.global_chemical_inclusion.get(lookup_key, [])
-
             lowered_word = token.keyword.lower()
 
-            if chem_val:
-                if token.keyword in self._get_chemical_annotations_to_exclude():
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
+            if lowered_word in self._get_chemical_annotations_to_exclude():
+                current_app.logger.info(
+                    f'Found a match in chemicals entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            elif lowered_word in self.exclusion_words:
+                current_app.logger.info(
+                    f'Found a match in chemicals entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            else:
+                if nlp_predicted_type == EntityType.CHEMICAL.value or nlp_predicted_type is None:  # noqa
+                    chem_val = self.lmdb_session.get_lmdb_values(
+                        txn=self.lmdb_session.chemicals_txn,
+                        key=lookup_key,
+                        token_type=EntityType.CHEMICAL.value
                     )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_chemicals()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <_get_chemical_annotations_to_exclude()>.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                elif lowered_word in self.exclusion_words:
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_chemicals()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                else:
+
+                if not chem_val:
+                    # didn't find in LMDB so look in global inclusion
+                    chem_val = self.global_chemical_inclusion.get(lookup_key, [])
+
+                if chem_val:
                     if token.keyword in self.matched_chemicals:
                         self.matched_chemicals[token.keyword].tokens.append(token)
                     else:
@@ -435,47 +419,31 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.COMPOUND.value:
-                comp_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.compounds_txn,
-                    key=lookup_key,
-                    token_type=EntityType.COMPOUND.value
-                )
-            elif nlp_predicted_type is None:
-                comp_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.compounds_txn,
-                    key=lookup_key,
-                    token_type=EntityType.COMPOUND.value
-                )
-
-            if not comp_val:
-                # didn't find in LMDB so look in global inclusion
-                comp_val = self.global_compound_inclusion.get(lookup_key, [])
-
             lowered_word = token.keyword.lower()
 
-            if comp_val:
-                if token.keyword in self._get_compound_annotations_to_exclude():
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
+            if lowered_word in self._get_compound_annotations_to_exclude():
+                current_app.logger.info(
+                    f'Found a match in compounds entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            elif lowered_word in self.exclusion_words:
+                current_app.logger.info(
+                    f'Found a match in compounds entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            else:
+                if nlp_predicted_type == EntityType.COMPOUND.value or nlp_predicted_type is None:  # noqa
+                    comp_val = self.lmdb_session.get_lmdb_values(
+                        txn=self.lmdb_session.compounds_txn,
+                        key=lookup_key,
+                        token_type=EntityType.COMPOUND.value
                     )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_compounds()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <_get_compound_annotations_to_exclude()>.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                elif lowered_word in self.exclusion_words:
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_compounds()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                else:
+
+                if not comp_val:
+                    # didn't find in LMDB so look in global inclusion
+                    comp_val = self.global_compound_inclusion.get(lookup_key, [])
+
+                if comp_val:
                     if token.keyword in self.matched_compounds:
                         self.matched_compounds[token.keyword].tokens.append(token)
                     else:
@@ -507,47 +475,31 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.DISEASE.value:
-                diseases_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.diseases_txn,
-                    key=lookup_key,
-                    token_type=EntityType.DISEASE.value
-                )
-            elif nlp_predicted_type is None:
-                diseases_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.diseases_txn,
-                    key=lookup_key,
-                    token_type=EntityType.DISEASE.value
-                )
-
-            if not diseases_val:
-                # didn't find in LMDB so look in global inclusion
-                diseases_val = self.global_disease_inclusion.get(lookup_key, [])
-
             lowered_word = token.keyword.lower()
 
-            if diseases_val:
-                if token.keyword in self._get_disease_annotations_to_exclude():
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
+            if lowered_word in self._get_disease_annotations_to_exclude():
+                current_app.logger.info(
+                    f'Found a match in diseases entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            elif lowered_word in self.exclusion_words:
+                current_app.logger.info(
+                    f'Found a match in diseases entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            else:
+                if nlp_predicted_type == EntityType.DISEASE.value or nlp_predicted_type is None:  # noqa
+                    diseases_val = self.lmdb_session.get_lmdb_values(
+                        txn=self.lmdb_session.diseases_txn,
+                        key=lookup_key,
+                        token_type=EntityType.DISEASE.value
                     )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_diseases()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <_get_disease_annotations_to_exclude()>.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                elif lowered_word in self.exclusion_words:
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_diseases()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                else:
+
+                if not diseases_val:
+                    # didn't find in LMDB so look in global inclusion
+                    diseases_val = self.global_disease_inclusion.get(lookup_key, [])
+
+                if diseases_val:
                     if token.keyword in self.matched_diseases:
                         self.matched_diseases[token.keyword].tokens.append(token)
                     else:
@@ -579,47 +531,31 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.GENE.value:
-                gene_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.genes_txn,
-                    key=lookup_key,
-                    token_type=EntityType.GENE.value
-                )
-            elif nlp_predicted_type is None:
-                gene_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.genes_txn,
-                    key=lookup_key,
-                    token_type=EntityType.GENE.value
-                )
-
-            if not gene_val:
-                # didn't find in LMDB so look in global inclusion
-                gene_val = self.global_gene_inclusion.get(lookup_key, [])
-
             lowered_word = token.keyword.lower()
 
-            if gene_val:
-                if token.keyword in self._get_gene_annotations_to_exclude():
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
+            if token.keyword in self._get_gene_annotations_to_exclude():
+                current_app.logger.info(
+                    f'Found a match in genes entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            elif lowered_word in self.exclusion_words:
+                current_app.logger.info(
+                    f'Found a match in genes entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            else:
+                if nlp_predicted_type == EntityType.GENE.value or nlp_predicted_type is None:  # noqa
+                    gene_val = self.lmdb_session.get_lmdb_values(
+                        txn=self.lmdb_session.genes_txn,
+                        key=lookup_key,
+                        token_type=EntityType.GENE.value
                     )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_genes()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <_get_gene_annotations_to_exclude()>.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                elif lowered_word in self.exclusion_words:
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_genes()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                else:
+
+                if not gene_val:
+                    # didn't find in LMDB so look in global inclusion
+                    gene_val = self.global_gene_inclusion.get(lookup_key, [])
+
+                if gene_val:
                     if token.keyword in self.matched_genes:
                         self.matched_genes[token.keyword].tokens.append(token)
                     else:
@@ -651,47 +587,31 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.PHENOTYPE.value:
-                phenotype_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.phenotypes_txn,
-                    key=lookup_key,
-                    token_type=EntityType.PHENOTYPE.value
-                )
-            elif nlp_predicted_type is None:
-                phenotype_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.phenotypes_txn,
-                    key=lookup_key,
-                    token_type=EntityType.PHENOTYPE.value
-                )
-
-            if not phenotype_val:
-                # didn't find in LMDB so look in global inclusion
-                phenotype_val = self.global_phenotype_inclusion.get(lookup_key, [])
-
             lowered_word = token.keyword.lower()
 
-            if phenotype_val:
-                if token.keyword in self._get_phenotype_annotations_to_exclude():
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
+            if lowered_word in self._get_phenotype_annotations_to_exclude():
+                current_app.logger.info(
+                    f'Found a match in phenotypes entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            elif lowered_word in self.exclusion_words:
+                current_app.logger.info(
+                    f'Found a match in phenotypes entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            else:
+                if nlp_predicted_type == EntityType.PHENOTYPE.value or nlp_predicted_type is None:  # noqa
+                    phenotype_val = self.lmdb_session.get_lmdb_values(
+                        txn=self.lmdb_session.phenotypes_txn,
+                        key=lookup_key,
+                        token_type=EntityType.PHENOTYPE.value
                     )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_phenotypes()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <_get_phenotype_annotations_to_exclude()>.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                elif lowered_word in self.exclusion_words:
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_phenotypes()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                else:
+
+                if not phenotype_val:
+                    # didn't find in LMDB so look in global inclusion
+                    phenotype_val = self.global_phenotype_inclusion.get(lookup_key, [])
+
+                if phenotype_val:
                     if token.keyword in self.matched_phenotypes:
                         self.matched_phenotypes[token.keyword].tokens.append(token)
                     else:
@@ -723,52 +643,36 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            if nlp_predicted_type == EntityType.PROTEIN.value:
-                protein_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.proteins_txn,
-                    key=lookup_key,
-                    token_type=EntityType.PROTEIN.value
-                )
-            elif nlp_predicted_type is None:
-                protein_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.proteins_txn,
-                    key=lookup_key,
-                    token_type=EntityType.PROTEIN.value
-                )
-
-            if protein_val:
-                entities_to_use = [entity for entity in protein_val if entity['synonym'] == token.keyword]  # noqa
-                if entities_to_use:
-                    protein_val = entities_to_use
-
-            if not protein_val:
-                # didn't find in LMDB so look in global inclusion
-                protein_val = self.global_protein_inclusion.get(lookup_key, [])
-
             lowered_word = token.keyword.lower()
 
-            if protein_val:
-                if token.keyword in self._get_protein_annotations_to_exclude():
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
+            if token.keyword in self._get_protein_annotations_to_exclude():
+                current_app.logger.info(
+                    f'Found a match in proteins entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            elif lowered_word in self.exclusion_words:
+                current_app.logger.info(
+                    f'Found a match in proteins entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            else:
+                if nlp_predicted_type == EntityType.PROTEIN.value or nlp_predicted_type is None:  # noqa
+                    protein_val = self.lmdb_session.get_lmdb_values(
+                        txn=self.lmdb_session.proteins_txn,
+                        key=lookup_key,
+                        token_type=EntityType.PROTEIN.value
                     )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_proteins()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <_get_protein_annotations_to_exclude()>.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                elif lowered_word in self.exclusion_words:
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_proteins()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <annotation_stop_words> database table.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                else:
+
+                if protein_val:
+                    entities_to_use = [entity for entity in protein_val if entity['synonym'] == token.keyword]  # noqa
+                    if entities_to_use:
+                        protein_val = entities_to_use
+
+                if not protein_val:
+                    # didn't find in LMDB so look in global inclusion
+                    protein_val = self.global_protein_inclusion.get(lookup_key, [])
+
+                if protein_val:
                     if token.keyword in self.matched_proteins:
                         self.matched_proteins[token.keyword].tokens.append(token)
                     else:
@@ -800,55 +704,40 @@ class EntityRecognitionService:
             lookup_key = normalize_str(token.keyword)
 
         if len(lookup_key) > 2:
-            # check species
-            # TODO: Bacteria because for now NLP has that instead of
-            # generic `Species`
-            if nlp_predicted_type == EntityType.SPECIES.value or nlp_predicted_type == 'Bacteria':  # noqa
-                species_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.species_txn,
-                    key=lookup_key,
-                    token_type=EntityType.SPECIES.value
-                )
-            elif nlp_predicted_type is None:
-                species_val = self.lmdb_session.get_lmdb_values(
-                    txn=self.lmdb_session.species_txn,
-                    key=lookup_key,
-                    token_type=EntityType.SPECIES.value
-                )
-
-            if not species_val:
-                # didn't find in LMDB so look in global inclusion
-                species_val = self.global_species_inclusion.get(lookup_key, [])
-
             lowered_word = token.keyword.lower()
-            global_exclusion = self._get_species_annotations_to_exclude()
 
-            if species_val or lookup_key in self.local_species_inclusion:  # noqa
-                if token.keyword in global_exclusion:
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
+            if lowered_word in self._get_species_annotations_to_exclude():
+                current_app.logger.info(
+                    f'Found a match in species entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            elif lowered_word in SPECIES_EXCLUSION:
+                current_app.logger.info(
+                    f'Found a match in species entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            else:
+                # check species
+                # TODO: Bacteria because for now NLP has that instead of
+                # generic `Species`
+                if nlp_predicted_type == EntityType.SPECIES.value or nlp_predicted_type == 'Bacteria':  # noqa
+                    species_val = self.lmdb_session.get_lmdb_values(
+                        txn=self.lmdb_session.species_txn,
+                        key=lookup_key,
+                        token_type=EntityType.SPECIES.value
                     )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_species()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <_get_species_annotations_to_exclude()>.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
+                elif nlp_predicted_type is None:
+                    species_val = self.lmdb_session.get_lmdb_values(
+                        txn=self.lmdb_session.species_txn,
+                        key=lookup_key,
+                        token_type=EntityType.SPECIES.value
                     )
-                elif lowered_word in SPECIES_EXCLUSION:
-                    current_app.logger.info(
-                        f'Found a match in entity lookup but token "{token.keyword}" is a stop word.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                    current_app.logger.debug(
-                        f'<entity_lookup_for_species()> Found a match in entity lookup for "{token.keyword}". '  # noqa
-                        f'But token "{token.keyword}" is in <{SPECIES_EXCLUSION}>.',  # noqa
-                        extra=EventLog(event_type='annotations').to_dict()
-                    )
-                else:
-                    # for LMDB and global inclusions, add to same dict
-                    # for local inclusions use separate
-                    #
-                    # TODO: can it be both?
+
+                if not species_val:
+                    # didn't find in LMDB so look in global inclusion
+                    species_val = self.global_species_inclusion.get(lookup_key, [])
+
+                if species_val or lookup_key in self.local_species_inclusion:  # noqa
                     if lookup_key in self.local_species_inclusion:
                         if token.keyword in self.matched_local_species_inclusion:
                             self.matched_local_species_inclusion[token.keyword].append(token)
