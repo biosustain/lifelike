@@ -783,7 +783,7 @@ def mock_global_gene_exclusion(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_global_phenotype_exclusion(monkeypatch):
     def get_exclusions(*args, **kwargs):
-        return {'Whey Proteins'}
+        return {'whey proteins'}
 
     monkeypatch.setattr(
         EntityRecognitionService,
