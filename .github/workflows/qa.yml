@@ -8,17 +8,21 @@ on:
       - qa
 
 jobs:
-  setup-build-publish-deploy:
-    name: Setup, Build, Publish, and Deploy
+  build:
+    name: Setup, Build, Publish
 
     runs-on: ubuntu-latest
+
+    outputs:
+      output1: ${{ steps.timestamp.outputs.commit_timestamp }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Set git commit timestamp
-        run: echo ::set-env name=GIT_TIMESTAMP::$(git log -1 --format=%cI)
+        id: timestamp
+        run: echo ::set-output name=commit_timestamp::$(git log -1 --format=%cI)
 
       # Setup gcloud CLI
       # https://github.com/GoogleCloudPlatform/github-actions
@@ -77,6 +81,17 @@ jobs:
           context: ./nlp
           dockerfile: ./Dockerfile
 
+  deploy:
+    name: Deploy
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Deploy application
         uses: dawidd6/action-ansible-playbook@v2
         with:
@@ -85,6 +100,6 @@ jobs:
           key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
           vault_password: ${{ secrets.ANSIBLE_VAULT }}
           options: |
-            --extra-vars "webserver=qa docker_img_hash=${{ github.sha }} git_timestamp='${GIT_TIMESTAMP}'"
+            --extra-vars "webserver=qa docker_img_hash=${{ github.sha }} git_timestamp=${{ needs.build.outputs.output1 }}"
             --user ansible
             --inventory ../inventories
