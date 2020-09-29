@@ -58,7 +58,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
-                image_tag: ${{ github.sha }},latest
+                image_tag: ${{ github.sha }}
                 context: ./appserver
                 dockerfile: ./Dockerfile
 
@@ -69,7 +69,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
-                image_tag: ${{ github.sha }},latest
+                image_tag: ${{ github.sha }}
                 context: ./client
                 dockerfile: ./Dockerfile
                 build_extra_args: "--build-arg=build_environment=staging --build-arg=nginx_conf=demo.conf"
@@ -81,7 +81,7 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
-                image_tag: ${{ github.sha }},latest
+                image_tag: ${{ github.sha }}
                 context: ./cache-invalidator
                 dockerfile: ./Dockerfile
 
@@ -92,6 +92,6 @@ jobs:
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
                 image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
-                image_tag: ${{ github.sha }},latest
+                image_tag: ${{ github.sha }}
                 context: ./nlp
                 dockerfile: ./Dockerfile
