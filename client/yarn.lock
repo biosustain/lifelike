@@ -2813,6 +2813,11 @@ d3-contour@1:
   dependencies:
     d3-array "^1.1.1"
 
+d3-dispatch@0.2.x:
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/d3-dispatch/-/d3-dispatch-0.2.6.tgz#e57df25906cdce5badeae79809ec0f73bbb184ab"
+  integrity sha1-5X3yWQbNzlut6ueYCewPc7uxhKs=
+
 d3-dispatch@1, d3-dispatch@^1.0.3:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/d3-dispatch/-/d3-dispatch-1.0.6.tgz#00d37bcee4dd8cd97729dd893a0ac29caaba5d58"
@@ -2977,6 +2982,13 @@ d3-zoom@1:
     d3-interpolate "1"
     d3-selection "1"
     d3-transition "1"
+
+d3.layout.cloud@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/d3.layout.cloud/-/d3.layout.cloud-1.2.0.tgz#bb7a951aac54ec0237f37b2528eb3e0031440bbd"
+  integrity sha1-u3qVGqxU7AI383slKOs+ADFEC70=
+  dependencies:
+    d3-dispatch "0.2.x"
 
 d3@^5.16.0:
   version "5.16.0"

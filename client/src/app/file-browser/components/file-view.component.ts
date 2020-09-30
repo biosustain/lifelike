@@ -1,6 +1,6 @@
 import { uniqueId } from 'lodash';
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, Subject, Subscription, BehaviorSubject } from 'rxjs';
+import { combineLatest, Subject, Subscription, BehaviorSubject, Observable } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, DatabaseType, AnnotationType } from 'app/shared/constants';
 
@@ -30,6 +30,7 @@ import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
+import { Pane, WorkspaceManager } from '../../shared/workspace-manager';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -114,6 +115,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     private route: ActivatedRoute,
     private readonly errorHandler: ErrorHandler,
     private readonly progressDialog: ProgressDialog,
+    private readonly workSpaceManager: WorkspaceManager
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
 
@@ -582,5 +584,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const modalRef = this.modalService.open(ShareDialogComponent);
     modalRef.componentInstance.url = `${window.location.origin}/projects/`
       + `${this.projectName}/files/${this.currentFileId}?fromWorkspace`;
+  }
+
+  openWordCloudPane() {
+    const url = `/word-cloud/${this.projectName}/${this.pdfFile.file_id}`;
+    this.workSpaceManager.openTabByUrl('left', url);
   }
 }
