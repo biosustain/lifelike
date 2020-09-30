@@ -135,6 +135,7 @@ def search():
                 t_project_role.id == projects_collaborator_role.c.app_role_id,
                 sqlalchemy.or_(
                     t_project_role.name == 'project-read',
+                    t_project_role.name == 'project-write',
                     t_project_role.name == 'project-admin'
                 )
             )
@@ -184,9 +185,7 @@ def search():
                 highlight = doc['highlight']['data.content'][0]
         results.append({
             'item': {
-                # TODO LL-1723: Need to add complete file path here. See
-                # https://github.com/SBRG/kg-prototypes/blob/7bd54167b9f6ef4559a70f84131a2163c5103ccd/appserver/neo4japp/models/files_queries.py#L47  # noqa
-                # and https://github.com/SBRG/kg-prototypes/blob/7bd54167b9f6ef4559a70f84131a2163c5103ccd/appserver/neo4japp/blueprints/filesystem.py#L18  # noqa
+                # TODO LL-1723: Need to add complete file path here
                 'type': 'file' if doc['_source']['type'] == 'pdf' else 'map',
                 'id': doc['_source']['id'],
                 'name': doc['_source']['filename'],
