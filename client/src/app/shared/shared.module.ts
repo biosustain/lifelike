@@ -22,7 +22,7 @@ import { ProgressDialogComponent } from './components/dialog/progress-dialog.com
 import { TooltipComponent } from './components/tooltip.component';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
-import { FriendlyDateStrPipe, TruncatePipe } from './pipes';
+import { FriendlyDateStrPipe, TruncatePipe, ScrubHtmlPipe } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
 import { OrganismAutocompleteComponent } from './components/organism-autocomplete.component';
 import { SharedSearchService } from './services/shared-search.service';
@@ -106,6 +106,7 @@ const components = [
     TruncatePipe,
     FriendlyDateStrPipe,
     NodeTextStylePipe,
+    ScrubHtmlPipe,
   ],
   providers: [
     SharedNgrxEffects,
@@ -128,6 +129,7 @@ const components = [
     // Components
     ...components,
     TruncatePipe,
+    ScrubHtmlPipe,
     FriendlyDateStrPipe,
     NodeTextStylePipe,
     NgbModule,
