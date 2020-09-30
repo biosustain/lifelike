@@ -81,11 +81,13 @@ def visualizer_search_temp(req: VizSearchRequest):
 def search():
     req = request.args
     search_term = req.get('q', '')
+    types = req.get('types', 'map;pdf').split(';')
 
     try:
         # Elastic uses 0-indexed pagination
-        page = int(req.get('page', '1')) - 1
-        limit = int(req.get('limit', '100'))
+        limit = int(req.get('limit', '20'))
+        offset = (int(req.get('page', '1')) - 1) * limit
+
     except ValueError as e:
         current_app.logger.error(
             f'Content search had bad params: {request.args}',
@@ -102,13 +104,15 @@ def search():
         )
 
     if search_term:
-        match_fields = ['filename', 'data.content']
+        match_fields = ['filename', 'description', 'data.content']
         highlight = {
-            'require_field_match': 'false',
-            'fields': {'*': {}},
-            'fragment_size': FRAGMENT_SIZE,
-            'pre_tags': ['<highlight>'],
-            'post_tags': ['</highlight>'],
+            'fields': {'data.content': {}},
+            # Need to be very careful with this option. If fragment_size is too large, search
+            # will be slow because elastic has to generate large highlight fragments. Setting to
+            # default for now.
+            # 'fragment_size': FRAGMENT_SIZE,
+            'pre_tags': ['<strong>'],
+            'post_tags': ['</strong>'],
         }
 
         user_id = g.current_user.id
@@ -137,15 +141,23 @@ def search():
         )
 
         accessible_project_ids = [project_id for project_id, in query]
-        # TODO LL-1723: Need to add file type filter here
         query_filter = [  # type:ignore
             {
                 'bool': {
-                    'should': [
-                        # If the user has access to the project the document is in...
-                        {'terms': {'project_id': accessible_project_ids}},
-                        # OR if the document is public...
-                        {'term': {'public': True}}
+                    'must': [
+                        # The document must have the specified type
+                        {'terms': {'type': types}},
+                        # And...
+                        {
+                            'bool': {
+                                'should': [
+                                    # If the user has access to the project the document is in...
+                                    {'terms': {'project_id': accessible_project_ids}},
+                                    # OR if the document is public...
+                                    {'term': {'public': True}}
+                                ]
+                            }
+                        }
                     ]
                 }
             }
@@ -155,7 +167,7 @@ def search():
         res = elastic_service.search(
             index_id=FILE_INDEX_ID,
             user_query=search_term,
-            offset=page,
+            offset=offset,
             limit=limit,
             match_fields=match_fields,
             query_filter=query_filter,
@@ -164,28 +176,37 @@ def search():
     else:
         res = {'hits': [], 'max_score': None, 'total': 0}
 
-    response = ResultList(
-        total=res['total'],
-        results=[{
+    results = []
+    for doc in res['hits']:
+        highlight = ''
+        if doc.get('highlight', None) is not None:
+            if doc['highlight'].get('data.content', None) is not None:
+                highlight = doc['highlight']['data.content'][0]
+        results.append({
             'item': {
                 # TODO LL-1723: Need to add complete file path here. See
                 # https://github.com/SBRG/kg-prototypes/blob/7bd54167b9f6ef4559a70f84131a2163c5103ccd/appserver/neo4japp/models/files_queries.py#L47  # noqa
                 # and https://github.com/SBRG/kg-prototypes/blob/7bd54167b9f6ef4559a70f84131a2163c5103ccd/appserver/neo4japp/blueprints/filesystem.py#L18  # noqa
-                'type': 'file' if doc['_source']['type'] == 'pdf' else 'map',  # TODO LL-1723: Should change the frontend to use 'Pdf'  # noqa
+                'type': 'file' if doc['_source']['type'] == 'pdf' else 'map',
                 'id': doc['_source']['id'],
                 'name': doc['_source']['filename'],
                 'description': doc['_source']['description'],
+                'highlight': highlight,
+                'doi': doc['_source']['doi'],
                 'creation_date': doc['_source']['uploaded_date'],
                 'project': {
                     'project_name': doc['_source']['project_name'],
                 },
                 'creator': {
-                    'id': doc['_source']['user_id'],
                     'username': doc['_source']['username'],
                 },
             },
             'rank': doc['_score'],
-        } for doc in res['hits']])
+        })
+    response = ResultList(
+        total=res['total'],
+        results=results
+    )
 
     return jsonify(response.to_dict()), 200
 

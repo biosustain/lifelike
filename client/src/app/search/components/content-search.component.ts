@@ -29,12 +29,11 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  private readonly defaultLimit = 100;
+  private readonly defaultLimit = 20;
   public results = new CollectionModal<RankedItem<DirectoryObject>>([], {
     multipleSelection: false,
   });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
-  snippetFilter: boolean;
 
   constructor(route: ActivatedRoute,
               workspaceManager: WorkspaceManager,
@@ -56,7 +55,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   }
 
   getResults(params: ContentSearchOptions) {
-    this.snippetFilter = !!params.types.find(filter => filter.id === 'snippets');
     return this.contentSearchService.search(params);
   }
 
