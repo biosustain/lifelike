@@ -518,8 +518,21 @@ class AnnotationsService:
                 matched_organism_ids=list(self.organism_frequency.keys()),
             )
 
+        # any genes not matched in KG fall back to specified organism
+        fallback_gene_organism_matches = {}
+
+        if self.specified_organism.synonym:
+            fallback_gene_organism_matches = \
+                self.annotation_neo4j.get_gene_to_organism_match_result(
+                    genes=list(gene_names - set(gene_organism_matches)),
+                    matched_organism_ids=[self.specified_organism.organism_id],
+                )
+
         for entity, token_positions in entity_tokenpos_pairs:
+            gene_id = None
+            category = None
             entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
+
             if entity_synonym in gene_organism_matches:
                 gene_id, organism_id, closest_distance = self._get_closest_gene_organism_pair(
                     gene_position=token_positions,
@@ -540,7 +553,14 @@ class AnnotationsService:
                         specified_organism_id = self.specified_organism.organism_id
 
                 category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
+            elif entity_synonym in fallback_gene_organism_matches:
+                try:
+                    gene_id = fallback_gene_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
+                    category = self.specified_organism.category
+                except KeyError:
+                    raise AnnotationError('Failed to find gene id with fallback organism.')
 
+            if gene_id and category:
                 annotation = self._create_annotation_object(
                     char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                     cropbox_in_pdf=cropbox_in_pdf,
