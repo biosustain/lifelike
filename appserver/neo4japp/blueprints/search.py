@@ -111,6 +111,7 @@ def search():
             # will be slow because elastic has to generate large highlight fragments. Setting to
             # default for now.
             # 'fragment_size': FRAGMENT_SIZE,
+            'fragment_size': 0,
             'pre_tags': ['<strong>'],
             'post_tags': ['</strong>'],
         }
@@ -179,10 +180,10 @@ def search():
 
     results = []
     for doc in res['hits']:
-        highlight = ''
+        highlight = None
         if doc.get('highlight', None) is not None:
             if doc['highlight'].get('data.content', None) is not None:
-                highlight = doc['highlight']['data.content'][0]
+                highlight = doc['highlight']['data.content']
         results.append({
             'item': {
                 # TODO LL-1723: Need to add complete file path here
