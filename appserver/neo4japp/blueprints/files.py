@@ -178,15 +178,21 @@ def upload_pdf(request, project_name: str):
         )
 
         db.session.add(file)
-        db.session.commit()
 
         current_app.logger.info(
             f'User uploaded file: <{filename}>',
             extra=UserEventLog(
                 username=g.current_user.username, event_type='file upload').to_dict())
         index_pdf.populate_single_index(file.id)
-    except Exception:
+    except (SQLAlchemyError, Exception):
+        # if index_pdf fail then do not save file
+        # otherwise creates a false representation for the user
+        # since they will see the file uploaded, but
+        # cannot search for the file
+        db.session.rollback()
         raise FileUploadError('Your file could not be saved. Please try uploading again.')
+    else:
+        db.session.commit()
 
     yield SuccessResponse(
         result={
