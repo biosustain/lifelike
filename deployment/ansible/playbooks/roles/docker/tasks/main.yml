@@ -53,8 +53,8 @@
     name: "docker"
     state: present
 
-- name: Add user "ubuntu" to "docker" group
+- name: Add deploying user to "docker" group
   user:
-    name: "ubuntu"
+    name: "{{ deploy_user }}"
     group: "docker"
     append: yes

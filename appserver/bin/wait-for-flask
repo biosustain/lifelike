@@ -1,12 +1,12 @@
 #!/bin/bash
 
-echo "Waiting for Neo4J"
+echo "Waiting for Flask"
 
 FLASK_STATUS="000"
 
 until [ "$FLASK_STATUS" = "200" ]
 do
     FLASK_STATUS=`curl -s -o /dev/null -I -w "%{http_code}" http://localhost:5000/`
-    echo "Status of Neo4J: $FLASK_STATUS"
+    echo "Status of Flask: $FLASK_STATUS"
     sleep 2
 done
