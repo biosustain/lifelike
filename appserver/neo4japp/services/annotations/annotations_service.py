@@ -518,8 +518,21 @@ class AnnotationsService:
                 matched_organism_ids=list(self.organism_frequency.keys()),
             )
 
+        # any genes not matched in KG fall back to specified organism
+        fallback_gene_organism_matches = {}
+
+        if self.specified_organism.synonym:
+            fallback_gene_organism_matches = \
+                self.annotation_neo4j.get_gene_to_organism_match_result(
+                    genes=list(gene_names),
+                    matched_organism_ids=[self.specified_organism.organism_id],
+                )
+
         for entity, token_positions in entity_tokenpos_pairs:
+            gene_id = None
+            category = None
             entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
+
             if entity_synonym in gene_organism_matches:
                 gene_id, organism_id, closest_distance = self._get_closest_gene_organism_pair(
                     gene_position=token_positions,
@@ -528,19 +541,20 @@ class AnnotationsService:
 
                 specified_organism_id = None
                 if self.specified_organism.synonym and closest_distance > ORGANISM_DISTANCE_THRESHOLD:  # noqa
-                    fallback_organism_match = \
-                        self.annotation_neo4j.get_gene_to_organism_match_result(
-                            genes=[entity_synonym],
-                            matched_organism_ids=[self.specified_organism.organism_id],
-                        )
-
-                    if fallback_organism_match:
+                    if fallback_gene_organism_matches.get(entity_synonym, None):
                         # if matched in KG then set to fallback strain
-                        gene_id = fallback_organism_match[entity_synonym][self.specified_organism.organism_id]  # noqa
+                        gene_id = fallback_gene_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
                         specified_organism_id = self.specified_organism.organism_id
 
                 category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
+            elif entity_synonym in fallback_gene_organism_matches:
+                try:
+                    gene_id = fallback_gene_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
+                    category = self.specified_organism.category
+                except KeyError:
+                    raise AnnotationError('Failed to find gene id with fallback organism.')
 
+            if gene_id and category:
                 annotation = self._create_annotation_object(
                     char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                     cropbox_in_pdf=cropbox_in_pdf,
