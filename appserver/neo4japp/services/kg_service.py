@@ -285,35 +285,40 @@ class KgService(HybridDBDao):
 
     def get_molecular_go_genes_query(self):
         return """
-        MATCH (g:Gene:db_NCBI)-[:GO_LINK]-(x:MolecularFunction:db_GO)
+        MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
-        RETURN x
+        OPTIONAL MATCH (g)-[:GO_LINK]-(x:MolecularFunction:db_GO)
+        RETURN g, collect(x) as xArray
         """
 
     def get_biological_go_genes_query(self):
         return """
-        MATCH (g:Gene:db_NCBI)-[:GO_LINK]-(x:BiologicalProcess:db_GO)
+        MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
-        RETURN x
+        OPTIONAL MATCH (g)-[:GO_LINK]-(x:BiologicalProcess:db_GO)
+        RETURN g, collect(x) as xArray
         """
 
     def get_cellular_go_genes_query(self):
         return """
-        MATCH (g:Gene:db_NCBI)-[:GO_LINK]-(x:CellularComponent:db_GO)
+        MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
-        RETURN x
+        OPTIONAL MATCH (g)-[:GO_LINK]-(x:CellularComponent:db_GO)
+        RETURN g, collect(x) as xArray
         """
 
     def get_ecocyc_genes_query(self):
         return """
-        MATCH (g:Gene:db_NCBI)-[:IS]-(x:db_EcoCyc)
+        MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:IS]-(x:db_EcoCyc)
         RETURN x
         """
 
     def get_regulon_genes_query(self):
         return """
-        MATCH (g:Gene:db_NCBI)-[:IS]-(x:db_RegulonDB)
+        MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:IS]-(x:db_RegulonDB)
         RETURN x
         """

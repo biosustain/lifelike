@@ -1,14 +1,15 @@
 import attr
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 
 from typing import List
 from sqlalchemy.orm.exc import NoResultFound
 
 from neo4japp.constants import ANNOTATION_STYLES_DICT
-from neo4japp.database import get_worksheet_viewer_service
+from neo4japp.database import get_worksheet_viewer_service, db
 from neo4japp.models import (
-    Worksheet
+    Worksheet, 
+    FileContent
 )
 from neo4japp.data_transfer_objects.visualization import (
     ExpandNodeRequest,
@@ -32,6 +33,24 @@ def get_neo4j_worksheet(worksheet_id: str):
         raise RecordNotFoundException('not found :-( ')
 
     return jsonify({'result': worksheets.to_dict()}), 200
+
+
+@bp.route('/get-neo4j-worksheet/<string:worksheet_id>/content', methods=['GET'])
+def get_neo4j_worksheet_content(worksheet_id: str):
+    try:
+        worksheets = db.session.query(
+            FileContent.raw_file
+        ).join(
+            Worksheet,
+            FileContent.id == Worksheet.content_id
+            ).filter(Worksheet.id == worksheet_id).one()
+    except NoResultFound:
+        raise RecordNotFoundException('not found :-( ')
+
+    res = make_response(worksheets.raw_file)
+    res.headers['Content-Type'] = 'application/pdf'
+
+    return res
 
 
 @bp.route('/get-ncbi-nodes/<string:worksheet_node_id>', methods=['GET'])
