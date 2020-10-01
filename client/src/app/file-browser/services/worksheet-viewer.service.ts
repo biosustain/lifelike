@@ -54,7 +54,9 @@ export interface NCBIWrapper {
 }
 
 export interface NodeWrapper {
-  x: EnrichmentNode;
+  x?: EnrichmentNode;
+  xArray?: EnrichmentNode[];
+  g?: NCBINode;
 }
 
 @Injectable({
@@ -75,6 +77,13 @@ export class WorksheetViewerService extends AbstractService {
     ).pipe(
       map((resp: any) => resp.result),
     );
+  }
+
+  getWorksheetContent(worksheetId): Observable<Worksheet> {
+    return this.http.get<Worksheet>(
+      `${this.worksheetAPI}/get-neo4j-worksheet/${encodeURIComponent(worksheetId)}/content`,
+      this.getHttpOptions(true),
+    )
   }
 
   getNCBINodes(nodeId): Observable<NCBIWrapper[]> {

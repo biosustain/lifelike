@@ -11,7 +11,15 @@
     <ng-container *ngIf="entries">
       <tr *ngFor="let row of entries">
         <td *ngFor="let entry of row" class="overflow-auto entry">
-          <div>{{ entry }}</div>
+          <div>{{ entry.text }}</div>
+          <ng-container *ngIf="entry.singleLink">
+          <a href="{{ entry.singleLink.link }}">{{ entry.singleLink.linkText }}</a>
+        </ng-container>
+        <ng-container *ngIf="entry.multiLink">
+          <div *ngFor="let link of entry.multiLink" style="display: inline">
+            <a href="{{ link.link }}" >{{ link.linkText }}</a>
+          </div>
+        </ng-container>
         </td>
       </tr>
     </ng-container>
