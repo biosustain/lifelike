@@ -524,7 +524,7 @@ class AnnotationsService:
         if self.specified_organism.synonym:
             fallback_gene_organism_matches = \
                 self.annotation_neo4j.get_gene_to_organism_match_result(
-                    genes=list(gene_names - set(gene_organism_matches)),
+                    genes=list(gene_names),
                     matched_organism_ids=[self.specified_organism.organism_id],
                 )
 
@@ -541,15 +541,9 @@ class AnnotationsService:
 
                 specified_organism_id = None
                 if self.specified_organism.synonym and closest_distance > ORGANISM_DISTANCE_THRESHOLD:  # noqa
-                    fallback_organism_match = \
-                        self.annotation_neo4j.get_gene_to_organism_match_result(
-                            genes=[entity_synonym],
-                            matched_organism_ids=[self.specified_organism.organism_id],
-                        )
-
-                    if fallback_organism_match:
+                    if fallback_gene_organism_matches.get(entity_synonym, None):
                         # if matched in KG then set to fallback strain
-                        gene_id = fallback_organism_match[entity_synonym][self.specified_organism.organism_id]  # noqa
+                        gene_id = fallback_gene_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
                         specified_organism_id = self.specified_organism.organism_id
 
                 category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
