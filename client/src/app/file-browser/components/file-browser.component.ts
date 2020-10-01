@@ -332,7 +332,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       .pipe(
         map(res => res.file_id),
         mergeMap(fileId => this.filesService.annotateFile(
-          this.locator.projectName, fileId, data.annotationMethod)),
+          this.locator.projectName, fileId, data.annotationMethod, data.organism)),
       )
       .pipe(this.errorHandler.create())
       .subscribe(event => {

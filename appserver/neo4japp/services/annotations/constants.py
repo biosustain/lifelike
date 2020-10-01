@@ -16,8 +16,10 @@ SPECIES_NCBI_LMDB = 'species_ncbi'
 # NLP endpoint
 NLP_ENDPOINT = 'http://nlpapi:5001/infer/v1'
 
+ORGANISM_DISTANCE_THRESHOLD = 200
 PDF_NEW_LINE_THRESHOLD = .30
 PDF_CHARACTER_SPACING_THRESHOLD = .325
+
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',
     'so', 'we', 'he', 'by', 'or', 'on', 'do', 'if',
@@ -53,9 +55,7 @@ COMMON_WORDS = set.union(*[
     COMMON_MISC_WORDS,
 ])
 
-# CHEMICAL_EXCLUSION = {'aa', 'same'}
-# COMPOUND_EXCLUSION = {'aa', 'same'}  # should this be the same as chemical?
-SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial', 'aa', 'pigs', 'electron'}
+SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial', 'pigs', 'electron'}
 
 # utf-32 unicode
 # can search these up here: https://www.fileformat.info/info/unicode/index.htm
