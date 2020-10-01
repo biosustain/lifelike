@@ -32,13 +32,6 @@ services:
     appserver:
         container_name: appserver
         build: ./appserver
-        command: [
-            '/usr/bin/env',
-            'bash',
-            'bin/wait-for-postgres',
-            'bin/wait-for-neo4j',
-            'bin/start-dev'
-        ]
         ports:
             - "5000:5000"
         environment:
@@ -106,6 +99,10 @@ services:
         build:
             context: ./client
             dockerfile: Dockerfile
+            target: compile
+            args:
+                build_environment: dev
+                nginx_conf: dev.conf
         ports:
             - "80:80"
         networks:
