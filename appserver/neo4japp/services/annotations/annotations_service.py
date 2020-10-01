@@ -1047,7 +1047,7 @@ class AnnotationsService:
             the `lo_location_offset` of another annotation.
         """
         updated_unified_annotations: List[Annotation] = []
-        annotations_to_clean: List[Annotation] = []
+        annotation_interval_dict: Dict[Tuple[int, int], List[Annotation]] = {}
 
         for unified in unified_annotations:
             if unified.lo_location_offset == unified.hi_location_offset:
@@ -1055,32 +1055,57 @@ class AnnotationsService:
                 # should not have overlaps
                 updated_unified_annotations.append(unified)
             else:
-                annotations_to_clean.append(unified)
+                interval_pair = (unified.lo_location_offset, unified.hi_location_offset)
+                if interval_pair in annotation_interval_dict:
+                    annotation_interval_dict[interval_pair].append(unified)
+                else:
+                    annotation_interval_dict[interval_pair] = [unified]
 
-        tree = self.create_annotation_tree(annotations=annotations_to_clean)
+        tree = self.create_annotation_tree(annotation_intervals=list(annotation_interval_dict))
         # first clean all annotations with equal intervals
         # this means the same keyword was mapped to multiple entities
-        cleaned_of_equal_intervals = tree.merge_equals(
-            data_reducer=self.determine_entity_precedence,
-        )
+        for intervals, annotations in annotation_interval_dict.items():
+            if len(annotations) > 1:
+                chosen_annotation = None
+                for annotation in annotations:
+                    if chosen_annotation:
+                        chosen_annotation = self.determine_entity_precedence(
+                            anno1=chosen_annotation, anno2=annotation)
+                    else:
+                        chosen_annotation = annotation
+                annotation_interval_dict[intervals] = [chosen_annotation]  # type: ignore
 
-        fixed_annotations = self._remove_overlapping_annotations(
-            conflicting_annotations=cleaned_of_equal_intervals,
-        )
+        overlap_ranges = tree.merge_overlaps()
 
-        updated_unified_annotations.extend(fixed_annotations)
+        for (lo, hi) in overlap_ranges:
+            overlaps = tree.overlap(lo, hi)
+
+            annotations_to_fix: List[Annotation] = []
+
+            for overlap in overlaps:
+                annotations_to_fix += [anno for anno in annotation_interval_dict[(overlap.begin, overlap.end)]]  # noqa
+
+            chosen_annotation = None
+
+            for annotation in annotations_to_fix:
+                if chosen_annotation:
+                    chosen_annotation = self.determine_entity_precedence(
+                        anno1=chosen_annotation, anno2=annotation)
+                else:
+                    chosen_annotation = annotation
+            updated_unified_annotations.append(chosen_annotation)  # type: ignore
+
         return updated_unified_annotations
 
     def create_annotation_tree(
         self,
-        annotations: List[Annotation],
+        annotation_intervals: List[Tuple[int, int]]
     ) -> AnnotationIntervalTree:
         return AnnotationIntervalTree(
             [AnnotationInterval(
-                begin=anno.lo_location_offset,
-                end=anno.hi_location_offset,
-                data=anno
-            ) for anno in annotations]
+                begin=lo,
+                end=hi
+            ) for lo, hi in annotation_intervals]
         )
 
     def determine_entity_precedence(
@@ -1173,24 +1198,6 @@ class AnnotationsService:
                 return anno1
             else:
                 return anno2
-
-    def _remove_overlapping_annotations(
-        self,
-        conflicting_annotations: List[Annotation],
-    ) -> List[Annotation]:
-        """Remove annotations based on rules defined in
-        self.determine_entity_precedence().
-        """
-        fixed_annotations: List[Annotation] = []
-
-        if conflicting_annotations:
-            tree = self.create_annotation_tree(annotations=conflicting_annotations)
-            fixed_annotations.extend(
-                tree.merge_overlaps(
-                    data_reducer=self.determine_entity_precedence,
-                ),
-            )
-        return fixed_annotations
 
     def get_matching_manual_annotations(
         self,
