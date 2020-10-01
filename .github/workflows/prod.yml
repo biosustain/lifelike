@@ -4,40 +4,23 @@ on:
   release:
     types: [published]
 
-
-env:
-    ELASTICSEARCH_HOSTS: ${{ secrets.ELASTICSEARCH_HOSTS }}
-    POSTGRES_HOST: ${{ secrets.PROD_POSTGRES_HOST }}
-    POSTGRES_PORT: ${{ secrets.PROD_POSTGRES_PORT }}
-    POSTGRES_USER: ${{ secrets.PROD_POSTGRES_USER }}
-    POSTGRES_PASSWORD: ${{ secrets.PROD_POSTGRES_PASSWORD }}
-    POSTGRES_DB: ${{ secrets.PROD_POSTGRES_DB }}
-    NEO4J_HOST: ${{ secrets.PROD_NEO4J_HOST }}
-    NEO4J_AUTH: ${{ secrets.PROD_NEO4J_AUTH }}
-    FLASK_APP: ${{ secrets.PROD_FLASK_APP }}
-    FLASK_APP_CONFIG: ${{ secrets.PROD_FLASK_APP_CONFIG }}
-    FLASK_ENV: ${{ secrets.PROD_FLASK_ENV }}
-    PROJECT_ID: ${{ secrets.GCE_PROJECT }}
-    GITHUB_HASH: ${{ github.sha }}
-    GCE_INSTANCE: kg-prod
-    GCE_INSTANCE_ZONE: us-central1-a
-    GCE_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
-    CLOUD_SQL_ALIAS: ${{ secrets.PROD_CLOUD_SQL_ALIAS }}
-    GCE_BACKUP_BUCKET: ${{ secrets.POSTGRES_BACKUP_BUCKET }}
-    SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
-    REDIS_HOST: ${{ secrets.REDIS_HOST }}
-    REDIS_PORT: ${{ secrets.REDIS_PORT }}
-    DOMAIN: https://kg.lifelike.bio
-
 jobs:
-    setup-build-publish-deploy:
+    build:
 
-        name: Setup, Build, Publish, and Deploy
+        name: Setup, Build, Publish
+
         runs-on: ubuntu-latest
+
+        outputs:
+          output1: ${{ steps.timestamp.outputs.commit_timestamp }}
 
         steps:
             - name: Checkout
               uses: actions/checkout@v2
+
+            - name: Set git commit timestamp
+              id: timestamp
+              run: echo ::set-output name=commit_timestamp::$(git log -1 --format=%cI)
 
             # Setup gcloud CLI
             # https://github.com/GoogleCloudPlatform/github-actions
@@ -51,16 +34,16 @@ jobs:
             - run: |-
                 gcloud --quiet auth configure-docker
 
-            - name: Build Appserver Image
+            - name: Build appserver image
               uses: whoan/docker-build-with-cache-action@v5
               with:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-prod
-                image_tag: ${{ github.sha }},latest
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
+                image_tag: ${{ github.sha }}
                 context: ./appserver
-                dockerfile: ./Dockerfile.prod
+                dockerfile: ./Dockerfile
 
             - name: Build Client and Nginx Image
               uses: whoan/docker-build-with-cache-action@v5
@@ -68,10 +51,11 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-prod
-                image_tag: ${{ github.sha }},latest
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
+                image_tag: ${{ github.sha }}
                 context: ./client
-                dockerfile: ./Dockerfile.prod
+                dockerfile: ./Dockerfile
+                build_extra_args: "--build-arg=build_environment=production --build-arg=nginx_conf=prod.conf"
 
             - name: Build Redis
               uses: whoan/docker-build-with-cache-action@v5
@@ -79,8 +63,8 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-prod
-                image_tag: ${{ github.sha }},latest
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
+                image_tag: ${{ github.sha }}
                 context: ./cache-invalidator
                 dockerfile: ./Dockerfile
 
@@ -90,54 +74,30 @@ jobs:
                 username: _json_key
                 password: ${{ secrets.GCE_SA_KEY }}
                 registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-prod
-                image_tag: ${{ github.sha }},latest
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
+                image_tag: ${{ github.sha }}
                 context: ./nlp
                 dockerfile: ./Dockerfile
 
-            - name: Deploy Setup
-              run: |-
-                echo "ELASTICSEARCH_HOSTS=$ELASTICSEARCH_HOSTS" >> prod.env
-                echo "POSTGRES_HOST=$POSTGRES_HOST" >> prod.env
-                echo "POSTGRES_PORT=$POSTGRES_PORT" >> prod.env
-                echo "POSTGRES_USER=$POSTGRES_USER" >> prod.env
-                echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> prod.env
-                echo "POSTGRES_DB=$POSTGRES_DB" >> prod.env
-                echo "NEO4J_HOST=$NEO4J_HOST" >> prod.env
-                echo "NEO4J_AUTH=$NEO4J_AUTH" >> prod.env
-                echo "FLASK_APP=$FLASK_APP" >> prod.env
-                echo "FLASK_APP_CONFIG=$FLASK_APP_CONFIG" >> prod.env
-                echo "FLASK_ENV=$FLASK_ENV" >> prod.env
-                echo "DOCKER_USER=_json_key" >> prod.env
-                echo "PROJECT_ID=$PROJECT_ID" >> prod.env
-                echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> prod.env
-                echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET" >> prod.env
-                echo "GITHUB_HASH=$GITHUB_HASH" >> prod.env
-                GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
-                echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> prod.env
-                echo "SENTRY_KEY=$SENTRY_KEY" >> prod.env
-                echo "REDIS_HOST=$REDIS_HOST" >> prod.env
-                echo "REDIS_PORT=$REDIS_PORT" >> prod.env
-                echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
-                gsutil cp prod.env gs://kg-secrets
-                gcloud compute scp prod.env root@$GCE_INSTANCE:/srv/.env --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp keyfile.json root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp docker-compose.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp docker-compose.prod.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp ./deployment/bin/startup.sh root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp ./deployment/bin/migration-manager.sh root@$GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp ./appserver/nlp/fetch-ai-models.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/startup.sh';
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='chmod a+x /srv/migration-manager.sh';
+    deploy:
+      name: Deploy
+      needs: build
 
-            - name: Deploy
-              run: |-
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/startup.sh -t production';
+      runs-on: ubuntu-latest
 
-            - name: Applying database migrations
-              run: |-
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='/srv/migration-manager.sh -t production';
+      steps:
 
-            - name: Clean up images
-              run: |-
-                gcloud compute ssh root@$GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune -f';
+        - name: Checkout code
+          uses: actions/checkout@v2
+
+        - name: Deploy application
+          uses: dawidd6/action-ansible-playbook@v2
+          with:
+            playbook: deploy.yml
+            directory: deployment/ansible/playbooks
+            key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+            vault_password: ${{ secrets.ANSIBLE_VAULT }}
+            options: |
+              --extra-vars "webserver=prod docker_img_hash=${{ github.sha }} git_timestamp=${{ needs.build.outputs.output1 }}"
+              --user ansible
+              --inventory ../inventories

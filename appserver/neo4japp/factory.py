@@ -81,7 +81,7 @@ def create_app(name='neo4japp', config='config.Development'):
     log_handler.setFormatter(formatter)
     app_logger.addHandler(log_handler)
 
-    if config == 'config.Staging' or config == 'config.Production':
+    if config in ['config.QA', 'config.Staging', 'config.Production']:
 
         sentry_logging = LoggingIntegration(
             level=logging.ERROR,

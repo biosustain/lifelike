@@ -1,4 +1,4 @@
-FROM fedora:32
+FROM fedora:32 as base
 
 # Install dependencies
 RUN dnf install postgresql graphviz python-pip python3-devel which -y \
@@ -35,3 +35,5 @@ ENV PYTHONPATH $N4J_HOME
 RUN echo 'alias python=python3' >> ~/.bashrc && source ~/.bashrc
 
 USER $N4J_USER
+
+ENTRYPOINT [ "bin/startup.sh" ]
