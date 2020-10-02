@@ -46,6 +46,10 @@
     command: certonly --non-interactive --webroot --webroot-path=/var/www/certbot --email {{ certbot_email }} --agree-tos -d {{ server_name }}
   when: not certbot_certs.stat.exists
 
+- name: Wait for certificates to be available before removing nginx container
+  wait_for:
+    path: "{{ certbot_conf_dir }}/etc/letsencrypt/live"
+
 - name: Stop nginx container
   docker_container:
     name: "{{ nginx_hostname }}"
