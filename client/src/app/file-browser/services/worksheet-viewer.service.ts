@@ -38,6 +38,10 @@ export interface EnrichmentNode {
   regulondb_id?: string;
   strand?: string;
   // String attributes
+  annotation?: string;
+  protein_size?: number;
+  refseq?: string;
+  tax_id?: string;
   // Biological Go attributes
   description?: string;
   // Cellular Go attributes
@@ -48,9 +52,14 @@ export interface EnrichmentNode {
   biocyc_id?: string;
 }
 
+export interface ImportGene {
+  cell_value: string;
+}
+
 export interface NCBIWrapper {
   neo4jID: number;
   x: NCBINode;
+  import: ImportGene;
 }
 
 export interface NodeWrapper {
