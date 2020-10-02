@@ -1,0 +1,5 @@
+name: "Ansible"
+description: "Run Ansible for Deployment"
+runs:
+    using: "docker"
+    image: "Dockerfile"

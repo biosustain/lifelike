@@ -94,13 +94,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Deploy application
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          playbook: deploy.yml
-          directory: deployment/ansible/playbooks
-          key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
-          vault_password: ${{ secrets.ANSIBLE_VAULT }}
-          options: |
-            --extra-vars "webserver=staging docker_img_hash=${{ github.sha }} git_timestamp=${{ needs.build.outputs.output1 }}"
-            --user ansible
-            --inventory ../inventories
+        uses: ./.github/actions/ansible
+        env:
+          ANSIBLE_VAULT: ${{ secrets.ANSIBLE_VAULT }}
+          ANSIBLE_PRIVATE_SSH_KEY: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+          DEPLOY_ENV: staging
+          DOCKER_IMG_HASH: ${{ github.sha }}
+          GIT_TIMESTAMP: ${{ needs.build.outputs.output1 }}
