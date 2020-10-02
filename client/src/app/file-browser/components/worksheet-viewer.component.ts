@@ -4,7 +4,7 @@ import { TableHeader, TableCell, TableLink } from './generic-table.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { DirectoryContent } from 'app/interfaces/projects.interface';
 import { Subscription, zip } from 'rxjs';
-import { Worksheet, WorksheetViewerService, NCBINode, NCBIWrapper, EnrichmentNode, NodeWrapper} from '../services/worksheet-viewer.service';
+import { Worksheet, WorksheetViewerService, NCBINode, NCBIWrapper, EnrichmentNode, NodeWrapper, ImportGene} from '../services/worksheet-viewer.service';
 
 @Component({
   selector: 'app-worksheet-viewer',
@@ -15,6 +15,7 @@ export class WorksheetViewerComponent implements OnInit, OnDestroy {
   tableHeader: TableHeader[][] = [
     // Primary headers
     [
+      {name: 'Import Gene Name', span: '1'},
       {name: 'NCBI Gene', span: '1'},
       {name: 'Regulon', span: '1'},
       {name: 'Uniprot', span: '1'},
@@ -24,6 +25,7 @@ export class WorksheetViewerComponent implements OnInit, OnDestroy {
     ],
     // Secondary headers
     [
+      {name: '', span: '1'},
       {name: '', span: '1'},
       {name: '', span: '1'},
       {name: '', span: '1'},
@@ -41,6 +43,7 @@ export class WorksheetViewerComponent implements OnInit, OnDestroy {
   sheetname: string;
   neo4jId: number;
   ncbiNodes: NCBINode[];
+  importGenes: ImportGene[];
   ncbiIds: number[];
   uniprotNodes: string[];
   regulonNodes: string[];
@@ -51,7 +54,7 @@ export class WorksheetViewerComponent implements OnInit, OnDestroy {
   ecocycGoNodes: string[];
 
 
-  @Input() worksheetId: string = '1';
+  @Input() worksheetId: string = '2';
 
   constructor(private readonly worksheetViewerService: WorksheetViewerService) {}
 
@@ -64,6 +67,7 @@ export class WorksheetViewerComponent implements OnInit, OnDestroy {
       this.neo4jId = worksheet.neo4jNodeId;
       this.worksheetViewerService.getNCBINodes(this.neo4jId).subscribe((result)=> {
         this.ncbiNodes = result.map((wrapper) => wrapper.x);
+        this.importGenes = result.map((wrapper) => wrapper.import);
         this.ncbiIds = result.map((wrapper) => wrapper.neo4jID);
         this.getDomains();
       })
@@ -79,7 +83,8 @@ export class WorksheetViewerComponent implements OnInit, OnDestroy {
     this.worksheetViewerService.getNCBIEnrichmentDomains(this.ncbiIds).subscribe((result)=> {
       this.tableEntries = result.map((wrapper) => this.processEnrichmentNodeArray(wrapper));
       for (var i = 0; i < this.ncbiNodes.length; i++) {
-        this.tableEntries[i].unshift({text: this.ncbiNodes[i].name, singleLink: {link: 'https://www.ncbi.nlm.nih.gov/gene/' + this.ncbiNodes[i].id, linkText: 'NCBI Link'}})
+        this.tableEntries[i].unshift({text: this.ncbiNodes[i].full_name, singleLink: {link: 'https://www.ncbi.nlm.nih.gov/gene/' + this.ncbiNodes[i].id, linkText: 'NCBI Link'}});
+        this.tableEntries[i].unshift({text: this.importGenes[i].cell_value})
       }
     })
   }
@@ -89,7 +94,7 @@ export class WorksheetViewerComponent implements OnInit, OnDestroy {
     const result: TableCell[] = [];
     result[0] = arr[0].x ? {text: arr[0].x.regulondb_id} : {text: ''};
     result[1] = arr[1].x ? {text: arr[1].x.name, singleLink: {link: 'http://identifiers.org/uniprot/' + arr[1].x.id, linkText: 'Uniprot Link'}} : {text: ''};
-    result[2] = arr[2].x ? {text: arr[2].x.name} : {text: ''};
+    result[2] = arr[2].x ? {text: arr[2].x.annotation} : {text: ''};
     const molecularArray: TableLink[] = []; 
     const biologicalArray: TableLink[] = []; 
     const cellularArray: TableLink[] = []; 

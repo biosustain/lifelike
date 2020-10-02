@@ -279,7 +279,7 @@ class KgService(HybridDBDao):
         return """
         MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
-        OPTIONAL MATCH (g)-[:HAS_STRING]-(x:db_STRING)
+        OPTIONAL MATCH (g)-[:GENE_LINK]-(x:db_STRING)
         RETURN x
         """
 
