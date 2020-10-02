@@ -47,8 +47,10 @@
   when: not certbot_certs.stat.exists
 
 - name: Wait for certificates to be available before removing nginx container
+  become: yes
   wait_for:
     path: "{{ certbot_conf_dir }}/etc/letsencrypt/live"
+  when: not certbot_certs.stat.exists
 
 - name: Stop nginx container
   docker_container:
