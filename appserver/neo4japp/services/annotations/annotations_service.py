@@ -1037,8 +1037,7 @@ class AnnotationsService:
         An annotation is a conflict if:
         - it has overlapping `lo_location_offset` and `hi_location_offset` with
             another annotation.
-        - it has adjacent intervals, meaning a `hi_location_offset` equals
-            the `lo_location_offset` of another annotation.
+        - it has same intervals.
         """
         updated_unified_annotations: List[Annotation] = []
         annotation_interval_dict: Dict[Tuple[int, int], List[Annotation]] = {}
@@ -1055,7 +1054,12 @@ class AnnotationsService:
                 else:
                     annotation_interval_dict[interval_pair] = [unified]
 
-        tree = self.create_annotation_tree(annotation_intervals=list(annotation_interval_dict))
+        tree = AnnotationIntervalTree([
+            AnnotationInterval(
+                begin=lo,
+                end=hi
+            ) for lo, hi in list(annotation_interval_dict)])
+
         # first clean all annotations with equal intervals
         # this means the same keyword was mapped to multiple entities
         for intervals, annotations in annotation_interval_dict.items():
