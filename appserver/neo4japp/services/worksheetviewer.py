@@ -33,6 +33,6 @@ class WorksheetViewerService(KgService):
 
     def get_ncbi_genes_query(self):
         return """
-        MATCH (w:Worksheet)<-[:IMPORTED_FROM]-(:UserData)-[:IS_A]-(x:Gene:db_NCBI)
-        WHERE ID(w) = $worksheet_id RETURN x, ID(x) as neo4jID
+        MATCH (w:Worksheet)<-[:IMPORTED_FROM]-(import:UserData)-[:IS_A]-(x:Gene:db_NCBI)
+        WHERE ID(w) = $worksheet_id RETURN import, x, ID(x) as neo4jID
         """
