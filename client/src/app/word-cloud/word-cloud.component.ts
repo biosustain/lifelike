@@ -199,18 +199,14 @@ export class WordCloudComponent {
 
     // Append the svg object to the wrapper
     const svg = d3.select(`#${this.id}cloud-wrapper`).append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', width + margin.top + margin.bottom)
-        .append('g')
-        .attr('transform',
-              'translate(' + margin.left + ',' + margin.top + ')');
+        .attr('width', width)
+        .attr('height', height);
 
-    const legend = this.legend;
     const maximumCount = Math.max(...data.map(annotation => annotation.value as number));
 
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
     const layout = cloud()
-      .size([width, height - 50])
+      .size([width, height])
       .words(data)
       .padding(3)
       // max ~86px, min ~12px
