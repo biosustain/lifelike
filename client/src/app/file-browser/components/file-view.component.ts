@@ -76,6 +76,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @Output() filterChangeSubject = new Subject<void>();
 
   searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
+  searchQuery = '';
   goToPosition: Subject<Location> = new Subject<Location>();
   loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]>;
   pendingScroll: Location;
@@ -515,25 +516,27 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.requestClose.emit(null);
   }
 
-  searchQueryChanged(query) {
+  searchQueryChanged() {
     this.searchChanged.next({
-      keyword: query,
+      keyword: this.searchQuery,
       findPrevious: false,
     });
   }
 
-  findNext(query) {
-    this.searchChanged.next({
-      keyword: query,
-      findPrevious: false,
-    });
+  findNext() {
+    this.searchQueryChanged();
   }
 
-  findPrevious(query) {
+  findPrevious() {
     this.searchChanged.next({
-      keyword: query,
+      keyword: this.searchQuery,
       findPrevious: true,
     });
+  }
+
+  clearSearchQuery() {
+    this.searchQuery = '';
+    this.searchQueryChanged();
   }
 
   displayEditDialog() {
