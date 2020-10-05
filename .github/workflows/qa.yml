@@ -101,7 +101,7 @@ jobs:
           vault_password: ${{ secrets.ANSIBLE_VAULT }}
           ssh_key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
           options: |
-            --extra-vars "webserver=qa docker_img_hash=${{ github.sha }} git_timestamp=${{ needs.build.outputs.output1 }}"
+            --extra-vars webserver=qa --extra-vars docker_img_hash=${{ github.sha }} --extra-vars git_timestamp=${{ needs.build.outputs.output1 }}
             --user ansible
             --verbose
 
