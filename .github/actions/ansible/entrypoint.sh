@@ -13,7 +13,7 @@ fi
 export PLAYBOOK_FILE_PATH=
 if [ ! -z "$INPUT_PLAYBOOK_FILE_PATH" ]
 then
-    PLAYBOOK_FILE_PATH="${INPUT_PLAYBOOK}"
+    PLAYBOOK_FILE_PATH="${INPUT_PLAYBOOK_FILE_PATH}"
 else
     echo "No playbook specifid."
 fi
@@ -21,7 +21,7 @@ fi
 export INVENTORY_FILE_PATH=
 if [ ! -z "$INPUT_INVENTORY_FILE_PATH" ]
 then
-    INVENTORY_FILE_PATH="-i ${INVENTORY_FILE_PATH}"
+    INVENTORY_FILE_PATH="-i ${INPUT_INVENTORY_FILE_PATH}"
 else
     echo "No inventory specified."
 fi
