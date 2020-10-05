@@ -405,6 +405,10 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         }
     }
 
+    fitToScreen() {
+        this.networkGraph.fit();
+    }
+
     /**
      * Gets the shared edges between the two input nodes.
      */
