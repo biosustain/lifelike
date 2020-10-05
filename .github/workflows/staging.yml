@@ -95,9 +95,13 @@ jobs:
 
       - name: Deploy application
         uses: ./.github/actions/ansible
-        env:
-          ANSIBLE_VAULT: ${{ secrets.ANSIBLE_VAULT }}
-          ANSIBLE_PRIVATE_SSH_KEY: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
-          DEPLOY_ENV: staging
-          DOCKER_IMG_HASH: ${{ github.sha }}
-          GIT_TIMESTAMP: ${{ needs.build.outputs.output1 }}
+        with:
+          workspace_dir: 'deployment/ansible'
+          playbook_file_path: 'playbooks/deploy.yml'
+          inventory_file_path: 'inventories/hosts.yml'
+          vault_password: ${{ secrets.ANSIBLE_VAULT }}
+          ssh_key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+          options: |
+            --extra-vars webserver=staging --extra-vars docker_img_hash=${{ github.sha }} --extra-vars git_timestamp=${{ needs.build.outputs.output1 }}
+            --user ansible
+            --verbose
