@@ -102,9 +102,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   removedAnnotationExclusion: RemovedAnnotationExclusion;
   projectName: string;
 
-  // search
-  pdfQuery;
-
   @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
 
   constructor(
@@ -517,6 +514,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   searchQueryChanged() {
+    if (this.searchQuery === '') {
+      this.pdfViewerLib.nullifyMatchesCount();
+    }
     this.searchChanged.next({
       keyword: this.searchQuery,
       findPrevious: false,
