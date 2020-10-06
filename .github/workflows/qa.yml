@@ -1,0 +1,107 @@
+name: QA Deployment
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - qa
+
+jobs:
+  build:
+    name: Setup, Build, Publish
+
+    runs-on: ubuntu-18.04
+
+    outputs:
+      output1: ${{ steps.timestamp.outputs.commit_timestamp }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set git commit timestamp
+        id: timestamp
+        run: echo ::set-output name=commit_timestamp::$(git log -1 --format=%cI)
+
+      # Setup gcloud CLI
+      # https://github.com/GoogleCloudPlatform/github-actions
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: "286.0.0"
+          service_account_key: ${{ secrets.GCE_SA_KEY }}
+          project_id: ${{ secrets.GCE_PROJECT }}
+
+      # Configure Docker to use gcloud command line tool
+      - run: |-
+          gcloud --quiet auth configure-docker
+
+      - name: Build appserver image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
+          image_tag: ${{ github.sha }}
+          context: ./appserver
+          dockerfile: ./Dockerfile
+
+      - name: Build Client and Nginx Image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
+          image_tag: ${{ github.sha }}
+          context: ./client
+          dockerfile: ./Dockerfile
+          build_extra_args: "--build-arg=build_environment=staging --build-arg=nginx_conf=qa.conf"
+
+      - name: Build Redis
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
+          image_tag: ${{ github.sha }}
+          context: ./cache-invalidator
+          dockerfile: ./Dockerfile
+
+      - name: Build NLP
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
+          image_tag: ${{ github.sha }}
+          context: ./nlp
+          dockerfile: ./Dockerfile
+
+  deploy:
+    name: Deploy
+    needs: build
+
+    runs-on: ubuntu-18.04
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy application
+        uses: ./.github/actions/ansible
+        with:
+          workspace_dir: 'deployment/ansible'
+          playbook_file_path: 'playbooks/deploy.yml'
+          inventory_file_path: 'inventories/hosts.yml'
+          vault_password: ${{ secrets.ANSIBLE_VAULT }}
+          ssh_key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+          options: |
+            --extra-vars webserver=qa --extra-vars docker_img_hash=${{ github.sha }} --extra-vars git_timestamp=${{ needs.build.outputs.output1 }}
+            --user ansible
+
+
