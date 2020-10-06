@@ -70,10 +70,10 @@ export class PdfFilesService extends AbstractService {
     ).pipe(map(res => res.result));
   }
 
-  annotateFile(projectName: string, fileId: string, annotationMethod: string): Observable<HttpEvent<object>> {
+  annotateFile(projectName: string, fileId: string, annotationMethod: string, organism: string): Observable<HttpEvent<object>> {
     return this.http.post<object>(
       `${this.ANNOTATIONS_BASE_URL}/${encodeURIComponent(projectName)}/${fileId}`,
-      {annotationMethod},
+      {annotationMethod, organism},
       {
         ...this.getHttpOptions(true),
         observe: 'events',

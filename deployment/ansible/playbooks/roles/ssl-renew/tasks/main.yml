@@ -1,0 +1,21 @@
+- name: Check if SSL/TLS certificate exists
+  become: true
+  stat:
+    path: "{{ certbot_conf_dir }}"
+  register: certbot_certs
+
+- name: Issue certificate renewal
+  docker_container:
+    name: "{{ certbot_hostname }}"
+    image: "{{ certbot_image }}"
+    volumes:
+      - "{{ certbot_conf_dir }}/www/:/var/www/certbot/"
+      - "{{ certbot_conf_dir }}/etc/letsencrypt:/etc/letsencrypt"
+      - "{{ certbot_conf_dir }}/var/lib/letsencrypt:/var/lib/letsencrypt"
+      - "{{ certbot_conf_dir }}/var/log/letsencrypt:/var/log/letsencrypt"
+    command: renew --web***ARANGO_USERNAME*** -w /var/www/certbot --quiet
+  when: certbot_certs.stat.exists
+
+- debug:
+    msg: "No SSL/TLS certificate exists to renew"
+  when: not certbot_certs.stat.exists

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 from intervaltree import Interval, IntervalTree
 
@@ -6,7 +6,7 @@ from neo4japp.data_transfer_objects import Annotation
 
 
 class AnnotationInterval(Interval):
-    def __init__(self, begin, end, data):
+    def __init__(self, begin, end, data=None):
         super().__new__(Interval, begin=begin, end=end, data=data)
 
 
@@ -22,9 +22,9 @@ class AnnotationIntervalTree(IntervalTree):
 
     def merge_equals(
         self,
-        data_reducer,
+        data_reducer=None,
         data_initializer=None,
-    ) -> List[Annotation]:
+    ) -> List[Tuple[int, int]]:
         """Override to change return type and how the merged is added.
         See self.__init__ comment.
 
@@ -48,28 +48,30 @@ class AnnotationIntervalTree(IntervalTree):
             else:  # data_initializer is not None
                 current_reduced[0] = copy(data_initializer)
                 current_reduced[0] = data_reducer(current_reduced[0], higher.data)
-                merged.append(Interval(higher.begin, higher.end, current_reduced[0]))
+                merged.append(AnnotationInterval(higher.begin, higher.end, current_reduced[0]))
 
         for higher in sorted_intervals:
             if merged:  # series already begun
                 lower = merged[-1]
                 if higher.range_matches(lower):  # should merge
-                    current_reduced[0] = data_reducer(current_reduced[0], higher.data)
-                    lower_offset = current_reduced[0].lo_location_offset or None  # type: ignore
-                    upper_offset = current_reduced[0].hi_location_offset or None  # type: ignore
-                    merged[-1] = Interval(lower_offset, upper_offset, current_reduced[0])
+                    upper_bound = max(lower.end, higher.end)
+                    if data_reducer is not None:
+                        current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                    else:  # annihilate the data, since we don't know how to merge it
+                        current_reduced[0] = None
+                    merged[-1] = AnnotationInterval(lower.begin, upper_bound, current_reduced[0])
                 else:
                     new_series()
             else:  # not merged; is first of Intervals to merge
                 new_series()
-        return [anno.data for anno in merged]
+        return [(interval.begin, interval.end) for interval in merged]
 
     def merge_overlaps(
         self,
-        data_reducer,
+        data_reducer=None,
         data_initializer=None,
         strict=False,
-    ) -> List[Annotation]:
+    ) -> List[Tuple[int, int]]:
         """Override to change return type and how the merged is added.
         See self.__init__ comment.
 
@@ -93,21 +95,21 @@ class AnnotationIntervalTree(IntervalTree):
             else:  # data_initializer is not None
                 current_reduced[0] = copy(data_initializer)
                 current_reduced[0] = data_reducer(current_reduced[0], higher.data)
-                merged.append(Interval(higher.begin, higher.end, current_reduced[0]))
+                merged.append(AnnotationInterval(higher.begin, higher.end, current_reduced[0]))
 
         for higher in sorted_intervals:
             if merged:  # series already begun
                 lower = merged[-1]
                 if (higher.begin < lower.end or
-                    not strict and
-                    higher.begin == lower.end
-                ):  # noqa  # should merge
-                    current_reduced[0] = data_reducer(current_reduced[0], higher.data)
-                    lower_offset = current_reduced[0].lo_location_offset or None  # type: ignore
-                    upper_offset = current_reduced[0].hi_location_offset or None  # type: ignore
-                    merged[-1] = Interval(lower_offset, upper_offset, current_reduced[0])
+                    not strict and higher.begin == lower.end):  # noqa # should merge
+                    upper_bound = max(lower.end, higher.end)
+                    if data_reducer is not None:
+                        current_reduced[0] = data_reducer(current_reduced[0], higher.data)
+                    else:  # annihilate the data, since we don't know how to merge it
+                        current_reduced[0] = None
+                    merged[-1] = AnnotationInterval(lower.begin, upper_bound, current_reduced[0])
                 else:
                     new_series()
             else:  # not merged; is first of Intervals to merge
                 new_series()
-        return [anno.data for anno in merged]
+        return [(interval.begin, interval.end) for interval in merged]
