@@ -108,6 +108,39 @@ class AnnotationsNeo4jService(KgService):
 
         return gene_to_organism_map
 
+    def get_proteins_to_organisms(
+        self,
+        proteins: List[str],
+        organisms: List[str],
+    ) -> Dict[str, Dict[str, str]]:
+        gene_to_organism_map: Dict[str, Dict[str, str]] = {}
+
+        query = self.get_protein_to_organism_query()
+        cursor = self.graph.run(
+            query,
+            {
+                'proteins': proteins,
+                'organisms': organisms,
+            }
+        )
+
+        result = cursor.data()
+        cursor.close()
+
+        for row in result:
+            protein_name: str = row['protein']
+            organism_id: str = row['organism_id']
+            # For now just get the first protein in the list of matches,
+            # no way for us to infer which to use
+            gene_id: str = row['protein_ids'][0]
+
+            if gene_to_organism_map.get(protein_name, None) is not None:
+                gene_to_organism_map[protein_name][organism_id] = gene_id
+            else:
+                gene_to_organism_map[protein_name] = {organism_id: gene_id}
+
+        return gene_to_organism_map
+
     def get_organisms_from_tax_ids(self, tax_ids: List[str]) -> List[str]:
         query = self.get_taxonomy_from_synonyms_query()
         result = self.graph.run(query, {'ids': tax_ids}).data()
@@ -132,6 +165,18 @@ class AnnotationsNeo4jService(KgService):
             WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p)
             WHERE p.id IN $organisms
             RETURN s.name AS gene, collect(g.id) AS gene_ids, p.id AS organism_id
+        """
+        return query
+
+    def get_protein_to_organism_query(self):
+        """Retrieves a list of all the protein with a given name
+        in a particular organism."""
+        query = """
+            MATCH (s:Synonym)-[]-(g:db_UniProt)
+            WHERE s.name IN $proteins
+            WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p)
+            WHERE p.id IN $organisms
+            RETURN s.name AS protein, collect(g.id) AS protein_ids, p.id AS organism_id
         """
         return query
 

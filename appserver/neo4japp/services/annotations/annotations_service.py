@@ -85,14 +85,15 @@ class AnnotationsService:
             entity_type_and_id_pairs.append(
                 (EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value))
 
+        if species:
+            # Order is IMPORTANT here
+            # Species should always be annotated before Genes and Proteins
+            entity_type_and_id_pairs.append(
+                (EntityType.SPECIES.value, EntityIdStr.SPECIES.value))
+
         if protein:
             entity_type_and_id_pairs.append(
                 (EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value))
-
-        if species:
-            # Order is IMPORTANT here, Species should always be annotated before Genes
-            entity_type_and_id_pairs.append(
-                (EntityType.SPECIES.value, EntityIdStr.SPECIES.value))
 
         if gene:
             entity_type_and_id_pairs.append(
@@ -410,23 +411,28 @@ class AnnotationsService:
                     matches.append(annotation)
         return matches
 
-    def _get_closest_gene_organism_pair(
+    def _get_closest_entity_organism_pair(
         self,
-        gene_position: PDFTokenPositions,
+        entity_position: PDFTokenPositions,
         organism_matches: Dict[str, str],
     ) -> Tuple[str, str, float]:
-        """Gets the correct gene/organism pair for a given gene and its list of matching organisms.
+        """Gets the correct entity/organism pair for a given entity
+        and its list of matching organisms.
 
-        A gene name may match multiple organisms. To choose which organism to use, we first
-        check for the closest one in the document. If two organisms are equal in distance,
-        we choose the one that appears most frequently in the document. If the two organisms
-        are both equidistant and equally frequent, we always prefer homo sapiens if it is
-        either of the two genes. Otherwise, we choose the one we matched first.
+        An entity name may match multiple organisms. To choose which organism to use,
+        we first check for the closest one in the document. If two organisms are
+        equal in distance, we choose the one that appears most frequently in the document.
+
+        If the two organisms are both equidistant and equally frequent,
+        we always prefer homo sapiens if it is either of the two entity.
+        Otherwise, we choose the one we matched first.
+
+        Currently used for proteins and genes.
         """
 
-        char_indexes = list(gene_position.char_positions.keys())
-        gene_location_lo = char_indexes[0]
-        gene_location_hi = char_indexes[-1]
+        char_indexes = list(entity_position.char_positions.keys())
+        entity_location_lo = char_indexes[0]
+        entity_location_hi = char_indexes[-1]
 
         closest_dist = inf
         curr_closest_organism = None
@@ -443,10 +449,10 @@ class AnnotationsService:
                     organism_location_lo = organism_pos[0]
                     organism_location_hi = organism_pos[1]
 
-                    if gene_location_lo > organism_location_hi:
-                        new_organism_dist = gene_location_lo - organism_location_hi
+                    if entity_location_lo > organism_location_hi:
+                        new_organism_dist = entity_location_lo - organism_location_hi
                     else:
-                        new_organism_dist = organism_location_lo - gene_location_hi
+                        new_organism_dist = organism_location_lo - entity_location_hi
 
                     if new_organism_dist < min_organism_dist:
                         min_organism_dist = new_organism_dist
@@ -535,8 +541,8 @@ class AnnotationsService:
             entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
 
             if entity_synonym in gene_organism_matches:
-                gene_id, organism_id, closest_distance = self._get_closest_gene_organism_pair(
-                    gene_position=token_positions,
+                gene_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
+                    entity_position=token_positions,
                     organism_matches=gene_organism_matches[entity_synonym]
                 )
 
@@ -605,14 +611,54 @@ class AnnotationsService:
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
-        return self._get_annotation(
-            tokens=self.matched_proteins,
-            token_type=EntityType.PROTEIN.value,
-            color=EntityColor.PROTEIN.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
-        )
+        """Nearly identical to `self._annotate_genes`. Return a list of
+        protein annotations with the correct protein_id. If the protein
+        was not matched in the knowledge graph, then keep the original
+        protein_id.
+        """
+        tokens: Dict[str, LMDBMatch] = self.matched_proteins
+
+        matches: List[Annotation] = []
+
+        entity_tokenpos_pairs = []
+        protein_names: Set[str] = set()
+        for word, lmdb_match in tokens.items():
+            for token_positions in lmdb_match.tokens:
+                for entity in lmdb_match.entities:
+                    protein_names.add(entity['synonym'])
+
+                    entity_tokenpos_pairs.append((entity, token_positions))
+
+        protein_organism_matches = \
+            self.annotation_neo4j.get_proteins_to_organisms(
+                proteins=list(protein_names),
+                organisms=list(self.organism_frequency.keys()),
+            )
+
+        for entity, token_positions in entity_tokenpos_pairs:
+            category = entity.get('category', '')
+            protein_id = entity[EntityIdStr.PROTEIN.value]
+
+            if entity['synonym'] in protein_organism_matches:
+                protein_id, organism_id, _ = self._get_closest_entity_organism_pair(
+                    entity_position=token_positions,
+                    organism_matches=protein_organism_matches[entity['synonym']]
+                )
+
+                category = self.organism_categories[organism_id]
+
+            annotation = self._create_annotation_object(
+                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                cropbox_in_pdf=cropbox_in_pdf,
+                token_positions=token_positions,
+                token_type=EntityType.PROTEIN.value,
+                entity=entity,
+                entity_id=protein_id,
+                entity_category=category,
+                color=EntityColor.PROTEIN.value,
+            )
+            matches.append(annotation)
+        return matches
 
     def _annotate_local_species_inclusions(
         self,
