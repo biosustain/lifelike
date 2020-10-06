@@ -235,6 +235,10 @@ export class PdfViewerComponent
     CustomEvent
   >();
   // tslint:disable-next-line
+  @Output('matches-count-updated') matchesCountUpdated = new EventEmitter<any>();
+  // tslint:disable-next-line
+  @Output('find-control-state-updated') findControlStateUpdated = new EventEmitter<any>();
+  // tslint:disable-next-line
   @Output('error') onError = new EventEmitter<any>();
   // tslint:disable-next-line
   @Output('on-progress') onProgress = new EventEmitter<PDFProgressData>();
@@ -459,6 +463,14 @@ export class PdfViewerComponent
       this.textLayerRendered.emit(e);
     });
 
+    eventBus.on('updatefindmatchescount', e => {
+      this.matchesCountUpdated.emit(e.matchesCount);
+    });
+
+    eventBus.on('updatefindcontrolstate', e => {
+      this.findControlStateUpdated.emit(e);
+    });
+
     this.pdfMultiPageLinkService = new pdfjsViewer.PDFLinkService({ eventBus });
     this.pdfMultiPageFindController = new pdfjsViewer.PDFFindController({
       linkService: this.pdfMultiPageLinkService,
@@ -500,6 +512,14 @@ export class PdfViewerComponent
 
     eventBus.on('textlayerrendered', e => {
       this.textLayerRendered.emit(e);
+    });
+
+    eventBus.on('updatefindmatchescount', e => {
+      this.matchesCountUpdated.emit(e.matchesCount);
+    });
+
+    eventBus.on('updatefindcontrolstate', e => {
+      this.findControlStateUpdated.emit(e);
     });
 
     this.pdfSinglePageLinkService = new pdfjsViewer.PDFLinkService({
