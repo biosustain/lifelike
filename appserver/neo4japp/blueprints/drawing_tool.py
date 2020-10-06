@@ -32,7 +32,11 @@ from neo4japp.constants import ANNOTATION_STYLES_DICT
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.data_transfer_objects import PublicMap
 from neo4japp.data_transfer_objects.common import ResultList
-from neo4japp.database import db, get_authorization_service, get_projects_service
+from neo4japp.database import (
+    db,
+    get_authorization_service,
+    get_projects_service,
+)
 from neo4japp.exceptions import (
     InvalidFileNameException, RecordNotFoundException, NotAuthorizedException
 )
@@ -280,6 +284,10 @@ def add_project(projects_name: str):
     current_app.logger.info(
         f'User created map: <{project.label}>',
         extra=UserEventLog(username=g.current_user.username, event_type='map create').to_dict())
+
+    # If we end up changing this so that either hash_id is removed or otherwise generated
+    # before the map is inserted, we will need to update the on_update and on_insert triggers
+    # in the class definition.
 
     # Flush it to database to that user
     db.session.add(project)

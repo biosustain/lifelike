@@ -33,6 +33,7 @@ services:
             - POSTGRES_PASSWORD=postgres
             - POSTGRES_DB=postgres
             - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+            - ELASTIC_FILE_INDEX_ID=file_ci
         volumes:
             - ./appserver/neo4japp/tests/database/services/annotations/lmdb:/home/n4j/tests/database/services/annotations/lmdb
         networks:

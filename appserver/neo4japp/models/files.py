@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
 
+from sqlalchemy import event
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.query import Query
 from sqlalchemy.types import TIMESTAMP
 
-from neo4japp.database import db
+from neo4japp.constants import FILE_INDEX_ID
+from neo4japp.database import db, get_elastic_service
 from neo4japp.models.common import RDBMSBase, TimestampMixin
 
 
@@ -42,6 +44,41 @@ class Files(RDBMSBase, TimestampMixin):  # type: ignore
     doi = db.Column(db.String(1024), nullable=True)
     upload_url = db.Column(db.String(2048), nullable=True)
     excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
+
+
+# Files table ORM event listeners
+@event.listens_for(Files, 'after_insert')
+def files_after_insert(mapper, connection, target):
+    "listen for the 'after_insert' event"
+
+    # Add this file as an elasticsearch document
+    elastic_service = get_elastic_service()
+    elastic_service.index_files([target.id])
+
+
+@event.listens_for(Files, 'after_delete')
+def files_after_delete(mapper, connection, target):
+    "listen for the 'after_delete' event"
+
+    # Delete this file from elasticsearch
+    elastic_service = get_elastic_service()
+    elastic_service.delete_documents_with_index(
+        file_ids=[target.file_id],
+        index_id=FILE_INDEX_ID
+    )
+
+
+@event.listens_for(Files, 'after_update')
+def files_after_update(mapper, connection, target):
+    "listen for the 'after_update' event"
+
+    # Update the elasticsearch document for this file
+    elastic_service = get_elastic_service()
+    elastic_service.delete_documents_with_index(
+        file_ids=[target.file_id],
+        index_id=FILE_INDEX_ID
+    )
+    elastic_service.index_files([target.id])
 
 
 class LMDBsDates(RDBMSBase):
