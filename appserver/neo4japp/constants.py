@@ -1,3 +1,4 @@
+import os
 from datetime import timezone
 
 TIMEZONE = timezone.utc
@@ -240,5 +241,5 @@ ANNOTATION_STYLES_DICT = {
 }
 
 # Start shared Elastic constants
-FILE_INDEX_ID = 'file'
+FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 2147483647

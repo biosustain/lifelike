@@ -37,4 +37,5 @@ export interface UploadPayload {
   // if type === Url
   url?: string;
   annotationMethod: string;
+  organism?: string;
 }

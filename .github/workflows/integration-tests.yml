@@ -8,27 +8,53 @@ on:
       - demo
 
 jobs:
+
     appserver-integration-checks:
 
         name: Pytest, Linting, Migration Integrity
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v2
+            - name: Checkout
+              uses: actions/checkout@v2
 
-            - name: Create Docker Image
+            - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+              with:
+                version: '286.0.0'
+                service_account_key: ${{ secrets.GCE_SA_KEY }}
+                project_id: ${{ secrets.GCE_PROJECT }}
+
+            - run: |-
+                gcloud --quiet auth configure-docker
+
+            - name: Build appserver image
+              uses: whoan/docker-build-with-cache-action@v5
+              with:
+                username: _json_key
+                password: ${{ secrets.GCE_SA_KEY }}
+                registry: gcr.io
+                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
+                image_tag: ${{ github.sha }}
+                context: ./appserver
+                dockerfile: ./Dockerfile
+
+            - name: Create environmental variable to pass in GitHub hash for Docker Compose
               run: |-
-                docker-compose -f docker-compose.ci-test.yml up --build -d
+                echo "GITHUB_HASH=${{ github.sha }}" >> .env
+
+            - name: Start docker
+              run: |-
+                docker-compose -f docker-compose.ci-test.yml up -d
                 ./appserver/bin/wait-for-flask
 
             - name: Appserver Linting Checks
               run: |-
-                docker-compose exec -T appserver mypy .
-                docker-compose exec -T appserver pycodestyle .
+                docker-compose -f docker-compose.ci-test.yml exec -T appserver mypy .
+                docker-compose -f docker-compose.ci-test.yml exec -T appserver pycodestyle .
 
             - name: Pytests
               run: |-
-                docker-compose exec -T appserver pytest tests
+                docker-compose -f docker-compose.ci-test.yml exec -T -u root appserver pytest tests
 
             - name: Migration Integrity Check
               run: |-
