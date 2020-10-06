@@ -1,5 +1,6 @@
 import re
 
+from bisect import bisect_left
 from math import inf
 from typing import cast, Dict, List, Optional, Set, Tuple, Union
 from uuid import uuid4
@@ -863,6 +864,8 @@ class AnnotationsService:
     def _get_fixed_false_positive_unified_annotations(
         self,
         annotations_list: List[Annotation],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
         """Removes any false positive annotations.
 
@@ -872,12 +875,12 @@ class AnnotationsService:
 
         False positives are multi length word that
         got matched to a shorter length word due to
-        normalizing in lmdb.
-
-        Gene related false positives are bacterial
-        genes in the form of cysB, algA, deaD, etc.
+        normalizing in lmdb. Or words that get matched
+        but the casing were not taken into account, e.g
+        gene marA is correct, but mara is not.
         """
         fixed_annotations: List[Annotation] = []
+        word_index_list = list(word_index_dict)
 
         for annotation in annotations_list:
             text_in_document = annotation.text_in_document.split(' ')
@@ -898,7 +901,25 @@ class AnnotationsService:
                 if text_in_document == annotation.keyword:
                     fixed_annotations.append(annotation)
             else:
-                fixed_annotations.append(annotation)
+                # check abbreviations
+                # all uppercase and within parenthesis
+                if all([c.isupper() for c in annotation.text_in_document]) and \
+                    (len(annotation.text_in_document) == 3 or len(annotation.text_in_document) == 4):  # noqa
+                    begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
+                    end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
+                    if begin == '(' and end == ')':
+                        i = bisect_left(word_index_list, annotation.lo_location_offset)
+                        abbrev = ''
+
+                        for idx in word_index_list[i-len(annotation.text_in_document):i]:
+                            abbrev += word_index_dict[idx][0]
+
+                        if abbrev.lower() != annotation.text_in_document.lower():
+                            fixed_annotations.append(annotation)
+                    else:
+                        fixed_annotations.append(annotation)
+                else:
+                    fixed_annotations.append(annotation)
 
         return fixed_annotations
 
@@ -967,7 +988,11 @@ class AnnotationsService:
             types_to_annotate=entity_type_and_id_pairs,
             organisms_from_custom_annotations=custom_annotations,
         )
-        return self._clean_annotations(annotations=annotations)
+        return self._clean_annotations(
+            annotations=annotations,
+            char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
+            word_index_dict=tokens.word_index_dict
+        )
 
     def create_nlp_annotations(
         self,
@@ -976,7 +1001,8 @@ class AnnotationsService:
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
         custom_annotations: List[dict],
-        entity_type_and_id_pairs: List[Tuple[str, str]]
+        entity_type_and_id_pairs: List[Tuple[str, str]],
+        word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
         """Create annotations based on NLP."""
         nlp_annotations = self._create_annotations(
@@ -1012,14 +1038,22 @@ class AnnotationsService:
             f'NLP TOKENS NOT MATCHED TO LMDB {not_matched}',
             extra=EventLog(event_type='annotations').to_dict()
         )
-        return self._clean_annotations(annotations=unified_annotations)
+        return self._clean_annotations(
+            annotations=unified_annotations,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            word_index_dict=word_index_dict
+        )
 
     def _clean_annotations(
         self,
         annotations: List[Annotation],
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=annotations,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            word_index_dict=word_index_dict
         )
         fixed_unified_annotations = self.fix_conflicting_annotations(
             unified_annotations=fixed_unified_annotations,
