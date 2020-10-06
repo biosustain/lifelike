@@ -7,9 +7,9 @@ from neo4japp.database import (
     db,
     get_annotations_service,
     get_annotations_pdf_parser,
-    get_lmdb_dao,
 )
 from neo4japp.exceptions import (
+    AnnotationError,
     RecordNotFoundException,
     DuplicateRecord,
 )
@@ -74,8 +74,7 @@ class ManualAnnotationsService:
             parsed_pdf_chars = pdf_parser.parse_pdf(pdf=fp)
             fp.close()
             tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-            lmdb_dao = get_lmdb_dao()
-            annotator = get_annotations_service(lmdb_dao=lmdb_dao)
+            annotator = get_annotations_service()
             keyword_type = custom_annotation['meta']['type']
             matches = annotator.get_matching_manual_annotations(
                 keyword=term, keyword_type=keyword_type, tokens=tokens
@@ -93,6 +92,10 @@ class ManualAnnotationsService:
             inclusions = [
                 add_annotation(match) for match in matches if not annotation_exists(match)
             ]
+
+            if not inclusions:
+                raise AnnotationError(f'There was a problem annotating "{term}", please select '
+                                      'option to annotate only one occurrence of this term.')
         else:
             if not annotation_exists(annotation_to_add):
                 inclusions = [annotation_to_add]

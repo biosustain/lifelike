@@ -40,6 +40,12 @@ class Development(Base):
     DOMAIN = 'http://localhost'
 
 
+class QA(Base):
+    """ QA configuration """
+    SITE_NAME = 'Lifelike Knowledge Search (QA)'
+    DOMAIN = 'https://qa.lifelike.bio'
+
+
 class Staging(Base):
     """Staging configurations"""
     SITE_NAME = 'Lifelike Knowledge Search (Staging)'
