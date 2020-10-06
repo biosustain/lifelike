@@ -241,7 +241,8 @@ def create_annotations(
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             custom_annotations=custom_annotations,
-            entity_type_and_id_pairs=annotator.get_entities_to_annotate(species=False)
+            entity_type_and_id_pairs=annotator.get_entities_to_annotate(species=False),
+            word_index_dict=tokens.word_index_dict
         )
     else:
         raise AnnotationError(f'Your file {filename} could not be annotated.')
