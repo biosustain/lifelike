@@ -9,6 +9,9 @@
                         [stick-to-page]="stickToPage"
                         [render-text]="renderText" [external-link-target]="'blank'" [autoresize]="autoresize"
                         (error)="onError($event)"
-                        (on-progress)="onProgress($event)" (page-rendered)="pageRendered($event)"></app-pdf-viewer-lib>
+                        (on-progress)="onProgress($event)" (page-rendered)="pageRendered($event)"
+                        (matches-count-updated)="matchesCountUpdated($event)"
+                        (find-control-state-updated)="findControlStateUpdated($event)">
+    </app-pdf-viewer-lib>
   </div>
 </div>

@@ -149,6 +149,13 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
 
   pdfViewerId = uniqueId();
 
+  matchesCount = {
+    current: 0,
+    total: 0
+  };
+
+  searchCommand: string;
+
   @ViewChild(PdfViewerComponent, {static: false})
   private pdfComponent: PdfViewerComponent;
 
@@ -900,6 +907,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   searchQueryChanged(newQuery: { keyword: string, findPrevious: boolean }) {
     if (newQuery.keyword !== this.pdfQuery) {
       this.pdfQuery = newQuery.keyword;
+      this.searchCommand = "find";
       this.pdfComponent.pdfFindController.executeCommand('find', {
         query: this.pdfQuery,
         highlightAll: true,
@@ -907,6 +915,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         findPrevious: newQuery.findPrevious,
       });
     } else {
+      this.searchCommand = "findagain";
       this.pdfComponent.pdfFindController.executeCommand('findagain', {
         query: this.pdfQuery,
         highlightAll: true,
@@ -952,6 +961,25 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
     this.renderFilterSettings();
+  }
+
+  matchesCountUpdated(matchesCount) {
+    if (this.searchCommand !== 'find') {
+      return;
+    }
+    this.matchesCount = matchesCount;
+  }
+
+  findControlStateUpdated(event) {
+    if (this.searchCommand !== 'findagain' || typeof event.previous === 'undefined') {
+      return;
+    }
+    this.matchesCount = event.matchesCount;
+  }
+
+  nullifyMatchesCount() {
+    this.matchesCount.total = 0;
+    this.matchesCount.current = 0;
   }
 
 }
