@@ -19,12 +19,15 @@
             {{ fileName }}
           </h1>
           <div class="btn-group" role="group">
-            <div ngbDropdown class="d-inline-block" #dropdown placement="bottom-right" container="body">
-              <button class="btn btn-secondary" id="filters-dropdown" ngbDropdownToggle>
+            <div ngbDropdown class="d-inline-block" #dropdown placement="bottom-right bottom-left" container="body">
+              <button class="btn btn-secondary" [id]="id + '-filters-dropdown'" ngbDropdownToggle>
                 <i class="fa fa-fw fa-filter"></i>
               </button>
-              <div ngbDropdownMenu aria-labelledby="filters-dropdown" [style.width]="'220px'" [style.height]="'660px'"
-                  class="dropdown-body dropdown-menu dropdown-menu-right overflow-auto">
+              <div ngbDropdownMenu
+                   [attr.aria-labelledby]="id + '-filters-dropdown'"
+                   class="dropdown-body dropdown-menu dropdown-menu-right overflow-auto"
+                   [style.width]="'max-content'"
+                   [style.height]="'660px'">
                 <div class="mb-2">
                   <button *ngIf="!wordVisibilityChanged" class="btn btn-outline-secondary btn-block"
                           (click)="setAllWordsVisibility(false)">
@@ -37,7 +40,10 @@
                 </div>
 
                 <div *ngFor="let data of annotationData">
-                  <div class="custom-control custom-checkbox">
+                  <div class="custom-control custom-checkbox"
+                       placement="right bottom top"
+                       container="body"
+                       [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">
                     <input class="custom-control-input" type="checkbox" [id]="id + 'filter-' + data.text"
                           value="1"
                           [checked]="isWordVisible(data.text)"
@@ -45,6 +51,7 @@
                     <label class="custom-control-label" [for]="id + 'filter-' + data.text">
                       <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}} <span>({{data.value}})</span>
                     </label>
+                    <i *ngIf="!data.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
                   </div>
                 </div>
 

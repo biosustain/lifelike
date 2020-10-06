@@ -75,10 +75,10 @@
 
           <div class="btn-group" role="group">
             <div ngbDropdown class="d-inline-block" #dropdown placement="bottom-right" container="body">
-              <button class="btn btn-secondary" id="filters-dropdown" ngbDropdownToggle>
+              <button class="btn btn-secondary" [id]="id + '-filters-dropdown'" ngbDropdownToggle>
                 <i class="fa fa-fw fa-filter"></i>
               </button>
-              <div ngbDropdownMenu aria-labelledby="filters-dropdown" [style.width]="'220px'"
+              <div ngbDropdownMenu [attr.aria-labelledby]="id + '-filters-dropdown'" [style.width]="'220px'"
                     class="dropdown-body dropdown-menu dropdown-menu-right">
                 <div class="mb-2">
                   <button *ngIf="!entityTypeVisibilityChanged" class="btn btn-outline-secondary btn-block"
