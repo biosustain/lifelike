@@ -59,6 +59,9 @@
                 </button>
               </div>
             </div>
+            <div class="ml-2 align-self-center" style="min-width: 70px">
+                {{pdfViewerLib?.matchesCount.current || 0}}/{{pdfViewerLib?.matchesCount.total || 0}}
+            </div>
             <div class="btn-group ml-2">
               <button type="button" class="btn btn-secondary"
                       [disabled]="!ready || searchQuery?.length === 0" (click)="findPrevious()" ngbTooltip="Previous result"
