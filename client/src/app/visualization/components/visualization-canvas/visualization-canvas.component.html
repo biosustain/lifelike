@@ -6,19 +6,8 @@
       <app-visualization-settings
         [legendLabels]="legendLabels"
         (settingsFormChanges)="updateSettings($event)"
+        (fitClickEvent)="fitToScreen($event)"
       ></app-visualization-settings>
-
-      <button
-        id="canvas-button"
-        type="button"
-        class="btn btn-secondary"
-        container="body"
-        ngbTooltip="Fit all nodes on screen"
-        placement="top"
-        (click)="fitToScreen()"
-      >
-        Fit to Screen
-      </button>
 
       <div [id]="networkContainerId" class="h-100"></div>
 

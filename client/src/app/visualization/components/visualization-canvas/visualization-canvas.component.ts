@@ -405,7 +405,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         }
     }
 
-    fitToScreen() {
+    fitToScreen(event: EventEmitter<any>) {
         this.networkGraph.fit();
     }
 
