@@ -1,19 +1,6 @@
 - include_vars: gcp_bucket_credentials.yml
-- include_vars: "os_{{ ansible_facts['distribution'] }}.yml"
-
-- name: Install Python 3 Pip
-  delegate_to: 127.0.0.1
-  connection: local
-  become: yes
-  package:
-    name: python_pip
-    state: present
-  when: (ansible_facts['distribution'] == "Alpine")
 
 - name: Install Python dependencies
-  delegate_to: 127.0.0.1
-  connection: local
-  become: yes
   pip:
     name:
       - boto
@@ -21,8 +8,7 @@
       - google-cloud-storage
       - psycopg2-binary
     umask: "0022"
-  become: True
-  when: (ansible_facts['distribution'] == "Alpine")
+    executable: /usr/bin/pip3
 
 - name: Create LMDB Database Directories
   file:
@@ -94,5 +80,7 @@
     POSTGRES_USER: "{{ POSTGRES_USER }}"
     POSTGRES_DB: "{{ POSTGRES_DB }}"
   register: outcome
+  args:
+    executable: /usr/bin/python3
 
 - debug: msg="{{ outcome.stdout }}"
