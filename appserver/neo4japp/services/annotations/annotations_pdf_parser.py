@@ -584,4 +584,5 @@ class AnnotationsPDFParser:
             char_coord_objs_in_pdf=parsed_chars.char_coord_objs_in_pdf,
             cropbox_in_pdf=parsed_chars.cropbox_in_pdf,
             min_idx_in_page=parsed_chars.min_idx_in_page,
+            word_index_dict={list(d)[0]: w for (w, d) in words_with_char_idx if not w.isnumeric()}
         )
