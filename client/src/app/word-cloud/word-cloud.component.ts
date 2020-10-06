@@ -43,6 +43,8 @@ export class WordCloudComponent {
 
   legend: Map<string, string>;
 
+  NOT_SHOWN_TOOLTIP = 'Could not fit this term in the cloud. Try expanding the window or filtering other terms.';
+
   constructor(
       readonly route: ActivatedRoute,
       private pdf: PdfFilesService,
@@ -93,6 +95,7 @@ export class WordCloudComponent {
           color: this.legend.get(cols[1].toLowerCase()), // Set lowercase to match the legend
           text: cols[2],
           value: parseInt(cols[3], 10),
+          shown: true,
         } as Word;
         this.wordVisibilityMap.set(annotation.text, true);
         this.annotationData.push(annotation);
@@ -204,6 +207,45 @@ export class WordCloudComponent {
 
     const maximumCount = Math.max(...data.map(annotation => annotation.value as number));
 
+    // This function takes the output of 'cloud' below and draws the words
+    const draw = (words: Word[]) => {
+      const tempWordMap = new Map<string, Word>();
+      words.forEach((word) => {
+        tempWordMap.set(word.text, word);
+      });
+
+      /* tslint:disable:prefer-for-of*/
+      for (const word of this.annotationData) {
+        // If the word was returned by the algorithm then it is not filtered and it is drawable
+        if (tempWordMap.has(word.text)) {
+          word.shown = true;
+        } else {
+          // If it wasn't returned BUT it's been filtered, we don't need to show a warning
+          if (!this.wordVisibilityMap.get(word.text)) {
+            word.shown = true;
+          } else {
+            // If it wasn't returned but it HASN'T been filtered, we need to show a warning
+            word.shown = false;
+          }
+        }
+
+      }
+
+      svg
+        .append('g')
+          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+          .selectAll('text')
+            .data(words)
+          .enter().append('text')
+            .style('font-size', (d) =>  d.size + 'px')
+            .style('fill', (d) => d.color)
+            .attr('text-anchor', 'middle')
+            .attr('transform', (d) => {
+              return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
+            })
+            .text((d) => d.text);
+    };
+
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
     const layout = cloud()
       .size([width, height])
@@ -215,22 +257,5 @@ export class WordCloudComponent {
       .rotate(() => (~~(Math.random() * 8) - 3) * 15)
       .on('end', draw);
     layout.start();
-
-    // This function takes the output of 'layout' above and draws the words
-    function draw(words) {
-      svg
-        .append('g')
-          .attr('transform', 'translate(' + layout.size()[0] / 2 + ',' + layout.size()[1] / 2 + ')')
-          .selectAll('text')
-            .data(words)
-          .enter().append('text')
-            .style('font-size', (d) =>  d.size + 'px')
-            .style('fill', (d) => d.color)
-            .attr('text-anchor', 'middle')
-            .attr('transform', (d) => {
-              return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
-            })
-            .text((d) => d.text);
-    }
   }
 }
