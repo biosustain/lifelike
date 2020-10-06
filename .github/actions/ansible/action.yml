@@ -9,7 +9,7 @@ inputs:
         required: true
     inventory_file_path:
         description: 'Inventory path relative to the workspace directory.'
-        required: false
+        required: true
     ssh_key:
         description: 'SSH key for remote Ansible connections.'
         required: false
