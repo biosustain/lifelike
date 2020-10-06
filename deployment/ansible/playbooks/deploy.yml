@@ -47,6 +47,7 @@
         content: |
           GITHUB_COMMIT_TIMESTAMP={{ git_timestamp }}
           ELASTICSEARCH_HOSTS={{ ELASTICSEARCH_HOSTS }}
+          ELASTIC_FILE_INDEX_ID={{ elastic_file_content_index_id }}
           POSTGRES_HOST={{ POSTGRES_HOST }}
           POSTGRES_PORT={{ POSTGRES_PORT }}
           POSTGRES_USER={{ POSTGRES_USER }}
@@ -54,7 +55,6 @@
           POSTGRES_DB={{ POSTGRES_DB }}
           NEO4J_HOST={{ NEO4J_HOST }}
           NEO4J_AUTH={{ NEO4J_AUTH }}
-          ELASTIC_FILE_INDEX_ID={{ elastic_file_content_index_id }}
           FLASK_APP={{ FLASK_APP }}
           FLASK_APP_CONFIG={{ FLASK_APP_CONFIG }}
           FLASK_ENV={{ FLASK_ENV }}
