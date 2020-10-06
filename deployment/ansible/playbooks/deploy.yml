@@ -1,4 +1,4 @@
-- hosts: "{{ webserver | default('prod') }}"
+- hosts: "{{ webserver }}"
   become: true
   vars:
     docker_img_hash: "{{ git_hash | default('latest') }}"
