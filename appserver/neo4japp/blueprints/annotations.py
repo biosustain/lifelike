@@ -1,4 +1,3 @@
-import io
 import os
 
 from datetime import datetime
@@ -6,7 +5,6 @@ from enum import Enum
 from typing import Dict, List
 
 from flask import Blueprint, current_app, g, make_response
-from werkzeug.datastructures import FileStorage
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import (
@@ -17,25 +15,18 @@ from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
     get_annotation_neo4j,
-    get_annotations_service,
-    get_annotations_pdf_parser,
-    get_bioc_document_service,
     get_excel_export_service,
-    get_lmdb_dao,
     get_manual_annotations_service,
-    get_kg_service,
 )
 from neo4japp.data_transfer_objects import AnnotationRequest
 from neo4japp.exceptions import (
     AnnotationError,
-    DatabaseError,
     RecordNotFoundException
 )
 from neo4japp.models import (
     AccessActionType,
     AppUser,
     Files,
-    FileContent,
     GlobalList,
     Projects,
 )
@@ -45,6 +36,7 @@ from neo4japp.services.annotations.constants import (
     EntityType,
     ManualAnnotationType,
 )
+from neo4japp.services.annotations.service_helpers import create_annotations
 from neo4japp.util import jsonify_with_class, SuccessResponse
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
@@ -52,44 +44,15 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 def annotate(
     doc: Files,
+    specified_organism: str = '',
     annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
 ):
-    lmdb_dao = get_lmdb_dao()
-    pdf_parser = get_annotations_pdf_parser()
-    annotator = get_annotations_service(lmdb_dao=lmdb_dao)
-    bioc_service = get_bioc_document_service()
-
-    fp = FileStorage(io.BytesIO(doc.raw_file), doc.filename)
-
-    try:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=fp)
-        fp.close()
-    except AnnotationError:
-        raise AnnotationError(
-            'Your file could not be imported. Please check if it is a valid PDF.'
-            'If it is a valid PDF, please try uploading again.')
-
-    tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-    pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
-
-    if annotation_method == AnnotationMethod.RULES.value:
-        annotations = annotator.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=doc.custom_annotations,
-        )
-    elif annotation_method == AnnotationMethod.NLP.value:
-        # NLP
-        annotations = annotator.create_nlp_annotations(
-            page_index=parsed_pdf_chars.min_idx_in_page,
-            text=pdf_text,
-            tokens=tokens,
-            custom_annotations=doc.custom_annotations,
-        )
-    else:
-        raise AnnotationError(f'Your file {doc.filename} could not be annotated.')
-    bioc = bioc_service.read(text=pdf_text, file_uri=doc.filename)
-    annotations_json = bioc_service.generate_bioc_json(
-        annotations=annotations, bioc=bioc)
+    annotations_json = create_annotations(
+        annotation_method=annotation_method,
+        specified_organism=specified_organism,
+        document=doc,
+        filename=doc.filename
+    )
 
     current_app.logger.debug(
         f'File successfully annotated: {doc.file_id}, {doc.filename}')
@@ -124,6 +87,7 @@ def annotate_file(req: AnnotationRequest, project_name: str, file_id: str):
         annotate(
             doc=doc,
             annotation_method=req.annotation_method,
+            specified_organism=req.organism
         )
     )
 

@@ -6,7 +6,12 @@ from os import path, remove, walk
 
 from neo4japp.models import FileContent, GlobalList
 
-from neo4japp.services.annotations import AnnotationsService, AnnotationsNeo4jService, LMDBDao
+from neo4japp.services.annotations import (
+    AnnotationsService,
+    AnnotationsNeo4jService,
+    EntityRecognitionService,
+    LMDBDao,
+)
 from neo4japp.services.annotations.constants import (
     DatabaseType,
     EntityType,
@@ -314,6 +319,63 @@ def default_lmdb_setup(app, request):
         (PHENOTYPES_MESH_LMDB, 'phenotypes', [whey_protein]),
         (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein, wasabi, ns2a, NS2A]),
         (SPECIES_NCBI_LMDB, 'species', [human, moniliophthora_roreri, rat]),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+
+@pytest.fixture(scope='function')
+def bola_human_monkey_gene(app, request):
+    # Create gene data
+    bola3 = lmdb_gene_factory(
+        gene_id='388962',
+        id_type=DatabaseType.NCBI.value,
+        name='BOLA3',
+        synonym='BOLA3',
+        category=OrganismCategory.EUKARYOTA.value,
+    )
+
+    bola3_monkey = lmdb_gene_factory(
+        gene_id='101099627',
+        id_type=DatabaseType.NCBI.value,
+        name='BOLA3',
+        synonym='BOLA3',
+        category=OrganismCategory.EUKARYOTA.value,
+    )
+
+    # Create species data
+    human = lmdb_species_factory(
+        tax_id='9606',
+        category=OrganismCategory.EUKARYOTA.value,
+        id_type=DatabaseType.NCBI.value,
+        name='Homo sapiens',
+        synonym='Homo sapiens',
+    )
+
+    monkey = lmdb_species_factory(
+        tax_id='37293',
+        category=OrganismCategory.EUKARYOTA.value,
+        id_type=DatabaseType.NCBI.value,
+        name='Aotus nancymai',
+        synonym='Aotus nancymai',
+    )
+
+    entities = [
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (GENES_NCBI_LMDB, 'genes', [bola3, bola3_monkey]),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [human, monkey]),
     ]
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
@@ -676,7 +738,7 @@ def mock_global_compound_exclusion(monkeypatch):
         return {'guanosine', 'hydrogen'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_compound_annotations_to_exclude',
         get_exclusions,
     )
@@ -688,7 +750,7 @@ def mock_global_chemical_exclusion(monkeypatch):
         return {'hypofluorite', 'hydrogen', 'adenosine'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_chemical_annotations_to_exclude',
         get_exclusions,
     )
@@ -700,7 +762,7 @@ def mock_global_disease_exclusion(monkeypatch):
         return {'cold sore'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_disease_annotations_to_exclude',
         get_exclusions,
     )
@@ -712,7 +774,7 @@ def mock_global_gene_exclusion(monkeypatch):
         return {'BOLA3', 'rpoS'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_gene_annotations_to_exclude',
         get_exclusions,
     )
@@ -721,10 +783,10 @@ def mock_global_gene_exclusion(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_global_phenotype_exclusion(monkeypatch):
     def get_exclusions(*args, **kwargs):
-        return {'Whey Proteins'}
+        return {'whey proteins'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_phenotype_annotations_to_exclude',
         get_exclusions,
     )
@@ -736,7 +798,7 @@ def mock_global_protein_exclusion(monkeypatch):
         return {'Wasabi receptor toxin'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_protein_annotations_to_exclude',
         get_exclusions,
     )
@@ -748,7 +810,7 @@ def mock_global_species_exclusion(monkeypatch):
         return {'human', 'dog'}
 
     monkeypatch.setattr(
-        AnnotationsService,
+        EntityRecognitionService,
         '_get_species_annotations_to_exclude',
         get_exclusions,
     )
@@ -763,6 +825,22 @@ def mock_get_gene_ace2_for_global_gene_inclusion(monkeypatch):
         AnnotationsNeo4jService,
         'get_genes_from_gene_ids',
         get_exclusions,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_get_gene_specified_strain(monkeypatch):
+    result = [{'BOLA3': {'9606': '388962'}}, {'BOLA3': {'37293': '101099627'}}]
+
+    def get_match_result(*args, **kwargs):
+        # simulate service being called twice
+        # TODO: not working as expected...
+        return result.pop()
+
+    monkeypatch.setattr(
+        AnnotationsNeo4jService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
     )
 
 
@@ -959,6 +1037,16 @@ def get_annotation_n4j(graph, session):
 
 
 @pytest.fixture(scope='function')
+def entity_inclusion_setup(get_annotation_n4j, get_lmdb):
+    entity_service = EntityRecognitionService(
+        annotation_neo4j=get_annotation_n4j,
+        lmdb_session=get_lmdb
+    )
+    entity_service.set_entity_inclusions(custom_annotations=[])
+    return entity_service
+
+
+@pytest.fixture(scope='function')
 def get_lmdb():
     for db_name, entity in [
         (CHEMICALS_CHEBI_LMDB, 'chemicals'),
@@ -993,7 +1081,7 @@ def get_lmdb():
 @pytest.fixture(scope='function')
 def get_annotations_service(
     get_annotation_n4j,
-    get_lmdb,
+    entity_inclusion_setup,
     request
 ):
     def teardown():
@@ -1005,6 +1093,5 @@ def get_annotations_service(
     request.addfinalizer(teardown)
 
     return AnnotationsService(
-        lmdb_session=get_lmdb,
         annotation_neo4j=get_annotation_n4j,
     )
