@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
 
+from sqlalchemy import event
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.query import Query
 from sqlalchemy.types import TIMESTAMP
 
-from neo4japp.database import db
-from neo4japp.models.common import RDBMSBase
+from neo4japp.constants import FILE_INDEX_ID
+from neo4japp.database import db, get_elastic_service
+from neo4japp.models.common import RDBMSBase, TimestampMixin
 
 
 class FileContent(RDBMSBase):
@@ -16,7 +18,7 @@ class FileContent(RDBMSBase):
     creation_date = db.Column(db.DateTime, nullable=False, default=db.func.now())
 
 
-class Files(RDBMSBase):  # type: ignore
+class Files(RDBMSBase, TimestampMixin):  # type: ignore
     __tablename__ = 'files'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     file_id = db.Column(db.String(36), unique=True, nullable=False)
@@ -32,8 +34,6 @@ class Files(RDBMSBase):  # type: ignore
                         index=True,
                         nullable=False)
     user = db.relationship('AppUser', foreign_keys=user_id)
-    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
-    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
     annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     project = db.Column(db.Integer(), db.ForeignKey('projects.id'), index=True, nullable=False)
@@ -46,13 +46,48 @@ class Files(RDBMSBase):  # type: ignore
     excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
 
 
+# Files table ORM event listeners
+@event.listens_for(Files, 'after_insert')
+def files_after_insert(mapper, connection, target):
+    "listen for the 'after_insert' event"
+
+    # Add this file as an elasticsearch document
+    elastic_service = get_elastic_service()
+    elastic_service.index_files([target.id])
+
+
+@event.listens_for(Files, 'after_delete')
+def files_after_delete(mapper, connection, target):
+    "listen for the 'after_delete' event"
+
+    # Delete this file from elasticsearch
+    elastic_service = get_elastic_service()
+    elastic_service.delete_documents_with_index(
+        file_ids=[target.file_id],
+        index_id=FILE_INDEX_ID
+    )
+
+
+@event.listens_for(Files, 'after_update')
+def files_after_update(mapper, connection, target):
+    "listen for the 'after_update' event"
+
+    # Update the elasticsearch document for this file
+    elastic_service = get_elastic_service()
+    elastic_service.delete_documents_with_index(
+        file_ids=[target.file_id],
+        index_id=FILE_INDEX_ID
+    )
+    elastic_service.index_files([target.id])
+
+
 class LMDBsDates(RDBMSBase):
     __tablename__ = 'lmdbs_dates'
     name = db.Column(db.String(256), primary_key=True)
     date = db.Column(TIMESTAMP(timezone=True), nullable=False)
 
 
-class Directory(RDBMSBase):
+class Directory(RDBMSBase, TimestampMixin):
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     name = db.Column(db.String(200), nullable=False)
     directory_parent_id = db.Column(
@@ -71,8 +106,6 @@ class Directory(RDBMSBase):
     project = db.relationship('Projects', foreign_keys=projects_id)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), index=True, nullable=True)
     user = db.relationship('AppUser', foreign_keys=user_id)
-    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
-    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
 
     @classmethod
     def query_child_directories(cls, dir_id: int) -> Query:
@@ -100,14 +133,12 @@ class Directory(RDBMSBase):
 # TODO: Adding the _bare minimum_ columns to this table for now. I imagine that eventually
 # we will want to manage permissions on worksheets, just as we do for pdf files. However,
 # we also don't currently have a home in the UI for managing these worksheets.
-class Worksheet(RDBMSBase):  # type: ignore
+class Worksheet(RDBMSBase, TimestampMixin):  # type: ignore
     __tablename__ = 'worksheets'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     filename = db.Column(db.String(200), nullable=False)
     sheetname = db.Column(db.String(200), nullable=False)
     neo4j_node_id = db.Column(db.Integer, nullable=False)
-    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
-    modified_date = db.Column(TIMESTAMP(timezone=True), nullable=False)
     content_id = db.Column(db.Integer,
                            db.ForeignKey('files_content.id', ondelete='CASCADE'),
                            index=True,

@@ -21,8 +21,8 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_permission, requires_role
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
-from neo4japp.constants import TIMEZONE
-from neo4japp.database import db, get_manual_annotations_service
+from neo4japp.constants import FILE_INDEX_ID, TIMEZONE
+from neo4japp.database import db, get_manual_annotations_service, get_elastic_service
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
     DatabaseError,
@@ -47,7 +47,6 @@ from neo4japp.request_schemas.annotations import (
     AnnotationRemovalSchema,
     AnnotationExclusionSchema,
 )
-from neo4japp.services.indexing import index_pdf
 from neo4japp.utils.network import read_url
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog
@@ -213,17 +212,20 @@ def upload_pdf(request, project_name: str):
         )
 
         db.session.add(file)
-        db.session.commit()
 
         current_app.logger.info(
             f'User uploaded file: <{filename}>',
             extra=UserEventLog(
                 username=g.current_user.username, event_type='file upload').to_dict())
-        index_pdf.populate_single_index(file.id)
-    except DuplicateRecord:
-        raise
-    except Exception:
+    except (SQLAlchemyError, Exception):
+        # if index_pdf fail then do not save file
+        # otherwise creates a false representation for the user
+        # since they will see the file uploaded, but
+        # cannot search for the file
+        db.session.rollback()
         raise FileUploadError('Your file could not be saved. Please try uploading again.')
+    else:
+        db.session.commit()
 
     yield SuccessResponse(
         result={
@@ -280,6 +282,7 @@ def list_files(project_name: str):
         'description': row.description,
         'username': row.username,
         'creation_date': row.creation_date,
+        'modified_date': row.modified_date,
         'doi': row.doi,
         'upload_url': row.upload_url
     } for row in db.session.query(
@@ -291,6 +294,7 @@ def list_files(project_name: str):
         Files.user_id,
         AppUser.username,
         Files.creation_date,
+        Files.modified_date,
         Files.doi,
         Files.upload_url)
         .join(AppUser, Files.user_id == AppUser.id)
@@ -322,6 +326,7 @@ def get_file_info(id: str, project_name: str):
                 Files.user_id,
                 AppUser.username,
                 Files.creation_date,
+                Files.modified_date,
                 Files.doi,
                 Files.upload_url
             ).join(
@@ -341,6 +346,7 @@ def get_file_info(id: str, project_name: str):
         'description': row.description,
         'username': row.username,
         'creation_date': row.creation_date,
+        'modified_date': row.modified_date,
         'doi': row.doi,
         'upload_url': row.upload_url
     })
@@ -543,13 +549,21 @@ def delete_files(project_name: str):
         raise DatabaseError('Failed to delete file(s).')
     else:
         db.session.commit()
-        index_pdf.delete_indices(file_ids=deleted_file_ids)
+
         for deleted in deleted_file_names:
             current_app.logger.info(
                 f'User deleted file: <{deleted}>',
                 extra=UserEventLog(
                     username=g.current_user.username, event_type='file delete').to_dict())
             outcome[deleted] = DeletionOutcome.DELETED.value
+
+        # Delete these files from elasticsearch. We have to do this manually here because of the
+        # bulk deletion above.
+        elastic_service = get_elastic_service()
+        elastic_service.delete_documents_with_index(
+            file_ids=deleted_file_ids,
+            index_id=FILE_INDEX_ID
+        )
 
     yield jsonify(outcome)
 

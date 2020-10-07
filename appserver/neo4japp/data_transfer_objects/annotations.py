@@ -11,6 +11,7 @@ from neo4japp.util import CamelDictMixin
 class AnnotationRequest(CamelDictMixin):
     annotation_method: str = attr.ib()
     file_ids: List[str] = attr.ib(default=attr.Factory(list))
+    organism: str = attr.ib(default='')
 
 
 @attr.s(frozen=True)
@@ -36,6 +37,7 @@ class PDFTokenPositionsList(CamelDictMixin):
     char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
     cropbox_in_pdf: Tuple[int, int] = attr.ib()
     min_idx_in_page: Dict[int, int] = attr.ib()
+    word_index_dict: Dict[int, str] = attr.ib(default=attr.Factory(list))
 
 
 # IMPORTANT NOTE/TODO: JIRA LL-465
@@ -112,3 +114,23 @@ class GeneAnnotation(Annotation):
 class LMDBMatch(CamelDictMixin):
     entities: List[dict] = attr.ib()
     tokens: List[PDFTokenPositions] = attr.ib()
+
+
+@attr.s(frozen=True)
+class EntityResults(CamelDictMixin):
+    local_species_inclusion: Dict[str, List[dict]] = attr.ib()
+    matched_local_species_inclusion: Dict[str, List[PDFTokenPositions]] = attr.ib()
+    matched_genes: Dict[str, LMDBMatch] = attr.ib()
+    matched_chemicals: Dict[str, LMDBMatch] = attr.ib()
+    matched_compounds: Dict[str, LMDBMatch] = attr.ib()
+    matched_proteins: Dict[str, LMDBMatch] = attr.ib()
+    matched_species: Dict[str, LMDBMatch] = attr.ib()
+    matched_diseases: Dict[str, LMDBMatch] = attr.ib()
+    matched_phenotypes: Dict[str, LMDBMatch] = attr.ib()
+
+
+@attr.s(frozen=True)
+class SpecifiedOrganismStrain(CamelDictMixin):
+    synonym: str = attr.ib()
+    organism_id: str = attr.ib()
+    category: str = attr.ib()

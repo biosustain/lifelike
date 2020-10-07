@@ -302,8 +302,8 @@ class SearchService(GraphBaseDao):
             CALL db.index.fulltext.queryNodes("synonymIdx", $term)
             YIELD node, score
             MATCH (node)-[]-(t:Taxonomy)
-            RETURN t.id AS tax_id, t.name AS organism_name, node.name AS synonym
-            LIMIT $limit
+            with t, collect(node.name) as synonyms LIMIT $limit
+            RETURN t.id AS tax_id, t.name AS organism_name, synonyms[0] AS synonym
         """
 
         nodes = self.graph.run(
