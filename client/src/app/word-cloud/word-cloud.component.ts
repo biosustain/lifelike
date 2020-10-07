@@ -85,20 +85,33 @@ export class WordCloudComponent {
       this.annotationData = [];
       this.wordVisibilityMap.clear();
 
+      const tempIdTypePairSet = new Map<string, number>();
+
       // remove the headers from tsv response
       annotationList.shift();
       // remove empty line at the end of the tsv response
       annotationList.pop();
       annotationList.forEach(e => {
+        //  entity_id	  type	  text	  count
+        //  col[0]      col[1]  col[2]  col[3]
         const cols = e.split('\t');
-        const annotation = {
-          color: this.legend.get(cols[1].toLowerCase()), // Set lowercase to match the legend
-          text: cols[2],
-          value: parseInt(cols[3], 10),
-          shown: true,
-        } as Word;
-        this.wordVisibilityMap.set(annotation.text, true);
-        this.annotationData.push(annotation);
+        const idTypePair = cols[0] + cols[1];
+
+        if (!tempIdTypePairSet.has(idTypePair)) {
+          const annotation = {
+            color: this.legend.get(cols[1].toLowerCase()), // Set lowercase to match the legend
+            text: cols[2],
+            value: parseInt(cols[3], 10),
+            shown: true,
+          } as Word;
+          this.wordVisibilityMap.set(annotation.text, true);
+          this.annotationData.push(annotation);
+          tempIdTypePairSet.set(idTypePair, this.annotationData.length - 1);
+        } else {
+          this.annotationData[tempIdTypePairSet.get(idTypePair)].value += parseInt(cols[3], 10);
+          // TODO: In the future, we may want to show "synonyms" somewhere, or even allow the user to swap out the most frequent term for a
+          // synonym
+        }
       });
       setTimeout(() => {
         this.drawWordCloud(this.getAnnotationDataDeepCopy(), true);
