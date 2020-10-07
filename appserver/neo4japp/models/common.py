@@ -6,6 +6,7 @@ from neo4japp.util import snake_to_camel, camel_to_snake
 from marshmallow import fields
 from marshmallow_sqlalchemy.convert import ModelConverter as BaseModelConverter
 from sqlalchemy_utils.types import TSVectorType
+from sqlalchemy.types import TIMESTAMP
 
 
 class NEO4JBase():
@@ -160,3 +161,10 @@ class ModelConverter(BaseModelConverter):
         **BaseModelConverter.SQLA_TYPE_MAPPING,
         **{TSVectorType: fields.Field},
     }
+
+
+class TimestampMixin:
+    """ Tables that need a created/updated """
+    creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
+    modified_date = db.Column(
+        TIMESTAMP(timezone=True), default=db.func.now(), nullable=False, onupdate=db.func.now())

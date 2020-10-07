@@ -12,6 +12,7 @@ import { CommonFormDialogComponent } from '../../shared/components/dialog/common
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
+import { OrganismAutocomplete } from '../../interfaces/neo4j.interface';
 import { UploadPayload, UploadType } from '../../interfaces/pdf-files.interface';
 
 import { AuthSelectors } from 'app/auth/store';
@@ -27,6 +28,7 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent imple
 
   readonly uploadType = UploadType;
   readonly userRoles$: Observable<string[]>;
+  organismChoice: string;
 
   // select annotation method
   readonly annotationMethods = ['NLP', 'Rules Based'];
@@ -47,6 +49,7 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent imple
     ]),
     description: new FormControl(''),
     annotationMethod: new FormControl(this.annotationMethods[1], [Validators.required]),
+    organism: new FormControl('')
   }, [
     (form: FormGroup) => {
       if (form.value.type === UploadType.Files) {
@@ -138,5 +141,9 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent imple
     return {
       ...this.form.value,
     };
+  }
+
+  setOrganism(organism: OrganismAutocomplete | null) {
+    this.form.get('organism').setValue(organism ? `${organism.synonym}#${organism.tax_id}` : null);
   }
 }

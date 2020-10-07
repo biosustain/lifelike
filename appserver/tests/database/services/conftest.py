@@ -71,8 +71,8 @@ def fix_project(fix_owner, fix_directory, session) -> Project:
         label='Project1',
         description='a test project',
         author='Jim Melancholy',
-        date_modified=str(date.today()),
-        graph=json.dumps({'project': 'project 1'}),
+        modified_date=str(date.today()),
+        graph={},
         user_id=fix_owner.id,
         dir_id=fix_directory.id,
     )

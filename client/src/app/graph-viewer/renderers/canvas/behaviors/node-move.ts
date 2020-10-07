@@ -5,6 +5,7 @@ import { CanvasGraphView } from '../canvas-graph-view';
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { GraphEntityUpdate } from '../../../actions/graph';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
+import { isCtrlOrMetaPressed, isShiftPressed } from '../../../../shared/utils';
 
 export class MovableNode extends AbstractCanvasBehavior {
   /**
@@ -27,8 +28,7 @@ export class MovableNode extends AbstractCanvasBehavior {
     const transform = this.graphView.transform;
     const subject: GraphEntity | undefined = d3.event.subject;
 
-    if (subject.type === GraphEntityType.Node
-      && this.graphView.selection.getEntitySet().has(subject.entity)) {
+    if (subject.type === GraphEntityType.Node) {
       const node = subject.entity as UniversalGraphNode;
 
       this.startMousePosition = [transform.invertX(mouseX), transform.invertY(mouseY)];
@@ -48,19 +48,45 @@ export class MovableNode extends AbstractCanvasBehavior {
     if (this.target) {
       const shiftX = transform.invertX(mouseX) - this.startMousePosition[0];
       const shiftY = transform.invertY(mouseY) - this.startMousePosition[1];
+
+      const selectedNodes = new Set<UniversalGraphNode>();
+
       for (const entity of this.graphView.selection.get()) {
         if (entity.type === GraphEntityType.Node) {
           const node = entity.entity as UniversalGraphNode;
-          if (!this.originalNodePositions.has(node)) {
-            this.originalNodePositions.set(node, [node.data.x, node.data.y]);
-          }
-          const [originalX, originalY] = this.originalNodePositions.get(node);
-          node.data.x = originalX + shiftX;
-          node.data.y = originalY + shiftY;
-          this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
-          this.graphView.invalidateNode(node);
-          // TODO: Store this in history as ONE object
+          selectedNodes.add(node);
         }
+      }
+
+      // If the user is moving a node that isn't selected, then we either (a) want to
+      // deselect everything, select just the target node, and then move only the target
+      // node, or (b) if the user is holding down the multiple selection modifier key
+      // (CTRL or CMD), then we add the target node to the selection and move the whole group
+      if (!selectedNodes.has(this.target)) {
+        // Case (a)
+        if (!isCtrlOrMetaPressed(event) && !isShiftPressed(event)) {
+          selectedNodes.clear();
+        }
+
+        selectedNodes.add(this.target);
+
+        // Update the selection
+        this.graphView.selection.replace([...selectedNodes].map(node => ({
+          type: GraphEntityType.Node,
+          entity: node,
+        })));
+      }
+
+      for (const node of selectedNodes) {
+        if (!this.originalNodePositions.has(node)) {
+          this.originalNodePositions.set(node, [node.data.x, node.data.y]);
+        }
+        const [originalX, originalY] = this.originalNodePositions.get(node);
+        node.data.x = originalX + shiftX;
+        node.data.y = originalY + shiftY;
+        this.graphView.nodePositionOverrideMap.set(node, [node.data.x, node.data.y]);
+        this.graphView.invalidateNode(node);
+        // TODO: Store this in history as ONE object
       }
     }
 
@@ -70,11 +96,11 @@ export class MovableNode extends AbstractCanvasBehavior {
   dragEnd(event: MouseEvent): BehaviorResult {
     if (this.target) {
       if (this.target.data.x !== this.originalTarget.data.x ||
-        this.target.data.y !== this.originalTarget.data.y) {
+          this.target.data.y !== this.originalTarget.data.y) {
         const actions: GraphAction[] = [];
 
         for (const [node, [originalX, originalY]] of
-          this.originalNodePositions.entries()) {
+            this.originalNodePositions.entries()) {
           actions.push(new GraphEntityUpdate('Move node', {
             type: GraphEntityType.Node,
             entity: node,

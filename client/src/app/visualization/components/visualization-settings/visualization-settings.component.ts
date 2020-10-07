@@ -16,6 +16,7 @@ export class VisualizationSettingsComponent implements OnInit {
     @Input() legendLabels: string[];
 
     @Output() settingsFormChanges: EventEmitter<SettingsFormValues>;
+    @Output() fitClickEvent: EventEmitter<any> = new EventEmitter();
 
     settingsForm: FormGroup;
     settingsFormValueChangesSub: Subscription;
@@ -96,5 +97,9 @@ export class VisualizationSettingsComponent implements OnInit {
       } else {
         this.maxClusterRowsInputClass = 'form-control w-50';
       }
+    }
+
+    fitToScreen() {
+        this.fitClickEvent.emit();
     }
 }

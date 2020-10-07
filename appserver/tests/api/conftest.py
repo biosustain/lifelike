@@ -19,9 +19,9 @@ from neo4japp.models import (
     DomainURLsMap,
     AnnotationStyle
 )
-from neo4japp.services.indexing import index_pdf
 from neo4japp.services.annotations import AnnotationsNeo4jService, ManualAnnotationsService
 from neo4japp.services.annotations.constants import EntityType
+from neo4japp.services.elastic import ElasticService
 
 
 #################
@@ -34,14 +34,14 @@ def mock_get_combined_annotations_result(monkeypatch):
         return [
             {
                 'meta': {
-                    'type': EntityType.Gene.value,
+                    'type': EntityType.GENE.value,
                     'id': '59272',
                     'allText': 'ace2'
                 }
             },
             {
                 'meta': {
-                    'type': EntityType.Species.value,
+                    'type': EntityType.SPECIES.value,
                     'id': '9606',
                     'allText': 'human'
                 }
@@ -75,14 +75,38 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_delete_elastic_indices(monkeypatch):
-    def delete_indices(*args, **kwargs):
+def mock_index_files(monkeypatch):
+    def index_files(*args, **kwargs):
         return None
 
     monkeypatch.setattr(
-        index_pdf,
-        'delete_indices',
-        delete_indices,
+        ElasticService,
+        'index_files',
+        index_files,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_index_maps(monkeypatch):
+    def index_maps(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(
+        ElasticService,
+        'index_maps',
+        index_maps,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_delete_elastic_documents(monkeypatch):
+    def delete_documents_with_index(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(
+        ElasticService,
+        'delete_documents_with_index',
+        delete_documents_with_index,
     )
 ####################
 # End service mocks

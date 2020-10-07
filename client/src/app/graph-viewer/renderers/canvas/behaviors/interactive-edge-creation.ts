@@ -16,8 +16,6 @@ const HANDLE_BEHAVIOR_KEY = '_interactive-edge-creation/handle';
 const HELPER_BEHAVIOR_KEY = '_interactive-edge-creation/helper';
 
 export class InteractiveEdgeCreation extends AbstractCanvasBehavior {
-  private readonly DISTANCE_MOVE_THRESHOLD = 5;
-  private dragFrom: { x: number, y: number };
   /**
    * Subscription for when the selection changes.
    */
@@ -40,32 +38,6 @@ export class InteractiveEdgeCreation extends AbstractCanvasBehavior {
         }
       },
     );
-  }
-
-  dragStart(event: MouseEvent): BehaviorResult {
-    const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
-    this.dragFrom = {x: mouseX, y: mouseY};
-    return BehaviorResult.Continue;
-  }
-
-  drag(event: MouseEvent): BehaviorResult {
-    const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
-    const subject: GraphEntity | undefined = d3.event.subject;
-
-    const mouseDistanceMoved = Math.sqrt(
-      Math.pow(this.dragFrom.x - mouseX, 2) + Math.pow(this.dragFrom.y - mouseY, 2));
-
-    if (mouseDistanceMoved > this.DISTANCE_MOVE_THRESHOLD
-      && subject != null
-      && subject.type === GraphEntityType.Node
-      && !this.graphView.selection.getEntitySet().has(subject.entity)) {
-      this.graphView.behaviors.delete(HELPER_BEHAVIOR_KEY);
-      this.graphView.behaviors.add(HELPER_BEHAVIOR_KEY,
-        new ActiveEdgeCreationHelper(this.graphView, subject.entity as UniversalGraphNode), 10);
-      return BehaviorResult.Stop;
-    } else {
-      return BehaviorResult.Continue;
-    }
   }
 }
 

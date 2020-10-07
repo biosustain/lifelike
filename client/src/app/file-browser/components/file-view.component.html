@@ -50,23 +50,26 @@
 
           <div class="d-flex mr-2">
             <div class="input-group">
-              <div class="input-group-prepend">
-                <div class="input-group-text bg-white border-right-0">
-                  <i class="fa fa-fw fa-search"></i>
-                </div>
+              <input [disabled]="!ready" (input)="searchQueryChanged()"
+                     (keyup.enter)="findNext()" placeholder="Find"
+                     [(ngModel)]="searchQuery" class="form-control input-border">
+              <div class="input-group-append">
+                <button class="form-control input-border border-left-0" (click)="clearSearchQuery()">
+                  <i [style.visibility]="searchQuery?.length === 0 ? 'hidden': 'visible'" class="fa fa-times"></i>
+                </button>
               </div>
-              <input #queryInp [disabled]="!ready" (input)="searchQueryChanged($event.target.value)"
-                     (keyup.enter)="searchQueryChanged(queryInp.value)" placeholder="Find" value=""
-                     class="form-control py-2 pl-0 input-border border-left-0">
             </div>
-            <div class="btn-group ml-2" *ngIf="queryInp.value && queryInp.value.length > 0">
+            <div class="ml-2 align-self-center" style="min-width: 70px">
+                {{pdfViewerLib?.matchesCount.current || 0}}/{{pdfViewerLib?.matchesCount.total || 0}}
+            </div>
+            <div class="btn-group ml-2">
               <button type="button" class="btn btn-secondary"
-                      [disabled]="!ready" (click)="findPrevious(queryInp.value)" ngbTooltip="Previous result"
+                      [disabled]="!ready || searchQuery?.length === 0" (click)="findPrevious()" ngbTooltip="Previous result"
                       placement="bottom">
                 <i class="fa fa-fw fa-angle-up"></i>
               </button>
               <button type="button" class="btn btn-secondary"
-                      [disabled]="!ready" (click)="findNext(queryInp.value)" ngbTooltip="Next result"
+                      [disabled]="!ready || searchQuery?.length === 0" (click)="findNext()" ngbTooltip="Next result"
                       placement="bottom">
                 <i class="fa fa-fw fa-angle-down"></i>
               </button>
@@ -95,11 +98,11 @@
                   <div *ngFor="let entityTypeEntry of sortedEntityTypeEntries"
                        [style.opacity]="entityTypeEntry.annotations.length ? '' : '0.2'">
                     <div class="custom-control custom-checkbox">
-                      <input class="custom-control-input" type="checkbox" [id]="'filter-' + entityTypeEntry.type.id"
+                      <input class="custom-control-input" type="checkbox" [id]="id + 'filter-' + entityTypeEntry.type.id"
                              value="1"
                              [checked]="isEntityTypeVisible(entityTypeEntry.type)"
                              (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
-                      <label class="custom-control-label" [for]="'filter-' + entityTypeEntry.type.id">
+                      <label class="custom-control-label" [for]="id + 'filter-' + entityTypeEntry.type.id">
                   <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color}">
                 </span> {{entityTypeEntry.type.name}} <span *ngIf="!!entityTypeEntry.annotations.length">
                   ({{entityTypeEntry.annotations.length}})
@@ -124,9 +127,13 @@
               </div>
             </div>
           </div>
-
+          <button type="button" class="btn btn-secondary" style="margin-left: 1px"
+                  [disabled]="!ready" (click)="openWordCloudPane()" ngbTooltip="Word Cloud"
+                  placement="bottom">
+              <i class="fa fa-fw fa-cloud"></i>
+          </button>
           <div class="btn-group ml-2">
-            <button type="button" class="btn btn-secondary"
+            <button type="button" class="btn btn-secondary text-nowrap"
                     (click)="displayShareDialog()">
               <i class="fa fa-fw fa-share-square"></i> Share
             </button>
