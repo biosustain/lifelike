@@ -7,15 +7,14 @@ from uuid import uuid4
 
 from pdfminer.layout import LTChar
 
-from neo4japp.database import (
-    get_annotations_pdf_parser,
-)
+from neo4japp.database import get_annotations_pdf_parser
 from neo4japp.data_transfer_objects import (
     Annotation,
     GeneAnnotation,
     PDFParsedCharacters,
     PDFTokenPositions,
     PDFTokenPositionsList,
+    SpecifiedOrganismStrain
 )
 from neo4japp.services.annotations.constants import EntityType, OrganismCategory
 
@@ -49,6 +48,66 @@ def get_dummy_LTChar(text):
     )
 
 
+def lookup_entities(entity_service, tokens, custom_annotations=[]):
+    entity_service.set_entity_inclusions(custom_annotations)
+    entity_service.identify_entities(
+        tokens=tokens.token_positions,
+        check_entities_in_lmdb=entity_service.get_entities_to_identify()
+    )
+
+
+def process_tokens(mock_tokens, abbrev=False, index=None):
+    char_coord_objs_in_pdf = []
+    word_index_dict = {}
+
+    for i, t in enumerate(mock_tokens):
+        length = len(t.keyword)
+        count = 0
+        added_parenth = False
+        for c in t.keyword:
+            if abbrev and i == index:
+                if not added_parenth:
+                    char_coord_objs_in_pdf.append(get_dummy_LTChar(text='('))
+                    added_parenth = True
+
+                char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+                count += 1
+                if count == length:
+                    char_coord_objs_in_pdf.append(get_dummy_LTChar(text=')'))
+            else:
+                char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
+        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+
+        if len(t.keyword.split()) == 1:
+            word_index_dict[list(t.char_positions)[0]] = t.keyword
+        else:
+            words = t.keyword.split()
+            prev = -1
+            count = 0
+            for i, (k, v) in enumerate(t.char_positions.items()):
+                if i == 0:
+                    word_index_dict[k] = words[count]
+                    count += 1
+                else:
+                    if t.char_positions[prev] == ' ':
+                        word_index_dict[k] = words[count]
+                        count += 1
+                prev = k
+
+    return char_coord_objs_in_pdf, word_index_dict
+
+
+def create_mock_tokens(annotations):
+    return [
+        PDFTokenPositions(
+            page_number=anno.page_number,
+            keyword=anno.keyword,
+            char_positions={
+                i + anno.lo_location_offset: c for i, c in enumerate(anno.keyword)}
+        ) for anno in annotations
+    ]
+
+
 @pytest.mark.parametrize(
     'index, annotations',
     [
@@ -63,7 +122,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -82,7 +141,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -103,7 +162,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -122,7 +181,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -143,7 +202,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -162,7 +221,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -183,7 +242,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -202,7 +261,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -223,7 +282,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -244,7 +303,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -263,7 +322,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -282,7 +341,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -304,7 +363,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
@@ -323,7 +382,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -345,7 +404,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -364,7 +423,7 @@ def get_dummy_LTChar(text):
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Chemical.value,
+                    type=EntityType.CHEMICAL.value,
                     color='',
                     id='',
                     id_type='',
@@ -446,48 +505,59 @@ def test_fix_conflicting_annotations(
 def test_escherichia_coli_pdf(
     escherichia_coli_pdf_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf,
-    get_annotations_service
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_inclusion_setup
 
     pdf = path.join(directory, f'pdf_samples/ecoli_gene_test.pdf')
 
     with open(pdf, 'rb') as f:
         pdf_text = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
+
+        lookup_entities(entity_service=entity_service, tokens=tokens)
         annotations = annotation_service.create_rules_based_annotations(
-            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text),
+            tokens=tokens,
             custom_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
         )
 
     keywords = {o.keyword: o.meta.type for o in annotations}
 
     assert 'Escherichia coli' in keywords
-    assert keywords['Escherichia coli'] == EntityType.Species.value
+    assert keywords['Escherichia coli'] == EntityType.SPECIES.value
 
     assert 'purA' in keywords
-    assert keywords['purA'] == EntityType.Gene.value
+    assert keywords['purA'] == EntityType.GENE.value
 
     assert 'purB' in keywords
-    assert keywords['purB'] == EntityType.Gene.value
+    assert keywords['purB'] == EntityType.GENE.value
 
     assert 'purC' in keywords
-    assert keywords['purC'] == EntityType.Gene.value
+    assert keywords['purC'] == EntityType.GENE.value
 
     assert 'purD' in keywords
-    assert keywords['purD'] == EntityType.Gene.value
+    assert keywords['purD'] == EntityType.GENE.value
 
     assert 'purF' in keywords
-    assert keywords['purF'] == EntityType.Gene.value
+    assert keywords['purF'] == EntityType.GENE.value
 
 
 def test_custom_annotations_gene_organism_matching_has_match(
     default_lmdb_setup,
     mock_general_human_genes,
-    get_annotations_service
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_inclusion_setup
 
     pdf = path.join(directory, f'pdf_samples/custom_annotations_gene_matching.pdf')
 
@@ -519,9 +589,20 @@ def test_custom_annotations_gene_organism_matching_has_match(
 
     with open(pdf, 'rb') as f:
         pdf_text = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
+
+        lookup_entities(
+            entity_service=entity_service,
+            tokens=tokens,
+            custom_annotations=[custom_annotation]
+        )
         annotations = annotation_service.create_rules_based_annotations(
-            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text),
+            tokens=tokens,
             custom_annotations=[custom_annotation],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
         )
 
     assert len(annotations) == 1
@@ -532,59 +613,68 @@ def test_human_gene_pdf(
     human_gene_pdf_lmdb_setup,
     human_gene_pdf_gene_and_organism_network,
     mock_get_gene_to_organism_match_result_for_human_gene_pdf,
-    get_annotations_service
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_inclusion_setup
 
     pdf = path.join(directory, f'pdf_samples/human_gene_test.pdf')
 
     with open(pdf, 'rb') as f:
         pdf_text = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
+
+        lookup_entities(entity_service=entity_service, tokens=tokens)
         annotations = annotation_service.create_rules_based_annotations(
-            tokens=pdf_parser.extract_tokens(parsed_chars=pdf_text),
+            tokens=tokens,
             custom_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
         )
 
     keywords = {o.keyword: o.meta.type for o in annotations}
 
     assert 'COVID-19' in keywords
-    assert keywords['COVID-19'] == EntityType.Disease.value
+    assert keywords['COVID-19'] == EntityType.DISEASE.value
 
     assert 'MERS-CoV' in keywords
-    assert keywords['MERS-CoV'] == EntityType.Species.value
+    assert keywords['MERS-CoV'] == EntityType.SPECIES.value
 
     assert 'ACE2' in keywords
-    assert keywords['ACE2'] == EntityType.Gene.value
+    assert keywords['ACE2'] == EntityType.GENE.value
 
 
 @pytest.mark.parametrize(
-    'tokens',
+    'mock_tokens',
     [
         [
             PDFTokenPositions(
                 page_number=1,
                 keyword='hyp27',
                 char_positions={
-                    i: c for i, c in enumerate('hyp27') if c != ' '}
+                    i: c for i, c in enumerate('hyp27')}
             ),
             PDFTokenPositions(
                 page_number=1,
                 keyword='Moniliophthora roreri',
                 char_positions={
-                    i + len('hyp27') + 2: c for i, c in enumerate('Moniliophthora roreri') if c != ' '}  # noqa
+                    i + len('hyp27') + 1: c for i, c in enumerate('Moniliophthora roreri')}  # noqa
             ),
             PDFTokenPositions(
                 page_number=1,
                 keyword='Hyp27',
                 char_positions={
-                    i + len('hyp27') + len('Moniliophthora roreri') + 2: c for i, c in enumerate('Hyp27') if c != ' '}  # noqa
+                    i + len('hyp27') + len('Moniliophthora roreri') + 2: c for i, c in enumerate('Hyp27')}  # noqa
             ),
             PDFTokenPositions(
                 page_number=1,
                 keyword='human',
                 char_positions={
-                    i + len('hyp27') + len('Moniliophthora roreri') + len('Hyp27') + 2: c for i, c in enumerate('human') if c != ' '}  # noqa
+                    i + len('hyp27') + len('Moniliophthora roreri') + len('Hyp27') + 3: c for i, c in enumerate('human')}  # noqa
             ),
         ]
     ],
@@ -592,57 +682,63 @@ def test_human_gene_pdf(
 def test_tokens_gene_vs_protein(
     default_lmdb_setup,
     mock_get_gene_to_organism_match_result,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 4
     assert annotations[0].keyword == 'hyp27'
-    assert annotations[0].meta.type == EntityType.Gene.value
+    assert annotations[0].meta.type == EntityType.GENE.value
 
     assert annotations[1].keyword == 'Moniliophthora roreri'
-    assert annotations[1].meta.type == EntityType.Species.value
+    assert annotations[1].meta.type == EntityType.SPECIES.value
 
     assert annotations[2].keyword == 'Hyp27'
-    assert annotations[2].meta.type == EntityType.Protein.value
+    assert annotations[2].meta.type == EntityType.PROTEIN.value
 
     assert annotations[3].keyword == 'human'
-    assert annotations[3].meta.type == EntityType.Species.value
+    assert annotations[3].meta.type == EntityType.SPECIES.value
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='Serpin A1',
                     char_positions={
-                        i: c for i, c in enumerate('Serpin A1') if c != ' '
+                        i: c for i, c in enumerate('Serpin A1')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
-                        i + len('Serpin A1'): c for i, c in enumerate('human') if c != ' '
+                        i + len('Serpin A1') + 1: c for i, c in enumerate('human')
                     }
                 ),
         ]),
@@ -652,20 +748,20 @@ def test_tokens_gene_vs_protein(
                     page_number=1,
                     keyword='SERPIN',
                     char_positions={
-                        i: c for i, c in enumerate('SERPIN') if c != ' '
+                        i: c for i, c in enumerate('SERPIN')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='SERPIN A1',
                     char_positions={
-                        i + len('SERPIN') + 2: c for i, c in enumerate('SERPINA A1') if c != ' '}  # noqa
+                        i + len('SERPIN') + 1: c for i, c in enumerate('SERPINA A1')}  # noqa
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
-                        i + len('SERPIN') + len('SERPINA A1') + 2: c for i, c in enumerate('human') if c != ' '}  # noqa
+                        i + len('SERPIN') + len('SERPINA A1') + 2: c for i, c in enumerate('human')}  # noqa
                 ),
         ]),
         (3, [
@@ -673,14 +769,14 @@ def test_tokens_gene_vs_protein(
                     page_number=1,
                     keyword='serpina1',
                     char_positions={
-                        i: c for i, c in enumerate('serpina1') if c != ' '
+                        i: c for i, c in enumerate('serpina1')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
-                        i + len('serpina1') + 2: c for i, c in enumerate('human') if c != ' '
+                        i + len('serpina1') + 1: c for i, c in enumerate('human')
                     }
                 ),
         ]),
@@ -689,14 +785,14 @@ def test_tokens_gene_vs_protein(
                     page_number=1,
                     keyword='SERPINA1',
                     char_positions={
-                        i: c for i, c in enumerate('SERPINA1') if c != ' '
+                        i: c for i, c in enumerate('SERPINA1')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
-                        i + len('SERPINA1') + 2: c for i, c in enumerate('human') if c != ' '
+                        i + len('SERPINA1') + 1: c for i, c in enumerate('human')
                     }
                 ),
         ]),
@@ -705,14 +801,14 @@ def test_tokens_gene_vs_protein(
                     page_number=1,
                     keyword='SerpinA1',
                     char_positions={
-                        i: c for i, c in enumerate('SerpinA1') if c != ' '
+                        i: c for i, c in enumerate('SerpinA1')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
-                        i + len('SerpinA1') + 2: c for i, c in enumerate('human') if c != ' '
+                        i + len('SerpinA1') + 1: c for i, c in enumerate('human')
                     }
                 ),
         ]),
@@ -722,48 +818,61 @@ def test_tokens_gene_vs_protein_serpina1_cases(
     default_lmdb_setup,
     mock_get_gene_to_organism_serpina1_match_result,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
-    annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
-        custom_annotations=[],
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
     )
 
-    if index == 1 or index == 2 or index == 5:
+    lookup_entities(entity_service=entity_service, tokens=tokens)
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=tokens,
+        custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
+    )
+
+    if index == 1 or index == 2:
         assert len(annotations) == 2
         assert annotations[0].keyword == 'Serpin A1'
-        assert annotations[0].meta.type == EntityType.Protein.value
+        assert annotations[0].meta.type == EntityType.PROTEIN.value
 
         assert annotations[1].keyword == 'human'
-        assert annotations[1].meta.type == EntityType.Species.value
+        assert annotations[1].meta.type == EntityType.SPECIES.value
     elif index == 3:
         assert len(annotations) == 2
         assert annotations[0].keyword == 'serpina1'
-        assert annotations[0].meta.type == EntityType.Gene.value
+        assert annotations[0].meta.type == EntityType.GENE.value
 
         assert annotations[1].keyword == 'human'
-        assert annotations[1].meta.type == EntityType.Species.value
+        assert annotations[1].meta.type == EntityType.SPECIES.value
     elif index == 4:
         assert len(annotations) == 2
         assert annotations[0].keyword == 'SERPINA1'
-        assert annotations[0].meta.type == EntityType.Gene.value
+        assert annotations[0].meta.type == EntityType.GENE.value
 
         assert annotations[1].keyword == 'human'
-        assert annotations[1].meta.type == EntityType.Species.value
+        assert annotations[1].meta.type == EntityType.SPECIES.value
+    elif index == 5:
+        assert len(annotations) == 2
+        assert annotations[0].keyword == 'Serpin A1'
+        assert annotations[0].meta.type == EntityType.PROTEIN.value
+
+        assert annotations[1].keyword == 'human'
+        assert annotations[1].meta.type == EntityType.SPECIES.value
 
 
 @pytest.mark.parametrize(
@@ -780,13 +889,13 @@ def test_tokens_gene_vs_protein_serpina1_cases(
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
-                    category=OrganismCategory.Bacteria.value,
+                    category=OrganismCategory.BACTERIA.value,
                 ),
                 uuid='',
             ),
@@ -802,13 +911,13 @@ def test_tokens_gene_vs_protein_serpina1_cases(
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
-                    category=OrganismCategory.Eukaryota.value,
+                    category=OrganismCategory.EUKARYOTA.value,
                 ),
                 uuid='',
             ),
@@ -824,13 +933,13 @@ def test_tokens_gene_vs_protein_serpina1_cases(
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
-                    category=OrganismCategory.Bacteria.value,
+                    category=OrganismCategory.BACTERIA.value,
                 ),
                 uuid='',
             ),
@@ -839,8 +948,14 @@ def test_tokens_gene_vs_protein_serpina1_cases(
 )
 def test_fix_false_positive_gene_annotations(get_annotations_service, index, annotations):
     annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(
+        create_mock_tokens(annotations))
+
     fixed = annotation_service._get_fixed_false_positive_unified_annotations(
         annotations_list=annotations,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        word_index_dict=word_index_dict
     )
 
     # do exact case matching for genes
@@ -866,13 +981,13 @@ def test_fix_false_positive_gene_annotations(get_annotations_service, index, ann
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='102353780',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
-                    category=OrganismCategory.Eukaryota.value,
+                    category=OrganismCategory.EUKARYOTA.value,
                 ),
                 uuid='',
             ),
@@ -886,7 +1001,7 @@ def test_fix_false_positive_gene_annotations(get_annotations_service, index, ann
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Protein.value,
+                    type=EntityType.PROTEIN.value,
                     color='',
                     id='12379999999',
                     id_type='',
@@ -907,13 +1022,13 @@ def test_fix_false_positive_gene_annotations(get_annotations_service, index, ann
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=GeneAnnotation.GeneMeta(
-                    type=EntityType.Gene.value,
+                    type=EntityType.GENE.value,
                     color='',
                     id='10235378012123',
                     id_type='',
                     id_hyperlink='',
                     links=Annotation.Meta.Links(),
-                    category=OrganismCategory.Eukaryota.value,
+                    category=OrganismCategory.EUKARYOTA.value,
                 ),
                 uuid='',
             ),
@@ -927,7 +1042,7 @@ def test_fix_false_positive_gene_annotations(get_annotations_service, index, ann
                 keywords=[''],
                 rects=[[1, 2]],
                 meta=Annotation.Meta(
-                    type=EntityType.Protein.value,
+                    type=EntityType.PROTEIN.value,
                     color='',
                     id='12379999999',
                     id_type='',
@@ -967,27 +1082,27 @@ def test_gene_vs_protein_annotations(
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='il-7',
                     char_positions={
-                        i: c for i, c in enumerate('il-7') if c != ' '
+                        i: c for i, c in enumerate('il-7')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='coelacanth',
                     char_positions={
-                        i + len('il-7') + 2: c for i, c in enumerate('coelacanth') if c != ' '}  # noqa
+                        i + len('il-7') + 1: c for i, c in enumerate('coelacanth')}  # noqa
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='Tetraodon rubripes',
                     char_positions={
-                        i + len('il-7') + len('coelacanth') + 2: c for i, c in enumerate('Tetraodon rubripes') if c != ' '}  # noqa
+                        i + len('il-7') + len('coelacanth') + 2: c for i, c in enumerate('Tetraodon rubripes')}  # noqa
                 ),
         ]),
     ],
@@ -996,25 +1111,31 @@ def test_gene_annotation_uses_id_from_knowledge_graph(
     fish_gene_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_fish_gene,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     if index == 1:
@@ -1024,27 +1145,27 @@ def test_gene_annotation_uses_id_from_knowledge_graph(
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i: c for i, c in enumerate('rat') if c != ' '
+                        i: c for i, c in enumerate('rat')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='EDEM3',
                     char_positions={
-                        i + len('rat') + 2: c for i, c in enumerate('EDEM3') if c != ' '}
+                        i + len('rat') + 1: c for i, c in enumerate('EDEM3')}
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='Human',
                     char_positions={
-                        i + len('rat') + len('EDEM3') + 2: c for i, c in enumerate('Human') if c != ' '}  # noqa
+                        i + len('rat') + len('EDEM3') + 2: c for i, c in enumerate('Human')}  # noqa
                 ),
         ]),
     ],
@@ -1053,25 +1174,31 @@ def test_gene_annotation_human_vs_rat(
     human_rat_gene_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_human_rat_gene,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     if index == 1:
@@ -1083,21 +1210,21 @@ def test_gene_annotation_human_vs_rat(
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
-                        i: c for i, c in enumerate('human') if c != ' '
+                        i: c for i, c in enumerate('human')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='FO(-)',
                     char_positions={
-                        i + len('human') + 2: c for i, c in enumerate('FO(-)') if c != ' '}  # noqa
+                        i + len('human') + 1: c for i, c in enumerate('FO(-)')}  # noqa
                 ),
                 PDFTokenPositions(
                     page_number=1,
@@ -1112,53 +1239,59 @@ def test_ignore_terms_length_two_or_less(
     default_lmdb_setup,
     mock_empty_gene_to_organism,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 1
-    assert annotations[0].keyword == tokens[0].keyword
+    assert annotations[0].keyword == mock_tokens[0].keyword
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='hypofluorite',
                     char_positions={
-                        i: c for i, c in enumerate('hypofluorite') if c != ' '
+                        i: c for i, c in enumerate('hypofluorite')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('hypofluorite') + 2: c for i, c in enumerate('rat') if c != ' '}  # noqa
+                        i + len('hypofluorite') + 1: c for i, c in enumerate('rat')}  # noqa
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='dog',
                     char_positions={
-                        i + len('hypofluorite') + len('rat') + 2: c for i, c in enumerate('dog') if c != ' '}  # noqa
+                        i + len('hypofluorite') + len('rat') + 2: c for i, c in enumerate('dog')}  # noqa
                 ),
         ]),
     ],
@@ -1167,53 +1300,58 @@ def test_global_excluded_chemical_annotations(
     default_lmdb_setup,
     mock_global_chemical_exclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 1
-    assert tokens[0].keyword not in set([anno.keyword for anno in annotations])
+    assert mock_tokens[0].keyword not in set([anno.keyword for anno in annotations])
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='guanosine',
                     char_positions={
-                        i: c for i, c in enumerate('guanosine') if c != ' '
+                        i: c for i, c in enumerate('guanosine')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('guanosine') + 2: c for i, c in enumerate('rat') if c != ' '}  # noqa
+                        i + len('guanosine') + 1: c for i, c in enumerate('rat')}  # noqa
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='dog',
                     char_positions={
-                        i + len('guanosine') + len('rat') + 2: c for i, c in enumerate('dog') if c != ' '}  # noqa
+                        i + len('guanosine') + len('rat') + 2: c for i, c in enumerate('dog')}  # noqa
                 ),
         ]),
     ],
@@ -1222,53 +1360,58 @@ def test_global_excluded_compound_annotations(
     default_lmdb_setup,
     mock_global_compound_exclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 1
-    assert tokens[0].keyword not in set([anno.keyword for anno in annotations])
+    assert mock_tokens[0].keyword not in set([anno.keyword for anno in annotations])
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='adenosine',
                     char_positions={
-                        i: c for i, c in enumerate('adenosine') if c != ' '
+                        i: c for i, c in enumerate('adenosine')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('adenosine') + 2: c for i, c in enumerate('rat') if c != ' '}  # noqa
+                        i + len('adenosine') + 1: c for i, c in enumerate('rat')}  # noqa
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='cold sore',
                     char_positions={
-                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('cold sore') if c != ' '}  # noqa
+                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('cold sore')}  # noqa
                 ),
         ]),
     ],
@@ -1277,53 +1420,58 @@ def test_global_excluded_disease_annotations(
     default_lmdb_setup,
     mock_global_disease_exclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 2
-    assert tokens[2].keyword not in set([anno.keyword for anno in annotations])
+    assert mock_tokens[2].keyword not in set([anno.keyword for anno in annotations])
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='adenosine',
                     char_positions={
-                        i: c for i, c in enumerate('adenosine') if c != ' '
+                        i: c for i, c in enumerate('adenosine')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('adenosine') + 2: c for i, c in enumerate('rat') if c != ' '}  # noqa
+                        i + len('adenosine') + 1: c for i, c in enumerate('rat')}  # noqa
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='BOLA3',
                     char_positions={
-                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('BOLA3') if c != ' '}  # noqa
+                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('BOLA3')}  # noqa
                 ),
         ]),
     ],
@@ -1332,53 +1480,58 @@ def test_global_excluded_gene_annotations(
     default_lmdb_setup,
     mock_global_gene_exclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 2
-    assert tokens[2].keyword not in set([anno.keyword for anno in annotations])
+    assert mock_tokens[2].keyword not in set([anno.keyword for anno in annotations])
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='adenosine',
                     char_positions={
-                        i: c for i, c in enumerate('adenosine') if c != ' '
+                        i: c for i, c in enumerate('adenosine')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('adenosine') + 2: c for i, c in enumerate('rat') if c != ' '}  # noqa
+                        i + len('adenosine') + 1: c for i, c in enumerate('rat')}  # noqa
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='Whey Proteins',
                     char_positions={
-                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('Whey Proteins') if c != ' '}  # noqa
+                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('Whey Proteins')}  # noqa
                 ),
         ]),
     ],
@@ -1387,53 +1540,58 @@ def test_global_excluded_phenotype_annotations(
     default_lmdb_setup,
     mock_global_phenotype_exclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 2
-    assert tokens[2].keyword not in set([anno.keyword for anno in annotations])
+    assert mock_tokens[2].keyword not in set([anno.keyword for anno in annotations])
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='adenosine',
                     char_positions={
-                        i: c for i, c in enumerate('adenosine') if c != ' '
+                        i: c for i, c in enumerate('adenosine')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('adenosine') + 2: c for i, c in enumerate('rat') if c != ' '}  # noqa
+                        i + len('adenosine') + 1: c for i, c in enumerate('rat')}  # noqa
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='Wasabi receptor toxin',
                     char_positions={
-                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('Wasabi receptor toxin') if c != ' '}  # noqa
+                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('Wasabi receptor toxin')}  # noqa
                 ),
         ]),
     ],
@@ -1442,53 +1600,58 @@ def test_global_excluded_protein_annotations(
     default_lmdb_setup,
     mock_global_protein_exclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 2
-    assert tokens[2].keyword not in set([anno.keyword for anno in annotations])
+    assert mock_tokens[2].keyword not in set([anno.keyword for anno in annotations])
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
-                        i: c for i, c in enumerate('human') if c != ' '
+                        i: c for i, c in enumerate('human')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('human') + 2: c for i, c in enumerate('rat') if c != ' '}  # noqa
+                        i + len('human') + 1: c for i, c in enumerate('rat')}  # noqa
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='dog',
                     char_positions={
-                        i + len('human') + len('rat') + 2: c for i, c in enumerate('dog') if c != ' '}  # noqa
+                        i + len('human') + len('rat') + 2: c for i, c in enumerate('dog')}  # noqa
                 ),
         ]),
     ],
@@ -1497,54 +1660,59 @@ def test_global_excluded_species_annotations(
     default_lmdb_setup,
     mock_global_species_exclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     # dog is not in default_lmdb_setup
     assert len(annotations) == 1
-    assert annotations[0].keyword == tokens[1].keyword
+    assert annotations[0].keyword == mock_tokens[1].keyword
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='adenosine',
                     char_positions={
-                        i: c for i, c in enumerate('adenosine') if c != ' '
+                        i: c for i, c in enumerate('adenosine')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('adenosine') + 2: c for i, c in enumerate('rat') if c != ' '}  # noqa
+                        i + len('adenosine') + 1: c for i, c in enumerate('rat')}  # noqa
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='dog',
                     char_positions={
-                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('dog') if c != ' '}  # noqa
+                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('dog')}  # noqa
                 ),
         ]),
     ],
@@ -1553,42 +1721,47 @@ def test_global_excluded_annotations_does_not_interfere_with_other_entities(
     default_lmdb_setup,
     mock_global_chemical_exclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 2
-    assert tokens[2].keyword not in set([anno.keyword for anno in annotations])
+    assert mock_tokens[2].keyword not in set([anno.keyword for anno in annotations])
     assert annotations[0].keyword == 'adenosine'
-    assert annotations[0].meta.type == EntityType.Compound.value
+    assert annotations[0].meta.type == EntityType.COMPOUND.value
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='NS2A',
                     char_positions={
-                        i: c for i, c in enumerate('NS2A') if c != ' '
+                        i: c for i, c in enumerate('NS2A')
                     }
                 ),
         ]),
@@ -1597,25 +1770,30 @@ def test_global_excluded_annotations_does_not_interfere_with_other_entities(
 def test_lmdb_match_protein_by_exact_case_if_multiple_matches(
     default_lmdb_setup,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 1
@@ -1624,14 +1802,14 @@ def test_lmdb_match_protein_by_exact_case_if_multiple_matches(
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='fake-chemical-(12345)',
                     char_positions={
-                        i: c for i, c in enumerate('fake-chemical-(12345)') if c != ' '
+                        i: c for i, c in enumerate('fake-chemical-(12345)')
                     }
                 ),
         ]),
@@ -1641,25 +1819,30 @@ def test_global_chemical_inclusion_annotation(
     default_lmdb_setup,
     mock_global_chemical_inclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 1
@@ -1668,14 +1851,14 @@ def test_global_chemical_inclusion_annotation(
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='compound-(12345)',
                     char_positions={
-                        i: c for i, c in enumerate('compound-(12345)') if c != ' '
+                        i: c for i, c in enumerate('compound-(12345)')
                     }
                 ),
         ]),
@@ -1685,25 +1868,30 @@ def test_global_compound_inclusion_annotation(
     default_lmdb_setup,
     mock_global_compound_inclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 1
@@ -1712,21 +1900,21 @@ def test_global_compound_inclusion_annotation(
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='gene-(12345)',
                     char_positions={
-                        i: c for i, c in enumerate('gene-(12345)') if c != ' '
+                        i: c for i, c in enumerate('gene-(12345)')
                     }
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
-                        i + len('gene-(12345)') + 2: c for i, c in enumerate('human') if c != ' '
+                        i + len('gene-(12345)') + 1: c for i, c in enumerate('human')
                     }
                 ),
         ]),
@@ -1739,25 +1927,30 @@ def test_global_gene_inclusion_annotation(
     mock_get_gene_ace2_for_global_gene_inclusion,
     mock_get_gene_to_organism_match_result_for_human_gene_pdf,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 2
@@ -1768,14 +1961,14 @@ def test_global_gene_inclusion_annotation(
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='disease-(12345)',
                     char_positions={
-                        i: c for i, c in enumerate('disease-(12345)') if c != ' '
+                        i: c for i, c in enumerate('disease-(12345)')
                     }
                 ),
         ]),
@@ -1785,25 +1978,30 @@ def test_global_disease_inclusion_annotation(
     default_lmdb_setup,
     mock_global_disease_inclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 1
@@ -1812,14 +2010,14 @@ def test_global_disease_inclusion_annotation(
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='phenotype-(12345)',
                     char_positions={
-                        i: c for i, c in enumerate('phenotype-(12345)') if c != ' '
+                        i: c for i, c in enumerate('phenotype-(12345)')
                     }
                 ),
         ]),
@@ -1829,25 +2027,30 @@ def test_global_phenotype_inclusion_annotation(
     default_lmdb_setup,
     mock_global_phenotype_inclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 1
@@ -1856,14 +2059,14 @@ def test_global_phenotype_inclusion_annotation(
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='protein-(12345)',
                     char_positions={
-                        i: c for i, c in enumerate('protein-(12345)') if c != ' '
+                        i: c for i, c in enumerate('protein-(12345)')
                     }
                 ),
         ]),
@@ -1873,25 +2076,30 @@ def test_global_protein_inclusion_annotation(
     default_lmdb_setup,
     mock_global_protein_inclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 1
@@ -1900,14 +2108,14 @@ def test_global_protein_inclusion_annotation(
 
 
 @pytest.mark.parametrize(
-    'index, tokens',
+    'index, mock_tokens',
     [
         (1, [
                 PDFTokenPositions(
                     page_number=1,
                     keyword='species-(12345)',
                     char_positions={
-                        i: c for i, c in enumerate('species-(12345)') if c != ' '
+                        i: c for i, c in enumerate('species-(12345)')
                     }
                 ),
         ]),
@@ -1917,27 +2125,138 @@ def test_global_species_inclusion_annotation(
     default_lmdb_setup,
     mock_global_species_inclusion,
     index,
-    tokens,
-    get_annotations_service
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf = []
-    for t in tokens:
-        for c in t.keyword:
-            char_coord_objs_in_pdf.append(get_dummy_LTChar(text=c))
-        char_coord_objs_in_pdf.append(get_dummy_LTChar(text=' '))
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
     annotations = annotation_service.create_rules_based_annotations(
-        tokens=PDFTokenPositionsList(
-            token_positions=tokens,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=(5, 5),
-            min_idx_in_page={0: 1},
-        ),
+        tokens=tokens,
         custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
     )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'species-(12345)'
     assert annotations[0].meta.id == 'Ncbi:Fake'
+
+
+@pytest.mark.skip(reason='Need to figure out how to mock service to return different values')
+def test_primary_organism_strain(
+    bola_human_monkey_gene,
+    mock_get_gene_specified_strain,
+    get_annotations_service,
+    entity_inclusion_setup
+):
+    annotation_service = get_annotations_service
+    pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_inclusion_setup
+
+    pdf = path.join(directory, f'pdf_samples/primary-organism-strain-bola3.pdf')
+
+    annotations = []
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
+
+        lookup_entities(entity_service=entity_service, tokens=tokens)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
+        )
+
+    bola = [anno for anno in annotations if anno.keyword == 'BOLA3']
+    assert bola[0].meta.id == '101099627'
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
+
+        lookup_entities(entity_service=entity_service, tokens=tokens)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                synonym='Homo sapiens', organism_id='9606', category='Eukaryota')
+        )
+
+    bola = [anno for anno in annotations if anno.keyword == 'BOLA3']
+    assert bola[0].meta.id == '388962'
+
+
+@pytest.mark.parametrize(
+    'index, mock_tokens',
+    [
+        (1, [
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='pentose phosphate pathway',
+                    char_positions={
+                        i: c for i, c in enumerate('pentose phosphate pathway')
+                    }
+                ),
+                PDFTokenPositions(
+                    page_number=1,
+                    keyword='PPP',
+                    char_positions={
+                        # add extra 1 due to parenthesis (PPP)
+                        # which were stripped out in parser
+                        i + len('pentose phosphate pathway') + 2: c for i, c in enumerate('PPP')
+                    }
+                ),
+        ]),
+    ],
+)
+def test_no_annotation_for_abbreviation(
+    abbreviation_lmdb_setup,
+    index,
+    mock_tokens,
+    get_annotations_service,
+    entity_inclusion_setup
+):
+    annotation_service = get_annotations_service
+    entity_service = entity_inclusion_setup
+
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens, abbrev=True, index=1)
+
+    tokens = PDFTokenPositionsList(
+        token_positions=mock_tokens,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        cropbox_in_pdf=(5, 5),
+        min_idx_in_page={0: 1},
+        word_index_dict=word_index_dict
+    )
+    lookup_entities(entity_service=entity_service, tokens=tokens)
+    annotations = annotation_service.create_rules_based_annotations(
+        tokens=tokens,
+        custom_annotations=[],
+        entity_results=entity_service.get_entity_match_results(),
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+                synonym='', organism_id='', category='')
+    )
+
+    assert len(annotations) == 1
+    assert annotations[0].keyword == 'Pentose Phosphate Pathway'

@@ -4,14 +4,8 @@ from flask import Blueprint, request, jsonify, g
 from sqlalchemy.orm import aliased
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.database import get_search_service_dao
-from neo4japp.data_transfer_objects.common import ResultList
-from neo4japp.database import get_search_service_dao, db
-from neo4japp.exceptions import InvalidArgumentsException
-from neo4japp.models import AppUser, Directory, Projects, AppRole, \
-    projects_collaborator_role, Files, Project
-from neo4japp.services.pdf_search import PDFSearch, PDFSearchResult
-from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
+from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
+from neo4japp.database import get_search_service_dao, get_elastic_service
 from neo4japp.data_transfer_objects import (
     GeneFilteredRequest,
     OrganismRequest,
@@ -20,6 +14,19 @@ from neo4japp.data_transfer_objects import (
     SimpleSearchRequest,
     VizSearchRequest
 )
+from neo4japp.data_transfer_objects.common import ResultList
+from neo4japp.database import get_search_service_dao, db
+from neo4japp.exceptions import InvalidArgumentsException
+from neo4japp.models import (
+    AppUser,
+    Directory,
+    Projects,
+    AppRole,
+    projects_collaborator_role,
+    Files,
+    Project
+)
+from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
 from neo4japp.utils.request import paginate_from_args
 from neo4japp.utils.sqlalchemy import ft_search
 
@@ -67,18 +74,77 @@ def visualizer_search_temp(req: VizSearchRequest):
 #     results = search_dao.predictive_search(req.query)
 #     return SuccessResponse(result=results, status_code=200)
 
+# TODO: Probably should rename this to something else...not sure what though
 @bp.route('/pdf-search', methods=['POST'])
 @auth.login_required
 @jsonify_with_class(PDFSearchRequest)
 def search(req: PDFSearchRequest):
     if req.query:
-        res = PDFSearch().search(
+        match_fields = ['filename', 'data.content']
+        boost_fields = ['filename^3', 'description^3']
+        highlight = {
+            'require_field_match': 'false',
+            'fields': {'*': {}},
+            'fragment_size': FRAGMENT_SIZE,
+            'pre_tags': ['<highlight>'],
+            'post_tags': ['</highlight>'],
+        }
+
+        user_id = g.current_user.id
+
+        t_project = aliased(Projects)
+        t_project_role = aliased(AppRole)
+
+        # Role table used to check if we have permission
+        query = db.session.query(
+            t_project.id
+        ).join(
+            projects_collaborator_role,
+            sqlalchemy.and_(
+                projects_collaborator_role.c.projects_id == t_project.id,
+                projects_collaborator_role.c.appuser_id == user_id,
+            )
+        ).join(
+            t_project_role,
+            sqlalchemy.and_(
+                t_project_role.id == projects_collaborator_role.c.app_role_id,
+                sqlalchemy.or_(
+                    t_project_role.name == 'project-read',
+                    t_project_role.name == 'project-admin'
+                )
+            )
+        )
+
+        accessible_project_ids = [project_id for project_id, in query]
+        query_filter = [  # type:ignore
+            {
+                'bool': {
+                    'should': [
+                        # If the user has access to the project the document is in...
+                        {'terms': {'project_id': accessible_project_ids}},
+                        # OR if the document is public...
+                        {'term': {'public': True}}
+                    ]
+                }
+            }
+        ]
+
+        elastic_service = get_elastic_service()
+        res = elastic_service.search(
+            index_id=FILE_INDEX_ID,
             user_query=req.query,
             offset=req.offset,
             limit=req.limit,
+            match_fields=match_fields,
+            boost_fields=boost_fields,
+            query_filter=query_filter,
+            highlight=highlight
         )['hits']
     else:
         res = {'hits': [], 'max_score': None, 'total': 0}
+
+    # TODO Frontend hasn't yet been reworked to expect the response as it currently is, refactoring
+    # the frontend will happen in later tickets
     return SuccessResponse(result=res, status_code=200)
 
 
@@ -121,11 +187,11 @@ def search_content():
     t_project_role_user = aliased(AppUser)
 
     # Role table used to check if we have permission
-    project_role_sq = db.session.query(projects_collaborator_role) \
+    project_role_sq = db.session.query(projects_collaborator_role.c.projects_id,
+                                       projects_collaborator_role.c.appuser_id,
+                                       t_project_role_role.name) \
         .join(t_project_role_role,
               t_project_role_role.id == projects_collaborator_role.c.app_role_id) \
-        .join(t_project_role_user,
-              t_project_role_user.id == projects_collaborator_role.c.appuser_id) \
         .subquery()
 
     queries = []
@@ -136,7 +202,7 @@ def search_content():
                                      Project.label.label('name'),
                                      Project.description.label('description'),
                                      Project.creation_date.label('creation_date'),
-                                     Project.date_modified.label('modification_date'),
+                                     Project.modified_date.label('modification_date'),
                                      t_owner.id.label('owner_id'),
                                      t_owner.username.label('owner_username'),
                                      t_owner.first_name.label('owner_first_name'),
@@ -148,8 +214,10 @@ def search_content():
             .join(t_project, t_project.id == t_directory.projects_id) \
             .outerjoin(project_role_sq, project_role_sq.c.projects_id == t_project.id) \
             .filter(sqlalchemy.or_(Project.public.is_(True),
-                                   sqlalchemy.and_(t_project_role_user.id == user_id,
-                                                   t_project_role_role.name == 'project-read')))
+                                   sqlalchemy.and_(project_role_sq.c.appuser_id == user_id,
+                                                   sqlalchemy.or_(
+                                                       project_role_sq.c.name == 'project-read',
+                                                       project_role_sq.c.name == 'project-admin'))))
         map_query = ft_search(map_query, q)
         queries.append(map_query)
 
@@ -171,8 +239,9 @@ def search_content():
             .join(t_directory, t_directory.id == Files.dir_id) \
             .join(t_project, t_project.id == t_directory.projects_id) \
             .outerjoin(project_role_sq, project_role_sq.c.projects_id == t_project.id) \
-            .filter(sqlalchemy.and_(t_project_role_user.id == user_id,
-                                    t_project_role_role.name == 'project-read'))
+            .filter(sqlalchemy.and_(project_role_sq.c.appuser_id == user_id,
+                                    sqlalchemy.or_(project_role_sq.c.name == 'project-read',
+                                                   project_role_sq.c.name == 'project-admin')))
         file_query = file_query.filter(
             sqlalchemy.func.lower(Files.filename).like(f'%{q.lower()}%')
         )  # TODO: Make FT

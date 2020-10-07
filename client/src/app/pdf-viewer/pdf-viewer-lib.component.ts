@@ -21,6 +21,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AddedAnnotationExclsuion } from 'app/drawing-tool/services/interfaces';
+import { uniqueId } from 'lodash';
 
 declare var jQuery: any;
 
@@ -146,6 +147,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   dragAndDropDestinationCoord;
   dragAndDropDestinationHoverCount;
 
+  pdfViewerId = uniqueId();
+
+  matchesCount = {
+    current: 0,
+    total: 0
+  };
+
+  searchCommand: string;
+
   @ViewChild(PdfViewerComponent, {static: false})
   private pdfComponent: PdfViewerComponent;
 
@@ -153,45 +163,18 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly modalService: NgbModal,
     private zone: NgZone,
     private snackBar: MatSnackBar,
-  ) {
-
-    (window as any).openAnnotationPanel = () => {
-      (window as any).pdfViewerRef.zone.run(() => {
-        (window as any).pdfViewerRef.componentFn();
-      });
-    };
-    (window as any).copySelectedText = () => {
-      (window as any).pdfViewerRef.zone.run(() => {
-        (window as any).pdfViewerRef.copySelectedText();
-      });
-    }
-    (window as any).removeCustomAnnotation = (uuid) => {
-      (window as any).pdfViewerRef.zone.run(() => {
-        (window as any).pdfViewerRef.removeCustomAnnotation(uuid);
-      });
-    }
-    (window as any).openExclusionPanel = (annExclusion) => {
-      (window as any).pdfViewerRef.zone.run(() => {
-        (window as any).pdfViewerRef.openExclusionPanel(annExclusion);
-      });
-    }
-    (window as any).removeAnnotationExclusion = (annExclusion) => {
-      (window as any).pdfViewerRef.zone.run(() => {
-        (window as any).pdfViewerRef.removeAnnotationExclusion(annExclusion);
-      });
-    }
-    (window as any).pdfViewerRef = {
-      zone: this.zone,
-      componentFn: () => this.openAnnotationPanel(),
-      copySelectedText: () => this.copySelectedText(),
-      removeCustomAnnotation: (uuid) => this.removeCustomAnnotation(uuid),
-      openExclusionPanel: (annExclusion) => this.openExclusionPanel(annExclusion),
-      removeAnnotationExclusion: (annExclusion) => this.removeAnnotationExclusion(annExclusion),
-      component: this,
-    };
-  }
+  ) {}
 
   ngOnInit() {
+    (window as any).pdfViewerRef = (window as any).pdfViewerRef || {};
+    (window as any).pdfViewerRef[this.pdfViewerId] = {
+      openAnnotationPanel: () => this.zone.run(() => this.openAnnotationPanel()),
+      copySelectedText: () => this.zone.run(() => this.copySelectedText()),
+      removeCustomAnnotation: (uuid) => this.zone.run(() => this.removeCustomAnnotation(uuid)),
+      openExclusionPanel: (annExclusion) => this.zone.run(() => this.openExclusionPanel(annExclusion)),
+      removeAnnotationExclusion: (annExclusion) => this.zone.run(() => this.removeAnnotationExclusion(annExclusion)),
+    };
+
     this.goToPosition.subscribe((sub) => {
       if (!this.isLoadCompleted && sub) {
         // Pdf viewer is not ready to go to a position
@@ -276,6 +259,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.searchChangedSub) {
       this.searchChangedSub.unsubscribe();
     }
+
+    delete (window as any).pdfViewerRef[this.pdfViewerId];
 
   }
 
@@ -427,7 +412,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     if (an.meta.isCustom) {
       base.push(`
         <div class="mt-1">
-          <button type="button" class="btn btn-primary btn-block" onclick="removeCustomAnnotation('${an.uuid}')">
+          <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].removeCustomAnnotation('${an.uuid}')">
             <i class="fas fa-fw fa-trash"></i>
             <span>Delete Annotation</span>
           </button>
@@ -445,7 +430,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       }).replace(/"/g, '\\&quot;').replace(/'/g, '\\&apos;');
       base.push(`
         <div class="mt-1">
-          <button type="button" class="btn btn-primary btn-block" onclick="openExclusionPanel('${annExclusion}')">
+          <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openExclusionPanel('${annExclusion}')">
             <i class="fas fa-fw fa-minus-circle"></i>
             <span>Mark for Exclusion</span>
           </button>
@@ -459,13 +444,13 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       }).replace(/"/g, '\\&quot;').replace(/'/g, '\\&apos;');
       base.push(`
         <div class="mt-2">
-          <div>
+          <div style="display: flex; flex-direction: column">
             <span style="line-height: 16px">Manually excluded</span>
             <span style="line-height: 16px"><i>reason: </i>${an.meta.exclusionReason}</span>
             ${an.meta.exclusionComment ? `<span style="line-height: 16px"><i>comment: </i>${an.meta.exclusionComment}</span>` : ''}
           </div>
           <div class="mt-1">
-            <button type="button" class="btn btn-primary btn-block" onclick="removeAnnotationExclusion('${annExclusion}')">
+            <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].removeAnnotationExclusion('${annExclusion}')">
               <i class="fas fa-fw fa-undo"></i>
               <span>Unmark Exclusion</span>
             </button>
@@ -679,12 +664,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       }
 
       jQuery(el).css('cursor', 'move');
-
       (jQuery(el) as any).qtip(
         {
 
-          content: `<img src="assets/images/annotate.png" onclick="openAnnotationPanel()">
-                <img src="assets/images/copy.png" onclick="copySelectedText()">`,
+          content: `<img src="assets/images/annotate.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()">
+                <img src="assets/images/copy.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].copySelectedText()">`,
           position: {
             my: 'bottom center',
             target: 'mouse',
@@ -923,6 +907,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   searchQueryChanged(newQuery: { keyword: string, findPrevious: boolean }) {
     if (newQuery.keyword !== this.pdfQuery) {
       this.pdfQuery = newQuery.keyword;
+      this.searchCommand = "find";
       this.pdfComponent.pdfFindController.executeCommand('find', {
         query: this.pdfQuery,
         highlightAll: true,
@@ -930,6 +915,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
         findPrevious: newQuery.findPrevious,
       });
     } else {
+      this.searchCommand = "findagain";
       this.pdfComponent.pdfFindController.executeCommand('findagain', {
         query: this.pdfQuery,
         highlightAll: true,
@@ -975,6 +961,25 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
     this.renderFilterSettings();
+  }
+
+  matchesCountUpdated(matchesCount) {
+    if (this.searchCommand !== 'find') {
+      return;
+    }
+    this.matchesCount = matchesCount;
+  }
+
+  findControlStateUpdated(event) {
+    if (this.searchCommand !== 'findagain' || typeof event.previous === 'undefined') {
+      return;
+    }
+    this.matchesCount = event.matchesCount;
+  }
+
+  nullifyMatchesCount() {
+    this.matchesCount.total = 0;
+    this.matchesCount.current = 0;
   }
 
 }

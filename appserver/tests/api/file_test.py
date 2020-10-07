@@ -14,7 +14,7 @@ def test_user_can_delete_own_pdf(
     fix_project,
     test_user_with_pdf,
     test_user,
-    mock_delete_elastic_indices
+    mock_delete_elastic_documents
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
@@ -44,7 +44,7 @@ def test_user_cannot_delete_pdf_without_permission(
 
 
 def test_admin_can_delete_pdf_without_permission(
-        client, test_user_with_pdf, fix_project, fix_api_owner):
+        client, test_user_with_pdf, fix_project, fix_api_owner, mock_delete_elastic_documents):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.id
@@ -59,7 +59,15 @@ def test_admin_can_delete_pdf_without_permission(
     assert 'Not an owner' not in resp_json
 
 
-def test_can_upload_pdf(monkeypatch, client, test_user, fix_project, fix_directory, elasticindexes):
+def test_can_upload_pdf(
+    monkeypatch,
+    client,
+    test_user,
+    fix_project,
+    fix_directory,
+    elasticindexes,
+    mock_index_maps
+):
     from neo4japp.blueprints import files
 
     login_resp = client.login_as_user(test_user.email, 'password')
@@ -330,7 +338,7 @@ def test_can_delete_files(
     test_user,
     test_user_with_pdf,
     fix_project,
-    mock_delete_elastic_indices
+    mock_delete_elastic_documents
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
