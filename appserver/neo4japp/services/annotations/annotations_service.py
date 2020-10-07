@@ -650,6 +650,8 @@ class AnnotationsService:
             protein_id = entity[EntityIdStr.PROTEIN.value]
             entity_synonym = entity['synonym']
 
+            # TODO: code is identical to gene organism
+            # move into function later if more than these two use
             if entity_synonym in protein_organism_matches:
                 protein_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
                     entity_position=token_positions,

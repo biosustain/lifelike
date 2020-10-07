@@ -229,22 +229,13 @@ class EntityRecognitionService:
 
                     if species_id and species_name:
                         if normalized_species_name in self.local_species_inclusion:
-                            unique = all(
-                                [
-                                    entity['tax_id'] != species_id for
-                                    entity in self.local_species_inclusion[normalized_species_name]
-                                ]
-                            )
-                            # need to check unique because a custom annotation
-                            # can have multiple of the same entity
-                            if unique:
-                                self.local_species_inclusion[normalized_species_name].append(
-                                    create_species_for_ner(
-                                        id_=species_id,
-                                        name=species_name,
-                                        synonym=species_name,
-                                    )
+                            self.local_species_inclusion[normalized_species_name].append(
+                                create_species_for_ner(
+                                    id_=species_id,
+                                    name=species_name,
+                                    synonym=species_name,
                                 )
+                            )
                         else:
                             self.local_species_inclusion[normalized_species_name] = [
                                 create_species_for_ner(
@@ -276,47 +267,38 @@ class EntityRecognitionService:
                     normalized_entity_name = normalize_str(entity_name)
 
                     if entity_id and entity_name:
-                        unique = all(
-                            [
-                                entity[entity_id_str] != entity_id for
-                                entity in global_inclusion.get(normalized_entity_name, [])  # noqa
-                            ]
-                        )
-                        # need to check unique because a custom annotation
-                        # can have multiple of the same entity
-                        if unique:
-                            entity = {}  # to avoid UnboundLocalError
-                            if entity_type in {
-                                EntityType.CHEMICAL.value,
-                                EntityType.COMPOUND.value,
-                                EntityType.DISEASE.value,
-                                EntityType.PHENOTYPE.value,
-                                EntityType.SPECIES.value
-                            }:
+                        entity = {}  # to avoid UnboundLocalError
+                        if entity_type in {
+                            EntityType.CHEMICAL.value,
+                            EntityType.COMPOUND.value,
+                            EntityType.DISEASE.value,
+                            EntityType.PHENOTYPE.value,
+                            EntityType.SPECIES.value
+                        }:
+                            entity = create_entity_ner_func(
+                                id_=entity_id,
+                                name=entity_name,
+                                synonym=entity_name
+                            )
+                        else:
+                            if entity_type == EntityType.GENE.value:
+                                self.gene_collection.append(
+                                    (entity_id, entity_name, normalized_entity_name))
+                                continue
+                            else:
+                                # protein
                                 entity = create_entity_ner_func(
-                                    id_=entity_id,
                                     name=entity_name,
                                     synonym=entity_name
                                 )
-                            else:
-                                if entity_type == EntityType.GENE.value:
-                                    self.gene_collection.append(
-                                        (entity_id, entity_name, normalized_entity_name))
-                                    continue
-                                else:
-                                    # protein
-                                    entity = create_entity_ner_func(
-                                        name=entity_name,
-                                        synonym=entity_name
-                                    )
 
-                            # differentiate between LMDB
-                            entity['inclusion'] = True
+                        # differentiate between LMDB
+                        entity['inclusion'] = True
 
-                            if normalized_entity_name in global_inclusion:
-                                global_inclusion[normalized_entity_name].append(entity)
-                            else:
-                                global_inclusion[normalized_entity_name] = [entity]
+                        if normalized_entity_name in global_inclusion:
+                            global_inclusion[normalized_entity_name].append(entity)
+                        else:
+                            global_inclusion[normalized_entity_name] = [entity]
 
     def entity_lookup_for_chemicals(
         self,
@@ -930,11 +912,6 @@ class EntityRecognitionService:
                     name=gene_names[gene_id],
                     synonym=entity_name
                 )
-                # gene doesn't have id in LMDB
-                # but we need to add it here for global inclusions
-                # because the user could add a gene id
-                # which we use to check for unique above
-                entity[EntityIdStr.GENE.value] = gene_id
                 # differentiate between LMDB
                 entity['inclusion'] = True
 
