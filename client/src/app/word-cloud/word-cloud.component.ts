@@ -101,7 +101,7 @@ export class WordCloudComponent {
         this.annotationData.push(annotation);
       });
       setTimeout(() => {
-        this.drawWordCloud(this.getAnnotationDataDeepCopy());
+        this.drawWordCloud(this.getAnnotationDataDeepCopy(), true);
       }, 10);
     });
 
@@ -116,18 +116,17 @@ export class WordCloudComponent {
   }
 
   /**
+   * Redraws the word cloud with updated dimensions to fit the current window.
+   */
+  fitCloudToWindow() {
+    this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), false);
+  }
+
+  /**
    * Sends a request to the BackgroundTask object for new annotations data.
    */
   getAnnotationsForFile() {
     this.loadTask.update([]);
-  }
-
-  getAnnotationDataDeepCopy() {
-    return JSON.parse(JSON.stringify(this.annotationData)) as Word[];
-  }
-
-  getFilteredAnnotationDeepCopy() {
-    return this.getAnnotationDataDeepCopy().filter(annotation => this.wordVisibilityMap.get(annotation.text));
   }
 
   isWordVisible(word: string) {
@@ -147,7 +146,7 @@ export class WordCloudComponent {
   changeWordVisibility(word: string, event) {
     this.wordVisibilityMap.set(word, event.target.checked);
     this.invalidateWordVisibility();
-    this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
+    this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), false);
   }
 
   /**
@@ -159,14 +158,14 @@ export class WordCloudComponent {
       this.wordVisibilityMap.set(annotation.text, state);
     }
     this.invalidateWordVisibility();
-    this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
+    this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), false);
   }
 
   /**
    * Determines whether any words in the word cloud have been filtered. By default words are not filtered, so if any of them are, then we
    * know that the user changed the filter. We use this to determine which (if any) of the buttons on the widget to disable/enable.
    */
-  invalidateWordVisibility() {
+  private invalidateWordVisibility() {
     // Keep track if the user has some entity types disabled
     let wordVisibilityChanged = false;
     for (const value of this.wordVisibilityMap.values()) {
@@ -178,73 +177,122 @@ export class WordCloudComponent {
     this.wordVisibilityChanged = wordVisibilityChanged;
   }
 
-  /**
-   * Redraws the word cloud with updated dimensions to fit the current window.
-   */
-  fitCloudToWindow() {
-    this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
+  private updateWordVisibility(words: Word[]) {
+    const tempWordMap = new Map<string, Word>();
+    words.forEach((word) => {
+      tempWordMap.set(word.text, word);
+    });
+
+    /* tslint:disable:prefer-for-of*/
+    for (const word of this.annotationData) {
+      // If the word was returned by the algorithm then it is not filtered and it is drawable
+      if (tempWordMap.has(word.text)) {
+        word.shown = true;
+      } else {
+        // If it wasn't returned BUT it's been filtered, we don't need to show a warning
+        if (!this.wordVisibilityMap.get(word.text)) {
+          word.shown = true;
+        } else {
+          // If it wasn't returned but it HASN'T been filtered, we need to show a warning
+          word.shown = false;
+        }
+      }
+    }
+  }
+
+  private getAnnotationDataDeepCopy() {
+    return JSON.parse(JSON.stringify(this.annotationData)) as Word[];
+  }
+
+  private getFilteredAnnotationDeepCopy() {
+    return this.getAnnotationDataDeepCopy().filter(annotation => this.wordVisibilityMap.get(annotation.text));
+  }
+
+  private getWrapperDimensions() {
+    const margin = {top: 10, right: 10, bottom: 10, left: 10};
+    const width = (document.getElementById(`${this.id}cloud-wrapper`).offsetWidth) - margin.left - margin.right;
+    const height = (document.getElementById(`${this.id}cloud-wrapper`).offsetHeight) - margin.top - margin.bottom;
+
+    return {width, height};
+  }
+
+  private createInitialWordCloudElements(words: Word[]) {
+    this.updateWordVisibility(words);
+
+    const {width, height} = this.getWrapperDimensions();
+
+    // Append the svg element to the wrapper, append the grouping element to the svg, and create initial words
+    d3.select(`#${this.id}cloud-wrapper`)
+      .append('svg')
+        .attr('width', width)
+        .attr('height', height)
+      .append('g')
+        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+      .selectAll('text')
+      .data(words, (d) => d.text)
+      .enter()
+      .append('text')
+        .style('fill', (d) => d.color)
+        .attr('text-anchor', 'middle')
+        .attr('transform', (d) => {
+          return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
+        })
+        .text((d) => d.text)
+        .style('font-size', '4px')
+        .transition()
+        .style('font-size', (d) =>  d.size + 'px')
+        .ease(d3.easeSin)
+        .duration(1000);
+  }
+
+  private updateWordCloudElements(words: Word[]) {
+    this.updateWordVisibility(words);
+
+    // Set the dimensions and margins of the graph
+    const {width, height} = this.getWrapperDimensions();
+
+    // Get the svg element and update
+    const svg = d3.select(`#${this.id}cloud-wrapper`)
+      .select('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+    // Get and update the grouping element
+    const g = svg
+                .select('g')
+                  .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+
+    // Get the word elements
+    const wordElements = g.selectAll('text').data(words, (d) => d.text);
+
+    // Add any new words
+    wordElements
+      .enter()
+      .append('text')
+      .merge(wordElements)
+        .style('fill', (d) => d.color)
+        .attr('text-anchor', 'middle')
+        .text((d) => d.text)
+        .transition()
+        .attr('transform', (d) => {
+          return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
+        })
+        .style('font-size', (d) =>  d.size + 'px')
+        .ease(d3.easeSin)
+        .duration(1000);
+
+    // Remove any words that have been removed by either the algorithm or the user
+    wordElements.exit().remove();
   }
 
   /**
    * Draws a word cloud with the given Word inputs using the d3.layout.cloud library.
    * @param data represents a collection of Word data
    */
-  private drawWordCloud(data: Word[]) {
+  private drawWordCloud(data: Word[], initial: boolean) {
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
-
-    // Set the dimensions and margins of the graph
-    const margin = {top: 10, right: 10, bottom: 10, left: 10};
-    const width = (document.getElementById(`${this.id}cloud-wrapper`).offsetWidth) - margin.left - margin.right;
-    const height = (document.getElementById(`${this.id}cloud-wrapper`).offsetHeight) - margin.top - margin.bottom;
-
-    // Remove any stuff we already put in the word cloud wrapper
-    d3.select(`#${this.id}cloud-wrapper`).selectAll('*').remove();
-
-    // Append the svg object to the wrapper
-    const svg = d3.select(`#${this.id}cloud-wrapper`).append('svg')
-        .attr('width', width)
-        .attr('height', height);
-
+    const {width, height} = this.getWrapperDimensions();
     const maximumCount = Math.max(...data.map(annotation => annotation.value as number));
-
-    // This function takes the output of 'cloud' below and draws the words
-    const draw = (words: Word[]) => {
-      const tempWordMap = new Map<string, Word>();
-      words.forEach((word) => {
-        tempWordMap.set(word.text, word);
-      });
-
-      /* tslint:disable:prefer-for-of*/
-      for (const word of this.annotationData) {
-        // If the word was returned by the algorithm then it is not filtered and it is drawable
-        if (tempWordMap.has(word.text)) {
-          word.shown = true;
-        } else {
-          // If it wasn't returned BUT it's been filtered, we don't need to show a warning
-          if (!this.wordVisibilityMap.get(word.text)) {
-            word.shown = true;
-          } else {
-            // If it wasn't returned but it HASN'T been filtered, we need to show a warning
-            word.shown = false;
-          }
-        }
-
-      }
-
-      svg
-        .append('g')
-          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
-          .selectAll('text')
-            .data(words)
-          .enter().append('text')
-            .style('font-size', (d) =>  d.size + 'px')
-            .style('fill', (d) => d.color)
-            .attr('text-anchor', 'middle')
-            .attr('transform', (d) => {
-              return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
-            })
-            .text((d) => d.text);
-    };
 
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
     const layout = cloud()
@@ -255,7 +303,7 @@ export class WordCloudComponent {
       .fontSize((d) => ((d.value / maximumCount) * 74) + 12)
       /* tslint:disable:no-bitwise*/
       .rotate(() => (~~(Math.random() * 8) - 3) * 15)
-      .on('end', draw);
+      .on('end', (words) => { initial ? this.createInitialWordCloudElements(words) : this.updateWordCloudElements(words); });
     layout.start();
   }
 }
