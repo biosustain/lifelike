@@ -26,7 +26,7 @@
         <strong>Author:</strong> {{ object.creator.username }}
       </li>
     </ul>
-    <div *ngIf="object.type === 'file'" class="mt-5">
+    <div *ngIf="object.type === 'file' && object.highlight" class="mt-5">
       <h5>Term matches in document:</h5>
       <div *ngFor="let highlight of object.highlight">
         <hr class="my-3">
