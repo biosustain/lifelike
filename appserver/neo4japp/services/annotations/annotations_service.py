@@ -635,17 +635,41 @@ class AnnotationsService:
                 organisms=list(self.organism_frequency.keys()),
             )
 
+        # any proteins not matched in KG fall back to specified organism
+        fallback_protein_organism_matches = {}
+
+        if self.specified_organism.synonym:
+            fallback_protein_organism_matches = \
+                self.annotation_neo4j.get_proteins_to_organisms(
+                    proteins=list(protein_names),
+                    organisms=[self.specified_organism.organism_id],
+                )
+
         for entity, token_positions in entity_tokenpos_pairs:
             category = entity.get('category', '')
             protein_id = entity[EntityIdStr.PROTEIN.value]
+            entity_synonym = entity['synonym']
 
-            if entity['synonym'] in protein_organism_matches:
-                protein_id, organism_id, _ = self._get_closest_entity_organism_pair(
+            if entity_synonym in protein_organism_matches:
+                protein_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
                     entity_position=token_positions,
-                    organism_matches=protein_organism_matches[entity['synonym']]
+                    organism_matches=protein_organism_matches[entity_synonym]
                 )
 
-                category = self.organism_categories[organism_id]
+                specified_organism_id = None
+                if self.specified_organism.synonym and closest_distance > ORGANISM_DISTANCE_THRESHOLD:  # noqa
+                    if fallback_protein_organism_matches.get(entity_synonym, None):
+                        # if matched in KG then set to fallback strain
+                        protein_id = fallback_protein_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
+                        specified_organism_id = self.specified_organism.organism_id
+
+                category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
+            elif entity_synonym in fallback_protein_organism_matches:
+                try:
+                    protein_id = fallback_protein_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
+                    category = self.specified_organism.category
+                except KeyError:
+                    continue
 
             annotation = self._create_annotation_object(
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
