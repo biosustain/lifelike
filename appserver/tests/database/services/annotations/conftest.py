@@ -917,7 +917,7 @@ def mock_global_species_exclusion(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_get_gene_ace2_for_global_gene_inclusion(monkeypatch):
     def get_exclusions(*args, **kwargs):
-        return {'ACE2'}
+        return {'59272': 'ACE2'}
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
