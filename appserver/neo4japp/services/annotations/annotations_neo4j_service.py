@@ -51,10 +51,10 @@ class AnnotationsNeo4jService(KgService):
 
         return gene_to_organism_map
 
-    def get_genes_from_gene_ids(self, gene_ids: List[str]) -> Set[str]:
+    def get_genes_from_gene_ids(self, gene_ids: List[str]) -> Dict[str, str]:
         query = self.get_genes_from_gene_ids_query()
         result = self.graph.run(query, {'gene_ids': gene_ids}).data()
-        return set(row['gene_name'] for row in result)
+        return {row['gene_id']: row['gene_name'] for row in result}
 
     def get_gene_to_organism_match_result(
         self,
@@ -183,7 +183,7 @@ class AnnotationsNeo4jService(KgService):
     def get_genes_from_gene_ids_query(self):
         query = """
             MATCH (g:Gene) WHERE g.id IN $gene_ids
-            RETURN g.name as gene_name
+            RETURN g.id as gene_id, g.name as gene_name
         """
         return query
 
