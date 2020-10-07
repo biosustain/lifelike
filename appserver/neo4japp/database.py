@@ -1,6 +1,7 @@
 import hashlib
 import os
 
+from elasticsearch import Elasticsearch
 from flask import g, current_app
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -48,6 +49,13 @@ def _connect_to_neo4j():
     return Graph(
         host=current_app.config.get("NEO4J_HOST"),
         auth=current_app.config.get('NEO4J_AUTH').split('/'),
+    )
+
+
+def _connect_to_elastic():
+    return Elasticsearch(
+        timeout=180,
+        hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
     )
 
 
@@ -115,6 +123,14 @@ def get_projects_service():
         from neo4japp.services import ProjectsService
         g.projects_service = ProjectsService(session=db.session)
     return g.projects_service
+
+
+def get_elastic_service():
+    if 'elastic_service' not in g:
+        from neo4japp.services.elastic import ElasticService
+        elastic = _connect_to_elastic()
+        g.elastic_service = ElasticService(elastic=elastic)
+    return g.elastic_service
 
 
 def get_lmdb_dao():
