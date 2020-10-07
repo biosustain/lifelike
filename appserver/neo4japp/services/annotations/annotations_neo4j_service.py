@@ -113,7 +113,7 @@ class AnnotationsNeo4jService(KgService):
         proteins: List[str],
         organisms: List[str],
     ) -> Dict[str, Dict[str, str]]:
-        gene_to_organism_map: Dict[str, Dict[str, str]] = {}
+        protein_to_organism_map: Dict[str, Dict[str, str]] = {}
 
         query = self.get_protein_to_organism_query()
         cursor = self.graph.run(
@@ -134,12 +134,12 @@ class AnnotationsNeo4jService(KgService):
             # no way for us to infer which to use
             gene_id: str = row['protein_ids'][0]
 
-            if gene_to_organism_map.get(protein_name, None) is not None:
-                gene_to_organism_map[protein_name][organism_id] = gene_id
+            if protein_to_organism_map.get(protein_name, None) is not None:
+                protein_to_organism_map[protein_name][organism_id] = gene_id
             else:
-                gene_to_organism_map[protein_name] = {organism_id: gene_id}
+                protein_to_organism_map[protein_name] = {organism_id: gene_id}
 
-        return gene_to_organism_map
+        return protein_to_organism_map
 
     def get_organisms_from_tax_ids(self, tax_ids: List[str]) -> List[str]:
         query = self.get_taxonomy_from_synonyms_query()
