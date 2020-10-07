@@ -1,11 +1,17 @@
 import enum
 import re
 
-from sqlalchemy import event
+from sqlalchemy import (
+    and_,
+    event,
+    join,
+    select
+)
 from sqlalchemy.orm import validates
 from sqlalchemy.orm.query import Query
 
-from neo4japp.database import db
+from neo4japp.constants import FILE_INDEX_ID
+from neo4japp.database import db, get_elastic_service
 from neo4japp.models.auth import (
     AccessActionType,
     AccessControlPolicy,
@@ -13,6 +19,7 @@ from neo4japp.models.auth import (
     AppRole,
     AppUser,
 )
+from neo4japp.models import Files, Project
 from neo4japp.models.common import RDBMSBase, TimestampMixin
 from neo4japp.models.files import Directory
 
@@ -158,3 +165,59 @@ def init_default_access(mapper, connection, target):
         principal_id=admin_role.id,
         rule_type=AccessRuleType.ALLOW,
     ))
+
+
+@event.listens_for(Projects, 'after_update')
+def projects_after_update(mapper, connection, target):
+    """listen for the `after_update` event"""
+
+    # Need to re-index all files/maps which use this project, since the name may have changed
+    map_id_pairs = connection.execute(
+        select([
+            Project.__table__.c.id,
+            Project.__table__.c.hash_id
+        ]).select_from(
+            join(
+                Project.__table__,
+                Directory.__table__,
+                Directory.__table__.c.id == Project.__table__.c.dir_id
+            ).join(
+                Projects.__table__,
+                and_(
+                    Projects.__table__.c.id == target.id,
+                    Projects.__table__.c.id == Directory.__table__.c.projects_id,
+                )
+            )
+        )
+    ).fetchall()
+
+    file_id_pairs = connection.execute(
+        select([
+            Files.__table__.c.id,
+            Files.__table__.c.file_id
+        ]).where(
+            Files.__table__.c.project == target.id
+        )
+    ).fetchall()
+
+    hash_ids = []
+    pdf_ids = []
+    map_ids = []
+    for map_id, hash_id in map_id_pairs:
+        map_ids.append(map_id)
+        hash_ids.append(hash_id)
+
+    for pdf_id, hash_id in file_id_pairs:
+        pdf_ids.append(pdf_id)
+        hash_ids.append(hash_id)
+
+    elastic_service = get_elastic_service()
+    elastic_service.delete_documents_with_index(
+        file_ids=hash_ids,
+        index_id=FILE_INDEX_ID
+    )
+    elastic_service.index_maps(map_ids)
+    elastic_service.index_files(pdf_ids)
+
+# TODO: I suppose we may need a `after_delete` here for updating elastic as well?
+# Not sure how we want to handle documents in elastic that have no corresponding project

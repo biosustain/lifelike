@@ -16,3 +16,5 @@ certbot_conf_dir: /home/ansible/certbot
 certbot_email: dbour@eng.ucsd.edu
 
 dh_param_dir: /home/ansible/dh-param
+
+elastic_file_content_index_id: file_prod
