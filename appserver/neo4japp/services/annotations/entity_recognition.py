@@ -19,6 +19,7 @@ from neo4japp.services.annotations.lmdb_util import (
     create_chemical_for_ner,
     create_compound_for_ner,
     create_disease_for_ner,
+    create_food_for_ner,
     create_gene_for_ner,
     create_phenotype_for_ner,
     create_protein_for_ner,
@@ -46,9 +47,11 @@ class EntityRecognitionService:
 
         # for the global and local, structured the same as LMDB
         self._local_species_inclusion: Dict[str, List[dict]] = {}
+
         self.global_chemical_inclusion: Dict[str, List[dict]] = {}
         self.global_compound_inclusion: Dict[str, List[dict]] = {}
         self.global_disease_inclusion: Dict[str, List[dict]] = {}
+        self.global_food_inclusion: Dict[str, List[dict]] = {}
         self.global_gene_inclusion: Dict[str, List[dict]] = {}
         self.global_phenotype_inclusion: Dict[str, List[dict]] = {}
         self.global_protein_inclusion: Dict[str, List[dict]] = {}
@@ -56,13 +59,14 @@ class EntityRecognitionService:
 
         self.gene_collection: List[Tuple[str, str, str]] = []
 
-        self._matched_genes: Dict[str, LMDBMatch] = {}
         self._matched_chemicals: Dict[str, LMDBMatch] = {}
         self._matched_compounds: Dict[str, LMDBMatch] = {}
-        self._matched_proteins: Dict[str, LMDBMatch] = {}
-        self._matched_species: Dict[str, LMDBMatch] = {}
+        self._matched_genes: Dict[str, LMDBMatch] = {}
         self._matched_diseases: Dict[str, LMDBMatch] = {}
+        self._matched_foods: Dict[str, LMDBMatch] = {}
+        self._matched_proteins: Dict[str, LMDBMatch] = {}
         self._matched_phenotypes: Dict[str, LMDBMatch] = {}
+        self._matched_species: Dict[str, LMDBMatch] = {}
 
         self._matched_local_species_inclusion: Dict[str, List[PDFTokenPositions]] = {}
 
@@ -117,6 +121,10 @@ class EntityRecognitionService:
         return self._matched_diseases
 
     @property
+    def matched_foods(self) -> Dict[str, LMDBMatch]:
+        return self._matched_foods
+
+    @property
     def matched_genes(self) -> Dict[str, LMDBMatch]:
         return self._matched_genes
 
@@ -137,6 +145,7 @@ class EntityRecognitionService:
         chemical: bool = True,
         compound: bool = True,
         disease: bool = True,
+        food: bool = True,
         gene: bool = True,
         phenotype: bool = True,
         protein: bool = True,
@@ -146,6 +155,7 @@ class EntityRecognitionService:
             EntityType.CHEMICAL.value: chemical,
             EntityType.COMPOUND.value: compound,
             EntityType.DISEASE.value: disease,
+            EntityType.FOOD.value: food,
             EntityType.GENE.value: gene,
             EntityType.PHENOTYPE.value: phenotype,
             EntityType.PROTEIN.value: protein,
@@ -159,6 +169,7 @@ class EntityRecognitionService:
             matched_chemicals=self.matched_chemicals,
             matched_compounds=self.matched_compounds,
             matched_diseases=self.matched_diseases,
+            matched_foods=self.matched_foods,
             matched_genes=self.matched_genes,
             matched_phenotypes=self.matched_phenotypes,
             matched_proteins=self.matched_proteins,
@@ -182,6 +193,12 @@ class EntityRecognitionService:
         return set(
             normalize_str(exclusion.get('text')) for exclusion in self.global_annotations_to_exclude if  # noqa
                 exclusion.get('type') == EntityType.DISEASE.value and exclusion.get('text'))  # noqa
+
+    def _get_food_annotations_to_exclude(self):
+        # case insensitive
+        return set(
+            normalize_str(exclusion.get('text')) for exclusion in self.global_annotations_to_exclude if  # noqa
+                exclusion.get('type') == EntityType.FOOD.value and exclusion.get('text'))  # noqa
 
     def _get_gene_annotations_to_exclude(self):
         return set(
@@ -210,6 +227,7 @@ class EntityRecognitionService:
             (EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value, self.global_chemical_inclusion, create_chemical_for_ner),  # noqa
             (EntityType.COMPOUND.value, EntityIdStr.COMPOUND.value, self.global_compound_inclusion, create_compound_for_ner),  # noqa
             (EntityType.DISEASE.value, EntityIdStr.DISEASE.value, self.global_disease_inclusion, create_disease_for_ner),  # noqa
+            (EntityType.FOOD.value, EntityIdStr.FOOD.value, self.global_food_inclusion, create_food_for_ner),  # noqa
             (EntityType.GENE.value, EntityIdStr.GENE.value, self.global_gene_inclusion, create_gene_for_ner),  # noqa
             (EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value, self.global_phenotype_inclusion, create_phenotype_for_ner),  # noqa
             (EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value, self.global_protein_inclusion, create_protein_for_ner),  # noqa
@@ -272,6 +290,7 @@ class EntityRecognitionService:
                             EntityType.CHEMICAL.value,
                             EntityType.COMPOUND.value,
                             EntityType.DISEASE.value,
+                            EntityType.FOOD.value,
                             EntityType.PHENOTYPE.value,
                             EntityType.SPECIES.value
                         }:
@@ -285,8 +304,8 @@ class EntityRecognitionService:
                                 self.gene_collection.append(
                                     (entity_id, entity_name, normalized_entity_name))
                                 continue
-                            else:
-                                # protein
+                            elif entity_type == EntityType.PROTEIN.value:
+                                # protein is a bit different for now
                                 entity = create_entity_ner_func(
                                     name=entity_name,
                                     synonym=entity_name
@@ -470,6 +489,63 @@ class EntityRecognitionService:
                         self.matched_diseases[token.keyword] = LMDBMatch(entities=diseases_val, tokens=[token])  # noqa
 
         return diseases_val
+
+    def entity_lookup_for_foods(
+        self,
+        global_exclusion: Set[str],
+        token: PDFTokenPositions,
+        synonym: Optional[str] = None,
+    ):
+        """Do entity lookups for food. First check in LMDB,
+        if nothing was found, then check in global inclusions.
+
+        Args:
+            token: the token with pdf text and it's positions
+            synonym: the correct spelling (if word is misspelled)
+        """
+        food_val = None
+        nlp_predicted_type = None
+
+        if token.token_type:
+            nlp_predicted_type = token.token_type
+
+        if synonym:
+            lookup_key = normalize_str(synonym)
+        else:
+            lookup_key = normalize_str(token.keyword)
+
+        if len(lookup_key) > 2:
+            lowered_word = token.keyword.lower()
+
+            if lowered_word in global_exclusion:
+                current_app.logger.info(
+                    f'Found a match in foods entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            elif lowered_word in self.exclusion_words:
+                current_app.logger.info(
+                    f'Found a match in foods entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            else:
+                if nlp_predicted_type == EntityType.FOOD.value or nlp_predicted_type is None:  # noqa
+                    food_val = self.lmdb_session.get_lmdb_values(
+                        txn=self.lmdb_session.foods_txn,
+                        key=lookup_key,
+                        token_type=EntityType.FOOD.value
+                    )
+
+                if not food_val:
+                    # didn't find in LMDB so look in global inclusion
+                    food_val = self.global_food_inclusion.get(lookup_key, [])
+
+                if food_val:
+                    if token.keyword in self.matched_foods:
+                        self.matched_foods[token.keyword].tokens.append(token)
+                    else:
+                        self.matched_foods[token.keyword] = LMDBMatch(entities=food_val, tokens=[token])  # noqa
+
+        return food_val
 
     def entity_lookup_for_genes(
         self,
@@ -737,6 +813,9 @@ class EntityRecognitionService:
         if check_entities.get(EntityType.DISEASE.value, False):
             self._find_disease_match(token, global_exclusions[EntityType.DISEASE.value])
 
+        if check_entities.get(EntityType.FOOD.value, False):
+            self._find_food_match(token, global_exclusions[EntityType.FOOD.value])
+
         if check_entities.get(EntityType.GENE.value, False):
             self._find_gene_match(token, global_exclusions[EntityType.GENE.value])
 
@@ -805,6 +884,26 @@ class EntityRecognitionService:
                         break
             else:
                 self.entity_lookup_for_diseases(
+                    global_exclusion=global_exclusion,
+                    token=token
+                )
+
+    def _find_food_match(self, token: PDFTokenPositions, global_exclusion: Set[str]) -> None:
+        word = token.keyword
+        if word:
+            if word in COMMON_TYPOS:
+                for correct_spelling in COMMON_TYPOS[word]:
+                    exist = self.entity_lookup_for_foods(
+                        global_exclusion=global_exclusion,
+                        token=token,
+                        synonym=correct_spelling
+                    )
+
+                    # if any that means there was a match
+                    if exist is not None:
+                        break
+            else:
+                self.entity_lookup_for_foods(
                     global_exclusion=global_exclusion,
                     token=token
                 )
@@ -929,6 +1028,7 @@ class EntityRecognitionService:
             EntityType.CHEMICAL.value: self._get_chemical_annotations_to_exclude(),
             EntityType.COMPOUND.value: self._get_compound_annotations_to_exclude(),
             EntityType.DISEASE.value: self._get_disease_annotations_to_exclude(),
+            EntityType.FOOD.value: self._get_food_annotations_to_exclude(),
             EntityType.GENE.value: self._get_gene_annotations_to_exclude(),
             EntityType.PHENOTYPE.value: self._get_phenotype_annotations_to_exclude(),
             EntityType.PROTEIN.value: self._get_protein_annotations_to_exclude(),

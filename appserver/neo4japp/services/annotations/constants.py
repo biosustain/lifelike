@@ -12,6 +12,7 @@ PHENOTYPES_MESH_LMDB = 'phenotypes_mesh'
 PROTEINS_UNIPROT_LMDB = 'proteins_uniprot'
 CHEMICALS_PUBCHEM_LMDB = 'chemicals_pubchem'
 SPECIES_NCBI_LMDB = 'species_ncbi'
+FOODS_MESH_LMDB = 'foods_mesh'
 
 # NLP endpoint
 NLP_ENDPOINT = 'http://nlpapi:5001/infer/v1'
@@ -83,6 +84,7 @@ class EntityType(Enum):
     PROTEIN = 'Protein'
     SPECIES = 'Species'
     PHENOTYPE = 'Phenotype'
+    FOOD = 'Food'
 
 
 ENTITY_TYPE_PRECEDENCE = {
@@ -92,8 +94,9 @@ ENTITY_TYPE_PRECEDENCE = {
     EntityType.DISEASE.value: 1,
     EntityType.GENE.value: 6,
     EntityType.PROTEIN.value: 5,
-    EntityType.SPECIES.value: 7,
+    EntityType.SPECIES.value: 8,  # 7,
     EntityType.PHENOTYPE.value: 4,
+    EntityType.FOOD.value: 7,
 }
 
 HOMO_SAPIENS_TAX_ID = '9606'
@@ -111,10 +114,11 @@ class EntityColor(Enum):
     CHEMICAL = ANNOTATION_STYLES_DICT['chemical']['color']
     COMPOUND = ANNOTATION_STYLES_DICT['compound']['color']
     DISEASE = ANNOTATION_STYLES_DICT['disease']['color']
+    FOOD = ANNOTATION_STYLES_DICT['food']['color']
     GENE = ANNOTATION_STYLES_DICT['gene']['color']
+    PHENOTYPE = ANNOTATION_STYLES_DICT['phenotype']['color']
     PROTEIN = ANNOTATION_STYLES_DICT['protein']['color']
     SPECIES = ANNOTATION_STYLES_DICT['species']['color']
-    PHENOTYPE = ANNOTATION_STYLES_DICT['phenotype']['color']
 
 
 class EntityIdStr(Enum):
@@ -125,6 +129,7 @@ class EntityIdStr(Enum):
     PROTEIN = 'protein_id'
     SPECIES = 'tax_id'
     PHENOTYPE = 'phenotype_id'
+    FOOD = 'food_id'
 
 
 class DatabaseType(Enum):
