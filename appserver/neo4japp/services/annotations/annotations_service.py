@@ -62,6 +62,7 @@ class AnnotationsService:
         chemical: bool = True,
         compound: bool = True,
         disease: bool = True,
+        food: bool = True,
         gene: bool = True,
         phenotype: bool = True,
         protein: bool = True,
@@ -80,6 +81,10 @@ class AnnotationsService:
         if disease:
             entity_type_and_id_pairs.append(
                 (EntityType.DISEASE.value, EntityIdStr.DISEASE.value))
+
+        if food:
+            entity_type_and_id_pairs.append(
+                (EntityType.FOOD.value, EntityIdStr.FOOD.value))
 
         if phenotype:
             entity_type_and_id_pairs.append(
@@ -605,6 +610,51 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
+    def _annotate_diseases(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_diseases,
+            token_type=EntityType.DISEASE.value,
+            color=EntityColor.DISEASE.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
+    def _annotate_foods(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_foods,
+            token_type=EntityType.FOOD.value,
+            color=EntityColor.FOOD.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
+    def _annotate_phenotypes(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_phenotypes,
+            token_type=EntityType.PHENOTYPE.value,
+            color=EntityColor.PHENOTYPE.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
     def _annotate_proteins(
         self,
         entity_id_str: str,
@@ -789,36 +839,6 @@ class AnnotationsService:
         # don't return the custom annotations because they should stay as custom
         return species_annotations
 
-    def _annotate_diseases(
-        self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            tokens=self.matched_diseases,
-            token_type=EntityType.DISEASE.value,
-            color=EntityColor.DISEASE.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
-        )
-
-    def _annotate_phenotypes(
-        self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            tokens=self.matched_phenotypes,
-            token_type=EntityType.PHENOTYPE.value,
-            color=EntityColor.PHENOTYPE.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
-        )
-
     def annotate(
         self,
         annotation_type: str,
@@ -830,10 +850,11 @@ class AnnotationsService:
         funcs = {
             EntityType.CHEMICAL.value: self._annotate_chemicals,
             EntityType.COMPOUND.value: self._annotate_compounds,
-            EntityType.PROTEIN.value: self._annotate_proteins,
-            EntityType.SPECIES.value: self._annotate_species,
             EntityType.DISEASE.value: self._annotate_diseases,
+            EntityType.FOOD.value: self._annotate_foods,
             EntityType.PHENOTYPE.value: self._annotate_phenotypes,
+            EntityType.SPECIES.value: self._annotate_species,
+            EntityType.PROTEIN.value: self._annotate_proteins,
             EntityType.GENE.value: self._annotate_genes,
         }
 
@@ -1047,6 +1068,7 @@ class AnnotationsService:
         self.matched_chemicals = entity_results.matched_chemicals
         self.matched_compounds = entity_results.matched_compounds
         self.matched_diseases = entity_results.matched_diseases
+        self.matched_foods = entity_results.matched_foods
         self.matched_genes = entity_results.matched_genes
         self.matched_phenotypes = entity_results.matched_phenotypes
         self.matched_proteins = entity_results.matched_proteins
