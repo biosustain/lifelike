@@ -601,7 +601,7 @@ def test_custom_annotations_gene_organism_matching_has_match(
         'meta': {
             'id': '9606',
             'type': 'Species',
-            'color': '#3177b8',
+            'color': '#0277bd',
             'links': {
                 'ncbi': 'https://www.ncbi.nlm.nih.gov/gene/?query=hooman',
                 'google': 'https://www.google.com/search?q=hooman',
