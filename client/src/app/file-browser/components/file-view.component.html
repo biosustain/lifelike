@@ -103,7 +103,7 @@
                              [checked]="isEntityTypeVisible(entityTypeEntry.type)"
                              (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
                       <label class="custom-control-label" [for]="id + 'filter-' + entityTypeEntry.type.id">
-                  <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color}">
+                  <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color, opacity: 0.3}">
                 </span> {{entityTypeEntry.type.name}} <span *ngIf="!!entityTypeEntry.annotations.length">
                   ({{entityTypeEntry.annotations.length}})
                 </span>
