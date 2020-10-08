@@ -1,11 +1,18 @@
 import hashlib
+import os
+import re
+from dataclasses import dataclass
+from typing import BinaryIO, Optional, List, Dict
 
+import sqlalchemy
 from sqlalchemy import and_, text
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.types import TIMESTAMP
 
 from neo4japp.database import db
-from neo4japp.models.common import RDBMSBase, TimestampMixin, RecyclableMixin, FullTimestampMixin
+from neo4japp.models import Projects
+from neo4japp.models.common import RDBMSBase, TimestampMixin, RecyclableMixin, FullTimestampMixin, HashIdMixin
 
 file_collaborator_role = db.Table(
     'file_collaborator_role',
@@ -46,8 +53,88 @@ class FileContent(RDBMSBase):
         self.raw_file = value.encode('utf-8')
         self.checksum_sha256 = hashlib.sha256(self.raw_file).digest()
 
+    @classmethod
+    def get_file_lock_hash(cls, checksum_sha256: bytes) -> int:
+        """Create the hash for the pg_advisory_xact_lock() function to prevent
+        a race condition on inserting rows to FileContent.
+        """
 
-class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin):  # type: ignore
+        # We use SHAKE-128 (a.k.a. Keccak or SHA-3) to generate a
+        # signed BIGINT for pg_advisory_xact_lock() to maximize the
+        # bit space accepted by the function
+        h = hashlib \
+            .shake_128('FileContentGetOrCreate'.encode('ascii') + checksum_sha256) \
+            .digest(8)
+        return int.from_bytes(h, byteorder='big', signed=True)
+
+    @classmethod
+    def get_or_create(cls, file: BinaryIO, checksum_sha256: bytes = None) -> int:
+        """Get the existing FileContent row for the given file or create a new row
+        if needed.
+
+        A lock is acquired for the operation with granularity down to
+        the specific file, and it is only released at the end of the transaction.
+        Do not add more than one file in the same transaction while using this method
+        otherwise you will risk a deadlock.
+
+        This method does not commit the transaction.
+
+        :param file: a file-like object
+        :param checksum_sha256: the checksum of the file (computed if not provided)
+        :return: the ID of the file
+        """
+
+        if checksum_sha256 is None:
+            content = file.read()
+            checksum_sha256 = hashlib.sha256(content).digest()
+        else:
+            content = None
+
+        # We need to deal with a potential race condition. We can't rely on
+        # transactions because transactions don't block each other (no matter the
+        # isolation level, a transaction would deal with either a dirty read or a race
+        # condition). Here we acquire a lock specific for this file to be added
+        # into the DB, which will block any other threads attempting to add
+        # the same file (assuming that they too acquire the same lock).
+        # The lock is released at the end of the transaction to
+        # prevent a dirty read occurring in another thread creating a FK error in their code.
+        # The only downside to acquiring a lock is that it could result in a deadlock,
+        # so hopefully the calling code isn't doing anything fancy beyond
+        # adding one file to the database. Please don't add more than one file
+        # in the same transaction (!). If later we require batch file adding, consider
+        # sorting the files in a stable manner (like by the checksum) and then acquiring
+        # the locks in the same order.
+        db.session.execute(db.select([
+            db.func.pg_advisory_xact_lock(
+                db.cast(cls.get_file_lock_hash(checksum_sha256), db.BIGINT)
+            )
+        ]))
+
+        try:
+            return db.session.query(FileContent.id) \
+                .filter(FileContent.checksum_sha256 == checksum_sha256) \
+                .one()[0]
+        except NoResultFound:
+            if content is None:
+                content = file.read()
+
+            row = FileContent()
+            row.checksum_sha256 = checksum_sha256
+            row.raw_file = content
+            db.session.add(row)
+
+            return row.id
+
+
+@dataclass
+class FilePrivileges:
+    readable: bool
+    writable: bool
+    commentable: bool
+
+
+class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # type: ignore
+    DIRECTORY_MIME_TYPE = 'vnd.lifelike.filesystem/directory'
     MAX_DEPTH = 50
     API_FIELDS = [
         'hash_id',
@@ -64,10 +151,9 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin):  # type: ignore
 
     __tablename__ = 'files'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    hash_id = db.Column(db.String(36), unique=True, nullable=False)
     filename = db.Column(db.String(200), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('files.id'), nullable=True, index=True)
-    parent = db.relationship('Files', foreign_keys=parent_id)
+    parent = db.relationship('Files', foreign_keys=parent_id, uselist=False, remote_side=[id])
     mime_type = db.Column(db.String(127), nullable=False)
     description = db.Column(db.String(2048), nullable=True)
     content_id = db.Column(db.Integer, db.ForeignKey('files_content.id', ondelete='CASCADE'),
@@ -92,6 +178,62 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin):  # type: ignore
                                        recycling_date.is_(None),
                                        parent_id.isnot(None))),
     )
+
+    calculated_project: Optional[Projects] = None
+    calculated_privileges: Dict[int, FilePrivileges] = {}
+    calculated_children: Optional[List['Files']] = None
+
+    def generate_non_conflicting_filename(self):
+        """Generate a new filename based of the current filename when there is a filename
+        conflict with another file in the same folder.
+
+        The returned filename could still conflict due to a race condition if you are
+        not fast enough. With haste!
+
+        :return: a new filename
+        :raises:
+            ValueError: if a new (reasonable) filename cannot be found
+        """
+
+        file_name, file_ext = os.path.splitext(self.filename)
+        file_ext_len = len(file_ext)
+
+        # Remove the file extension from the filename column in the table
+        c_file_name = sqlalchemy.func.left(Files.filename, -file_ext_len) if file_ext_len else Files.filename
+
+        # Extract the N from (N) in the filename
+        c_name_matches = sqlalchemy.func.regexp_matches(
+            c_file_name,
+            '^.* \\(([0-9]+)\\)$',
+            type_=sqlalchemy.ARRAY(sqlalchemy.Text))
+
+        # regexp_matches() returns an array so get the first result
+        c_name_index = c_name_matches[1]
+
+        # Search the table for all files that have {this_filename} (N){ext}
+        q_used_indices = db.session.query(sqlalchemy.cast(c_name_index, sqlalchemy.Integer).label('index')) \
+            .select_from(Files) \
+            .filter(Files.parent_id == self.parent_id,
+                    Files.filename.op('~')(
+                        f'^{re.escape(file_name)} \\(([0-9]+)\\){re.escape(file_ext)}$'),
+                    Files.recycling_date.is_(None),
+                    Files.deletion_date.is_(None)) \
+            .subquery()
+
+        # Finally get the MAX() of all the Ns found in the subquery
+        max_index = db.session.query(sqlalchemy.func.max(q_used_indices.c.index).label('index')) \
+                        .select_from(q_used_indices) \
+                        .scalar() or 0
+
+        next_index = max_index + 1
+
+        new_filename = f"{file_name} ({next_index}){file_ext}"
+
+        # Check that the new filename doesn't exceed the length of the column
+        if len(self.filename) > Files.filename.property.columns[0].type.length:
+            raise ValueError('new filename would exceed the length of the column')
+
+        return new_filename
 
 
 class FileVersion(RDBMSBase, FullTimestampMixin):

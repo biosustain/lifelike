@@ -10,8 +10,7 @@ from sqlalchemy.orm.query import Query
 
 from neo4japp.database import db, ma
 
-from .common import RDBMSBase, TimestampMixin
-
+from .common import RDBMSBase, TimestampMixin, HashIdMixin
 
 user_role = db.Table(
     'app_user_role',
@@ -37,7 +36,7 @@ class AppRole(RDBMSBase):
     name = db.Column(db.String(128), unique=True, nullable=False)
 
 
-class AppUser(RDBMSBase, TimestampMixin):
+class AppUser(RDBMSBase, TimestampMixin, HashIdMixin):
     API_FIELDS = [
         'hash_id',
         'first_name',
@@ -51,7 +50,6 @@ class AppUser(RDBMSBase, TimestampMixin):
     __tablename__ = 'appuser'
 
     id = db.Column(db.Integer, primary_key=True)
-    hash_id = db.Column(db.String(36), unique=True, nullable=False)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     first_name = db.Column(db.String(120), nullable=False)

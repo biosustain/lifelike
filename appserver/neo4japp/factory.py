@@ -1,10 +1,9 @@
 import logging
 import os
 import traceback
-import sentry_sdk
 from functools import partial
 
-from pythonjsonlogger import jsonlogger
+import sentry_sdk
 from flask import (
     current_app,
     Flask,
@@ -12,14 +11,21 @@ from flask import (
     has_request_context,
     request,
 )
-
+from flask.logging import wsgi_errors_stream
 from flask_caching import Cache
 from flask_cors import CORS
+from marshmallow import ValidationError
+from marshmallow.exceptions import SCHEMA
+from pythonjsonlogger import jsonlogger
+from sentry_sdk.integrations.flask import FlaskIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.logging import ignore_logger
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+from werkzeug.exceptions import UnprocessableEntity
 from werkzeug.utils import (
     find_modules,
     import_string,
 )
-from flask.logging import wsgi_errors_stream
 
 from neo4japp.database import db, ma, migrate, close_lmdb
 from neo4japp.encoders import CustomJSONEncoder
@@ -29,14 +35,8 @@ from neo4japp.exceptions import (
     JWTAuthTokenException,
     JWTTokenException,
     RecordNotFoundException,
-    DataNotAvailableException
+    DataNotAvailableException, FilesystemAccessRequestRequired
 )
-
-from werkzeug.exceptions import UnprocessableEntity
-from sentry_sdk.integrations.flask import FlaskIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
-from sentry_sdk.integrations.logging import ignore_logger
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 # Set the following modules to have a minimum of log level 'WARNING'
 module_logs = [
@@ -65,6 +65,7 @@ cache = Cache()
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
     """ Adds meta data about the request when available """
+
     def add_fields(self, log_record, record, message_dict):
         super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
         if has_request_context():
@@ -73,7 +74,6 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
 
 
 def create_app(name='neo4japp', config='config.Development'):
-
     app_logger = logging.getLogger(name)
     log_handler = logging.StreamHandler(stream=wsgi_errors_stream)
     format_str = '%(message)%(levelname)%(asctime)%(module)'
@@ -134,6 +134,8 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(RecordNotFoundException, partial(handle_error, 404))
     app.register_error_handler(JWTAuthTokenException, partial(handle_error, 401))
     app.register_error_handler(JWTTokenException, partial(handle_error, 401))
+    app.register_error_handler(FilesystemAccessRequestRequired, partial(handle_error, 403))
+    app.register_error_handler(ValidationError, partial(handle_validation_error, 400))
     app.register_error_handler(UnprocessableEntity, partial(handle_webargs_error, 400))
     app.register_error_handler(BaseException, partial(handle_error, 400))
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
@@ -149,15 +151,22 @@ def register_blueprints(app, pkgname):
 
 
 def handle_error(code: int, ex: BaseException):
-    reterr = {'apiHttpError': ex.to_dict()}
     current_app.logger.error(f'Request caused {type(ex)} error', exc_info=ex)
-    reterr['version'] = GITHUB_HASH
 
-    transaction_id = request.headers.get('X-Transaction-Id', '')
-    reterr['transactionId'] = transaction_id
+    reterr = {
+        'apiHttpError': ex.to_dict(),
+        'message': ex.message,
+        'code': ex.code or 'error',
+        'fields': [],
+        'version': GITHUB_HASH,
+        'transactionId': request.headers.get('X-Transaction-Id', ''),
+        **ex.error_return_props,
+    }
+
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
+
     return jsonify(reterr), code
 
 
@@ -174,15 +183,37 @@ def handle_generic_error(code: int, ex: Exception):
     return jsonify(reterr), code
 
 
-# Ensure that response includes all error messages produced from the parser
-def handle_webargs_error(code, error):
-    reterr = {'apiHttpError': error.data['messages']}
+def handle_validation_error(code, error: ValidationError, messages = None):
     current_app.logger.error('Request caused UnprocessableEntity error', exc_info=error)
-    reterr['version'] = GITHUB_HASH
 
-    transaction_id = request.headers.get('X-Transaction-Id', '')
-    reterr['transactionId'] = transaction_id
+    fields: dict = messages or error.normalized_messages()
+    field_keys = list(fields.keys())
+    if len(field_keys) == 1:
+        key = field_keys[0]
+        field = fields[key]
+        if key == SCHEMA:
+            message = '; '.join(field)
+        else:
+            message = f"{field_keys[0]}: {'; '.join(field)}"
+    else:
+        message = 'An error occurred with the provided input.'
+
+    reterr = {
+        'message': message,
+        'code': 'validation',
+        'fields': fields,
+        'apiHttpError': 'An error occurred with the provided input.',
+        'version': GITHUB_HASH,
+        'transactionId': request.headers.get('X-Transaction-Id', ''),
+    }
+
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(error), value=error, tb=error.__traceback__))
+
     return jsonify(reterr), code
+
+
+# Ensure that response includes all error messages produced from the parser
+def handle_webargs_error(code, error):
+    return handle_validation_error(code, error, error.data['messages'])

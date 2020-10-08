@@ -1,3 +1,5 @@
+import random
+
 import sqlalchemy as sa
 from decimal import Decimal
 
@@ -9,6 +11,12 @@ from marshmallow import fields
 from marshmallow_sqlalchemy.convert import ModelConverter as BaseModelConverter
 from sqlalchemy_utils.types import TSVectorType
 from sqlalchemy.types import TIMESTAMP
+
+
+def generate_hash_id():
+    length = 36
+    letters = 'abcdefghkmnoprstwxzABCDEFGHJKLMNPQRTWXY34689'
+    return ''.join(random.choice(letters) for i in range(length))
 
 
 class NEO4JBase():
@@ -182,12 +190,24 @@ class FullTimestampMixin(TimestampMixin):
         return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
 
     @declared_attr
+    def creator(cls):
+        return db.relationship('AppUser', foreign_keys=cls.creator_id, uselist=False)
+
+    @declared_attr
     def modifier_id(cls):
         return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
 
     @declared_attr
+    def modifier(cls):
+        return db.relationship('AppUser', foreign_keys=cls.modifier_id, uselist=False)
+
+    @declared_attr
     def deleter_id(cls):
         return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+
+    @declared_attr
+    def deleter(cls):
+        return db.relationship('AppUser', foreign_keys=cls.deleter_id, uselist=False)
 
     @property
     def deleted(self):
@@ -202,6 +222,14 @@ class RecyclableMixin:
     def recycler_id(cls):
         return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
 
+    @declared_attr
+    def recycler(cls):
+        return db.relationship('AppUser', foreign_keys=cls.recycler_id, uselist=False)
+
     @property
     def recycled(self):
         return self.recycling_date is not None
+
+
+class HashIdMixin:
+    hash_id = db.Column(db.String(36), unique=True, nullable=False, default=generate_hash_id)
