@@ -42,6 +42,7 @@ requests = "*"
 pandas = "~=1.0.5"
 xlsxwriter = "~=1.2.9"
 python-json-logger = "*"
+marshmallow-dataclass = "*"
 
 [requires]
 python_version = "3.8.2"

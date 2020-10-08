@@ -1,16 +1,15 @@
 """TODO: Possibly turn this into a DAO in the future.
 For now, it's just a file with query functions to help DRY.
 """
-from typing import List, Set
+from typing import List, Set, Dict
 
 from sqlalchemy import and_, inspect
-from sqlalchemy.orm import raiseload, contains_eager
-from sqlalchemy.orm.exc import NoResultFound
-
-from . import projects_collaborator_role, AppUser, AppRole, Projects
-from .files import Files, FileContent, file_collaborator_role
+from sqlalchemy.orm import contains_eager, aliased
 
 from neo4japp.database import db
+from . import projects_collaborator_role, AppUser, AppRole, Projects
+from .files import Files, FileContent, file_collaborator_role
+from ..schemas.filesystem import FilePrivileges
 
 
 def get_all_files_and_content_by_id(file_ids: Set[str], project_id: int):
@@ -44,9 +43,11 @@ def get_all_files_by_id(file_ids: Set[str], project_id: int):
     return files
 
 
-def get_file_parent_hierarchy(filter, max_depth=Files.MAX_DEPTH, files_table=Files, projects_table=Projects):
+def build_file_parents_cte(filter, max_depth=Files.MAX_DEPTH, files_table=Files, projects_table=Projects):
     """
-    Build a qurey that will get a hierarchy of one or more files.
+    Build a query for fetching *just* the parent IDs of a file, and the file itself.
+    The query returned is to be combined with another query to actually
+    fetch file or file information (see :func:`get_file_hierarchy_query`).
 
     :param filter: WHERE for finding the desired file (i.e. Files.id == X)
     :param max_depth: a maximum number of parents to return (infinite recursion mitigation)
@@ -98,7 +99,15 @@ def get_file_parent_hierarchy(filter, max_depth=Files.MAX_DEPTH, files_table=Fil
     return q_hierarchy
 
 
-def get_projects_from_hierarchy(q_hierarchy):
+def join_projects_to_parents_cte(q_hierarchy):
+    """
+    Using the query from :func:`get_get_file_parent_hierarchy_query`, this methods joins
+    the project ID for the initial file row(s), provided the top-most parent (root) of
+    that initial file row has a project.
+
+    :param q_hierarchy: the hierarchy query
+    :return: a new query
+    """
     return db.session.query(
         q_hierarchy.c.initial_id,
         db.func.max(q_hierarchy.c.project_id).label('project_id'),
@@ -108,7 +117,71 @@ def get_projects_from_hierarchy(q_hierarchy):
         .subquery()
 
 
+def build_file_hierarchy_query(condition, projects_table, files_table,
+                               include_deleted_files=False, include_deleted_projects=False):
+    """
+    Build a query for fetching a file, its parents, and the related project(s), while
+    (optionally) excluding deleted projects and deleted projects.
+
+    :param condition: the condition to limit the files returned
+    :param projects_table: a reference to the projects table used in the query
+    :param files_table: a reference to the files table used in the query
+    :param include_deleted_files: whether to include deleted files
+    :param include_deleted_projects: whether to include deleted projects
+    :return: a query
+    """
+
+    # Goals:
+    # - Remove deleted files (done in recursive CTE)
+    # - Remove deleted projects (done in main query)
+    # - Allow recycled files (done in main query)
+    # - Fetch permissions (done in main query)
+    # Do it in one query efficiently
+
+    # Fetch the target file and its parents
+    q_hierarchy = build_file_parents_cte(and_(
+        condition,
+        *([Files.deletion_date.is_(None)] if not include_deleted_files else [])
+    ))
+
+    # Only the top-most directory has a project FK, so we need to reorganize
+    # the query results from the CTE so we have a project ID for every file row
+    q_hierarchy_project = join_projects_to_parents_cte(q_hierarchy)
+
+    t_parent_files = aliased(files_table)
+
+    # Main query
+    query = db.session.query(files_table,
+                             q_hierarchy.c.initial_id,
+                             q_hierarchy.c.level,
+                             projects_table) \
+        .join(q_hierarchy, q_hierarchy.c.id == files_table.id) \
+        .join(q_hierarchy_project, q_hierarchy_project.c.initial_id == q_hierarchy.c.initial_id) \
+        .join(projects_table, projects_table.root_id == q_hierarchy_project.c.project_id) \
+        .outerjoin(t_parent_files, t_parent_files.id == files_table.parent_id) \
+        .options(contains_eager(files_table.parent, alias=t_parent_files)) \
+        .order_by(q_hierarchy.c.level)
+
+    if not include_deleted_projects:
+        query = query.filter(projects_table.deletion_date.is_(None))
+
+    return query
+
+
+# noinspection DuplicatedCode
 def add_project_user_role_columns(query, project_table, role_names, user_id, column_format="has_{}"):
+    """
+    Add columns to a query for fetching the value of the provided roles for the
+    provided user ID for projects in the provided project table.
+
+    :param query: the query to modify
+    :param project_table: the project table
+    :param role_names: a list of roles to check
+    :param user_id: the user ID to check for
+    :param column_format: the format for the name of the column, where {} is the role name
+    :return: the new query
+    """
+
     for role_name in role_names:
         t_role = db.aliased(AppRole)
         t_user = db.aliased(AppUser)
@@ -127,26 +200,50 @@ def add_project_user_role_columns(query, project_table, role_names, user_id, col
     return query
 
 
+# noinspection DuplicatedCode
 def add_file_user_role_columns(query, file_table, role_names, user_id, column_format="has_{}"):
+    """
+    Add columns to a query for fetching the value of the provided roles for the
+    provided user ID for files in the provided fi;e table.
+
+    :param query: the query to modify
+    :param file_table: the file table
+    :param role_names: a list of roles to check
+    :param user_id: the user ID to check for
+    :param column_format: the format for the name of the column, where {} is the role name
+    :return: the new query
+    """
+
     for role_name in role_names:
         t_role = db.aliased(AppRole)
         t_user = db.aliased(AppUser)
 
-        project_role_sq = db.session.query(file_collaborator_role, t_role.name) \
+        file_role_sq = db.session.query(file_collaborator_role, t_role.name) \
             .join(t_role, t_role.id == file_collaborator_role.c.role_id) \
             .join(t_user, t_user.id == file_collaborator_role.c.collaborator_id) \
             .subquery()
 
         query = query \
-            .outerjoin(project_role_sq, and_(project_role_sq.c.file_id == file_table.id,
-                                             project_role_sq.c.collaborator_id == user_id,
-                                             project_role_sq.c.name == role_name)) \
-            .add_column(project_role_sq.c.name.isnot(None).label(column_format.format(role_name)))
+            .outerjoin(file_role_sq, and_(file_role_sq.c.file_id == file_table.id,
+                                          file_role_sq.c.collaborator_id == user_id,
+                                          file_role_sq.c.name == role_name)) \
+            .add_column(file_role_sq.c.name.isnot(None).label(column_format.format(role_name)))
 
     return query
 
 
 def add_user_permission_columns(query, project_table, file_table, user_id):
+    """
+    Add the regular project role columns (read, write, admin) and the regular
+    file role columns (read, write, comment) to the given query.
+
+    :param query: the query to update
+    :param project_table: the projects table to use
+    :param file_table: the files table to use
+    :param user_id: the user ID to check for
+    :return: the new query
+    """
+
     query = add_project_user_role_columns(query, project_table, [
         'project-read',
         'project-write',
@@ -163,54 +260,71 @@ def add_user_permission_columns(query, project_table, file_table, user_id):
 
 
 class FileHierarchy:
+    """
+    Provides accessors for working with the file hierarchy data returned
+    from :func:`build_file_parents_cte` and
+    :func:`build_file_hierarchy_query`.
+    """
+
     def __init__(self, results, file_table, project_table):
-        self.results = list(map(lambda item: item._asdict(), results))
+        self.results = [row._asdict() for row in results]
         self.file_table = file_table
         self.project_table = project_table
         self.file_key = inspect(self.file_table).name
         self.project_key = inspect(self.project_table).name
         if self.project_key is None or self.file_key is None:
             raise RuntimeError("the file_table or project_table need to be aliased")
+        self.file.calculated_project = self.project
 
     @property
-    def project(self) -> Files:
+    def project(self) -> Projects:
         return self.results[0][self.project_key]
 
     @property
     def file(self) -> Files:
         return self.results[0][self.file_key]
 
-    @property
-    def hierarchy(self) -> List[Files]:
-        return [row[self.file_key] for row in self.results]
+    def calculate_privileges(self, user_ids):
+        stack = []
 
-    @property
-    def parents(self) -> List[Files]:
-        return [row[self.file_key] for row in self.results[1:]]
+        # We need to iterate through the files from parent to child because
+        # permissions are inherited and must be calculated in that order
+        for row in reversed(self.results):
+            file: Files = row[self.file_key]
 
-    def may_read(self, user_id):
-        target = self.results[0]
-        if target[f'has_project-read_{user_id}'] or target[f'has_project-admin_{user_id}']:
-            return True
-        for row in self.results:
-            if row[f'has_file-read_{user_id}']:
-                return True
-        return False
+            for user_id in user_ids:
+                project_manageable = row[f'has_project-admin_{user_id}']
+                project_readable = row[f'has_project-read_{user_id}']
+                project_writable = row[f'has_project-write_{user_id}']
+                file_readable = row[f'has_file-read_{user_id}']
+                file_writable = row[f'has_file-write_{user_id}']
+                file_commentable = row[f'has_file-comment_{user_id}']
 
-    def may_write(self, user_id):
-        target = self.results[0]
-        if target[f'has_project-write_{user_id}'] or target[f'has_project-admin_{user_id}']:
-            return True
-        for row in self.results:
-            if row[f'has_file-write_{user_id}']:
-                return True
-        return False
+                parent = stack[-1] if len(stack) else None
 
-    def may_comment(self, user_id):
-        target = self.results[0]
-        if target[f'has_project-read_{user_id}'] or target[f'has_project-admin_{user_id}']:
-            return True
-        for row in self.results:
-            if row[f'has_file-comment_{user_id}']:
-                return True
-        return False
+                commentable = any([
+                    project_manageable,
+                    project_readable and project_writable,
+                    file_commentable,
+                    parent and parent.commentable,
+                ])
+                readable = commentable or any([
+                    project_manageable,
+                    project_readable,
+                    file_readable,
+                    file.public,
+                    parent and parent.readable,
+                ])
+                writable = readable and any([
+                    project_manageable,
+                    project_writable,
+                    file_writable,
+                    parent and parent.writable,
+                ])
+                commentable = commentable or writable
+
+                file.calculated_privileges[user_id] = FilePrivileges(
+                    readable=readable,
+                    writable=writable,
+                    commentable=commentable,
+                )

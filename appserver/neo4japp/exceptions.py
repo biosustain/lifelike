@@ -2,9 +2,11 @@ from typing import Dict, List, Optional
 
 
 class BaseException(Exception):
-    def __init__(self, name, message, *args):
+    def __init__(self, name, message, *args, code='error', error_return_props=None):
         self.name = name
         self.message = message
+        self.code = code
+        self.error_return_props = error_return_props if error_return_props is not None else {}
         super().__init__(*args)
 
     def __str__(self):
@@ -152,8 +154,17 @@ class NameUnavailableError(BaseException):
         super().__init__('Name Unavailable Error', message)
 
 
-class AccessRequestRequiredError(BaseException):
+class FilesystemAccessRequestRequired(BaseException):
     """Raised when access needs to be requested."""
 
-    def __init__(self, message):
-        super().__init__('Access Request Required Error', message)
+    def __init__(self, message, file_hash_id):
+        super().__init__('Access Request Required Error',
+                         message,
+                         code='access_request_required',
+                         error_return_props={
+                             'request': {
+                                 'file': {
+                                     'hash_id': file_hash_id,
+                                 }
+                             }
+                         })
