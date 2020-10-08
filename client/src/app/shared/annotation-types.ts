@@ -10,15 +10,15 @@ export class EntityType {
 export const ENTITY_TYPES = [
   new EntityType('Gene', '#673ab7'),
   new EntityType('Protein', '#bcbd22'),
-  new EntityType('Disease', '#ff9800'),
-  new EntityType('Species', '#0277bd'),
-  new EntityType('Companies', '#d62728'),
-  new EntityType('Mutations', '#5d4037'),
-  new EntityType('Chemical', '#4caf50'),
+  new EntityType('Disease', '#fae0b8'),
+  new EntityType('Species', '#3177b8'),
+  new EntityType('Company', '#ff7f7f'),
+  new EntityType('Mutation', '#8b5d2e'),
+  new EntityType('Chemical', '#cee5cb'),
   new EntityType('Phenotype', '#edc949'),
-  new EntityType('Pathways', '#e377c2'),
-  new EntityType('Entities', '#7f7f7f'),
-  new EntityType('Compound', '#4caf50'),
+  new EntityType('Pathway', '#90eebf'),
+  new EntityType('Entity', '#7f7f7f'),
+  new EntityType('Compound', '#cee5cb'),
   new EntityType('Food', '#8eff69'),
   new EntityType('Anatomy', '#0202bd')
 ];
