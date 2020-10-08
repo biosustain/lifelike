@@ -12,7 +12,7 @@ from neo4japp.models.auth import (
     AppRole,
     AppUser,
 )
-from neo4japp.models.common import RDBMSBase, FullTimestampMixin
+from neo4japp.models.common import RDBMSBase, FullTimestampMixin, HashIdMixin
 
 projects_collaborator_role = db.Table(
     'projects_collaborator_role',
@@ -40,7 +40,7 @@ projects_collaborator_role = db.Table(
 )
 
 
-class Projects(RDBMSBase, FullTimestampMixin):  # type: ignore
+class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
     API_FIELDS = [
         'hash_id',
         'name',
@@ -51,7 +51,6 @@ class Projects(RDBMSBase, FullTimestampMixin):  # type: ignore
 
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    hash_id = db.Column(db.String(36), unique=True, nullable=False)
     name = db.Column(db.String(250), unique=True, nullable=False)
     description = db.Column(db.Text)
     ***ARANGO_USERNAME***_id = db.Column(db.Integer, db.ForeignKey('files.id'), nullable=False, index=True)
