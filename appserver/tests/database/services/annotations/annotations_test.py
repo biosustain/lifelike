@@ -502,8 +502,8 @@ def test_fix_conflicting_annotations(
         assert fixed[0].meta.type == annotations[1].meta.type
 
 
-def test_escherichia_coli_pdf(
-    escherichia_coli_pdf_lmdb_setup,
+def test_gene_organism_escherichia_coli_pdf(
+    gene_organism_escherichia_coli_pdf_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf,
     get_annotations_service,
     entity_inclusion_setup
@@ -547,6 +547,42 @@ def test_escherichia_coli_pdf(
 
     assert 'purF' in keywords
     assert keywords['purF'] == EntityType.GENE.value
+
+
+def test_protein_organism_escherichia_coli_pdf(
+    protein_organism_escherichia_coli_pdf_lmdb_setup,
+    mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf,
+    get_annotations_service,
+    entity_inclusion_setup
+):
+    annotation_service = get_annotations_service
+    pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_inclusion_setup
+
+    pdf = path.join(directory, f'pdf_samples/ecoli_protein_test.pdf')
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
+
+        lookup_entities(entity_service=entity_service, tokens=tokens)
+
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
+        )
+
+    keywords = {o.keyword: o.meta.id for o in annotations}
+
+    assert 'YdhB' in keywords
+    assert keywords['YdhB'] == 'P0ACR2'
+
+    assert 'YdhC' in keywords
+    assert keywords['YdhC'] == 'P37597'
 
 
 def test_custom_annotations_gene_organism_matching_has_match(
