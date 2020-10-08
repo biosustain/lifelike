@@ -20,12 +20,14 @@ from neo4japp.services.annotations.constants import (
     PROTEINS_UNIPROT_LMDB,
     CHEMICALS_PUBCHEM_LMDB,
     SPECIES_NCBI_LMDB,
+    FOODS_MESH_LMDB,
     DatabaseType,
 )
 from neo4japp.services.annotations.lmdb_util import (
     create_chemical_for_ner,
     create_compound_for_ner,
     create_disease_for_ner,
+    create_food_for_ner,
     create_gene_for_ner,
     create_phenotype_for_ner,
     create_protein_for_ner,
@@ -346,6 +348,39 @@ def prepare_lmdb_phenotypes_database(filename: str, custom: bool = False):
                     continue
 
 
+def prepare_lmdb_foods_database(filename: str):
+    with open(path.join(directory, filename), 'r') as f:
+        map_size = 1099511627776
+        env = lmdb.open(path.join(directory, 'lmdb/foods'), map_size=map_size, max_dbs=2)
+        db = env.open_db(FOODS_MESH_LMDB.encode('utf-8'), dupsort=True)
+
+        with env.begin(db=db, write=True) as transaction:
+            reader = csv.reader(f, delimiter='\t', quotechar='"')
+            # skip headers
+            # MeshID	Name	Synonym
+            headers = next(reader)
+            for line in reader:
+                foods_id = line[0]
+                foods_name = line[1]
+                foods_synonym = line[2]
+
+                foods = create_food_for_ner(
+                    id_=foods_id,
+                    name=foods_name,
+                    synonym=foods_synonym,
+                )
+
+                try:
+                    transaction.put(
+                        normalize_str(foods_synonym).encode('utf-8'),
+                        json.dumps(foods).encode('utf-8'))
+                except lmdb.BadValsizeError:
+                    # ignore any keys that are too large
+                    # LMDB has max key size 512 bytes
+                    # can change but larger keys mean performance issues
+                    continue
+
+
 if __name__ == '__main__':
     # delete all .mdb files before calling functions
     # otherwise can potentially result in finding
@@ -365,25 +400,36 @@ if __name__ == '__main__':
                 print(f'Deleting {path.join(parent, fn)}...')
                 remove(path.join(parent, fn))
 
-    prepare_lmdb_genes_database(filename='datasets/genes.tsv')
+    # chemical
     prepare_lmdb_chemicals_database(filename='datasets/chebi.csv')
+
+    # compound
     prepare_lmdb_compounds_database(filename='datasets/compounds.csv')
-    prepare_lmdb_proteins_database(filename='datasets/proteins.tsv')
-    prepare_lmdb_species_database(filename='datasets/taxonomy.tsv')
+
+    # gene
+    prepare_lmdb_genes_database(filename='datasets/genes.tsv')
+
+    # disease
     prepare_lmdb_diseases_database(filename='datasets/disease.csv')
+    prepare_lmdb_diseases_database(filename='datasets/covid19_disease.csv')
+    prepare_lmdb_phenotypes_database(
+        filename='datasets/microbial_phenotype.csv', custom=True)
+
+    # food
+    prepare_lmdb_foods_database(filename='datasets/food_terms.tsv')
+
+    # phenotype
     prepare_lmdb_phenotypes_database(filename='datasets/phenotype.csv')
 
-    # covid-19
-    prepare_lmdb_diseases_database(filename='datasets/covid19_disease.csv')
-    prepare_lmdb_species_database(filename='datasets/covid19_taxonomy.tsv')
+    # protein
+    prepare_lmdb_proteins_database(filename='datasets/proteins.tsv')
+    prepare_lmdb_proteins_database(filename='datasets/sprot2syn_gene.tsv')
 
+    # organism
+    prepare_lmdb_species_database(filename='datasets/taxonomy.tsv')
+    prepare_lmdb_species_database(filename='datasets/covid19_taxonomy.tsv')
     prepare_lmdb_species_database(filename='datasets/cdiff_taxonomy.tsv')
     prepare_lmdb_species_database(filename='datasets/ecoli_taxonomy.tsv')
     prepare_lmdb_species_database(filename='datasets/pseudomonas_aerug_taxonomy.tsv')
     prepare_lmdb_species_database(filename='datasets/staph_aureus_taxonomy.tsv')
     prepare_lmdb_species_database(filename='datasets/yeast_taxonomy.tsv')
-
-    prepare_lmdb_phenotypes_database(
-        filename='datasets/microbial_phenotype.csv', custom=True)
-
-    prepare_lmdb_proteins_database(filename='datasets/sprot2syn_gene.tsv')
