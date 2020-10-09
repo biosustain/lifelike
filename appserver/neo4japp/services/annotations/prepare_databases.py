@@ -21,9 +21,11 @@ from neo4japp.services.annotations.constants import (
     CHEMICALS_PUBCHEM_LMDB,
     SPECIES_NCBI_LMDB,
     FOODS_MESH_LMDB,
+    ANATOMY_MESH_LMDB,
     DatabaseType,
 )
 from neo4japp.services.annotations.lmdb_util import (
+    create_anatomy_for_ner,
     create_chemical_for_ner,
     create_compound_for_ner,
     create_disease_for_ner,
@@ -381,6 +383,39 @@ def prepare_lmdb_foods_database(filename: str):
                     continue
 
 
+def prepare_lmdb_anatomy_database(filename: str):
+    with open(path.join(directory, filename), 'r') as f:
+        map_size = 1099511627776
+        env = lmdb.open(path.join(directory, 'lmdb/anatomy'), map_size=map_size, max_dbs=2)
+        db = env.open_db(ANATOMY_MESH_LMDB.encode('utf-8'), dupsort=True)
+
+        with env.begin(db=db, write=True) as transaction:
+            reader = csv.reader(f, delimiter='\t', quotechar='"')
+            # skip headers
+            # MeshID	Name	Synonym
+            headers = next(reader)
+            for line in reader:
+                anatomy_id = line[0]
+                anatomy_name = line[1]
+                anatomy_synonym = line[2]
+
+                anatomy = create_anatomy_for_ner(
+                    id_=anatomy_id,
+                    name=anatomy_name,
+                    synonym=anatomy_synonym,
+                )
+
+                try:
+                    transaction.put(
+                        normalize_str(anatomy_synonym).encode('utf-8'),
+                        json.dumps(anatomy).encode('utf-8'))
+                except lmdb.BadValsizeError:
+                    # ignore any keys that are too large
+                    # LMDB has max key size 512 bytes
+                    # can change but larger keys mean performance issues
+                    continue
+
+
 if __name__ == '__main__':
     # delete all .mdb files before calling functions
     # otherwise can potentially result in finding
@@ -399,6 +434,9 @@ if __name__ == '__main__':
             if fn.lower().endswith('.mdb'):
                 print(f'Deleting {path.join(parent, fn)}...')
                 remove(path.join(parent, fn))
+
+    # anatomy
+    prepare_lmdb_anatomy_database(filename='datasets/anatomy_terms.tsv')
 
     # chemical
     prepare_lmdb_chemicals_database(filename='datasets/chebi.csv')

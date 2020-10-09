@@ -684,6 +684,74 @@ def test_human_gene_pdf(
     assert keywords['ACE2'] == EntityType.GENE.value
 
 
+def test_foods_pdf(
+    food_lmdb_setup,
+    get_annotations_service,
+    entity_inclusion_setup
+):
+    annotation_service = get_annotations_service
+    pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_inclusion_setup
+
+    pdf = path.join(directory, f'pdf_samples/food-test.pdf')
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
+
+        lookup_entities(entity_service=entity_service, tokens=tokens)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
+        )
+
+    keywords = {o.keyword: o.meta.type for o in annotations}
+
+    assert 'Artificial Sweeteners' in keywords
+    assert keywords['Artificial Sweeteners'] == EntityType.FOOD.value
+
+    assert 'Bacon' in keywords
+    assert keywords['Bacon'] == EntityType.FOOD.value
+
+
+def test_anatomy_pdf(
+    anatomy_lmdb_setup,
+    get_annotations_service,
+    entity_inclusion_setup
+):
+    annotation_service = get_annotations_service
+    pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_inclusion_setup
+
+    pdf = path.join(directory, f'pdf_samples/anatomy-test.pdf')
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
+
+        lookup_entities(entity_service=entity_service, tokens=tokens)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
+        )
+
+    keywords = {o.keyword: o.meta.type for o in annotations}
+
+    assert '280 kDa Actin Binding Protein' in keywords
+    assert keywords['280 kDa Actin Binding Protein'] == EntityType.ANATOMY.value
+
+    assert 'Claws' in keywords
+    assert keywords['Claws'] == EntityType.ANATOMY.value
+
+
 @pytest.mark.parametrize(
     'mock_tokens',
     [

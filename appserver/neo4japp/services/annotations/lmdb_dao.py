@@ -6,6 +6,7 @@ from typing import List
 
 from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.constants import (
+    ANATOMY_MESH_LMDB,
     CHEMICALS_CHEBI_LMDB,
     COMPOUNDS_BIOCYC_LMDB,
     DISEASES_MESH_LMDB,
@@ -25,6 +26,7 @@ directory = path.realpath(path.dirname(__file__))
 class LMDBDao:
     def __init__(
         self,
+        anatomy_lmdb_path: str = 'lmdb/anatomy',
         chemicals_lmdb_path: str = 'lmdb/chemicals',
         compounds_lmdb_path: str = 'lmdb/compounds',
         diseases_lmdb_path: str = 'lmdb/diseases',
@@ -35,6 +37,7 @@ class LMDBDao:
         species_lmdb_path: str = 'lmdb/species',
     ) -> None:
         if all([
+            anatomy_lmdb_path,
             chemicals_lmdb_path,
             compounds_lmdb_path,
             diseases_lmdb_path,
@@ -44,6 +47,11 @@ class LMDBDao:
             proteins_lmdb_path,
             species_lmdb_path,
         ]):
+            self.anatomy_env = lmdb.open(
+                path=path.join(directory, anatomy_lmdb_path),
+                readonly=True,
+                max_dbs=2,
+            )
             self.chemicals_env = lmdb.open(
                 path=path.join(directory, chemicals_lmdb_path),
                 readonly=True,
@@ -96,6 +104,7 @@ class LMDBDao:
             and the transaction and cursor will point to the wrong address in
             memory and retrieve whatever is there.
             """
+            anatomy_db = self.anatomy_env.open_db(ANATOMY_MESH_LMDB.encode('utf-8'), dupsort=True)  # noqa
             chemicals_db = self.chemicals_env.open_db(CHEMICALS_CHEBI_LMDB.encode('utf-8'), dupsort=True)  # noqa
             compounds_db = self.compounds_env.open_db(COMPOUNDS_BIOCYC_LMDB.encode('utf-8'), dupsort=True)  # noqa
             diseases_db = self.diseases_env.open_db(DISEASES_MESH_LMDB.encode('utf-8'), dupsort=True)  # noqa
@@ -107,6 +116,7 @@ class LMDBDao:
 
             # https://lmdb.readthedocs.io/en/release/#transaction-management
             # TODO: JIRA LL-330 env should be closed at end of app context
+            self.anatomy_txn = self.anatomy_env.begin(db=anatomy_db)
             self.chemicals_txn = self.chemicals_env.begin(db=chemicals_db)
             self.compounds_txn = self.compounds_env.begin(db=compounds_db)
             self.diseases_txn = self.diseases_env.begin(db=diseases_db)
@@ -119,6 +129,7 @@ class LMDBDao:
     def close_envs(self, envs=[]):
         if not envs:
             envs = [
+                self.anatomy_env,
                 self.chemicals_env,
                 self.compounds_env,
                 self.diseases_env,
@@ -138,6 +149,7 @@ class LMDBDao:
         # any data to commit
         if not txns:
             txns = [
+                self.anatomy_txn,
                 self.chemicals_txn,
                 self.compounds_txn,
                 self.diseases_txn,
