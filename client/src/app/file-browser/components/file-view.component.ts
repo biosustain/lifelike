@@ -1,5 +1,5 @@
 import { uniqueId } from 'lodash';
-import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
 import { combineLatest, Subject, Subscription, BehaviorSubject, Observable } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, DatabaseType, AnnotationType } from 'app/shared/constants';
@@ -103,6 +103,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   projectName: string;
 
   @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
+  @ViewChild('search', {static: false}) searchElement: ElementRef;
 
   constructor(
     private readonly filesService: PdfFilesService,
@@ -537,6 +538,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   clearSearchQuery() {
     this.searchQuery = '';
     this.searchQueryChanged();
+    this.searchElement.nativeElement.focus();
   }
 
   displayEditDialog() {
