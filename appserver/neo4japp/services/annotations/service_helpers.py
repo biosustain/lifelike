@@ -30,7 +30,7 @@ multiple steps needed in a certain annotation pipeline.
 """
 
 
-def nlp_concurrent(
+def process_nlp(
     page: int,
     page_text: str,
     pages_to_index: Dict[int, int],
@@ -131,7 +131,7 @@ def get_nlp_entities(
                 (page, page_text, pages_to_index, tokens.min_idx_in_page)
             )
 
-        results = pool.starmap(nlp_concurrent, resources)
+        results = pool.starmap(process_nlp, resources)
 
         for result_tokens, resp in results:
             nlp_tokens += result_tokens
@@ -214,8 +214,8 @@ def create_annotations(
         entity_recog.identify_entities(
             tokens=tokens.token_positions,
             check_entities_in_lmdb=entity_recog.get_entities_to_identify(
-                chemical=False, compound=False, disease=False,
-                gene=False, phenotype=False, protein=False
+                anatomy=False, chemical=False, compound=False, disease=False,
+                food=False, gene=False, phenotype=False, protein=False
             )
         )
 
@@ -224,8 +224,8 @@ def create_annotations(
             custom_annotations=custom_annotations,
             entity_results=entity_recog.get_entity_match_results(),
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(
-                chemical=False, compound=False, disease=False,
-                gene=False, phenotype=False, protein=False
+                anatomy=False, chemical=False, compound=False, disease=False,
+                food=False, gene=False, phenotype=False, protein=False
             )
         )
 
