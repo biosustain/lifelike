@@ -10,6 +10,17 @@
   border-radius: 10rem;
 }
 
+.invalid-input {
+  border-color: $danger;
+}
+.invalid-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba($danger, 0.25);
+}
+
+.small-font {
+  font-size: $font-size-sm;
+}
+
 .word-cloud-title {
   min-width: 2rem;
 }
