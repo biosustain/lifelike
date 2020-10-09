@@ -120,6 +120,7 @@ class LMDBMatch(CamelDictMixin):
 class EntityResults(CamelDictMixin):
     local_species_inclusion: Dict[str, List[dict]] = attr.ib()
     matched_local_species_inclusion: Dict[str, List[PDFTokenPositions]] = attr.ib()
+    matched_anatomy: Dict[str, LMDBMatch] = attr.ib()
     matched_chemicals: Dict[str, LMDBMatch] = attr.ib()
     matched_compounds: Dict[str, LMDBMatch] = attr.ib()
     matched_diseases: Dict[str, LMDBMatch] = attr.ib()

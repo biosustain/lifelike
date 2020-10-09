@@ -59,6 +59,7 @@ class AnnotationsService:
 
     def get_entities_to_annotate(
         self,
+        anatomy: bool = True,
         chemical: bool = True,
         compound: bool = True,
         disease: bool = True,
@@ -69,6 +70,10 @@ class AnnotationsService:
         species: bool = True,
     ) -> List[Tuple[str, str]]:
         entity_type_and_id_pairs: List[Tuple[str, str]] = []
+
+        if anatomy:
+            entity_type_and_id_pairs.append(
+                (EntityType.ANATOMY.value, EntityIdStr.ANATOMY.value))
 
         if chemical:
             entity_type_and_id_pairs.append(
@@ -580,6 +585,21 @@ class AnnotationsService:
                 matches.append(annotation)
         return matches
 
+    def _annotate_anatomy(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_anatomy,
+            token_type=EntityType.ANATOMY.value,
+            color=EntityColor.ANATOMY.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
     def _annotate_chemicals(
         self,
         entity_id_str: str,
@@ -848,6 +868,7 @@ class AnnotationsService:
         organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
         funcs = {
+            EntityType.ANATOMY.value: self._annotate_anatomy,
             EntityType.CHEMICAL.value: self._annotate_chemicals,
             EntityType.COMPOUND.value: self._annotate_compounds,
             EntityType.DISEASE.value: self._annotate_diseases,
@@ -1065,6 +1086,7 @@ class AnnotationsService:
         """Create annotations based on semantic rules."""
         self.local_species_inclusion = entity_results.local_species_inclusion
         self.matched_local_species_inclusion = entity_results.matched_local_species_inclusion
+        self.matched_anatomy = entity_results.matched_anatomy
         self.matched_chemicals = entity_results.matched_chemicals
         self.matched_compounds = entity_results.matched_compounds
         self.matched_diseases = entity_results.matched_diseases
