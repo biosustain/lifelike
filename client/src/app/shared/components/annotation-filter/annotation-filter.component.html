@@ -1,0 +1,86 @@
+<div class="border-bottom border-secondary pb-3 mb-3">
+  <form [formGroup]="form"
+        class="d-flex flex-column justify-content-between"
+        (ngSubmit)="submit()">
+    <fieldset class="fieldset-properties">
+      <legend class="m-0">Filters</legend>
+
+      <!-- Minimum frequency input -->
+      <label class="mt-2 w-50" [for]="minimumFrequencyInputId">Min. Entity Frequency:</label>
+      <input [id]="minimumFrequencyInputId"
+            [ngClass]="form.get('minimumFrequency').invalid ? 'form-control w-50 invalid-input' : 'form-control w-50'"
+            type="number"
+            min="0"
+            step="1"
+            formControlName="minimumFrequency"/>
+      <div class="mt-1 text-danger small-font" *ngIf="form.get('minimumFrequency').hasError('required')">
+        Min frequency cannot be empty!
+      </div>
+      <div class="mt-1 text-danger small-font" *ngIf="form.get('minimumFrequency').hasError('min')">
+        Min frequency cannot be less than 0!
+      </div>
+      <div class="mt-1 text-danger small-font" *ngIf="form.get('minimumFrequency').hasError('badMinMax')">
+        Min frequency should not be more than the maximum!
+      </div>
+      <div class="mt-1 text-danger small-font" *ngIf="form.get('minimumFrequency').hasError('pattern')">
+        Min frequency must be a whole number!
+      </div>
+
+      <!-- Maximum frequency input -->
+      <label class="mt-2 w-50" [for]="maximumFrequencyInputId">Max. Entity Frequency:</label>
+      <input [id]="maximumFrequencyInputId"
+            [ngClass]="form.get('maximumFrequency').invalid ? 'form-control w-50 invalid-input' : 'form-control w-50'"
+            type="number"
+            min="0"
+            step="1"
+            formControlName="maximumFrequency"/>
+      <div class="mt-1 text-danger small-font" *ngIf="form.get('maximumFrequency').hasError('required')">
+        Max frequency cannot be empty!
+      </div>
+      <div class="mt-1 text-danger small-font" *ngIf="form.get('maximumFrequency').hasError('min')">
+        Max frequency cannot be less than 0!
+      </div>
+      <div class="mt-1 text-danger small-font" *ngIf="form.get('maximumFrequency').hasError('badMinMax')">
+        Max frequency should not be less than the minimum!
+      </div>
+      <div class="mt-1 text-danger small-font" *ngIf="form.get('maximumFrequency').hasError('pattern')">
+        Max frequency must be a whole number!
+      </div>
+    </fieldset>
+
+    <fieldset class="fieldset-properties mt-2">
+      <legend>Grouping</legend>
+      <!-- TODO -->
+    </fieldset>
+    <div class="d-flex justify-content-end">
+    <button class="btn btn-primary"
+          type="submit"
+          [disabled]="!form.valid">Apply Filters/Groupings</button>
+    </div>
+  </form>
+</div>
+
+<div class="mb-2">
+  <button *ngIf="!wordVisibilityChanged" class="btn btn-outline-secondary btn-block"
+    (click)="setAllWordsVisibility(false)">
+  Hide All
+  </button>
+  <button *ngIf="wordVisibilityChanged" class="btn btn-outline-secondary btn-block"
+    (click)="setAllWordsVisibility(true)">
+  Show All
+  </button>
+</div>
+
+<div *ngFor="let data of annotationData">
+  <div class="custom-control custom-checkbox">
+    <input [id]="id + 'filter-' + data.text"
+         class="custom-control-input"
+         type="checkbox"
+         value="1"
+         [checked]="isWordVisible(data.text)"
+         (change)="changeWordVisibility(data.text, $event)">
+    <label class="custom-control-label" [for]="id + 'filter-' + data.text">
+      <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}} <span>({{data.frequency}})</span>
+    </label>
+  </div>
+</div>
