@@ -119,33 +119,65 @@ class EntityRecognitionService:
     def matched_chemicals(self) -> Dict[str, LMDBMatch]:
         return self._matched_chemicals
 
+    @matched_chemicals.setter
+    def matched_chemicals(self, chemicals):
+        self._matched_chemicals = chemicals
+
     @property
     def matched_compounds(self) -> Dict[str, LMDBMatch]:
         return self._matched_compounds
+
+    @matched_compounds.setter
+    def matched_compounds(self, compounds):
+        self._matched_compounds = compounds
 
     @property
     def matched_diseases(self) -> Dict[str, LMDBMatch]:
         return self._matched_diseases
 
+    @matched_diseases.setter
+    def matched_diseases(self, diseases):
+        self._matched_diseases = diseases
+
     @property
     def matched_foods(self) -> Dict[str, LMDBMatch]:
         return self._matched_foods
+
+    @matched_foods.setter
+    def matched_foods(self, foods):
+        self._matched_foods = foods
 
     @property
     def matched_genes(self) -> Dict[str, LMDBMatch]:
         return self._matched_genes
 
+    @matched_genes.setter
+    def matched_genes(self, genes):
+        self._matched_genes = genes
+
     @property
     def matched_phenotypes(self) -> Dict[str, LMDBMatch]:
         return self._matched_phenotypes
+
+    @matched_phenotypes.setter
+    def matched_phenotypes(self, phenotypes):
+        self._matched_phenotypes = phenotypes
 
     @property
     def matched_proteins(self) -> Dict[str, LMDBMatch]:
         return self._matched_proteins
 
+    @matched_proteins.setter
+    def matched_proteins(self, proteins):
+        self._matched_proteins = proteins
+
     @property
     def matched_species(self) -> Dict[str, LMDBMatch]:
         return self._matched_species
+
+    @matched_species.setter
+    def matched_species(self, species):
+        self._matched_species = species
 
     def get_entities_to_identify(
         self,
@@ -290,10 +322,6 @@ class EntityRecognitionService:
         """Creates a dictionary structured very similar to LMDB.
         Used for global entity custom annotation lookups.
         """
-        current_app.logger.info(
-            f'Creating global inclusion lookup for {entity_type}',
-            extra=EventLog(event_type='annotations').to_dict()
-        )
         for inclusion in self.global_annotations_to_include:
             if inclusion.get('meta', None):
                 if inclusion['meta'].get('type', None) == entity_type:
@@ -358,7 +386,7 @@ class EntityRecognitionService:
         if synonym:
             lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword)
+            lookup_key = token.normalized_keyword
 
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
@@ -415,7 +443,7 @@ class EntityRecognitionService:
         if synonym:
             lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword)
+            lookup_key = token.normalized_keyword
 
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
@@ -472,7 +500,7 @@ class EntityRecognitionService:
         if synonym:
             lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword)
+            lookup_key = token.normalized_keyword
 
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
@@ -529,7 +557,7 @@ class EntityRecognitionService:
         if synonym:
             lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword)
+            lookup_key = token.normalized_keyword
 
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
@@ -586,7 +614,7 @@ class EntityRecognitionService:
         if synonym:
             lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword)
+            lookup_key = token.normalized_keyword
 
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
@@ -643,7 +671,7 @@ class EntityRecognitionService:
         if synonym:
             lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword)
+            lookup_key = token.normalized_keyword
 
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
@@ -700,7 +728,7 @@ class EntityRecognitionService:
         if synonym:
             lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword)
+            lookup_key = token.normalized_keyword
 
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
@@ -757,7 +785,7 @@ class EntityRecognitionService:
         if synonym:
             lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword)
+            lookup_key = token.normalized_keyword
 
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
@@ -819,7 +847,7 @@ class EntityRecognitionService:
         if synonym:
             lookup_key = normalize_str(synonym)
         else:
-            lookup_key = normalize_str(token.keyword)
+            lookup_key = token.normalized_keyword
 
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()

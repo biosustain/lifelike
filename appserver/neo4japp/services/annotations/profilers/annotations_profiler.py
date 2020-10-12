@@ -19,6 +19,8 @@ from neo4japp.models import Files
 
 from neo4japp.data_transfer_objects import SpecifiedOrganismStrain
 
+from neo4japp.services.annotations.service_helpers import create_annotations
+
 
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
