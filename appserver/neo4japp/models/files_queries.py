@@ -1,7 +1,7 @@
 """TODO: Possibly turn this into a DAO in the future.
 For now, it's just a file with query functions to help DRY.
 """
-from typing import List, Set, Dict
+from typing import List, Set, Dict, Optional
 
 from sqlalchemy import and_, inspect
 from sqlalchemy.orm import contains_eager, aliased
@@ -118,7 +118,7 @@ def join_projects_to_parents_cte(q_hierarchy):
 
 
 def build_file_hierarchy_query(condition, projects_table, files_table,
-                               include_deleted_files=False, include_deleted_projects=False):
+                               include_deleted_projects=False):
     """
     Build a query for fetching a file, its parents, and the related project(s), while
     (optionally) excluding deleted projects and deleted projects.
@@ -126,7 +126,6 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
     :param condition: the condition to limit the files returned
     :param projects_table: a reference to the projects table used in the query
     :param files_table: a reference to the files table used in the query
-    :param include_deleted_files: whether to include deleted files
     :param include_deleted_projects: whether to include deleted projects
     :return: a query
     """
@@ -139,10 +138,7 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
     # Do it in one query efficiently
 
     # Fetch the target file and its parents
-    q_hierarchy = build_file_parents_cte(and_(
-        condition,
-        *([Files.deletion_date.is_(None)] if not include_deleted_files else [])
-    ))
+    q_hierarchy = build_file_parents_cte(condition)
 
     # Only the top-most directory has a project FK, so we need to reorganize
     # the query results from the CTE so we have a project ID for every file row
@@ -274,7 +270,6 @@ class FileHierarchy:
         self.project_key = inspect(self.project_table).name
         if self.project_key is None or self.file_key is None:
             raise RuntimeError("the file_table or project_table need to be aliased")
-        self.file.calculated_project = self.project
 
     @property
     def project(self) -> Projects:
@@ -284,8 +279,23 @@ class FileHierarchy:
     def file(self) -> Files:
         return self.results[0][self.file_key]
 
+    def calculate_properties(self):
+        self.file.calculated_project = self.project
+
+        parent_deleted = False
+        parent_recycled = False
+
+        for row in reversed(self.results):
+            file: Files = row[self.file_key]
+
+            file.calculated_parent_deleted = parent_deleted
+            file.calculated_parent_recycled = parent_recycled
+
+            parent_deleted = parent_deleted or file.deleted
+            parent_recycled = parent_recycled or file.recycled
+
     def calculate_privileges(self, user_ids):
-        stack = []
+        parent_file: Optional[Files] = None
 
         # We need to iterate through the files from parent to child because
         # permissions are inherited and must be calculated in that order
@@ -299,32 +309,35 @@ class FileHierarchy:
                 file_readable = row[f'has_file-read_{user_id}']
                 file_writable = row[f'has_file-write_{user_id}']
                 file_commentable = row[f'has_file-comment_{user_id}']
-
-                parent = stack[-1] if len(stack) else None
+                parent_privileges = parent_file.calculated_privileges[user_id] if parent_file else None
 
                 commentable = any([
                     project_manageable,
                     project_readable and project_writable,
                     file_commentable,
-                    parent and parent.commentable,
+                    parent_privileges and parent_privileges.commentable,
                 ])
                 readable = commentable or any([
                     project_manageable,
                     project_readable,
                     file_readable,
                     file.public,
-                    parent and parent.readable,
+                    parent_privileges and parent_privileges.readable,
                 ])
                 writable = readable and any([
                     project_manageable,
                     project_writable,
                     file_writable,
-                    parent and parent.writable,
+                    parent_privileges and parent_privileges.writable,
                 ])
                 commentable = commentable or writable
 
-                file.calculated_privileges[user_id] = FilePrivileges(
+                privileges = FilePrivileges(
                     readable=readable,
                     writable=writable,
                     commentable=commentable,
                 )
+
+                file.calculated_privileges[user_id] = privileges
+
+            parent_file = file

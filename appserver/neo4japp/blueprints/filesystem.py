@@ -4,7 +4,8 @@ import os
 import re
 import urllib.request
 from collections import defaultdict
-from typing import Optional, List
+from datetime import datetime
+from typing import Optional, List, Set
 from urllib.error import URLError
 
 from flask import Blueprint, jsonify, g, make_response, request
@@ -13,18 +14,18 @@ from marshmallow import ValidationError
 from pdfminer import high_level
 from sqlalchemy import and_, or_
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import raiseload, joinedload
+from sqlalchemy.orm import raiseload, joinedload, lazyload
 from webargs.flaskparser import use_args
 from werkzeug.datastructures import FileStorage
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db
-from neo4japp.exceptions import RecordNotFoundException, FilesystemAccessRequestRequired
-from neo4japp.models import Projects, Files, FileContent
+from neo4japp.exceptions import RecordNotFoundException, AccessRequestRequiredError
+from neo4japp.models import Projects, Files, FileContent, AppUser
 from neo4japp.models.files_queries import add_user_permission_columns, FileHierarchy, \
     build_file_hierarchy_query, build_file_parents_cte
 from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponse, FileResponseSchema, \
-    FileCreateRequestSchema
+    FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema
 from neo4japp.utils.network import read_url
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
@@ -50,13 +51,13 @@ class FilesystemView(MethodView):
         'vnd.lifelike.filesystem/directory': lambda buffer: buffer is None,
     }
 
-    def get_file(self, filter, load_content=False) -> Files:
-        files = self.get_files(filter, load_content)
+    def get_file(self, filter, lazy_load_content=False) -> Files:
+        files = self.get_files(filter, lazy_load_content)
         if not len(files):
             raise RecordNotFoundException("The requested file object could not be found.")
         return files[0]
 
-    def get_files(self, filter, load_content=False) -> List[Files]:
+    def get_files(self, filter, lazy_load_content=False) -> List[Files]:
         current_user = g.current_user
 
         t_file = db.aliased(Files, name='_file')  # alias required for the FileHierarchy class
@@ -69,8 +70,8 @@ class FilesystemView(MethodView):
         # Fetch permissions for the given user
         query = add_user_permission_columns(query, t_project, t_file, current_user.id)
 
-        if load_content:
-            query = query.options(joinedload(t_file.content))
+        if lazy_load_content:
+            query = query.options(lazyload(t_file.content))
 
         results = query.all()
         grouped_results = defaultdict(lambda: [])
@@ -81,6 +82,7 @@ class FilesystemView(MethodView):
 
         for rows in grouped_results.values():
             hierarchy = FileHierarchy(rows, t_file, t_project)
+            hierarchy.calculate_properties()
             hierarchy.calculate_privileges([current_user.id])
             files.append(hierarchy.file)
 
@@ -140,6 +142,77 @@ class FilesystemView(MethodView):
 class FileListView(FilesystemView):
     decorators = [auth.login_required]
 
+    def check_files_for_edit(self, hash_ids: List[str], user: AppUser, *,
+                             permit_recycled: bool = False) -> List[Files]:
+
+        # ========================================
+        # Lock
+        # ========================================
+
+        q_hierarchy = build_file_parents_cte(and_(
+            or_(*[Files.hash_id == key for key in hash_ids]),
+            Files.deletion_date.is_(None),
+        ))
+
+        db.session.query(Files.id) \
+            .join(q_hierarchy, q_hierarchy.c.id == Files.id) \
+            .with_for_update() \
+            .all()
+
+        # ========================================
+        # Query
+        # ========================================
+
+        files = self.get_files(or_(*[Files.hash_id == key for key in hash_ids]))
+
+        # ========================================
+        # Validate
+        # ========================================
+
+        missing_hash_ids = set()
+
+        # Check we got all the files
+        if len(files) != len(hash_ids):
+            found_hash_ids = [file.hash_id for file in files]
+            missing_hash_ids.update([hash_id for hash_id in hash_ids if hash_id not in found_hash_ids])
+
+        # Check each file
+        for file in files:
+            if file.deleted or file.parent_deleted:
+                missing_hash_ids.add(file.hash_id)
+
+            if not file.calculated_privileges[user.id].writable:
+                # Do not reveal the filename with the error!
+                raise AccessRequestRequiredError(
+                    f"You do not have access to the specified file object "
+                    f"(with ID of {file.hash_id}) to change it.", file.hash_id)
+
+            if not permit_recycled and (file.recycled or file.parent_recycled):
+                raise ValidationError(f"The file or directory '{file.filename}' has been trashed and "
+                                      "must be restored first.")
+
+        if len(missing_hash_ids):
+            raise RecordNotFoundException(f"The request specified one or more file or directory "
+                                          f"({', '.join(missing_hash_ids)}) that could not be found.")
+
+        return files
+
+    def get_bulk_file_response(self, hash_ids: List[str], user: AppUser):
+        files = self.get_files(Files.hash_id.in_(hash_ids))
+        returned_files = {}
+
+        for file in files:
+            if file.calculated_privileges[user.id].readable:
+                returned_files[file.hash_id] = file
+
+        return jsonify(MultipleFileResponseSchema(context={
+            'user_privilege_filter': user.id,
+        }, exclude=(
+            'objects.children',
+        )).dump(dict(
+            objects=returned_files,
+        )))
+
     @use_args(FileCreateRequestSchema, locations=['json', 'form', 'files'])
     def put(self, params: dict):
         """Endpoint to create a new file or to clone a file into a new one."""
@@ -160,8 +233,14 @@ class FileListView(FilesystemView):
 
         try:
             parent = self.get_file(Files.hash_id == params['parent_hash_id'])
+            if parent.deleted or parent.parent_deleted:
+                raise RecordNotFoundException("Soft deleted")
         except RecordNotFoundException:
             raise ValidationError("The requested parent object could not be found.",
+                                  "parent_hash_id")
+
+        if parent.recycled or parent.parent_recycled:
+            raise ValidationError("The specified parent is in the trash and must be restored first.",
                                   "parent_hash_id")
 
         if not parent.calculated_privileges[current_user.id].writable:
@@ -170,6 +249,8 @@ class FileListView(FilesystemView):
 
         if parent.mime_type != Files.DIRECTORY_MIME_TYPE:
             raise ValidationError("The parent must be a directory type.", "parent_hash_id")
+
+        # TODO: Check max hierarchy depth
 
         file.parent = parent
 
@@ -186,15 +267,18 @@ class FileListView(FilesystemView):
             try:
                 existing_file = self.get_file(Files.hash_id == source_hash_id)
             except RecordNotFoundException:
-                raise ValidationError("The requested file object to clone could not be found.",
+                raise ValidationError(f"The requested file or directory to clone from "
+                                      f"({source_hash_id}) could not be found.",
                                       "content_hash_id")
 
             if not existing_file.calculated_privileges[current_user.id].readable:
-                raise ValidationError("You do not have access to the file object that you are cloning.",
-                                      "content_hash_id")
+                # Make sure to not reveal the filename
+                raise ValidationError(f"You do not have access to the file or folder ({source_hash_id})"
+                                      f" that you are cloning.", "content_hash_id")
 
             if existing_file.mime_type == Files.DIRECTORY_MIME_TYPE:
-                raise ValidationError("You cannot clone a directory", "mime_type")
+                raise ValidationError(f"The specified clone source ({source_hash_id}) "
+                                      f"is a folder and that is not supported.", "mime_type")
 
             file.mime_type = existing_file.mime_type
             file.doi = existing_file.doi
@@ -232,7 +316,7 @@ class FileListView(FilesystemView):
             # Fetch from upload
             elif params.get('content_value') is not None:
                 content_field = 'content_value'
-                file_storage: FileStorage = params.get('content_value')
+                file_storage = params.get('content_value')
 
                 file_storage.seek(0, 2)
                 size = file_storage.tell()
@@ -299,7 +383,7 @@ class FileListView(FilesystemView):
         return_file = self.get_file(Files.hash_id == file.hash_id)
 
         if not return_file.calculated_privileges[current_user.id].readable:
-            raise FilesystemAccessRequestRequired(
+            raise AccessRequestRequiredError(
                 "You do not have access to this object to read it.", file.hash_id)
 
         children = self.get_files(Files.parent_id == file.id)
@@ -313,6 +397,137 @@ class FileListView(FilesystemView):
             object=return_file,
         )))
 
+    @use_args(lambda request: BulkFileRequestSchema())
+    @use_args(lambda request: FileUpdateRequestSchema(partial=True))
+    def patch(self, targets, params):
+        """File update endpoint."""
+
+        changed_fields = set()
+        current_user = g.current_user
+
+        # Collect everything that we need to query
+        target_hash_ids = set(targets['hash_ids'])
+        parent_hash_id = params.get('parent_hash_id')
+
+        query_hash_ids = targets['hash_ids'][:]
+        if parent_hash_id is not None:
+            query_hash_ids.append(parent_hash_id)
+
+        if parent_hash_id in target_hash_ids:
+            raise ValidationError(f'An object cannot be set as the parent of itself.',
+                                  "parent_hash_id")
+
+        # ========================================
+        # Fetch and check
+        # ========================================
+
+        # This method checks permissions
+        files = self.check_files_for_edit(query_hash_ids, current_user)
+        target_files = [file for file in files if file.hash_id in target_hash_ids]
+        parent_file = None
+
+        # Check parent
+        if parent_hash_id is not None:
+            parent_file = next(filter(lambda file: file.hash_id == parent_hash_id, files), None)
+
+            if parent_file.mime_type != Files.DIRECTORY_MIME_TYPE:
+                raise ValidationError(f"The specified parent ({parent_hash_id}) is "
+                                      f"not a folder. It is a file, and you cannot make files "
+                                      f"become a child of another file.", "parent_hash_id")
+
+        # ========================================
+        # Apply
+        # ========================================
+
+        for target_file in target_files:
+            is_root_dir = (target_file.calculated_project.root_id == target_file.id)
+
+            if 'description' in params:
+                if target_file.description != params['description']:
+                    target_file.description = params['description']
+                    changed_fields.add('description')
+
+            # Some changes cannot be applied to root directories
+            if not is_root_dir:
+                if parent_hash_id is not None:
+                    # Re-check referential parent
+                    if target_file.id == parent_file.id:
+                        raise ValidationError(f'A file or folder ({target_file.filename}) cannot be '
+                                              f'set as the parent of itself.', "parent_hash_id")
+
+                    # TODO: Check max hierarchy depth
+
+                    # Check for circular inheritance
+                    current_parent = parent_file.parent
+                    while current_parent:
+                        if current_parent.hash_id == target_file.hash_id:
+                            raise ValidationError(f"If the parent of '{target_file.filename}' was set to "
+                                                  f"'{parent_file.filename}', it would result in circular"
+                                                  f"inheritance.", "parent_hash_id")
+                        current_parent = current_parent.parent
+
+                    target_file.parent = parent_file
+                    changed_fields.add('parent')
+
+                if 'filename' in params:
+                    target_file.filename = params['filename']
+                    changed_fields.add('filename')
+
+                if 'public' in params:
+                    if target_file.public != params['public']:
+                        target_file.public = params['public']
+                        changed_fields.add('public')
+
+            target_file.modifier = current_user
+
+        if len(changed_fields):
+            try:
+                db.session.commit()
+            except IntegrityError as e:
+                raise ValidationError("The requested changes would result in a duplicate filename "
+                                      "within the same folder.")
+
+        # ========================================
+        # Return changed files
+        # ========================================
+
+        return self.get_bulk_file_response(list(target_hash_ids), current_user)
+
+    # noinspection DuplicatedCode
+    @use_args(lambda request: BulkFileRequestSchema())
+    def delete(self, targets):
+        """File delete endpoint."""
+
+        current_user = g.current_user
+
+        hash_ids = targets['hash_ids']
+
+        # This method checks permissions
+        files = self.check_files_for_edit(hash_ids, current_user, permit_recycled=True)
+
+        # ========================================
+        # Apply
+        # ========================================
+
+        for file in files:
+            if file.calculated_project.root_id == file.id:
+                raise ValidationError(f"You cannot delete the root directory "
+                                      f"for a project (the folder for the project "
+                                      f"'{file.calculated_project.name}' was specified).")
+
+            if not file.recycled:
+                file.recycling_date = datetime.now()
+                file.recycler = current_user
+                file.modifier = current_user
+
+        db.session.commit()
+
+        # ========================================
+        # Return changed files
+        # ========================================
+
+        return self.get_bulk_file_response(hash_ids, current_user)
+
 
 class FileDetailView(FilesystemView):
     decorators = [auth.login_required]
@@ -323,9 +538,17 @@ class FileDetailView(FilesystemView):
         current_user = g.current_user
         file = self.get_file(Files.hash_id == hash_id)
 
+        if file.parent_deleted or file.deleted:
+            raise RecordNotFoundException(f"The requested file or directory ({hash_id}) "
+                                          f"could not be found.")
+
         if not file.calculated_privileges[current_user.id].readable:
-            raise FilesystemAccessRequestRequired(
-                "You do not have access to this object to read it.", hash_id)
+            # Make sure to not reveal the filename
+            raise AccessRequestRequiredError(
+                f"You do not have access to the specified file or "
+                f"directory ({hash_id}) to read it.", hash_id)
+
+        # We allow returning recycled objects
 
         children = self.get_files(Files.parent_id == file.id)
         file.calculated_children = children
@@ -338,95 +561,6 @@ class FileDetailView(FilesystemView):
             object=file,
         )))
 
-    @use_args(lambda request: FileUpdateRequestSchema(partial=True))
-    def patch(self, params, hash_id):
-        """File update endpoint."""
-
-        actually_changed = False
-        current_user = g.current_user
-
-        # For performance, we query both the file and, if provided, the parent file
-        # object, at the same time
-        query_hash_ids = [hash_id]
-        parent_hash_id = params.get('parent_hash_id')
-        if parent_hash_id is not None:
-            query_hash_ids.append(parent_hash_id)
-
-        # Before we do the real query, we do a SELECT FOR UPDATE query to lock
-        # the the relevant rows so that no one changes it suddenly
-        # in the middle of our operation
-        q_hierarchy = build_file_parents_cte(and_(
-            or_(*[Files.hash_id == key for key in query_hash_ids]),
-            Files.deletion_date.is_(None),
-        ))
-
-        db.session.query(Files.id) \
-            .join(q_hierarchy, q_hierarchy.c.id == Files.id) \
-            .with_for_update() \
-            .all()
-
-        # Now we do the real query -- we can't do FOR update on this query because
-        # some of our joins can't be locked, which is why we have the pre-query above
-        target_file = None
-        parent_file = None
-
-        for file in self.get_files(or_(*[Files.hash_id == key for key in query_hash_ids])):
-            if file.hash_id == hash_id:
-                target_file = file
-
-            if file.hash_id == params['parent_hash_id']:
-                parent_file = file
-
-        if not target_file:
-            raise RecordNotFoundException("The requested file object could not be found.")
-
-        if not target_file.calculated_privileges[current_user.id].writable:
-            raise FilesystemAccessRequestRequired(
-                "You do not have access to this object to change it.", hash_id)
-
-        if 'filename' in params:
-            target_file.filename = params['filename']
-            actually_changed = True
-
-        if parent_hash_id is not None:
-            if not parent_file:
-                raise ValidationError("The requested parent object could not be found.", "parent_hash_id")
-
-            if target_file.id == parent_file.id:
-                raise ValidationError('An object cannot be set as the parent of itself.', "parent_hash_id")
-
-            if not parent_file.calculated_privileges[current_user.id].writable:
-                raise ValidationError("You do not have access to the parent object.", "parent_hash_id")
-
-            if parent_file.mime_type != Files.DIRECTORY_MIME_TYPE:
-                raise ValidationError("The specified parent object is not a directory.", "parent_hash_id")
-
-            # Check for circular inheritance
-            current_parent = parent_file.parent
-            while current_parent:
-                if current_parent.hash_id == target_file.hash_id:
-                    raise ValidationError('Circular inheritance is not permitted.', "parent_hash_id")
-                current_parent = current_parent.parent
-
-            target_file.parent = parent_file
-            actually_changed = True
-
-        if 'description' in params:
-            target_file.description = params['description']
-            actually_changed = True
-
-        if 'public' in params:
-            target_file.public = params['public']
-            actually_changed = True
-
-        if actually_changed:
-            target_file.modifier = current_user
-
-            db.session.add(target_file)
-            db.session.commit()
-
-        return self.get(hash_id)
-
 
 class FileContentView(FilesystemView):
     decorators = [auth.login_required]
@@ -434,7 +568,14 @@ class FileContentView(FilesystemView):
     def get(self, hash_id):
         """File content fetch endpoint."""
 
-        file = self.get_file(Files.hash_id == hash_id, load_content=True)
+        file = self.get_file(Files.hash_id == hash_id, lazy_load_content=True)
+
+        if file.parent_deleted or file.deleted:
+            raise RecordNotFoundException("The requested file object could not be found.")
+
+        # We allow returning recycled objects
+
+        # Lazy loaded
         content = file.content
 
         if content:

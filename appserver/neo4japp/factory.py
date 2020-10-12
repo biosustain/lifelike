@@ -35,7 +35,7 @@ from neo4japp.exceptions import (
     JWTAuthTokenException,
     JWTTokenException,
     RecordNotFoundException,
-    DataNotAvailableException, FilesystemAccessRequestRequired
+    DataNotAvailableException, AccessRequestRequiredError
 )
 
 # Set the following modules to have a minimum of log level 'WARNING'
@@ -134,7 +134,7 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(RecordNotFoundException, partial(handle_error, 404))
     app.register_error_handler(JWTAuthTokenException, partial(handle_error, 401))
     app.register_error_handler(JWTTokenException, partial(handle_error, 401))
-    app.register_error_handler(FilesystemAccessRequestRequired, partial(handle_error, 403))
+    app.register_error_handler(AccessRequestRequiredError, partial(handle_error, 403))
     app.register_error_handler(ValidationError, partial(handle_validation_error, 400))
     app.register_error_handler(UnprocessableEntity, partial(handle_webargs_error, 400))
     app.register_error_handler(BaseException, partial(handle_error, 400))

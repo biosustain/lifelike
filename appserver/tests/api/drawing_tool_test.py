@@ -146,12 +146,7 @@ def test_can_add_map(client, fix_api_owner, fix_project, fix_directory):
 def test_can_update_map(client, fix_api_owner, fix_project, private_fix_map):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
-    res = client.patch(
-        f'/projects/{fix_project.project_name}/map/{private_fix_map.hash_id}',
-        headers=headers,
-        data=json.dumps({'label': 'new-label'}),
-        content_type='application/json'
-    )
+    res = client.patch_files()
     assert res.status_code == 200
 
 

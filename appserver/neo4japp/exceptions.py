@@ -168,3 +168,19 @@ class FilesystemAccessRequestRequired(BaseException):
                                  }
                              }
                          })
+
+
+class AccessRequestRequiredError(BaseException):
+    """Raised when access needs to be requested."""
+
+    def __init__(self, message, file_hash_id):
+        super().__init__('Access Request Required Error',
+                         message,
+                         code='access_request_required',
+                         error_return_props={
+                             'request': {
+                                 'file': {
+                                     'hash_id': file_hash_id,
+                                 }
+                             }
+                         })
