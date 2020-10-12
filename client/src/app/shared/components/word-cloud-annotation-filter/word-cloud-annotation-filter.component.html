@@ -6,9 +6,10 @@
       <legend class="m-0">Filters</legend>
 
       <!-- Minimum frequency input -->
-      <label class="mt-2 w-50" [for]="minimumFrequencyInputId">Min. Entity Frequency:</label>
+      <label class="mt-2 text-nowrap" [ngStyle]="{width: '160px'}" [for]="minimumFrequencyInputId">Min. Entity Frequency:</label>
       <input [id]="minimumFrequencyInputId"
-            [ngClass]="form.get('minimumFrequency').invalid ? 'form-control w-50 invalid-input' : 'form-control w-50'"
+            [ngClass]="form.get('minimumFrequency').invalid ? 'form-control invalid-input' : 'form-control'"
+            [ngStyle]="{width: '160px'}"
             type="number"
             min="0"
             step="1"
@@ -27,9 +28,10 @@
       </div>
 
       <!-- Maximum frequency input -->
-      <label class="mt-2 w-50" [for]="maximumFrequencyInputId">Max. Entity Frequency:</label>
+      <label class="mt-2 text-nowrap" [ngStyle]="{width: '160px'}" [for]="maximumFrequencyInputId">Max. Entity Frequency:</label>
       <input [id]="maximumFrequencyInputId"
-            [ngClass]="form.get('maximumFrequency').invalid ? 'form-control w-50 invalid-input' : 'form-control w-50'"
+            [ngClass]="form.get('maximumFrequency').invalid ? 'form-control invalid-input' : 'form-control'"
+            [ngStyle]="{width: '160px'}"
             type="number"
             min="0"
             step="1"
@@ -53,38 +55,37 @@
       <!-- TODO -->
     </fieldset>
     <div class="d-flex justify-content-end">
-    <button class="btn btn-primary"
+    <button class="btn btn-primary text-nowrap"
           type="submit"
           [disabled]="!form.valid">Apply Filters/Groupings</button>
     </div>
   </form>
 </div>
 
-<div class="mb-2">
-  <button *ngIf="!wordVisibilityChanged" class="btn btn-outline-secondary btn-block"
-    (click)="setAllWordsVisibility(false)">
-  Hide All
-  </button>
-  <button *ngIf="wordVisibilityChanged" class="btn btn-outline-secondary btn-block"
-    (click)="setAllWordsVisibility(true)">
-  Show All
-  </button>
+<div class="d-flex justify-content-center mb-2 text-nowrap">
+  <button *ngIf="!wordVisibilityChanged"
+          class="btn btn-secondary btn-block"
+          (click)="setAllWordsVisibility(false)">Hide All</button>
+  <button *ngIf="wordVisibilityChanged"
+          class="btn btn-secondary btn-block"
+          (click)="setAllWordsVisibility(true)">Show All</button>
 </div>
 
 <div *ngFor="let data of annotationData">
-  <div class="custom-control custom-checkbox"
-       placement="right bottom top"
-       container="body"
-       [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">
+  <div class="custom-control custom-checkbox">
     <input [id]="id + 'filter-' + data.text"
          class="custom-control-input"
          type="checkbox"
          value="1"
          [checked]="isWordVisible(data.text)"
          (change)="changeWordVisibility(data.text, $event)">
-    <label class="custom-control-label" [for]="id + 'filter-' + data.text">
+    <label class="custom-control-label text-nowrap"
+           [for]="id + 'filter-' + data.text"
+           placement="right bottom top"
+           container="body"
+           [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">
       <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}} <span>({{data.frequency}})</span>
+      <i *ngIf="!data.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
     </label>
-    <i *ngIf="!data.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
   </div>
 </div>

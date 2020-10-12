@@ -38,6 +38,8 @@ export class WordCloudComponent {
 
   legend: Map<string, string>;
 
+  filtersPanelOpened: boolean;
+
   WORD_CLOUD_MARGIN = 10;
 
   constructor(
@@ -54,6 +56,8 @@ export class WordCloudComponent {
     this.annotationData = [];
 
     this.legend = new Map<string, string>();
+
+    this.filtersPanelOpened = false;
 
     this.loadTask = new BackgroundTask(() => {
       return combineLatest(
@@ -156,6 +160,10 @@ export class WordCloudComponent {
    */
   fitCloudToWindow() {
     this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), false);
+  }
+
+  toggleFiltersPanel() {
+    this.filtersPanelOpened = !this.filtersPanelOpened;
   }
 
   /**

@@ -22,39 +22,44 @@
             <button class="btn btn-secondary text-nowrap"
                     (click)="fitCloudToWindow()">Fit Cloud to Window</button>
             <button class="btn btn-secondary"
-                    ngbTooltip="Reload annotations"
+                    ngbTooltip="Reload Annotations"
                     container="body"
                     placement="bottom top left right"
                     (click)="getAnnotationsForFile()">
               <i class="fa fa-fw fa-redo"></i>
             </button>
-            <div ngbDropdown
-                 class="d-inline-block"
-                 [ngStyle]="{'margin-left': '1px'}"
-                 #dropdown
-                 placement="bottom-right bottom-left"
-                 container="body">
-              <button [id]="id + '-filters-dropdown'"
-                      class="btn btn-secondary"
-                      ngbDropdownToggle>
-                <i class="fa fa-fw fa-filter"></i>
-              </button>
-
-              <div ngbDropdownMenu
-                   [attr.aria-labelledby]="id + '-filters-dropdown'"
-                   class="dropdown-body dropdown-menu dropdown-menu-right overflow-auto"
-                   [style.width]="'max-content'"
-                   [style.height]="'660px'">
-                <app-word-cloud-annotation-filter
-                  [annotationData]="annotationData"
-                  (wordVisibilityOutput)="updateWordVisibilityMap($event)"
-                ></app-word-cloud-annotation-filter>
-              </div>
-            </div>
+            <button class="btn btn-secondary"
+                    (click)="toggleFiltersPanel()"
+                    ngbTooltip="Show Annotation Filters"
+                    container="body"
+                    placement="bottom top left right">
+              <i class="fa fa-fw fa-filter"></i>
+            </button>
           </div>
         </div>
       </div>
-      <div [id]="id + 'cloud-wrapper'" class="h-100 w-100 d-flex justify-content-center align-items-center"></div>
+      <as-split unit="pixel"
+                direction="horizontal"
+                [gutterSize]="5">
+        <as-split-area [order]="0">
+          <div [id]="id + 'cloud-wrapper'" class="h-100 w-100 d-flex justify-content-center align-items-center"></div>
+        </as-split-area>
+        <as-split-area *ngIf="filtersPanelOpened" size="340" [order]="1">
+          <div class="w-100 h-100 p-3">
+            <div class="annotation-filter-btns-container">
+              <button class="btn btn-danger annotation-filter-close-btn"
+                    type="button"
+                    (click)="toggleFiltersPanel()">
+                <i class="fa fa-close"></i>
+              </button>
+            </div>
+            <app-word-cloud-annotation-filter
+              [annotationData]="annotationData"
+              (wordVisibilityOutput)="updateWordVisibilityMap($event)"
+            ></app-word-cloud-annotation-filter>
+          </div>
+        </as-split-area>
+      </as-split>
     </div>
   </div>
 </div>

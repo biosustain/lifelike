@@ -1,5 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
+
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
+
 import { AnnotationFilterComponent } from '../annotation-filter/annotation-filter.component';
 
 @Component({
