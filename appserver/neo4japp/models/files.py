@@ -182,6 +182,24 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     calculated_project: Optional[Projects] = None
     calculated_privileges: Dict[int, FilePrivileges] = {}
     calculated_children: Optional[List['Files']] = None
+    calculated_parent_deleted: Optional[bool] = None
+    calculated_parent_recycled: Optional[bool] = None
+
+    @property
+    def parent_deleted(self):
+        value = self.calculated_parent_deleted
+        assert value is not None
+        return value
+
+    @property
+    def parent_recycled(self):
+        value = self.calculated_parent_recycled
+        assert value is not None
+        return value
+
+    @property
+    def effectively_recycled(self):
+        return self.recycled or self.parent_recycled
 
     def generate_non_conflicting_filename(self):
         """Generate a new filename based of the current filename when there is a filename

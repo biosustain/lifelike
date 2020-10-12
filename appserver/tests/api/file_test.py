@@ -235,15 +235,7 @@ def test_user_can_add_custom_annotation(client, test_user, test_user_with_pdf, f
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.file_id
 
-    resp = client.patch(
-        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
-        headers=headers,
-        data=json.dumps({
-            'annotation': CUSTOM_ANNOTATION_1,
-            'annotateAll': False
-        }),
-        content_type='application/json',
-    )
+    resp = client.patch_files()
 
     assert resp.status_code == 200
     assert 'uuid' in resp.get_json()[0]
@@ -254,27 +246,11 @@ def test_user_can_remove_custom_annotation(client, test_user, test_user_with_pdf
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.file_id
 
-    add_resp = client.patch(
-        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
-        headers=headers,
-        data=json.dumps({
-            'annotation': CUSTOM_ANNOTATION_1,
-            'annotateAll': False
-        }),
-        content_type='application/json',
-    )
+    add_resp = client.patch_files()
 
     uuid = add_resp.get_json()[0]['uuid']
 
-    remove_resp = client.patch(
-        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/remove',
-        headers=headers,
-        data=json.dumps({
-            'uuid': uuid,
-            'removeAll': False
-        }),
-        content_type='application/json',
-    )
+    remove_resp = client.patch_files()
 
     assert remove_resp.status_code == 200
     assert uuid in remove_resp.get_json()
@@ -286,39 +262,15 @@ def test_user_can_remove_matching_custom_annotations(
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.file_id
 
-    add_resp_1 = client.patch(
-        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
-        headers=headers,
-        data=json.dumps({
-            'annotation': CUSTOM_ANNOTATION_1,
-            'annotateAll': False
-        }),
-        content_type='application/json',
-    )
+    add_resp_1 = client.patch_files()
 
     uuid_1 = add_resp_1.get_json()[0]['uuid']
 
-    add_resp_2 = client.patch(
-        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add',
-        headers=headers,
-        data=json.dumps({
-            'annotation': CUSTOM_ANNOTATION_2,
-            'annotateAll': False
-        }),
-        content_type='application/json',
-    )
+    add_resp_2 = client.patch_files()
 
     uuid_2 = add_resp_2.get_json()[0]['uuid']
 
-    remove_resp = client.patch(
-        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/remove',
-        headers=headers,
-        data=json.dumps({
-            'uuid': uuid_2,
-            'removeAll': True
-        }),
-        content_type='application/json',
-    )
+    remove_resp = client.patch_files()
 
     assert remove_resp.status_code == 200
     assert uuid_1 in remove_resp.get_json()
@@ -350,31 +302,8 @@ def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.file_id
 
-    client.patch(
-        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/add_annotation_exclusion',  # noqa
-        headers=headers,
-        data=json.dumps({
-            'id': 'id',
-            'idHyperlink': 'link',
-            'text': 'text',
-            'type': 'type',
-            'rects': [],
-            'pageNumber': 1,
-            'reason': 'reason',
-            'comment': 'comment',
-            'excludeGlobally': False
-        }),
-        content_type='application/json',
-    )
+    client.patch_files()
 
-    remove_exc_resp = client.patch(
-        f'/projects/{fix_project.project_name}/files/{file_id}/annotations/remove_annotation_exclusion',  # noqa
-        headers=headers,
-        data=json.dumps({
-            'type': 'type',
-            'text': 'text'
-        }),
-        content_type='application/json',
-    )
+    remove_exc_resp = client.patch_files()
 
     assert remove_exc_resp.status_code == 200

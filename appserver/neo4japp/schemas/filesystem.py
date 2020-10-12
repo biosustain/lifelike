@@ -41,6 +41,8 @@ class FileSchema(Schema):
     children = fields.Method('get_children')
     project = fields.Method('get_project', exclude='***ARANGO_USERNAME***')
     privileges = fields.Method('get_privileges')
+    recycled = fields.Boolean()
+    effectively_recycled = fields.Boolean()
 
     def get_user_privilege_filter(self):
         try:
@@ -58,7 +60,9 @@ class FileSchema(Schema):
             return None
 
     def get_project(self, obj: Files):
-        return obj.calculated_project
+        return ProjectSchema(context=self.context, exclude=(
+            '***ARANGO_USERNAME***',
+        )).dump(obj.calculated_project)
 
     def get_parent(self, obj: Files):
         privilege_user_id = self.get_user_privilege_filter()
@@ -97,6 +101,12 @@ class FileUpdateRequest:
     public: bool = None
 
 
+class BulkFileRequestSchema(Schema):
+    hash_ids = fields.List(fields.String(validate=marshmallow.validate.Length(min=1, max=200)),
+                           required=True,
+                           validate=marshmallow.validate.Length(min=1, max=100))
+
+
 class FileUpdateRequestSchema(Schema):
     filename = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=200))
     parent_hash_id = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=36))
@@ -128,7 +138,6 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
                 raise ValidationError("More than one source of content cannot be specified.")
 
 
-
 @dataclass
 class FileResponse:
     object: Files = field(metadata={
@@ -140,3 +149,8 @@ class FileResponseSchema(Schema):
     object = fields.Nested(FileSchema, exclude=('project',))
     project = fields.Function(lambda obj: ProjectSchema(exclude=('***ARANGO_USERNAME***',)) \
                               .dump(obj.object.calculated_project))
+
+
+class MultipleFileResponseSchema(Schema):
+    objects = fields.Dict(keys=fields.String(),
+                          values=fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',)))
