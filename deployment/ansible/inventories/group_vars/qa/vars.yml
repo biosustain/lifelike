@@ -1,4 +1,5 @@
 server_name: qa.***ARANGO_DB_NAME***.bio
+app_environment: qa
 
 deploy_user: ansible
 deploy_group: ansible
