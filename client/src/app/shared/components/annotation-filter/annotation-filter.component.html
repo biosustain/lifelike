@@ -61,14 +61,12 @@
 </div>
 
 <div class="mb-2">
-  <button *ngIf="!wordVisibilityChanged" class="btn btn-outline-secondary btn-block"
-    (click)="setAllWordsVisibility(false)">
-  Hide All
-  </button>
-  <button *ngIf="wordVisibilityChanged" class="btn btn-outline-secondary btn-block"
-    (click)="setAllWordsVisibility(true)">
-  Show All
-  </button>
+  <button *ngIf="!wordVisibilityChanged"
+          class="btn btn-secondary btn-block"
+          (click)="setAllWordsVisibility(false)">Hide All</button>
+  <button *ngIf="wordVisibilityChanged"
+          class="btn btn-secondary btn-block"
+          (click)="setAllWordsVisibility(true)">Show All</button>
 </div>
 
 <div *ngFor="let data of annotationData">
