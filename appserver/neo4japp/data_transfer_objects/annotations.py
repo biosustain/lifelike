@@ -26,6 +26,7 @@ class PDFParsedCharacters(CamelDictMixin):
 class PDFTokenPositions(CamelDictMixin):
     page_number: int = attr.ib()
     keyword: str = attr.ib()
+    normalized_keyword: str = attr.ib()
     char_positions: Dict[int, str] = attr.ib()
     # used in NLP because it returns the type
     token_type: Optional[str] = attr.ib(default='')
