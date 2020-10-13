@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -8,6 +15,9 @@ import {
 } from '@angular/forms';
 
 import { uniqueId } from 'lodash';
+
+import { Subject, Subscription, timer } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
@@ -24,11 +34,14 @@ import {
   templateUrl: './annotation-filter.component.html',
   styleUrls: ['./annotation-filter.component.scss']
 })
-export class AnnotationFilterComponent implements OnInit {
+export class AnnotationFilterComponent implements OnInit, OnDestroy {
   id = uniqueId('AnnotationFilterComponent-');
 
   @Input() annotationData: AnnotationFilterEntity[];
   @Output() wordVisibilityOutput: EventEmitter<Map<string, boolean>>;
+
+  outputSubject: Subject<boolean>;
+  outputSubjectSub: Subscription;
 
   wordVisibilityMap: Map<string, boolean>;
   wordVisibilityChanged: boolean;
@@ -50,6 +63,8 @@ export class AnnotationFilterComponent implements OnInit {
   legend: Map<string, string>;
 
   constructor() {
+    this.outputSubject = new Subject<boolean>();
+
     this.wordVisibilityMap = new Map<string, boolean>();
     this.typeVisibilityMap = new Map<string, boolean>();
 
@@ -90,12 +105,25 @@ export class AnnotationFilterComponent implements OnInit {
       this.typeVisibilityMap.set(annotation.type, true);
       this.legend.set(annotation.type, annotation.color);
     });
+
+    // Basically debounces the word visibility output. Any time the parent component should know about visibility changes, we should emit a
+    // new value to `outputSubject`, rather than emitting to `wordVisibilityOutput` directly.
+    this.outputSubjectSub = this.outputSubject.asObservable().pipe(
+      switchMap(() => timer(250)),
+    ).subscribe(() => {
+      this.wordVisibilityOutput.emit(this.wordVisibilityMap);
+    });
+  }
+
+  ngOnDestroy() {
+    // `complete` effectively unsubscribes from the `outputSubjectSub`, so we don't need to manually unsubscribe from it here.
+    this.outputSubject.complete();
   }
 
   submitFiltersForm() {
     if (this.filtersForm.valid) {
       this.applyFilters();
-      this.wordVisibilityOutput.emit(this.wordVisibilityMap);
+      this.outputSubject.next();
     }
   }
 
@@ -126,7 +154,7 @@ export class AnnotationFilterComponent implements OnInit {
     this.wordVisibilityMap.set(word, event.target.checked);
     this.invalidateWordVisibility();
     this.invalidateTypeVisibility();
-    this.wordVisibilityOutput.emit(this.wordVisibilityMap);
+    this.outputSubject.next();
   }
 
   changeTypeVisibility(type: string, event) {
@@ -138,7 +166,8 @@ export class AnnotationFilterComponent implements OnInit {
       }
     });
 
-    this.wordVisibilityOutput.emit(this.wordVisibilityMap);
+    this.groupAndSortData();
+    this.outputSubject.next();
   }
 
   /**
@@ -151,7 +180,7 @@ export class AnnotationFilterComponent implements OnInit {
       this.typeVisibilityMap.set(annotation.type, state);
     }
     this.invalidateWordVisibility();
-    this.wordVisibilityOutput.emit(this.wordVisibilityMap);
+    this.outputSubject.next();
   }
 
   setGroupByOptions() {
@@ -182,6 +211,55 @@ export class AnnotationFilterComponent implements OnInit {
         this.orderDirections.push(OrderDirection[option]);
       }
     }
+  }
+
+  sortData() {
+    switch (this.selectedOrderByOption) {
+      case DefaultOrderByOptions.FREQUENCY:
+        this.annotationData.sort((a, b) => this.sortByFrequency(a, b, this.selectedOrderDirection));
+        break;
+    }
+  }
+
+  groupData() {
+    switch (this.selectedGroupByOption) {
+      case DefaultGroupByOptions.ENTITY_TYPE:
+        this.groupDataByEntityType();
+        break;
+      case DefaultGroupByOptions.FILTERED:
+        this.groupDataByFilteredState();
+        break;
+      case DefaultGroupByOptions.NONE:
+      default:
+        break;
+    }
+  }
+
+  groupAndSortData() {
+    this.sortData();
+    this.groupData();
+  }
+
+  private sortByFrequency(a: AnnotationFilterEntity, b: AnnotationFilterEntity, direction: string) {
+    return direction === OrderDirection.DESCENDING ? b.frequency - a.frequency : a.frequency - b.frequency;
+  }
+
+  private groupDataByEntityType() {
+    const typeMap = new Map<string, AnnotationFilterEntity[]>();
+
+    this.legend.forEach((_, type) => typeMap.set(type, []));
+    this.annotationData.forEach(annotation => typeMap.get(annotation.type).push(annotation));
+    this.annotationData = Array.from(typeMap.values()).reduce((accumulator, value) => accumulator.concat(value), []);
+  }
+
+  private groupDataByFilteredState() {
+    const filteredList = [];
+    const unfilteredList = [];
+
+    this.annotationData.forEach(
+      annotation => this.wordVisibilityMap.get(annotation.text) ? unfilteredList.push(annotation) : filteredList.push(annotation)
+    );
+    this.annotationData = unfilteredList.concat(filteredList);
   }
 
   /**
@@ -239,6 +317,7 @@ export class AnnotationFilterComponent implements OnInit {
     }
     this.invalidateTypeVisibility();
     this.invalidateWordVisibility();
+    this.groupAndSortData();
   }
 
   /**

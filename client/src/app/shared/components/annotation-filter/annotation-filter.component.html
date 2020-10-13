@@ -68,7 +68,7 @@
 
     <div class="form-group d-flex align-items-center">
       <label [for]="id + '-group-by-options'" class="my-0 mr-2 text-nowrap">Group By:</label>
-      <select [(ngModel)]="selectedGroupByOption" class="custom-select" [id]="id + '-group-by-options'">
+      <select [(ngModel)]="selectedGroupByOption" class="custom-select" [id]="id + '-group-by-options'" (change)="groupAndSortData()">
         <option *ngFor="let option of groupByOptions" [value]="option">
           {{option}}
         </option>
@@ -77,7 +77,7 @@
 
     <div class="form-group d-flex align-items-center">
       <label [for]="id + '-order-by-options'" class="my-0 mr-2 text-nowrap">Order By:</label>
-      <select [(ngModel)]="selectedOrderByOption" class="custom-select" [id]="id + '-order-by-options'">
+      <select [(ngModel)]="selectedOrderByOption" class="custom-select" [id]="id + '-order-by-options'" (change)="groupAndSortData()">
         <option *ngFor="let option of orderByOptions" [value]="option">
           {{option}}
         </option>
@@ -86,7 +86,7 @@
 
     <div class="form-group d-flex align-items-center">
       <label [for]="id + '-sort-direction-options'" class="my-0 mr-2 text-nowrap">Sort Direction:</label>
-      <select [(ngModel)]="selectedOrderDirection" class="custom-select" [id]="id + '-sort-direction-options'">
+      <select [(ngModel)]="selectedOrderDirection" class="custom-select" [id]="id + '-sort-direction-options'" (change)="groupAndSortData()">
         <option *ngFor="let option of orderDirections" [value]="option">
           {{option}}
         </option>
