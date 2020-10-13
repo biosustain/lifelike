@@ -47,7 +47,7 @@ def annotate(
     specified_organism: str = '',
     annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
 ):
-    annotations_json = create_annotations(
+    _, annotations_json = create_annotations(
         annotation_method=annotation_method,
         specified_organism=specified_organism,
         document=doc,
