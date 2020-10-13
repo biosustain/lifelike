@@ -1,6 +1,0 @@
-- hosts: "{{ webserver }}"
-  roles:
-    - role: ssl-cert
-      tags: ["ssl"]
-    - role: dh-params
-      tags: ["dh"]
