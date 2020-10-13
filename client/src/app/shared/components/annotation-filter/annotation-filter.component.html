@@ -104,16 +104,34 @@
           (click)="setAllWordsVisibility(true)">Show All</button>
 </div>
 
-<div *ngFor="let data of annotationData">
-  <div class="custom-control custom-checkbox">
-    <input [id]="id + 'filter-' + data.text"
-         class="custom-control-input"
-         type="checkbox"
-         value="1"
-         [checked]="isWordVisible(data.text)"
-         (change)="changeWordVisibility(data.text, $event)">
-    <label class="custom-control-label" [for]="id + 'filter-' + data.text">
-      <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}} <span>({{data.frequency}})</span>
-    </label>
+<fieldset class="fieldset-properties mt-2">
+  <legend placement="top left right"
+          container="body"
+          ngbTooltip="Click a checkbox to filter annotations of that type">Legend</legend>
+
+  <div *ngFor="let keyvalue of legend | keyvalue">
+    <div class="custom-control custom-checkbox">
+      <input [id]="id + '-legend-filter-' + keyvalue.key" class="custom-control-input" type="checkbox" value="1">
+      <label class="custom-control-label text-nowrap" [for]="id + '-legend-filter-' + keyvalue.key">
+        <span class="entity-type-legend" [ngStyle]="{background: keyvalue.value}"></span> {{keyvalue.key}}
+      </label>
+    </div>
   </div>
-</div>
+</fieldset>
+
+<fieldset class="fieldset-properties mt-2">
+  <legend>Annotations</legend>
+  <div *ngFor="let data of annotationData">
+    <div class="custom-control custom-checkbox">
+      <input [id]="id + 'filter-' + data.text"
+          class="custom-control-input"
+          type="checkbox"
+          value="1"
+          [checked]="isWordVisible(data.text)"
+          (change)="changeWordVisibility(data.text, $event)">
+      <label class="custom-control-label" [for]="id + 'filter-' + data.text">
+        <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}} <span>({{data.frequency}})</span>
+      </label>
+    </div>
+  </div>
+</fieldset>
