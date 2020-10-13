@@ -26,14 +26,19 @@ import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guar
 import { DashboardComponent } from './dashboard.component';
 import { KgImportModule } from './kg-import/kg-import.module';
 import { WordCloudModule } from './word-cloud/word-cloud.module';
+import { AppVersionDialogComponent } from './app-version-dialog.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     WorkspaceComponent,
     WorkspaceOutletComponent,
+    AppVersionDialogComponent,
     DashboardComponent,
     KgStatisticsComponent,
+  ],
+  entryComponents: [
+    AppVersionDialogComponent,
   ],
   imports: [
     BrowserModule,
