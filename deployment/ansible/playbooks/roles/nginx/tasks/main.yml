@@ -5,13 +5,13 @@
 
 - name: Check if TLS certificate exists
   stat:
-    path: "{{ certbot_conf_dir }}/live/{{ server_name }}"
+    path: "{{ certbot_conf_dir }}/live/{{ elk_server_name }}"
   register: certbot_certs
 
 - name: Copy nginx certbot config
   template:
     src: templates/nginx-certbot.conf
-    dest: "{{ nginx_conf_dir }}/{{ server_name }}.conf"
+    dest: "{{ nginx_conf_dir }}/{{ elk_server_name }}.conf"
   when: not certbot_certs.stat.exists
 
 - name: Start nginx container
@@ -42,7 +42,7 @@
     volumes:
         - "{{ certbot_conf_dir }}/:/etc/letsencrypt/"
         - "{{ certbot_conf_dir }}/www/:/var/www/certbot/"
-    command: certonly --web***ARANGO_USERNAME*** --email {{ certbot_email }} --agree-tos --web***ARANGO_USERNAME***-path=/var/www/certbot/ -d {{ server_name }}
+    command: certonly --web***ARANGO_USERNAME*** --email {{ certbot_email }} --agree-tos --web***ARANGO_USERNAME***-path=/var/www/certbot/ -d {{ elk_server_name }}
   when: not certbot_certs.stat.exists
 
 - name: Wait for certificate request
