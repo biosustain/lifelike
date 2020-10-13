@@ -1,11 +1,22 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
 
 import { uniqueId } from 'lodash';
 
 import { isNullOrUndefined } from 'util';
 
-import { AnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
-import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import {
+  AnnotationFilterEntity,
+  DefaultGroupByOptions,
+  DefaultOrderByOptions,
+  OrderDirection,
+} from 'app/interfaces/annotation-filter.interface';
 
 
 @Component({
@@ -22,15 +33,22 @@ export class AnnotationFilterComponent implements OnInit {
   wordVisibilityMap: Map<string, boolean>;
   wordVisibilityChanged: boolean;
 
-  form: FormGroup;
+  filtersForm: FormGroup;
 
   minimumFrequencyInputId: string;
   maximumFrequencyInputId: string;
 
+  selectedGroupByOption: string;
+  selectedOrderByOption: string;
+  selectedOrderDirection: string;
+  groupByOptions: string[];
+  orderByOptions: string[];
+  orderDirections: string[];
+
   constructor() {
     this.wordVisibilityMap = new Map<string, boolean>();
 
-    this.form = new FormGroup(
+    this.filtersForm = new FormGroup(
       // Form controls
       {
         minimumFrequency: new FormControl(
@@ -48,12 +66,16 @@ export class AnnotationFilterComponent implements OnInit {
     this.maximumFrequencyInputId = `${this.id}-maximum-frequency-input`;
 
     this.wordVisibilityOutput = new EventEmitter<Map<string, boolean>>();
+
+    this.setGroupByOptions();
+    this.setOrderByOptions();
+    this.setOrderDirections();
   }
 
   ngOnInit() {
     // The very first time we get the annotationData, set the default values for the frequency filters
-    this.form.get('minimumFrequency').setValue(1);
-    this.form.get('maximumFrequency').setValue(this.annotationData[0].frequency);
+    this.filtersForm.get('minimumFrequency').setValue(1);
+    this.filtersForm.get('maximumFrequency').setValue(this.annotationData[0].frequency);
 
     // Also set the visibility of each annotation to true
     this.annotationData.forEach(annotation => {
@@ -61,9 +83,9 @@ export class AnnotationFilterComponent implements OnInit {
     });
   }
 
-  submit() {
-    if (this.form.valid) {
-      this.applyFiltersAndGroupings();
+  submitFiltersForm() {
+    if (this.filtersForm.valid) {
+      this.applyFilters();
       this.wordVisibilityOutput.emit(this.wordVisibilityMap);
     }
   }
@@ -100,6 +122,36 @@ export class AnnotationFilterComponent implements OnInit {
     this.wordVisibilityOutput.emit(this.wordVisibilityMap);
   }
 
+  setGroupByOptions() {
+    this.groupByOptions = [];
+    this.selectedGroupByOption = DefaultGroupByOptions.NONE;
+    for (const option in DefaultGroupByOptions) {
+      if (typeof option === 'string') {
+        this.groupByOptions.push(DefaultGroupByOptions[option]);
+      }
+    }
+  }
+
+  setOrderByOptions() {
+    this.orderByOptions = [];
+    this.selectedOrderByOption = DefaultOrderByOptions.FREQUENCY;
+    for (const option in DefaultOrderByOptions) {
+      if (typeof option === 'string') {
+        this.orderByOptions.push(DefaultOrderByOptions[option]);
+      }
+    }
+  }
+
+  setOrderDirections() {
+    this.orderDirections = [];
+    this.selectedOrderDirection = OrderDirection.DESCENDING;
+    for (const option in OrderDirection) {
+      if (typeof option === 'string') {
+        this.orderDirections.push(OrderDirection[option]);
+      }
+    }
+  }
+
   /**
    * Determines whether any words in the word cloud have been filtered. By default words are not filtered, so if any of them are, then we
    * know that the user changed the filter. We use this to determine which (if any) of the buttons on the widget to disable/enable.
@@ -121,8 +173,8 @@ export class AnnotationFilterComponent implements OnInit {
    * calling function should bre responsible for the redraw.
    */
   private filterByFrequency() {
-    const minimumFrequency = this.form.get('minimumFrequency').value;
-    const maximumFrequency = this.form.get('maximumFrequency').value;
+    const minimumFrequency = this.filtersForm.get('minimumFrequency').value;
+    const maximumFrequency = this.filtersForm.get('maximumFrequency').value;
 
     for (const annotation of this.annotationData) {
       this.wordVisibilityMap.set(annotation.text,  minimumFrequency <= annotation.frequency && annotation.frequency <= maximumFrequency);
@@ -133,7 +185,7 @@ export class AnnotationFilterComponent implements OnInit {
   /**
    * Helper function for applying all filter and grouping methods simultaneously. Used by the filter form submission function.
    */
-  private applyFiltersAndGroupings() {
+  private applyFilters() {
     this.filterByFrequency();
   }
 
