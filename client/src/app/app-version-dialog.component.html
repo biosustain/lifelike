@@ -1,0 +1,15 @@
+<app-modal-header (cancel)="close()">
+  Lifelike
+</app-modal-header>
+
+<app-modal-body>
+  <div>
+    <span>Lifelike version:</span> {{ buildVersion }}
+  </div>
+  <div>
+    <span>Last updated:</span> {{ buildTimestamp }}
+  </div>
+  <div>
+    <span>Build identifier: {{ buildCommitHash }}</span>
+  </div>
+</app-modal-body>
