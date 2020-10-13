@@ -33,6 +33,8 @@ export class AnnotationFilterComponent implements OnInit {
   wordVisibilityMap: Map<string, boolean>;
   wordVisibilityChanged: boolean;
 
+  typeVisibilityMap: Map<string, boolean>;
+
   filtersForm: FormGroup;
 
   minimumFrequencyInputId: string;
@@ -45,8 +47,11 @@ export class AnnotationFilterComponent implements OnInit {
   orderByOptions: string[];
   orderDirections: string[];
 
+  legend: Map<string, string>;
+
   constructor() {
     this.wordVisibilityMap = new Map<string, boolean>();
+    this.typeVisibilityMap = new Map<string, boolean>();
 
     this.filtersForm = new FormGroup(
       // Form controls
@@ -70,6 +75,8 @@ export class AnnotationFilterComponent implements OnInit {
     this.setGroupByOptions();
     this.setOrderByOptions();
     this.setOrderDirections();
+
+    this.legend = new Map<string, string>();
   }
 
   ngOnInit() {
@@ -80,6 +87,8 @@ export class AnnotationFilterComponent implements OnInit {
     // Also set the visibility of each annotation to true
     this.annotationData.forEach(annotation => {
       this.wordVisibilityMap.set(annotation.text, true);
+      this.typeVisibilityMap.set(annotation.type, true);
+      this.legend.set(annotation.type, annotation.color);
     });
   }
 
@@ -99,6 +108,15 @@ export class AnnotationFilterComponent implements OnInit {
     }
   }
 
+  isTypeVisible(type: string) {
+    const value = this.typeVisibilityMap.get(type);
+    if (value === undefined) {
+      return true;
+    } else {
+      return value;
+    }
+  }
+
   /**
    * Changes the filter state of the given word to the given input state.
    * @param word string representing the word to change the state of
@@ -107,6 +125,19 @@ export class AnnotationFilterComponent implements OnInit {
   changeWordVisibility(word: string, event) {
     this.wordVisibilityMap.set(word, event.target.checked);
     this.invalidateWordVisibility();
+    this.invalidateTypeVisibility();
+    this.wordVisibilityOutput.emit(this.wordVisibilityMap);
+  }
+
+  changeTypeVisibility(type: string, event) {
+    this.typeVisibilityMap.set(type, event.target.checked);
+
+    this.annotationData.forEach(annotation => {
+      if (annotation.type === type) {
+        this.wordVisibilityMap.set(annotation.text, this.typeVisibilityMap.get(annotation.type));
+      }
+    });
+
     this.wordVisibilityOutput.emit(this.wordVisibilityMap);
   }
 
@@ -117,6 +148,7 @@ export class AnnotationFilterComponent implements OnInit {
   setAllWordsVisibility(state: boolean) {
     for (const annotation of this.annotationData) {
       this.wordVisibilityMap.set(annotation.text, state);
+      this.typeVisibilityMap.set(annotation.type, state);
     }
     this.invalidateWordVisibility();
     this.wordVisibilityOutput.emit(this.wordVisibilityMap);
@@ -169,24 +201,44 @@ export class AnnotationFilterComponent implements OnInit {
   }
 
   /**
+   * Checks the visibility status of each annotation type and sets them accordingly. For example, if all 'Chemical' are filtered, then the
+   * 'Chemical' option in the legend will be unchecked. If any 'Chemical' are not filtered, it is checked.
+   */
+  private invalidateTypeVisibility() {
+    this.typeVisibilityMap.forEach((_, key) => this.typeVisibilityMap.set(key, false));
+
+    this.annotationData.forEach(annotation => {
+      if (this.wordVisibilityMap.get(annotation.text)) {
+        this.typeVisibilityMap.set(annotation.type, true);
+      }
+    });
+  }
+
+  /**
    * Sets visibility to false for all entities that are not within the range specified by the user. This DOES NOT redraw the cloud! The
    * calling function should bre responsible for the redraw.
    */
-  private filterByFrequency() {
+  private filterByFrequency(annotation: AnnotationFilterEntity) {
     const minimumFrequency = this.filtersForm.get('minimumFrequency').value;
     const maximumFrequency = this.filtersForm.get('maximumFrequency').value;
 
-    for (const annotation of this.annotationData) {
-      this.wordVisibilityMap.set(annotation.text,  minimumFrequency <= annotation.frequency && annotation.frequency <= maximumFrequency);
-    }
-    this.invalidateWordVisibility();
+    return minimumFrequency <= annotation.frequency && annotation.frequency <= maximumFrequency;
+  }
+
+  private filterByType(annotation: AnnotationFilterEntity) {
+    return this.typeVisibilityMap.get(annotation.type);
   }
 
   /**
    * Helper function for applying all filter and grouping methods simultaneously. Used by the filter form submission function.
    */
   private applyFilters() {
-    this.filterByFrequency();
+    for (const annotation of this.annotationData) {
+      const state = this.filterByFrequency(annotation) && this.filterByType(annotation);
+      this.wordVisibilityMap.set(annotation.text, state);
+    }
+    this.invalidateTypeVisibility();
+    this.invalidateWordVisibility();
   }
 
   /**

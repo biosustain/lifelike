@@ -100,6 +100,7 @@ export class WordCloudComponent {
         if (!tempIdTypePairSet.has(idTypePair)) {
           const annotation = {
             id: cols[0],
+            type: cols[1],
             color: this.legend.get(cols[1].toLowerCase()), // Set lowercase to match the legend
             text: cols[2],
             frequency: parseInt(cols[3], 10),
