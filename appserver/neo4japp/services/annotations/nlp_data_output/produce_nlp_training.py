@@ -10,13 +10,18 @@ from neo4japp.database import (
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
-    # get_lmdb_dao,
     get_entity_recognition
 )
 from neo4japp.data_transfer_objects import Annotation, SpecifiedOrganismStrain
 from neo4japp.factory import create_app
 from neo4japp.services.annotations.constants import EntityType, OrganismCategory
 from neo4japp.util import compute_hash
+from neo4japp.services.annotations.service_helpers import (
+    create_annotations as create_annotations_helper
+)
+
+import paramiko
+import base64
 
 
 # reference to this directory
@@ -167,63 +172,31 @@ def pdf_to_pubtator(
                     )
 
 
-def create_annotations_from_text(doc, title):
+def create_annotations_from_text(text, title):
     nlp_annotations_list = []
-    # title = None
-    text = None
+    app = create_app('Functional Test Flask App', config='config.Testing')
 
-    for line in doc:
-        app = create_app('Functional Test Flask App', config='config.Testing')
-        with app.app_context():
-            try:
-                bioc_service = get_bioc_document_service()
-                annotator = get_annotations_service()
-                parser = get_annotations_pdf_parser()
-                entity_service = get_entity_recognition()
+    with app.app_context():
+        try:
 
-                # line_split = line.split('|')
-                # if len(line_split) > 1:
-                #     if 't' in line_split:
-                #         title = line_split[-1]
-                #     elif 'a' in line_split:
-                #         text = line_split[-1]
+            annotations, bioc_json = create_annotations_helper(
+                annotation_method='Rules Based',
+                specified_organism='',
+                document=text,
+                filename=title
+            )
 
-                # if title and text:
-                text = line
-                parsed_text = parser.parse_text(abstract=text)
-
-                tokens = parser.extract_tokens(parsed_chars=parsed_text)
-                entity_service.set_entity_inclusions(custom_annotations=[])
-
-                entity_service.identify_entities(
-                    tokens=tokens.token_positions,
-                    check_entities_in_lmdb=entity_service.get_entities_to_identify()
-                )
-
-                annotations = annotator.create_rules_based_annotations(
-                    tokens=tokens,
-                    custom_annotations=[],
-                    entity_results=entity_service.get_entity_match_results(),
-                    entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
-                    specified_organism=SpecifiedOrganismStrain('', '', '')
-                )
-
-                bioc = bioc_service.read(text=text, file_uri=title)
-                bioc_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
-                nlp_annotations_list.append((NLPAnnotations(
-                    filename=title,
-                    text=text,
-                    annotations=annotations,
-                ), bioc_json))
-
-                # text = None  # indent these once code above is uncommented
-                # title = None  # indent these once code above is uncommented
-            except Exception as ex:
-                raise ex
+            nlp_annotations_list.append((NLPAnnotations(
+                filename=title,
+                text=text,
+                annotations=annotations,
+            ), bioc_json))
+        except Exception as ex:
+            raise ex
     return nlp_annotations_list
 
 
-def pubtator_to_pubtator(
+def text_to_pubtator(
     chemical_pubtator,
     gene_pubtator,
     disease_pubtator,
@@ -254,6 +227,48 @@ def pubtator_to_pubtator(
                     )
 
 
+def text_to_pubtator2(
+    chemical_pubtator,
+    gene_pubtator,
+    disease_pubtator,
+    species_pubtator,
+):
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect('nas-server01.biosustain.dtu.dk', username='jining', password='LifeLike001')
+
+    count = 0
+    with open(os.path.join(directory, 'abstracts/data-1602546717626.csv')) as path_file:
+        headers = next(path_file)
+        for line in path_file:
+            split_line = line.replace('\n', '').split(',')
+            file_path = split_line[1]
+            pmcid = split_line[3]
+            stdin, stdout, stderr = client.exec_command(f'cat {file_path}/{pmcid}.no-anns.txt')
+            results = create_annotations_from_text(list(stdout)[0], f'{pmcid}.no-anns.txt')
+
+            for (annotations, bioc_json) in results:
+                annotation_file = os.path.join(
+                    directory, f'annotations/{pmcid}.json')
+                with open(annotation_file, 'w+') as a_f:
+                    json.dump(bioc_json, a_f)
+
+                write_to_file(
+                    annotations=annotations,
+                    chemical_pubtator=chemical_pubtator,
+                    gene_pubtator=gene_pubtator,
+                    disease_pubtator=disease_pubtator,
+                    species_pubtator=species_pubtator,
+                    add_offset=False,
+                )
+
+            count += 1
+            if count == 20:
+                break
+    client.close()
+
+
 def main():
     chemical_pubtator = open(os.path.join(directory, 'chemical_pubtator.txt'), 'w+')
     gene_pubtator = open(os.path.join(directory, 'gene_pubtator.txt'), 'w+')
@@ -267,7 +282,14 @@ def main():
     #     species_pubtator=species_pubtator,
     # )
 
-    pubtator_to_pubtator(
+    # text_to_pubtator(
+    #     chemical_pubtator=chemical_pubtator,
+    #     gene_pubtator=gene_pubtator,
+    #     disease_pubtator=disease_pubtator,
+    #     species_pubtator=species_pubtator,
+    # )
+
+    text_to_pubtator2(
         chemical_pubtator=chemical_pubtator,
         gene_pubtator=gene_pubtator,
         disease_pubtator=disease_pubtator,

@@ -247,4 +247,4 @@ def create_annotations(
     else:
         raise AnnotationError(f'Your file {filename} could not be annotated.')
     bioc = bioc_service.read(text=pdf_text, file_uri=filename)
-    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+    return annotations, bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
