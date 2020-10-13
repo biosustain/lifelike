@@ -971,7 +971,25 @@ class AnnotationsService:
             elif isinstance(annotation, GeneAnnotation):
                 text_in_document = text_in_document[0]  # type: ignore
                 if text_in_document == annotation.keyword:
-                    fixed_annotations.append(annotation)
+                    # check abbreviations
+                    # all uppercase and within parenthesis
+                    if all([c.isupper() for c in annotation.text_in_document]) and \
+                        (len(annotation.text_in_document) == 3 or len(annotation.text_in_document) == 4):  # noqa
+                        begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
+                        end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
+                        if begin == '(' and end == ')':
+                            i = bisect_left(word_index_list, annotation.lo_location_offset)
+                            abbrev = ''
+
+                            for idx in word_index_list[i-len(annotation.text_in_document):i]:
+                                abbrev += word_index_dict[idx][0]
+
+                            if abbrev.lower() != annotation.text_in_document.lower():
+                                fixed_annotations.append(annotation)
+                        else:
+                            fixed_annotations.append(annotation)
+                    else:
+                        fixed_annotations.append(annotation)
             else:
                 # check abbreviations
                 # all uppercase and within parenthesis
