@@ -104,21 +104,44 @@
           (click)="setAllWordsVisibility(true)">Show All</button>
 </div>
 
-<div *ngFor="let data of annotationData">
-  <div class="custom-control custom-checkbox">
-    <input [id]="id + 'filter-' + data.text"
-         class="custom-control-input"
-         type="checkbox"
-         value="1"
-         [checked]="isWordVisible(data.text)"
-         (change)="changeWordVisibility(data.text, $event)">
-    <label class="custom-control-label text-nowrap"
-           [for]="id + 'filter-' + data.text"
-           placement="right bottom top"
-           container="body"
-           [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">
-      <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}} <span>({{data.frequency}})</span>
-      <i *ngIf="!data.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
-    </label>
+<fieldset class="fieldset-properties mt-2">
+  <legend placement="top left right"
+          container="body"
+          ngbTooltip="Click a checkbox to filter annotations of that type">Legend</legend>
+
+  <div *ngFor="let keyvalue of legend | keyvalue">
+    <div class="custom-control custom-checkbox">
+      <input [id]="id + '-legend-filter-' + keyvalue.key"
+             class="custom-control-input"
+             type="checkbox"
+             value="1"
+             [checked]="isTypeVisible(keyvalue.key)"
+             (change)="changeTypeVisibility(keyvalue.key, $event)">
+      <label class="custom-control-label text-nowrap" [for]="id + '-legend-filter-' + keyvalue.key">
+        <span class="entity-type-legend" [ngStyle]="{background: keyvalue.value}"></span> {{keyvalue.key}}
+      </label>
+    </div>
   </div>
-</div>
+</fieldset>
+
+<fieldset class="fieldset-properties mt-2">
+  <legend>Annotations</legend>
+  <div *ngFor="let data of annotationData">
+    <div class="custom-control custom-checkbox">
+      <input [id]="id + 'filter-' + data.text"
+          class="custom-control-input"
+          type="checkbox"
+          value="1"
+          [checked]="isWordVisible(data.text)"
+          (change)="changeWordVisibility(data.text, $event)">
+      <label class="custom-control-label text-nowrap"
+            [for]="id + 'filter-' + data.text"
+            placement="right bottom top"
+            container="body"
+            [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">
+        <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}} <span>({{data.frequency}})</span>
+        <i *ngIf="!data.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
+      </label>
+    </div>
+  </div>
+</fieldset>
