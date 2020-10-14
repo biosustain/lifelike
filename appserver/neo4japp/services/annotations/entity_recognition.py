@@ -1,7 +1,7 @@
 from collections import deque
 from functools import partial
 from itertools import starmap
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from flask import current_app
 from sqlalchemy import and_
@@ -53,6 +53,8 @@ class EntityRecognitionService:
         self.global_phenotype_inclusion: Dict[str, List[dict]] = {}
         self.global_protein_inclusion: Dict[str, List[dict]] = {}
         self.global_species_inclusion: Dict[str, List[dict]] = {}
+
+        self.gene_collection: List[Tuple[str, str, str]] = []
 
         self._matched_genes: Dict[str, LMDBMatch] = {}
         self._matched_chemicals: Dict[str, LMDBMatch] = {}
@@ -227,22 +229,13 @@ class EntityRecognitionService:
 
                     if species_id and species_name:
                         if normalized_species_name in self.local_species_inclusion:
-                            unique = all(
-                                [
-                                    entity['tax_id'] != species_id for
-                                    entity in self.local_species_inclusion[normalized_species_name]
-                                ]
-                            )
-                            # need to check unique because a custom annotation
-                            # can have multiple of the same entity
-                            if unique:
-                                self.local_species_inclusion[normalized_species_name].append(
-                                    create_species_for_ner(
-                                        id_=species_id,
-                                        name=species_name,
-                                        synonym=species_name,
-                                    )
+                            self.local_species_inclusion[normalized_species_name].append(
+                                create_species_for_ner(
+                                    id_=species_id,
+                                    name=species_name,
+                                    synonym=species_name,
                                 )
+                            )
                         else:
                             self.local_species_inclusion[normalized_species_name] = [
                                 create_species_for_ner(
@@ -274,73 +267,42 @@ class EntityRecognitionService:
                     normalized_entity_name = normalize_str(entity_name)
 
                     if entity_id and entity_name:
-                        unique = all(
-                            [
-                                entity[entity_id_str] != entity_id for
-                                entity in global_inclusion.get(normalized_entity_name, [])  # noqa
-                            ]
-                        )
-                        # need to check unique because a custom annotation
-                        # can have multiple of the same entity
-                        if unique:
-                            entity = {}  # to avoid UnboundLocalError
-                            if entity_type in {
-                                EntityType.CHEMICAL.value,
-                                EntityType.COMPOUND.value,
-                                EntityType.DISEASE.value,
-                                EntityType.PHENOTYPE.value,
-                                EntityType.SPECIES.value
-                            }:
+                        entity = {}  # to avoid UnboundLocalError
+                        if entity_type in {
+                            EntityType.CHEMICAL.value,
+                            EntityType.COMPOUND.value,
+                            EntityType.DISEASE.value,
+                            EntityType.PHENOTYPE.value,
+                            EntityType.SPECIES.value
+                        }:
+                            entity = create_entity_ner_func(
+                                id_=entity_id,
+                                name=entity_name,
+                                synonym=entity_name
+                            )
+                        else:
+                            if entity_type == EntityType.GENE.value:
+                                self.gene_collection.append(
+                                    (entity_id, entity_name, normalized_entity_name))
+                                continue
+                            else:
+                                # protein
                                 entity = create_entity_ner_func(
-                                    id_=entity_id,
                                     name=entity_name,
                                     synonym=entity_name
                                 )
-                            else:
-                                if entity_type == EntityType.GENE.value:
-                                    # the word manually annotated by user
-                                    # will not be in the KG
-                                    # otherwise it would've been annotated
-                                    # so we use the gene_id to query the KG to get
-                                    # the correct gene name and use that gene name
-                                    # as the synonym too for gene/organism matching
-                                    gene_name = self.annotation_neo4j.get_genes_from_gene_ids(gene_ids=[entity_id])  # noqa
-                                    if gene_name:
-                                        entity = create_entity_ner_func(
-                                            name=gene_name.pop(),
-                                            synonym=entity_name
-                                        )
 
-                                        # gene doesn't have id in LMDB
-                                        # but we need to add it here for global inclusions
-                                        # because the user could add a gene id
-                                        # which we use to check for unique above
-                                        entity[entity_id_str] = entity_id
-                                    else:
-                                        current_app.logger.info(
-                                            f'Failed to find a gene match in the knowledge graph with id {entity_id}.',  # noqa
-                                            extra=EventLog(event_type='annotations').to_dict()
-                                        )
-                                        # continue here, otherwise will reach
-                                        # entity['inclusion'] = True below and
-                                        # we don't want that, get KeyError entity['name'] later
-                                        continue
-                                else:
-                                    entity = create_entity_ner_func(
-                                        name=entity_name,
-                                        synonym=entity_name
-                                    )
+                        # differentiate between LMDB
+                        entity['inclusion'] = True
 
-                            # differentiate between LMDB
-                            entity['inclusion'] = True
-
-                            if normalized_entity_name in global_inclusion:
-                                global_inclusion[normalized_entity_name].append(entity)
-                            else:
-                                global_inclusion[normalized_entity_name] = [entity]
+                        if normalized_entity_name in global_inclusion:
+                            global_inclusion[normalized_entity_name].append(entity)
+                        else:
+                            global_inclusion[normalized_entity_name] = [entity]
 
     def entity_lookup_for_chemicals(
         self,
+        global_exclusion: Set[str],
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
@@ -365,7 +327,7 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
-            if lowered_word in self._get_chemical_annotations_to_exclude():
+            if lowered_word in global_exclusion:
                 current_app.logger.info(
                     f'Found a match in chemicals entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
@@ -397,6 +359,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_compounds(
         self,
+        global_exclusion: Set[str],
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
@@ -421,7 +384,7 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
-            if lowered_word in self._get_compound_annotations_to_exclude():
+            if lowered_word in global_exclusion:
                 current_app.logger.info(
                     f'Found a match in compounds entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
@@ -453,6 +416,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_diseases(
         self,
+        global_exclusion: Set[str],
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
@@ -477,7 +441,7 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
-            if lowered_word in self._get_disease_annotations_to_exclude():
+            if lowered_word in global_exclusion:
                 current_app.logger.info(
                     f'Found a match in diseases entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
@@ -509,6 +473,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_genes(
         self,
+        global_exclusion: Set[str],
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
@@ -533,7 +498,7 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
-            if token.keyword in self._get_gene_annotations_to_exclude():
+            if token.keyword in global_exclusion:
                 current_app.logger.info(
                     f'Found a match in genes entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
@@ -565,6 +530,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_phenotypes(
         self,
+        global_exclusion: Set[str],
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
@@ -589,7 +555,7 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
-            if lowered_word in self._get_phenotype_annotations_to_exclude():
+            if lowered_word in global_exclusion:
                 current_app.logger.info(
                     f'Found a match in phenotypes entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
@@ -621,6 +587,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_proteins(
         self,
+        global_exclusion: Set[str],
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
@@ -645,7 +612,7 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
-            if token.keyword in self._get_protein_annotations_to_exclude():
+            if token.keyword in global_exclusion:
                 current_app.logger.info(
                     f'Found a match in proteins entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
@@ -682,6 +649,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_species(
         self,
+        global_exclusion: Set[str],
         token: PDFTokenPositions,
         synonym: Optional[str] = None,
     ):
@@ -706,7 +674,7 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
-            if lowered_word in self._get_species_annotations_to_exclude():
+            if lowered_word in global_exclusion:
                 current_app.logger.info(
                     f'Found a match in species entity lookup but token "{token.keyword}" is a global exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
@@ -758,36 +726,38 @@ class EntityRecognitionService:
         self,
         token: PDFTokenPositions,
         check_entities: Dict[str, bool],
+        global_exclusions: Dict[str, set]
     ) -> None:
         if check_entities.get(EntityType.CHEMICAL.value, False):
-            self._find_chemical_match(token)
+            self._find_chemical_match(token, global_exclusions[EntityType.CHEMICAL.value])
 
         if check_entities.get(EntityType.COMPOUND.value, False):
-            self._find_compound_match(token)
+            self._find_compound_match(token, global_exclusions[EntityType.COMPOUND.value])
 
         if check_entities.get(EntityType.DISEASE.value, False):
-            self._find_disease_match(token)
+            self._find_disease_match(token, global_exclusions[EntityType.DISEASE.value])
 
         if check_entities.get(EntityType.GENE.value, False):
-            self._find_gene_match(token)
+            self._find_gene_match(token, global_exclusions[EntityType.GENE.value])
 
         if check_entities.get(EntityType.PHENOTYPE.value, False):
-            self._find_phenotype_match(token)
+            self._find_phenotype_match(token, global_exclusions[EntityType.PHENOTYPE.value])
 
         if check_entities.get(EntityType.PROTEIN.value, False):
-            self._find_protein_match(token)
+            self._find_protein_match(token, global_exclusions[EntityType.PROTEIN.value])
 
         if check_entities.get(EntityType.SPECIES.value, False):
-            self._find_species_match(token)
+            self._find_species_match(token, global_exclusions[EntityType.SPECIES.value])
 
-    def _find_chemical_match(self, token: PDFTokenPositions) -> None:
+    def _find_chemical_match(self, token: PDFTokenPositions, global_exclusion: Set[str]) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
                     exist = self.entity_lookup_for_chemicals(
+                        global_exclusion=global_exclusion,
                         token=token,
-                        synonym=correct_spelling,
+                        synonym=correct_spelling
                     )
 
                     # if any that means there was a match
@@ -795,17 +765,19 @@ class EntityRecognitionService:
                         break
             else:
                 self.entity_lookup_for_chemicals(
-                    token=token,
+                    global_exclusion=global_exclusion,
+                    token=token
                 )
 
-    def _find_compound_match(self, token: PDFTokenPositions) -> None:
+    def _find_compound_match(self, token: PDFTokenPositions, global_exclusion: Set[str]) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
                     exist = self.entity_lookup_for_compounds(
+                        global_exclusion=global_exclusion,
                         token=token,
-                        synonym=correct_spelling,
+                        synonym=correct_spelling
                     )
 
                     # if any that means there was a match
@@ -813,17 +785,19 @@ class EntityRecognitionService:
                         break
             else:
                 self.entity_lookup_for_compounds(
-                    token=token,
+                    global_exclusion=global_exclusion,
+                    token=token
                 )
 
-    def _find_disease_match(self, token: PDFTokenPositions) -> None:
+    def _find_disease_match(self, token: PDFTokenPositions, global_exclusion: Set[str]) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
                     exist = self.entity_lookup_for_diseases(
+                        global_exclusion=global_exclusion,
                         token=token,
-                        synonym=correct_spelling,
+                        synonym=correct_spelling
                     )
 
                     # if any that means there was a match
@@ -831,17 +805,19 @@ class EntityRecognitionService:
                         break
             else:
                 self.entity_lookup_for_diseases(
-                    token=token,
+                    global_exclusion=global_exclusion,
+                    token=token
                 )
 
-    def _find_gene_match(self, token: PDFTokenPositions) -> None:
+    def _find_gene_match(self, token: PDFTokenPositions, global_exclusion: Set[str]) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
                     exist = self.entity_lookup_for_genes(
+                        global_exclusion=global_exclusion,
                         token=token,
-                        synonym=correct_spelling,
+                        synonym=correct_spelling
                     )
 
                     # if any that means there was a match
@@ -849,17 +825,19 @@ class EntityRecognitionService:
                         break
             else:
                 self.entity_lookup_for_genes(
-                    token=token,
+                    global_exclusion=global_exclusion,
+                    token=token
                 )
 
-    def _find_phenotype_match(self, token: PDFTokenPositions) -> None:
+    def _find_phenotype_match(self, token: PDFTokenPositions, global_exclusion: Set[str]) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
                     exist = self.entity_lookup_for_phenotypes(
+                        global_exclusion=global_exclusion,
                         token=token,
-                        synonym=correct_spelling,
+                        synonym=correct_spelling
                     )
 
                     # if any that means there was a match
@@ -867,17 +845,19 @@ class EntityRecognitionService:
                         break
             else:
                 self.entity_lookup_for_phenotypes(
-                    token=token,
+                    global_exclusion=global_exclusion,
+                    token=token
                 )
 
-    def _find_protein_match(self, token: PDFTokenPositions) -> None:
+    def _find_protein_match(self, token: PDFTokenPositions, global_exclusion: Set[str]) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
                     exist = self.entity_lookup_for_proteins(
+                        global_exclusion=global_exclusion,
                         token=token,
-                        synonym=correct_spelling,
+                        synonym=correct_spelling
                     )
 
                     # if any that means there was a match
@@ -885,17 +865,19 @@ class EntityRecognitionService:
                         break
             else:
                 self.entity_lookup_for_proteins(
-                    token=token,
+                    global_exclusion=global_exclusion,
+                    token=token
                 )
 
-    def _find_species_match(self, token: PDFTokenPositions) -> None:
+    def _find_species_match(self, token: PDFTokenPositions, global_exclusion: Set[str]) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
                 for correct_spelling in COMMON_TYPOS[word]:
                     exist = self.entity_lookup_for_species(
+                        global_exclusion=global_exclusion,
                         token=token,
-                        synonym=correct_spelling,
+                        synonym=correct_spelling
                     )
 
                     # if any that means there was a match
@@ -903,7 +885,8 @@ class EntityRecognitionService:
                         break
             else:
                 self.entity_lookup_for_species(
-                    token=token,
+                    global_exclusion=global_exclusion,
+                    token=token
                 )
 
     def set_entity_inclusions(
@@ -913,9 +896,45 @@ class EntityRecognitionService:
         self._set_local_species_inclusion(custom_annotations)
         deque(starmap(self._set_global_inclusions, self._get_global_inclusion_pairs()), maxlen=0)  # noqa
 
+        # do this separately to make only one call to KG
+        gene_ids = [i for i, _, _ in self.gene_collection]
+        gene_names = self.annotation_neo4j.get_genes_from_gene_ids(
+            gene_ids=gene_ids)
+
+        current_app.logger.info(
+            f'Failed to find a gene match in the knowledge graph for gene ids {set(gene_ids) - set(gene_names)}.',  # noqa
+            extra=EventLog(event_type='annotations').to_dict()
+        )
+
+        for (gene_id, entity_name, normalized_name) in self.gene_collection:
+            if gene_names.get(gene_id, None):
+                entity = create_gene_for_ner(
+                    name=gene_names[gene_id],
+                    synonym=entity_name
+                )
+                # differentiate between LMDB
+                entity['inclusion'] = True
+
+                if normalized_name in self.global_gene_inclusion:
+                    self.global_gene_inclusion[normalized_name].append(entity)
+                else:
+                    self.global_gene_inclusion[normalized_name] = [entity]
+
     def identify_entities(
         self,
         tokens: List[PDFTokenPositions],
         check_entities_in_lmdb: Dict[str, bool],
     ) -> None:
-        deque(map(partial(self._entity_lookup_dispatch, check_entities=check_entities_in_lmdb), tokens), maxlen=0)  # noqa
+        global_exclusions = {
+            EntityType.CHEMICAL.value: self._get_chemical_annotations_to_exclude(),
+            EntityType.COMPOUND.value: self._get_compound_annotations_to_exclude(),
+            EntityType.DISEASE.value: self._get_disease_annotations_to_exclude(),
+            EntityType.GENE.value: self._get_gene_annotations_to_exclude(),
+            EntityType.PHENOTYPE.value: self._get_phenotype_annotations_to_exclude(),
+            EntityType.PROTEIN.value: self._get_protein_annotations_to_exclude(),
+            EntityType.SPECIES.value: self._get_species_annotations_to_exclude()
+        }
+        deque(map(partial(
+            self._entity_lookup_dispatch,
+            check_entities=check_entities_in_lmdb,
+            global_exclusions=global_exclusions), tokens), maxlen=0)
