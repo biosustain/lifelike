@@ -39,12 +39,12 @@ http:
     lifelike-elk:
       entryPoints:
         - websecure
-      rule: "Host(`elk.prod.lifelike.bio`)"
+      rule: "Host(`elk.lifelike.bio`)"
       service: lifelike-elk-prod
       tls:
         certResolver: "le"
         domains:
-          - main: "elk.prod.lifelike.bio"
+          - main: "elk.lifelike.bio"
 
   services:
     lifelike-qa-service:
@@ -62,7 +62,7 @@ http:
     lifelike-elk-prod:
       loadBalancer:
         servers:
-          - url: "http://10.128.0.43"
+          - url: "http://10.128.15.244"
 
   middlewares:
     admin-auth:
