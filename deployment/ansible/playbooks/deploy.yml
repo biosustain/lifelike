@@ -124,3 +124,13 @@
       tags:
         - lmdb
         - deploy
+
+    - name: Seed Elasticsearch with Global Annotations
+      include_role:
+        name: global-annotation
+        apply:
+          tags:
+            - always
+      tags:
+        - annotation
+        - deploy
