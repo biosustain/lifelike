@@ -166,6 +166,9 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.invalidateWordVisibility();
+    this.invalidateTypeVisibility();
+
     this.groupAndSortData();
     this.outputSubject.next();
   }
