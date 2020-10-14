@@ -1,6 +1,7 @@
 import attr
 import sqlalchemy
 from flask import Blueprint, request, jsonify, g, current_app
+from flask_apispec import use_kwargs
 from sqlalchemy.orm import aliased
 
 from neo4japp.blueprints.auth import auth
@@ -25,6 +26,9 @@ from neo4japp.models import (
     projects_collaborator_role,
     Files,
     Project
+)
+from neo4japp.request_schemas.search import (
+    ContentSearchSchema,
 )
 from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import EventLog
@@ -78,30 +82,11 @@ def visualizer_search_temp(req: VizSearchRequest):
 # TODO: Probably should rename this to something else...not sure what though
 @bp.route('/content', methods=['GET'])
 @auth.login_required
-def search():
-    req = request.args
-    search_term = req.get('q', '')
-    types = req.get('types', 'map;pdf').split(';')
-
-    try:
-        # Elastic uses 0-indexed pagination
-        limit = int(req.get('limit', '20'))
-        offset = (int(req.get('page', '1')) - 1) * limit
-
-    except ValueError as e:
-        current_app.logger.error(
-            f'Content search had bad params: {request.args}',
-            exc_info=e,
-            extra=EventLog(event_type='content search').to_dict()
-        )
-        raise InvalidArgumentsException(
-            'Invalid params',
-            additional_msgs=[e],
-            fields={
-                'page': [f"Value of page: {req.get('page')}"],
-                'limit': [f"Value of limit: {req.get('limit')}"],
-            }
-        )
+@use_kwargs(ContentSearchSchema, location='query')
+def search(q, types, limit, page):
+    search_term = q
+    types = types.split(';')
+    offset = (page - 1) * limit
 
     if search_term:
         match_fields = ['filename', 'description', 'data.content']
@@ -208,7 +193,7 @@ def search():
         results=results
     )
 
-    return jsonify(response.to_dict()), 200
+    return jsonify(response.to_dict())
 
 
 @bp.route('/organism/<string:organism_tax_id>', methods=['GET'])
