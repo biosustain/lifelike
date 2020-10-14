@@ -18,11 +18,19 @@
     repo: deb https://artifacts.elastic.co/packages/7.x/apt stable main
     state: present
 
-- name: Install Filebeat
+- name: Remove old Filebeat
   apt:
     pkg:
       - filebeat
+    state: absent
+
+- name: Install Filebeat
+  apt:
+    pkg:
+      - filebeat={{ filebeat_version }}
     update_cache: yes
+    autoclean: yes
+    autoremove: yes
 
 - name: Copy filebeat conf
   template: src={{ item.src }} dest={{ item.dest }}
