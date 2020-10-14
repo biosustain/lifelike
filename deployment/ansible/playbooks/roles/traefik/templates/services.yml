@@ -39,12 +39,12 @@ http:
     ***ARANGO_DB_NAME***-elk:
       entryPoints:
         - websecure
-      rule: "Host(`elk.prod.***ARANGO_DB_NAME***.bio`)"
+      rule: "Host(`elk.***ARANGO_DB_NAME***.bio`)"
       service: ***ARANGO_DB_NAME***-elk-prod
       tls:
         certResolver: "le"
         domains:
-          - main: "elk.prod.***ARANGO_DB_NAME***.bio"
+          - main: "elk.***ARANGO_DB_NAME***.bio"
 
   services:
     ***ARANGO_DB_NAME***-qa-service:
@@ -62,7 +62,7 @@ http:
     ***ARANGO_DB_NAME***-elk-prod:
       loadBalancer:
         servers:
-          - url: "http://10.128.0.43"
+          - url: "http://10.128.15.244"
 
   middlewares:
     admin-auth:
