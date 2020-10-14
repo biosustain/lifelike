@@ -85,7 +85,6 @@ export class WordCloudComponent {
 
       const tempIdTypePairSet = new Map<string, number>();
       const annotationList = annotationExport.split('\n');
-      let maximumPossibleFrequency = 0;
 
       // remove the headers from tsv response
       annotationList.shift();
@@ -115,12 +114,6 @@ export class WordCloudComponent {
 
           // TODO: In the future, we may want to show "synonyms" somewhere, or even allow the user to swap out the most frequent term for a
           // synonym
-        }
-
-        // Need to keep track of the maximum possible frequency so we know what we should set the initial limit to
-        const frequencyOfThisEntity = this.annotationData[tempIdTypePairSet.get(idTypePair)].frequency;
-        if ( frequencyOfThisEntity > maximumPossibleFrequency) {
-          maximumPossibleFrequency = frequencyOfThisEntity;
         }
       });
 
