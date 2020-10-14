@@ -312,7 +312,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
    */
   private applyFilters() {
     for (const annotation of this.annotationData) {
-      const state = this.filterByFrequency(annotation) && this.filterByType(annotation);
+      const state = this.filterByFrequency(annotation);
       this.wordVisibilityMap.set(annotation.text, state);
     }
     this.invalidateTypeVisibility();
