@@ -95,15 +95,15 @@ class EntityType(Enum):
 
 ENTITY_TYPE_PRECEDENCE = {
     # larger value takes precedence
-    EntityType.ANATOMY.value: 9,
-    EntityType.SPECIES.value: 8,  # 7,
-    EntityType.FOOD.value: 7,
-    EntityType.GENE.value: 6,
-    EntityType.PROTEIN.value: 5,
-    EntityType.PHENOTYPE.value: 4,
-    EntityType.CHEMICAL.value: 3,
-    EntityType.COMPOUND.value: 2,
-    EntityType.DISEASE.value: 1,
+    EntityType.SPECIES.value: 9,
+    EntityType.GENE.value: 8,
+    EntityType.PROTEIN.value: 7,
+    EntityType.PHENOTYPE.value: 6,
+    EntityType.ANATOMY.value: 5,
+    EntityType.CHEMICAL.value: 4,
+    EntityType.COMPOUND.value: 3,
+    EntityType.DISEASE.value: 2,
+    EntityType.FOOD.value: 1,
 }
 
 
