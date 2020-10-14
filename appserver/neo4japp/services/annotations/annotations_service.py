@@ -949,10 +949,37 @@ class AnnotationsService:
         got matched to a shorter length word due to
         normalizing in lmdb. Or words that get matched
         but the casing were not taken into account, e.g
-        gene marA is correct, but mara is not.
+        gene 'marA' is correct, but 'mara' is not.
         """
+        def is_abbrev(text_in_document, annotation, word_index_list, abbrevs) -> bool:
+            if text_in_document not in abbrevs:
+                if all([c.isupper() for c in text_in_document]) and \
+                    (len(text_in_document) == 3 or len(text_in_document) == 4):  # noqa
+                    begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
+                    end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
+                    if begin == '(' and end == ')':
+                        i = bisect_left(word_index_list, annotation.lo_location_offset)
+                        abbrev = ''
+
+                        for idx in word_index_list[i-len(text_in_document):i]:
+                            abbrev += word_index_dict[idx][0]
+
+                        if abbrev.lower() != text_in_document.lower():
+                            return False
+                        else:
+                            # is an abbreviation so mark it as so
+                            return True
+                    else:
+                        return False
+                else:
+                    return False
+            else:
+                return True
+
         fixed_annotations: List[Annotation] = []
         word_index_list = list(word_index_dict)
+
+        abbrevs: Set[str] = set()
 
         for annotation in annotations_list:
             text_in_document = annotation.text_in_document.split(' ')
@@ -971,25 +998,14 @@ class AnnotationsService:
             elif isinstance(annotation, GeneAnnotation):
                 text_in_document = text_in_document[0]  # type: ignore
                 if text_in_document == annotation.keyword:
-                    fixed_annotations.append(annotation)
-            else:
-                # check abbreviations
-                # all uppercase and within parenthesis
-                if all([c.isupper() for c in annotation.text_in_document]) and \
-                    (len(annotation.text_in_document) == 3 or len(annotation.text_in_document) == 4):  # noqa
-                    begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
-                    end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
-                    if begin == '(' and end == ')':
-                        i = bisect_left(word_index_list, annotation.lo_location_offset)
-                        abbrev = ''
-
-                        for idx in word_index_list[i-len(annotation.text_in_document):i]:
-                            abbrev += word_index_dict[idx][0]
-
-                        if abbrev.lower() != annotation.text_in_document.lower():
-                            fixed_annotations.append(annotation)
+                    if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):
+                        abbrevs.add(text_in_document)  # type: ignore
                     else:
                         fixed_annotations.append(annotation)
+            else:
+                text_in_document = text_in_document[0]  # type: ignore
+                if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):
+                    abbrevs.add(text_in_document)  # type: ignore
                 else:
                     fixed_annotations.append(annotation)
 
