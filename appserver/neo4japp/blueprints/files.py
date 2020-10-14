@@ -89,7 +89,10 @@ def search_doi(content: bytes) -> Optional[str]:
 
     if match is None:
         return None
-    doi = match.group(1).decode('utf-8').replace('%2F', '/')
+    try:
+        doi = match.group(1).decode('utf-8').replace('%2F', '/')
+    except Exception:
+        return None
     # Make sure that the match does not contain undesired characters at the end.
     # E.g. when the match is at the end of a line, and there is a full stop.
     while doi and doi[-1] in './%':
