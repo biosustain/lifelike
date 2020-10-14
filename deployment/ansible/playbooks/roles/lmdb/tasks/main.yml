@@ -8,7 +8,7 @@
       - google-cloud-storage
       - psycopg2-binary
     umask: "0022"
-  become: True
+    executable: /usr/bin/pip3
 
 - name: Create LMDB Database Directories
   file:
@@ -80,5 +80,7 @@
     POSTGRES_USER: "{{ POSTGRES_USER }}"
     POSTGRES_DB: "{{ POSTGRES_DB }}"
   register: outcome
+  args:
+    executable: /usr/bin/python3
 
 - debug: msg="{{ outcome.stdout }}"

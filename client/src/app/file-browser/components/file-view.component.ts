@@ -1,5 +1,5 @@
 import { uniqueId } from 'lodash';
-import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
 import { combineLatest, Subject, Subscription, BehaviorSubject, Observable } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { Hyperlink, DatabaseType, AnnotationType } from 'app/shared/constants';
@@ -76,6 +76,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @Output() filterChangeSubject = new Subject<void>();
 
   searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
+  searchQuery = '';
   goToPosition: Subject<Location> = new Subject<Location>();
   loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]>;
   pendingScroll: Location;
@@ -101,10 +102,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   removedAnnotationExclusion: RemovedAnnotationExclusion;
   projectName: string;
 
-  // search
-  pdfQuery;
-
   @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
+  @ViewChild('search', {static: false}) searchElement: ElementRef;
 
   constructor(
     private readonly filesService: PdfFilesService,
@@ -515,25 +514,31 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.requestClose.emit(null);
   }
 
-  searchQueryChanged(query) {
+  searchQueryChanged() {
+    if (this.searchQuery === '') {
+      this.pdfViewerLib.nullifyMatchesCount();
+    }
     this.searchChanged.next({
-      keyword: query,
+      keyword: this.searchQuery,
       findPrevious: false,
     });
   }
 
-  findNext(query) {
-    this.searchChanged.next({
-      keyword: query,
-      findPrevious: false,
-    });
+  findNext() {
+    this.searchQueryChanged();
   }
 
-  findPrevious(query) {
+  findPrevious() {
     this.searchChanged.next({
-      keyword: query,
+      keyword: this.searchQuery,
       findPrevious: true,
     });
+  }
+
+  clearSearchQuery() {
+    this.searchQuery = '';
+    this.searchQueryChanged();
+    this.searchElement.nativeElement.focus();
   }
 
   displayEditDialog() {

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """ Used for updating LMDB Dates
 The dates of the lmdb database files on google cloud storage (bucket)
 is compared with the dates listed on the target Cloud SQL database.
