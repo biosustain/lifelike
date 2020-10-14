@@ -82,7 +82,7 @@ def visualizer_search_temp(req: VizSearchRequest):
 # TODO: Probably should rename this to something else...not sure what though
 @bp.route('/content', methods=['GET'])
 @auth.login_required
-@use_kwargs(ContentSearchSchema, location='query')
+@use_kwargs(ContentSearchSchema)
 def search(q, types, limit, page):
     search_term = q
     types = types.split(';')
