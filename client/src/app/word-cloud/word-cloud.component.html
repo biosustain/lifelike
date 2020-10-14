@@ -42,7 +42,7 @@
                 direction="horizontal"
                 [gutterSize]="5">
         <as-split-area [order]="0">
-          <div [id]="id + 'cloud-wrapper'" class="h-100 w-100 d-flex justify-content-center align-items-center"></div>
+          <div [id]="id + 'cloud-wrapper'" class="h-100 w-100 overflow-hidden"></div>
         </as-split-area>
         <as-split-area *ngIf="filtersPanelOpened" size="340" [order]="1">
           <div class="w-100 h-100 p-3">
