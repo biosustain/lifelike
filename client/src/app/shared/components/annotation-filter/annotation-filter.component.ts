@@ -16,8 +16,8 @@ import {
 
 import { uniqueId } from 'lodash';
 
-import { Subject, Subscription, timer } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
@@ -109,7 +109,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     // Basically debounces the word visibility output. Any time the parent component should know about visibility changes, we should emit a
     // new value to `outputSubject`, rather than emitting to `wordVisibilityOutput` directly.
     this.outputSubjectSub = this.outputSubject.asObservable().pipe(
-      switchMap(() => timer(250)),
+      debounceTime(250),
     ).subscribe(() => {
       this.wordVisibilityOutput.emit(this.wordVisibilityMap);
     });
