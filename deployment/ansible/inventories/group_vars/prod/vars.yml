@@ -1,4 +1,5 @@
 server_name: lifelike.bio
+app_environment: production
 
 deploy_user: ansible
 deploy_group: ansible

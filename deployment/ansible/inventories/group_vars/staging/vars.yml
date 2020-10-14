@@ -1,4 +1,5 @@
 server_name: staging.lifelike.bio
+app_environment: staging
 
 deploy_user: ansible
 deploy_group: ansible
