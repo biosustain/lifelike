@@ -593,6 +593,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   openWordCloudPane() {
     const url = `/word-cloud/${this.projectName}/${this.pdfFile.file_id}`;
-    this.workSpaceManager.openTabByUrl('left', url);
+    this.workSpaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
   }
 }
