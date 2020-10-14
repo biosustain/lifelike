@@ -333,6 +333,43 @@ def default_lmdb_setup(app, request):
 
 
 @pytest.fixture(scope='function')
+def abbreviation_lmdb_setup(app, request):
+    pathway = lmdb_phenotype_factory(
+        phenotype_id='MESH:D010427',
+        id_type=DatabaseType.MESH.value,
+        name='Pentose Phosphate Pathway',
+        synonym='Pentose Phosphate Pathway',
+    )
+
+    ppp = lmdb_chemical_factory(
+        chemical_id='CHEBI:73647',
+        id_type=DatabaseType.CHEBI.value,
+        name='Pro-Pro-Pro',
+        synonym='PPP',
+    )
+
+    entities = [
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', [ppp]),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', [pathway]),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', []),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+
+@pytest.fixture(scope='function')
 def bola_human_monkey_gene(app, request):
     # Create gene data
     bola3 = lmdb_gene_factory(
@@ -439,7 +476,7 @@ def human_gene_pdf_lmdb_setup(app, request):
 
 
 @pytest.fixture(scope='function')
-def escherichia_coli_pdf_lmdb_setup(app, request):
+def gene_organism_escherichia_coli_pdf_lmdb_setup(app, request):
     # Create gene data
     purA = lmdb_gene_factory(
         gene_id='948695',
@@ -497,6 +534,52 @@ def escherichia_coli_pdf_lmdb_setup(app, request):
         (GENES_NCBI_LMDB, 'genes', [purA, purB, purC, purD, purF]),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [e_coli]),
+    ]
+    for db_names, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_names, data)
+
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+
+@pytest.fixture(scope='function')
+def protein_organism_escherichia_coli_pdf_lmdb_setup(app, request):
+    ydhc = lmdb_protein_factory(
+        protein_id='YdhC',
+        id_type=DatabaseType.UNIPROT.value,
+        name='YdhC',
+        synonym='YdhC',
+    )
+
+    ydhb = lmdb_protein_factory(
+        protein_id='YdhB',
+        id_type=DatabaseType.UNIPROT.value,
+        name='YdhB',
+        synonym='YdhB',
+    )
+
+    # Create species data
+    e_coli = lmdb_species_factory(
+        tax_id='562',
+        category=OrganismCategory.BACTERIA.value,
+        id_type=DatabaseType.NCBI.value,
+        name='Escherichia coli',
+        synonym='Escherichia coli',
+    )
+
+    entities = [
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', [ydhb, ydhc]),
         (SPECIES_NCBI_LMDB, 'species', [e_coli]),
     ]
     for db_names, entity, data in entities:
@@ -733,6 +816,21 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
 
 
 @pytest.fixture(scope='function')
+def mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {
+            'YdhC': {'562': 'P37597'},
+            'YdhB': {'562': 'P0ACR2'},
+        }
+
+    monkeypatch.setattr(
+        AnnotationsNeo4jService,
+        'get_proteins_to_organisms',
+        get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
 def mock_global_compound_exclusion(monkeypatch):
     def get_exclusions(*args, **kwargs):
         return {'guanosine', 'hydrogen'}
@@ -819,7 +917,7 @@ def mock_global_species_exclusion(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_get_gene_ace2_for_global_gene_inclusion(monkeypatch):
     def get_exclusions(*args, **kwargs):
-        return {'ACE2'}
+        return {'59272': 'ACE2'}
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
