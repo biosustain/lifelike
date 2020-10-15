@@ -587,7 +587,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       const el = document.createElement('div');
       const meta: Meta = {
         allText: that.allText,
-        type: 'entity',
+        type: 'link',
         color: 'not-defined',
       };
       const location: Location = {
@@ -596,6 +596,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       }
       el.setAttribute('draggable', 'true');
       el.addEventListener('dragstart', event => {
+        jQuery('.frictionless-annotation').qtip('hide');
         this.annotationDragStart.emit(event);
       });
       el.setAttribute('location', JSON.stringify(location));
