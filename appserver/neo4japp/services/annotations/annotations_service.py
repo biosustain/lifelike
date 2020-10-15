@@ -2,7 +2,7 @@ import re
 
 from bisect import bisect_left
 from math import inf
-from typing import cast, Dict, List, Optional, Set, Tuple, Union
+from typing import cast, Dict, List, Set, Tuple, Union
 from uuid import uuid4
 
 from flask import current_app
@@ -529,9 +529,11 @@ class AnnotationsService:
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
+        gene_names_list = list(gene_names)
+
         gene_organism_matches = \
             self.annotation_neo4j.get_gene_to_organism_match_result(
-                genes=list(gene_names),
+                genes=gene_names_list,
                 matched_organism_ids=list(self.organism_frequency.keys()),
             )
 
@@ -541,7 +543,7 @@ class AnnotationsService:
         if self.specified_organism.synonym:
             fallback_gene_organism_matches = \
                 self.annotation_neo4j.get_gene_to_organism_match_result(
-                    genes=list(gene_names),
+                    genes=gene_names_list,
                     matched_organism_ids=[self.specified_organism.organism_id],
                 )
 
@@ -699,9 +701,11 @@ class AnnotationsService:
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
+        protein_names_list = list(protein_names)
+
         protein_organism_matches = \
             self.annotation_neo4j.get_proteins_to_organisms(
-                proteins=list(protein_names),
+                proteins=protein_names_list,
                 organisms=list(self.organism_frequency.keys()),
             )
 
@@ -711,7 +715,7 @@ class AnnotationsService:
         if self.specified_organism.synonym:
             fallback_protein_organism_matches = \
                 self.annotation_neo4j.get_proteins_to_organisms(
-                    proteins=list(protein_names),
+                    proteins=protein_names_list,
                     organisms=[self.specified_organism.organism_id],
                 )
 

@@ -305,44 +305,27 @@ def prepare_lmdb_phenotypes_database(filename: str, custom: bool = False):
         db = env.open_db(PHENOTYPES_MESH_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
-            reader = csv.reader(f, delimiter=',', quotechar='"')
+            reader = csv.reader(f, delimiter='\t', quotechar='"')
             # skip headers
-            # line,mesh_id,name,synonym,tree
+            # mesh_id,name,synonym
             headers = next(reader)
             for line in reader:
-                phenotype_id = line[1]
-                phenotype_name = line[2]
-                # turn string repr list into list
-                synonyms = literal_eval(line[3]) if line[3] else None
+                phenotype_id = line[0]
+                phenotype_name = line[1]
+                synonym = line[2]
 
                 phenotype = create_phenotype_for_ner(
                     id_=phenotype_id,
                     name=phenotype_name,
-                    synonym=phenotype_name,
+                    synonym=synonym,
                     custom=custom,
                 )
 
                 try:
                     transaction.put(
-                        normalize_str(phenotype_name).encode('utf-8'),
+                        normalize_str(synonym).encode('utf-8'),
                         json.dumps(phenotype).encode('utf-8'),
                     )
-
-                    if synonyms:
-                        for synonym_term in synonyms:
-                            normalized_key = normalize_str(synonym_term)
-
-                            synonym = create_phenotype_for_ner(
-                                id_=phenotype_id,
-                                name=phenotype_name,
-                                synonym=synonym_term,
-                                custom=custom,
-                            )
-
-                            transaction.put(
-                                normalized_key.encode('utf-8'),
-                                json.dumps(synonym).encode('utf-8'),
-                            )
                 except lmdb.BadValsizeError:
                     # ignore any keys that are too large
                     # LMDB has max key size 512 bytes
@@ -436,7 +419,7 @@ if __name__ == '__main__':
                 remove(path.join(parent, fn))
 
     # anatomy
-    prepare_lmdb_anatomy_database(filename='datasets/anatomy_terms.tsv')
+    prepare_lmdb_anatomy_database(filename='datasets/anatomy.tsv')
 
     # chemical
     prepare_lmdb_chemicals_database(filename='datasets/chebi.csv')
@@ -450,14 +433,14 @@ if __name__ == '__main__':
     # disease
     prepare_lmdb_diseases_database(filename='datasets/disease.csv')
     prepare_lmdb_diseases_database(filename='datasets/covid19_disease.csv')
-    prepare_lmdb_phenotypes_database(
-        filename='datasets/microbial_phenotype.csv', custom=True)
 
     # food
-    prepare_lmdb_foods_database(filename='datasets/food_terms.tsv')
+    prepare_lmdb_foods_database(filename='datasets/food.tsv')
 
     # phenotype
-    prepare_lmdb_phenotypes_database(filename='datasets/phenotype.csv')
+    prepare_lmdb_phenotypes_database(filename='datasets/phenotype.tsv')
+    prepare_lmdb_phenotypes_database(
+        filename='datasets/microbial_phenotype.tsv', custom=True)
 
     # protein
     prepare_lmdb_proteins_database(filename='datasets/proteins.tsv')
