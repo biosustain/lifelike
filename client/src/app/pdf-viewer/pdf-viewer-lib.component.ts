@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   Component,
   EventEmitter,
   HostListener,
@@ -31,14 +30,12 @@ declare var jQuery: any;
   templateUrl: './pdf-viewer-lib.component.html',
   styleUrls: ['./pdf-viewer-lib.component.scss'],
 })
-export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
+export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   @Input() searchChanged: Subject<{ keyword: string, findPrevious: boolean }>;
   private searchChangedSub: Subscription;
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
-  @Input() dropAreaIdentifier: string;
-  @Input() handleDropArea: boolean;
   @Input() goToPosition: Subject<Location>;
   @Input() debugMode: boolean;
   @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
@@ -95,7 +92,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   @Output() loadCompleted = new EventEmitter();
-  @Output() dropEvents = new EventEmitter();
   @Output() annotationDragStart = new EventEmitter<any>();
   // tslint:disable
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
@@ -137,7 +133,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   selectedText: string[];
   selectedTextCoords: Rect[];
   currentPage: number;
-  isSelectionLink = false;
   selectedElements: HTMLElement[] = [];
 
   opacity = 0.3;
@@ -201,53 +196,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
       debounceTime(250)).subscribe((sb) => {
       this.searchQueryChanged(sb);
     });
-  }
-
-  ngAfterViewInit(): void {
-    const dropAreaIdentifier = this.dropAreaIdentifier;
-    const that = this;
-    jQuery(dropAreaIdentifier).droppable({
-      accept: '.frictionless-annotation,.system-annotation',
-      drop(event, ui) {
-        if (that.isSelectionLink) {
-          const meta: Meta = JSON.parse(ui.draggable[0].getAttribute('meta'));
-          meta.type = 'Link';
-          ui.draggable[0].setAttribute('meta', JSON.stringify(meta));
-
-          // Find min value for bottom left point and max value for top right point
-          // to save the coordinates of the rect that represents multiple lines
-          const location: Location = JSON.parse(ui.draggable[0].getAttribute('location'));
-          location.rect = that.selectedTextCoords.reduce((result, rect) => {
-            result[0] = Math.min(result[0], rect[0]);
-            result[1] = Math.max(result[1], rect[1]);
-            result[2] = Math.max(result[2], rect[2]);
-            result[3] = Math.min(result[3], rect[3]);
-            return result;
-          }, [Number.MAX_VALUE, Number.MIN_VALUE, Number.MIN_VALUE, Number.MAX_VALUE]);
-          ui.draggable[0].setAttribute('location', JSON.stringify(location));
-        }
-
-        that.dropEvents.emit({
-          event,
-          ui,
-        });
-
-        if (this.handleDropArea) {
-          const droppable = jQuery(this);
-          const draggable = ui.draggable;
-          const clone = draggable.clone();
-          // Move draggable into droppable
-          jQuery(dropAreaIdentifier).append(clone);
-          const $newPosX = ui.offset.left - jQuery(this).offset().left;
-          const $newPosY = ui.offset.top - jQuery(this).offset().top;
-          clone.css({position: 'relative', top: Number($newPosY), left: Number($newPosX)});
-          clone.removeClass('highlight');
-        }
-        that.deleteFrictionless();
-        that.resetSelection();
-      },
-    });
-
   }
 
   ngOnDestroy(): void {
@@ -706,7 +654,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
     this.selectedText = [];
     this.selectedTextCoords = [];
     this.allText = '';
-    this.isSelectionLink = false;
     this.selectedElements = [];
   }
 
@@ -742,7 +689,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   clearSelection() {
-    this.isSelectionLink = false;
     const sel = window.getSelection();
     sel.removeAllRanges();
   }
