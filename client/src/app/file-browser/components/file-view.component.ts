@@ -383,7 +383,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       };
     });
 
-    const text = meta.type === 'Links' ? 'Link' : meta.allText;
+    const text = meta.type === 'link' ? 'Link' : meta.allText;
 
     const dataTransfer: DataTransfer = event.dataTransfer;
     dataTransfer.setData('text/plain', text);
@@ -405,8 +405,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           domain: 'Annotation URL',
           url: hyperlink,
         }],
-        detail: meta.type === 'Link' ? meta.allText : '',
+        detail: meta.type === 'link' ? meta.allText : '',
       },
+      style: {
+        showDetail: meta.type === 'link',
+      }
     } as Partial<UniversalGraphNode>));
   }
 
