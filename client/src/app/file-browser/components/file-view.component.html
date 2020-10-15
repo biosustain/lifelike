@@ -76,63 +76,60 @@
             </div>
           </div>
 
-          <div>
-            <div class="btn-group" role="group">
-              <div ngbDropdown class="d-inline-block" #dropdown placement="bottom-right" container="body">
-                <button class="btn btn-secondary" id="filters-dropdown" ngbDropdownToggle>
-                  <i class="fa fa-fw fa-filter"></i>
-                </button>
-                <div ngbDropdownMenu aria-labelledby="filters-dropdown" [style.width]="'220px'"
-                     class="dropdown-body dropdown-menu dropdown-menu-right">
-                  <div class="mb-2">
-                    <button *ngIf="!entityTypeVisibilityChanged" class="btn btn-outline-secondary btn-block"
-                            (click)="setAllEntityTypesVisibility(false)">
-                      Hide All
-                    </button>
-                    <button *ngIf="entityTypeVisibilityChanged" class="btn btn-outline-secondary btn-block"
-                            (click)="setAllEntityTypesVisibility(true)">
-                      Show All
-                    </button>
-                  </div>
+          <div class="btn-group" role="group">
+            <div ngbDropdown class="d-inline-block" #dropdown placement="bottom-right" container="body">
+              <button class="btn btn-secondary" [id]="id + '-filters-dropdown'" ngbDropdownToggle>
+                <i class="fa fa-fw fa-filter"></i>
+              </button>
+              <div ngbDropdownMenu [attr.aria-labelledby]="id + '-filters-dropdown'" [style.width]="'220px'"
+                    class="dropdown-body dropdown-menu dropdown-menu-right">
+                <div class="mb-2">
+                  <button *ngIf="!entityTypeVisibilityChanged" class="btn btn-outline-secondary btn-block"
+                          (click)="setAllEntityTypesVisibility(false)">
+                    Hide All
+                  </button>
+                  <button *ngIf="entityTypeVisibilityChanged" class="btn btn-outline-secondary btn-block"
+                          (click)="setAllEntityTypesVisibility(true)">
+                    Show All
+                  </button>
+                </div>
 
-                  <div *ngFor="let entityTypeEntry of sortedEntityTypeEntries"
-                       [style.opacity]="entityTypeEntry.annotations.length ? '' : '0.2'">
-                    <div class="custom-control custom-checkbox">
-                      <input class="custom-control-input" type="checkbox" [id]="id + 'filter-' + entityTypeEntry.type.id"
-                             value="1"
-                             [checked]="isEntityTypeVisible(entityTypeEntry.type)"
-                             (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
-                      <label class="custom-control-label" [for]="id + 'filter-' + entityTypeEntry.type.id">
-                  <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color, opacity: 0.3}">
-                </span> {{entityTypeEntry.type.name}} <span *ngIf="!!entityTypeEntry.annotations.length">
-                  ({{entityTypeEntry.annotations.length}})
-                </span>
-                      </label>
-                    </div>
+                <div *ngFor="let entityTypeEntry of sortedEntityTypeEntries"
+                      [style.opacity]="entityTypeEntry.annotations.length ? '' : '0.2'">
+                  <div class="custom-control custom-checkbox">
+                    <input class="custom-control-input" type="checkbox" [id]="id + 'filter-' + entityTypeEntry.type.id"
+                            value="1"
+                            [checked]="isEntityTypeVisible(entityTypeEntry.type)"
+                            (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
+                    <label class="custom-control-label" [for]="id + 'filter-' + entityTypeEntry.type.id">
+                <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color}">
+              </span> {{entityTypeEntry.type.name}} <span *ngIf="!!entityTypeEntry.annotations.length">
+                ({{entityTypeEntry.annotations.length}})
+              </span>
+                    </label>
                   </div>
+                </div>
 
-                  <div class="mt-2">
-                    <div class="custom-control custom-checkbox">
-                      <input type="checkbox" [(ngModel)]="showExcludedAnnotations"
-                             class="custom-control-input" id="showExcludedAnnotations">
-                      <label class="custom-control-label" for="showExcludedAnnotations">Show excluded
-                        annotations</label>
-                    </div>
+                <div class="mt-2">
+                  <div class="custom-control custom-checkbox">
+                    <input type="checkbox" [(ngModel)]="showExcludedAnnotations"
+                            class="custom-control-input" id="showExcludedAnnotations">
+                    <label class="custom-control-label" for="showExcludedAnnotations">Show excluded
+                      annotations</label>
                   </div>
+                </div>
 
-                  <div class="mt-2">
-                    <button class="btn btn-secondary btn-block" (click)="closeFilterPopup()">Done</button>
-                  </div>
+                <div class="mt-2">
+                  <button class="btn btn-secondary btn-block" (click)="closeFilterPopup()">Done</button>
                 </div>
               </div>
             </div>
-          </div>
-          <button type="button" class="btn btn-secondary" style="margin-left: 1px"
-                  [disabled]="!ready" (click)="openWordCloudPane()" ngbTooltip="Word Cloud"
-                  placement="bottom">
+
+            <button type="button" class="btn btn-secondary"
+                    [disabled]="!ready" (click)="openWordCloudPane()"
+                    ngbTooltip="Word Cloud" placement="bottom">
               <i class="fa fa-fw fa-cloud"></i>
-          </button>
-          <div class="btn-group ml-2">
+            </button>
             <button type="button" class="btn btn-secondary text-nowrap"
                     (click)="displayShareDialog()">
               <i class="fa fa-fw fa-share-square"></i> Share
