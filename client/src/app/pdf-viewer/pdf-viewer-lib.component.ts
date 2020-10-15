@@ -592,7 +592,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       };
       const location: Location = {
         pageNumber: that.currentPage,
-        rect,
+        rect: that.getMultilinedRect(),
       }
       el.setAttribute('draggable', 'true');
       el.addEventListener('dragstart', event => {
@@ -927,6 +927,18 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   nullifyMatchesCount() {
     this.matchesCount.total = 0;
     this.matchesCount.current = 0;
+  }
+
+  getMultilinedRect() {
+    // Find min value for bottom left point and max value for top right point
+    // to save the coordinates of the rect that represents multiple lines
+    return this.selectedTextCoords.reduce((result, rect) => {
+      result[0] = Math.min(result[0], rect[0]);
+      result[1] = Math.max(result[1], rect[1]);
+      result[2] = Math.max(result[2], rect[2]);
+      result[3] = Math.min(result[3], rect[3]);
+      return result;
+    }, [Number.MAX_VALUE, Number.MIN_VALUE, Number.MIN_VALUE, Number.MAX_VALUE]);
   }
 
 }
