@@ -69,22 +69,21 @@ ENV ANGULAR_DIR $CLIENT_HOME/client
 ENV PATH $ANGULAR_DIR/node_modules/.bin:$PATH
 WORKDIR $ANGULAR_DIR
 COPY --from=build /home/node/client .
-# Configuration environment to build (staging, production)
 ARG build_environment
-RUN yarn build --configuration="${build_environment:-staging}" --output-path=dist
+RUN yarn build --configuration="production" --output-path=dist
 
 # ========================================
 # nginx
 # ========================================
 # Set the nginx conf file to use
-FROM nginx:latest
+FROM nginx:latest AS webserver
 ARG nginx_conf
 RUN mkdir -p /home/node/client/dist
 RUN mkdir -p /home/node/client/landing/dist
 COPY --from=compile /home/node/client/dist /usr/share/nginx/html
 COPY --from=landing /home/node/client/landing/dist /usr/share/nginx/html
 RUN rm /etc/nginx/conf.d/default.conf
-COPY --from=build "/home/node/client/nginx/${nginx_conf:-dev.conf}" /etc/nginx/conf.d/default.conf
+COPY --from=build "/home/node/client/nginx/nginx.conf" /etc/nginx/conf.d/default.conf
 
 EXPOSE 80 443
 
