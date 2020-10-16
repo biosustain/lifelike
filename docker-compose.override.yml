@@ -59,6 +59,8 @@ services:
             - REDIS_PORT=6379
             # Other
             - DOMAIN=http://localhost
+            # TODO: Set a production mount for this
+            - GOOGLE_APPLICATION_CREDENTIALS=gcp_service_account.json
         # Allow debugging w/ IPython or pdb
         stdin_open: true
         tty: true
