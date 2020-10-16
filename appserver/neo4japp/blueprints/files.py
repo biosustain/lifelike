@@ -26,6 +26,7 @@ from neo4japp.database import db, get_manual_annotations_service, get_elastic_se
 from neo4japp.data_transfer_objects import FileUpload
 from neo4japp.exceptions import (
     DatabaseError,
+    DuplicateRecord,
     FileUploadError,
     RecordNotFoundException,
     NotAuthorizedException,
@@ -99,6 +100,30 @@ def search_doi(content: bytes) -> Optional[str]:
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
+@newbp.route('/directory/<int:directory_id>/<string:filename>', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
+def validate_filename(
+    directory_id: int,
+    filename: str,
+):
+    user = g.current_user
+
+    try:
+        directory = Directory.query.get(directory_id)
+        projects = Projects.query.get(directory.projects_id)
+    except NoResultFound as err:
+        raise RecordNotFoundException(f'No record found: {err}.')
+
+    yield user, projects
+
+    exist = files_queries.filename_exist(
+        filename=filename,
+        directory_id=directory_id,
+        project_id=projects.id)
+    yield jsonify({'result': not exist}), 200
+
+
 @bp.route('/upload', methods=['POST'])
 @newbp.route('/<string:project_name>/files', methods=['POST'])  # TODO: use this once LL-415 done
 @auth.login_required
@@ -167,6 +192,16 @@ def upload_pdf(request, project_name: str):
         doi = extract_doi(pdf_content, file_id, filename)
         upload_url = request.url
 
+        # check if filename already exists in directory/project
+        # this is needed in case the API is called directly
+        exist = files_queries.filename_exist(
+            filename=filename,
+            directory_id=directory.id,
+            project_id=projects.id)
+
+        if exist:
+            raise DuplicateRecord('Filename already exists, please choose a different one.')
+
         file = Files(
             file_id=file_id,
             filename=filename,
@@ -226,6 +261,7 @@ def download(file_content_id: int):
     yield res
 
 
+# TODO: Is this used???
 @newbp.route('/<string:project_name>/files', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)

@@ -2,7 +2,7 @@ import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { ProjectSpaceService, Collaborator, Project } from '../services/project-space.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormArray, FormGroup, FormControl } from '@angular/forms';
-import { Subscription, combineLatest, Observable, of } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MatSnackBar } from '@angular/material';
@@ -12,7 +12,7 @@ import { isNullOrUndefined, isArray } from 'util';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AppUser } from 'app/interfaces';
 import { AccountService } from 'app/users/services/account.service';
-import { startWith, map, filter, debounceTime, distinctUntilChanged, switchMap, flatMap } from 'rxjs/operators';
+import { filter, debounceTime, switchMap } from 'rxjs/operators';
 
 
 @Component({
