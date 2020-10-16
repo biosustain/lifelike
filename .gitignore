@@ -18,10 +18,7 @@ Thumbs.db
 .local/
 
 # IDE - VSCode
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
+.vscode/
 
 # ignore db files
 neo4j/data/*
