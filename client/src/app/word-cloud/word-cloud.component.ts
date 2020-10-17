@@ -105,7 +105,7 @@ export class WordCloudComponent {
             frequency: parseInt(cols[3], 10),
             shown: true,
           } as WordCloudAnnotationFilterEntity;
-          this.wordVisibilityMap.set(annotation.text, true);
+          this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), true);
           this.annotationData.push(annotation);
           tempIdTypePairSet.set(idTypePair, this.annotationData.length - 1);
         } else {
@@ -128,6 +128,10 @@ export class WordCloudComponent {
     });
 
     this.getAnnotationsForFile();
+  }
+
+  getAnnotationIdentifier(annotation: WordCloudAnnotationFilterEntity) {
+    return annotation.id + annotation.type;
   }
 
   /**
@@ -172,7 +176,7 @@ export class WordCloudComponent {
    * Gets a filtered copy of the annotation data. Any word not mapped to 'true' in the wordVisibilityMap will be filtered out.
    */
   private getFilteredAnnotationDeepCopy() {
-    return this.getAnnotationDataDeepCopy().filter(annotation => this.wordVisibilityMap.get(annotation.text));
+    return this.getAnnotationDataDeepCopy().filter(annotation => this.wordVisibilityMap.get(this.getAnnotationIdentifier(annotation)));
   }
 
   /**
@@ -199,7 +203,7 @@ export class WordCloudComponent {
         word.shown = true;
       } else {
         // If it wasn't returned BUT it's been filtered, we don't need to show a warning
-        if (!this.wordVisibilityMap.get(word.text)) {
+        if (!this.wordVisibilityMap.get(this.getAnnotationIdentifier(word))) {
           word.shown = true;
         } else {
           // If it wasn't returned but it HASN'T been filtered, we need to show a warning
