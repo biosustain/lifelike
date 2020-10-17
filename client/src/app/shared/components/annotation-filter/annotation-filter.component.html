@@ -123,13 +123,13 @@
   <legend>Annotations</legend>
   <div *ngFor="let data of annotationData">
     <div class="custom-control custom-checkbox">
-      <input [id]="id + 'filter-' + data.text"
+      <input [id]="id + 'filter-' + getAnnotationIdentifier(data)"
           class="custom-control-input"
           type="checkbox"
           value="1"
-          [checked]="isWordVisible(data.text)"
-          (change)="changeWordVisibility(data.text, $event)">
-      <label class="custom-control-label" [for]="id + 'filter-' + data.text">
+          [checked]="isWordVisible(getAnnotationIdentifier(data))"
+          (change)="changeWordVisibility(getAnnotationIdentifier(data), $event)">
+      <label class="custom-control-label" [for]="id + 'filter-' + getAnnotationIdentifier(data)">
         <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}} <span>({{data.frequency}})</span>
       </label>
     </div>

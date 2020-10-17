@@ -128,14 +128,14 @@
   <legend>Annotations</legend>
   <div *ngFor="let data of annotationData">
     <div class="custom-control custom-checkbox">
-      <input [id]="id + 'filter-' + data.text"
+      <input [id]="id + 'filter-' + getAnnotationIdentifier(data)"
           class="custom-control-input"
           type="checkbox"
           value="1"
-          [checked]="isWordVisible(data.text)"
-          (change)="changeWordVisibility(data.text, $event)">
+          [checked]="isWordVisible(getAnnotationIdentifier(data))"
+          (change)="changeWordVisibility(getAnnotationIdentifier(data), $event)">
       <label class="custom-control-label text-nowrap"
-            [for]="id + 'filter-' + data.text"
+            [for]="id + 'filter-' + getAnnotationIdentifier(data)"
             placement="right bottom top"
             container="body"
             [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">
