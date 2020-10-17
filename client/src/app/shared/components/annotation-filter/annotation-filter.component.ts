@@ -101,7 +101,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
 
     // Also set the visibility of each annotation to true
     this.annotationData.forEach(annotation => {
-      this.wordVisibilityMap.set(annotation.text, true);
+      this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), true);
       this.typeVisibilityMap.set(annotation.type, true);
       this.legend.set(annotation.type, annotation.color);
     });
@@ -120,6 +120,10 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     this.outputSubject.complete();
   }
 
+  getAnnotationIdentifier(annotation: AnnotationFilterEntity) {
+    return annotation.id + annotation.type;
+  }
+
   submitFiltersForm() {
     if (this.filtersForm.valid) {
       this.applyFilters();
@@ -127,8 +131,8 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     }
   }
 
-  isWordVisible(word: string) {
-    const value = this.wordVisibilityMap.get(word);
+  isWordVisible(identifier: string) {
+    const value = this.wordVisibilityMap.get(identifier);
     if (value === undefined) {
       return true;
     } else {
@@ -150,8 +154,8 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
    * @param word string representing the word to change the state of
    * @param event checkbox event object containing the new state
    */
-  changeWordVisibility(word: string, event) {
-    this.wordVisibilityMap.set(word, event.target.checked);
+  changeWordVisibility(identifier: string, event) {
+    this.wordVisibilityMap.set(identifier, event.target.checked);
     this.invalidateWordVisibility();
     this.invalidateTypeVisibility();
     this.outputSubject.next();
@@ -162,7 +166,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
 
     this.annotationData.forEach(annotation => {
       if (annotation.type === type) {
-        this.wordVisibilityMap.set(annotation.text, this.typeVisibilityMap.get(annotation.type));
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), this.typeVisibilityMap.get(annotation.type));
       }
     });
 
@@ -179,7 +183,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
    */
   setAllWordsVisibility(state: boolean) {
     for (const annotation of this.annotationData) {
-      this.wordVisibilityMap.set(annotation.text, state);
+      this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), state);
       this.typeVisibilityMap.set(annotation.type, state);
     }
     this.invalidateWordVisibility();
@@ -260,7 +264,13 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     const unfilteredList = [];
 
     this.annotationData.forEach(
-      annotation => this.wordVisibilityMap.get(annotation.text) ? unfilteredList.push(annotation) : filteredList.push(annotation)
+      annotation => {
+        if (this.wordVisibilityMap.get(this.getAnnotationIdentifier(annotation))) {
+          unfilteredList.push(annotation);
+        } else {
+          filteredList.push(annotation);
+        }
+      }
     );
     this.annotationData = unfilteredList.concat(filteredList);
   }
@@ -289,7 +299,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     this.typeVisibilityMap.forEach((_, key) => this.typeVisibilityMap.set(key, false));
 
     this.annotationData.forEach(annotation => {
-      if (this.wordVisibilityMap.get(annotation.text)) {
+      if (this.wordVisibilityMap.get(this.getAnnotationIdentifier(annotation))) {
         this.typeVisibilityMap.set(annotation.type, true);
       }
     });
@@ -306,17 +316,13 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     return minimumFrequency <= annotation.frequency && annotation.frequency <= maximumFrequency;
   }
 
-  private filterByType(annotation: AnnotationFilterEntity) {
-    return this.typeVisibilityMap.get(annotation.type);
-  }
-
   /**
    * Helper function for applying all filter and grouping methods simultaneously. Used by the filter form submission function.
    */
   private applyFilters() {
     for (const annotation of this.annotationData) {
       const state = this.filterByFrequency(annotation);
-      this.wordVisibilityMap.set(annotation.text, state);
+      this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), state);
     }
     this.invalidateTypeVisibility();
     this.invalidateWordVisibility();
