@@ -3,6 +3,7 @@ import json
 import os
 import time
 
+from datetime import datetime
 from io import StringIO
 from typing import List
 
@@ -324,7 +325,7 @@ def main():
     sftp = client.open_sftp()
     sftp.put(
         os.path.join(directory, 'processed_records.txt'),
-        '/home/jining/processed_nlp_dict_training_data/processed_records.txt')
+        f'/home/jining/processed_nlp_dict_training_data/processed_records-{datetime.now()}.txt')  # noqa
 
     client.close()
     sftp.close()
