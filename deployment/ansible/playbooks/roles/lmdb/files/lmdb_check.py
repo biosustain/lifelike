@@ -66,9 +66,11 @@ def init_database_connection():
 def main():
 
     LMDB_CATEGORIES = [
+        'anatomy',
         'chemicals',
         'compounds',
         'diseases',
+        'foods',
         'genes',
         'phenotypes',
         'proteins',
