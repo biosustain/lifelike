@@ -13,7 +13,7 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
 
 
-bp = Blueprint('admin', __name__, url_prefix='/admin')
+bp = Blueprint('storage', __name__, url_prefix='/storage')
 
 
 class UserManualAPI(MethodView):
