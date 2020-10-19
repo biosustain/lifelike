@@ -150,8 +150,8 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Changes the filter state of the given word to the given input state.
-   * @param word string representing the word to change the state of
+   * Changes the filter state of the given annotation to the given input state.
+   * @param identifier string representing the annotation to change the state of
    * @param event checkbox event object containing the new state
    */
   changeWordVisibility(identifier: string, event) {
