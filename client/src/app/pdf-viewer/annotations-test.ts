@@ -15,7 +15,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -35,7 +35,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -55,7 +55,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -75,7 +75,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -95,7 +95,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -115,7 +115,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -135,7 +135,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -155,7 +155,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -175,7 +175,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -195,7 +195,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -215,7 +215,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -235,7 +235,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -255,7 +255,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -275,7 +275,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -295,7 +295,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -315,7 +315,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -335,7 +335,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -355,7 +355,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -375,7 +375,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -395,7 +395,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -415,7 +415,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -435,7 +435,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -455,7 +455,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -475,7 +475,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -495,7 +495,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -515,7 +515,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -535,7 +535,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -555,7 +555,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -575,7 +575,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -595,7 +595,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -615,7 +615,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -635,7 +635,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -655,7 +655,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -675,7 +675,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -695,7 +695,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -715,7 +715,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -735,7 +735,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -755,7 +755,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -775,7 +775,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -795,7 +795,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -815,7 +815,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -835,7 +835,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -855,7 +855,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -875,7 +875,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -895,7 +895,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -915,7 +915,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -935,7 +935,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -955,7 +955,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -975,7 +975,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -995,7 +995,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1015,7 +1015,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1035,7 +1035,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1055,7 +1055,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1075,7 +1075,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1095,7 +1095,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1115,7 +1115,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112114492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1142,7 +1142,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '34716797',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1162,7 +1162,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824395',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1182,7 +1182,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824395',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1202,7 +1202,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824395',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1222,7 +1222,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824395',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1242,7 +1242,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824395',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1262,7 +1262,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824395',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1282,7 +1282,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824395',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1302,7 +1302,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824395',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1322,7 +1322,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824395',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1342,7 +1342,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824395',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1369,7 +1369,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '252800',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1389,7 +1389,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '6729221',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1409,7 +1409,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '388962',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1429,7 +1429,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '40525935',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1449,7 +1449,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112120303',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1469,7 +1469,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112120303',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1489,7 +1489,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112120303',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1509,7 +1509,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112120303',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1529,7 +1529,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112120303',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1549,7 +1549,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '27247',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1569,7 +1569,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '103650148',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1589,7 +1589,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '103650148',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1609,7 +1609,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '103650148',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1629,7 +1629,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '6647',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1649,7 +1649,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '6647',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1669,7 +1669,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '6647',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1689,7 +1689,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '6647',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1709,7 +1709,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '42861999',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1729,7 +1729,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '23687505',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1749,7 +1749,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '23687505',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1769,7 +1769,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '23687505',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1789,7 +1789,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '23687505',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1809,7 +1809,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '23687505',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1829,7 +1829,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '23687505',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1849,7 +1849,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824655',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1869,7 +1869,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824655',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1889,7 +1889,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824655',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1916,7 +1916,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '824655',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1936,7 +1936,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '111060150',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1956,7 +1956,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '111060150',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1976,7 +1976,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '111060150',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -1996,7 +1996,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '111060150',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2016,7 +2016,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '111060150',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2043,7 +2043,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '111060150',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2063,7 +2063,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '111060150',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2083,7 +2083,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '111060150',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2103,7 +2103,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '353257',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2123,7 +2123,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '353257',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2150,7 +2150,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2170,7 +2170,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2190,7 +2190,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2210,7 +2210,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2230,7 +2230,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2250,7 +2250,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2270,7 +2270,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2290,7 +2290,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2310,7 +2310,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2330,7 +2330,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2350,7 +2350,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2370,7 +2370,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2390,7 +2390,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2410,7 +2410,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2430,7 +2430,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2450,7 +2450,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2470,7 +2470,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2490,7 +2490,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2510,7 +2510,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20741',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2530,7 +2530,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '18299',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2557,7 +2557,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '856570',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2584,7 +2584,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '852398',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2604,7 +2604,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '31359628',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2624,7 +2624,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '542060',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2644,7 +2644,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '542060',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2664,7 +2664,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '542060',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2684,7 +2684,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '655772',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2704,7 +2704,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '655772',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2724,7 +2724,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '655772',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2744,7 +2744,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '655772',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2764,7 +2764,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '655772',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2784,7 +2784,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '655772',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2804,7 +2804,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '655772',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2824,7 +2824,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '655772',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2844,7 +2844,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '655772',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2864,7 +2864,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '655772',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2884,7 +2884,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '655772',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2904,7 +2904,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7152012',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2924,7 +2924,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7152012',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2944,7 +2944,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '947226',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2964,7 +2964,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '947226',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -2984,7 +2984,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112112370',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3004,7 +3004,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112101860',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3024,7 +3024,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112107518',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3044,7 +3044,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112107518',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3064,7 +3064,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112107518',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3084,7 +3084,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '4343840',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3104,7 +3104,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '248382',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3124,7 +3124,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '248382',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3144,7 +3144,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '248382',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3164,7 +3164,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '38331764',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3184,7 +3184,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '956582',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3204,7 +3204,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '114330751',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3224,7 +3224,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '114330751',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3244,7 +3244,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '114330751',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3264,7 +3264,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '2539487',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3284,7 +3284,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '57217',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3304,7 +3304,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '83881',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3324,7 +3324,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '83881',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3344,7 +3344,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112112985',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3364,7 +3364,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '105265589',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3384,7 +3384,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7200301',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3404,7 +3404,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112104129',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3424,7 +3424,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112104129',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3444,7 +3444,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112104129',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3464,7 +3464,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112104129',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3484,7 +3484,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112104129',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3504,7 +3504,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112104129',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3524,7 +3524,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112104129',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3544,7 +3544,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112104129',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3564,7 +3564,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112104129',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3584,7 +3584,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112104129',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3604,7 +3604,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112104129',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3624,7 +3624,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112104129',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3644,7 +3644,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '945803',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3664,7 +3664,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '945803',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3684,7 +3684,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '945803',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3704,7 +3704,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '945803',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3724,7 +3724,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '38331515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3744,7 +3744,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '38331515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3764,7 +3764,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '38331515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3784,7 +3784,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '38331515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3804,7 +3804,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '40527143',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3824,7 +3824,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '40527143',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3844,7 +3844,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '40527143',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3871,7 +3871,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '837639',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3891,7 +3891,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '837639',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3911,7 +3911,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '837639',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3938,7 +3938,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '837639',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3958,7 +3958,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112118686',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -3985,7 +3985,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '842386',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4005,7 +4005,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '842386',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4025,7 +4025,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '842386',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4045,7 +4045,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112125477',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4065,7 +4065,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112125477',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4085,7 +4085,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112125477',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4105,7 +4105,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112125477',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4125,7 +4125,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4145,7 +4145,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4165,7 +4165,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4185,7 +4185,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4205,7 +4205,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4225,7 +4225,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4245,7 +4245,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4265,7 +4265,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4285,7 +4285,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4305,7 +4305,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4325,7 +4325,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4345,7 +4345,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4365,7 +4365,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4385,7 +4385,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4405,7 +4405,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4425,7 +4425,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4445,7 +4445,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4465,7 +4465,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4485,7 +4485,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4505,7 +4505,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4525,7 +4525,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4545,7 +4545,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109951515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4565,7 +4565,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4585,7 +4585,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4605,7 +4605,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4625,7 +4625,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4645,7 +4645,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4665,7 +4665,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4685,7 +4685,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4705,7 +4705,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4725,7 +4725,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4745,7 +4745,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4765,7 +4765,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4785,7 +4785,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4805,7 +4805,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4825,7 +4825,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4845,7 +4845,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4865,7 +4865,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4885,7 +4885,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4905,7 +4905,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4925,7 +4925,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4945,7 +4945,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4965,7 +4965,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -4985,7 +4985,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5005,7 +5005,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5025,7 +5025,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5045,7 +5045,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5065,7 +5065,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5085,7 +5085,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5105,7 +5105,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5125,7 +5125,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5145,7 +5145,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5165,7 +5165,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5185,7 +5185,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5205,7 +5205,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5225,7 +5225,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5245,7 +5245,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17884',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5265,7 +5265,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '41595042',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5285,7 +5285,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '41595042',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5305,7 +5305,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '41595042',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5325,7 +5325,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14340099',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5345,7 +5345,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14340099',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5365,7 +5365,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14340099',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5385,7 +5385,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14340099',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5405,7 +5405,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14340099',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5425,7 +5425,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14340099',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5445,7 +5445,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14340099',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5465,7 +5465,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14340099',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5485,7 +5485,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14340099',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5505,7 +5505,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14340099',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5525,7 +5525,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14340099',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5545,7 +5545,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '394678',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5572,7 +5572,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '394678',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5592,7 +5592,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '394678',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5612,7 +5612,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112109634',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5632,7 +5632,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112109634',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5652,7 +5652,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112109634',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5672,7 +5672,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112109634',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5692,7 +5692,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112109634',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5712,7 +5712,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112109634',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5732,7 +5732,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '42007118',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5752,7 +5752,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '945829',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5772,7 +5772,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109180051',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5792,7 +5792,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '4326471',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5812,7 +5812,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '4326471',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5832,7 +5832,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '4326471',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5852,7 +5852,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '4326471',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5872,7 +5872,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '4326471',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5892,7 +5892,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '42542',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5912,7 +5912,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '42542',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5932,7 +5932,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112598213',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5952,7 +5952,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '1057',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5972,7 +5972,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '1057',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -5992,7 +5992,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '101073534',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6012,7 +6012,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109182406',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6032,7 +6032,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '18290',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6052,7 +6052,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '18290',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6072,7 +6072,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '18290',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6092,7 +6092,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '18290',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6112,7 +6112,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '18826146',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6132,7 +6132,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112592909',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6152,7 +6152,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '726381',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6172,7 +6172,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '41324498',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6192,7 +6192,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '41324498',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6212,7 +6212,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '385253',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6232,7 +6232,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '50798',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6252,7 +6252,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '50798',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6272,7 +6272,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '50798',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6292,7 +6292,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '50798',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6312,7 +6312,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '50798',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6332,7 +6332,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '50798',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6352,7 +6352,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '50798',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6372,7 +6372,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '50798',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6392,7 +6392,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '50798',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6412,7 +6412,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '50798',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6439,7 +6439,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '44173',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6466,7 +6466,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '44173',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6486,7 +6486,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '108969922',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6506,7 +6506,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '218973',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6526,7 +6526,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '543623',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6546,7 +6546,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '18252730',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6566,7 +6566,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '18252730',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6586,7 +6586,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '18252730',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6606,7 +6606,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '937332',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6626,7 +6626,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '937332',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6646,7 +6646,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '937332',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6666,7 +6666,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '937332',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6686,7 +6686,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '937332',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6706,7 +6706,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '937332',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6726,7 +6726,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '937332',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6746,7 +6746,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '937332',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6766,7 +6766,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '937332',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6786,7 +6786,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '937332',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6813,7 +6813,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '1062016',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6840,7 +6840,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13892577',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6860,7 +6860,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '6386035',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6880,7 +6880,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '100532596',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6900,7 +6900,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7201080',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6920,7 +6920,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7450869',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6940,7 +6940,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7450869',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6960,7 +6960,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7450869',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -6980,7 +6980,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13890068',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7000,7 +7000,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13890068',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7020,7 +7020,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13890068',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7040,7 +7040,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '3908',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7060,7 +7060,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '3908',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7080,7 +7080,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '108917073',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7100,7 +7100,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '108969485',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7120,7 +7120,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '103595608',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7140,7 +7140,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '103595608',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7160,7 +7160,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '42860173',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7180,7 +7180,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '42860173',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7200,7 +7200,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '94221',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7220,7 +7220,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '94221',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7240,7 +7240,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '94221',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7260,7 +7260,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '94221',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7280,7 +7280,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '94221',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7300,7 +7300,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '94221',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7320,7 +7320,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '94221',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7340,7 +7340,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '94221',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7360,7 +7360,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '94221',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7380,7 +7380,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '250496',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7400,7 +7400,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112116265',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7420,7 +7420,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112116265',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7440,7 +7440,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112116265',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7460,7 +7460,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112116265',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7480,7 +7480,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112116265',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7500,7 +7500,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112116265',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7520,7 +7520,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '42008',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7540,7 +7540,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '42008',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7560,7 +7560,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112117218',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7580,7 +7580,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112117218',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7600,7 +7600,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '36039',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7620,7 +7620,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '424122',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7640,7 +7640,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '34715567',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7660,7 +7660,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '101409888',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7680,7 +7680,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '101409888',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7700,7 +7700,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '101409888',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7720,7 +7720,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '101409888',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7740,7 +7740,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '34716843',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7760,7 +7760,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112044731',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7780,7 +7780,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112044731',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7800,7 +7800,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '2658890',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7820,7 +7820,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '2658890',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7847,7 +7847,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '37620400',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7867,7 +7867,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '3087500',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7887,7 +7887,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '11464243',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7907,7 +7907,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7161385',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7927,7 +7927,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '11464239',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7947,7 +7947,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '11464240',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7967,7 +7967,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '11464242',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -7987,7 +7987,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '41983800',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8007,7 +8007,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20358',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8027,7 +8027,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '818031',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8047,7 +8047,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '22',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8067,7 +8067,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '8926979',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8087,7 +8087,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '8926979',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8107,7 +8107,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112116009',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8127,7 +8127,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '778293',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8147,7 +8147,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '110483795',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8167,7 +8167,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '117226',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8187,7 +8187,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '108974642',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8207,7 +8207,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '108925328',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8227,7 +8227,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '41332921',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8254,7 +8254,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '818407',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8274,7 +8274,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '41981130',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8294,7 +8294,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '100329201',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8314,7 +8314,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '938243',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8334,7 +8334,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '45958',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8354,7 +8354,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '42492',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8374,7 +8374,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '1490011',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8394,7 +8394,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '1490011',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8414,7 +8414,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '22072',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8434,7 +8434,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '41984173',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8454,7 +8454,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7195220',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8474,7 +8474,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7376',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8494,7 +8494,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '42368945',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8514,7 +8514,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '38864',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8534,7 +8534,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14181358',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8554,7 +8554,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '16456',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8581,7 +8581,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '16456',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8601,7 +8601,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '16456',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8621,7 +8621,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '16456',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8641,7 +8641,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '16456',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8661,7 +8661,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '16456',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8681,7 +8681,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8701,7 +8701,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8721,7 +8721,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8741,7 +8741,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8761,7 +8761,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8781,7 +8781,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8801,7 +8801,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8821,7 +8821,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8841,7 +8841,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8861,7 +8861,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8881,7 +8881,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8901,7 +8901,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8921,7 +8921,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8941,7 +8941,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8961,7 +8961,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -8981,7 +8981,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9001,7 +9001,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9021,7 +9021,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9041,7 +9041,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9061,7 +9061,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13977448',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9081,7 +9081,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7803861',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9101,7 +9101,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7803861',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9121,7 +9121,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7803861',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9141,7 +9141,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7803861',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9161,7 +9161,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7803861',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9181,7 +9181,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7803861',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9201,7 +9201,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109243305',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9221,7 +9221,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109243305',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9241,7 +9241,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109243305',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9261,7 +9261,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109243305',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9281,7 +9281,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109243305',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9301,7 +9301,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109243305',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9321,7 +9321,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109243305',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9341,7 +9341,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109243305',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9361,7 +9361,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109243305',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9381,7 +9381,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13034',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9401,7 +9401,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13034',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9421,7 +9421,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13034',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9441,7 +9441,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13034',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9461,7 +9461,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '5187003',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9481,7 +9481,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '5187003',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9501,7 +9501,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '5187003',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9521,7 +9521,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '4156584',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9541,7 +9541,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '9687812',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9561,7 +9561,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '4338499',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9581,7 +9581,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '105267563',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9601,7 +9601,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '67405',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9621,7 +9621,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '67405',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9641,7 +9641,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '4815560',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9661,7 +9661,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '39734854',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9681,7 +9681,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '39734854',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9701,7 +9701,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '3878011',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9721,7 +9721,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '3878011',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9741,7 +9741,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '3878011',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9761,7 +9761,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '113657460',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9781,7 +9781,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '113657460',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9801,7 +9801,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13518',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9821,7 +9821,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13518',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9841,7 +9841,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '19883',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9861,7 +9861,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '19883',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9881,7 +9881,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '19883',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9901,7 +9901,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '36839046',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9921,7 +9921,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '23972',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9941,7 +9941,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '3678455',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9961,7 +9961,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '104184',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -9981,7 +9981,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '104184',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10001,7 +10001,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '104184',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10021,7 +10021,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7196647',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10041,7 +10041,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7196647',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10061,7 +10061,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7196647',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10081,7 +10081,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7196647',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10101,7 +10101,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7196647',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10121,7 +10121,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '103325053',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10141,7 +10141,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '6727029',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10161,7 +10161,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '16461',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10181,7 +10181,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '1043621',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10201,7 +10201,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14016309',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10221,7 +10221,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '945837',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10241,7 +10241,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '23104238',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10261,7 +10261,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '23104238',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10281,7 +10281,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '395753',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10301,7 +10301,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '4241541',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10321,7 +10321,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '10934',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10341,7 +10341,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '10934',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10361,7 +10361,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '10934',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10381,7 +10381,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112596515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10401,7 +10401,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112596515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10421,7 +10421,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112596515',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10441,7 +10441,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '110113711',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10461,7 +10461,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '110113711',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10488,7 +10488,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '25769393',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10508,7 +10508,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109215549',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10528,7 +10528,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '7803754',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10548,7 +10548,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '251556',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10568,7 +10568,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '3853071',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10588,7 +10588,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '31080706',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10608,7 +10608,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '11639372',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10628,7 +10628,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '5658040',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10648,7 +10648,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112117813',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10668,7 +10668,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112117813',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10688,7 +10688,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13055',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10708,7 +10708,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '13055',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10728,7 +10728,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '105051862',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10748,7 +10748,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '105051862',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10768,7 +10768,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '407373',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10788,7 +10788,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '407373',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10808,7 +10808,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '933743',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10828,7 +10828,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112594697',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10848,7 +10848,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '11638749',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10868,7 +10868,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112119189',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10888,7 +10888,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '549749',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10908,7 +10908,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '111060391',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10928,7 +10928,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '16847',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10948,7 +10948,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '362119',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10968,7 +10968,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '100270782',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -10988,7 +10988,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '106603806',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11008,7 +11008,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '106603806',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11028,7 +11028,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '50663',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11048,7 +11048,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '208194',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11068,7 +11068,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '41826267',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11088,7 +11088,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '100281754',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11108,7 +11108,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '26797477',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11128,7 +11128,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '20221668',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11148,7 +11148,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '8240934',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11168,7 +11168,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '24536',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11188,7 +11188,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '45885',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11208,7 +11208,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '192189',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11228,7 +11228,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '16522',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11248,7 +11248,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109205',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11268,7 +11268,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '108914721',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11288,7 +11288,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '10178789',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11308,7 +11308,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '10178789',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11328,7 +11328,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '105218045',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11348,7 +11348,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '100532577',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11368,7 +11368,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '100532577',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11388,7 +11388,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '693001',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11408,7 +11408,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '251554',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11428,7 +11428,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '40101789',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11448,7 +11448,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '31800',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11468,7 +11468,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '112112820',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11488,7 +11488,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '57471',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11508,7 +11508,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '249889',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11528,7 +11528,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '192232',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11548,7 +11548,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '1457763',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11568,7 +11568,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '948867',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11588,7 +11588,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '109698',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11608,7 +11608,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '8241411',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11628,7 +11628,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '14235',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11648,7 +11648,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '9441851',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11668,7 +11668,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '108594366',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11688,7 +11688,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '17359640',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11708,7 +11708,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '12292',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11728,7 +11728,7 @@ export const annotations = [
     meta: {
       type: 'Genes',
       id: '10475',
-      color: '#8f7cbf',
+      color: '#673ab7',
       idType: 'NCBI'
     }
   },
@@ -11748,7 +11748,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -11768,7 +11768,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -11788,7 +11788,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -11808,7 +11808,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -11828,7 +11828,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -11848,7 +11848,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -11868,7 +11868,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -11888,7 +11888,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -11908,7 +11908,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -11928,7 +11928,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -11948,7 +11948,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -11968,7 +11968,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -11988,7 +11988,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12008,7 +12008,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12028,7 +12028,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12048,7 +12048,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12068,7 +12068,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12088,7 +12088,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12108,7 +12108,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12128,7 +12128,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12148,7 +12148,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12168,7 +12168,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:36080',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12188,7 +12188,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12208,7 +12208,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12228,7 +12228,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12248,7 +12248,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12268,7 +12268,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12288,7 +12288,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12308,7 +12308,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12328,7 +12328,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12348,7 +12348,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12368,7 +12368,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12388,7 +12388,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12408,7 +12408,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12428,7 +12428,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12448,7 +12448,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12468,7 +12468,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16856',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12488,7 +12488,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16856',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12508,7 +12508,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16856',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12528,7 +12528,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16856',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12548,7 +12548,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16856',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12568,7 +12568,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16856',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12588,7 +12588,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:48465',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12608,7 +12608,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:48465',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12628,7 +12628,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:48465',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12655,7 +12655,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:48465',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12675,7 +12675,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18320',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12695,7 +12695,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:5017',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12715,7 +12715,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:5017',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12735,7 +12735,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:5017',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12755,7 +12755,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:5017',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12775,7 +12775,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:5017',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12802,7 +12802,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:5017',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12822,7 +12822,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:5017',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12842,7 +12842,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:5017',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12862,7 +12862,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:23357',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12882,7 +12882,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:10545',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12902,7 +12902,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16991',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12922,7 +12922,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16991',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12942,7 +12942,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16991',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12962,7 +12962,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:23357',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -12982,7 +12982,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:23357',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13002,7 +13002,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:23357',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13022,7 +13022,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16494',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13042,7 +13042,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16494',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13062,7 +13062,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16494',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13082,7 +13082,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:33731',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13102,7 +13102,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:33731',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13122,7 +13122,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:33731',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13142,7 +13142,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:33731',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13162,7 +13162,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:33731',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13182,7 +13182,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:33731',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13202,7 +13202,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:46882',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13222,7 +13222,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:37527',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13242,7 +13242,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:30808',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13262,7 +13262,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:30808',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13282,7 +13282,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:30808',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13302,7 +13302,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:30808',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13322,7 +13322,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:17996',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13342,7 +13342,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:17996',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13362,7 +13362,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:17996',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13382,7 +13382,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:17996',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13402,7 +13402,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:17996',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13422,7 +13422,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26708',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13442,7 +13442,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26708',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13462,7 +13462,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26708',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13482,7 +13482,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26708',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13502,7 +13502,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26822',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13522,7 +13522,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26822',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13542,7 +13542,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26822',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13562,7 +13562,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:17561',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13582,7 +13582,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:17561',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13602,7 +13602,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:17561',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13622,7 +13622,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:17561',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13642,7 +13642,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:30418',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13662,7 +13662,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:6104',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13682,7 +13682,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:6104',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13702,7 +13702,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:6104',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13722,7 +13722,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16199',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13742,7 +13742,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16199',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13762,7 +13762,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16199',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13782,7 +13782,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:46756',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13802,7 +13802,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:46756',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13822,7 +13822,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:46756',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13842,7 +13842,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:46756',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13862,7 +13862,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:46756',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13882,7 +13882,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:46756',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13902,7 +13902,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:46756',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13922,7 +13922,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:46756',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13942,7 +13942,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:46756',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13962,7 +13962,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:46756',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -13982,7 +13982,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26710',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14002,7 +14002,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26710',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14022,7 +14022,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26710',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14042,7 +14042,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26710',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14062,7 +14062,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26710',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14082,7 +14082,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26710',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14102,7 +14102,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26710',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14122,7 +14122,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26710',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14142,7 +14142,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26710',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14162,7 +14162,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:26710',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14182,7 +14182,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:13850',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14209,7 +14209,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:13850',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14229,7 +14229,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:13850',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14249,7 +14249,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74705',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14269,7 +14269,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74705',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14289,7 +14289,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74705',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14309,7 +14309,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74705',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14329,7 +14329,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74705',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14349,7 +14349,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:30353',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14369,7 +14369,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:61448',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14389,7 +14389,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:35225',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14409,7 +14409,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:35225',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14429,7 +14429,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:14434',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14449,7 +14449,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:141423',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14469,7 +14469,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:141423',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14489,7 +14489,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:141423',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14509,7 +14509,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:141423',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14529,7 +14529,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:141423',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14549,7 +14549,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:141423',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14569,7 +14569,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:141423',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14589,7 +14589,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:141423',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14609,7 +14609,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:141423',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14629,7 +14629,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:141423',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14656,7 +14656,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:29034',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14683,7 +14683,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:29034',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14703,7 +14703,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:33893',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14723,7 +14723,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:33893',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14743,7 +14743,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:15414',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14763,7 +14763,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:15414',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14783,7 +14783,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:15414',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14803,7 +14803,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:15414',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14823,7 +14823,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:15414',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14843,7 +14843,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16856',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14863,7 +14863,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16856',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14883,7 +14883,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16856',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14903,7 +14903,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16856',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14930,7 +14930,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16856',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14950,7 +14950,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16856',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14970,7 +14970,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18248',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -14990,7 +14990,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18248',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15010,7 +15010,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:18248',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15030,7 +15030,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:66870',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15050,7 +15050,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:42160',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15070,7 +15070,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:42160',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15090,7 +15090,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:42160',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15110,7 +15110,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:29351',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15130,7 +15130,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74709',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15150,7 +15150,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73613',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15170,7 +15170,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:15365',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15190,7 +15190,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:15365',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15210,7 +15210,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:15365',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15230,7 +15230,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16236',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15250,7 +15250,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73179',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15270,7 +15270,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73179',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15290,7 +15290,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73179',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15310,7 +15310,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73179',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15330,7 +15330,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73179',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15350,7 +15350,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73179',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15370,7 +15370,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:23240',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15390,7 +15390,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:23240',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15410,7 +15410,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:52214',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15430,7 +15430,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:52214',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15450,7 +15450,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:52214',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15470,7 +15470,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:29256',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15490,7 +15490,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:554446',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15510,7 +15510,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:29401',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15530,7 +15530,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:29386',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15550,7 +15550,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:52214',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15570,7 +15570,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:63213',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15590,7 +15590,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:15339',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15610,7 +15610,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:15339',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15630,7 +15630,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:17822',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15650,7 +15650,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:23853',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15670,7 +15670,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:27594',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15690,7 +15690,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:35640',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15710,7 +15710,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:30687',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15730,7 +15730,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73507',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15750,7 +15750,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:32386',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15770,7 +15770,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:141426',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15790,7 +15790,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74698',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15810,7 +15810,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74698',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15830,7 +15830,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74706',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15850,7 +15850,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74706',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15870,7 +15870,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74706',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15890,7 +15890,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74706',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15910,7 +15910,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74706',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15930,7 +15930,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:111513',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15950,7 +15950,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:28940',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15970,7 +15970,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74820',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -15990,7 +15990,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74564',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16010,7 +16010,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:5206',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16030,7 +16030,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:5206',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16050,7 +16050,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73807',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16070,7 +16070,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73807',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16090,7 +16090,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:63877',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16110,7 +16110,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73445',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16130,7 +16130,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:33349',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16150,7 +16150,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:31739',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16170,7 +16170,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:33521',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16190,7 +16190,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:141457',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16210,7 +16210,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74877',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16230,7 +16230,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73583',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16250,7 +16250,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73695',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16270,7 +16270,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73695',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16290,7 +16290,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74557',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16310,7 +16310,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:33330',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16330,7 +16330,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74569',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16350,7 +16350,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74872',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16370,7 +16370,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:74531',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16390,7 +16390,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73817',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16410,7 +16410,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:73451',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16430,7 +16430,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:137245',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16450,7 +16450,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:82508',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16470,7 +16470,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:132403',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16490,7 +16490,7 @@ export const annotations = [
     meta: {
       type: 'Chemicals',
       id: 'CHEBI:16750',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'CHEBI'
     }
   },
@@ -16510,7 +16510,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'GLUTATHIONE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16530,7 +16530,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'GLUTATHIONE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16550,7 +16550,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'GLUTATHIONE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16570,7 +16570,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'GLUTATHIONE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16590,7 +16590,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'GLUTATHIONE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16610,7 +16610,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'GLUTATHIONE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16630,7 +16630,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'OH',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16650,7 +16650,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'LIPOIC-ACID',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16670,7 +16670,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'LIPOIC-ACID',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16690,7 +16690,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'LIPOIC-ACID',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16710,7 +16710,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD0-1693',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16730,7 +16730,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD0-1693',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16750,7 +16750,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD0-1693',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16770,7 +16770,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD0-1693',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16790,7 +16790,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CL-',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16810,7 +16810,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CL-',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16830,7 +16830,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CL-',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16850,7 +16850,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CL-',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16870,7 +16870,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CL-',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16890,7 +16890,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'NA+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16910,7 +16910,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'NA+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16930,7 +16930,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'NA+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16950,7 +16950,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'NA+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16970,7 +16970,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'HS',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -16990,7 +16990,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'HS',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17010,7 +17010,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'HS',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17030,7 +17030,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CYS',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17050,7 +17050,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CYS',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17070,7 +17070,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CYS',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17090,7 +17090,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CYS',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17110,7 +17110,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD-846',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17130,7 +17130,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD-846',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17150,7 +17150,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD-846',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17170,7 +17170,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD-846',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17190,7 +17190,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'EDTA',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17210,7 +17210,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'EDTA',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17230,7 +17230,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'UREA',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17250,7 +17250,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'UREA',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17270,7 +17270,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'UREA',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17297,7 +17297,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'FE+3',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17324,7 +17324,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'FE+3',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17344,7 +17344,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'GLUTATHIONE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17364,7 +17364,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'GLUTATHIONE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17384,7 +17384,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'GLUTATHIONE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17404,7 +17404,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'GLUTATHIONE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17431,7 +17431,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'GLUTATHIONE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17451,7 +17451,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'GLUTATHIONE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17471,7 +17471,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD-17695',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17491,7 +17491,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'S2O4',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17511,7 +17511,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'S2O4',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17531,7 +17531,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'S2O4',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17551,7 +17551,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'NITROGEN-MOLECULE',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17571,7 +17571,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'ETOH',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17591,7 +17591,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD-3921',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17611,7 +17611,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD-3921',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17631,7 +17631,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'SER',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17651,7 +17651,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'LI+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17671,7 +17671,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'LI+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17691,7 +17691,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'LI+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17711,7 +17711,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'LI+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17731,7 +17731,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'LI+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17751,7 +17751,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'LI+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17771,7 +17771,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'LI+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17791,7 +17791,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'LI+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17811,7 +17811,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'LI+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17831,7 +17831,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'AG+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17851,7 +17851,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'NA+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17871,7 +17871,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'NA+',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17891,7 +17891,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD-4209',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17911,7 +17911,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CPD-10431',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17931,7 +17931,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'PPI',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -17951,7 +17951,7 @@ export const annotations = [
     meta: {
       type: 'Compounds',
       id: 'CA+2',
-      color: '#cee5cb',
+      color: '#4caf50',
       idType: 'BIOCYC'
     }
   },
@@ -20399,7 +20399,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20419,7 +20419,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20439,7 +20439,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20459,7 +20459,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20479,7 +20479,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20499,7 +20499,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20519,7 +20519,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20539,7 +20539,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20559,7 +20559,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20579,7 +20579,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20599,7 +20599,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20619,7 +20619,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20639,7 +20639,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20659,7 +20659,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20679,7 +20679,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20699,7 +20699,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20719,7 +20719,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20739,7 +20739,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20759,7 +20759,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20779,7 +20779,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20799,7 +20799,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20819,7 +20819,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20839,7 +20839,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20859,7 +20859,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20879,7 +20879,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20899,7 +20899,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20919,7 +20919,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '9606',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20939,7 +20939,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '76720',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20959,7 +20959,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '32630',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20979,7 +20979,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '45202',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -20999,7 +20999,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '45202',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21026,7 +21026,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '562',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21046,7 +21046,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '562',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21066,7 +21066,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '81076',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21086,7 +21086,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '81076',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21106,7 +21106,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '4097',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21126,7 +21126,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '12227',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21146,7 +21146,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '301693',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21166,7 +21166,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '32644',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21193,7 +21193,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '32644',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21213,7 +21213,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '32630',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21233,7 +21233,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '11086',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21253,7 +21253,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '11086',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21273,7 +21273,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '11086',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21293,7 +21293,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '11086',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21313,7 +21313,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '11086',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21333,7 +21333,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '11086',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21353,7 +21353,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '11086',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21373,7 +21373,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '11086',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21393,7 +21393,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '11086',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21413,7 +21413,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '37334',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21433,7 +21433,7 @@ export const annotations = [
     meta: {
       type: 'Species',
       id: '37334',
-      color: '#3177b8',
+      color: '#0277bd',
       idType: 'NCBI'
     }
   },
@@ -21453,7 +21453,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D028361',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21473,7 +21473,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D004194',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21493,7 +21493,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D004194',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21513,7 +21513,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D004194',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21540,7 +21540,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:C565304',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21567,7 +21567,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D013577',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21587,7 +21587,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21607,7 +21607,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21627,7 +21627,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21647,7 +21647,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21667,7 +21667,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21687,7 +21687,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21707,7 +21707,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21727,7 +21727,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21747,7 +21747,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21767,7 +21767,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21787,7 +21787,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21807,7 +21807,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21827,7 +21827,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21847,7 +21847,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21867,7 +21867,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21887,7 +21887,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21907,7 +21907,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21927,7 +21927,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21947,7 +21947,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21967,7 +21967,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -21987,7 +21987,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22007,7 +22007,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018455',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22027,7 +22027,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D005117',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22047,7 +22047,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D005117',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22067,7 +22067,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D005117',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22087,7 +22087,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D021922',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22107,7 +22107,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D000210',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22127,7 +22127,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D000210',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22147,7 +22147,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D000210',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22167,7 +22167,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D000210',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22187,7 +22187,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D000210',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22207,7 +22207,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D000210',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22227,7 +22227,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D013036',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22247,7 +22247,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:C564766',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22267,7 +22267,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D004266',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22287,7 +22287,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D004266',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22307,7 +22307,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D004266',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22327,7 +22327,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D008661',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22347,7 +22347,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D058606',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22367,7 +22367,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D058606',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22387,7 +22387,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D058606',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22414,7 +22414,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D028361',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22441,7 +22441,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:C565304',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22461,7 +22461,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D013577',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22481,7 +22481,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D020886',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22501,7 +22501,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:C566757',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22521,7 +22521,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D018329',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22541,7 +22541,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D009371',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22561,7 +22561,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D019846',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22588,7 +22588,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D004927',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22608,7 +22608,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D004927',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22628,7 +22628,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D002471',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22648,7 +22648,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D002471',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22668,7 +22668,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D015835',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22688,7 +22688,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D015835',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22708,7 +22708,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D015835',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22728,7 +22728,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D015835',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22748,7 +22748,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D002062',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22768,7 +22768,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D014717',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22788,7 +22788,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D014717',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22808,7 +22808,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D014717',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22828,7 +22828,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D014717',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22848,7 +22848,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D014717',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22875,7 +22875,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D014717',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22895,7 +22895,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D014717',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22915,7 +22915,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D014717',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22935,7 +22935,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D014717',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22955,7 +22955,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D056807',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22975,7 +22975,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D056807',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -22995,7 +22995,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D056807',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23015,7 +23015,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:C536654',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23035,7 +23035,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D000652',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23055,7 +23055,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D000652',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23075,7 +23075,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D015211',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23095,7 +23095,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D015211',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23115,7 +23115,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D015211',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23135,7 +23135,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D015211',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23155,7 +23155,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D015211',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23175,7 +23175,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D015211',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23195,7 +23195,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D015211',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23215,7 +23215,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:C566689',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23235,7 +23235,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D003731',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23255,7 +23255,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D003731',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23275,7 +23275,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D001259',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23295,7 +23295,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D001259',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23315,7 +23315,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D001259',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23342,7 +23342,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D001259',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23369,7 +23369,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D001259',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23389,7 +23389,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D001259',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23409,7 +23409,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:C566799',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23429,7 +23429,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D007088',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23449,7 +23449,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D007088',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23469,7 +23469,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D006937',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23489,7 +23489,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D002057',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23509,7 +23509,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D003117',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23529,7 +23529,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D003117',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23549,7 +23549,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D001259',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23569,7 +23569,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D058426',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23589,7 +23589,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D006212',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23609,7 +23609,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D006552',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23629,7 +23629,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D013547',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23649,7 +23649,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D020216',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23669,7 +23669,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D008216',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23689,7 +23689,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D030401',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   },
@@ -23709,7 +23709,7 @@ export const annotations = [
     meta: {
       type: 'Diseases',
       id: 'MESH:D006250',
-      color: '#fae0b8',
+      color: '#ff9800',
       idType: 'MESH'
     }
   }

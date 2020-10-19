@@ -5,7 +5,7 @@ export abstract class PaginatedResultListComponent<O extends PaginatedRequestOpt
     RL extends ResultList<R> = ResultList<R>> extends ResultListComponent<O, R, RL> {
 
   goToPage(page: number): void {
-    this.workspaceManager.navigate([], {
+    this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {
       queryParams: this.serializeParams({
         ...this.params,
         page,

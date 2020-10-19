@@ -2,7 +2,7 @@ import re
 
 from bisect import bisect_left
 from math import inf
-from typing import cast, Dict, List, Optional, Set, Tuple, Union
+from typing import cast, Dict, List, Set, Tuple, Union
 from uuid import uuid4
 
 from flask import current_app
@@ -59,15 +59,21 @@ class AnnotationsService:
 
     def get_entities_to_annotate(
         self,
+        anatomy: bool = True,
         chemical: bool = True,
         compound: bool = True,
         disease: bool = True,
+        food: bool = True,
         gene: bool = True,
         phenotype: bool = True,
         protein: bool = True,
         species: bool = True,
     ) -> List[Tuple[str, str]]:
         entity_type_and_id_pairs: List[Tuple[str, str]] = []
+
+        if anatomy:
+            entity_type_and_id_pairs.append(
+                (EntityType.ANATOMY.value, EntityIdStr.ANATOMY.value))
 
         if chemical:
             entity_type_and_id_pairs.append(
@@ -80,6 +86,10 @@ class AnnotationsService:
         if disease:
             entity_type_and_id_pairs.append(
                 (EntityType.DISEASE.value, EntityIdStr.DISEASE.value))
+
+        if food:
+            entity_type_and_id_pairs.append(
+                (EntityType.FOOD.value, EntityIdStr.FOOD.value))
 
         if phenotype:
             entity_type_and_id_pairs.append(
@@ -519,9 +529,11 @@ class AnnotationsService:
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
+        gene_names_list = list(gene_names)
+
         gene_organism_matches = \
             self.annotation_neo4j.get_gene_to_organism_match_result(
-                genes=list(gene_names),
+                genes=gene_names_list,
                 matched_organism_ids=list(self.organism_frequency.keys()),
             )
 
@@ -531,7 +543,7 @@ class AnnotationsService:
         if self.specified_organism.synonym:
             fallback_gene_organism_matches = \
                 self.annotation_neo4j.get_gene_to_organism_match_result(
-                    genes=list(gene_names),
+                    genes=gene_names_list,
                     matched_organism_ids=[self.specified_organism.organism_id],
                 )
 
@@ -575,6 +587,21 @@ class AnnotationsService:
                 matches.append(annotation)
         return matches
 
+    def _annotate_anatomy(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_anatomy,
+            token_type=EntityType.ANATOMY.value,
+            color=EntityColor.ANATOMY.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
     def _annotate_chemicals(
         self,
         entity_id_str: str,
@@ -605,6 +632,51 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
+    def _annotate_diseases(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_diseases,
+            token_type=EntityType.DISEASE.value,
+            color=EntityColor.DISEASE.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
+    def _annotate_foods(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_foods,
+            token_type=EntityType.FOOD.value,
+            color=EntityColor.FOOD.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
+    def _annotate_phenotypes(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_phenotypes,
+            token_type=EntityType.PHENOTYPE.value,
+            color=EntityColor.PHENOTYPE.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
     def _annotate_proteins(
         self,
         entity_id_str: str,
@@ -629,9 +701,11 @@ class AnnotationsService:
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
+        protein_names_list = list(protein_names)
+
         protein_organism_matches = \
             self.annotation_neo4j.get_proteins_to_organisms(
-                proteins=list(protein_names),
+                proteins=protein_names_list,
                 organisms=list(self.organism_frequency.keys()),
             )
 
@@ -641,7 +715,7 @@ class AnnotationsService:
         if self.specified_organism.synonym:
             fallback_protein_organism_matches = \
                 self.annotation_neo4j.get_proteins_to_organisms(
-                    proteins=list(protein_names),
+                    proteins=protein_names_list,
                     organisms=[self.specified_organism.organism_id],
                 )
 
@@ -789,36 +863,6 @@ class AnnotationsService:
         # don't return the custom annotations because they should stay as custom
         return species_annotations
 
-    def _annotate_diseases(
-        self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            tokens=self.matched_diseases,
-            token_type=EntityType.DISEASE.value,
-            color=EntityColor.DISEASE.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
-        )
-
-    def _annotate_phenotypes(
-        self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            tokens=self.matched_phenotypes,
-            token_type=EntityType.PHENOTYPE.value,
-            color=EntityColor.PHENOTYPE.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
-        )
-
     def annotate(
         self,
         annotation_type: str,
@@ -828,12 +872,14 @@ class AnnotationsService:
         organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
         funcs = {
+            EntityType.ANATOMY.value: self._annotate_anatomy,
             EntityType.CHEMICAL.value: self._annotate_chemicals,
             EntityType.COMPOUND.value: self._annotate_compounds,
-            EntityType.PROTEIN.value: self._annotate_proteins,
-            EntityType.SPECIES.value: self._annotate_species,
             EntityType.DISEASE.value: self._annotate_diseases,
+            EntityType.FOOD.value: self._annotate_foods,
             EntityType.PHENOTYPE.value: self._annotate_phenotypes,
+            EntityType.SPECIES.value: self._annotate_species,
+            EntityType.PROTEIN.value: self._annotate_proteins,
             EntityType.GENE.value: self._annotate_genes,
         }
 
@@ -949,10 +995,37 @@ class AnnotationsService:
         got matched to a shorter length word due to
         normalizing in lmdb. Or words that get matched
         but the casing were not taken into account, e.g
-        gene marA is correct, but mara is not.
+        gene 'marA' is correct, but 'mara' is not.
         """
+        def is_abbrev(text_in_document, annotation, word_index_list, abbrevs) -> bool:
+            if text_in_document not in abbrevs:
+                if all([c.isupper() for c in text_in_document]) and \
+                    (len(text_in_document) == 3 or len(text_in_document) == 4):  # noqa
+                    begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
+                    end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
+                    if begin == '(' and end == ')':
+                        i = bisect_left(word_index_list, annotation.lo_location_offset)
+                        abbrev = ''
+
+                        for idx in word_index_list[i-len(text_in_document):i]:
+                            abbrev += word_index_dict[idx][0]
+
+                        if abbrev.lower() != text_in_document.lower():
+                            return False
+                        else:
+                            # is an abbreviation so mark it as so
+                            return True
+                    else:
+                        return False
+                else:
+                    return False
+            else:
+                return True
+
         fixed_annotations: List[Annotation] = []
         word_index_list = list(word_index_dict)
+
+        abbrevs: Set[str] = set()
 
         for annotation in annotations_list:
             text_in_document = annotation.text_in_document.split(' ')
@@ -971,25 +1044,14 @@ class AnnotationsService:
             elif isinstance(annotation, GeneAnnotation):
                 text_in_document = text_in_document[0]  # type: ignore
                 if text_in_document == annotation.keyword:
-                    fixed_annotations.append(annotation)
-            else:
-                # check abbreviations
-                # all uppercase and within parenthesis
-                if all([c.isupper() for c in annotation.text_in_document]) and \
-                    (len(annotation.text_in_document) == 3 or len(annotation.text_in_document) == 4):  # noqa
-                    begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
-                    end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
-                    if begin == '(' and end == ')':
-                        i = bisect_left(word_index_list, annotation.lo_location_offset)
-                        abbrev = ''
-
-                        for idx in word_index_list[i-len(annotation.text_in_document):i]:
-                            abbrev += word_index_dict[idx][0]
-
-                        if abbrev.lower() != annotation.text_in_document.lower():
-                            fixed_annotations.append(annotation)
+                    if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):
+                        abbrevs.add(text_in_document)  # type: ignore
                     else:
                         fixed_annotations.append(annotation)
+            else:
+                text_in_document = text_in_document[0]  # type: ignore
+                if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):
+                    abbrevs.add(text_in_document)  # type: ignore
                 else:
                     fixed_annotations.append(annotation)
 
@@ -1044,9 +1106,11 @@ class AnnotationsService:
         """Create annotations based on semantic rules."""
         self.local_species_inclusion = entity_results.local_species_inclusion
         self.matched_local_species_inclusion = entity_results.matched_local_species_inclusion
+        self.matched_anatomy = entity_results.matched_anatomy
         self.matched_chemicals = entity_results.matched_chemicals
         self.matched_compounds = entity_results.matched_compounds
         self.matched_diseases = entity_results.matched_diseases
+        self.matched_foods = entity_results.matched_foods
         self.matched_genes = entity_results.matched_genes
         self.matched_phenotypes = entity_results.matched_phenotypes
         self.matched_proteins = entity_results.matched_proteins
