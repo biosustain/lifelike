@@ -84,7 +84,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       strokeColor = styleData.strokeColor;
     }
 
-    if (d.label === 'note' && styleData.showDetail) {
+    if ((d.label === 'note' || d.label === 'link') && styleData.showDetail) {
       // ---------------------------------
       // Note WITH detail
       // ---------------------------------
