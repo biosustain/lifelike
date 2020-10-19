@@ -28,7 +28,7 @@ class ProjectsService(RDBMSBaseDao):
     def __init__(self, session: Session):
         super().__init__(session)
 
-    def get_accessible_projects(self, user: AppUser, filter = None) -> Sequence[Projects]:
+    def get_accessible_projects(self, user: AppUser, filter=None) -> Sequence[Projects]:
         """ Return list a of projects that user either has collab rights to
             or owns it
         """
@@ -45,7 +45,8 @@ class ProjectsService(RDBMSBaseDao):
             .outerjoin(project_role_sq,
                        and_(project_role_sq.c.projects_id == Projects.id,
                             project_role_sq.c.appuser_id == user.id,
-                            project_role_sq.c.name.in_(['project-read', 'project-write', 'project-admin'])))
+                            project_role_sq.c.name.in_(
+                                ['project-read', 'project-write', 'project-admin'])))
 
         if filter:
             query = query.filter(filter)
