@@ -15,7 +15,7 @@
                 "isCustom": true,
                 "allText": "E.  coli K-12 MG1655",
                 "primaryLink": "",
-                "color": "#3177b8",
+                "color": "#0277bd",
                 "includeGlobally": true
             },
             "rects": [
@@ -64,7 +64,7 @@
                 "id": "ECK3947",
                 "allText": "ppc",
                 "idHyperlink": "",
-                "color": "#8f7cbf",
+                "color": "#673ab7",
                 "type": "Gene",
                 "primaryLink": ""
             },
@@ -87,7 +87,7 @@
                 },
                 "id": "8914395",
                 "idHyperlink": "",
-                "color": "#8f7cbf",
+                "color": "#673ab7",
                 "idType": "",
                 "primaryLink": ""
             },
@@ -121,7 +121,7 @@
             ],
             "meta": {
                 "idType": "",
-                "color": "#3177b8",
+                "color": "#0277bd",
                 "idHyperlink": "",
                 "id": "511145",
                 "primaryLink": "",

@@ -17,6 +17,7 @@ from neo4japp.data_transfer_objects import (
     SpecifiedOrganismStrain
 )
 from neo4japp.services.annotations.constants import EntityType, OrganismCategory
+from neo4japp.services.annotations.util import normalize_str
 
 
 # reference to this directory
@@ -103,7 +104,8 @@ def create_mock_tokens(annotations):
             page_number=anno.page_number,
             keyword=anno.keyword,
             char_positions={
-                i + anno.lo_location_offset: c for i, c in enumerate(anno.keyword)}
+                i + anno.lo_location_offset: c for i, c in enumerate(anno.keyword)},
+            normalized_keyword=normalize_str(anno.keyword)
         ) for anno in annotations
     ]
 
@@ -601,7 +603,7 @@ def test_custom_annotations_gene_organism_matching_has_match(
         'meta': {
             'id': '9606',
             'type': 'Species',
-            'color': '#3177b8',
+            'color': '#0277bd',
             'links': {
                 'ncbi': 'https://www.ncbi.nlm.nih.gov/gene/?query=hooman',
                 'google': 'https://www.google.com/search?q=hooman',
@@ -684,6 +686,74 @@ def test_human_gene_pdf(
     assert keywords['ACE2'] == EntityType.GENE.value
 
 
+def test_foods_pdf(
+    food_lmdb_setup,
+    get_annotations_service,
+    entity_inclusion_setup
+):
+    annotation_service = get_annotations_service
+    pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_inclusion_setup
+
+    pdf = path.join(directory, f'pdf_samples/food-test.pdf')
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
+
+        lookup_entities(entity_service=entity_service, tokens=tokens)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
+        )
+
+    keywords = {o.keyword: o.meta.type for o in annotations}
+
+    assert 'Artificial Sweeteners' in keywords
+    assert keywords['Artificial Sweeteners'] == EntityType.FOOD.value
+
+    assert 'Bacon' in keywords
+    assert keywords['Bacon'] == EntityType.FOOD.value
+
+
+def test_anatomy_pdf(
+    anatomy_lmdb_setup,
+    get_annotations_service,
+    entity_inclusion_setup
+):
+    annotation_service = get_annotations_service
+    pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_inclusion_setup
+
+    pdf = path.join(directory, f'pdf_samples/anatomy-test.pdf')
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
+
+        lookup_entities(entity_service=entity_service, tokens=tokens)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
+        )
+
+    keywords = {o.keyword: o.meta.type for o in annotations}
+
+    assert '280 kDa Actin Binding Protein' in keywords
+    assert keywords['280 kDa Actin Binding Protein'] == EntityType.ANATOMY.value
+
+    assert 'Claws' in keywords
+    assert keywords['Claws'] == EntityType.ANATOMY.value
+
+
 @pytest.mark.parametrize(
     'mock_tokens',
     [
@@ -692,25 +762,29 @@ def test_human_gene_pdf(
                 page_number=1,
                 keyword='hyp27',
                 char_positions={
-                    i: c for i, c in enumerate('hyp27')}
+                    i: c for i, c in enumerate('hyp27')},
+                normalized_keyword='hyp27'
             ),
             PDFTokenPositions(
                 page_number=1,
                 keyword='Moniliophthora roreri',
                 char_positions={
-                    i + len('hyp27') + 1: c for i, c in enumerate('Moniliophthora roreri')}  # noqa
+                    i + len('hyp27') + 1: c for i, c in enumerate('Moniliophthora roreri')},  # noqa
+                normalized_keyword='moniliophthoraroreri'
             ),
             PDFTokenPositions(
                 page_number=1,
                 keyword='Hyp27',
                 char_positions={
-                    i + len('hyp27') + len('Moniliophthora roreri') + 2: c for i, c in enumerate('Hyp27')}  # noqa
+                    i + len('hyp27') + len('Moniliophthora roreri') + 2: c for i, c in enumerate('Hyp27')},  # noqa
+                normalized_keyword='hyp27'
             ),
             PDFTokenPositions(
                 page_number=1,
                 keyword='human',
                 char_positions={
-                    i + len('hyp27') + len('Moniliophthora roreri') + len('Hyp27') + 3: c for i, c in enumerate('human')}  # noqa
+                    i + len('hyp27') + len('Moniliophthora roreri') + len('Hyp27') + 3: c for i, c in enumerate('human')},  # noqa
+                normalized_keyword='human'
             ),
         ]
     ],
@@ -768,14 +842,16 @@ def test_tokens_gene_vs_protein(
                     keyword='Serpin A1',
                     char_positions={
                         i: c for i, c in enumerate('Serpin A1')
-                    }
+                    },
+                    normalized_keyword='serpina1'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
                         i + len('Serpin A1') + 1: c for i, c in enumerate('human')
-                    }
+                    },
+                    normalized_keyword='human'
                 ),
         ]),
         # overlapping intervals
@@ -785,19 +861,22 @@ def test_tokens_gene_vs_protein(
                     keyword='SERPIN',
                     char_positions={
                         i: c for i, c in enumerate('SERPIN')
-                    }
+                    },
+                    normalized_keyword='serpin'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='SERPIN A1',
                     char_positions={
-                        i + len('SERPIN') + 1: c for i, c in enumerate('SERPINA A1')}  # noqa
+                        i + len('SERPIN') + 1: c for i, c in enumerate('SERPINA A1')},  # noqa
+                    normalized_keyword='serpina1'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
-                        i + len('SERPIN') + len('SERPINA A1') + 2: c for i, c in enumerate('human')}  # noqa
+                        i + len('SERPIN') + len('SERPINA A1') + 2: c for i, c in enumerate('human')},  # noqa
+                    normalized_keyword='human'
                 ),
         ]),
         (3, [
@@ -806,14 +885,16 @@ def test_tokens_gene_vs_protein(
                     keyword='serpina1',
                     char_positions={
                         i: c for i, c in enumerate('serpina1')
-                    }
+                    },
+                    normalized_keyword='serpina1'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
                         i + len('serpina1') + 1: c for i, c in enumerate('human')
-                    }
+                    },
+                    normalized_keyword='human'
                 ),
         ]),
         (4, [
@@ -822,14 +903,16 @@ def test_tokens_gene_vs_protein(
                     keyword='SERPINA1',
                     char_positions={
                         i: c for i, c in enumerate('SERPINA1')
-                    }
+                    },
+                    normalized_keyword='serpina1'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
                         i + len('SERPINA1') + 1: c for i, c in enumerate('human')
-                    }
+                    },
+                    normalized_keyword='human'
                 ),
         ]),
         (5, [
@@ -838,14 +921,16 @@ def test_tokens_gene_vs_protein(
                     keyword='SerpinA1',
                     char_positions={
                         i: c for i, c in enumerate('SerpinA1')
-                    }
+                    },
+                    normalized_keyword='serpina1'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
                         i + len('SerpinA1') + 1: c for i, c in enumerate('human')
-                    }
+                    },
+                    normalized_keyword='human'
                 ),
         ]),
     ],
@@ -1126,19 +1211,22 @@ def test_gene_vs_protein_annotations(
                     keyword='il-7',
                     char_positions={
                         i: c for i, c in enumerate('il-7')
-                    }
+                    },
+                    normalized_keyword='il7'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='coelacanth',
                     char_positions={
-                        i + len('il-7') + 1: c for i, c in enumerate('coelacanth')}  # noqa
+                        i + len('il-7') + 1: c for i, c in enumerate('coelacanth')},  # noqa
+                    normalized_keyword='coelacanth'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='Tetraodon rubripes',
                     char_positions={
-                        i + len('il-7') + len('coelacanth') + 2: c for i, c in enumerate('Tetraodon rubripes')}  # noqa
+                        i + len('il-7') + len('coelacanth') + 2: c for i, c in enumerate('Tetraodon rubripes')},  # noqa
+                    normalized_keyword='tetraodonrubripes'
                 ),
         ]),
     ],
@@ -1189,19 +1277,22 @@ def test_gene_annotation_uses_id_from_knowledge_graph(
                     keyword='rat',
                     char_positions={
                         i: c for i, c in enumerate('rat')
-                    }
+                    },
+                    normalized_keyword='rat'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='EDEM3',
                     char_positions={
-                        i + len('rat') + 1: c for i, c in enumerate('EDEM3')}
+                        i + len('rat') + 1: c for i, c in enumerate('EDEM3')},
+                    normalized_keyword='edem3'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='Human',
                     char_positions={
-                        i + len('rat') + len('EDEM3') + 2: c for i, c in enumerate('Human')}  # noqa
+                        i + len('rat') + len('EDEM3') + 2: c for i, c in enumerate('Human')},  # noqa
+                    normalized_keyword='human'
                 ),
         ]),
     ],
@@ -1254,19 +1345,22 @@ def test_gene_annotation_human_vs_rat(
                     keyword='human',
                     char_positions={
                         i: c for i, c in enumerate('human')
-                    }
+                    },
+                    normalized_keyword='human'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='FO(-)',
                     char_positions={
-                        i + len('human') + 1: c for i, c in enumerate('FO(-)')}  # noqa
+                        i + len('human') + 1: c for i, c in enumerate('FO(-)')},  # noqa
+                    normalized_keyword='fo'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='H',
                     char_positions={
-                        i + len('human') + len('FO(-)') + 2: c for i, c in enumerate('H') if c != ' '}  # noqa
+                        i + len('human') + len('FO(-)') + 2: c for i, c in enumerate('H') if c != ' '},  # noqa
+                    normalized_keyword='h'
                 ),
         ]),
     ],
@@ -1315,19 +1409,22 @@ def test_ignore_terms_length_two_or_less(
                     keyword='hypofluorite',
                     char_positions={
                         i: c for i, c in enumerate('hypofluorite')
-                    }
+                    },
+                    normalized_keyword='hypofluorite'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('hypofluorite') + 1: c for i, c in enumerate('rat')}  # noqa
+                        i + len('hypofluorite') + 1: c for i, c in enumerate('rat')},  # noqa
+                    normalized_keyword='rat'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='dog',
                     char_positions={
-                        i + len('hypofluorite') + len('rat') + 2: c for i, c in enumerate('dog')}  # noqa
+                        i + len('hypofluorite') + len('rat') + 2: c for i, c in enumerate('dog')},  # noqa
+                    normalized_keyword='dog'
                 ),
         ]),
     ],
@@ -1375,19 +1472,22 @@ def test_global_excluded_chemical_annotations(
                     keyword='guanosine',
                     char_positions={
                         i: c for i, c in enumerate('guanosine')
-                    }
+                    },
+                    normalized_keyword='guanosine'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('guanosine') + 1: c for i, c in enumerate('rat')}  # noqa
+                        i + len('guanosine') + 1: c for i, c in enumerate('rat')},  # noqa
+                    normalized_keyword='rat'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='dog',
                     char_positions={
-                        i + len('guanosine') + len('rat') + 2: c for i, c in enumerate('dog')}  # noqa
+                        i + len('guanosine') + len('rat') + 2: c for i, c in enumerate('dog')},  # noqa
+                    normalized_keyword='dog'
                 ),
         ]),
     ],
@@ -1435,19 +1535,22 @@ def test_global_excluded_compound_annotations(
                     keyword='adenosine',
                     char_positions={
                         i: c for i, c in enumerate('adenosine')
-                    }
+                    },
+                    normalized_keyword='adenosine'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('adenosine') + 1: c for i, c in enumerate('rat')}  # noqa
+                        i + len('adenosine') + 1: c for i, c in enumerate('rat')},  # noqa
+                    normalized_keyword='rat'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='cold sore',
                     char_positions={
-                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('cold sore')}  # noqa
+                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('cold sore')},  # noqa
+                    normalized_keyword='coldsore'
                 ),
         ]),
     ],
@@ -1495,19 +1598,22 @@ def test_global_excluded_disease_annotations(
                     keyword='adenosine',
                     char_positions={
                         i: c for i, c in enumerate('adenosine')
-                    }
+                    },
+                    normalized_keyword='adenosine'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('adenosine') + 1: c for i, c in enumerate('rat')}  # noqa
+                        i + len('adenosine') + 1: c for i, c in enumerate('rat')},  # noqa
+                    normalized_keyword='rat'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='BOLA3',
                     char_positions={
-                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('BOLA3')}  # noqa
+                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('BOLA3')},  # noqa
+                    normalized_keyword='bola3'
                 ),
         ]),
     ],
@@ -1555,19 +1661,22 @@ def test_global_excluded_gene_annotations(
                     keyword='adenosine',
                     char_positions={
                         i: c for i, c in enumerate('adenosine')
-                    }
+                    },
+                    normalized_keyword='adenosine'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('adenosine') + 1: c for i, c in enumerate('rat')}  # noqa
+                        i + len('adenosine') + 1: c for i, c in enumerate('rat')},  # noqa
+                    normalized_keyword='rat'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='Whey Proteins',
                     char_positions={
-                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('Whey Proteins')}  # noqa
+                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('Whey Proteins')},  # noqa
+                    normalized_keyword='wheyproteins'
                 ),
         ]),
     ],
@@ -1615,19 +1724,22 @@ def test_global_excluded_phenotype_annotations(
                     keyword='adenosine',
                     char_positions={
                         i: c for i, c in enumerate('adenosine')
-                    }
+                    },
+                    normalized_keyword='adenosine'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('adenosine') + 1: c for i, c in enumerate('rat')}  # noqa
+                        i + len('adenosine') + 1: c for i, c in enumerate('rat')},  # noqa
+                    normalized_keyword='rat'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='Wasabi receptor toxin',
                     char_positions={
-                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('Wasabi receptor toxin')}  # noqa
+                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('Wasabi receptor toxin')},  # noqa
+                    normalized_keyword='wasabireceptortoxin'
                 ),
         ]),
     ],
@@ -1675,19 +1787,22 @@ def test_global_excluded_protein_annotations(
                     keyword='human',
                     char_positions={
                         i: c for i, c in enumerate('human')
-                    }
+                    },
+                    normalized_keyword='human'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('human') + 1: c for i, c in enumerate('rat')}  # noqa
+                        i + len('human') + 1: c for i, c in enumerate('rat')},  # noqa
+                    normalized_keyword='rat'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='dog',
                     char_positions={
-                        i + len('human') + len('rat') + 2: c for i, c in enumerate('dog')}  # noqa
+                        i + len('human') + len('rat') + 2: c for i, c in enumerate('dog')},  # noqa
+                    normalized_keyword='dog'
                 ),
         ]),
     ],
@@ -1736,19 +1851,22 @@ def test_global_excluded_species_annotations(
                     keyword='adenosine',
                     char_positions={
                         i: c for i, c in enumerate('adenosine')
-                    }
+                    },
+                    normalized_keyword='adenosine'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='rat',
                     char_positions={
-                        i + len('adenosine') + 1: c for i, c in enumerate('rat')}  # noqa
+                        i + len('adenosine') + 1: c for i, c in enumerate('rat')},  # noqa
+                    normalized_keyword='rat'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='dog',
                     char_positions={
-                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('dog')}  # noqa
+                        i + len('adenosine') + len('rat') + 2: c for i, c in enumerate('dog')},  # noqa
+                    normalized_keyword='dog'
                 ),
         ]),
     ],
@@ -1798,7 +1916,8 @@ def test_global_excluded_annotations_does_not_interfere_with_other_entities(
                     keyword='NS2A',
                     char_positions={
                         i: c for i, c in enumerate('NS2A')
-                    }
+                    },
+                    normalized_keyword='ns2a'
                 ),
         ]),
     ],
@@ -1846,7 +1965,8 @@ def test_lmdb_match_protein_by_exact_case_if_multiple_matches(
                     keyword='fake-chemical-(12345)',
                     char_positions={
                         i: c for i, c in enumerate('fake-chemical-(12345)')
-                    }
+                    },
+                    normalized_keyword='fakechemical12345'
                 ),
         ]),
     ],
@@ -1895,7 +2015,8 @@ def test_global_chemical_inclusion_annotation(
                     keyword='compound-(12345)',
                     char_positions={
                         i: c for i, c in enumerate('compound-(12345)')
-                    }
+                    },
+                    normalized_keyword='compound12345'
                 ),
         ]),
     ],
@@ -1944,14 +2065,16 @@ def test_global_compound_inclusion_annotation(
                     keyword='gene-(12345)',
                     char_positions={
                         i: c for i, c in enumerate('gene-(12345)')
-                    }
+                    },
+                    normalized_keyword='gene12345'
                 ),
                 PDFTokenPositions(
                     page_number=1,
                     keyword='human',
                     char_positions={
                         i + len('gene-(12345)') + 1: c for i, c in enumerate('human')
-                    }
+                    },
+                    normalized_keyword='human'
                 ),
         ]),
     ],
@@ -2005,7 +2128,8 @@ def test_global_gene_inclusion_annotation(
                     keyword='disease-(12345)',
                     char_positions={
                         i: c for i, c in enumerate('disease-(12345)')
-                    }
+                    },
+                    normalized_keyword='disease12345'
                 ),
         ]),
     ],
@@ -2054,7 +2178,8 @@ def test_global_disease_inclusion_annotation(
                     keyword='phenotype-(12345)',
                     char_positions={
                         i: c for i, c in enumerate('phenotype-(12345)')
-                    }
+                    },
+                    normalized_keyword='phenotype12345'
                 ),
         ]),
     ],
@@ -2103,7 +2228,8 @@ def test_global_phenotype_inclusion_annotation(
                     keyword='protein-(12345)',
                     char_positions={
                         i: c for i, c in enumerate('protein-(12345)')
-                    }
+                    },
+                    normalized_keyword='protein12345'
                 ),
         ]),
     ],
@@ -2152,7 +2278,8 @@ def test_global_protein_inclusion_annotation(
                     keyword='species-(12345)',
                     char_positions={
                         i: c for i, c in enumerate('species-(12345)')
-                    }
+                    },
+                    normalized_keyword='species12345'
                 ),
         ]),
     ],
@@ -2251,7 +2378,8 @@ def test_primary_organism_strain(
                     keyword='pentose phosphate pathway',
                     char_positions={
                         i: c for i, c in enumerate('pentose phosphate pathway')
-                    }
+                    },
+                    normalized_keyword='pentosephosphatepathway'
                 ),
                 PDFTokenPositions(
                     page_number=1,
@@ -2260,7 +2388,8 @@ def test_primary_organism_strain(
                         # add extra 1 due to parenthesis (PPP)
                         # which were stripped out in parser
                         i + len('pentose phosphate pathway') + 2: c for i, c in enumerate('PPP')
-                    }
+                    },
+                    normalized_keyword='ppp'
                 ),
         ]),
     ],
