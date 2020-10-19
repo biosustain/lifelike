@@ -319,8 +319,9 @@ class ElasticService():
     def _build_query_clause(
         self,
         search_term: str,
-        fields: List[str],
-        punc_boost_field: str,
+        text_fields: List[str],
+        keyword_fields: List[str],
+        boost_fields: Dict[str, int],
         query_filter,
         highlight,
     ):
@@ -355,30 +356,35 @@ class ElasticService():
             # word_stack.
             word_stack.extend(term.split(' '))
 
+        def get_match_objs(fields: List[str], boost_fields: Dict[str, int], word: str):
+            multi_match_obj = {
+                'multi_match': {
+                    'query': word,
+                    'type': 'phrase',
+                    'fields': fields
+                }
+            }
+
+            term_objs = [
+                {
+                    'term': {
+                        field: {
+                            'value': word,
+                            'boost': boost_fields[field]
+                        }
+                    }
+                } for field in fields
+            ]
+
+            return [multi_match_obj] + term_objs
+
         word_operands = []
         for word in word_stack:
             if any([c in string.punctuation for c in word]):
                 word_operands.append(
                     {
                         'bool': {
-                            'should': [
-                                {
-                                    'multi_match': {
-                                        'query': word,
-                                        'type': 'phrase',
-                                        'fields': fields
-                                    }
-                                },
-                                {
-                                    'term': {
-                                        punc_boost_field: {
-                                            'value': word,
-                                            'boost': 2.0
-                                        }
-                                    }
-                                }
-
-                            ]
+                            'should': get_match_objs(text_fields, boost_fields, word)
                         }
                     }
                 )
@@ -387,7 +393,7 @@ class ElasticService():
                     'multi_match': {
                         'query': word,  # type:ignore
                         'type': 'phrase',  # type:ignore
-                        'fields': fields  # type:ignore
+                        'fields': text_fields  # type:ignore
                     }
                 })
 
@@ -397,15 +403,46 @@ class ElasticService():
                 'multi_match': {
                     'query': phrase,
                     'type': 'phrase',
-                    'fields': fields
+                    'fields': text_fields
                 }
             })
 
         return {
             'query': {
                 'bool': {
-                    'must': word_operands + phrase_operands,  # type:ignore
-                    'filter': query_filter
+                    'must': [
+                        # Search term needs to match some documents...
+                        {
+                            'bool': {
+                                'should': [
+                                    # ...on all of the text fields...
+                                    {
+                                        'bool': {
+                                            'must': word_operands + phrase_operands,  # type:ignore
+                                        }
+                                    },
+                                    # ...or on at least one keyword field
+                                    {
+                                        'bool': {
+                                            'should': [
+                                                {
+                                                    'term': {
+                                                        field: {
+                                                            'value': search_term,
+                                                            'boost': boost_fields[field]
+                                                        }
+                                                    }
+                                                } for field in keyword_fields
+                                            ]
+                                        }
+                                    }
+                                ],
+
+                            }
+                        },
+                        # ...and it must also pass the provided filters
+                        query_filter,
+                    ],
                 }
             },
             'highlight': highlight
@@ -415,7 +452,9 @@ class ElasticService():
         self,
         index_id: str,
         user_query: str,
-        match_fields: List[str],
+        text_fields: List[str],
+        keyword_fields: List[str],
+        boost_fields: Dict[str, int],
         offset: int = 0,
         limit: int = 10,
         query_filter=None,
@@ -423,8 +462,9 @@ class ElasticService():
     ):
         es_query = self._build_query_clause(
             search_term=user_query,
-            fields=match_fields,
-            punc_boost_field='data.content',  # TODO: TEMP
+            text_fields=text_fields,
+            keyword_fields=keyword_fields,
+            boost_fields=boost_fields,
             query_filter=query_filter,
             highlight=highlight,
         )

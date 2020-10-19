@@ -350,6 +350,16 @@ def get_pdf(id: str, project_name: str):
             if update:
                 db.session.query(Files).filter(Files.file_id == id).update(update)
                 db.session.commit()
+
+                # .update doesn't invoke the ORM event mappers (see "Warnings" under
+                # https://docs.sqlalchemy.org/en/13/orm/query.html?highlight=query%20update#sqlalchemy.orm.query.Query.update),  # noqa
+                # so we have to manually update elastic
+                elastic_service = get_elastic_service()
+                elastic_service.delete_documents_with_index(
+                    file_ids=[file.file_id],
+                    index_id=FILE_INDEX_ID
+                )
+                elastic_service.index_files([file.id])
         yield ''
 
     try:
