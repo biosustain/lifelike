@@ -197,7 +197,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
             placedTo: PlacedNode,
             ctx: CanvasRenderingContext2D,
             placementOptions: PlacementOptions): PlacedEdge {
-    const connectedToNotes = this.noteTypes.has(from.label) && this.noteTypes.has(to.label);
+    const connectedToNotes = this.noteTypes.has(from.label) || this.noteTypes.has(to.label);
     const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
     const fontSizeScale = nullCoalesce(styleData.fontSizeScale, 1);
     const strokeColor = nullCoalesce(styleData.strokeColor, '#2B7CE9');
