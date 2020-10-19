@@ -48,8 +48,12 @@ import { SourcesComponent } from './components/sources/sources.component';
 import { ModuleErrorComponent } from './components/module-error.component';
 import { ModuleProgressComponent } from './components/module-progress.component';
 import { ShareDialogComponent } from './components/dialog/share-dialog.component';
+import { AnnotationFilterComponent } from './components/annotation-filter/annotation-filter.component';
+import { WordCloudAnnotationFilterComponent } from './components/word-cloud-annotation-filter/word-cloud-annotation-filter.component';
 
 const components = [
+  AnnotationFilterComponent,
+  WordCloudAnnotationFilterComponent,
   MessageDialogComponent,
   ProgressDialogComponent,
   HighlightSnippetComponent,
