@@ -1,10 +1,5 @@
 server_name: qa.***ARANGO_DB_NAME***.bio
-
-deploy_user: ansible
-deploy_group: ansible
-deploy_dir: /home/ansible
-
-lmdb_path: /home/ansible/lmdb
+app_environment: qa
 
 nginx_image: nginx:1.19.1-alpine
 nginx_hostname: ng01

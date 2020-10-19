@@ -32,12 +32,10 @@
   <as-split-area *ngIf="sidenavOpened" size="640" [order]="1">
     <div id="sidenav-container">
       <div id="sidenav-panel-btns-container">
-        <button
-          type="button"
-          id="sidenav-panel-close-btn"
-          class="btn btn-danger"
-          (click)="closeSidenav()"
-        >
+        <button id="sidenav-panel-close-btn"
+                type="button"
+                class="btn btn-danger"
+                (click)="closeSidenav()">
           <i class="fa fa-close"></i>
         </button>
       </div>

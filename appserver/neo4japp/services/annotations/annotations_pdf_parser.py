@@ -28,7 +28,7 @@ from .constants import (
     PDF_CHARACTER_SPACING_THRESHOLD,
     PDF_NEW_LINE_THRESHOLD,
 )
-from .util import clean_char
+from .util import clean_char, normalize_str
 
 
 class AnnotationsPDFParser:
@@ -549,6 +549,7 @@ class AnnotationsPDFParser:
                     token = PDFTokenPositions(
                         page_number=min_idx_in_page[page_idx],
                         keyword=curr_keyword,
+                        normalized_keyword=normalize_str(curr_keyword),
                         char_positions=curr_char_idx_mappings,
                     )
                     yield token
