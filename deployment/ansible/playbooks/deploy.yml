@@ -134,6 +134,6 @@
     - name: Warm up LMDB
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver python neo4japp/services/annotations/warm_up/lmdb_warmup.py"
+        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver python3 neo4japp/services/annotations/warm_up/lmdb_warmup.py"
       tags:
         - deploy
