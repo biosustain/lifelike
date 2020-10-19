@@ -43,6 +43,9 @@
                placement="right">
               Administration
             </a>
+            <a class="dropdown-item" (click)="downloadManual()" placement="right">
+              User Guide
+            </a>
             <a class="dropdown-item" [routerLink]="['/users', (appUser$ | async)?.username]" placement="right">
               Account
             </a>
