@@ -3,6 +3,9 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { select, Store } from '@ngrx/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 
+import { downloader } from 'app/shared/utils';
+import { StorageService } from 'app/shared/services/storage.service';
+
 import * as AuthActions from 'app/auth/store/actions';
 import { AuthSelectors } from 'app/auth/store';
 import { Observable } from 'rxjs';
@@ -32,6 +35,7 @@ export class AppComponent {
     private readonly titleService: Title,
     private readonly ngbModalConfig: NgbModalConfig,
     private readonly ngbPaginationConfig: NgbPaginationConfig,
+    private storage: StorageService,
   ) {
     this.ngbModalConfig.backdrop = 'static';
     this.ngbPaginationConfig.maxSize = 5;
@@ -47,6 +51,7 @@ export class AppComponent {
         titleService.setTitle(child.snapshot.data.title ? `Lifelike: ${child.snapshot.data.title}` : 'Lifelike');
       }
     });
+
   }
 
   /**
@@ -61,5 +66,11 @@ export class AppComponent {
    */
   logout() {
     this.store.dispatch(AuthActions.logout());
+  }
+
+  downloadManual() {
+    this.storage.getUserManual().subscribe(resp => {
+      downloader(resp, 'application/pdf', '***ARANGO_DB_NAME***-manual.pdf');
+    });
   }
 }
