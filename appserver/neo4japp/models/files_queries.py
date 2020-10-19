@@ -39,3 +39,12 @@ def get_all_files_by_id(file_ids: Set[str], project_id: int):
         ),
     ).all()
     return files
+
+
+def filename_exist(filename: str, directory_id: int, project_id: int):
+    q = db.session.query(Files.id).filter(
+        Files.filename == filename,
+        Files.dir_id == directory_id,
+        Files.project == project_id
+    )
+    return db.session.query(q.exists()).scalar()
