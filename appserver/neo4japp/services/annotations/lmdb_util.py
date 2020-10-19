@@ -1,6 +1,19 @@
 from neo4japp.services.annotations.constants import DatabaseType, EntityIdStr
 
 
+def create_anatomy_for_ner(
+    id_: str,
+    name: str,
+    synonym: str
+) -> dict:
+    return {
+        EntityIdStr.ANATOMY.value: id_,
+        'id_type': DatabaseType.MESH.value,
+        'name': name,
+        'synonym': synonym
+    }
+
+
 def create_chemical_for_ner(id_: str, name: str, synonym: str) -> dict:
     return {
         EntityIdStr.CHEMICAL.value: id_,
@@ -25,6 +38,19 @@ def create_disease_for_ner(id_: str, name: str, synonym: str) -> dict:
         'id_type': DatabaseType.MESH.value,
         'name': name,
         'synonym': synonym,
+    }
+
+
+def create_food_for_ner(
+    id_: str,
+    name: str,
+    synonym: str
+) -> dict:
+    return {
+        EntityIdStr.FOOD.value: id_,
+        'id_type': DatabaseType.MESH.value,
+        'name': name,
+        'synonym': synonym
     }
 
 
