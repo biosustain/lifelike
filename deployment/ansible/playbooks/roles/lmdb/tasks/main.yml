@@ -27,9 +27,11 @@
     owner: "{{ deploy_user }}"
     group: 1000
   loop:
+    - anatomy
     - chemicals
-    - diseases
     - compounds
+    - diseases
+    - foods
     - genes
     - phenotypes
     - proteins
@@ -45,9 +47,11 @@
     gs_secret_key: "{{ gce_bucket_secret_key }}"
     force: yes
   loop:
+    - anatomy
     - chemicals
-    - diseases
     - compounds
+    - diseases
+    - foods
     - genes
     - phenotypes
     - proteins
@@ -63,9 +67,11 @@
     gs_secret_key: "{{ gce_bucket_secret_key }}"
     force: yes
   loop:
+    - anatomy
     - chemicals
-    - diseases
     - compounds
+    - diseases
+    - foods
     - genes
     - phenotypes
     - proteins
