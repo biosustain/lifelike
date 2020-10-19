@@ -26,6 +26,7 @@ class PDFParsedCharacters(CamelDictMixin):
 class PDFTokenPositions(CamelDictMixin):
     page_number: int = attr.ib()
     keyword: str = attr.ib()
+    normalized_keyword: str = attr.ib()
     char_positions: Dict[int, str] = attr.ib()
     # used in NLP because it returns the type
     token_type: Optional[str] = attr.ib(default='')
@@ -120,13 +121,15 @@ class LMDBMatch(CamelDictMixin):
 class EntityResults(CamelDictMixin):
     local_species_inclusion: Dict[str, List[dict]] = attr.ib()
     matched_local_species_inclusion: Dict[str, List[PDFTokenPositions]] = attr.ib()
-    matched_genes: Dict[str, LMDBMatch] = attr.ib()
+    matched_anatomy: Dict[str, LMDBMatch] = attr.ib()
     matched_chemicals: Dict[str, LMDBMatch] = attr.ib()
     matched_compounds: Dict[str, LMDBMatch] = attr.ib()
+    matched_diseases: Dict[str, LMDBMatch] = attr.ib()
+    matched_foods: Dict[str, LMDBMatch] = attr.ib()
+    matched_genes: Dict[str, LMDBMatch] = attr.ib()
+    matched_phenotypes: Dict[str, LMDBMatch] = attr.ib()
     matched_proteins: Dict[str, LMDBMatch] = attr.ib()
     matched_species: Dict[str, LMDBMatch] = attr.ib()
-    matched_diseases: Dict[str, LMDBMatch] = attr.ib()
-    matched_phenotypes: Dict[str, LMDBMatch] = attr.ib()
 
 
 @attr.s(frozen=True)
