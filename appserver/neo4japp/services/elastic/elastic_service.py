@@ -409,7 +409,7 @@ class ElasticService():
                 }
             },
             'highlight': highlight
-        }, phrase_stack
+        }, phrase_stack + word_stack
 
     def search(
         self,
