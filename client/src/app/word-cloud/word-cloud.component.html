@@ -1,8 +1,8 @@
-<div class="d-flex flex-column position-relative h-100" *ngIf="(loadTask.status$ | async) as status">
+<div class="d-flex flex-column position-relative h-100" *ngIf="(loadTask?.status$ | async) as status">
   <app-module-progress *ngIf="status.running" class="position-absolute w-100 h-100 bg-white p-4"
                        style="z-index: 2">
     <div>
-      Downloading annotations for file...
+      Downloading annotations...
     </div>
   </app-module-progress>
 
@@ -16,7 +16,7 @@
       <div class="module-header">
         <div class="module-title-bar">
           <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
-            {{ fileName }}
+            {{ windowTitle }}
           </h1>
           <div class="btn-group ml-auto d-flex align-items-stretch" role="group">
             <button class="btn btn-secondary text-nowrap"
@@ -25,7 +25,7 @@
                     ngbTooltip="Reload Annotations"
                     container="body"
                     placement="bottom top left right"
-                    (click)="getAnnotationsForFile()">
+                    (click)="getAnnotations()">
               <i class="fa fa-fw fa-redo"></i>
             </button>
             <button class="btn btn-secondary"
