@@ -119,7 +119,6 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     });
 
     this.applyFilters();
-    this.outputSubject.next();
   }
 
   ngOnDestroy() {
