@@ -105,12 +105,13 @@ export class WordCloudComponent {
             frequency: parseInt(cols[3], 10),
             shown: true,
           } as WordCloudAnnotationFilterEntity;
-          this.wordVisibilityMap.set(annotation.text, true);
+          this.wordVisibilityMap.set(annotation.text, annotation.frequency > 1);
           this.annotationData.push(annotation);
           tempIdTypePairSet.set(idTypePair, this.annotationData.length - 1);
         } else {
           // Add the frequency of the synonym to the original word
           this.annotationData[tempIdTypePairSet.get(idTypePair)].frequency += parseInt(cols[3], 10);
+          this.wordVisibilityMap.set(this.annotationData[tempIdTypePairSet.get(idTypePair)].text, true);
 
           // TODO: In the future, we may want to show "synonyms" somewhere, or even allow the user to swap out the most frequent term for a
           // synonym
