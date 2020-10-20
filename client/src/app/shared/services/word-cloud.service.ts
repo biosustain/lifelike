@@ -1,10 +1,9 @@
-import {AbstractService} from '../../shared/services/abstract-service';
+import {AbstractService} from 'app/shared/services/abstract-service';
 import {Injectable} from '@angular/core';
-import {AuthenticationService} from '../../auth/services/authentication.service';
+import {AuthenticationService} from 'app/auth/services/authentication.service';
 import {HttpClient} from '@angular/common/http';
-import {map} from 'rxjs/operators';
 
-@Injectable()
+@Injectable({providedIn: 'root'})
 export class WordCloudService extends AbstractService {
   protected readonly SEARCH_BASE_URL = '/api/annotations';
 
