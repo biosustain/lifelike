@@ -21,6 +21,7 @@ import { AnnotationExcludeDialogComponent } from './components/annotation-exclud
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AddedAnnotationExclsuion } from 'app/drawing-tool/services/interfaces';
 import { uniqueId } from 'lodash';
+import { SEARCH_LINKS } from 'app/shared/links';
 
 declare var jQuery: any;
 
@@ -345,17 +346,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     if (an.meta.isCustom) {
       base.push(`User generated annotation`);
     }
-    if (an.meta.links && an.meta.links.google) {
-      base.push(`<a target="_blank" href="${an.meta.links.google}">Google</a>`);
-    }
-    if (an.meta.links && an.meta.links.ncbi) {
-      base.push(`<a target="_blank" href="${an.meta.links.ncbi}">NCBI</a>`);
-    }
-    if (an.meta.links && an.meta.links.uniprot) {
-      base.push(`<a target="_blank" href="${an.meta.links.uniprot}">Uniprot</a>`);
-    }
-    if (an.meta.links && an.meta.links.wikipedia) {
-      base.push(`<a target="_blank" href="${an.meta.links.wikipedia}">Wikipedia</a>`);
+    for (const [domain, url] of Object.entries(an.meta.links)) {
+      const domainToShow = SEARCH_LINKS.find(link => link.domain.toLowerCase() === domain).domain;
+      base.push(`<a target="_blank" href="${url}">${domainToShow}</a>`);
     }
     if (an.meta.isCustom) {
       base.push(`
