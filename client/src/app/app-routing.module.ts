@@ -26,6 +26,7 @@ import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard
 import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
 import { WordCloudComponent } from './word-cloud/word-cloud.component';
+import { WordCloudProjectComponent } from './word-cloud/word-cloud-project.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
