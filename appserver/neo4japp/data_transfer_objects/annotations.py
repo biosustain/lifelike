@@ -11,7 +11,7 @@ from neo4japp.util import CamelDictMixin
 class AnnotationRequest(CamelDictMixin):
     annotation_method: str = attr.ib()
     file_ids: List[str] = attr.ib(default=attr.Factory(list))
-    organism: str = attr.ib(default='')
+    organism: dict = attr.ib(default=attr.Factory(dict))
 
 
 @attr.s(frozen=True)

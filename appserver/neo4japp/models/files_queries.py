@@ -5,13 +5,13 @@ from typing import List, Set
 
 from sqlalchemy import and_
 
-from .files import Files, FileContent
+from .files import Files, FileContent, FallbackOrganism
 
 from neo4japp.database import db
 
 
 def get_all_files_and_content_by_id(file_ids: Set[str], project_id: int):
-    return db.session.query(
+    query = db.session.query(
         Files.id,
         Files.annotations,
         Files.custom_annotations,
@@ -27,6 +27,16 @@ def get_all_files_and_content_by_id(file_ids: Set[str], project_id: int):
             Files.file_id.in_(file_ids),
         ),
     )
+
+    sub_query = db.session.query(FallbackOrganism)
+
+    if sub_query.count():
+        sub_query = sub_query.subquery()
+        return query.outerjoin(
+            sub_query,
+            and_(sub_query.c.id == Files.fallback_organism_id))
+    else:
+        return query
 
 
 def get_all_files_by_id(file_ids: Set[str], project_id: int):

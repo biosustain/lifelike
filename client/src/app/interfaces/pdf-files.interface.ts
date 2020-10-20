@@ -1,3 +1,5 @@
+import { OrganismAutocomplete } from './neo4j.interface';
+
 export interface PdfFiles {
   files: PdfFile[];
 }
@@ -37,5 +39,5 @@ export interface UploadPayload {
   // if type === Url
   url?: string;
   annotationMethod: string;
-  organism?: string;
+  organism?: OrganismAutocomplete;
 }

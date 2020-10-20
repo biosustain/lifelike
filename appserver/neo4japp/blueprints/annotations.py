@@ -2,7 +2,7 @@ import os
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from flask import Blueprint, current_app, g, make_response
 
@@ -29,6 +29,7 @@ from neo4japp.models import (
     Files,
     GlobalList,
     Projects,
+    FallbackOrganism
 )
 import neo4japp.models.files_queries as files_queries
 from neo4japp.services.annotations.constants import (
@@ -44,12 +45,13 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 def annotate(
     doc: Files,
-    specified_organism: str = '',
+    specified_organism: Optional[FallbackOrganism] = None,
     annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
 ):
     annotations_json = create_annotations(
         annotation_method=annotation_method,
-        specified_organism=specified_organism,
+        specified_organism_synonym=specified_organism.organism_synonym if specified_organism else '',  # noqa
+        specified_organism_tax_id=specified_organism.organism_taxonomy_id if specified_organism else '',  # noqa
         document=doc,
         filename=doc.filename
     )
@@ -57,11 +59,16 @@ def annotate(
     current_app.logger.debug(
         f'File successfully annotated: {doc.file_id}, {doc.filename}')
 
-    return {
+    update = {
         'id': doc.id,
         'annotations': annotations_json,
         'annotations_date': datetime.now(TIMEZONE),
     }
+
+    if specified_organism:
+        update['fallback_organism'] = specified_organism
+        update['fallback_organism_id'] = specified_organism.id
+    return update
 
 
 @bp.route('/<string:project_name>/<string:file_id>', methods=['POST'])
@@ -82,12 +89,22 @@ def annotate_file(req: AnnotationRequest, project_name: str, file_id: str):
     if not doc:
         raise RecordNotFoundException(f'File with file id {file_id} not found.')
 
+    fallback = None
+    if req.organism:
+        fallback = FallbackOrganism(
+            organism_name=req.organism['organism_name'],
+            organism_synonym=req.organism['synonym'],
+            organism_taxonomy_id=req.organism['tax_id']
+        )
+        db.session.add(fallback)
+        db.session.flush()
+
     annotated: List[dict] = []
     annotated.append(
         annotate(
             doc=doc,
             annotation_method=req.annotation_method,
-            specified_organism=req.organism
+            specified_organism=fallback
         )
     )
 
