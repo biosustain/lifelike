@@ -210,23 +210,32 @@ class ManualAnnotationsService:
         if file is None:
             raise RecordNotFoundException('File does not exist')
 
+        return self._get_file_annotations(file)
+
+    def _get_file_annotations(self, file):
         def isExcluded(exclusions, annotation):
             for exclusion in exclusions:
                 if annotation['meta']['type'] == exclusion['type'] and \
                         annotation['textInDocument'] == exclusion['text']:
                     return True
             return False
-
         if len(file.annotations) == 0:
             return file.custom_annotations
-
         annotations = file.annotations['documents'][0]['passages'][0]['annotations']
         filtered_annotations = [
             annotation for annotation in annotations
             if not isExcluded(file.excluded_annotations, annotation)
         ]
-
         return filtered_annotations + file.custom_annotations
+
+    def get_combined_annotations_in_project(self, project_id):
+        files = Files.query.filter_by(project=project_id).all()
+        if len(files) == 0:
+            raise RecordNotFoundException('No annotated files exists within this project')
+        annotations = []
+        for fi in files:
+            annotations.extend(self._get_file_annotations(fi))
+        return annotations
 
     def add_to_global_list(self, annotation, type, file_id):
         """ Adds inclusion or exclusion to a global_list table
