@@ -95,17 +95,6 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // The very first time we get the annotationData, set the default values for the frequency filters
-    this.filtersForm.get('minimumFrequency').setValue(1);
-    this.filtersForm.get('maximumFrequency').setValue(this.annotationData[0].frequency);
-
-    // Also set the visibility of each annotation to true
-    this.annotationData.forEach(annotation => {
-      this.wordVisibilityMap.set(annotation.text, true);
-      this.typeVisibilityMap.set(annotation.type, true);
-      this.legend.set(annotation.type, annotation.color);
-    });
-
     // Basically debounces the word visibility output. Any time the parent component should know about visibility changes, we should emit a
     // new value to `outputSubject`, rather than emitting to `wordVisibilityOutput` directly.
     this.outputSubjectSub = this.outputSubject.asObservable().pipe(
@@ -113,6 +102,18 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     ).subscribe(() => {
       this.wordVisibilityOutput.emit(this.wordVisibilityMap);
     });
+
+    // The very first time we get the annotationData, set the default values for the frequency filters
+    this.filtersForm.get('minimumFrequency').setValue(2);
+    this.filtersForm.get('maximumFrequency').setValue(this.annotationData[0].frequency);
+
+    // Also set the visibility of each annotation to true
+    this.annotationData.forEach(annotation => {
+      this.legend.set(annotation.type, annotation.color);
+    });
+
+    this.applyFilters();
+    this.outputSubject.next();
   }
 
   ngOnDestroy() {
