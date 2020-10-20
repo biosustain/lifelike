@@ -355,6 +355,30 @@ def get_file_info(id: str, project_name: str):
     })
 
 
+@newbp.route('/<string:project_name>/files/<string:file_id>/associated-maps', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_associated_maps(file_id: str, project_name: str):
+
+    user = g.current_user
+
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
+
+    yield user, projects
+
+    # TODO: Get maps
+
+    yield jsonify([
+        {
+            'author': 'wumpus',
+            'label': 'magic wumpus map',
+            'hash_id': 'abc123xyzdoremi'
+        }
+    ])
+
+
 @newbp.route('/<string:project_name>/files/<string:id>', methods=['GET', 'PATCH'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
