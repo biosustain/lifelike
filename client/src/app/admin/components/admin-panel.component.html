@@ -16,6 +16,12 @@
             <app-users-view></app-users-view>
           </ng-template>
         </li>
+        <li ngbNavItem="settings">
+          <a ngbNavLink>Settings</a>
+          <ng-template ngbNavContent>
+            <app-admin-settings-view></app-admin-settings-view>
+          </ng-template>
+        </li>
       </ul>
 
       <div [ngbNavOutlet]="nav" class="mt-4"></div>

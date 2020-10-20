@@ -70,7 +70,8 @@ export class AppComponent {
 
   downloadManual() {
     this.storage.getUserManual().subscribe(resp => {
-      downloader(resp, 'application/pdf', 'lifelike-manual.pdf');
+      const filename = resp.headers.get('content-disposition').split('=')[1]
+      downloader(resp, 'application/pdf', filename);
     });
   }
 }
