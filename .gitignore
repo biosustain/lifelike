@@ -70,3 +70,6 @@ appserver/neo4japp/services/annotations/nlp_data_output/*.txt
 
 # Backups
 *.backup
+
+# gcloud service accounts
+*ansible_service_account*
