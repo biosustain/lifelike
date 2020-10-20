@@ -1,0 +1,71 @@
+http:
+  routers:
+    dashboard:
+      rule: "Host(`traefik.lifelike.bio`)"
+      service: api@internal
+      middlewares:
+        - admin-auth
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "traefik.lifelike.bio"
+    lifelike-qa:
+      entryPoints:
+        - websecure
+      rule: "Host(`qa.lifelike.bio`)"
+      service: lifelike-qa-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "qa.lifelike.bio"
+    lifelike-staging:
+      entryPoints:
+        - websecure
+      rule: "Host(`staging.lifelike.bio`)"
+      service: lifelike-staging-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "staging.lifelike.bio"
+    lifelike-prod:
+      entryPoints:
+        - websecure
+      rule: "Host(`lifelike.bio`)"
+      service: lifelike-prod-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "lifelike.bio"
+    lifelike-elk-qa:
+      entryPoints:
+        - websecure
+      rule: "Host(`elk.lifelike.bio`)"
+      service: lifelike-elk-qa
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "elk.lifelike.bio"
+
+  services:
+    lifelike-qa-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.15.243"
+    lifelike-staging-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.15.207"
+    lifelike-prod-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.15.235"
+    lifelike-elk-qa:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.15.244"
+
+  middlewares:
+    admin-auth:
+      basicAuth:
+        users:
+          - "{{ traefik_credentials }}"
