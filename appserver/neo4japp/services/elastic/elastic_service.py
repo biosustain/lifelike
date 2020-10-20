@@ -316,14 +316,38 @@ class ElasticService():
 
     # Begin search methods
 
-    def _build_query_clause(
+    def get_text_match_objs(
+        self,
+        fields: List[str],
+        boost_fields: Dict[str, int],
+        word: str
+    ):
+        multi_match_obj = {
+            'multi_match': {
+                'query': word,
+                'type': 'phrase',
+                'fields': [f'{field}^{boost_fields[field]}' for field in fields]
+            }
+        }
+
+        term_objs = [
+            {
+                'term': {
+                    field: {
+                        'value': word,
+                        'boost': boost_fields[field]
+                    }
+                }
+            } for field in fields
+        ]
+
+        return [multi_match_obj] + term_objs  # type:ignore
+
+    def get_text_match_queries(
         self,
         search_term: str,
         text_fields: List[str],
-        keyword_fields: List[str],
-        boost_fields: Dict[str, int],
-        query_filter,
-        highlight,
+        text_field_boosts: Dict[str, int]
     ):
         search_term = search_term.strip()
 
@@ -356,35 +380,13 @@ class ElasticService():
             # word_stack.
             word_stack.extend(term.split(' '))
 
-        def get_match_objs(fields: List[str], boost_fields: Dict[str, int], word: str):
-            multi_match_obj = {
-                'multi_match': {
-                    'query': word,
-                    'type': 'phrase',
-                    'fields': fields
-                }
-            }
-
-            term_objs = [
-                {
-                    'term': {
-                        field: {
-                            'value': word,
-                            'boost': boost_fields[field]
-                        }
-                    }
-                } for field in fields
-            ]
-
-            return [multi_match_obj] + term_objs
-
         word_operands = []
         for word in word_stack:
             if any([c in string.punctuation for c in word]):
                 word_operands.append(
                     {
                         'bool': {
-                            'should': get_match_objs(text_fields, boost_fields, word)
+                            'should': self.get_text_match_objs(text_fields, text_field_boosts, word)
                         }
                     }
                 )
@@ -393,7 +395,7 @@ class ElasticService():
                     'multi_match': {
                         'query': word,  # type:ignore
                         'type': 'phrase',  # type:ignore
-                        'fields': text_fields  # type:ignore
+                        'fields': [f'{field}^{text_field_boosts[field]}' for field in text_fields]
                     }
                 })
 
@@ -403,44 +405,76 @@ class ElasticService():
                 'multi_match': {
                     'query': phrase,
                     'type': 'phrase',
-                    'fields': text_fields
+                    'fields': [f'{field}^{text_field_boosts[field]}' for field in text_fields]
                 }
             })
+
+        return {
+            'bool': {
+                'must': word_operands + phrase_operands,  # type:ignore
+            }
+        }
+
+    def get_keyword_match_queries(
+        self,
+        search_term: str,
+        keyword_fields: List[str],
+        keyword_field_boosts: Dict[str, int]
+    ):
+        return {
+            'bool': {
+                'should': [
+                    {
+                        'term': {
+                            field: {
+                                'value': search_term,
+                                'boost': keyword_field_boosts[field]
+                            }
+                        }
+                    } for field in keyword_fields
+                ]
+            }
+        }
+
+    def _build_query_clause(
+        self,
+        search_term: str,
+        text_fields: List[str],
+        text_field_boosts: Dict[str, int],
+        keyword_fields: List[str],
+        keyword_field_boosts: Dict[str, int],
+        query_filter,
+        highlight,
+    ):
+        search_queries = []
+        if len(text_fields) > 0:
+            search_queries.append(
+                self.get_text_match_queries(
+                    search_term,
+                    text_fields,
+                    text_field_boosts
+                )
+            )
+
+        if len(keyword_fields) > 0:
+            search_queries.append(
+                self.get_keyword_match_queries(
+                    search_term,
+                    keyword_fields,
+                    keyword_field_boosts
+                )
+            )
 
         return {
             'query': {
                 'bool': {
                     'must': [
-                        # Search term needs to match some documents...
                         {
                             'bool': {
-                                'should': [
-                                    # ...on all of the text fields...
-                                    {
-                                        'bool': {
-                                            'must': word_operands + phrase_operands,  # type:ignore
-                                        }
-                                    },
-                                    # ...or on at least one keyword field
-                                    {
-                                        'bool': {
-                                            'should': [
-                                                {
-                                                    'term': {
-                                                        field: {
-                                                            'value': search_term,
-                                                            'boost': boost_fields[field]
-                                                        }
-                                                    }
-                                                } for field in keyword_fields
-                                            ]
-                                        }
-                                    }
-                                ],
+                                'should': search_queries,
 
                             }
                         },
-                        # ...and it must also pass the provided filters
                         query_filter,
                     ],
                 }
@@ -451,20 +485,22 @@ class ElasticService():
     def search(
         self,
         index_id: str,
-        user_query: str,
+        search_term: str,
         text_fields: List[str],
+        text_field_boosts: Dict[str, int],
         keyword_fields: List[str],
-        boost_fields: Dict[str, int],
+        keyword_field_boosts: Dict[str, int],
         offset: int = 0,
         limit: int = 10,
         query_filter=None,
         highlight=None
     ):
         es_query = self._build_query_clause(
-            search_term=user_query,
+            search_term=search_term,
             text_fields=text_fields,
+            text_field_boosts=text_field_boosts,
             keyword_fields=keyword_fields,
-            boost_fields=boost_fields,
+            keyword_field_boosts=keyword_field_boosts,
             query_filter=query_filter,
             highlight=highlight,
         )
