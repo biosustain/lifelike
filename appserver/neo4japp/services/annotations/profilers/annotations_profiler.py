@@ -19,6 +19,8 @@ from neo4japp.models import Files
 
 from neo4japp.data_transfer_objects import SpecifiedOrganismStrain
 
+from neo4japp.services.annotations.service_helpers import create_annotations
+
 
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
@@ -48,14 +50,13 @@ def cprofiled():
     # print(s.getvalue())
 
 
-def create_annotations(
+def profile_annotations(
     annotator,
     pdf_parser,
     bioc_service,
     entity_service,
-    pdf,
+    pdf
 ):
-    annotations = None
     with cprofiled():
         parsed = pdf_parser.parse_pdf(pdf=pdf)
         tokens = pdf_parser.extract_tokens(parsed_chars=parsed)
@@ -98,10 +99,10 @@ def main():
 
         pdf = os.path.join(
             directory,
-            '../tests/database/services/annotations/pdf_samples/Protein Protein Interactions for Covid.pdf')  # noqa
+            '../../../../tests/database/services/annotations/pdf_samples/Sepsis and Shock.pdf')  # noqa
 
         with open(pdf, 'rb') as f:
-            create_annotations(
+            profile_annotations(
                 annotator=service,
                 pdf_parser=parser,
                 bioc_service=bioc_service,
