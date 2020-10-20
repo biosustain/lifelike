@@ -4,6 +4,10 @@ import json
 from io import BytesIO
 from werkzeug.datastructures import FileStorage
 
+from neo4japp.models import Files
+
+from neo4japp.blueprints import files
+
 
 def generate_headers(jwt_token):
     return {'Authorization': f'Bearer {jwt_token}'}
@@ -68,8 +72,6 @@ def test_can_upload_pdf(
     elasticindexes,
     mock_index_maps
 ):
-    from neo4japp.blueprints import files
-
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
@@ -95,9 +97,13 @@ def test_can_upload_pdf(
 
 
 def test_cannot_upload_if_no_write_permission(
-        monkeypatch, client, test_user, test_user_2, fix_project, fix_directory):
-    from neo4japp.blueprints import files
-
+    monkeypatch,
+    client,
+    test_user,
+    test_user_2,
+    fix_project,
+    fix_directory
+):
     login_resp = client.login_as_user(test_user_2.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
@@ -118,9 +124,13 @@ def test_cannot_upload_if_no_write_permission(
 
 
 @pytest.mark.skip(reason="Session is failing after file endpoint refactor")
-def test_can_view_all_files_in_project(monkeypatch, client, test_user, fix_project, fix_directory):
-    from neo4japp.blueprints import files
-
+def test_can_view_all_files_in_project(
+    monkeypatch,
+    client,
+    test_user,
+    fix_project,
+    fix_directory
+):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
@@ -150,8 +160,6 @@ def test_can_view_all_files_in_project(monkeypatch, client, test_user, fix_proje
 
 
 def test_can_get_pdf(client, test_user, test_user_with_pdf, fix_project):
-    from neo4japp.blueprints import files
-
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
 
@@ -162,11 +170,76 @@ def test_can_get_pdf(client, test_user, test_user_with_pdf, fix_project):
     assert resp.status_code == 200
 
 
+def test_can_update_pdf_metadata(
+    client,
+    session,
+    test_user,
+    test_user_with_pdf,
+    fix_project
+):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    file_id = test_user_with_pdf.file_id
+
+    assert test_user_with_pdf.fallback_organism.organism_taxonomy_id == '9606'
+
+    resp = client.patch(
+        f'/projects/{fix_project.project_name}/files/{file_id}',
+        headers=headers,
+        data={
+            'filename': test_user_with_pdf.filename,
+            'description': test_user_with_pdf.description or '',
+            'organism': json.dumps({
+                'organism_name': 'Escherichia coli',
+                'synonym': 'Escherichia coli',
+                'tax_id': '562'
+            })
+        },
+        content_type='multipart/form-data'
+    )
+
+    f = session.query(Files).get(test_user_with_pdf.id)
+    assert f.fallback_organism.organism_taxonomy_id == '562'
+
+
+def test_can_update_pdf_metadata_remove_fallback(
+    client,
+    session,
+    test_user,
+    test_user_with_pdf,
+    fix_project
+):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    file_id = test_user_with_pdf.file_id
+
+    assert test_user_with_pdf.fallback_organism.organism_taxonomy_id == '9606'
+
+    resp = client.patch(
+        f'/projects/{fix_project.project_name}/files/{file_id}',
+        headers=headers,
+        data={
+            'filename': test_user_with_pdf.filename,
+            'description': test_user_with_pdf.description or '',
+            'organism': json.dumps({})
+        },
+        content_type='multipart/form-data'
+    )
+
+    f = session.query(Files).get(test_user_with_pdf.id)
+    assert f.fallback_organism is None
+
+
 @pytest.mark.skip('Does this API work??? TODO: Check if return makes sense')
 def test_can_get_pdf_annotations(
-        monkeypatch, client, test_user, test_user_with_pdf, fix_project):
-    from neo4japp.blueprints import files
-
+    monkeypatch,
+    client,
+    test_user,
+    test_user_with_pdf,
+    fix_project
+):
     def mock_map_annotations_to_correct_format(unformatted_annotations):
         """ Mocks out the formatter in the function
         since we don't care about the annotation process """
@@ -289,7 +362,11 @@ def test_user_can_remove_custom_annotation(client, test_user, test_user_with_pdf
 
 
 def test_user_can_remove_matching_custom_annotations(
-        client, test_user, test_user_with_pdf, fix_project):
+    client,
+    test_user,
+    test_user_with_pdf,
+    fix_project
+):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     file_id = test_user_with_pdf.file_id
