@@ -1,6 +1,7 @@
 import json
 import multiprocessing as mp
 import requests
+import time
 
 from io import BytesIO
 from flask import current_app
@@ -11,7 +12,9 @@ from neo4japp.database import (
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
-    get_entity_recognition
+    get_entity_recognition,
+    get_annotation_neo4j,
+    get_lmdb_dao
 )
 
 from neo4japp.exceptions import AnnotationError
@@ -20,9 +23,10 @@ from neo4japp.data_transfer_objects import (
     PDFTokenPositionsList,
     SpecifiedOrganismStrain
 )
-from neo4japp.services.annotations.constants import AnnotationMethod, NLP_ENDPOINT
+from neo4japp.services.annotations.constants import AnnotationMethod, NLP_ENDPOINT, EntityType
 from neo4japp.services.annotations.util import normalize_str
 from neo4japp.utils.logger import EventLog
+from neo4japp.services.annotations.entity_recognition import EntityRecognitionService
 
 
 """File is to put helper functions that abstract away
@@ -30,7 +34,7 @@ multiple steps needed in a certain annotation pipeline.
 """
 
 
-def nlp_concurrent(
+def process_nlp(
     page: int,
     page_text: str,
     pages_to_index: Dict[int, int],
@@ -71,6 +75,7 @@ def nlp_concurrent(
                 token = PDFTokenPositions(
                     page_number=min_idx_in_page[page_idx],
                     keyword=predicted['item'],
+                    normalized_keyword=normalize_str(predicted['item']),
                     char_positions=curr_char_idx_mappings,
                     token_type=predicted['type'],
                 )
@@ -131,7 +136,7 @@ def get_nlp_entities(
                 (page, page_text, pages_to_index, tokens.min_idx_in_page)
             )
 
-        results = pool.starmap(nlp_concurrent, resources)
+        results = pool.starmap(process_nlp, resources)
 
         for result_tokens, resp in results:
             nlp_tokens += result_tokens
@@ -145,11 +150,42 @@ def get_nlp_entities(
     return nlp_tokens, nlp_resp
 
 
+def process_annotations(custom_annotations, tokens, entity_type, entity_to_annotate):
+    current_app.logger.info(f'Starting {mp.current_process()} for {entity_type}')
+
+    recog = EntityRecognitionService(
+        annotation_neo4j=get_annotation_neo4j(),
+        lmdb_session=get_lmdb_dao()
+    )
+    recog.set_entity_inclusions(custom_annotations=custom_annotations)
+    recog.identify_entities(tokens, entity_to_annotate)
+
+    if entity_type == EntityType.CHEMICAL.value:
+        return recog.matched_chemicals
+    elif entity_type == EntityType.COMPOUND.value:
+        return recog.matched_compounds
+    elif entity_type == EntityType.DISEASE.value:
+        return recog.matched_diseases
+    elif entity_type == EntityType.FOOD.value:
+        return recog.matched_foods
+    elif entity_type == EntityType.GENE.value:
+        return recog.matched_genes
+    elif entity_type == EntityType.PHENOTYPE.value:
+        return recog.matched_phenotypes
+    elif entity_type == EntityType.PROTEIN.value:
+        return recog.matched_proteins
+    elif entity_type == EntityType.SPECIES.value:
+        return recog.matched_species
+
+
 def create_annotations(
     annotation_method,
     specified_organism,
     document,
-    filename
+    filename,
+    # set to false for now since it doesn't
+    # seem to be any better (but keep code in case need in the future)
+    parallel=False
 ):
     annotator = get_annotations_service()
     bioc_service = get_bioc_document_service()
@@ -158,6 +194,7 @@ def create_annotations(
 
     custom_annotations = []
 
+    start = time.time()
     try:
         if type(document) is str:
             parsed = parser.parse_text(abstract=document)
@@ -171,16 +208,47 @@ def create_annotations(
             'Your file could not be parsed. Please check if it is a valid PDF.'
             'If it is a valid PDF, please try uploading again.')
 
+    current_app.logger.info(
+        f'Time to parse PDF {time.time() - start}',
+        extra=EventLog(event_type='annotations').to_dict()
+    )
+
+    start = time.time()
     tokens = parser.extract_tokens(parsed_chars=parsed)
     pdf_text = parser.combine_all_chars(parsed_chars=parsed)
 
-    entity_recog.set_entity_inclusions(custom_annotations=custom_annotations)
+    tokens_list = list(tokens.token_positions)
 
     if annotation_method == AnnotationMethod.RULES.value:
-        entity_recog.identify_entities(
-            tokens=tokens.token_positions,
-            check_entities_in_lmdb=entity_recog.get_entities_to_identify()
-        )
+        if parallel:
+            with mp.Pool(processes=4) as pool:
+                results = pool.starmap(
+                    process_annotations,
+                    [
+                        (custom_annotations, tokens_list, EntityType.CHEMICAL.value, {EntityType.CHEMICAL.value: True}),  # noqa
+                        (custom_annotations, tokens_list, EntityType.COMPOUND.value, {EntityType.COMPOUND.value: True}),  # noqa
+                        (custom_annotations, tokens_list, EntityType.DISEASE.value, {EntityType.DISEASE.value: True}),  # noqa
+                        (custom_annotations, tokens_list, EntityType.FOOD.value, {EntityType.FOOD.value: True}),  # noqa
+                        (custom_annotations, tokens_list, EntityType.GENE.value, {EntityType.GENE.value: True}),  # noqa
+                        (custom_annotations, tokens_list, EntityType.PHENOTYPE.value, {EntityType.PHENOTYPE.value: True}),  # noqa
+                        (custom_annotations, tokens_list, EntityType.PROTEIN.value, {EntityType.PROTEIN.value: True}),  # noqa
+                        (custom_annotations, tokens_list, EntityType.SPECIES.value, {EntityType.SPECIES.value: True})  # noqa
+                    ]
+                )
+                entity_recog.matched_chemicals = results[0]
+                entity_recog.matched_compounds = results[1]
+                entity_recog.matched_diseases = results[2]
+                entity_recog.matched_foods = results[3]
+                entity_recog.matched_genes = results[4]
+                entity_recog.matched_phenotypes = results[5]
+                entity_recog.matched_proteins = results[6]
+                entity_recog.matched_species = results[7]
+        else:
+            entity_recog.set_entity_inclusions(custom_annotations=custom_annotations)
+            entity_recog.identify_entities(
+                tokens=tokens_list,
+                check_entities_in_lmdb=entity_recog.get_entities_to_identify()
+            )
 
         entity_synonym = ''
         entity_id = ''
@@ -214,8 +282,8 @@ def create_annotations(
         entity_recog.identify_entities(
             tokens=tokens.token_positions,
             check_entities_in_lmdb=entity_recog.get_entities_to_identify(
-                chemical=False, compound=False, disease=False,
-                gene=False, phenotype=False, protein=False
+                anatomy=False, chemical=False, compound=False, disease=False,
+                food=False, gene=False, phenotype=False, protein=False
             )
         )
 
@@ -224,8 +292,8 @@ def create_annotations(
             custom_annotations=custom_annotations,
             entity_results=entity_recog.get_entity_match_results(),
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(
-                chemical=False, compound=False, disease=False,
-                gene=False, phenotype=False, protein=False
+                anatomy=False, chemical=False, compound=False, disease=False,
+                food=False, gene=False, phenotype=False, protein=False
             )
         )
 
@@ -247,4 +315,9 @@ def create_annotations(
     else:
         raise AnnotationError(f'Your file {filename} could not be annotated.')
     bioc = bioc_service.read(text=pdf_text, file_uri=filename)
+
+    current_app.logger.info(
+        f'Time to create annotations {time.time() - start}',
+        extra=EventLog(event_type='annotations').to_dict()
+    )
     return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)

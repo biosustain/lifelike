@@ -4,17 +4,21 @@ from neo4japp.constants import ANNOTATION_STYLES_DICT
 
 
 # lmdb database names
+ANATOMY_MESH_LMDB = 'anatomy_mesh'
 CHEMICALS_CHEBI_LMDB = 'chemicals_chebi'
+CHEMICALS_PUBCHEM_LMDB = 'chemicals_pubchem'
 COMPOUNDS_BIOCYC_LMDB = 'compounds_biocyc'
 DISEASES_MESH_LMDB = 'diseases_mesh'
+FOODS_MESH_LMDB = 'foods_mesh'
 GENES_NCBI_LMDB = 'genes_ncbi'
 PHENOTYPES_MESH_LMDB = 'phenotypes_mesh'
 PROTEINS_UNIPROT_LMDB = 'proteins_uniprot'
-CHEMICALS_PUBCHEM_LMDB = 'chemicals_pubchem'
 SPECIES_NCBI_LMDB = 'species_ncbi'
 
 # NLP endpoint
 NLP_ENDPOINT = 'http://nlpapi:5001/infer/v1'
+
+HOMO_SAPIENS_TAX_ID = '9606'
 
 ORGANISM_DISTANCE_THRESHOLD = 200
 PDF_NEW_LINE_THRESHOLD = .30
@@ -26,6 +30,7 @@ COMMON_TWO_LETTER_WORDS = {
     'me', 'my', 'up', 'an', 'go', 'no', 'us', 'am',
     'et', 'vs',
 }
+
 COMMON_THREE_LETTER_WORDS = {
     'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all',
     'any', 'can', 'had', 'her', 'was', 'one', 'our', 'out',
@@ -35,6 +40,7 @@ COMMON_THREE_LETTER_WORDS = {
     'min', 'far', 'set', 'key', 'tag', 'pdf', 'raw', 'low',
     'med', 'men', 'led', 'add',
 }
+
 COMMON_FOUR_LETTER_WORDS = {
     'that', 'with', 'have', 'this', 'will', 'your', 'from',
     'name', 'they', 'know', 'want', 'been', 'good', 'much',
@@ -76,27 +82,29 @@ LIGATURES = {
 
 
 class EntityType(Enum):
+    ANATOMY = 'Anatomy'
     CHEMICAL = 'Chemical'
     COMPOUND = 'Compound'
     DISEASE = 'Disease'
+    FOOD = 'Food'
     GENE = 'Gene'
+    PHENOTYPE = 'Phenotype'
     PROTEIN = 'Protein'
     SPECIES = 'Species'
-    PHENOTYPE = 'Phenotype'
 
 
 ENTITY_TYPE_PRECEDENCE = {
     # larger value takes precedence
-    EntityType.CHEMICAL.value: 3,
-    EntityType.COMPOUND.value: 2,
-    EntityType.DISEASE.value: 1,
-    EntityType.GENE.value: 6,
-    EntityType.PROTEIN.value: 5,
-    EntityType.SPECIES.value: 7,
-    EntityType.PHENOTYPE.value: 4,
+    EntityType.SPECIES.value: 9,
+    EntityType.GENE.value: 8,
+    EntityType.PROTEIN.value: 7,
+    EntityType.PHENOTYPE.value: 6,
+    EntityType.ANATOMY.value: 5,
+    EntityType.CHEMICAL.value: 4,
+    EntityType.COMPOUND.value: 3,
+    EntityType.DISEASE.value: 2,
+    EntityType.FOOD.value: 1,
 }
-
-HOMO_SAPIENS_TAX_ID = '9606'
 
 
 class OrganismCategory(Enum):
@@ -108,23 +116,27 @@ class OrganismCategory(Enum):
 
 
 class EntityColor(Enum):
+    ANATOMY = ANNOTATION_STYLES_DICT['anatomy']['color']
     CHEMICAL = ANNOTATION_STYLES_DICT['chemical']['color']
     COMPOUND = ANNOTATION_STYLES_DICT['compound']['color']
     DISEASE = ANNOTATION_STYLES_DICT['disease']['color']
+    FOOD = ANNOTATION_STYLES_DICT['food']['color']
     GENE = ANNOTATION_STYLES_DICT['gene']['color']
+    PHENOTYPE = ANNOTATION_STYLES_DICT['phenotype']['color']
     PROTEIN = ANNOTATION_STYLES_DICT['protein']['color']
     SPECIES = ANNOTATION_STYLES_DICT['species']['color']
-    PHENOTYPE = ANNOTATION_STYLES_DICT['phenotype']['color']
 
 
 class EntityIdStr(Enum):
+    ANATOMY = 'anatomy_id'
     CHEMICAL = 'chemical_id'
     COMPOUND = 'compound_id'
     DISEASE = 'disease_id'
+    FOOD = 'food_id'
     GENE = 'gene_id'
+    PHENOTYPE = 'phenotype_id'
     PROTEIN = 'protein_id'
     SPECIES = 'tax_id'
-    PHENOTYPE = 'phenotype_id'
 
 
 class DatabaseType(Enum):

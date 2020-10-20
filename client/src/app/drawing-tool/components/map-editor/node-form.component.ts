@@ -177,7 +177,7 @@ export class NodeFormComponent implements AfterViewInit {
   }
 
   mayShowDetailText() {
-    return this.node.label === 'note';
+    return this.node.label === 'note' || this.node.label === 'link';
   }
 
   focus() {
