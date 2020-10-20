@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
 
@@ -13,19 +14,30 @@ import { CollectionModal } from 'app/shared/utils/collection-modal';
   styleUrls: ['./associated-maps.component.scss']
 })
 export class AssociatedMapsComponent implements OnInit, OnDestroy {
-  public readonly loadTask: BackgroundTask<void, KnowledgeMap[]> = new BackgroundTask(
-    // TODO: This is temp, need to get the actual project name and file id
-    () => this.fileNavigatorService.getAssociatedMaps('Example', '7d131591-f156-4de3-90bb-49f9352d7c2a'),
+  private loadTaskSubscription: Subscription;
+
+  readonly loadTask: BackgroundTask<void, KnowledgeMap[]> = new BackgroundTask(
+    () => this.fileNavigatorService.getAssociatedMaps(this.projectName, this.fileId),
   );
 
-  public collectionSize = 0;
-  public readonly results = new CollectionModal<KnowledgeMap>([], {
+  readonly results = new CollectionModal<KnowledgeMap>([], {
     multipleSelection: true,
   });
 
-  private loadTaskSubscription: Subscription;
+  collectionSize: number;
 
-  constructor(private readonly fileNavigatorService: FileNavigatorService) {}
+  projectName: string;
+  fileId: string;
+
+  constructor(
+    readonly route: ActivatedRoute,
+    private readonly fileNavigatorService: FileNavigatorService
+  ) {
+    this.projectName = this.route.snapshot.params.project_name;
+    this.fileId = this.route.snapshot.params.file_id;
+
+    this.collectionSize = 0;
+  }
 
   ngOnInit() {
     this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: maps}) => {
