@@ -180,7 +180,8 @@ def process_annotations(custom_annotations, tokens, entity_type, entity_to_annot
 
 def create_annotations(
     annotation_method,
-    specified_organism,
+    specified_organism_synonym,
+    specified_organism_tax_id,
     document,
     filename,
     # set to false for now since it doesn't
@@ -254,13 +255,20 @@ def create_annotations(
         entity_id = ''
         entity_category = ''
 
-        if specified_organism:
-            split = specified_organism.split('#')
-            entity_synonym = normalize_str(split[0])
-            entity_id = split[1]
-            entity_category = json.loads(
-                entity_recog.lmdb_session.species_txn.get(
-                    entity_synonym.encode('utf-8')))['category']
+        if specified_organism_synonym and specified_organism_tax_id:
+            entity_synonym = normalize_str(specified_organism_synonym)
+            entity_id = specified_organism_tax_id
+            try:
+                entity_category = json.loads(
+                    entity_recog.lmdb_session.species_txn.get(
+                        entity_synonym.encode('utf-8')))['category']
+            except (TypeError, Exception):
+                # could not get data from lmdb
+                current_app.logger.info(
+                    f'Failed to get category for fallback organism "{specified_organism_synonym}".',
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+                entity_category = 'Uncategorized'
 
         annotations = annotator.create_rules_based_annotations(
             tokens=tokens,

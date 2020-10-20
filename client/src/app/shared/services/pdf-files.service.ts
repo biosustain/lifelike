@@ -3,6 +3,7 @@ import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { PdfFile, PdfFileUpload, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
+import { OrganismAutocomplete } from 'app/interfaces/neo4j.interface';
 import { AbstractService } from './abstract-service';
 import { map } from 'rxjs/operators';
 
@@ -41,6 +42,13 @@ export class PdfFilesService extends AbstractService {
       });
   }
 
+  getFileFallbackOrganism(projectName: string, fileId: string): Observable<string> {
+    return this.http.get<{result: string}>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files/${encodeURIComponent(fileId)}/fallback-organism`,
+      this.getHttpOptions(true),
+    ).pipe(map(res => res.result));
+  }
+
   // ========================================
   // CRUD
   // ========================================
@@ -76,7 +84,12 @@ export class PdfFilesService extends AbstractService {
     ).pipe(map(res => res.result));
   }
 
-  annotateFile(projectName: string, fileId: string, annotationMethod: string, organism: string): Observable<HttpEvent<object>> {
+  annotateFile(
+    projectName: string,
+    fileId: string,
+    annotationMethod: string,
+    organism: OrganismAutocomplete
+  ): Observable<HttpEvent<object>> {
     return this.http.post<object>(
       `${this.ANNOTATIONS_BASE_URL}/${encodeURIComponent(projectName)}/${fileId}`,
       {annotationMethod, organism},
@@ -88,10 +101,20 @@ export class PdfFilesService extends AbstractService {
     );
   }
 
-  updateFileMeta(projectName: string, id: string, filename: string, description: string = ''): Observable<any> {
+  updateFileMeta(
+    projectName: string,
+    id: string,
+    filename: string,
+    fallbackOrganism: OrganismAutocomplete,
+    description: string = '',
+  ): Observable<any> {
     const formData: FormData = new FormData();
     formData.append('filename', filename.substring(0, this.FILENAME_MAX_LENGTH));
     formData.append('description', description.substring(0, this.DESCRIPTION_MAX_LENGTH));
+
+    if (fallbackOrganism) {
+      formData.append('organism', JSON.stringify(fallbackOrganism));
+    }
     return this.http.patch<string>(
       `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files/${encodeURIComponent(id)}`,
       formData,
