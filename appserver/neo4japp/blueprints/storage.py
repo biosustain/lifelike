@@ -36,6 +36,7 @@ class UserManualAPI(MethodView):
     def get(self):
         file_content = self.blob.download_as_bytes()
         resp = make_response(file_content)
+        resp.headers['Content-Disposition'] = f'attachment;filename={self.USER_MANUAL_FILENAME}.pdf'
         resp.headers['Content-Type'] = 'application/pdf'
         return resp
 
