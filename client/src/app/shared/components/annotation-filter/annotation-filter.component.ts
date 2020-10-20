@@ -74,13 +74,18 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
         minimumFrequency: new FormControl(
           0, [Validators.required, Validators.min(0), Validators.pattern(/^-?[0-9][^\.]*$/)]
         ),
-        maximumFrequency: new FormControl(
-          0, [Validators.required, Validators.min(0), Validators.pattern(/^-?[0-9][^\.]*$/)]
-        ),
+        // TODO: Removing for now, may bring back
+        // maximumFrequency: new FormControl(
+        //   0, [Validators.required, Validators.min(0), Validators.pattern(/^-?[0-9][^\.]*$/)]
+        // ),
       },
       // Form group validators
-      [this.minMaxFreqValidator()]
+      // TODO: Don't need this right now, bring it back later if we bring back max frequency
+      // [this.minMaxFreqValidator()]
     );
+
+    this.selectedOrderByOption = DefaultOrderByOptions.FREQUENCY;
+    this.selectedOrderDirection = OrderDirection.DESCENDING;
 
     this.minimumFrequencyInputId = `${this.id}-mininum-frequency-input`;
     this.maximumFrequencyInputId = `${this.id}-maximum-frequency-input`;
@@ -95,17 +100,6 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // The very first time we get the annotationData, set the default values for the frequency filters
-    this.filtersForm.get('minimumFrequency').setValue(1);
-    this.filtersForm.get('maximumFrequency').setValue(this.annotationData[0].frequency);
-
-    // Also set the visibility of each annotation to true
-    this.annotationData.forEach(annotation => {
-      this.wordVisibilityMap.set(annotation.text, true);
-      this.typeVisibilityMap.set(annotation.type, true);
-      this.legend.set(annotation.type, annotation.color);
-    });
-
     // Basically debounces the word visibility output. Any time the parent component should know about visibility changes, we should emit a
     // new value to `outputSubject`, rather than emitting to `wordVisibilityOutput` directly.
     this.outputSubjectSub = this.outputSubject.asObservable().pipe(
@@ -113,6 +107,18 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     ).subscribe(() => {
       this.wordVisibilityOutput.emit(this.wordVisibilityMap);
     });
+
+    // The very first time we get the annotationData, set the default values for the frequency filters
+    this.filtersForm.get('minimumFrequency').setValue(2);
+    // TODO: Uncomment if we bring back max frequency
+    // this.filtersForm.get('maximumFrequency').setValue(this.annotationData[0].frequency);
+
+    // Also set the visibility of each annotation to true
+    this.annotationData.forEach(annotation => {
+      this.legend.set(annotation.type, annotation.color);
+    });
+
+    this.applyFilters();
   }
 
   ngOnDestroy() {
@@ -196,6 +202,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     }
   }
 
+  // TODO: This is effectively unused, may bring it back once we have more order by options
   setOrderByOptions() {
     this.orderByOptions = [];
     this.selectedOrderByOption = DefaultOrderByOptions.FREQUENCY;
@@ -206,6 +213,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     }
   }
 
+  // TODO: Effectively unused, may bring it back if we decide ordering direction is important
   setOrderDirections() {
     this.orderDirections = [];
     this.selectedOrderDirection = OrderDirection.DESCENDING;
@@ -229,9 +237,10 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
       case DefaultGroupByOptions.ENTITY_TYPE:
         this.groupDataByEntityType();
         break;
-      case DefaultGroupByOptions.FILTERED:
-        this.groupDataByFilteredState();
-        break;
+      // TODO: Bring this back if we decide to group on filtered in the future
+      // case DefaultGroupByOptions.FILTERED:
+      //   this.groupDataByFilteredState();
+      //   break;
       case DefaultGroupByOptions.NONE:
       default:
         break;
@@ -255,6 +264,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     this.annotationData = Array.from(typeMap.values()).reduce((accumulator, value) => accumulator.concat(value), []);
   }
 
+  // TODO: Effectively unused, but keeping because we might add it back in the future
   private groupDataByFilteredState() {
     const filteredList = [];
     const unfilteredList = [];
@@ -301,13 +311,13 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
    */
   private filterByFrequency(annotation: AnnotationFilterEntity) {
     const minimumFrequency = this.filtersForm.get('minimumFrequency').value;
-    const maximumFrequency = this.filtersForm.get('maximumFrequency').value;
 
-    return minimumFrequency <= annotation.frequency && annotation.frequency <= maximumFrequency;
-  }
+    // TODO: Uncomment these if we bring back max frequency
+    // const maximumFrequency = this.filtersForm.get('maximumFrequency').value;
 
-  private filterByType(annotation: AnnotationFilterEntity) {
-    return this.typeVisibilityMap.get(annotation.type);
+    // return minimumFrequency <= annotation.frequency && annotation.frequency <= maximumFrequency;
+
+    return minimumFrequency <= annotation.frequency;
   }
 
   /**
@@ -323,6 +333,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     this.groupAndSortData();
   }
 
+  // TODO: Currently unused, may bring it back in the future
   /**
    * Validation function used by the filter form group to check validity of the maximum and minimum frequency values.
    */
