@@ -89,9 +89,10 @@ def search(q, types, limit, page):
     offset = (page - 1) * limit
 
     if search_term:
-        text_fields = ['description', 'data.content']
-        keyword_fields = ['filename']
-        boost_fields = {'description': 2, 'data.content': 2, 'filename': 3}
+        text_fields = ['description', 'data.content', 'filename']
+        text_field_boosts = {'description': 1, 'data.content': 1, 'filename': 3}
+        keyword_fields = []
+        keyword_field_boosts = {}
         highlight = {
             'fields': {
                 'data.content': {},
@@ -152,16 +153,16 @@ def search(q, types, limit, page):
             }
         }
 
-
         elastic_service = get_elastic_service()
         res = elastic_service.search(
             index_id=FILE_INDEX_ID,
-            user_query=search_term,
+            search_term=search_term,
             offset=offset,
             limit=limit,
             text_fields=text_fields,
+            text_field_boosts=text_field_boosts,
             keyword_fields=keyword_fields,
-            boost_fields=boost_fields,
+            keyword_field_boosts=keyword_field_boosts,
             query_filter=query_filter,
             highlight=highlight
         )['hits']

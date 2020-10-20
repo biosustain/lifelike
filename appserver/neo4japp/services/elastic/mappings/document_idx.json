@@ -7,7 +7,7 @@
     "mappings": {
         "properties": {
             "filename": {
-                "type": "keyword"
+                "type": "text"
             },
             "description": {
                 "type": "text"
@@ -25,7 +25,7 @@
                 "type": "integer"
             },
             "project_name": {
-                "type": "keyword"
+                "type": "text"
             },
             "doi": {
                 "type": "keyword"
