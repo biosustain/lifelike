@@ -16,7 +16,7 @@ export class AdminSettingsComponent {
 
     readonly form: FormGroup = new FormGroup({
         files: new FormControl(''),
-    })
+    });
 
     constructor(
         private readonly progressDialog: ProgressDialog,
@@ -37,11 +37,11 @@ export class AdminSettingsComponent {
     submit() {
         const progressObservable = new BehaviorSubject<Progress>(new Progress({
             status: 'Uploading user manual...',
-        }))
+        }));
         const progressDialogRef = this.progressDialog.display({
             title: 'Saving manual as lifelike-user-manual.pdf...',
             progressObservable,
-        })
+        });
         const data = {...this.form.value};
         const file: File = data.files[0];
         this.storage.uploadUserManual(file).pipe(
