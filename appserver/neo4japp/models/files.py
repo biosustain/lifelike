@@ -122,7 +122,9 @@ class FileContent(RDBMSBase):
             row.checksum_sha256 = checksum_sha256
             row.raw_file = content
             db.session.add(row)
+            db.session.flush()
 
+            assert row.id is not None
             return row.id
 
 

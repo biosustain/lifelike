@@ -5,7 +5,7 @@ import re
 import urllib.request
 from collections import defaultdict
 from datetime import datetime
-from typing import Optional, List, Set
+from typing import Optional, List, Dict
 from urllib.error import URLError
 
 from flask import Blueprint, jsonify, g, make_response, request
@@ -16,16 +16,15 @@ from sqlalchemy import and_, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload, lazyload
 from webargs.flaskparser import use_args
-from werkzeug.datastructures import FileStorage
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db
 from neo4japp.exceptions import RecordNotFoundException, AccessRequestRequiredError
-from neo4japp.models import Projects, Files, FileContent, AppUser
+from neo4japp.models import Projects, Files, FileContent, AppUser, FileVersion
 from neo4japp.models.files_queries import add_user_permission_columns, FileHierarchy, \
     build_file_hierarchy_query, build_file_parents_cte
 from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponse, FileResponseSchema, \
-    FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema
+    FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, BulkFileUpdateRequestSchema
 from neo4japp.utils.network import read_url
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
@@ -88,59 +87,125 @@ class FilesystemView(MethodView):
 
         return files
 
-    def detect_mime_type(self, params: dict):
-        name, ext = os.path.splitext(params['filename'])
-        mime_type = params.get('mime_type')
-        if mime_type in self.accepted_mime_types:
-            return mime_type
-        elif ext in self.extension_mime_types:
-            return self.extension_mime_types[ext]
-        else:
-            raise ValueError('Provided file is not a known type of file.')
+    def update_files(self, hash_ids: List[str], params: Dict, user: AppUser):
+        changed_fields = set()
 
-    def validate_content(self, mime_type, buffer):
-        validator = self.content_validators[mime_type]
-        if not validator(buffer):
-            raise ValueError()
+        # Collect everything that we need to query
+        target_hash_ids = set(hash_ids)
+        parent_hash_id = params.get('parent_hash_id')
 
-    def extract_doi(self, mime_type, buffer):
-        data = buffer.getvalue()
+        query_hash_ids = hash_ids[:]
+        if parent_hash_id is not None:
+            query_hash_ids.append(parent_hash_id)
 
-        if mime_type == 'application/pdf':
-            # Attempt 1: search through the first N bytes (most probably containing only metadata)
-            chunk = data[:2 ** 17]
-            doi = self._search_doi_in_pdf(chunk)
-            if doi is not None:
-                return doi
+        if parent_hash_id in target_hash_ids:
+            raise ValidationError(f'An object cannot be set as the parent of itself.',
+                                  "parent_hash_id")
 
-            # Attempt 2: search through the first two pages of text (no metadata)
-            fp = io.BytesIO(data)
-            text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
-            doi = self._search_doi_in_pdf(bytes(text, encoding='utf8'))
-            if doi is not None:
-                return doi
+        # ========================================
+        # Fetch and check
+        # ========================================
 
-        return None
+        # This method checks permissions
+        files = self.check_files_for_edit(query_hash_ids, user)
+        target_files = [file for file in files if file.hash_id in target_hash_ids]
+        parent_file = None
 
-    def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
-        # ref: https://stackoverflow.com/a/10324802
-        # Has a good breakdown of the DOI specifications,
-        # in case need to play around with the regex in the future
-        doi_re = rb'(?i)(?:doi:\s*|https?:\/\/doi\.org\/)(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b'  # noqa
-        match = re.search(doi_re, content)
+        # Check parent
+        if parent_hash_id is not None:
+            parent_file = next(filter(lambda file: file.hash_id == parent_hash_id, files), None)
 
-        if match is None:
-            return None
-        doi = match.group(1).decode('utf-8').replace('%2F', '/')
-        # Make sure that the match does not contain undesired characters at the end.
-        # E.g. when the match is at the end of a line, and there is a full stop.
-        while doi and doi[-1] in './%':
-            doi = doi[:-1]
-        return doi if doi.startswith('http') else f'https://doi.org/{doi}'
+            if parent_file.mime_type != Files.DIRECTORY_MIME_TYPE:
+                raise ValidationError(f"The specified parent ({parent_hash_id}) is "
+                                      f"not a folder. It is a file, and you cannot make files "
+                                      f"become a child of another file.", "parent_hash_id")
 
+        if 'content_value' in params and len(target_files) > 1:
+            # We don't allow multiple files to be changed due to a potential deadlock
+            # in FileContent.get_or_create(), and also because it's a weird use case
+            raise NotImplementedError("Cannot update the content of multiple files with this method")
 
-class FileListView(FilesystemView):
-    decorators = [auth.login_required]
+        # ========================================
+        # Apply
+        # ========================================
+
+        for file in target_files:
+            is_***ARANGO_USERNAME***_dir = (file.calculated_project.***ARANGO_USERNAME***_id == file.id)
+
+            if 'description' in params:
+                if file.description != params['description']:
+                    file.description = params['description']
+                    changed_fields.add('description')
+
+            # Some changes cannot be applied to ***ARANGO_USERNAME*** directories
+            if not is_***ARANGO_USERNAME***_dir:
+                if parent_hash_id is not None:
+                    # Re-check referential parent
+                    if file.id == parent_file.id:
+                        raise ValidationError(f'A file or folder ({file.filename}) cannot be '
+                                              f'set as the parent of itself.', "parent_hash_id")
+
+                    # TODO: Check max hierarchy depth
+
+                    # Check for circular inheritance
+                    current_parent = parent_file.parent
+                    while current_parent:
+                        if current_parent.hash_id == file.hash_id:
+                            raise ValidationError(f"If the parent of '{file.filename}' was set to "
+                                                  f"'{parent_file.filename}', it would result in circular"
+                                                  f"inheritance.", "parent_hash_id")
+                        current_parent = current_parent.parent
+
+                    file.parent = parent_file
+                    changed_fields.add('parent')
+
+                if 'filename' in params:
+                    file.filename = params['filename']
+                    changed_fields.add('filename')
+
+                if 'public' in params:
+                    if file.public != params['public']:
+                        file.public = params['public']
+                        changed_fields.add('public')
+
+                if 'content_value' in params:
+                    buffer = params['content_value']
+                    buffer.seek(0, io.SEEK_END)
+                    size = buffer.tell()
+                    buffer.seek(0)
+
+                    if size > self.file_max_size:
+                        raise ValidationError('Your file could not be processed because it is too large.',
+                                              "content_value")
+
+                    try:
+                        self.validate_content(file.mime_type, buffer)
+                    except ValueError:
+                        raise ValidationError(f"The provided file may be corrupt for files of type "
+                                              f"'{file.mime_type}' (which '{file.hash_id}' is of).",
+                                              "content_value")
+
+                    new_content_id = FileContent.get_or_create(buffer)
+
+                    # Only make a file version if the content actually changed
+                    if file.content_id != new_content_id:
+                        # Create file version
+                        version = FileVersion()
+                        version.file = file
+                        version.content_id = file.content_id
+                        version.user = user
+                        db.session.add(version)
+
+                        file.content_id = new_content_id
+
+            file.modifier = user
+
+        if len(changed_fields):
+            try:
+                db.session.commit()
+            except IntegrityError as e:
+                raise ValidationError("The requested changes would result in a duplicate filename "
+                                      "within the same folder.")
 
     def check_files_for_edit(self, hash_ids: List[str], user: AppUser, *,
                              permit_recycled: bool = False) -> List[Files]:
@@ -202,6 +267,9 @@ class FileListView(FilesystemView):
         returned_files = {}
 
         for file in files:
+            if file.parent_deleted or file.deleted:
+                pass
+
             if file.calculated_privileges[user.id].readable:
                 returned_files[file.hash_id] = file
 
@@ -212,6 +280,60 @@ class FileListView(FilesystemView):
         )).dump(dict(
             objects=returned_files,
         )))
+
+    def detect_mime_type(self, params: dict):
+        name, ext = os.path.splitext(params['filename'])
+        mime_type = params.get('mime_type')
+        if mime_type in self.accepted_mime_types:
+            return mime_type
+        elif ext in self.extension_mime_types:
+            return self.extension_mime_types[ext]
+        else:
+            raise ValueError('Provided file is not a known type of file.')
+
+    def validate_content(self, mime_type, buffer):
+        validator = self.content_validators[mime_type]
+        if not validator(buffer):
+            raise ValueError()
+
+    def extract_doi(self, mime_type, buffer):
+        data = buffer.getvalue()
+
+        if mime_type == 'application/pdf':
+            # Attempt 1: search through the first N bytes (most probably containing only metadata)
+            chunk = data[:2 ** 17]
+            doi = self._search_doi_in_pdf(chunk)
+            if doi is not None:
+                return doi
+
+            # Attempt 2: search through the first two pages of text (no metadata)
+            fp = io.BytesIO(data)
+            text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
+            doi = self._search_doi_in_pdf(bytes(text, encoding='utf8'))
+            if doi is not None:
+                return doi
+
+        return None
+
+    def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
+        # ref: https://stackoverflow.com/a/10324802
+        # Has a good breakdown of the DOI specifications,
+        # in case need to play around with the regex in the future
+        doi_re = rb'(?i)(?:doi:\s*|https?:\/\/doi\.org\/)(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b'  # noqa
+        match = re.search(doi_re, content)
+
+        if match is None:
+            return None
+        doi = match.group(1).decode('utf-8').replace('%2F', '/')
+        # Make sure that the match does not contain undesired characters at the end.
+        # E.g. when the match is at the end of a line, and there is a full stop.
+        while doi and doi[-1] in './%':
+            doi = doi[:-1]
+        return doi if doi.startswith('http') else f'https://doi.org/{doi}'
+
+
+class FileListView(FilesystemView):
+    decorators = [auth.login_required]
 
     @use_args(FileCreateRequestSchema, locations=['json', 'form', 'files'])
     def put(self, params: dict):
@@ -248,7 +370,9 @@ class FileListView(FilesystemView):
                                   "to add a new object to it.", "parent_hash_id")
 
         if parent.mime_type != Files.DIRECTORY_MIME_TYPE:
-            raise ValidationError("The parent must be a directory type.", "parent_hash_id")
+            raise ValidationError(f"The specified parent ({params['parent_hash_id']}) is "
+                                  f"not a folder. It is a file, and you cannot make files "
+                                  f"become a child of another file.", "parent_hash_id")
 
         # TODO: Check max hierarchy depth
 
@@ -316,18 +440,15 @@ class FileListView(FilesystemView):
             # Fetch from upload
             elif params.get('content_value') is not None:
                 content_field = 'content_value'
-                file_storage = params.get('content_value')
+                buffer = params.get('content_value')
 
-                file_storage.seek(0, 2)
-                size = file_storage.tell()
+                buffer.seek(0, io.SEEK_END)
+                size = buffer.tell()
+                buffer.seek(0)
 
                 if size > self.file_max_size:
                     raise ValidationError('Your file could not be processed because it is too large.',
                                           "content_value")
-
-                file_storage.seek(0)
-
-                buffer = file_storage
 
             try:
                 file.mime_type = self.detect_mime_type(params)
@@ -398,100 +519,13 @@ class FileListView(FilesystemView):
         )))
 
     @use_args(lambda request: BulkFileRequestSchema())
-    @use_args(lambda request: FileUpdateRequestSchema(partial=True))
+    @use_args(lambda request: BulkFileUpdateRequestSchema(partial=True))
     def patch(self, targets, params):
         """File update endpoint."""
 
-        changed_fields = set()
         current_user = g.current_user
-
-        # Collect everything that we need to query
-        target_hash_ids = set(targets['hash_ids'])
-        parent_hash_id = params.get('parent_hash_id')
-
-        query_hash_ids = targets['hash_ids'][:]
-        if parent_hash_id is not None:
-            query_hash_ids.append(parent_hash_id)
-
-        if parent_hash_id in target_hash_ids:
-            raise ValidationError(f'An object cannot be set as the parent of itself.',
-                                  "parent_hash_id")
-
-        # ========================================
-        # Fetch and check
-        # ========================================
-
-        # This method checks permissions
-        files = self.check_files_for_edit(query_hash_ids, current_user)
-        target_files = [file for file in files if file.hash_id in target_hash_ids]
-        parent_file = None
-
-        # Check parent
-        if parent_hash_id is not None:
-            parent_file = next(filter(lambda file: file.hash_id == parent_hash_id, files), None)
-
-            if parent_file.mime_type != Files.DIRECTORY_MIME_TYPE:
-                raise ValidationError(f"The specified parent ({parent_hash_id}) is "
-                                      f"not a folder. It is a file, and you cannot make files "
-                                      f"become a child of another file.", "parent_hash_id")
-
-        # ========================================
-        # Apply
-        # ========================================
-
-        for target_file in target_files:
-            is_***ARANGO_USERNAME***_dir = (target_file.calculated_project.***ARANGO_USERNAME***_id == target_file.id)
-
-            if 'description' in params:
-                if target_file.description != params['description']:
-                    target_file.description = params['description']
-                    changed_fields.add('description')
-
-            # Some changes cannot be applied to ***ARANGO_USERNAME*** directories
-            if not is_***ARANGO_USERNAME***_dir:
-                if parent_hash_id is not None:
-                    # Re-check referential parent
-                    if target_file.id == parent_file.id:
-                        raise ValidationError(f'A file or folder ({target_file.filename}) cannot be '
-                                              f'set as the parent of itself.', "parent_hash_id")
-
-                    # TODO: Check max hierarchy depth
-
-                    # Check for circular inheritance
-                    current_parent = parent_file.parent
-                    while current_parent:
-                        if current_parent.hash_id == target_file.hash_id:
-                            raise ValidationError(f"If the parent of '{target_file.filename}' was set to "
-                                                  f"'{parent_file.filename}', it would result in circular"
-                                                  f"inheritance.", "parent_hash_id")
-                        current_parent = current_parent.parent
-
-                    target_file.parent = parent_file
-                    changed_fields.add('parent')
-
-                if 'filename' in params:
-                    target_file.filename = params['filename']
-                    changed_fields.add('filename')
-
-                if 'public' in params:
-                    if target_file.public != params['public']:
-                        target_file.public = params['public']
-                        changed_fields.add('public')
-
-            target_file.modifier = current_user
-
-        if len(changed_fields):
-            try:
-                db.session.commit()
-            except IntegrityError as e:
-                raise ValidationError("The requested changes would result in a duplicate filename "
-                                      "within the same folder.")
-
-        # ========================================
-        # Return changed files
-        # ========================================
-
-        return self.get_bulk_file_response(list(target_hash_ids), current_user)
+        self.update_files(targets['hash_ids'], params, current_user)
+        return self.get_bulk_file_response(targets['hash_ids'], current_user)
 
     # noinspection DuplicatedCode
     @use_args(lambda request: BulkFileRequestSchema())
@@ -560,6 +594,12 @@ class FileDetailView(FilesystemView):
         )).dump(FileResponse(
             object=file,
         )))
+
+    @use_args(lambda request: FileUpdateRequestSchema(partial=True), locations=['json', 'form', 'files'])
+    def patch(self, params, hash_id):
+        current_user = g.current_user
+        self.update_files([hash_id], params, current_user)
+        return self.get(hash_id)
 
 
 class FileContentView(FilesystemView):
