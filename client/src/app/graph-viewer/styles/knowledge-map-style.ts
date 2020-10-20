@@ -105,13 +105,17 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         fillStyle: nullCoalesce(styleData.fillColor, '#000'),
         horizontalAlign: TextAlignment.Start,
         verticalAlign: TextAlignment.Start,
+        topInset: 5,
+        leftInset: 5,
+        bottomInset: 5,
+        rightInset: 5,
       });
 
       return new RectangleNode(ctx, {
         x: d.data.x,
         y: d.data.y,
-        width: nullCoalesce(d.data.width, textbox.actualWidth),
-        height: nullCoalesce(d.data.height, textbox.actualHeight),
+        width: nullCoalesce(d.data.width, textbox.actualWidthWithInsets),
+        height: nullCoalesce(d.data.height, textbox.actualHeightWithInsets),
         textbox,
         stroke: this.createLine(
             nullCoalesce(styleData.lineType, 'solid'),
