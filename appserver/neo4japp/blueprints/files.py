@@ -368,14 +368,47 @@ def get_associated_maps(file_id: str, project_name: str):
 
     yield user, projects
 
-    # TODO: Get maps
+    query = f"""
+    SELECT
+        DISTINCT
+        p.id
+        , p.hash_id
+        , p.label
+        , p.author
+    FROM (
+        SELECT
+            p.id
+            , data
+        FROM project p
+        CROSS JOIN json_to_recordset(json_extract_path(graph, 'nodes')) AS data(data JSON)
+        UNION ALL
+        SELECT
+            p.id
+            , data
+        FROM project p
+        CROSS JOIN json_to_recordset(json_extract_path(graph, 'edges')) AS data(data JSON)
+    ) data
+    CROSS JOIN json_to_recordset(json_extract_path(data.data, 'sources')) AS source(url VARCHAR)
+    INNER JOIN project p ON p.id = data.id
+    WHERE
+        url ~ :url_1
+        OR url ~ :url_2
+    """
+
+    results = db.session.execute(
+        query,
+        {
+            'url_1': f'/projects/{project_name}/files/{file_id}(?:#.*)?',
+            'url_2': f'/dt/pdf/{file_id}(?:#.*)?'
+        }
+    ).fetchall()
 
     yield jsonify([
         {
-            'author': 'wumpus',
-            'label': 'magic wumpus map',
-            'hash_id': 'abc123xyzdoremi'
-        }
+            'hash_id': row[1],
+            'label': row[2],
+            'author': row[3],
+        } for row in results
     ])
 
 
