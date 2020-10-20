@@ -118,7 +118,8 @@ def join_projects_to_parents_cte(q_hierarchy):
 
 
 def build_file_hierarchy_query(condition, projects_table, files_table,
-                               include_deleted_projects=False):
+                               include_deleted_projects=False,
+                               include_deleted_files=False):
     """
     Build a query for fetching a file, its parents, and the related project(s), while
     (optionally) excluding deleted projects and deleted projects.
@@ -133,12 +134,14 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
     # Goals:
     # - Remove deleted files (done in recursive CTE)
     # - Remove deleted projects (done in main query)
-    # - Allow recycled files (done in main query)
     # - Fetch permissions (done in main query)
     # Do it in one query efficiently
 
     # Fetch the target file and its parents
-    q_hierarchy = build_file_parents_cte(condition)
+    q_hierarchy = build_file_parents_cte(and_(
+        condition,
+        *([files_table.deleted_date.is_(None)] if include_deleted_files else []),
+    ))
 
     # Only the top-most directory has a project FK, so we need to reorganize
     # the query results from the CTE so we have a project ID for every file row
