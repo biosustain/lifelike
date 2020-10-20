@@ -70,7 +70,7 @@ export class AppComponent {
 
   downloadManual() {
     this.storage.getUserManual().subscribe(resp => {
-      const filename = resp.headers.get('content-disposition').split('=')[1]
+      const filename = resp.headers.get('content-disposition').split('=')[1];
       downloader(resp, 'application/pdf', filename);
     });
   }
