@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { uniqueId } from 'lodash';
 
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { LegendService } from 'app/shared/services/legend.service';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { combineLatest } from 'rxjs';
 import { WordCloudService } from './services/word-cloud.service';
+import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
 
 import { WordCloudComponent } from './word-cloud.component';
 
