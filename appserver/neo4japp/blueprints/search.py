@@ -1,39 +1,35 @@
-import attr
+import html
+import json
+import re
+
 import sqlalchemy
-from flask import Blueprint, request, jsonify, g, current_app
+from flask import Blueprint, jsonify, g
 from flask_apispec import use_kwargs
 from sqlalchemy.orm import aliased
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
-from neo4japp.database import get_search_service_dao, get_elastic_service
+from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.data_transfer_objects import (
     GeneFilteredRequest,
     OrganismRequest,
-    PDFSearchRequest,
     SearchRequest,
     SimpleSearchRequest,
     VizSearchRequest
 )
 from neo4japp.data_transfer_objects.common import ResultList
+from neo4japp.database import get_elastic_service
 from neo4japp.database import get_search_service_dao, db
-from neo4japp.exceptions import InvalidArgumentsException
 from neo4japp.models import (
-    AppUser,
-    Directory,
     Projects,
     AppRole,
-    projects_collaborator_role,
-    Files,
-    Project
+    projects_collaborator_role
 )
 from neo4japp.request_schemas.search import (
     ContentSearchSchema,
 )
-from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
-from neo4japp.utils.logger import EventLog
-from neo4japp.utils.request import paginate_from_args
-from neo4japp.utils.sqlalchemy import ft_search
+from neo4japp.services.annotations.constants import AnnotationMethod
+from neo4japp.services.annotations.service_helpers import create_annotations
+from neo4japp.util import jsonify_with_class, SuccessResponse
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
@@ -90,15 +86,15 @@ def search(q, types, limit, page):
 
     if search_term:
         match_fields = ['filename', 'description', 'data.content']
-        highlight = {
+        snippets = {
             'fields': {'data.content': {}},
             # Need to be very careful with this option. If fragment_size is too large, search
             # will be slow because elastic has to generate large highlight fragments. Setting to
             # default for now.
             # 'fragment_size': FRAGMENT_SIZE,
             'fragment_size': 0,
-            'pre_tags': ['<strong>'],
-            'post_tags': ['</strong>'],
+            'pre_tags': ['<highlight>'],
+            'post_tags': ['</highlight>'],
         }
 
         user_id = g.current_user.id
@@ -158,17 +154,43 @@ def search(q, types, limit, page):
             limit=limit,
             match_fields=match_fields,
             query_filter=query_filter,
-            highlight=highlight
+            highlight=snippets
         )['hits']
     else:
         res = {'hits': [], 'max_score': None, 'total': 0}
 
     results = []
     for doc in res['hits']:
-        highlight = None
+        snippets = None
+
         if doc.get('highlight', None) is not None:
             if doc['highlight'].get('data.content', None) is not None:
-                highlight = doc['highlight']['data.content']
+                snippets = doc['highlight']['data.content']
+
+        if snippets:
+            # Highlight annotations in snippets (LL-1931)
+            for i, snippet in enumerate(snippets):
+                snippet_annotations = create_annotations(
+                    annotation_method=AnnotationMethod.RULES.value,
+                    document=snippet,
+                    filename=doc['_source']['filename'],
+                    specified_organism_synonym='',
+                    specified_organism_tax_id='',
+                )['documents'][0]['passages'][0]['annotations']
+
+                for annotation in snippet_annotations:
+                    keyword = annotation['keyword']
+                    print(annotation["meta"])
+                    snippet = re.sub(
+                        # Replace but outside tags (shh @ regex)
+                        f"({re.escape(keyword)})(?![^<]*>|[^<>]*</)",
+                        f'<annotation type="{annotation["meta"]["type"]}" '
+                        f'meta="{html.escape(json.dumps(annotation["meta"]))}">{keyword}</annotation>',
+                        snippet,
+                        flags=re.IGNORECASE)
+
+                snippets[i] = f"<snippet>{snippet}</snippet>"
+
         results.append({
             'item': {
                 # TODO LL-1723: Need to add complete file path here
@@ -176,7 +198,7 @@ def search(q, types, limit, page):
                 'id': doc['_source']['id'],
                 'name': doc['_source']['filename'],
                 'description': doc['_source']['description'],
-                'highlight': highlight,
+                'highlight': snippets,
                 'doi': doc['_source']['doi'],
                 'creation_date': doc['_source']['uploaded_date'],
                 'project': {

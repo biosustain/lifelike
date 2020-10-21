@@ -30,7 +30,9 @@
       <h5>Term matches in document:</h5>
       <div *ngFor="let highlight of object.highlight">
         <hr class="my-3">
-        <div class="mt-2" [innerHTML]="highlight | scrubHtml"></div>
+        <div class="mt-2">
+          <app-highlight-text [highlight]="highlight"></app-highlight-text>
+        </div>
       </div>
     </div>
   </div>
