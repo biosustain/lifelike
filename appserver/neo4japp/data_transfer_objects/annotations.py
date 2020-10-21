@@ -60,6 +60,9 @@ class Annotation(CamelDictMixin):
         class Links(CamelDictMixin):
             ncbi: str = attr.ib(default='')
             uniprot: str = attr.ib(default='')
+            mesh: str = attr.ib(default='')
+            chebi: str = attr.ib(default='')
+            pubchem: str = attr.ib(default='')
             wikipedia: str = attr.ib(default='')
             google: str = attr.ib(default='')
 
