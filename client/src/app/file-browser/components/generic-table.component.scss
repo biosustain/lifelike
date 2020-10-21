@@ -1,3 +1,16 @@
 .entry {
   resize: both;
+  overflow: hidden;
+}
+
+.error {
+  background-color: #fa8888;
+}
+
+ul {
+  padding-inline-start: 20px;
+}
+
+td .div {
+  white-space:pre-wrap;
 }

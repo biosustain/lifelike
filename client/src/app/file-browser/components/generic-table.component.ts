@@ -17,8 +17,8 @@ export class GenericTableComponent {
   @Input()
   set header(header: TableHeader[][]) {
     this.HEADER = header;
-    const num = Math.max.apply(null, header.map(x => x.reduce((a,b) => a + parseInt(b.span), 0)))
-    this.numColumns = new Array(num)
+    const num = Math.max.apply(null, header.map(x => x.reduce((a, b) => a + parseInt(b.span, 10), 0)));
+    this.numColumns = new Array(num);
   }
   @Input() entries: TableCell[][];
 }
@@ -27,14 +27,14 @@ export interface TableCell {
   text: string;
   singleLink?: TableLink;
   multiLink?: TableLink[];
+  highlight?: boolean;
 }
 
 export interface TableLink {
   link: string;
-  linkText: string
+  linkText: string;
 }
 
-// Should probably be an interface rather than a class
 export interface TableHeader {
   name: string;
   span: string;

@@ -45,6 +45,29 @@ export class PdfFilesService extends AbstractService {
   // CRUD
   // ========================================
 
+  addGeneList(projectName, directoryId, enrichmentData: string, description: string, filename: string): Observable<any> {
+    return this.http.post<{result: any}>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/enrichment-table`,
+      {description, filename, enrichmentData, directoryId},
+      {...this.getHttpOptions(true)},
+    );
+  }
+
+  editGeneList(projectName, fileId, enrichmentData, name, description): Observable<any> {
+    return this.http.patch<{result: any}>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/enrichment-table/${encodeURIComponent(fileId)}`,
+      {enrichmentData, name, description},
+      {...this.getHttpOptions(true)},
+    );
+  }
+
+  getEnrichmentData(projectName, fileId): Observable<any> {
+    return this.http.get(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/enrichment-table/${encodeURIComponent(fileId)}`, {
+        ...this.getHttpOptions(true),
+      });
+  }
+
   uploadFile(projectName, parentDir, data: UploadPayload): Observable<PdfFileUpload> {
     const formData: FormData = new FormData();
 

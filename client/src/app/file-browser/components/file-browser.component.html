@@ -68,6 +68,7 @@
                 <div ngbDropdownMenu>
                   <button ngbDropdownItem (click)="displayMapCreateDialog()">New Map...</button>
                   <button ngbDropdownItem (click)="displayDirectoryCreateDialog()">New Folder...</button>
+                  <button ngbDropdownItem (click)="displayEnrichmentTableCreateDialog()">New Enrichment Table...</button>
                   <div class="dropdown-divider"></div>
                   <button ngbDropdownItem (click)="displayUploadDialog()">Upload File...</button>
                 </div>
@@ -207,7 +208,10 @@
                            [disablePopover]="object.description == null || object.description.length === 0">
                         <div [ngSwitch]="object.type" class="d-inline-block mr-1">
                           <i *ngSwitchCase="'dir'" class="fa fa-fw fa-folder text-icon"></i>
-                          <i *ngSwitchCase="'file'" class="fa fa-fw fa-file text-icon"></i>
+                          <div *ngSwitchCase="'file'">
+                            <i *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'" class="fa fa-fw fa-file text-icon"></i>
+                            <i *ngIf="object.name.slice(object.name.length - 11) === '.enrichment'" class="fa-fw fa fa-table text-icon"></i>
+                          </div>
                           <i *ngSwitchCase="'map'" class="fa fa-fw fa-project-diagram text-icon"></i>
                         </div>
 
@@ -229,7 +233,7 @@
 
                 <td class="align-middle text-nowrap text-truncate d-none d-cbp-sm-table-cell"
                     (click)="results.toggle(object)">
-                  <ng-container *ngIf="object.type === 'file'">
+                  <ng-container *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) !== '.enrichment'">
                     <div popoverTitle="Annotation Status" [ngbPopover]="object.annotationsTooltipContent"
                          container="body" class="text-truncate"
                          placement="right" triggers="mouseenter:mouseleave"
@@ -266,10 +270,14 @@
                                 [queryParams]="getObjectQueryParams()">
                           Open
                         </button>
-                        <button ngbDropdownItem (click)="displayEditDialog(object)">
+                        <button ngbDropdownItem (click)="displayEditDialog(object)" *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'">
                           Edit...
                         </button>
-                        <button ngbDropdownItem *ngIf="object.type === 'file'"
+                        <button ngbDropdownItem *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) === '.enrichment'"
+                                (click)="displayEnrichmentTableEditDialog([object])">
+                          Edit Enrichment Params
+                        </button>
+                        <button ngbDropdownItem *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) !== '.enrichment'"
                                 (click)="reannotate([object])">
                           Re-annotate
                         </button>
