@@ -104,7 +104,10 @@ def add_gene_list(projects_name: str):
     data = request.get_json()
     user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    try:
+        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Project could not be found.')
     yield g.current_user, projects
 
     dir_id = data['directoryId']
@@ -161,7 +164,10 @@ def edit_gene_list(projects_name: str, fileId: str):
     data = request.get_json()
     user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    try:
+        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Project could not be found.')
     yield g.current_user, projects
 
     enrichment_data = data['enrichmentData'].encode('utf-8')
@@ -201,16 +207,17 @@ def edit_gene_list(projects_name: str, fileId: str):
     yield jsonify({'status': 'success'}), 200
 
 
-@newbp.route('/<string:project_name>/enrichment-table/<string:id>', methods=['GET'])
+@newbp.route('/<string:projects_name>/enrichment-table/<string:id>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_enrichment_data(id: str, project_name: str):
+def get_enrichment_data(id: str, projects_name: str):
 
     user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
+    try:
+        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    except NoResultFound:
+        raise RecordNotFoundException(f'Project {projects_name} not found')
 
     yield user, projects
 
