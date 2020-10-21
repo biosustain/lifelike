@@ -124,7 +124,8 @@ def fix_api_owner(session, account_user) -> AppUser:
     )
     user.set_password('password')
     admin_role = account_user.get_or_create_role('admin')
-    user.roles.extend([admin_role])
+    private_data_access_role = account_user.get_or_create_role('private-data-access')
+    user.roles.extend([admin_role, private_data_access_role])
     session.add(user)
     session.flush()
     return user
