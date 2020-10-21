@@ -13,11 +13,9 @@
 
   <div *ngIf="status.resultsShown" class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
     <div class="module-section w-100 h-100">
-      <div class="module-section-header">
+      <div class="module-section-header mb-2">
         <div class="module-title-bar">
-          <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">
-            {{ fileName }}
-          </h1>
+          <h2 class="module-section-header-title m-0">Word Cloud</h2>
           <div class="btn-group ml-auto d-flex align-items-stretch" role="group">
             <button class="btn btn-secondary text-nowrap"
                     (click)="fitCloudToWindow()">Fit Cloud to Window</button>
@@ -45,7 +43,7 @@
           <as-split-area [order]="0">
             <div [id]="id + 'cloud-wrapper'" class="h-100 w-100 overflow-hidden"></div>
           </as-split-area>
-          <as-split-area *ngIf="filtersPanelOpened" size="340" [order]="1">
+          <as-split-area *ngIf="filtersPanelOpened" size="340" [order]="1" class="border">
             <div class="w-100 h-100 p-3">
               <div class="annotation-filter-btns-container">
                 <button class="btn btn-danger annotation-filter-close-btn"
