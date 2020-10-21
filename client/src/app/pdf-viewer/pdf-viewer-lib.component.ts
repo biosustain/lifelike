@@ -8,6 +8,7 @@ import {
   OnInit,
   Output,
   ViewChild,
+  ViewEncapsulation,
 } from '@angular/core';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -30,6 +31,7 @@ declare var jQuery: any;
   selector: 'lib-pdf-viewer-lib',
   templateUrl: './pdf-viewer-lib.component.html',
   styleUrls: ['./pdf-viewer-lib.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
@@ -346,10 +348,23 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     if (an.meta.isCustom) {
       base.push(`User generated annotation`);
     }
+    // search links
+    const collapseTargetId = uniqueId('pdf-tooltip-collapse-target');
+    let collapseHtml = `
+      <a class="pdf-tooltip-collapse-control collapsed" role="button" data-toggle="collapse" data-target="#${collapseTargetId}" aria-expanded="false" aria-controls="${collapseTargetId}">
+        Search links
+      </a>
+      <div class="collapse" id="${collapseTargetId}">
+    `;
     for (const [domain, url] of Object.entries(an.meta.links)) {
       const domainToShow = SEARCH_LINKS.find(link => link.domain.toLowerCase() === domain).domain;
-      base.push(`<a target="_blank" href="${url}">${domainToShow}</a>`);
+      collapseHtml += `<a target="_blank" href="${url}">${domainToShow}</a><br/>`;
     }
+    collapseHtml += `
+      </div>
+    `;
+    base.push(collapseHtml);
+
     if (an.meta.isCustom) {
       base.push(`
         <div class="mt-1">
