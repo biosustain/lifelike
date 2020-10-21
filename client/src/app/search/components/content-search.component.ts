@@ -87,4 +87,13 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   getObjectCommands(object: DirectoryObject) {
     return getObjectCommands(object);
   }
+
+  highlightClicked(object: DirectoryObject, highlight: string) {
+    const parser = new DOMParser();
+    const text = parser.parseFromString(highlight, 'application/xml').documentElement.textContent;
+    const commands = this.getObjectCommands(object);
+    this.workspaceManager.navigate(commands, {
+      fragment: `jump=${encodeURIComponent(text)}`,
+    });
+  }
 }
