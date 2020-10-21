@@ -76,7 +76,7 @@ export class NodeFormComponent implements AfterViewInit {
     const fromDetailNode = DETAIL_NODE_LABELS.has(this.previousLabel);
     const toDetailNode = DETAIL_NODE_LABELS.has(this.node.label);
 
-    // <LL-1946 - Swap node display name and detail when switching to a Note or Link>
+    // Swap node display name and detail when switching to a Note or Link (LL-1946)
     if (!fromDetailNode && toDetailNode) {
       // If we are changing to a detail node, swap the detail and display name (sometimes)
       if (nullIfEmpty(this.node.data.detail) === null
@@ -109,7 +109,6 @@ export class NodeFormComponent implements AfterViewInit {
         this.node.display_name = startCase(this.node.label);
       }
     }
-    // </LL-1946>
 
     this.previousLabel = this.node.label;
 
