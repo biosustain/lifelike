@@ -25,7 +25,7 @@ def main():
             specified_organism_synonym='',
             specified_organism_tax_id='',
             document=text,
-            filename=fname,
+            filename='text1.txt',
         )
 
 
