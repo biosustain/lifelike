@@ -375,6 +375,7 @@ def get_associated_maps(file_id: str, project_name: str):
         , p.hash_id
         , p.label
         , p.author
+        , p.dir_id
     FROM (
         SELECT
             p.id
@@ -403,11 +404,27 @@ def get_associated_maps(file_id: str, project_name: str):
         }
     ).fetchall()
 
+    directory_project_query_result = db.session.query(
+        Directory.id,
+        Projects.project_name
+    ).filter(
+        Directory.id.in_([row[4] for row in results])
+    ).join(
+        Projects,
+        Projects.id == Directory.projects_id
+    ).all()
+
+    dir_project_map = {
+        dir_id: project_name
+        for (dir_id, project_name) in directory_project_query_result
+    }
+
     yield jsonify([
         {
             'hash_id': row[1],
             'label': row[2],
             'author': row[3],
+            'project_name': dir_project_map[row[4]]
         } for row in results
     ])
 

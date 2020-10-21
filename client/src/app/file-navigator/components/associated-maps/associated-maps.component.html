@@ -49,14 +49,14 @@
             <div class="tile-deck">
               <div *ngFor="let map of results.view" class="tile d-flex flex-column">
                 <div class="flex-fill d-flex justify-content-center align-items-center my-2">
-                  <a [appLink]="['/projects', 'Example', 'maps', 'c04d0ae7508d1f05a7365d31476898ef', 'edit']"
+                  <a [appLink]="['/projects', map.project_name, 'maps', map.hash_id, 'edit']"
                      [newTab]="true"
                      class="text-muted">
                     <i class="fa faw fa-project-diagram fa-4x"></i>
                   </a>
                 </div>
                 <div class="text-truncate text-center">
-                  <a [appLink]="['/projects', 'Example', 'maps', 'c04d0ae7508d1f05a7365d31476898ef', 'edit']"
+                  <a [appLink]="['/projects', map.project_name, 'maps', map.hash_id, 'edit']"
                      [newTab]="true"
                      class="d-block text-truncate">
                     <strong>{{ map.label }}</strong>
