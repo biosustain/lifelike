@@ -93,6 +93,7 @@ export interface Reference {
 export interface Location {
   pageNumber: number;
   rect: Rect;
+  jumpText: string;
 }
 
 export interface Links {
