@@ -89,6 +89,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   });
 
   lmdbsDates = {};
+  projectName: string;
 
   constructor(private readonly filesService: PdfFilesService,
               private readonly router: Router,
@@ -136,6 +137,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         projectName: params.project_name,
         directoryId: params.dir_id,
       };
+
+      this.projectName = params.project_name;
 
       this.modulePropertiesChange.emit({
         title: this.locator.projectName,
@@ -534,6 +537,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         this.workspaceManager.navigate(['/projects']);
       }
     }
+  }
+
+  openWordCloudPane() {
+    const url = `/word-cloud/${this.projectName}`;
+    this.workspaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
   }
 
   // ========================================
