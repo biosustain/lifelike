@@ -17,6 +17,12 @@ export class WordCloudService extends AbstractService {
     });
   }
 
+  getCombinedAnnotationsProject(projectName: string) {
+    return this.http.get(`${this.SEARCH_BASE_URL}/${projectName}`, {
+      headers: this.getAuthHeader(), responseType: 'text',
+    });
+  }
+
   private getAuthHeader() {
     return {Authorization: `Bearer ${this.auth.getAccessToken()}`};
   }
