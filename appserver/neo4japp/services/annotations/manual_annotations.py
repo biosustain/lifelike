@@ -1,7 +1,7 @@
 from datetime import datetime
 import io
 import uuid
-
+from sqlalchemy import and_
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
@@ -229,9 +229,11 @@ class ManualAnnotationsService:
         return filtered_annotations + file.custom_annotations
 
     def get_combined_annotations_in_project(self, project_id):
-        files = Files.query.filter_by(project=project_id).all()
-        if len(files) == 0:
-            raise RecordNotFoundException('No annotated files exists within this project')
+        files = Files.query.filter(
+            and_(
+                Files.project == project_id,
+                Files.annotations != []
+            )).all()
         annotations = []
         for fi in files:
             annotations.extend(self._get_file_annotations(fi))
