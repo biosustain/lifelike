@@ -3,7 +3,7 @@ import {Injectable} from '@angular/core';
 import {AuthenticationService} from 'app/auth/services/authentication.service';
 import {HttpClient} from '@angular/common/http';
 
-@Injectable({providedIn: 'root'})
+@Injectable()
 export class WordCloudService extends AbstractService {
   protected readonly SEARCH_BASE_URL = '/api/annotations';
 
