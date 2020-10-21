@@ -102,7 +102,7 @@ def get_ncbi_enrichment_domains():
     string = kg.get_string_genes(node_ids)
     uniprot = kg.get_uniprot_genes(node_ids)
     nodes = []
-    for i in range(len(node_ids)):
+    for i, node_id in enumerate(node_ids):
         node = {'regulon': regulon[i],
                 'uniprot': uniprot[i],
                 'string': string[i],
