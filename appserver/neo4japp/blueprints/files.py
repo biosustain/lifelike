@@ -34,6 +34,7 @@ from neo4japp.exceptions import (
 from neo4japp.models import (
     AccessActionType,
     AppUser,
+    FallbackOrganism,
     Files,
     FileContent,
     Directory,
@@ -371,17 +372,55 @@ def get_pdf(id: str, project_name: str):
     if request.method == 'PATCH':
         filename = request.form['filename'].strip()
         description = request.form['description'].strip()
+        fallback_organism = json.loads(request.form.get('organism', '{}'))
+
         try:
             file = Files.query.filter_by(file_id=id).one()
         except NoResultFound:
             raise RecordNotFoundException('Requested PDF file not found.')
         else:
+            # TODO: maybe move these into a separate service file?
             update: Dict[str, str] = {}
             if filename and filename != file.filename:
                 update['filename'] = filename
 
             if description != file.description:
                 update['description'] = description
+
+            curr_fallback = FallbackOrganism.query.get(file.fallback_organism_id)
+
+            if not fallback_organism:
+                # fallback organism was removed
+                try:
+                    file.fallback_organism = None
+                    db.session.delete(curr_fallback)
+                    db.session.commit()
+                except SQLAlchemyError:
+                    db.session.rollback()
+                    raise DatabaseError(f'Failed to delete fallback organism from file <{file.file_id}>.')  # noqa
+            else:
+                if (not curr_fallback or
+                    (curr_fallback.organism_name != fallback_organism['organism_name']
+                    and curr_fallback.organism_synonym != fallback_organism['synonym']
+                    and curr_fallback.organism_taxonomy_id != fallback_organism['tax_id'])):  # noqa
+
+                    # no match so probably a new fallback organism
+                    new_fallback = FallbackOrganism(
+                        organism_name=fallback_organism['organism_name'],
+                        organism_synonym=fallback_organism['synonym'],
+                        organism_taxonomy_id=fallback_organism['tax_id']
+                    )
+
+                    try:
+                        db.session.add(new_fallback)
+                        db.session.flush()
+                        file.fallback_organism = new_fallback
+                        if curr_fallback:
+                            db.session.delete(curr_fallback)
+                        db.session.commit()
+                    except SQLAlchemyError:
+                        db.session.rollback()
+                        raise DatabaseError(f'There was a problem updating fallback organism from file <{file.file_id}>.')  # noqa
 
             if update:
                 db.session.query(Files).filter(Files.file_id == id).update(update)
@@ -620,3 +659,25 @@ def remove_annotation_exclusion(project_name, file_id, type, text):
 def get_lmdbs_dates():
     rows = LMDBsDates.query.all()
     return {row.name: row.date for row in rows}
+
+
+@newbp.route('/<string:project_name>/files/<string:file_id>/fallback-organism', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_file_fallback_organism(project_name: str, file_id):
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
+
+    user = g.current_user
+
+    yield user, projects
+
+    file = Files.query.filter_by(file_id=file_id, project=projects.id).one_or_none()
+    if not file:
+        raise RecordNotFoundException('File does not exist')
+
+    organism_taxonomy_id = None
+    if file.fallback_organism:
+        organism_taxonomy_id = file.fallback_organism.organism_taxonomy_id
+    yield jsonify({'result': organism_taxonomy_id})
