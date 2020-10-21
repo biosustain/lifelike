@@ -5,13 +5,10 @@ import { uniqueId } from 'lodash';
 
 import { combineLatest, Subscription } from 'rxjs';
 
-import { NodeLegend } from 'app/interfaces';
-import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { LegendService } from 'app/shared/services/legend.service';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-
 import { WordCloudService } from './services/word-cloud.service';
 
 import * as d3 from 'd3';
@@ -28,37 +25,32 @@ export class WordCloudComponent {
 
   projectName: string;
   fileId: string;
-  fileName: string;
+  windowTitle: string;
 
-  loadTask: BackgroundTask<[], [PdfFile, NodeLegend, string]>;
+  loadTask: BackgroundTask<[], any>;
   annotationsLoadedSub: Subscription;
 
-  wordVisibilityMap: Map<string, boolean>;
-  annotationData: WordCloudAnnotationFilterEntity[];
+  wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
+  annotationData: WordCloudAnnotationFilterEntity[] = [];
 
-  legend: Map<string, string>;
+  legend: Map<string, string> = new Map<string, string>();
 
-  filtersPanelOpened: boolean;
+  filtersPanelOpened = false;
 
   WORD_CLOUD_MARGIN = 10;
 
   constructor(
       readonly route: ActivatedRoute,
-      private pdf: PdfFilesService,
-      private wordCloudService: WordCloudService,
-      private legendService: LegendService,
+      public pdf: PdfFilesService,
+      public wordCloudService: WordCloudService,
+      public legendService: LegendService,
   ) {
     this.projectName = this.route.snapshot.params.project_name;
     this.fileId = this.route.snapshot.params.file_id;
-    this.fileName = '';
+    this.initWordCloud();
+  }
 
-    this.wordVisibilityMap = new Map<string, boolean>();
-    this.annotationData = [];
-
-    this.legend = new Map<string, string>();
-
-    this.filtersPanelOpened = false;
-
+  initDataFetch() {
     this.loadTask = new BackgroundTask(() => {
       return combineLatest(
         this.pdf.getFileMeta(this.fileId, this.projectName),
@@ -66,13 +58,15 @@ export class WordCloudComponent {
         this.wordCloudService.getCombinedAnnotations(this.projectName, this.fileId),
       );
     });
+  }
 
+  initWordCloud() {
+    this.initDataFetch();
     this.annotationsLoadedSub = this.loadTask.results$.subscribe(({
       result: [pdfFile, legend, annotationExport],
       value: [],
     }) => {
-      // Reset filename
-      this.fileName = pdfFile.filename;
+      this.windowTitle = pdfFile.filename;
 
       // Reset legend
       Object.keys(legend).forEach(label => {
@@ -105,12 +99,13 @@ export class WordCloudComponent {
             frequency: parseInt(cols[3], 10),
             shown: true,
           } as WordCloudAnnotationFilterEntity;
-          this.wordVisibilityMap.set(annotation.text, true);
+          this.wordVisibilityMap.set(annotation.text, annotation.frequency > 1);
           this.annotationData.push(annotation);
           tempIdTypePairSet.set(idTypePair, this.annotationData.length - 1);
         } else {
           // Add the frequency of the synonym to the original word
           this.annotationData[tempIdTypePairSet.get(idTypePair)].frequency += parseInt(cols[3], 10);
+          this.wordVisibilityMap.set(this.annotationData[tempIdTypePairSet.get(idTypePair)].text, true);
 
           // TODO: In the future, we may want to show "synonyms" somewhere, or even allow the user to swap out the most frequent term for a
           // synonym
@@ -127,13 +122,13 @@ export class WordCloudComponent {
       }, 10);
     });
 
-    this.getAnnotationsForFile();
+    this.getAnnotations();
   }
 
   /**
    * Sends a request to the BackgroundTask object for new annotations data.
    */
-  getAnnotationsForFile() {
+  getAnnotations() {
     this.loadTask.update([]);
   }
 
@@ -160,6 +155,24 @@ export class WordCloudComponent {
     this.filtersPanelOpened = !this.filtersPanelOpened;
   }
 
+  copyWordCloudToClipboard() {
+    const hiddenTextAreaWrapper = document.getElementById(`${this.id}-hidden-text-area-wrapper`);
+    hiddenTextAreaWrapper.style.display = 'block';
+    const tempTextArea = document.createElement('textarea');
+
+    hiddenTextAreaWrapper.appendChild(tempTextArea);
+    this.annotationData.forEach(annotation => {
+      if (this.wordVisibilityMap.get(annotation.text)) {
+        tempTextArea.value += `${annotation.text}\n`;
+      }
+    });
+    tempTextArea.select();
+    document.execCommand('copy');
+
+    hiddenTextAreaWrapper.removeChild(tempTextArea);
+    hiddenTextAreaWrapper.style.display = 'none';
+  }
+
   /**
    * Generates a copy of the annotation data. The reason we do this is the word cloud layout algorithm actually mutates the input data. To
    * keep our API response data pure, we deep copy it and give the copy to the layout algorithm instead.
@@ -171,7 +184,7 @@ export class WordCloudComponent {
   /**
    * Gets a filtered copy of the annotation data. Any word not mapped to 'true' in the wordVisibilityMap will be filtered out.
    */
-  private getFilteredAnnotationDeepCopy() {
+  getFilteredAnnotationDeepCopy() {
     return this.getAnnotationDataDeepCopy().filter(annotation => this.wordVisibilityMap.get(annotation.text));
   }
 
@@ -308,7 +321,7 @@ export class WordCloudComponent {
    * Draws a word cloud with the given AnnotationFilterEntity inputs using the d3.layout.cloud library.
    * @param data represents a collection of AnnotationFilterEntity data
    */
-  private drawWordCloud(data: WordCloudAnnotationFilterEntity[], initial: boolean) {
+  drawWordCloud(data: WordCloudAnnotationFilterEntity[], initial: boolean) {
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
     const {width, height} = this.getCloudSvgDimensions();
     const maximumCount = Math.max(...data.map(annotation => annotation.frequency as number));

@@ -477,7 +477,7 @@ def get_project_pdf(projects_name: str, hash_id: str):
     user = g.current_user
     auth_service = get_authorization_service()
     project_service = get_projects_service()
-    is_superuser = auth_service.has_role(user, 'admin')
+    private_data_access = auth_service.has_role(user, 'private-data-access')
 
     hash_id_queue = [hash_id]
     seen_hash_ids = set()
@@ -496,7 +496,7 @@ def get_project_pdf(projects_name: str, hash_id: str):
                 .one()
 
             # Check permission
-            if not is_superuser:
+            if not private_data_access:
                 role = project_service.has_role(user, project.dir.project)
                 if role is None or not auth_service.is_allowed(role, AccessActionType.READ,
                                                                project.dir.project):
