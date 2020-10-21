@@ -12,6 +12,17 @@
       <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
                 rows="5" maxlength="2048"></textarea>
     </app-form-row>
+
+    <app-form-row
+      label="Organism"
+      ngbTooltip="If you know the specific organism strain related to the paper, you may optionally search for it by name here."
+    >
+      <app-organism-autocomplete
+        formId="organism"
+        [organismTaxId]="organismTaxId"
+        (organismPicked)="setOrganism($event)"
+      ></app-organism-autocomplete>
+    </app-form-row>
   </app-modal-body>
 
   <app-modal-footer>
