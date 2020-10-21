@@ -5,4 +5,4 @@ from .auth import AuthService
 from .account import AccountService
 from .projects import ProjectsService
 from .visualizer import VisualizerService
-from .worksheetviewer import WorksheetViewerService
+from .enrichment_table import EnrichmentTableService

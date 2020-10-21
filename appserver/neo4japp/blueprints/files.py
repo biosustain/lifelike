@@ -97,6 +97,146 @@ def search_doi(content: bytes) -> Optional[str]:
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
+@newbp.route('/<string:projects_name>/enrichment-table', methods=['POST'])
+@auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
+def add_gene_list(projects_name: str):
+    data = request.get_json()
+    user = g.current_user
+
+    projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    yield g.current_user, projects
+
+    dir_id = data['directoryId']
+    enrichment_data = data['enrichmentData'].encode('utf-8')
+
+    try:
+        checksum_sha256 = hashlib.sha256(enrichment_data).digest()
+
+        try:
+            # First look for an existing copy of this file
+            file_content = db.session.query(FileContent.id) \
+                .filter(FileContent.checksum_sha256 == checksum_sha256) \
+                .one()
+        except NoResultFound:
+            # Otherwise, let's add the file content to the database
+            file_content = FileContent(
+                raw_file=enrichment_data,
+                checksum_sha256=checksum_sha256
+            )
+            db.session.add(file_content)
+            db.session.flush()
+
+        file_id = str(uuid.uuid4())
+        filename = data['filename']
+
+        file = Files(
+            file_id=file_id,
+            filename=filename + '.enrichment',
+            description=data['description'],
+            content_id=file_content.id,
+            user_id=user.id,
+            project=projects.id,
+            dir_id=dir_id,
+        )
+
+        db.session.add(file)
+        db.session.commit()
+
+        current_app.logger.info(
+            f'User uploaded file: <{filename}>',
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='file upload').to_dict())
+        index_pdf.populate_single_index(file.id)
+    except Exception:
+        raise FileUploadError('Your file could not be saved. Please try creating again.')
+
+    yield jsonify({'status': 'success', 'filename': filename + '.enrichment'}), 200
+
+
+@newbp.route('/<string:projects_name>/enrichment-table/<string:fileId>', methods=['PATCH'])
+@auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
+def edit_gene_list(projects_name: str, fileId: str):
+    data = request.get_json()
+    user = g.current_user
+
+    projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    yield g.current_user, projects
+
+    enrichment_data = data['enrichmentData'].encode('utf-8')
+    checksum_sha256 = hashlib.sha256(enrichment_data).digest()
+    file_name = data['name']
+    if (file_name[-11:] != '.enrichment'):
+        file_name = file_name + '.enrichment'
+
+    try:
+        entry_file = Files.query.filter(
+            Files.file_id == fileId,
+            Files.project == projects.id
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested file not found.')
+
+    try:
+        entry_content = FileContent.query.join(
+            Files,
+            FileContent.id == Files.content_id
+        ).filter(
+            Files.file_id == fileId,
+            Files.project == projects.id
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested file not found.')
+
+    entry_content.raw_file = enrichment_data
+    entry_content.checksum_sha256 = checksum_sha256
+    entry_file.filename = file_name
+    entry_file.description = data['description']
+
+    db.session.add(entry_content)
+    db.session.add(entry_file)
+    db.session.commit()
+
+    yield jsonify({'status': 'success'}), 200
+
+
+@newbp.route('/<string:project_name>/enrichment-table/<string:id>', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_enrichment_data(id: str, project_name: str):
+
+    user = g.current_user
+
+    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if projects is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
+
+    yield user, projects
+
+    try:
+        entry = db.session.query(
+            Files.id,
+            Files.filename,
+            Files.description,
+            FileContent.raw_file
+        ).join(
+            FileContent,
+            FileContent.id == Files.content_id
+        ).filter(
+            Files.file_id == id,
+            Files.project == projects.id
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested file not found.')
+
+    yield jsonify({
+        'status': 'success',
+        'data': entry.raw_file.decode('utf-8'),
+        'name': entry.filename,
+        'description': entry.description}), 200
+
+
 @bp.route('/upload', methods=['POST'])
 @newbp.route('/<string:project_name>/files', methods=['POST'])  # TODO: use this once LL-415 done
 @auth.login_required

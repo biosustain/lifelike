@@ -25,7 +25,7 @@ import { BrowserComponent } from './file-browser/components/browser/browser.comp
 import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
 import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
-import { WorksheetViewerComponent } from './file-browser/components/worksheet-viewer.component';
+import { EnrichmentTableViewerComponent } from './file-browser/components/enrichment-table-viewer.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -88,11 +88,11 @@ const routes: Routes = [
     },
   },
   {
-    path: 'worksheet-viewer',
-    component: WorksheetViewerComponent,
+    path: 'projects/:project_name/enrichment-table/:file_id',
+    component: EnrichmentTableViewerComponent,
     data: {
       title: 'Worksheet Viewer',
-      fontAwesomeIcon: 'sign-in-alt',
+      fontAwesomeIcon: 'table',
     },
   },
   {
