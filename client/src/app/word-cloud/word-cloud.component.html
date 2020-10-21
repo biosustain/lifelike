@@ -44,7 +44,7 @@
                 direction="horizontal"
                 [gutterSize]="5">
         <as-split-area [order]="0">
-          <ng-container *ngIf="annotationData.length === 0; else emptyAnnotation">
+          <ng-container *ngIf="annotationData.length === 0">
             <ngb-alert [dismissible]="false">
               <strong>NOTICE:</strong> No annotations were found within the project.
             </ngb-alert>
