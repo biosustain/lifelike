@@ -8,6 +8,7 @@ import { DirectoryObject } from '../../interfaces/projects.interface';
 export class FileInfoComponent {
   @Input() object: DirectoryObject | undefined;
   @Output() objectEdit = new EventEmitter<DirectoryObject>();
+  @Output() highlightClick = new EventEmitter<string>();
   highlightLimit = 5;
 
   get shownHighlights() {
