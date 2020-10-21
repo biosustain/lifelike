@@ -17,7 +17,8 @@ from neo4japp.models import (
     FileContent,
     Files,
     DomainURLsMap,
-    AnnotationStyle
+    AnnotationStyle,
+    FallbackOrganism
 )
 from neo4japp.services.annotations import AnnotationsNeo4jService, ManualAnnotationsService
 from neo4japp.services.annotations.constants import EntityType
@@ -177,6 +178,15 @@ def test_user_with_pdf(
         session.add(file_content)
         session.flush()
 
+        fallback = FallbackOrganism(
+            organism_name='Homo sapiens',
+            organism_synonym='Homo sapiens',
+            organism_taxonomy_id='9606'
+        )
+
+        session.add(fallback)
+        session.flush()
+
         fake_file = Files(
             file_id='unknown',
             filename='example3.pdf',
@@ -185,6 +195,7 @@ def test_user_with_pdf(
             creation_date=datetime.now(),
             project=fix_project.id,
             dir_id=fix_directory.id,
+            fallback_organism_id=fallback.id
         )
         session.add(fake_file)
         session.flush()
