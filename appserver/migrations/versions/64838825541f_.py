@@ -2,7 +2,7 @@
 track of fallback organisms associated with a file.
 
 Revision ID: 64838825541f
-Revises: 151b6ffde36f
+Revises: 6cf8f5c54c9c
 Create Date: 2020-10-20 22:10:59.597364
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '64838825541f'
-down_revision = '151b6ffde36f'
+down_revision = '6cf8f5c54c9c'
 branch_labels = None
 depends_on = None
 
