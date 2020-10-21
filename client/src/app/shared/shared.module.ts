@@ -50,11 +50,9 @@ import { ModuleProgressComponent } from './components/module-progress.component'
 import { ShareDialogComponent } from './components/dialog/share-dialog.component';
 import { AnnotationFilterComponent } from './components/annotation-filter/annotation-filter.component';
 import { WordCloudAnnotationFilterComponent } from './components/word-cloud-annotation-filter/word-cloud-annotation-filter.component';
-import { WordCloudComponent } from './components/word-cloud/word-cloud.component';
 
 const components = [
   AnnotationFilterComponent,
-  WordCloudComponent,
   WordCloudAnnotationFilterComponent,
   MessageDialogComponent,
   ProgressDialogComponent,
