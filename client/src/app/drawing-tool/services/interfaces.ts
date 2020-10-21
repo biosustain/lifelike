@@ -163,6 +163,8 @@ export interface KnowledgeMap {
   hash_id?: string;
   /** ID of the user who made the project */
   user_id?: number;
+  /** Name of the project this map is found in */
+  project_name?: string;
 }
 
 export interface RemovedAnnotationExclusion {
