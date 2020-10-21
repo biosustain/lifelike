@@ -26,6 +26,7 @@ import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard
 import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
 import { WordCloudComponent } from './word-cloud/word-cloud.component';
+import { WordCloudProjectComponent } from './word-cloud/word-cloud-project.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -222,6 +223,14 @@ const routes: Routes = [
       title: 'Word Cloud',
       fontAwesomeIcon: 'cloud',
     },
+  },
+  {
+    path: 'word-cloud/:project_name',
+    component: WordCloudProjectComponent,
+    data: {
+      title: 'Word Cloud',
+      fontAwesomeIcon: 'cloud',
+    }
   },
   // Old links
   {path: 'file-browser', redirectTo: 'projects', pathMatch: 'full'},
