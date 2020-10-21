@@ -399,9 +399,10 @@ def get_pdf(id: str, project_name: str):
                     db.session.rollback()
                     raise DatabaseError(f'Failed to delete fallback organism from file <{file.file_id}>.')  # noqa
             else:
-                if (curr_fallback.organism_name != fallback_organism['organism_name']
+                if (not curr_fallback or
+                    (curr_fallback.organism_name != fallback_organism['organism_name']
                     and curr_fallback.organism_synonym != fallback_organism['synonym']
-                    and curr_fallback.organism_taxonomy_id != fallback_organism['tax_id']):  # noqa
+                    and curr_fallback.organism_taxonomy_id != fallback_organism['tax_id'])):  # noqa
 
                     # no match so probably a new fallback organism
                     new_fallback = FallbackOrganism(
@@ -414,7 +415,8 @@ def get_pdf(id: str, project_name: str):
                         db.session.add(new_fallback)
                         db.session.flush()
                         file.fallback_organism = new_fallback
-                        db.session.delete(curr_fallback)
+                        if curr_fallback:
+                            db.session.delete(curr_fallback)
                         db.session.commit()
                     except SQLAlchemyError:
                         db.session.rollback()
