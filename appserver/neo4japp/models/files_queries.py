@@ -11,6 +11,7 @@ from neo4japp.database import db
 
 
 def get_all_files_and_content_by_id(file_ids: Set[str], project_id: int):
+    sub_query = db.session.query(FallbackOrganism.id.label('fallback_organism_id')).subquery()
     query = db.session.query(
         Files.id,
         Files.annotations,
@@ -18,6 +19,7 @@ def get_all_files_and_content_by_id(file_ids: Set[str], project_id: int):
         Files.file_id,
         Files.filename,
         FileContent.raw_file,
+        sub_query.c.fallback_organism_id
     ).join(
         FileContent,
         FileContent.id == Files.content_id,
@@ -28,15 +30,9 @@ def get_all_files_and_content_by_id(file_ids: Set[str], project_id: int):
         ),
     )
 
-    sub_query = db.session.query(FallbackOrganism)
-
-    if sub_query.count():
-        sub_query = sub_query.subquery()
-        return query.outerjoin(
-            sub_query,
-            and_(sub_query.c.id == Files.fallback_organism_id))
-    else:
-        return query
+    return query.outerjoin(
+        sub_query,
+        and_(sub_query.c.fallback_organism_id == Files.fallback_organism_id))
 
 
 def get_all_files_by_id(file_ids: Set[str], project_id: int):

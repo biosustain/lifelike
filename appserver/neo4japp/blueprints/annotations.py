@@ -150,7 +150,9 @@ def reannotate(req: AnnotationRequest, project_name: str):
 
     for f in files:
         try:
-            annotations = annotate(doc=f)
+            annotations = annotate(
+                doc=f,
+                specified_organism=FallbackOrganism.query.get(f.fallback_organism_id))
         except AnnotationError as e:
             current_app.logger.error(
                 'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
