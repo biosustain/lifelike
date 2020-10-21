@@ -161,6 +161,24 @@ export class WordCloudComponent {
     this.filtersPanelOpened = !this.filtersPanelOpened;
   }
 
+  copyWordCloudToClipboard() {
+    const hiddenTextAreaWrapper = document.getElementById(`${this.id}-hidden-text-area-wrapper`);
+    hiddenTextAreaWrapper.style.display = 'block';
+    const tempTextArea = document.createElement('textarea');
+
+    hiddenTextAreaWrapper.appendChild(tempTextArea);
+    this.annotationData.forEach(annotation => {
+      if (this.wordVisibilityMap.get(annotation.text)) {
+        tempTextArea.value += `${annotation.text}\n`;
+      }
+    });
+    tempTextArea.select();
+    document.execCommand('copy');
+
+    hiddenTextAreaWrapper.removeChild(tempTextArea);
+    hiddenTextAreaWrapper.style.display = 'none';
+  }
+
   /**
    * Generates a copy of the annotation data. The reason we do this is the word cloud layout algorithm actually mutates the input data. To
    * keep our API response data pure, we deep copy it and give the copy to the layout algorithm instead.
