@@ -238,18 +238,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   processGoWrapper(linkArray: string[], nodeArray: GoNode[]): TableLink[] {
-    const result: TableLink[] = [];
-    for (let i = 0; i < linkArray.length; i++) {
-      result.push({ link: linkArray[i], linkText: nodeArray[i].name });
-    }
+    const result = linkArray.map((link, i) => ({link, linkText: nodeArray[i].name}));
     return result;
   }
 
   processBiocycWrapper(pathways: string[], biocycLink: string): TableLink[] {
-    const result = [];
-    pathways.map((pathway) =>
-      result.push({ link: biocycLink, linkText: pathway })
-    );
+    const result = pathways.map((pathway) => ({ link: biocycLink, linkText: pathway }));
     return result;
   }
 }

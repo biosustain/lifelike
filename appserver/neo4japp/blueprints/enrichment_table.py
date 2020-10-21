@@ -30,7 +30,7 @@ def get_neo4j_worksheet(worksheet_id: str):
     try:
         worksheets = Worksheet.query.filter(Worksheet.id == worksheet_id).one()
     except NoResultFound:
-        raise RecordNotFoundException('not found :-( ')
+        raise RecordNotFoundException('Worksheet not found.')
 
     return jsonify({'result': worksheets.to_dict()}), 200
 

@@ -196,10 +196,11 @@ class KgService(HybridDBDao):
         result_list = []
         domain = self.session.query(DomainURLsMap).filter(
                                         DomainURLsMap.domain == 'uniprot').one()
-        for i in range(len(result)):
-            item = {'result': result[i]['x']}
-            if (result[i]['x'] is not None):
-                item['link'] = domain.base_URL.format(result[i]['x']['id'])
+        for meta_result in result:
+            item = {'result': meta_result['x']}
+            if (meta_result['x'] is not None):
+                meta_id = meta_result['x']['id']
+                item['link'] = domain.base_URL.format(meta_id)
             result_list.append(item)
         return result_list
 
@@ -215,11 +216,11 @@ class KgService(HybridDBDao):
             }
         ).data()
         result_list = []
-        base_url = 'https://string-db.org/cgi/network?identifiers={}'
-        for i in range(len(result)):
-            item = {'result': result[i]['x']}
-            if (result[i]['x'] is not None):
-                item['link'] = base_url.format(result[i]['x']['refseq'])
+        for meta_result in result:
+            item = {'result': meta_result['x']}
+            if (meta_result['x'] is not None):
+                refseq = meta_result['x']['refseq']
+                item['link'] = f'https://string-db.org/cgi/network?identifiers={refseq}'
             result_list.append(item)
         return result_list
 
@@ -237,11 +238,12 @@ class KgService(HybridDBDao):
         result_list = []
         domain = self.session.query(DomainURLsMap).filter(
                                         DomainURLsMap.domain == 'go').one()
-        for i in range(len(result)):
-            item = {'result': result[i]['xArray']}
-            if (result[i]['xArray'] is not None):
+        for meta_result in result:
+            xArray = meta_result['xArray']
+            item = {'result': xArray}
+            if (xArray is not None):
                 link_list = []
-                for go in result[i]['xArray']:
+                for go in xArray:
                     link_list.append(domain.base_URL.format(go['id']))
                 item['linkList'] = link_list
             result_list.append(item)
@@ -261,11 +263,12 @@ class KgService(HybridDBDao):
         result_list = []
         domain = self.session.query(DomainURLsMap).filter(
                                         DomainURLsMap.domain == 'go').one()
-        for i in range(len(result)):
-            item = {'result': result[i]['xArray']}
-            if (result[i]['xArray'] is not None):
+        for meta_result in result:
+            xArray = meta_result['xArray']
+            item = {'result': xArray}
+            if (xArray is not None):
                 link_list = []
-                for go in result[i]['xArray']:
+                for go in xArray:
                     link_list.append(domain.base_URL.format(go['id']))
                 item['linkList'] = link_list
             result_list.append(item)
@@ -285,11 +288,12 @@ class KgService(HybridDBDao):
         result_list = []
         domain = self.session.query(DomainURLsMap).filter(
                                         DomainURLsMap.domain == 'go').one()
-        for i in range(len(result)):
-            item = {'result': result[i]['xArray']}
-            if (result[i]['xArray'] is not None):
+        for meta_result in result:
+            xArray = meta_result['xArray']
+            item = {'result': xArray}
+            if (xArray is not None):
                 link_list = []
-                for go in result[i]['xArray']:
+                for go in xArray:
                     link_list.append(domain.base_URL.format(go['id']))
                 item['linkList'] = link_list
             result_list.append(item)
@@ -307,11 +311,11 @@ class KgService(HybridDBDao):
             }
         ).data()
         result_list = []
-        base_url = 'https://biocyc.org/gene?id={}'
-        for i in range(len(result)):
-            item = {'result': result[i]['x']}
-            if (result[i]['x'] is not None):
-                item['link'] = base_url.format(result[i]['x']['biocyc_id'])
+        for meta_result in result:
+            item = {'result': meta_result['x']}
+            if (meta_result['x'] is not None):
+                biocyc_id = meta_result['x']['biocyc_id']
+                item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
             result_list.append(item)
         return result_list
 
@@ -327,11 +331,12 @@ class KgService(HybridDBDao):
             }
         ).data()
         result_list = []
-        base_url = 'http://regulondb.ccg.unam.mx/gene?term={}&organism=ECK12&format=jsp&type=gene'
-        for i in range(len(result)):
-            item = {'result': result[i]['x']}
-            if (result[i]['x'] is not None):
-                item['link'] = base_url.format(result[i]['x']['regulondb_id'])
+        for meta_result in result:
+            item = {'result': meta_result['x']}
+            if (meta_result['x'] is not None):
+                regulondb_id = meta_result['x']['regulondb_id']
+                item['link'] = f'http://regulondb.ccg.unam.mx/gene?term={regulondb_id}' \
+                    '&organism=ECK12&format=jsp&type=gene'
             result_list.append(item)
         return result_list
 
@@ -387,6 +392,6 @@ class KgService(HybridDBDao):
         return """
         MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
-        OPTIONAL MATCH (g)-[:IS]-(db_RegulonDB)-[:ENCODES]-(x:GeneProduct)
+        OPTIONAL MATCH (g)-[:IS]-(x:db_RegulonDB)
         RETURN x
         """

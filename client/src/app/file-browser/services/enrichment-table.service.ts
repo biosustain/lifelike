@@ -90,10 +90,11 @@ export interface RegulonWrapper {
 }
 
 export interface RegulonNode {
-  location: string;
-  molecular_weight: number;
+  right_end_position: number;
+  left_end_position: number;
   name: string;
   regulondb_id: string;
+  strand: string;
 }
 
 export interface StringWrapper {
@@ -160,7 +161,7 @@ export class EnrichmentTableService extends AbstractService {
   }
 
   matchNCBINodes(geneNames: string[], organism: string): Observable<NCBIWrapper[]> {
-    return this.http.post<any>(
+    return this.http.post<{result: NCBIWrapper[]}>(
       `${this.worksheetAPI}/match-ncbi-nodes`,
       {geneNames, organism},
       this.getHttpOptions(true),
@@ -170,7 +171,7 @@ export class EnrichmentTableService extends AbstractService {
   }
 
   getNCBIEnrichmentDomains(nodeIds): Observable<EnrichmentWrapper[]> {
-    return this.http.post<any>(
+    return this.http.post<{result: EnrichmentWrapper[]}>(
       `${this.kgAPI}/get-ncbi-nodes/enrichment-domains`,
       {nodeIds},
       this.getHttpOptions(true),
