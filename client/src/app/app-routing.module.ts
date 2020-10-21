@@ -224,6 +224,14 @@ const routes: Routes = [
       fontAwesomeIcon: 'cloud',
     },
   },
+  {
+    path: 'word-cloud/:project_name',
+    component: WordCloudProjectComponent,
+    data: {
+      title: 'Word Cloud',
+      fontAwesomeIcon: 'cloud',
+    }
+  },
   // Old links
   {path: 'file-browser', redirectTo: 'projects', pathMatch: 'full'},
   {path: 'pdf-viewer/:file_id', redirectTo: 'projects/beta-project/files/:file_id', pathMatch: 'full'},
