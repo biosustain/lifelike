@@ -20,6 +20,8 @@
           </h1>
           <div class="btn-group ml-auto d-flex align-items-stretch" role="group">
             <button class="btn btn-secondary text-nowrap"
+                    (click)="copyWordCloudToClipboard()">Copy Cloud to Clipboard</button>
+            <button class="btn btn-secondary text-nowrap"
                     (click)="fitCloudToWindow()">Fit Cloud to Window</button>
             <button class="btn btn-secondary"
                     ngbTooltip="Reload Annotations"
@@ -63,3 +65,4 @@
     </div>
   </div>
 </div>
+<div [id]="id + '-hidden-text-area-wrapper'" style="display: none;"></div>
