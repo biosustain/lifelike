@@ -95,6 +95,7 @@ def search(q, types, limit, page):
             'fragment_size': 0,
             'pre_tags': ['<highlight>'],
             'post_tags': ['</highlight>'],
+            'number_of_fragments': 50,
         }
 
         user_id = g.current_user.id
