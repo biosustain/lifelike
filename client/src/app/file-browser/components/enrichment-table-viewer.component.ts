@@ -25,7 +25,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     [
       { name: 'Imported Gene Name', span: '1' },
       { name: 'NCBI Gene Full Name', span: '1' },
-      { name: 'Regulon Gene Product Name', span: '1' },
+      { name: 'Regulon Gene Product Name', span: '3' },
       { name: 'Uniprot Function', span: '1' },
       { name: 'String Annotation', span: '1' },
       { name: 'Go Enrichment', span: '3' },
@@ -35,7 +35,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     [
       { name: '', span: '1' },
       { name: '', span: '1' },
-      { name: '', span: '1' },
+      { name: 'Regulator Family', span: '1' },
+      { name: 'Activated By', span: '1' },
+      { name: 'Repressed By', span: '1' },
       { name: '', span: '1' },
       { name: '', span: '1' },
       { name: 'Molecular Function', span: '1' },
@@ -165,7 +167,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     unmatchedGenes.forEach((gene) => {
       const cell: TableCell[] = [];
       cell.push({ text: gene, highlight: true });
-      for (let i = 0; i < 8; i++) {
+      const colNum = Math.max.apply(null, this.tableHeader.map(x => x.reduce((a, b) => a + parseInt(b.span, 10), 0)));
+      for (let i = 0; i < colNum - 1; i++) {
         cell.push({ text: '', highlight: true });
       }
       this.tableEntries.unshift(cell);
@@ -176,25 +179,37 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   // Process wrapper to convert domain data into string array that represents domain columns.
   processEnrichmentNodeArray(wrapper: EnrichmentWrapper): TableCell[] {
     const result: TableCell[] = [];
-    result[0] = wrapper.regulon.result
+    result.push(wrapper.regulon.result.regulator_family
       ? {
-          text: wrapper.regulon.result.name,
+          text: wrapper.regulon.result.regulator_family,
           singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
         }
-      : { text: '' };
-    result[1] = wrapper.uniprot.result
+      : { text: '' });
+    result.push(wrapper.regulon.result.activated_by
+      ? {
+          text: wrapper.regulon.result.activated_by.join('; '),
+          singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
+        }
+      : { text: '' });
+    result.push(wrapper.regulon.result.repressed_by
+      ? {
+          text: wrapper.regulon.result.repressed_by.join('; '),
+          singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
+        }
+      : { text: '' });
+    result.push(wrapper.uniprot.result
       ? {
           text: wrapper.uniprot.result.function,
           singleLink: { link: wrapper.uniprot.link, linkText: 'Uniprot Link' },
         }
-      : { text: '' };
-    result[2] = wrapper.string.result
+      : { text: '' });
+    result.push(wrapper.string.result
       ? {
           text: wrapper.string.result.annotation,
           singleLink: { link: wrapper.string.link, linkText: 'String Link' },
         }
-      : { text: '' };
-    result[3] = wrapper.molecularGo.result
+      : { text: '' });
+    result.push(wrapper.molecularGo.result
       ? {
           text: '',
           multiLink: this.processGoWrapper(
@@ -202,8 +217,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
             wrapper.molecularGo.result
           ),
         }
-      : { text: '' };
-    result[4] = wrapper.biologicalGo.result
+      : { text: '' });
+    result.push(wrapper.biologicalGo.result
       ? {
           text: '',
           multiLink: this.processGoWrapper(
@@ -211,8 +226,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
             wrapper.biologicalGo.result
           ),
         }
-      : { text: '' };
-    result[5] = wrapper.cellularGo.result
+      : { text: '' });
+    result.push(wrapper.cellularGo.result
       ? {
           text: '',
           multiLink: this.processGoWrapper(
@@ -220,8 +235,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
             wrapper.cellularGo.result
           ),
         }
-      : { text: '' };
-    result[6] = wrapper.biocyc.result
+      : { text: '' });
+    result.push(wrapper.biocyc.result
       ? wrapper.biocyc.result.pathways
         ? {
             text: '',
@@ -233,7 +248,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
             text: 'Pathways not found.',
             singleLink: { link: wrapper.biocyc.link, linkText: 'Biocyc Link' },
           }
-      : { text: '' };
+      : { text: '' });
     return result;
   }
 

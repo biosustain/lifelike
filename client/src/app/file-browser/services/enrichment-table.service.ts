@@ -95,6 +95,9 @@ export interface RegulonNode {
   name: string;
   regulondb_id: string;
   strand: string;
+  regulator_family: string;
+  repressed_by: string[];
+  activated_by: string[];
 }
 
 export interface StringWrapper {
