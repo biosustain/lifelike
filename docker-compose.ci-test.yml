@@ -34,7 +34,9 @@ services:
             - POSTGRES_DB=postgres
             - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
             - ELASTIC_FILE_INDEX_ID=file_ci
+            - GOOGLE_APPLICATION_CREDENTIALS=ansible_service_account.json
         volumes:
+            - ./appserver/ansible_service_account.json:/home/n4j/ansible_service_account.json
             - ./appserver/neo4japp/tests/database/services/annotations/lmdb:/home/n4j/tests/database/services/annotations/lmdb
         networks:
             - frontend
