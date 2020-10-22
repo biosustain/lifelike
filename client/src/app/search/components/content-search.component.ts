@@ -33,6 +33,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   public results = new CollectionModal<RankedItem<DirectoryObject>>([], {
     multipleSelection: false,
   });
+  public queryPhrases: string[] = [];
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
 
   constructor(route: ActivatedRoute,
