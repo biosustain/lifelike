@@ -186,3 +186,9 @@ export interface AddedAnnotationExclsuion {
 
 export const MAP_TYPE_ID = 'LifelikeKnowledgeMap/1';
 export const NODE_TYPE_ID = 'LifelikeKnowledgeNode/1';
+
+export const DETAIL_NODE_LABELS = new Set(['note', 'link']);
+
+export function isCommonNodeDisplayName(label: string, displayName: string) {
+  return displayName.toLowerCase() === label.toLowerCase();
+}
