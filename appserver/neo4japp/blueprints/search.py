@@ -1,17 +1,12 @@
 import attr
 import sqlalchemy
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, request, jsonify, g, current_app
+from flask_apispec import use_kwargs
 from sqlalchemy.orm import aliased
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.database import get_search_service_dao
-from neo4japp.data_transfer_objects.common import ResultList
-from neo4japp.database import get_search_service_dao, db
-from neo4japp.exceptions import InvalidArgumentsException
-from neo4japp.models import AppUser, Directory, Projects, AppRole, \
-    projects_collaborator_role, Files, Project
-from neo4japp.services.pdf_search import PDFSearch, PDFSearchResult
-from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
+from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
+from neo4japp.database import get_search_service_dao, get_elastic_service
 from neo4japp.data_transfer_objects import (
     GeneFilteredRequest,
     OrganismRequest,
@@ -20,6 +15,23 @@ from neo4japp.data_transfer_objects import (
     SimpleSearchRequest,
     VizSearchRequest
 )
+from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
+from neo4japp.database import get_search_service_dao, db
+from neo4japp.exceptions import InvalidArgumentsException
+from neo4japp.models import (
+    AppUser,
+    Directory,
+    Projects,
+    AppRole,
+    projects_collaborator_role,
+    Files,
+    Project
+)
+from neo4japp.request_schemas.search import (
+    ContentSearchSchema,
+)
+from neo4japp.util import CamelDictMixin, jsonify_with_class, SuccessResponse
+from neo4japp.utils.logger import EventLog
 from neo4japp.utils.request import paginate_from_args
 from neo4japp.utils.sqlalchemy import ft_search
 
@@ -67,19 +79,125 @@ def visualizer_search_temp(req: VizSearchRequest):
 #     results = search_dao.predictive_search(req.query)
 #     return SuccessResponse(result=results, status_code=200)
 
-@bp.route('/pdf-search', methods=['POST'])
+# TODO: Probably should rename this to something else...not sure what though
+@bp.route('/content', methods=['GET'])
 @auth.login_required
-@jsonify_with_class(PDFSearchRequest)
-def search(req: PDFSearchRequest):
-    if req.query:
-        res = PDFSearch().search(
-            user_query=req.query,
-            offset=req.offset,
-            limit=req.limit,
-        )['hits']
+@use_kwargs(ContentSearchSchema)
+def search(q, types, limit, page):
+    search_term = q
+    types = types.split(';')
+    offset = (page - 1) * limit
+    search_phrases = []
+
+    if search_term:
+        match_fields = ['filename', 'description', 'data.content']
+        highlight = {
+            'fields': {'data.content': {}},
+            # Need to be very careful with this option. If fragment_size is too large, search
+            # will be slow because elastic has to generate large highlight fragments. Setting to
+            # default for now.
+            # 'fragment_size': FRAGMENT_SIZE,
+            'fragment_size': 0,
+            'pre_tags': ['<strong>'],
+            'post_tags': ['</strong>'],
+        }
+
+        user_id = g.current_user.id
+
+        t_project = aliased(Projects)
+        t_project_role = aliased(AppRole)
+
+        # Role table used to check if we have permission
+        query = db.session.query(
+            t_project.id
+        ).join(
+            projects_collaborator_role,
+            sqlalchemy.and_(
+                projects_collaborator_role.c.projects_id == t_project.id,
+                projects_collaborator_role.c.appuser_id == user_id,
+            )
+        ).join(
+            t_project_role,
+            sqlalchemy.and_(
+                t_project_role.id == projects_collaborator_role.c.app_role_id,
+                sqlalchemy.or_(
+                    t_project_role.name == 'project-read',
+                    t_project_role.name == 'project-write',
+                    t_project_role.name == 'project-admin'
+                )
+            )
+        )
+
+        accessible_project_ids = [project_id for project_id, in query]
+        query_filter = [  # type:ignore
+            {
+                'bool': {
+                    'must': [
+                        # The document must have the specified type
+                        {'terms': {'type': types}},
+                        # And...
+                        {
+                            'bool': {
+                                'should': [
+                                    # If the user has access to the project the document is in...
+                                    {'terms': {'project_id': accessible_project_ids}},
+                                    # OR if the document is public...
+                                    {'term': {'public': True}}
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+
+        elastic_service = get_elastic_service()
+        res, search_phrases = elastic_service.search(
+            index_id=FILE_INDEX_ID,
+            user_query=search_term,
+            offset=offset,
+            limit=limit,
+            match_fields=match_fields,
+            query_filter=query_filter,
+            highlight=highlight
+        )
+        res = res['hits']
     else:
         res = {'hits': [], 'max_score': None, 'total': 0}
-    return SuccessResponse(result=res, status_code=200)
+
+    results = []
+    for doc in res['hits']:
+        highlight = None
+        if doc.get('highlight', None) is not None:
+            if doc['highlight'].get('data.content', None) is not None:
+                highlight = doc['highlight']['data.content']
+        results.append({
+            'item': {
+                # TODO LL-1723: Need to add complete file path here
+                'type': 'file' if doc['_source']['type'] == 'pdf' else 'map',
+                'id': doc['_source']['id'],
+                'name': doc['_source']['filename'],
+                'description': doc['_source']['description'],
+                'highlight': highlight,
+                'doi': doc['_source']['doi'],
+                'creation_date': doc['_source']['uploaded_date'],
+                'project': {
+                    'project_name': doc['_source']['project_name'],
+                },
+                'creator': {
+                    'username': doc['_source']['username'],
+                },
+            },
+            'rank': doc['_score'],
+        })
+
+    response = ResultList(
+        total=res['total'],
+        results=results,
+        query=ResultQuery(phrases=search_phrases),
+    )
+
+    return jsonify(response.to_dict())
 
 
 @bp.route('/organism/<string:organism_tax_id>', methods=['GET'])
@@ -105,128 +223,3 @@ def get_genes_filtering_by_organism(req: GeneFilteredRequest):
     results = search_dao.search_genes_filtering_by_organism_and_others(
         req.query, req.organism_id, req.filters)
     return SuccessResponse(result=results, status_code=200)
-
-
-@bp.route('/content', methods=['GET'])
-@auth.login_required
-def search_content():
-    types = request.args.get('types', ';')
-    q = request.args.get('q', '')
-    user_id = g.current_user.id
-
-    t_owner = aliased(AppUser)
-    t_directory = aliased(Directory)
-    t_project = aliased(Projects)
-    t_project_role_role = aliased(AppRole)
-    t_project_role_user = aliased(AppUser)
-
-    # Role table used to check if we have permission
-    project_role_sq = db.session.query(projects_collaborator_role) \
-        .join(t_project_role_role,
-              t_project_role_role.id == projects_collaborator_role.c.app_role_id) \
-        .join(t_project_role_user,
-              t_project_role_user.id == projects_collaborator_role.c.appuser_id) \
-        .subquery()
-
-    queries = []
-
-    # Map subquery
-    if 'maps' in types:
-        map_query = db.session.query(Project.hash_id.label('id'),
-                                     Project.label.label('name'),
-                                     Project.description.label('description'),
-                                     Project.creation_date.label('creation_date'),
-                                     Project.date_modified.label('modification_date'),
-                                     t_owner.id.label('owner_id'),
-                                     t_owner.username.label('owner_username'),
-                                     t_owner.first_name.label('owner_first_name'),
-                                     t_owner.last_name.label('owner_last_name'),
-                                     t_project.project_name.label('project_name'),
-                                     sqlalchemy.literal_column('\'map\'').label('type')) \
-            .join(t_owner, t_owner.id == Project.user_id) \
-            .join(t_directory, t_directory.id == Project.dir_id) \
-            .join(t_project, t_project.id == t_directory.projects_id) \
-            .outerjoin(project_role_sq, project_role_sq.c.projects_id == t_project.id) \
-            .filter(sqlalchemy.or_(Project.public.is_(True),
-                                   sqlalchemy.and_(t_project_role_user.id == user_id,
-                                                   t_project_role_role.name == 'project-read')))
-        map_query = ft_search(map_query, q)
-        queries.append(map_query)
-
-    # File subquery
-    if 'documents' in types:
-        file_query = db.session.query(Files.file_id.label('id'),
-                                      Files.filename.label('name'),
-                                      Files.description.label('description'),
-                                      Files.creation_date.label('creation_date'),
-                                      Files.modified_date.label('modification_date'),
-                                      t_owner.id.label('owner_id'),
-                                      t_owner.username.label('owner_username'),
-                                      t_owner.first_name.label('owner_first_name'),
-                                      t_owner.last_name.label('owner_last_name'),
-                                      t_project.project_name.label('project_name'),
-                                      sqlalchemy.literal_column('\'file\'').label('type'),
-                                      sqlalchemy.literal_column('1').label('rank')) \
-            .join(t_owner, t_owner.id == Files.user_id) \
-            .join(t_directory, t_directory.id == Files.dir_id) \
-            .join(t_project, t_project.id == t_directory.projects_id) \
-            .outerjoin(project_role_sq, project_role_sq.c.projects_id == t_project.id) \
-            .filter(sqlalchemy.and_(t_project_role_user.id == user_id,
-                                    t_project_role_role.name == 'project-read'))
-        file_query = file_query.filter(
-            sqlalchemy.func.lower(Files.filename).like(f'%{q.lower()}%')
-        )  # TODO: Make FT
-        queries.append(file_query)
-
-    if not len(queries):
-        raise InvalidArgumentsException('Missing types', fields={
-            'type': ['No accepted type specified'],
-        })
-
-    # Combine results
-    combined_query = sqlalchemy.union_all(*queries).alias('combined_results')
-
-    # Distinct and order
-    base_query = db.session.query(combined_query).order_by(
-        sqlalchemy.desc(combined_query.c.rank)
-    ).distinct()
-
-    # Paginate
-    query = paginate_from_args(
-        base_query,
-        request.args,
-        columns={
-            'rank': combined_query.c.rank,
-        },
-        default_sort='-rank',
-        upper_limit=200
-    )
-
-    # Convert results into list of dicts
-    keys = [item['name'] for item in base_query.column_descriptions]
-    results = [dict(zip(keys, item)) for item in query.items]
-
-    response = ResultList(
-        total=query.total,
-        results=[{
-            'item': {
-                'type': item['type'],
-                'id': item['id'],
-                'name': item['name'],
-                'description': item['description'],
-                'creation_date': item['creation_date'],
-                'modification_date': item['modification_date'],
-                'project': {
-                    'project_name': item['project_name'],
-                },
-                'creator': {
-                    'id': item['owner_id'],
-                    'username': item['owner_username'],
-                    'first_name': item['owner_first_name'],
-                    'last_name': item['owner_last_name'],
-                },
-            },
-            'rank': item['rank'],
-        } for item in results])
-
-    return jsonify(response.to_dict())

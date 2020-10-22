@@ -101,7 +101,14 @@ def test_can_download_map(
     assert resp.headers.get('Content-Disposition') == f'attachment;filename={proj_label}.json'
 
 
-def test_can_upload_map(client, fix_api_owner, fix_project, fix_directory, session):
+def test_can_upload_map(
+    client,
+    mock_index_maps,
+    fix_api_owner,
+    fix_project,
+    fix_directory,
+    session
+):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     mock_data = BytesIO(json.dumps({'graph': {'edges': [], 'nodes': []}}).encode('utf-8'))
@@ -123,7 +130,7 @@ def test_can_upload_map(client, fix_api_owner, fix_project, fix_directory, sessi
     assert uploaded is not None
 
 
-def test_can_add_map(client, fix_api_owner, fix_project, fix_directory):
+def test_can_add_map(client, mock_index_maps, fix_api_owner, fix_project, fix_directory):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     res = client.post(
@@ -134,16 +141,23 @@ def test_can_add_map(client, fix_api_owner, fix_project, fix_directory):
             'last_name': fix_api_owner.last_name,
             'description': 'test',
             'directoryId': f'{fix_directory.id}',
-            'graph': {"graph": [], "edges": []},
+            'graph': {'nodes': [], 'edges': []},
             'label': 'my-map',
-            'date_modified': datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            'modified_date': datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
         }),
         content_type='application/json'
     )
     assert res.status_code == 200
 
 
-def test_can_update_map(client, fix_api_owner, fix_project, private_fix_map):
+def test_can_update_map(
+    client,
+    mock_index_maps,
+    mock_delete_elastic_documents,
+    fix_api_owner,
+    fix_project,
+    private_fix_map
+):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     res = client.patch(
@@ -155,7 +169,13 @@ def test_can_update_map(client, fix_api_owner, fix_project, private_fix_map):
     assert res.status_code == 200
 
 
-def test_can_delete_map(client, fix_api_owner, fix_project, private_fix_map):
+def test_can_delete_map(
+    client,
+    mock_delete_elastic_documents,
+    fix_api_owner,
+    fix_project,
+    private_fix_map
+):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])
     res = client.delete(

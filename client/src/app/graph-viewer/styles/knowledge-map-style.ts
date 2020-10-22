@@ -1,4 +1,5 @@
 import {
+  DETAIL_NODE_LABELS,
   UniversalEdgeStyle,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -40,12 +41,15 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   private readonly lineEndBaseSize = 16;
   private readonly maxWidthIfUnsized = 400;
   private readonly maxHeightIfUnsized = 400;
+  private readonly detailTypeBackgrounds = new Map([
+    ['note', '#FFF6D5'],
+    ['link', '#DCF1F1'],
+  ]);
 
   placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
     const styleData: UniversalNodeStyle = nullCoalesce(d.style, {});
     const labelFontSizeScale = nullCoalesce(styleData.fontSizeScale, 1);
-    const labelFont = (placementOptions.highlighted || placementOptions.selected ? 'bold ' : '') +
-      (16 * labelFontSizeScale) + 'px ' + this.font;
+    const labelFont = (16 * labelFontSizeScale) + 'px ' + this.font;
     const forceHighDetailLevel = placementOptions.selected || placementOptions.highlighted;
 
     let textColor = '#000';
@@ -85,7 +89,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       strokeColor = styleData.strokeColor;
     }
 
-    if (d.label === 'note' && styleData.showDetail) {
+    if (DETAIL_NODE_LABELS.has(d.label) && styleData.showDetail) {
       // ---------------------------------
       // Note WITH detail
       // ---------------------------------
@@ -97,24 +101,28 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         maxHeight: !d.data.height ? this.maxHeightIfUnsized : null,
         text: d.data.detail != null ? d.data.detail : '',
         font: labelFont,
-        fillStyle: nullCoalesce(styleData.fillColor, '#999'),
+        fillStyle: nullCoalesce(styleData.fillColor, '#000'),
         horizontalAlign: TextAlignment.Start,
         verticalAlign: TextAlignment.Start,
+        topInset: 5,
+        leftInset: 5,
+        bottomInset: 5,
+        rightInset: 5,
       });
 
       return new RectangleNode(ctx, {
         x: d.data.x,
         y: d.data.y,
-        width: nullCoalesce(d.data.width, textbox.actualWidth),
-        height: nullCoalesce(d.data.height, textbox.actualHeight),
+        width: nullCoalesce(d.data.width, textbox.actualWidthWithInsets),
+        height: nullCoalesce(d.data.height, textbox.actualHeightWithInsets),
         textbox,
         stroke: this.createLine(
-          nullCoalesce(styleData.lineType, 'dashed'),
-          nullCoalesce(styleData.lineWidthScale, 1) *
-          (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
-          nullCoalesce(styleData.strokeColor, '#999'),
+            nullCoalesce(styleData.lineType, 'solid'),
+            nullCoalesce(styleData.lineWidthScale, 1) *
+            (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
+            nullCoalesce(styleData.strokeColor, this.detailTypeBackgrounds.get(d.label)),
         ),
-        shapeFillColor: null,
+        shapeFillColor: this.detailTypeBackgrounds.get(d.label),
         forceHighDetailLevel,
       });
 
@@ -176,11 +184,10 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         textbox,
         stroke: this.createLine(
           nullCoalesce(styleData.lineType, 'solid'),
-          nullCoalesce(styleData.lineWidthScale, 1) *
-          (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
+          nullCoalesce(styleData.lineWidthScale, 1),
           strokeColor,
         ),
-        shapeFillColor: (placementOptions.highlighted ? '#E4EFFF' : (placementOptions.selected ? '#efefef' : bgColor)),
+        shapeFillColor: bgColor,
         forceHighDetailLevel,
       });
     }
@@ -193,12 +200,14 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
             placedTo: PlacedNode,
             ctx: CanvasRenderingContext2D,
             placementOptions: PlacementOptions): PlacedEdge {
+    const connectedToNotes = DETAIL_NODE_LABELS.has(from.label) || DETAIL_NODE_LABELS .has(to.label);
     const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
     const fontSizeScale = nullCoalesce(styleData.fontSizeScale, 1);
     const strokeColor = nullCoalesce(styleData.strokeColor, '#2B7CE9');
-    const lineType = nullCoalesce(styleData.lineType, 'solid');
+    const lineType = nullCoalesce(styleData.lineType, connectedToNotes ? 'dashed' : 'solid');
+    // noinspection UnnecessaryLocalVariableJS
     const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
-    const lineWidth = lineWidthScale * (placementOptions.highlighted ? 1.5 : 1);
+    const lineWidth = lineWidthScale;
     const sourceHeadType = styleData.sourceHeadType;
     const targetHeadType = styleData.targetHeadType;
 
@@ -220,7 +229,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       nullIfEmpty(targetHeadType),
       lineWidth,
       strokeColor,
-      this.defaultTargetLineEndDescriptor,
+      connectedToNotes ? null : this.defaultTargetLineEndDescriptor,
     );
 
     // Label textbox, if any

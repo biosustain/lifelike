@@ -17,11 +17,12 @@ from neo4japp.models import (
     FileContent,
     Files,
     DomainURLsMap,
-    AnnotationStyle
+    AnnotationStyle,
+    FallbackOrganism
 )
-from neo4japp.services.indexing import index_pdf
 from neo4japp.services.annotations import AnnotationsNeo4jService, ManualAnnotationsService
 from neo4japp.services.annotations.constants import EntityType
+from neo4japp.services.elastic import ElasticService
 
 
 #################
@@ -34,14 +35,14 @@ def mock_get_combined_annotations_result(monkeypatch):
         return [
             {
                 'meta': {
-                    'type': EntityType.Gene.value,
+                    'type': EntityType.GENE.value,
                     'id': '59272',
                     'allText': 'ace2'
                 }
             },
             {
                 'meta': {
-                    'type': EntityType.Species.value,
+                    'type': EntityType.SPECIES.value,
                     'id': '9606',
                     'allText': 'human'
                 }
@@ -75,14 +76,38 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_delete_elastic_indices(monkeypatch):
-    def delete_indices(*args, **kwargs):
+def mock_index_files(monkeypatch):
+    def index_files(*args, **kwargs):
         return None
 
     monkeypatch.setattr(
-        index_pdf,
-        'delete_indices',
-        delete_indices,
+        ElasticService,
+        'index_files',
+        index_files,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_index_maps(monkeypatch):
+    def index_maps(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(
+        ElasticService,
+        'index_maps',
+        index_maps,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_delete_elastic_documents(monkeypatch):
+    def delete_documents_with_index(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(
+        ElasticService,
+        'delete_documents_with_index',
+        delete_documents_with_index,
     )
 ####################
 # End service mocks
@@ -100,7 +125,8 @@ def fix_api_owner(session, account_user) -> AppUser:
     )
     user.set_password('password')
     admin_role = account_user.get_or_create_role('admin')
-    user.roles.extend([admin_role])
+    private_data_access_role = account_user.get_or_create_role('private-data-access')
+    user.roles.extend([admin_role, private_data_access_role])
     session.add(user)
     session.flush()
     return user
@@ -152,6 +178,15 @@ def test_user_with_pdf(
         session.add(file_content)
         session.flush()
 
+        fallback = FallbackOrganism(
+            organism_name='Homo sapiens',
+            organism_synonym='Homo sapiens',
+            organism_taxonomy_id='9606'
+        )
+
+        session.add(fallback)
+        session.flush()
+
         fake_file = Files(
             file_id='unknown',
             filename='example3.pdf',
@@ -160,6 +195,7 @@ def test_user_with_pdf(
             creation_date=datetime.now(),
             project=fix_project.id,
             dir_id=fix_directory.id,
+            fallback_organism_id=fallback.id
         )
         session.add(fake_file)
         session.flush()
@@ -226,6 +262,18 @@ def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
                         {
                             "domain": "ncbi",
                             "url": "https://www.ncbi.nlm.nih.gov/gene/?query=E. coli"
+                        },
+                        {
+                            "domain": "mesh",
+                            "url": "https://www.ncbi.nlm.nih.gov/mesh/?term=E. coli"
+                        },
+                        {
+                            "domain": "chebi",
+                            "url": "https://www.google.com/search?q=site:ebi.ac.uk/+E. coli"
+                        },
+                        {
+                            "domain": "pubchem",
+                            "url": "https://www.google.com/search?q=site:ncbi.nlm.nih.gov/+E. coli"
                         },
                         {
                             "domain": "uniprot",
