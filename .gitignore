@@ -74,3 +74,6 @@ appserver/neo4japp/services/annotations/nlp_data_output/*.txt
 
 # gcloud service accounts
 *ansible_service_account*
+
+# ansible secrets
+.vault_secrets_pw
