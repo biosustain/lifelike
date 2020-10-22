@@ -1,0 +1,35 @@
+- name: Install Python virtualenv
+  become: yes
+  pip:
+    name:
+      - virtualenv
+    umask: "0022"
+
+- name: Install Python dependencies
+  pip:
+    name:
+      - boto
+      - elasticsearch
+      - sqlalchemy
+      - psycopg2-binary
+      - six>1.13.0
+    umask: "0022"
+    virtualenv: "{{ deploy_dir }}/.venv"
+    virtualenv_command: "virtualenv"
+    virtualenv_python: python3
+
+- name: Add global inclusion/exclusion into Elasticsearch/Kibana
+  become_user: "{{ deploy_user }}"
+  script: seed-global-annotation.py --db {{ app_environment }}
+  environment:
+    POSTGRES_HOST: "{{ POSTGRES_HOST }}"
+    POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+    POSTGRES_PORT: "{{ POSTGRES_PORT }}"
+    POSTGRES_USER: "{{ POSTGRES_USER }}"
+    POSTGRES_DB: "{{ POSTGRES_DB }}"
+    ELASTICSEARCH_HOSTS: "{{ ELASTICSEARCH_HOSTS }}"
+  register: outcome
+  args:
+    executable: "{{ deploy_dir }}/.venv/bin/python"
+
+- debug: msg="{{ outcome.stdout }}"

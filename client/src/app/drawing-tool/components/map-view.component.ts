@@ -81,7 +81,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
    */
   save() {
     this.map.graph = this.graphCanvas.getGraph();
-    this.map.date_modified = new Date().toISOString();
+    this.map.modified_date = new Date().toISOString();
 
     // Push to backend to save
     this.mapService.updateMap(this.locator.projectName, this.map)

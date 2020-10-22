@@ -1,0 +1,29 @@
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+@import 'src/scss/variables';
+
+.annotation-filter-btns-container {
+    height: 1.5rem;
+    margin-bottom: .25rem;
+}
+
+.annotation-filter-close-btn {
+  float: right;
+  border-radius: 0.25rem;
+  height: 1.5rem;
+  width: 1.5rem;
+  padding: 0;
+  outline: none;
+}
+.annotation-filter-close-btn:hover {
+  background-color: #FFFFFF;
+  color: #dc3545;
+  cursor: pointer;
+}
+.annotation-filter-close-btn:active {
+  border: thin solid #dc3545;
+}
+
+.word-cloud-title {
+  min-width: 2rem;
+}

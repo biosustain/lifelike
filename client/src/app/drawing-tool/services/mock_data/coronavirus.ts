@@ -1,5 +1,5 @@
 export const coronavirus = {
-    date_modified:  '2020-03-19T19: 32: 44.297Z',
+    modified_date:  '2020-03-19T19: 32: 44.297Z',
     description:  'This illustrate the potential solutions that exists out there in' +
     'treating the coronavirus currently plaguing our reality.',
     graph:  {

@@ -60,6 +60,7 @@ outputs/
 
 # LMDB files
 appserver/neo4japp/services/annotations/**/*.mdb
+appserver/neo4japp/services/annotations/**/*.mdb.old
 appserver/neo4japp/services/annotations/datasets/**/*.csv
 appserver/neo4japp/services/annotations/datasets/**/*.tsv
 
@@ -73,6 +74,3 @@ appserver/neo4japp/services/annotations/nlp_data_output/*.txt
 
 # Backups
 *.backup
-
-# GCP secrets
-*service_account*

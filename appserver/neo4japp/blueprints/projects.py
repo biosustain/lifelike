@@ -46,19 +46,20 @@ bp = Blueprint('projects', __name__, url_prefix='/projects')
 @bp.route('/<name>', methods=['GET'])
 @auth.login_required
 def get_project(name):
-    # TODO: Add permission checks here
     user = g.current_user
-    projects = Projects.query.filter(Projects.project_name == name).one_or_none()
-    if projects is None:
+    proj_service = get_projects_service()
+    projects_list = proj_service.get_accessible_projects(user, Projects.project_name == name)
+    if not len(projects_list):
         raise RecordNotFoundException(f'Project {name} not found')
+    project = projects_list[0]
 
     # Pull up directory id for project
     proj_service = get_projects_service()
-    dir = proj_service.get_root_dir(projects)
+    dir = proj_service.get_root_dir(project)
 
     # Combine both dictionaries
     results = {
-        **projects.to_dict(),
+        **project.to_dict(),
         "directory": dir.to_dict()
     }
     return jsonify({'results': results}), 200
@@ -67,11 +68,10 @@ def get_project(name):
 @bp.route('/', methods=['GET'])
 @auth.login_required
 def get_projects():
-    # TODO: Add permission checks here
     user = g.current_user
 
     proj_service = get_projects_service()
-    projects_list = proj_service.projects_users_have_access_2(user)
+    projects_list = proj_service.get_accessible_projects(user)
     return jsonify({'results': [p.to_dict() for p in projects_list]}), 200
 
 
@@ -447,8 +447,8 @@ def get_child_directories(current_dir_id: int, project_name: str):
                     'project_name': project_name,
                 },
                 'annotation_date': None,
-                'creation_date': None,
-                'modification_date': None,
+                'creation_date': c.creation_date,
+                'modification_date': c.modified_date,
                 'data': c.__dict__.to_dict(snake_to_camel_transform=True),
             } for c in child_dirs],
             *[{
@@ -466,7 +466,7 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'description': f.description,
                 'annotation_date': f.annotations_date,
                 'creation_date': f.creation_date,
-                'modification_date': None,
+                'modification_date': f.modified_date,
                 'data': CasePreservedDict(f.__dict__)
             } for f in files],
             *[{
@@ -474,8 +474,8 @@ def get_child_directories(current_dir_id: int, project_name: str):
                 'type': 'map',
                 'name': m.label,
                 'annotation_date': None,
-                'creation_date': None,
-                'modification_date': m.date_modified,
+                'creation_date': m.creation_date,
+                'modification_date': m.modified_date,
                 'creator': {
                     'id': m.user_id,
                     'name': m.username,
