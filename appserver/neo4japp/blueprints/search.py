@@ -186,7 +186,8 @@ def search(q, types, limit, page):
                         # Replace but outside tags (shh @ regex)
                         f"({re.escape(keyword)})(?![^<]*>|[^<>]*</)",
                         f'<annotation type="{annotation["meta"]["type"]}" '
-                        f'meta="{html.escape(json.dumps(annotation["meta"]))}">{keyword}</annotation>',
+                        f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
+                        f'>{keyword}</annotation>',
                         snippet,
                         flags=re.IGNORECASE)
 
