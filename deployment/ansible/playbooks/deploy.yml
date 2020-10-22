@@ -38,10 +38,6 @@
       tags:
         - deploy
 
-    - name: Copy GCP service account
-      copy:
-        src: "./files/"
-
     - name: Create .env file
       copy:
         content: |
