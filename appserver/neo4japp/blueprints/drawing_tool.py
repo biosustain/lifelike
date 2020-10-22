@@ -220,7 +220,8 @@ def get_community_projects():
                 ),
                 project=o.dir.project
             ) for o in query.items
-        ])
+        ],
+        query=None)
 
     return jsonify(response.to_dict())
 
