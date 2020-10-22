@@ -1,4 +1,5 @@
 import {
+  DETAIL_NODE_LABELS,
   UniversalEdgeStyle,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -40,8 +41,6 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   private readonly lineEndBaseSize = 16;
   private readonly maxWidthIfUnsized = 400;
   private readonly maxHeightIfUnsized = 400;
-  private readonly noteTypes = new Set(['note', 'link']);
-  private readonly detailTypes = new Set(['note', 'link']);
   private readonly detailTypeBackgrounds = new Map([
     ['note', '#FFF6D5'],
     ['link', '#DCF1F1'],
@@ -90,7 +89,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
       strokeColor = styleData.strokeColor;
     }
 
-    if (this.detailTypes.has(d.label) && styleData.showDetail) {
+    if (DETAIL_NODE_LABELS.has(d.label) && styleData.showDetail) {
       // ---------------------------------
       // Note WITH detail
       // ---------------------------------
@@ -201,7 +200,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
             placedTo: PlacedNode,
             ctx: CanvasRenderingContext2D,
             placementOptions: PlacementOptions): PlacedEdge {
-    const connectedToNotes = this.noteTypes.has(from.label) || this.noteTypes.has(to.label);
+    const connectedToNotes = DETAIL_NODE_LABELS.has(from.label) || DETAIL_NODE_LABELS .has(to.label);
     const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
     const fontSizeScale = nullCoalesce(styleData.fontSizeScale, 1);
     const strokeColor = nullCoalesce(styleData.strokeColor, '#2B7CE9');
