@@ -154,7 +154,6 @@ def add_gene_list(projects_name: str):
             f'User uploaded file: <{filename}>',
             extra=UserEventLog(
                 username=g.current_user.username, event_type='file upload').to_dict())
-        index_pdf.populate_single_index(file.id)
     except Exception:
         raise FileUploadError('Your file could not be saved. Please try creating again.')
 
@@ -247,7 +246,7 @@ def get_enrichment_data(id: str, projects_name: str):
         'name': entry.filename,
         'description': entry.description}), 200
 
-    
+
 @newbp.route('/directory/<int:directory_id>/<string:filename>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
