@@ -461,17 +461,24 @@ def get_pdf(id: str, project_name: str):
             if description != file.description:
                 update['description'] = description
 
+            if update:
+                try:
+                    db.session.query(Files).filter(Files.file_id == id).update(update)
+                except SQLAlchemyError:
+                    db.session.rollback()
+                    raise DatabaseError('Failed to update PDF filename and/or description.')  # noqa
+
             curr_fallback = FallbackOrganism.query.get(file.fallback_organism_id)
 
             if not fallback_organism:
-                # fallback organism was removed
-                try:
-                    file.fallback_organism = None
-                    db.session.delete(curr_fallback)
-                    db.session.commit()
-                except SQLAlchemyError:
-                    db.session.rollback()
-                    raise DatabaseError(f'Failed to delete fallback organism from file <{file.file_id}>.')  # noqa
+                if curr_fallback:
+                    # fallback organism was removed
+                    try:
+                        file.fallback_organism = None
+                        db.session.delete(curr_fallback)
+                    except SQLAlchemyError:
+                        db.session.rollback()
+                        raise DatabaseError('Failed to delete fallback organism from the PDF.')  # noqa
             else:
                 if (not curr_fallback or
                     (curr_fallback.organism_name != fallback_organism['organism_name']
@@ -491,14 +498,15 @@ def get_pdf(id: str, project_name: str):
                         file.fallback_organism = new_fallback
                         if curr_fallback:
                             db.session.delete(curr_fallback)
-                        db.session.commit()
                     except SQLAlchemyError:
                         db.session.rollback()
-                        raise DatabaseError(f'There was a problem updating fallback organism from file <{file.file_id}>.')  # noqa
+                        raise DatabaseError('There was a problem updating fallback organism for the PDF.')  # noqa
 
-            if update:
-                db.session.query(Files).filter(Files.file_id == id).update(update)
+            try:
                 db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback()
+                raise DatabaseError('Unexpected error occurred updating PDF.')
         yield ''
 
     try:
