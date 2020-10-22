@@ -16,9 +16,8 @@ from neo4japp.data_transfer_objects import (
     SimpleSearchRequest,
     VizSearchRequest
 )
-from neo4japp.data_transfer_objects.common import ResultList
-from neo4japp.database import get_elastic_service
-from neo4japp.database import get_search_service_dao, db
+from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
+from neo4japp.database import get_search_service_dao, db, get_elastic_service
 from neo4japp.models import (
     Projects,
     AppRole,
@@ -83,6 +82,7 @@ def search(q, types, limit, page):
     search_term = q
     types = types.split(';')
     offset = (page - 1) * limit
+    search_phrases = []
 
     if search_term:
         match_fields = ['filename', 'description', 'data.content']
@@ -148,7 +148,7 @@ def search(q, types, limit, page):
         ]
 
         elastic_service = get_elastic_service()
-        res = elastic_service.search(
+        res, search_phrases = elastic_service.search(
             index_id=FILE_INDEX_ID,
             user_query=search_term,
             offset=offset,
@@ -156,7 +156,8 @@ def search(q, types, limit, page):
             match_fields=match_fields,
             query_filter=query_filter,
             highlight=snippets
-        )['hits']
+        )
+        res = res['hits']
     else:
         res = {'hits': [], 'max_score': None, 'total': 0}
 
@@ -217,9 +218,11 @@ def search(q, types, limit, page):
             },
             'rank': doc['_score'],
         })
+
     response = ResultList(
         total=res['total'],
-        results=results
+        results=results,
+        query=ResultQuery(phrases=search_phrases),
     )
 
     return jsonify(response.to_dict())
