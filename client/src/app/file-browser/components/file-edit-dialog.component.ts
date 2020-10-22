@@ -4,13 +4,15 @@ import { CommonFormDialogComponent } from '../../shared/components/dialog/common
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
+import { OrganismAutocomplete } from '../../interfaces/neo4j.interface';
 
 @Component({
   selector: 'app-dialog-edit-file',
   templateUrl: './file-edit-dialog.component.html',
 })
 export class FileEditDialogComponent extends CommonFormDialogComponent {
-  @Input() currentFile: PdfFile;
+  currentFile: PdfFile;
+  organismTaxId: string;
 
   readonly form: FormGroup = new FormGroup({
     filename: new FormControl('', [
@@ -22,26 +24,33 @@ export class FileEditDialogComponent extends CommonFormDialogComponent {
       },
     ]),
     description: new FormControl(''),
+    organism: new FormControl('')
   });
 
-  constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+  ) {
     super(modal, messageDialog);
   }
 
-  get file() {
-    return this.currentFile;
-  }
+  @Input()
+  set organism(value: string) { this.organismTaxId = value; }
+
+  get file() { return this.currentFile; }
 
   @Input()
   set file(value: PdfFile) {
     this.currentFile = value;
-    this.form.setValue({
-      filename: value.filename || '',
-      description: value.description || '',
-    });
+    this.form.get('filename').setValue(value.filename || '');
+    this.form.get('description').setValue(value.description || '');
   }
 
   getValue() {
     return this.form.value;
+  }
+
+  setOrganism(organism: OrganismAutocomplete | null) {
+    this.form.get('organism').setValue(organism ? organism : null);
   }
 }
