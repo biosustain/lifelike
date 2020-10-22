@@ -453,7 +453,6 @@ def get_pdf(id: str, project_name: str):
         except NoResultFound:
             raise RecordNotFoundException('Requested PDF file not found.')
         else:
-            errors = ''
             # TODO: maybe move these into a separate service file?
             update: Dict[str, str] = {}
             if filename and filename != file.filename:
@@ -466,7 +465,8 @@ def get_pdf(id: str, project_name: str):
                 try:
                     db.session.query(Files).filter(Files.file_id == id).update(update)
                 except SQLAlchemyError:
-                    errors += f'Failed to update file <{file.file_id}> filename and/or description.'  # noqa
+                    db.session.rollback()
+                    raise DatabaseError('Failed to update PDF filename and/or description.')  # noqa
 
             curr_fallback = FallbackOrganism.query.get(file.fallback_organism_id)
 
@@ -477,7 +477,8 @@ def get_pdf(id: str, project_name: str):
                         file.fallback_organism = None
                         db.session.delete(curr_fallback)
                     except SQLAlchemyError:
-                        errors += f'Failed to delete fallback organism from file <{file.file_id}>.'  # noqa
+                        db.session.rollback()
+                        raise DatabaseError('Failed to delete fallback organism from the PDF.')  # noqa
             else:
                 if (not curr_fallback or
                     (curr_fallback.organism_name != fallback_organism['organism_name']
@@ -498,17 +499,14 @@ def get_pdf(id: str, project_name: str):
                         if curr_fallback:
                             db.session.delete(curr_fallback)
                     except SQLAlchemyError:
-                        errors += f'There was a problem updating fallback organism from file <{file.file_id}>.'  # noqa
+                        db.session.rollback()
+                        raise DatabaseError('There was a problem updating fallback organism for the PDF.')  # noqa
 
-            if not errors:
-                try:
-                    db.session.commit()
-                except SQLAlchemyError:
-                    db.session.rollback()
-                    raise DatabaseError(f'Unexpected error occurred updating file <{file.file_id}>.')  # noqa
-            else:
-                db.rollback()
-                raise DatabaseError(errors)
+            try:
+                db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback()
+                raise DatabaseError('Unexpected error occurred updating PDF.')
         yield ''
 
     try:
