@@ -93,8 +93,8 @@ def search(q, types, limit, page):
             # default for now.
             # 'fragment_size': FRAGMENT_SIZE,
             'fragment_size': 0,
-            'pre_tags': ['<highlight>'],
-            'post_tags': ['</highlight>'],
+            'pre_tags': ['@@@@$'],
+            'post_tags': ['@@@@/$'],
             'number_of_fragments': 50,
         }
 
@@ -160,6 +160,8 @@ def search(q, types, limit, page):
     else:
         res = {'hits': [], 'max_score': None, 'total': 0}
 
+    highlight_tag_re = re.compile('@@@@(/?)\\$')
+
     results = []
     for doc in res['hits']:
         snippets = None
@@ -171,6 +173,9 @@ def search(q, types, limit, page):
         if snippets:
             # Highlight annotations in snippets (LL-1931)
             for i, snippet in enumerate(snippets):
+                snippet = html.escape(snippet)
+                snippet = highlight_tag_re.sub('<\\1highlight>', snippet)
+
                 snippet_annotations = create_annotations(
                     annotation_method=AnnotationMethod.RULES.value,
                     document=snippet,
