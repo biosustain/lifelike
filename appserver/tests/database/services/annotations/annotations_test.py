@@ -606,6 +606,9 @@ def test_custom_annotations_gene_organism_matching_has_match(
             'color': '#0277bd',
             'links': {
                 'ncbi': 'https://www.ncbi.nlm.nih.gov/gene/?query=hooman',
+                'mesh': 'https://www.ncbi.nlm.nih.gov/mesh/?term=hooman',
+                'chebi': 'https://www.google.com/search?q=site:ebi.ac.uk/+hooman',
+                'pubchem': 'https://www.google.com/search?q=site:ncbi.nlm.nih.gov/+hooman',
                 'google': 'https://www.google.com/search?q=hooman',
                 'uniprot': 'https://www.uniprot.org/uniprot/?sort=score&query=hooman',
                 'wikipedia': 'https://www.google.com/search?q=site:+wikipedia.org+hooman',
