@@ -13,21 +13,20 @@ directory = os.path.realpath(os.path.dirname(__file__))
 def main():
     app = create_app('Flask App')
     with app.app_context():
-        files = ['text1.txt', 'text2.txt']
-        for fname in files:
-            f = os.path.join(directory, fname)
-            text = ''
+        f = os.path.join(directory, 'text1.txt')
+        text = ''
 
-            with open(f, 'r') as text_file:
-                for line in text_file:
-                    text += line
+        with open(f, 'r') as text_file:
+            for line in text_file:
+                text += line
 
-            create_annotations(
-                annotation_method=AnnotationMethod.RULES.value,
-                specified_organism='',
-                document=text,
-                filename=fname,
-            )
+        create_annotations(
+            annotation_method=AnnotationMethod.RULES.value,
+            specified_organism_synonym='',
+            specified_organism_tax_id='',
+            document=text,
+            filename='text1.txt',
+        )
 
 
 if __name__ == '__main__':
