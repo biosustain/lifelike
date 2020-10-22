@@ -6,6 +6,7 @@ import { DirectoryObject } from '../../interfaces/projects.interface';
   templateUrl: './file-info.component.html',
 })
 export class FileInfoComponent {
+  @Input() highlightTerms: string[] | undefined;
   @Input() object: DirectoryObject | undefined;
   @Output() objectEdit = new EventEmitter<DirectoryObject>();
 }
