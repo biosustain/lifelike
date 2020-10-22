@@ -21,7 +21,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AddedAnnotationExclsuion } from 'app/drawing-tool/services/interfaces';
-import { uniqueId } from 'lodash';
+import { escape, uniqueId } from 'lodash';
 import { SEARCH_LINKS } from 'app/shared/links';
 
 declare var jQuery: any;
@@ -359,7 +359,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     // links should be sorted in the order that they appear in SEARCH_LINKS
     for (const { domain, } of SEARCH_LINKS) {
       const url = an.meta.links[domain.toLowerCase()];
-      collapseHtml += `<a target="_blank" href="${url}">${domain}</a><br/>`;
+      collapseHtml += `<a target="_blank" href="${escape(url)}">${escape(domain)}</a><br/>`;
     }
     collapseHtml += `
       </div>
