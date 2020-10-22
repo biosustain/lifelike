@@ -1,21 +1,20 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-
-import { combineLatest } from 'rxjs';
-
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
+
 import { LegendService } from 'app/shared/services/legend.service';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+import { combineLatest } from 'rxjs';
 
 import { WordCloudService } from './services/word-cloud.service';
 import { WordCloudComponent } from './word-cloud.component';
 
 @Component({
-  selector: 'app-word-cloud-project',
-  templateUrl: './word-cloud.component.html',
+  selector: 'app-word-cloud-file-navigator',
+  templateUrl: './word-cloud-file-navigator.component.html',
   styleUrls: ['./word-cloud.component.scss'],
 })
-export class WordCloudProjectComponent extends WordCloudComponent {
+export class WordCloudFileNavigatorComponent extends WordCloudComponent {
 
   constructor(
     readonly route: ActivatedRoute,
@@ -30,7 +29,7 @@ export class WordCloudProjectComponent extends WordCloudComponent {
     this.loadTask = new BackgroundTask(() => {
       return combineLatest(
         this.legendService.getAnnotationLegend(),
-        this.wordCloudService.getCombinedAnnotationsProject(this.projectName),
+        this.wordCloudService.getCombinedAnnotations(this.projectName, this.fileId),
       );
     });
   }
@@ -41,7 +40,7 @@ export class WordCloudProjectComponent extends WordCloudComponent {
       result: [legend, annotationExport],
       value: [],
     }) => {
-      this.windowTitle = this.projectName;
+      this.windowTitle = 'Word Cloud';
 
       // Reset legend
       Object.keys(legend).forEach(label => {
@@ -56,6 +55,7 @@ export class WordCloudProjectComponent extends WordCloudComponent {
         this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), true);
       }, 10);
     });
+
     this.getAnnotations();
   }
 }
