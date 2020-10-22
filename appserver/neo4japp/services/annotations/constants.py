@@ -99,10 +99,10 @@ ENTITY_TYPE_PRECEDENCE = {
     EntityType.GENE.value: 8,
     EntityType.PROTEIN.value: 7,
     EntityType.PHENOTYPE.value: 6,
-    EntityType.ANATOMY.value: 5,
-    EntityType.CHEMICAL.value: 4,
-    EntityType.COMPOUND.value: 3,
-    EntityType.DISEASE.value: 2,
+    EntityType.CHEMICAL.value: 5,
+    EntityType.COMPOUND.value: 4,
+    EntityType.DISEASE.value: 3,
+    EntityType.ANATOMY.value: 2,
     EntityType.FOOD.value: 1,
 }
 

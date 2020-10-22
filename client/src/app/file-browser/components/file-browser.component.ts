@@ -14,7 +14,7 @@ import { ObjectDeleteDialogComponent } from './object-delete-dialog.component';
 import { ObjectUploadDialogComponent } from './object-upload-dialog.component';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { Directory, ProjectSpaceService } from '../services/project-space.service';
+import { Directory } from '../services/project-space.service';
 import { ProjectPageService } from '../services/project-page.service';
 import { DirectoryEditDialogComponent } from './directory-edit-dialog.component';
 import { DirectoryContent, DirectoryObject } from '../../interfaces/projects.interface';
@@ -89,6 +89,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   });
 
   lmdbsDates = {};
+  projectName: string;
 
   constructor(private readonly filesService: PdfFilesService,
               private readonly router: Router,
@@ -97,7 +98,6 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
               private readonly progressDialog: ProgressDialog,
               private readonly errorHandler: ErrorHandler,
               private readonly route: ActivatedRoute,
-              private readonly projectSpaceService: ProjectSpaceService,
               private readonly projectPageService: ProjectPageService,
               private readonly workspaceManager: WorkspaceManager,
               private readonly mapService: MapService,
@@ -136,6 +136,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         projectName: params.project_name,
         directoryId: params.dir_id,
       };
+
+      this.projectName = params.project_name;
 
       this.modulePropertiesChange.emit({
         title: this.locator.projectName,
@@ -266,23 +268,30 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       );
     } else if (object.type === 'file') {
       const file = object.data as PdfFile;
-      const dialogRef = this.modalService.open(FileEditDialogComponent);
-      dialogRef.componentInstance.file = file;
-      dialogRef.result.then(data => {
-        if (data) {
-          this.filesService.updateFileMeta(
-            this.locator.projectName,
-            file.file_id,
-            data.filename,
-            data.description,
-          )
-            .pipe(this.errorHandler.create())
-            .subscribe(() => {
-              this.refresh();
-              this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
-            });
-        }
-      }, () => {
+      this.filesService.getFileFallbackOrganism(
+        this.locator.projectName, file.file_id
+      ).subscribe(organismTaxId => {
+        const dialogRef = this.modalService.open(FileEditDialogComponent);
+        dialogRef.componentInstance.organism = organismTaxId;
+        dialogRef.componentInstance.file = file;
+
+        dialogRef.result.then(data => {
+          if (data) {
+            this.filesService.updateFileMeta(
+              this.locator.projectName,
+              file.file_id,
+              data.filename,
+              data.organism,
+              data.description,
+            )
+              .pipe(this.errorHandler.create())
+              .subscribe(() => {
+                this.refresh();
+                this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
+              });
+          }
+        }, () => {
+        });
       });
     } else if (object.type === 'map') {
       const dialogRef = this.modalService.open(MapEditDialogComponent);
@@ -534,6 +543,11 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         this.workspaceManager.navigate(['/projects']);
       }
     }
+  }
+
+  openWordCloudPane() {
+    const url = `/word-cloud/${this.projectName}`;
+    this.workspaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
   }
 
   // ========================================

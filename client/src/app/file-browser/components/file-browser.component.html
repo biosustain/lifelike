@@ -78,6 +78,11 @@
                 <i class="fa fa-fw fa-upload"></i> Upload
               </button>
 
+              <button class="btn btn-secondary ml-2" ngbTooltip="Word Cloud"
+                      (click)="openWordCloudPane()">
+                <i class="fa fa-fw fa-cloud"></i>
+              </button>
+
               <button class="btn btn-secondary ml-2"
                       [disabled]="results.selection.length === 0"
                       (click)="reannotate(results.selection)" ngbTooltip="Re-annotate document"
