@@ -87,6 +87,7 @@ def search(q, types, limit, page):
     search_term = q
     types = types.split(';')
     offset = (page - 1) * limit
+    search_phrases = []
 
     if search_term:
         match_fields = ['filename', 'description', 'data.content']
@@ -189,6 +190,7 @@ def search(q, types, limit, page):
             },
             'rank': doc['_score'],
         })
+
     response = ResultList(
         total=res['total'],
         results=results,
