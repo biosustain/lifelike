@@ -34,7 +34,7 @@
             </label>
             <div class="d-flex flex-column flex-fill">
               <select [(ngModel)]="node.label" (change)="doSave()" class="custom-select w-100" id="type"
-                      (ngModelChange)="checkSubtype()">
+                      (ngModelChange)="handleTypeChange()">
                 <option *ngFor="let choice of nodeTypeChoices" [value]="choice.label">
                   {{choice.label | titlecase}}
                 </option>

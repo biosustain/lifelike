@@ -26,11 +26,13 @@ export class OrganismAutocompleteComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.search.getOrganismFromTaxId(
-      this.organismTaxId
-    ).subscribe(
-      (response) => this.organism = response
-    );
+    if (this.organismTaxId) {
+      this.search.getOrganismFromTaxId(
+        this.organismTaxId
+      ).subscribe(
+        (response) => this.organism = response
+      );
+    }
   }
 
   searcher = (text$: Observable<string>) => text$.pipe(
