@@ -1,15 +1,15 @@
 from datetime import datetime
 import io
 import uuid
-
+from sqlalchemy import and_
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
     get_annotations_service,
     get_annotations_pdf_parser,
-    get_lmdb_dao,
 )
 from neo4japp.exceptions import (
+    AnnotationError,
     RecordNotFoundException,
     DuplicateRecord,
 )
@@ -74,8 +74,7 @@ class ManualAnnotationsService:
             parsed_pdf_chars = pdf_parser.parse_pdf(pdf=fp)
             fp.close()
             tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-            lmdb_dao = get_lmdb_dao()
-            annotator = get_annotations_service(lmdb_dao=lmdb_dao)
+            annotator = get_annotations_service()
             keyword_type = custom_annotation['meta']['type']
             matches = annotator.get_matching_manual_annotations(
                 keyword=term, keyword_type=keyword_type, tokens=tokens
@@ -93,6 +92,10 @@ class ManualAnnotationsService:
             inclusions = [
                 add_annotation(match) for match in matches if not annotation_exists(match)
             ]
+
+            if not inclusions:
+                raise AnnotationError(f'There was a problem annotating "{term}", please select '
+                                      'option to annotate only one occurrence of this term.')
         else:
             if not annotation_exists(annotation_to_add):
                 inclusions = [annotation_to_add]
@@ -102,7 +105,7 @@ class ManualAnnotationsService:
         if annotation_to_add['meta']['includeGlobally']:
             self.add_to_global_list(
                 annotation_to_add,
-                ManualAnnotationType.Inclusion.value,
+                ManualAnnotationType.INCLUSION.value,
                 file.content_id
             )
 
@@ -168,7 +171,7 @@ class ManualAnnotationsService:
         if excluded_annotation['excludeGlobally']:
             self.add_to_global_list(
                 excluded_annotation,
-                ManualAnnotationType.Exclusion.value,
+                ManualAnnotationType.EXCLUSION.value,
                 file.content_id
             )
 
@@ -207,23 +210,34 @@ class ManualAnnotationsService:
         if file is None:
             raise RecordNotFoundException('File does not exist')
 
+        return self._get_file_annotations(file)
+
+    def _get_file_annotations(self, file):
         def isExcluded(exclusions, annotation):
             for exclusion in exclusions:
                 if annotation['meta']['type'] == exclusion['type'] and \
                         annotation['textInDocument'] == exclusion['text']:
                     return True
             return False
-
         if len(file.annotations) == 0:
             return file.custom_annotations
-
         annotations = file.annotations['documents'][0]['passages'][0]['annotations']
         filtered_annotations = [
             annotation for annotation in annotations
             if not isExcluded(file.excluded_annotations, annotation)
         ]
-
         return filtered_annotations + file.custom_annotations
+
+    def get_combined_annotations_in_project(self, project_id):
+        files = Files.query.filter(
+            and_(
+                Files.project == project_id,
+                Files.annotations != []
+            )).all()
+        annotations = []
+        for fi in files:
+            annotations.extend(self._get_file_annotations(fi))
+        return annotations
 
     def add_to_global_list(self, annotation, type, file_id):
         """ Adds inclusion or exclusion to a global_list table

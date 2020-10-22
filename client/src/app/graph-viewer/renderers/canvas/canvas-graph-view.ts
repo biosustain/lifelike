@@ -2,7 +2,8 @@ import * as d3 from 'd3';
 import { GraphView } from '../graph-view';
 import {
   GraphEntity,
-  GraphEntityType, UniversalEdgeStyle,
+  GraphEntityType,
+  UniversalEdgeStyle,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -157,46 +158,46 @@ export class CanvasGraphView extends GraphView {
     this.canvas.height = this.canvas.clientHeight;
 
     this.zoom = d3.zoom()
-      .on('zoom', this.canvasZoomed.bind(this))
-      .on('end', this.canvasZoomEnded.bind(this));
+        .on('zoom', this.canvasZoomed.bind(this))
+        .on('end', this.canvasZoomEnded.bind(this));
 
     // We use rxjs to limit the number of mousemove events
     const canvasMouseMoveSubject = new Subject<any>();
 
     d3.select(this.canvas)
-      .on('click', this.canvasClicked.bind(this))
-      .on('dblclick', this.canvasDoubleClicked.bind(this))
-      .on('mousedown', this.canvasMouseDown.bind(this))
-      .on('mousemove', () => {
-        canvasMouseMoveSubject.next();
-      })
-      .on('dragover', () => {
-        canvasMouseMoveSubject.next();
-      })
-      .on('mouseleave', this.canvasMouseLeave.bind(this))
-      .on('mouseup', this.canvasMouseUp.bind(this))
-      .call(d3.drag()
-        .container(this.canvas)
-        .filter(() => !d3.event.button)
-        .subject(this.getEntityAtMouse.bind(this))
-        .on('start', this.canvasDragStarted.bind(this))
-        .on('drag', this.canvasDragged.bind(this))
-        .on('end', this.canvasDragEnded.bind(this)))
-      .call(this.zoom)
-      .on('dblclick.zoom', null);
+        .on('click', this.canvasClicked.bind(this))
+        .on('dblclick', this.canvasDoubleClicked.bind(this))
+        .on('mousedown', this.canvasMouseDown.bind(this))
+        .on('mousemove', () => {
+          canvasMouseMoveSubject.next();
+        })
+        .on('dragover', () => {
+          canvasMouseMoveSubject.next();
+        })
+        .on('mouseleave', this.canvasMouseLeave.bind(this))
+        .on('mouseup', this.canvasMouseUp.bind(this))
+        .call(d3.drag()
+            .container(this.canvas)
+            .filter(() => !d3.event.button)
+            .subject(this.getEntityAtMouse.bind(this))
+            .on('start', this.canvasDragStarted.bind(this))
+            .on('drag', this.canvasDragged.bind(this))
+            .on('end', this.canvasDragEnded.bind(this)))
+        .call(this.zoom)
+        .on('dblclick.zoom', null);
 
     this.trackedSubscriptions.push(
-      canvasMouseMoveSubject
-        .pipe(throttleTime(this.renderMinimumInterval, asyncScheduler, {
-          leading: true,
-          trailing: false,
-        }))
-        .subscribe(this.canvasMouseMoved.bind(this)),
+        canvasMouseMoveSubject
+            .pipe(throttleTime(this.renderMinimumInterval, asyncScheduler, {
+              leading: true,
+              trailing: false,
+            }))
+            .subscribe(this.canvasMouseMoved.bind(this)),
     );
 
     this.trackedSubscriptions.push(
-      fromEvent(this.canvas, 'keyup')
-        .subscribe(this.canvasKeyDown.bind(this)),
+        fromEvent(this.canvas, 'keyup')
+            .subscribe(this.canvasKeyDown.bind(this)),
     );
   }
 
@@ -229,10 +230,10 @@ export class CanvasGraphView extends GraphView {
     // Handle resizing of the canvas, but doing it with a throttled stream
     // so we don't burn extra CPU cycles resizing repeatedly unnecessarily
     this.canvasResizePendingSubscription = this.canvasResizePendingSubject
-      .pipe(debounceTime(250, asyncScheduler))
-      .subscribe(([width, height]) => {
-        this.setSize(width, height);
-      });
+        .pipe(debounceTime(250, asyncScheduler))
+        .subscribe(([width, height]) => {
+          this.setSize(width, height);
+        });
     const pushResize = () => {
       this.canvasResizePendingSubject.next([
         this.canvas.clientWidth,
@@ -306,9 +307,9 @@ export class CanvasGraphView extends GraphView {
         const newCenterX = this.transform.invertX(this.canvas.width / 2);
         const newCenterY = this.transform.invertY(this.canvas.height / 2);
         d3.select(this.canvas).call(
-          this.zoom.translateBy,
-          newCenterX - centerX,
-          newCenterY - centerY,
+            this.zoom.translateBy,
+            newCenterX - centerX,
+            newCenterY - centerY,
         );
       }
     }
@@ -427,11 +428,11 @@ export class CanvasGraphView extends GraphView {
     }
 
     select.call(
-      this.zoom.transform,
-      d3.zoomIdentity
-        .translate(canvasWidth / 2, canvasHeight / 2)
-        .scale(Math.min(1, Math.min(canvasWidth / width, canvasHeight / height)))
-        .translate(-minX - width / 2, -minY - height / 2),
+        this.zoom.transform,
+        d3.zoomIdentity
+            .translate(canvasWidth / 2, canvasHeight / 2)
+            .scale(Math.min(1, Math.min(canvasWidth / width, canvasHeight / height)))
+            .translate(-minX - width / 2, -minY - height / 2),
     );
 
     this.invalidateAll();
@@ -580,10 +581,11 @@ export class CanvasGraphView extends GraphView {
     const ctx = this.canvas.getContext('2d');
 
     yield* this.drawTouchPosition(ctx);
-    yield* this.drawHighlightBackground(ctx);
+    yield* this.drawSelectionBackground(ctx);
     yield* this.drawLayoutGroups(ctx);
     yield* this.drawEdges(ctx);
     yield* this.drawNodes(ctx);
+    yield* this.drawHighlightBackground(ctx);
     yield* this.drawActiveBehaviors(ctx);
   }
 
@@ -597,7 +599,7 @@ export class CanvasGraphView extends GraphView {
       // Either we highlight the 'touched entity' if we have one (because the user just
       // touched one), otherwise we draw something at the mouse coordinates
       if (touchPositionEntity != null) {
-        this.drawEntityHighlight(ctx, touchPositionEntity);
+        this.drawEntityBackground(ctx, touchPositionEntity, 'rgba(0, 0, 0, 0.075)');
       } else {
         ctx.beginPath();
         ctx.arc(this.touchPosition.position.x, this.touchPosition.position.y, 20 * noZoomScale, 0, 2 * Math.PI, false);
@@ -610,11 +612,21 @@ export class CanvasGraphView extends GraphView {
   private* drawHighlightBackground(ctx: CanvasRenderingContext2D) {
     yield null;
 
-    if (!this.touchPosition) {
-      const highlighted = this.highlighting.get();
-      for (const highlightedEntity of highlighted) {
-        this.drawEntityHighlight(ctx, highlightedEntity);
-      }
+    ctx.save();
+    ctx.globalCompositeOperation = 'overlay';
+    const highlighted = this.highlighting.get();
+    for (const highlightedEntity of highlighted) {
+      this.drawEntityBackground(ctx, highlightedEntity, 'rgba(254, 234, 0, 0.3)');
+    }
+    ctx.restore();
+  }
+
+  private* drawSelectionBackground(ctx: CanvasRenderingContext2D) {
+    yield null;
+
+    const selected = this.selection.get();
+    for (const selectedEntity of selected) {
+      this.drawEntityBackground(ctx, selectedEntity, 'rgba(0, 0, 0, 0.075)');
     }
   }
 
@@ -689,9 +701,10 @@ export class CanvasGraphView extends GraphView {
   }
 
   /**
-   * Draw a highlight around the entity.
+   * Draw a selection around the entity.
    */
-  private drawEntityHighlight(ctx: CanvasRenderingContext2D, entity: GraphEntity) {
+  private drawEntityBackground(ctx: CanvasRenderingContext2D, entity: GraphEntity,
+                               fillColor: string) {
     if (entity.type === GraphEntityType.Edge) {
       const d = entity.entity as UniversalGraphEdge;
       const from = this.expectNodeByHash(d.from);
@@ -715,7 +728,7 @@ export class CanvasGraphView extends GraphView {
           x: toX,
           y: toY,
         },
-        stroke: new SolidLine(lineWidth, 'rgba(0, 0, 0, 0.075)', {
+        stroke: new SolidLine(lineWidth, fillColor, {
           lineCap: 'square',
         }),
         forceHighDetailLevel: true,
@@ -724,7 +737,7 @@ export class CanvasGraphView extends GraphView {
       ctx.beginPath();
       const bbox = this.getEntityBoundingBox([entity], 10);
       ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+      ctx.fillStyle = fillColor;
       ctx.fill();
     }
   }

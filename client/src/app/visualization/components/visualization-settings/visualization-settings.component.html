@@ -50,6 +50,17 @@
           <input type="checkbox" [formControlName]="label" class="custom-control-input pointer-on-hover" [id]="expandEntityInputIdPrefix + i">
           <label class="custom-control-label pointer-on-hover" [for]="expandEntityInputIdPrefix + i">{{ label }}</label>
         </div>
+
+        <button
+        type="button"
+        class="btn btn-secondary settings-button"
+        container="body"
+        ngbTooltip="Fit all nodes on screen"
+        placement="top"
+        (click)="fitToScreen()"
+      >
+        Fit to Screen
+      </button>
       </fieldset>
     </form>
   </div>

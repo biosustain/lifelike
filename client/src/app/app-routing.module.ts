@@ -26,9 +26,19 @@ import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard
 import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
 import { EnrichmentTableViewerComponent } from './file-browser/components/enrichment-table-viewer.component';
+import { FileNavigatorComponent } from './file-navigator/file-navigator.component';
+import { WordCloudProjectComponent } from './word-cloud/word-cloud-project.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
+  {
+    path: '',
+    component: DashboardComponent,
+    data: {
+      title: 'Dashboard',
+      fontAwesomeIcon: 'home',
+    },
+  },
   {
     path: 'dashboard',
     component: DashboardComponent,
@@ -75,7 +85,7 @@ const routes: Routes = [
     path: 'search/graph',
     component: GraphSearchComponent,
     data: {
-      title: 'Visualizer Search',
+      title: 'Visualizer',
       fontAwesomeIcon: 'search',
     },
   },
@@ -83,7 +93,7 @@ const routes: Routes = [
     path: 'search/content',
     component: ContentSearchComponent,
     data: {
-      title: 'File Search',
+      title: 'Search',
       fontAwesomeIcon: 'search',
     },
   },
@@ -108,7 +118,7 @@ const routes: Routes = [
         path: 'graph',
         component: VisualizationComponent,
         data: {
-          title: 'KG Visualizer',
+          title: 'Visualizer',
           fontAwesomeIcon: 'search',
         },
       },
@@ -214,6 +224,22 @@ const routes: Routes = [
     data: {
       fontAwesomeIcon: 'tachometer-alt',
     },
+  },
+  {
+    path: 'file-navigator/:project_name/:file_id',
+    component: FileNavigatorComponent,
+    data: {
+      title: 'File Navigator',
+      fontAwesomeIcon: 'cloud',
+    },
+  },
+  {
+    path: 'word-cloud/:project_name',
+    component: WordCloudProjectComponent,
+    data: {
+      title: 'Word Cloud',
+      fontAwesomeIcon: 'cloud',
+    }
   },
   // Old links
   {path: 'file-browser', redirectTo: 'projects', pathMatch: 'full'},

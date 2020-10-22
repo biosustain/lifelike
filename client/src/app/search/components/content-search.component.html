@@ -3,7 +3,7 @@
     <div class="module-header">
       <div class="module-title-bar">
         <h1 class="module-title">
-          File Search
+          Search
           <ng-container *ngIf="valid">
             Results for "{{ params.q }}"
           </ng-container>
@@ -65,14 +65,14 @@
             </div>
           </ng-container>
 
-          <ng-container *ngIf="status.resultsShown || (fileResults.total > 0 && snippetFilter)">
-            <ng-container *ngIf="results.length || (fileResults.total > 0 && snippetFilter); else noResults">
+          <ng-container *ngIf="status.resultsShown || (fileResults.total > 0)">
+            <ng-container *ngIf="results.length || (fileResults.total > 0); else noResults">
               <div class="module-body text-muted">
                 <div class="mb-3">
                   <app-results-summary
                       [page]="params.page"
                       [pageSize]="params.limit"
-                      [collectionSize]="!(fileResults.total > 0 && snippetFilter) ? collectionSize
+                      [collectionSize]="!(fileResults.total > 0) ? collectionSize
                       : collectionSize + fileResults.total"></app-results-summary>
                 </div>
 
@@ -83,23 +83,29 @@
                     <div class="mb-1">
                       <app-file-type-label [object]="result.item"></app-file-type-label>
                     </div>
-                    <div class="search-results-item-header">
-                      <h5>
+                    <div class="search-results-item-header text-truncate">
+                      <h5 class="text-truncate">
+                        <a [appLink]="['/projects', result.item.project.projectName]" [newTab]="true">{{ result.item.project.projectName }}</a>
+                        /
                         <a [appLink]="getObjectCommands(result.item)" [newTab]="true">{{ result.item.name }}</a>
                       </h5>
                     </div>
+                    <div class="mt-2 text-truncate"><i>Created by user {{ result.item.creator.username }} on {{ result.item.creationDate | date: 'fullDate'}}</i></div>
                     <div class="mt-2 paragraph-truncate-3">
                       {{ result.item.description }}
                     </div>
+                    <ng-container *ngIf="result.item.type == 'file' && result.item.highlight">
+                      <div class="dropdown-divider"></div>
+                      <div class="mt-2 paragraph-truncate-3" [innerHTML]="result.item.highlight[0] + '...' | scrubHtml"></div>
+                      <div class="d-flex align-items-center justify-content-end">
+                        <a
+                        *ngIf="result.item.doi"
+                        [href]="result.item.doi"
+                        target="_blank">DOI Link</a>
+                      </div>
+                    </ng-container>
                   </div>
                 </div>
-                <ng-container>
-                  <div class="search-results" *ngIf="snippetFilter">
-                    <app-file-records
-                        [results]="fileResults">
-                    </app-file-records>
-                  </div>
-                </ng-container>
                 <div class="mt-4">
                   <ngb-pagination
                       [page]="params.page"
@@ -121,7 +127,7 @@
       </div>
       <div class="module-body-split-sidebar">
         <ng-container *ngIf="results.selection.length">
-          <app-file-info [object]="results.selection[0].item"></app-file-info>
+          <app-file-info [object]="results.selection[0].item" [highlightTerms]="resultQuery.phrases"></app-file-info>
         </ng-container>
       </div>
     </div>
