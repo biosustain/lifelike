@@ -37,10 +37,10 @@ class EnrichmentTableService(KgService):
         result_list = []
         domain = self.session.query(DomainURLsMap).filter(
                                         DomainURLsMap.domain == 'NCBI_Gene').one()
-        for i in range(len(result)):
-            item = {'x': result[i]['x'], 'neo4jID': result[i]['neo4jID']}
-            if (result[i]['x'] is not None):
-                item['link'] = domain.base_URL.format(result[i]['x']['id'])
+        for meta_result in result:
+            item = {'x': meta_result['x'], 'neo4jID': meta_result['neo4jID']}
+            if (meta_result['x'] is not None):
+                item['link'] = domain.base_URL.format(meta_result['x']['id'])
             result_list.append(item)
         return result_list
 
