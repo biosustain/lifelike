@@ -11,3 +11,13 @@
   left: $spacer;
   z-index: 100;
 }
+
+.pdf-tooltip-collapse-control:after {
+  font-family: Fontawesome;
+  content: '\f077';
+  float: right;
+}
+
+.pdf-tooltip-collapse-control.collapsed:after {
+  content: '\f078';
+}

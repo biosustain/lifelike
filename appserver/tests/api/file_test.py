@@ -279,6 +279,9 @@ CUSTOM_ANNOTATION_1 = {
         'links': {
             'ncbi': '',
             'uniprot': '',
+            'mesh': '',
+            'chebi': '',
+            'pubchem': '',
             'wikipedia': '',
             'google': ''
         },
@@ -302,6 +305,9 @@ CUSTOM_ANNOTATION_2 = {
         'links': {
             'ncbi': '',
             'uniprot': '',
+            'mesh': '',
+            'chebi': '',
+            'pubchem': '',
             'wikipedia': '',
             'google': ''
         },
