@@ -143,7 +143,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     }
 
     if (this.highlightTerms != null && this.highlightTerms.length) {
-      console.log('\\b' + this.highlightTerms.map(term => escapeRegExp(term)).join('|') + '\\b');
       const pattern = new RegExp(
           '\\b' + this.highlightTerms.map(term => escapeRegExp(term)).join('|') + '\\b', 'i');
       const highlights: GraphEntity[] = [];
