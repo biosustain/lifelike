@@ -1,7 +1,7 @@
 export interface Location {
   pageNumber: number;
   rect: Rect;
-  jumpText: string;
+  jumpText?: string;
 }
 
 export interface Links {
