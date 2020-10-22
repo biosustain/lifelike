@@ -8,6 +8,7 @@ import {
   OnInit,
   Output,
   ViewChild,
+  ViewEncapsulation,
 } from '@angular/core';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -20,7 +21,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AddedAnnotationExclsuion } from 'app/drawing-tool/services/interfaces';
-import { uniqueId } from 'lodash';
+import { escape, uniqueId } from 'lodash';
+import { SEARCH_LINKS } from 'app/shared/links';
 
 declare var jQuery: any;
 
@@ -29,6 +31,7 @@ declare var jQuery: any;
   selector: 'lib-pdf-viewer-lib',
   templateUrl: './pdf-viewer-lib.component.html',
   styleUrls: ['./pdf-viewer-lib.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
@@ -345,18 +348,24 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     if (an.meta.isCustom) {
       base.push(`User generated annotation`);
     }
-    if (an.meta.links && an.meta.links.google) {
-      base.push(`<a target="_blank" href="${an.meta.links.google}">Google</a>`);
+    // search links
+    const collapseTargetId = uniqueId('pdf-tooltip-collapse-target');
+    let collapseHtml = `
+      <a class="pdf-tooltip-collapse-control collapsed" role="button" data-toggle="collapse" data-target="#${collapseTargetId}" aria-expanded="false" aria-controls="${collapseTargetId}">
+        Search links
+      </a>
+      <div class="collapse" id="${collapseTargetId}">
+    `;
+    // links should be sorted in the order that they appear in SEARCH_LINKS
+    for (const { domain, } of SEARCH_LINKS) {
+      const url = an.meta.links[domain.toLowerCase()];
+      collapseHtml += `<a target="_blank" href="${escape(url)}">${escape(domain)}</a><br/>`;
     }
-    if (an.meta.links && an.meta.links.ncbi) {
-      base.push(`<a target="_blank" href="${an.meta.links.ncbi}">NCBI</a>`);
-    }
-    if (an.meta.links && an.meta.links.uniprot) {
-      base.push(`<a target="_blank" href="${an.meta.links.uniprot}">Uniprot</a>`);
-    }
-    if (an.meta.links && an.meta.links.wikipedia) {
-      base.push(`<a target="_blank" href="${an.meta.links.wikipedia}">Wikipedia</a>`);
-    }
+    collapseHtml += `
+      </div>
+    `;
+    base.push(collapseHtml);
+
     if (an.meta.isCustom) {
       base.push(`
         <div class="mt-1">
