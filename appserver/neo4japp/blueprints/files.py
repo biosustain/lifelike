@@ -176,36 +176,44 @@ def edit_gene_list(projects_name: str, fileId: str):
     enrichment_data = data['enrichmentData'].encode('utf-8')
     checksum_sha256 = hashlib.sha256(enrichment_data).digest()
     file_name = data['name']
-    if (file_name[-11:] != '.enrichment'):
-        file_name = file_name + '.enrichment'
 
     try:
         entry_file = Files.query.filter(
             Files.file_id == fileId,
             Files.project == projects.id
         ).one()
+
+        # If file type enrichment table add .enrichment to new name if it doesn't have .enrichment.
+        if (file_name[-11:] != '.enrichment' and entry_file.filename[-11:] == '.enrichment'):
+            file_name = file_name + '.enrichment'
+
+        # If file type enrichment table remove .enrichment from new name if it has .enrichment.
+        if (file_name[-11:] == '.enrichment' and entry_file.filename[-11:] != '.enrichment'):
+            file_name = file_name[:-11]
+
+        try:
+            # First look for an existing copy of this file
+            file_content = db.session.query(FileContent.id) \
+                .filter(FileContent.checksum_sha256 == checksum_sha256) \
+                .one()
+        except NoResultFound:
+            # Otherwise, let's add the file content to the database
+            file_content = FileContent(
+                raw_file=enrichment_data,
+                checksum_sha256=checksum_sha256
+            )
+            db.session.add(file_content)
+            db.session.flush()
+
+        entry_file.filename = file_name
+        entry_file.description = data['description']
+        entry_file.content_id = file_content.id
+
+        db.session.add(entry_file)
+        db.session.commit()
+
     except NoResultFound:
         raise RecordNotFoundException('Requested file not found.')
-
-    try:
-        entry_content = FileContent.query.join(
-            Files,
-            FileContent.id == Files.content_id
-        ).filter(
-            Files.file_id == fileId,
-            Files.project == projects.id
-        ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('Requested file not found.')
-
-    entry_content.raw_file = enrichment_data
-    entry_content.checksum_sha256 = checksum_sha256
-    entry_file.filename = file_name
-    entry_file.description = data['description']
-
-    db.session.add(entry_content)
-    db.session.add(entry_file)
-    db.session.commit()
 
     yield jsonify({'status': 'success'}), 200
 
@@ -602,6 +610,9 @@ def get_pdf(id: str, project_name: str):
             # TODO: maybe move these into a separate service file?
             update: Dict[str, str] = {}
             if filename and filename != file.filename:
+                # If name ends in .enrichment remove .enrichment.
+                if (filename[-11:] == '.enrichment'):
+                    filename = filename[:-11]
                 update['filename'] = filename
 
             if description != file.description:

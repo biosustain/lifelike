@@ -26,39 +26,13 @@ export interface NCBINode {
   name: string;
 }
 
-export interface EnrichmentNode {
-  // Common attributes
-  name: string;
-  // Uniprot attributes
-  function?: string;
-  gene_name?: string;
-  id?: string;
-  // Regulon attributes
-  left_end_position?: number;
-  right_end_position?: number;
-  regulondb_id?: string;
-  strand?: string;
-  // String attributes
-  annotation?: string;
-  protein_size?: number;
-  refseq?: string;
-  tax_id?: string;
-  // Biological Go attributes
-  description?: string;
-  // Cellular Go attributes
-  // Molecular Go attributes
-  alt_id?: string;
-  // biocyc attributes
-
-}
-
-export interface NCBIWrapper {
+interface NCBIWrapper {
   neo4jID: number;
   x: NCBINode;
   link: string;
 }
 
-export interface BiocycWrapper {
+interface BiocycWrapper {
   link: string;
   result: BiocycNode;
 }
@@ -73,7 +47,7 @@ export interface BiocycNode {
   pathways: string[];
 }
 
-export interface GoWrapper {
+interface GoWrapper {
   linkList: string[];
   result: GoNode[];
 }
@@ -84,7 +58,7 @@ export interface GoNode {
   name: string;
 }
 
-export interface RegulonWrapper {
+interface RegulonWrapper {
   link: string;
   result: RegulonNode;
 }
@@ -100,7 +74,7 @@ export interface RegulonNode {
   activated_by: string[];
 }
 
-export interface StringWrapper {
+interface StringWrapper {
   link: string;
   result: StringNode;
 }
@@ -114,7 +88,7 @@ export interface StringNode {
   tax_id: string;
 }
 
-export interface UniprotWrapper {
+interface UniprotWrapper {
   link: string;
   result: UniprotNode;
 }
@@ -135,12 +109,6 @@ export interface EnrichmentWrapper {
   regulon: RegulonWrapper;
   string: StringWrapper;
   uniprot: UniprotWrapper;
-}
-
-export interface NodeWrapper {
-  x?: EnrichmentNode;
-  xArray?: EnrichmentNode[];
-  g?: NCBINode;
 }
 
 @Injectable({
