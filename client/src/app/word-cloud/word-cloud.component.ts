@@ -96,46 +96,46 @@ export class WordCloudComponent {
   }
 
   setAnnotationData(annotationExport: any) {
-      // Reset annotation data
-      this.annotationData = [];
-      this.wordVisibilityMap.clear();
+    // Reset annotation data
+    this.annotationData = [];
+    this.wordVisibilityMap.clear();
 
-      const uniquePairMap = new Map<string, number>();
-      const annotationList = annotationExport.split('\n');
+    const uniquePairMap = new Map<string, number>();
+    const annotationList = annotationExport.split('\n');
 
-      // remove the headers from tsv response
-      annotationList.shift();
-      // remove empty line at the end of the tsv response
-      annotationList.pop();
-      annotationList.forEach(e => {
-        //  entity_id	  type	  text	  count
-        //  col[0]      col[1]  col[2]  col[3]
-        const cols = e.split('\t');
-        const uniquePair = cols[0] === '' ? cols[1] + cols[2] : cols[0] + cols[1];
+    // remove the headers from tsv response
+    annotationList.shift();
+    // remove empty line at the end of the tsv response
+    annotationList.pop();
+    annotationList.forEach(e => {
+      //  entity_id	  type	  text	  count
+      //  col[0]      col[1]  col[2]  col[3]
+      const cols = e.split('\t');
+      const uniquePair = cols[0] === '' ? cols[1] + cols[2] : cols[0] + cols[1];
 
-        if (!uniquePairMap.has(uniquePair)) {
-          const annotation = {
-            id: cols[0],
-            type: cols[1],
-            color: this.legend.get(cols[1].toLowerCase()), // Set lowercase to match the legend
-            text: cols[2],
-            frequency: parseInt(cols[3], 10),
-            shown: true,
-          } as WordCloudAnnotationFilterEntity;
-          this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), annotation.frequency > 1);
-          this.annotationData.push(annotation);
-          uniquePairMap.set(uniquePair, this.annotationData.length - 1);
-        } else {
-          // Add the frequency of the synonym to the original word
-          this.annotationData[uniquePairMap.get(uniquePair)].frequency += parseInt(cols[3], 10);
+      if (!uniquePairMap.has(uniquePair)) {
+        const annotation = {
+          id: cols[0],
+          type: cols[1],
+          color: this.legend.get(cols[1].toLowerCase()), // Set lowercase to match the legend
+          text: cols[2],
+          frequency: parseInt(cols[3], 10),
+          shown: true,
+        } as WordCloudAnnotationFilterEntity;
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), annotation.frequency > 1);
+        this.annotationData.push(annotation);
+        uniquePairMap.set(uniquePair, this.annotationData.length - 1);
+      } else {
+        // Add the frequency of the synonym to the original word
+        this.annotationData[uniquePairMap.get(uniquePair)].frequency += parseInt(cols[3], 10);
 
-          // TODO: In the future, we may want to show "synonyms" somewhere, or even allow the user to swap out the most frequent term for a
-          // synonym
-        }
-      });
+        // TODO: In the future, we may want to show "synonyms" somewhere, or even allow the user to swap out the most frequent term for a
+        // synonym
+      }
+    });
 
-      // Need to sort the data, since we may have squashed some terms down and messed with the order given by the API
-      this.annotationData = this.annotationData.sort((a, b) => b.frequency - a.frequency);
+    // Need to sort the data, since we may have squashed some terms down and messed with the order given by the API
+    this.annotationData = this.annotationData.sort((a, b) => b.frequency - a.frequency);
   }
 
   /**
