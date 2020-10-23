@@ -409,7 +409,7 @@ class ElasticService():
                 }
             },
             'highlight': highlight
-        }
+        }, phrase_stack + word_stack
 
     def search(
         self,
@@ -421,7 +421,7 @@ class ElasticService():
         query_filter=None,
         highlight=None
     ):
-        es_query = self._build_query_clause(
+        es_query, search_phrases = self._build_query_clause(
             search_term=user_query,
             fields=match_fields,
             punc_boost_field='data.content',  # TODO: TEMP
@@ -437,6 +437,6 @@ class ElasticService():
             rest_total_hits_as_int=True,
         )
         es_response['hits']['hits'] = [doc for doc in es_response['hits']['hits']]
-        return es_response
+        return es_response, search_phrases
 
     # End search methods

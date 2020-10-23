@@ -16,13 +16,15 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import parallel_bulk
 
 
+ANATOMY_MESH_LMDB = 'anatomy_mesh'
 CHEMICALS_CHEBI_LMDB = 'chemicals_chebi'
+CHEMICALS_PUBCHEM_LMDB = 'chemicals_pubchem'
 COMPOUNDS_BIOCYC_LMDB = 'compounds_biocyc'
 DISEASES_MESH_LMDB = 'diseases_mesh'
+FOODS_MESH_LMDB = 'foods_mesh'
 GENES_NCBI_LMDB = 'genes_ncbi'
 PHENOTYPES_MESH_LMDB = 'phenotypes_mesh'
 PROTEINS_UNIPROT_LMDB = 'proteins_uniprot'
-CHEMICALS_PUBCHEM_LMDB = 'chemicals_pubchem'
 SPECIES_NCBI_LMDB = 'species_ncbi'
 
 
@@ -33,12 +35,16 @@ def _open_env(parentdir, db_name):
 
 
 def open_env(entity_type, parentdir):
-    if entity_type == 'chemicals':
+    if entity_type == 'anatomy':
+        env, db = _open_env(parentdir, ANATOMY_MESH_LMDB)
+    elif entity_type == 'chemicals':
         env, db = _open_env(parentdir, CHEMICALS_CHEBI_LMDB)
     elif entity_type == 'compounds':
         env, db = _open_env(parentdir, COMPOUNDS_BIOCYC_LMDB)
     elif entity_type == 'diseases':
         env, db = _open_env(parentdir, DISEASES_MESH_LMDB)
+    elif entity_type == 'foods':
+        env, db = _open_env(parentdir, FOODS_MESH_LMDB)
     elif entity_type == 'genes':
         env, db = _open_env(parentdir, GENES_NCBI_LMDB)
     elif entity_type == 'phenotypes':

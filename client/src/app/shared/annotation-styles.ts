@@ -39,6 +39,8 @@ const STUDY = '#17becf';
 const PROTEIN = '#bcbd22';
 const PATHWAY = '#e377c2';
 const PHENOTYPE = '#edc949';
+const FOOD = '#8eff69';
+const ANATOMY = '#0202bd';
 
 const NOTE = '#edc949';
 const MAP = '#0277bd';
@@ -106,6 +108,14 @@ const annotationTypes: AnnotationStyle[] = [{
   {
     label: 'phenotype',
     color: PHENOTYPE,
+  },
+  {
+    label: 'food',
+    color: FOOD,
+  },
+  {
+    label: 'anatomy',
+    color: ANATOMY,
   },
   {
     label: 'link',
