@@ -10,10 +10,6 @@
   border-bottom: $module-header-border-width solid $module-header-border-color;
   box-shadow: $module-header-box-shadow;
   z-index: 2;
-
-  @include module-breakpoint-up('md') {
-    padding: $module-header-padding-y-lg $module-header-padding-x-lg;
-  }
 }
 
 .module-title-bar {
@@ -39,10 +35,6 @@
   font-weight: $module-title-font-weight;
   line-height: $module-title-line-height;
   @include text-truncate();
-
-  @include module-breakpoint-up(md) {
-    font-size: $module-title-font-size-lg;
-  }
 }
 
 .module-toolbar {
@@ -56,10 +48,6 @@
 
 .module-body {
   padding: $module-body-padding-x;
-
-  @include module-breakpoint-up(md) {
-    padding: $module-body-padding-x-lg;
-  }
 }
 
 .module-body-table {
@@ -71,44 +59,21 @@
     &:last-child {
       padding-right: $module-body-padding-x;
     }
-
-    @include module-breakpoint-up(md) {
-      &:first-child {
-        padding-left: $module-body-padding-x-lg;
-      }
-
-      &:last-child {
-        padding-right: $module-body-padding-x-lg;
-      }
-    }
   }
 }
 
 .module-section {
   margin-bottom: $module-section-margin-bottom;
-
-  @include module-breakpoint-up(md) {
-    margin-bottom: $module-section-margin-bottom-lg;
-  }
 }
 
 .module-section-header {
   margin-bottom: $module-section-header-margin-bottom;
-
-  @include module-breakpoint-up(md) {
-    margin-bottom: $module-section-header-margin-bottom-lg;
-  }
 }
 
 .module-section-header-title {
   font-size: $module-section-title-font-size;
   font-weight: $module-section-title-font-weight;
   color: $module-section-title-color;
-
-  @include module-breakpoint-up(md) {
-    font-size: $module-section-title-font-size-lg;
-    font-weight: $module-section-title-font-weight-lg;
-  }
 }
 
 // Used to constrain the width of the body to a standard size
