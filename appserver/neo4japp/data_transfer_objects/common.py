@@ -19,6 +19,12 @@ class PaginatedRequest(CamelDictMixin):
 
 
 @attr.s(frozen=True)
+class ResultQuery(CamelDictMixin):
+    phrases: Sequence[str] = attr.ib()
+
+
+@attr.s(frozen=True)
 class ResultList(CamelDictMixin):
     total: int = attr.ib()
     results: Sequence = attr.ib()
+    query = attr.ib()
