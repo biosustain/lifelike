@@ -222,7 +222,7 @@ def export_global_inclusions():
 
         if inclusion.file_id is not None:
             domain = os.environ.get('DOMAIN')
-            file = Files.query.filter_by(content_id=inclusion.file_id).one_or_none()
+            file = Files.query.filter_by(content_id=inclusion.file_id).first()
             if file is not None:
                 project = Projects.query.filter_by(id=file.project).one_or_none()
                 if project is not None:
@@ -276,7 +276,7 @@ def export_global_exclusions():
 
         if exclusion.file_id is not None:
             domain = os.environ.get('DOMAIN')
-            file = Files.query.filter_by(content_id=exclusion.file_id).one_or_none()
+            file = Files.query.filter_by(content_id=exclusion.file_id).first()
             if file is not None:
                 project = Projects.query.filter_by(id=file.project).one_or_none()
                 if project is not None:
