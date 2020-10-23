@@ -85,7 +85,7 @@ export class WordCloudComponent {
   }
 
   getAnnotationIdentifier(annotation: WordCloudAnnotationFilterEntity) {
-    return annotation.id + annotation.type;
+    return annotation.id + annotation.type + annotation.text;
   }
 
   /**
@@ -100,7 +100,7 @@ export class WordCloudComponent {
       this.annotationData = [];
       this.wordVisibilityMap.clear();
 
-      const tempIdTypePairSet = new Map<string, number>();
+      const uniquePairMap = new Map<string, number>();
       const annotationList = annotationExport.split('\n');
 
       // remove the headers from tsv response
@@ -111,9 +111,9 @@ export class WordCloudComponent {
         //  entity_id	  type	  text	  count
         //  col[0]      col[1]  col[2]  col[3]
         const cols = e.split('\t');
-        const idTypePair = cols[0] + cols[1];
+        const uniquePair = cols[0] === '' ? cols[1] + cols[2] : cols[0] + cols[1];
 
-        if (!tempIdTypePairSet.has(idTypePair)) {
+        if (!uniquePairMap.has(uniquePair)) {
           const annotation = {
             id: cols[0],
             type: cols[1],
@@ -122,12 +122,12 @@ export class WordCloudComponent {
             frequency: parseInt(cols[3], 10),
             shown: true,
           } as WordCloudAnnotationFilterEntity;
-          this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), true);
+          this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), annotation.frequency > 1);
           this.annotationData.push(annotation);
-          tempIdTypePairSet.set(idTypePair, this.annotationData.length - 1);
+          uniquePairMap.set(uniquePair, this.annotationData.length - 1);
         } else {
           // Add the frequency of the synonym to the original word
-          this.annotationData[tempIdTypePairSet.get(idTypePair)].frequency += parseInt(cols[3], 10);
+          this.annotationData[uniquePairMap.get(uniquePair)].frequency += parseInt(cols[3], 10);
 
           // TODO: In the future, we may want to show "synonyms" somewhere, or even allow the user to swap out the most frequent term for a
           // synonym

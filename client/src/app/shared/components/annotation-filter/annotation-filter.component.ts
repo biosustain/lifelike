@@ -113,9 +113,14 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     // TODO: Uncomment if we bring back max frequency
     // this.filtersForm.get('maximumFrequency').setValue(this.annotationData[0].frequency);
 
-    // Also set the visibility of each annotation to true
+    // Get all the annotation types to populate the legend
     this.annotationData.forEach(annotation => {
       this.legend.set(annotation.type, annotation.color);
+    });
+
+    // Set each type's visibility to false at first, we'll figure out what the visibility actually is in `applyFilters` below.
+    this.legend.forEach((_, key) => {
+      this.typeVisibilityMap.set(key, false);
     });
 
     this.applyFilters();
@@ -127,7 +132,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   }
 
   getAnnotationIdentifier(annotation: AnnotationFilterEntity) {
-    return annotation.id + annotation.type;
+    return annotation.id + annotation.type + annotation.text;
   }
 
   submitFiltersForm() {
