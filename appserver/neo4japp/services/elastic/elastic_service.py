@@ -316,41 +316,10 @@ class ElasticService():
 
     # Begin search methods
 
-    def get_text_match_objs(
-        self,
-        fields: List[str],
-        boost_fields: Dict[str, int],
-        word: str
-    ):
-        multi_match_obj = {
-            'multi_match': {
-                'query': word,
-                'type': 'phrase',
-                'fields': [f'{field}^{boost_fields[field]}' for field in fields]
-            }
-        }
-
-        term_objs = [
-            {
-                'term': {
-                    field: {
-                        'value': word,
-                        'boost': boost_fields[field]
-                    }
-                }
-            } for field in fields
-        ]
-
-        return [multi_match_obj] + term_objs  # type:ignore
-
-    def get_text_match_queries(
+    def get_words_and_phrases_from_search_term(
         self,
         search_term: str,
-        text_fields: List[str],
-        text_field_boosts: Dict[str, int]
     ):
-        search_term = search_term.strip()
-
         term = ''
         parsing_phrase = False
         word_stack = []
@@ -380,8 +349,44 @@ class ElasticService():
             # word_stack.
             word_stack.extend(term.split(' '))
 
+        return word_stack, phrase_stack
+
+    def get_text_match_objs(
+        self,
+        fields: List[str],
+        boost_fields: Dict[str, int],
+        word: str
+    ):
+        multi_match_obj = {
+            'multi_match': {
+                'query': word,
+                'type': 'phrase',
+                'fields': [f'{field}^{boost_fields[field]}' for field in fields]
+            }
+        }
+
+        term_objs = [
+            {
+                'term': {
+                    field: {
+                        'value': word,
+                        'boost': boost_fields[field]
+                    }
+                }
+            } for field in fields
+        ]
+
+        return [multi_match_obj] + term_objs  # type:ignore
+
+    def get_text_match_queries(
+        self,
+        words: List[str],
+        phrases: List[str],
+        text_fields: List[str],
+        text_field_boosts: Dict[str, int]
+    ):
         word_operands = []
-        for word in word_stack:
+        for word in words:
             if any([c in string.punctuation for c in word]):
                 word_operands.append(
                     {
@@ -400,7 +405,7 @@ class ElasticService():
                 })
 
         phrase_operands = []
-        for phrase in phrase_stack:
+        for phrase in phrases:
             phrase_operands.append({
                 'multi_match': {
                     'query': phrase,
@@ -446,11 +451,15 @@ class ElasticService():
         query_filter,
         highlight,
     ):
+        search_term = search_term.strip()
+        words, phrases = self.get_words_and_phrases_from_search_term(search_term)
+
         search_queries = []
         if len(text_fields) > 0:
             search_queries.append(
                 self.get_text_match_queries(
-                    search_term,
+                    words,
+                    phrases,
                     text_fields,
                     text_field_boosts
                 )
@@ -480,7 +489,7 @@ class ElasticService():
                 }
             },
             'highlight': highlight
-        }
+        }, phrases + words
 
     def search(
         self,
@@ -495,7 +504,7 @@ class ElasticService():
         query_filter=None,
         highlight=None
     ):
-        es_query = self._build_query_clause(
+        es_query, search_phrases = self._build_query_clause(
             search_term=search_term,
             text_fields=text_fields,
             text_field_boosts=text_field_boosts,
@@ -513,6 +522,6 @@ class ElasticService():
             rest_total_hits_as_int=True,
         )
         es_response['hits']['hits'] = [doc for doc in es_response['hits']['hits']]
-        return es_response
+        return es_response, search_phrases
 
     # End search methods

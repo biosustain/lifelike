@@ -1,9 +1,10 @@
+import { escapeRegExp } from 'lodash';
 import { AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Output, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { MapService } from '../services';
-import { KnowledgeMap } from '../services/interfaces';
+import { GraphEntity, GraphEntityType, KnowledgeMap } from '../services/interfaces';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ModuleProperties } from '../../shared/modules';
@@ -24,6 +25,7 @@ import { WorkspaceManager } from '../../shared/workspace-manager';
   ],
 })
 export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit {
+  @Input() highlightTerms: string[] | undefined;
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
@@ -138,6 +140,34 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     if (!this.graphCanvas) {
       this.pendingInitialize = true;
       return;
+    }
+
+    if (this.highlightTerms != null && this.highlightTerms.length) {
+      const pattern = new RegExp(
+          '\\b' + this.highlightTerms.map(term => escapeRegExp(term)).join('|') + '\\b', 'i');
+      const highlights: GraphEntity[] = [];
+
+      for (const node of this.map.graph.nodes) {
+        const text = (node.display_name + ' ' + node.data.detail).toLowerCase();
+        if (pattern.test(text)) {
+          highlights.push({
+            type: GraphEntityType.Node,
+            entity: node,
+          });
+        }
+      }
+
+      for (const edge of this.map.graph.edges) {
+        const text = (edge.label + ' ' + edge.data.detail).toLowerCase();
+        if (pattern.test(text)) {
+          highlights.push({
+            type: GraphEntityType.Edge,
+            entity: edge,
+          });
+        }
+      }
+
+      this.graphCanvas.highlighting.replace(highlights);
     }
 
     this.graphCanvas.setGraph(this.map.graph);

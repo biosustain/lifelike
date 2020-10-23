@@ -15,7 +15,7 @@ from neo4japp.data_transfer_objects import (
     SimpleSearchRequest,
     VizSearchRequest
 )
-from neo4japp.data_transfer_objects.common import ResultList
+from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
 from neo4japp.database import get_search_service_dao, db
 from neo4japp.exceptions import InvalidArgumentsException
 from neo4japp.models import (
@@ -87,6 +87,7 @@ def search(q, types, limit, page):
     search_term = q
     types = types.split(';')
     offset = (page - 1) * limit
+    search_phrases = []
 
     if search_term:
         text_fields = ['description', 'data.content', 'filename']
@@ -154,7 +155,7 @@ def search(q, types, limit, page):
         }
 
         elastic_service = get_elastic_service()
-        res = elastic_service.search(
+        res, search_phrases = elastic_service.search(
             index_id=FILE_INDEX_ID,
             search_term=search_term,
             offset=offset,
@@ -165,7 +166,8 @@ def search(q, types, limit, page):
             keyword_field_boosts=keyword_field_boosts,
             query_filter=query_filter,
             highlight=highlight
-        )['hits']
+        )
+        res = res['hits']
     else:
         res = {'hits': [], 'max_score': None, 'total': 0}
 
@@ -194,9 +196,11 @@ def search(q, types, limit, page):
             },
             'rank': doc['_score'],
         })
+
     response = ResultList(
         total=res['total'],
-        results=results
+        results=results,
+        query=ResultQuery(phrases=search_phrases),
     )
 
     return jsonify(response.to_dict())
