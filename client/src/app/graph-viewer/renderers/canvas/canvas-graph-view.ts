@@ -2,7 +2,8 @@ import * as d3 from 'd3';
 import { GraphView } from '../graph-view';
 import {
   GraphEntity,
-  GraphEntityType, UniversalEdgeStyle,
+  GraphEntityType,
+  UniversalEdgeStyle,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -584,6 +585,7 @@ export class CanvasGraphView extends GraphView {
     yield* this.drawLayoutGroups(ctx);
     yield* this.drawEdges(ctx);
     yield* this.drawNodes(ctx);
+    yield* this.drawHighlightBackground(ctx);
     yield* this.drawActiveBehaviors(ctx);
   }
 
@@ -597,7 +599,7 @@ export class CanvasGraphView extends GraphView {
       // Either we highlight the 'touched entity' if we have one (because the user just
       // touched one), otherwise we draw something at the mouse coordinates
       if (touchPositionEntity != null) {
-        this.drawEntityHighlight(ctx, touchPositionEntity);
+        this.drawEntityBackground(ctx, touchPositionEntity, 'rgba(0, 0, 0, 0.075)');
       } else {
         ctx.beginPath();
         ctx.arc(this.touchPosition.position.x, this.touchPosition.position.y, 20 * noZoomScale, 0, 2 * Math.PI, false);
@@ -607,12 +609,24 @@ export class CanvasGraphView extends GraphView {
     }
   }
 
+  private* drawHighlightBackground(ctx: CanvasRenderingContext2D) {
+    yield null;
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'overlay';
+    const highlighted = this.highlighting.get();
+    for (const highlightedEntity of highlighted) {
+      this.drawEntityBackground(ctx, highlightedEntity, 'rgba(254, 234, 0, 0.3)');
+    }
+    ctx.restore();
+  }
+
   private* drawSelectionBackground(ctx: CanvasRenderingContext2D) {
     yield null;
 
     const selected = this.selection.get();
     for (const selectedEntity of selected) {
-      this.drawEntityHighlight(ctx, selectedEntity);
+      this.drawEntityBackground(ctx, selectedEntity, 'rgba(0, 0, 0, 0.075)');
     }
   }
 
@@ -687,9 +701,10 @@ export class CanvasGraphView extends GraphView {
   }
 
   /**
-   * Draw a highlight around the entity.
+   * Draw a selection around the entity.
    */
-  private drawEntityHighlight(ctx: CanvasRenderingContext2D, entity: GraphEntity) {
+  private drawEntityBackground(ctx: CanvasRenderingContext2D, entity: GraphEntity,
+                               fillColor: string) {
     if (entity.type === GraphEntityType.Edge) {
       const d = entity.entity as UniversalGraphEdge;
       const from = this.expectNodeByHash(d.from);
@@ -713,7 +728,7 @@ export class CanvasGraphView extends GraphView {
           x: toX,
           y: toY,
         },
-        stroke: new SolidLine(lineWidth, 'rgba(0, 0, 0, 0.075)', {
+        stroke: new SolidLine(lineWidth, fillColor, {
           lineCap: 'square',
         }),
         forceHighDetailLevel: true,
@@ -722,7 +737,7 @@ export class CanvasGraphView extends GraphView {
       ctx.beginPath();
       const bbox = this.getEntityBoundingBox([entity], 10);
       ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+      ctx.fillStyle = fillColor;
       ctx.fill();
     }
   }
