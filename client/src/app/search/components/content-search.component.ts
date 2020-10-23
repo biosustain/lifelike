@@ -1,25 +1,19 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { ChangeDetectorRef, Component, EventEmitter, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { getObjectCommands } from 'app/file-browser/utils/objects';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
-
-import { ProjectSpaceService } from 'app/file-browser/services/project-space.service';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { RankedItem } from 'app/interfaces/shared.interface';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
 import { CollectionModal } from 'app/shared/utils/collection-modal';
-import {
-  deserializePaginatedParams,
-  getChoicesFromQuery,
-  serializePaginatedParams
-} from 'app/shared/utils/params';
+import { deserializePaginatedParams, getChoicesFromQuery, serializePaginatedParams } from 'app/shared/utils/params';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { ContentSearchOptions, TYPES, TYPES_MAP } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
+import { HighlightDisplayLimitChange } from '../../file-browser/components/file-info.component';
 
 @Component({
   selector: 'app-content-search',
@@ -33,14 +27,12 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   public results = new CollectionModal<RankedItem<DirectoryObject>>([], {
     multipleSelection: false,
   });
-  public queryPhrases: string[] = [];
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
 
-  constructor(route: ActivatedRoute,
-              workspaceManager: WorkspaceManager,
+  constructor(protected readonly route: ActivatedRoute,
+              protected readonly workspaceManager: WorkspaceManager,
               protected readonly contentSearchService: ContentSearchService,
-              protected readonly projectSpaceService: ProjectSpaceService,
-              protected readonly sanitizer: DomSanitizer) {
+              protected readonly zone: NgZone) {
     super(route, workspaceManager);
   }
 
@@ -95,6 +87,18 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     const commands = this.getObjectCommands(object);
     this.workspaceManager.navigate(commands, {
       fragment: `jump=${encodeURIComponent(text)}`,
+    });
+  }
+
+  highlightDisplayLimitChanged(object: DirectoryObject, change: HighlightDisplayLimitChange) {
+    this.contentSearchService.annotate({
+      texts: object.highlight.slice(change.previous, change.limit),
+    }).subscribe(result => {
+      this.zone.run(() => {
+        for (let i = 0, j = change.previous; j < change.limit; i++, j++) {
+          object.highlight[j] = result.texts[i];
+        }
+      });
     });
   }
 }

@@ -24,7 +24,7 @@ from neo4japp.models import (
     projects_collaborator_role
 )
 from neo4japp.request_schemas.search import (
-    ContentSearchSchema,
+    ContentSearchSchema, AnnotateRequestSchema,
 )
 from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.services.annotations.service_helpers import create_annotations
@@ -73,6 +73,61 @@ def visualizer_search_temp(req: VizSearchRequest):
 #     search_dao = get_search_service_dao()
 #     results = search_dao.predictive_search(req.query)
 #     return SuccessResponse(result=results, status_code=200)
+
+@bp.route('/annotate', methods=['POST'])
+@auth.login_required
+@use_kwargs(AnnotateRequestSchema)
+def annotate(texts):
+    # If done right, we would parse the XML but the built-in XML libraries in Python
+    # are susceptible to some security vulns, but because this is an internal API,
+    # we can accept that it can be janky
+    container_tag_re = re.compile("^<snippet>(.*)</snippet>$", re.DOTALL | re.IGNORECASE)
+    highlight_strip_tag_re = re.compile("^<highlight>([^<]+)</highlight>$", re.IGNORECASE)
+    highlight_add_tag_re = re.compile("^%%%%%-(.+)-%%%%%$", re.IGNORECASE)
+
+    results = []
+
+    for text in texts:
+        annotations = []
+
+        # Remove the outer document tag
+        text = container_tag_re.sub("\\1", text)
+        # Remove the highlight tags to help the annotation parser
+        text = highlight_strip_tag_re.sub("%%%%%-\\1-%%%%%", text)
+
+        try:
+            annotations = create_annotations(
+                annotation_method=AnnotationMethod.RULES.value,
+                document=text,
+                filename='snippet.pdf',
+                specified_organism_synonym='',
+                specified_organism_tax_id='',
+            )['documents'][0]['passages'][0]['annotations']
+        except Exception as e:
+            pass
+
+        for annotation in annotations:
+            keyword = annotation['keyword']
+            text = re.sub(
+                # Replace but outside tags (shh @ regex)
+                f"({re.escape(keyword)})(?![^<]*>|[^<>]*</)",
+                f'<annotation type="{annotation["meta"]["type"]}" '
+                f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
+                f'>\\1</annotation>',
+                text,
+                flags=re.IGNORECASE)
+
+        # Re-add the highlight tags
+        text = highlight_add_tag_re.sub("<highlight>\\1</highlight>", text)
+        # Re-wrap with document tags
+        text = f"<snippet>{text}</snippet>"
+
+        results.append(text)
+
+    return jsonify({
+        'texts': results,
+    })
+
 
 # TODO: Probably should rename this to something else...not sure what though
 @bp.route('/content', methods=['GET'])
@@ -172,31 +227,9 @@ def search(q, types, limit, page):
                 snippets = doc['highlight']['data.content']
 
         if snippets:
-            # Highlight annotations in snippets (LL-1931)
             for i, snippet in enumerate(snippets):
                 snippet = html.escape(snippet)
                 snippet = highlight_tag_re.sub('<\\1highlight>', snippet)
-
-                snippet_annotations = create_annotations(
-                    annotation_method=AnnotationMethod.RULES.value,
-                    document=snippet,
-                    filename=doc['_source']['filename'],
-                    specified_organism_synonym='',
-                    specified_organism_tax_id='',
-                )['documents'][0]['passages'][0]['annotations']
-
-                for annotation in snippet_annotations:
-                    keyword = annotation['keyword']
-                    print(annotation["meta"])
-                    snippet = re.sub(
-                        # Replace but outside tags (shh @ regex)
-                        f"({re.escape(keyword)})(?![^<]*>|[^<>]*</)",
-                        f'<annotation type="{annotation["meta"]["type"]}" '
-                        f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
-                        f'>{keyword}</annotation>',
-                        snippet,
-                        flags=re.IGNORECASE)
-
                 snippets[i] = f"<snippet>{snippet}</snippet>"
 
         results.append({
