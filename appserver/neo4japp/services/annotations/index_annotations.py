@@ -29,6 +29,11 @@ from neo4japp.services.annotations.constants import ManualAnnotationType
 
 es = Elasticsearch(hosts=['http://elasticsearch'], timeout=5000)
 
+"""
+Don't delete - useful for testing locally to confirm the
+LMDB structure and row count.
+"""
+
 
 def process_lmdb(env, db, entity_type):
     with env.begin(db=db) as transaction:
