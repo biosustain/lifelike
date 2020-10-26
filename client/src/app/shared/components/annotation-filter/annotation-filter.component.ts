@@ -188,7 +188,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
       // If we set the visibility of annotations with this type to 'true', then do a second filter on frequency so we don't show anything
       // not in the range.
       if (this.typeVisibilityMap.get(annotation.type)) {
-        this.wordVisibilityMap.set(annotation.text, this.filterByFrequency(annotation));
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), this.filterByFrequency(annotation));
       }
     });
 
@@ -210,7 +210,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
 
       // If we set the global state to 'true', then we should apply the current range filter
       if (state) {
-        this.wordVisibilityMap.set(annotation.text, this.filterByFrequency(annotation));
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), this.filterByFrequency(annotation));
       }
     }
     this.invalidateWordVisibility();
@@ -308,7 +308,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   }
 
   // TODO: Should consider wrapping the invalidation of word/type visibility into a single function, right now we do a lot of unnecessary
-  // looping...Not a huge problem because the lists are generally going to be relative small, but it may be a problem in the future.
+  // looping...Not a huge problem because the lists are generally going to be relatively small, but it may be a problem in the future.
 
   /**
    * Determines whether any words in the word cloud have been filtered. By default words are not filtered, so if any of them are, then we
@@ -319,7 +319,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     let wordVisibilityChanged = false;
 
     this.annotationData.forEach(annotation => {
-      if (!this.wordVisibilityMap.get(annotation.text) && this.filterByFrequency(annotation)) {
+      if (!this.wordVisibilityMap.get(this.getAnnotationIdentifier(annotation)) && this.filterByFrequency(annotation)) {
         wordVisibilityChanged = true;
       }
     });
