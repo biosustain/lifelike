@@ -129,6 +129,9 @@ export class WordCloudComponent {
         // Add the frequency of the synonym to the original word
         this.annotationData[uniquePairMap.get(uniquePair)].frequency += parseInt(cols[3], 10);
 
+        // And also update the word visibility, since the original frequency might have been 1
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(this.annotationData[uniquePairMap.get(uniquePair)]), true);
+
         // TODO: In the future, we may want to show "synonyms" somewhere, or even allow the user to swap out the most frequent term for a
         // synonym
       }
@@ -168,7 +171,7 @@ export class WordCloudComponent {
 
     hiddenTextAreaWrapper.appendChild(tempTextArea);
     this.annotationData.forEach(annotation => {
-      if (this.wordVisibilityMap.get(annotation.text)) {
+      if (this.wordVisibilityMap.get(this.getAnnotationIdentifier(annotation))) {
         tempTextArea.value += `${annotation.text}\n`;
       }
     });
