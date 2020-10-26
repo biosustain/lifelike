@@ -179,24 +179,27 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   // Process wrapper to convert domain data into string array that represents domain columns.
   processEnrichmentNodeArray(wrapper: EnrichmentWrapper): TableCell[] {
     const result: TableCell[] = [];
-    result.push(wrapper.regulon.result.regulator_family
-      ? {
-          text: wrapper.regulon.result.regulator_family,
-          singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
-        }
-      : { text: '' });
-    result.push(wrapper.regulon.result.activated_by
-      ? {
-          text: wrapper.regulon.result.activated_by.join('; '),
-          singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
-        }
-      : { text: '' });
-    result.push(wrapper.regulon.result.repressed_by
-      ? {
-          text: wrapper.regulon.result.repressed_by.join('; '),
-          singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
-        }
-      : { text: '' });
+    if (wrapper.regulon.result !== null) {
+      result.push(wrapper.regulon.result.regulator_family
+        ? {
+            text: wrapper.regulon.result.regulator_family,
+            singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
+          }
+        : { text: '' });
+      result.push(wrapper.regulon.result.activated_by
+        ? {
+            text: wrapper.regulon.result.activated_by.join('; '),
+            singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
+          }
+        : { text: '' });
+      result.push(wrapper.regulon.result.repressed_by
+        ? {
+            text: wrapper.regulon.result.repressed_by.join('; '),
+            singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
+          }
+        : { text: '' });
+    }
+
     result.push(wrapper.uniprot.result
       ? {
           text: wrapper.uniprot.result.function,
