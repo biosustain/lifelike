@@ -44,23 +44,38 @@ export class AdminSettingsComponent {
         });
         const data = {...this.form.value};
         const file: File = data.files[0];
-        this.storage.uploadUserManual(file).pipe(
-            this.errorHandler.create()
-        ).subscribe(event => {
-            if (event.type === HttpEventType.UploadProgress) {
-                progressObservable.next(new Progress({
-                    mode: ProgressMode.Determinate,
-                    status: 'Uploading file...',
-                    value: event.loaded / event.total,
-                }));
-            } else if (event.type === HttpEventType.Response) {
+        this.storage
+          .uploadUserManual(file)
+          .pipe(this.errorHandler.create())
+          .subscribe(
+            (event) => {
+              if (event.type === HttpEventType.UploadProgress) {
+                if (event.loaded >= event.total) {
+                  progressObservable.next(
+                    new Progress({
+                      mode: ProgressMode.Buffer,
+                      status: 'Processing file...',
+                      value: event.loaded / event.total,
+                    }));
+                } else {
+                  progressObservable.next(
+                    new Progress({
+                      mode: ProgressMode.Determinate,
+                      status: 'Uploading file...',
+                      value: event.loaded / event.total,
+                    }));
+                }
+              } else if (event.type === HttpEventType.Response) {
                 progressDialogRef.close();
-                this.snackBar.open(`User manual uploaded`, 'Close', {duration: 5000});
+                this.snackBar.open(`User manual uploaded`, 'Close', {
+                  duration: 5000,
+                });
+              }
+            },
+            (err) => {
+              progressDialogRef.close();
+              return throwError(err);
             }
-        },
-        err => {
-            progressDialogRef.close();
-            return throwError(err);
-        });
+          );
     }
 }

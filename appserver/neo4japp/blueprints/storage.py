@@ -45,9 +45,11 @@ class UserManualAPI(MethodView):
     def post(self):
         yield g.current_user
 
-        if 'file' not in request.files:
+        try:
+            file = request.files['file']
+        except KeyError:
             raise FileUploadError('No file specified.')
-        file = request.files['file']
+
         self.blob.upload_from_string(file.read(), content_type='application/pdf')
 
         yield jsonify(dict(results='Manual successfully uploaded.'))
