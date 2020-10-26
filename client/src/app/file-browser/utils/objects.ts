@@ -9,7 +9,11 @@ export function getObjectCommands(object: DirectoryObject) {
       // TODO: Convert to hash ID
       return ['/projects', object.project.projectName, 'folders', object.id];
     case 'file':
-      return ['/projects', object.project.projectName, 'files', object.id];
+      if (object.name.slice(object.name.length - 11) === '.enrichment') {
+        return ['/projects', object.project.projectName, 'enrichment-table', object.id];
+      } else {
+        return ['/projects', object.project.projectName, 'files', object.id];
+      }
     case 'map':
       return ['/projects', object.project.projectName, 'maps', object.id, 'edit'];
     default:

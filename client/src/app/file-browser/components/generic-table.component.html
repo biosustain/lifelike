@@ -1,0 +1,36 @@
+<table class="table table-bordered module-body-table">
+  <thead *ngIf="HEADER">
+    <ng-container>
+      <tr class="table-secondary" *ngFor="let row of HEADER">
+        <th
+          *ngFor="let col of row"
+          class="border-top text-center text-truncate"
+          [attr.colspan]="col.span"
+        >
+          {{ col.name }}
+        </th>
+      </tr>
+    </ng-container>
+  </thead>
+
+  <tbody *ngIf="entries">
+    <ng-container>
+      <tr *ngFor="let row of entries">
+        <td *ngFor="let entry of row" class="overflow-auto" [ngClass]="{ 'error': entry.highlight}">
+          <div>{{ entry.text }}</div>
+          <ng-container *ngIf="entry.multiLink">
+            <ul *ngFor="let link of entry.multiLink">
+              <li><a href="{{ link.link }}">{{ link.linkText }}</a></li>
+            </ul>
+          </ng-container>
+          <ng-container *ngIf="entry.singleLink">
+            <a href="{{ entry.singleLink.link }}">{{
+              entry.singleLink.linkText
+            }}</a>
+          </ng-container>
+        </td>
+      </tr>
+    </ng-container>
+    <tr></tr>
+  </tbody>
+</table>

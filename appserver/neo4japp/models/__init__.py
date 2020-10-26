@@ -13,7 +13,7 @@ from .drawing_tool import (
     ProjectBackup,
 )
 from .neo4j import GraphNode, GraphRelationship
-from .files import Directory, Files, FileContent, LMDBsDates, Worksheet
+from .files import Directory, Files, FileContent, LMDBsDates, Worksheet, FallbackOrganism
 from .projects import Projects, projects_collaborator_role
 from .organism_match import OrganismGeneMatch
 from .annotations import AnnotationStopWords, GlobalList
