@@ -411,7 +411,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   reannotate(objects: readonly AnnotatedDirectoryObject[]) {
     const files: PdfFile[] = objects
-      .filter(object => object.type === 'file')
+      .filter(object => object.type === 'file' && object.name.slice(object.name.length - 11) !== '.enrichment')
       .map(file => file.data as PdfFile);
 
     if (files.length) {
