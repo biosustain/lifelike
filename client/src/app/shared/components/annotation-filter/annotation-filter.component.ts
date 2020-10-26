@@ -47,8 +47,10 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   wordVisibilityChanged: boolean;
 
   typeVisibilityMap: Map<string, boolean>;
+  disabledTypeMap: Map<string, boolean>;
 
   filtersForm: FormGroup;
+  filtersFormValueChangesSub: Subscription;
 
   minimumFrequencyInputId: string;
   maximumFrequencyInputId: string;
@@ -67,6 +69,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
 
     this.wordVisibilityMap = new Map<string, boolean>();
     this.typeVisibilityMap = new Map<string, boolean>();
+    this.disabledTypeMap = new Map<string, boolean>();
 
     this.filtersForm = new FormGroup(
       // Form controls
@@ -100,14 +103,6 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Basically debounces the word visibility output. Any time the parent component should know about visibility changes, we should emit a
-    // new value to `outputSubject`, rather than emitting to `wordVisibilityOutput` directly.
-    this.outputSubjectSub = this.outputSubject.asObservable().pipe(
-      debounceTime(250),
-    ).subscribe(() => {
-      this.wordVisibilityOutput.emit(this.wordVisibilityMap);
-    });
-
     // The very first time we get the annotationData, set the default values for the frequency filters
     this.filtersForm.get('minimumFrequency').setValue(2);
     // TODO: Uncomment if we bring back max frequency
@@ -124,22 +119,32 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     });
 
     this.applyFilters();
+
+    // Basically debounces the word visibility output. Any time the parent component should know about visibility changes, we should emit a
+    // new value to `outputSubject`, rather than emitting to `wordVisibilityOutput` directly.
+    this.outputSubjectSub = this.outputSubject.asObservable().pipe(
+      debounceTime(250),
+    ).subscribe(() => {
+      this.wordVisibilityOutput.emit(this.wordVisibilityMap);
+    });
+
+    // Anytime the frequency filters change, output to the parent so the word cloud is redrawn.
+    this.filtersFormValueChangesSub = this.filtersForm.valueChanges.subscribe(() => {
+      if (this.filtersForm.valid) {
+        this.applyFilters();
+        this.outputSubject.next();
+      }
+    });
   }
 
   ngOnDestroy() {
     // `complete` effectively unsubscribes from the `outputSubjectSub`, so we don't need to manually unsubscribe from it here.
     this.outputSubject.complete();
+    this.filtersFormValueChangesSub.unsubscribe();
   }
 
   getAnnotationIdentifier(annotation: AnnotationFilterEntity) {
     return annotation.id + annotation.type + annotation.text;
-  }
-
-  submitFiltersForm() {
-    if (this.filtersForm.valid) {
-      this.applyFilters();
-      this.outputSubject.next();
-    }
   }
 
   isWordVisible(identifier: string) {
@@ -179,6 +184,12 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
       if (annotation.type === type) {
         this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), this.typeVisibilityMap.get(annotation.type));
       }
+
+      // If we set the visibility of annotations with this type to 'true', then do a second filter on frequency so we don't show anything
+      // not in the range.
+      if (this.typeVisibilityMap.get(annotation.type)) {
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), this.filterByFrequency(annotation));
+      }
     });
 
     this.invalidateWordVisibility();
@@ -196,8 +207,14 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     for (const annotation of this.annotationData) {
       this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), state);
       this.typeVisibilityMap.set(annotation.type, state);
+
+      // If we set the global state to 'true', then we should apply the current range filter
+      if (state) {
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), this.filterByFrequency(annotation));
+      }
     }
     this.invalidateWordVisibility();
+    this.invalidateTypeVisibility();
     this.outputSubject.next();
   }
 
@@ -290,6 +307,9 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     this.annotationData = unfilteredList.concat(filteredList);
   }
 
+  // TODO: Should consider wrapping the invalidation of word/type visibility into a single function, right now we do a lot of unnecessary
+  // looping...Not a huge problem because the lists are generally going to be relatively small, but it may be a problem in the future.
+
   /**
    * Determines whether any words in the word cloud have been filtered. By default words are not filtered, so if any of them are, then we
    * know that the user changed the filter. We use this to determine which (if any) of the buttons on the widget to disable/enable.
@@ -297,12 +317,12 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   private invalidateWordVisibility() {
     // Keep track if the user has some entity types disabled
     let wordVisibilityChanged = false;
-    for (const value of this.wordVisibilityMap.values()) {
-      if (!value) {
+
+    this.annotationData.forEach(annotation => {
+      if (!this.wordVisibilityMap.get(this.getAnnotationIdentifier(annotation)) && this.filterByFrequency(annotation)) {
         wordVisibilityChanged = true;
-        break;
       }
-    }
+    });
     this.wordVisibilityChanged = wordVisibilityChanged;
   }
 
@@ -311,11 +331,18 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
    * 'Chemical' option in the legend will be unchecked. If any 'Chemical' are not filtered, it is checked.
    */
   private invalidateTypeVisibility() {
-    this.typeVisibilityMap.forEach((_, key) => this.typeVisibilityMap.set(key, false));
+    this.typeVisibilityMap.forEach((_, key) => {
+      this.typeVisibilityMap.set(key, false);
+      this.disabledTypeMap.set(key, true);
+    });
 
     this.annotationData.forEach(annotation => {
       if (this.wordVisibilityMap.get(this.getAnnotationIdentifier(annotation))) {
         this.typeVisibilityMap.set(annotation.type, true);
+      }
+
+      if (this.filterByFrequency(annotation)) {
+        this.disabledTypeMap.set(annotation.type, false);
       }
     });
   }
