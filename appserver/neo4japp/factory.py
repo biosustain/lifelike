@@ -11,6 +11,7 @@ from flask import (
     jsonify,
     has_request_context,
     request,
+    g,
 )
 
 from flask_caching import Cache
@@ -31,6 +32,7 @@ from neo4japp.exceptions import (
     RecordNotFoundException,
     DataNotAvailableException
 )
+from neo4japp.utils.logger import ErrorLog
 
 from werkzeug.exceptions import UnprocessableEntity
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -169,12 +171,25 @@ def register_blueprints(app, pkgname):
 
 
 def handle_error(code: int, ex: BaseException):
+    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
     reterr = {'apiHttpError': ex.to_dict()}
     reterr['version'] = GITHUB_HASH
-    current_app.logger.error(
-        f'Request caused a handled exception {type(ex)}', exc_info=ex, extra={'to_sentry': False})
     transaction_id = request.headers.get('X-Transaction-Id', '')
     reterr['transactionId'] = transaction_id
+    current_app.logger.error(
+        f'Request caused a handled exception "{type(ex)}"',
+        exc_info=ex,
+        extra={
+            **{'to_sentry': False},
+            **ErrorLog(
+                error_name=f'{type(ex)}',
+                expected=True,
+                event_type='handled exception',
+                transaction_id=transaction_id,
+                username=current_user,
+            ).to_dict()
+        }
+    )
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
@@ -182,12 +197,23 @@ def handle_error(code: int, ex: BaseException):
 
 
 def handle_generic_error(code: int, ex: Exception):
+    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
     reterr = {'apiHttpError': str(ex)}
-    current_app.logger.error('Request caused unhandled exception', exc_info=ex)
-    reterr['version'] = GITHUB_HASH
-
     transaction_id = request.headers.get('X-Transaction-Id', '')
     reterr['transactionId'] = transaction_id
+    current_app.logger.error(
+        'Request caused unhandled exception',
+        exc_info=ex,
+        extra=ErrorLog(
+            error_name=f'{type(ex)}',
+            expected=False,
+            event_type='unhandled exception',
+            transaction_id=transaction_id,
+            username=current_user,
+        ).to_dict()
+    )
+    reterr['version'] = GITHUB_HASH
+
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
@@ -196,12 +222,22 @@ def handle_generic_error(code: int, ex: Exception):
 
 # Ensure that response includes all error messages produced from the parser
 def handle_webargs_error(code, error):
+    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
     reterr = {'apiHttpError': error.data['messages']}
-    current_app.logger.error('Request caused UnprocessableEntity error', exc_info=error)
-    reterr['version'] = GITHUB_HASH
-
     transaction_id = request.headers.get('X-Transaction-Id', '')
     reterr['transactionId'] = transaction_id
+    current_app.logger.error(
+        'Request caused UnprocessableEntity error',
+        exc_info=error,
+        extra=ErrorLog(
+            error_name=f'{type(error)}',
+            expected=True,
+            event_type='handled exception',
+            transaction_id=transaction_id,
+            username=current_user,
+        ).to_dict()
+    )
+    reterr['version'] = GITHUB_HASH
     if current_app.debug:
         reterr['detail'] = "".join(traceback.format_exception(
             etype=type(error), value=error, tb=error.__traceback__))
