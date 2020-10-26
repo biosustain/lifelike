@@ -269,7 +269,7 @@ def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
                         },
                         {
                             "domain": "chebi",
-                            "url": "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=E. coli"
+                            "url": "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=E. coli"  # noqa
                         },
                         {
                             "domain": "pubchem",
