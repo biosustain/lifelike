@@ -11,10 +11,10 @@ export const SEARCH_LINKS: readonly Hyperlink[] = Object.freeze([{
   url: 'https://www.ncbi.nlm.nih.gov/mesh/?term=%s',
 }, {
   domain: 'ChEBI',
-  url: 'https://www.google.com/search?q=site:ebi.ac.uk/+%s',
+  url: 'https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=%s',
 }, {
-  domain: 'PubCHem',
-  url: 'https://www.google.com/search?q=site:ncbi.nlm.nih.gov/+%s',
+  domain: 'PubChem',
+  url: 'https://pubchem.ncbi.nlm.nih.gov/#query=%s',
 }, {
   domain: 'Wikipedia',
   url: 'https://www.google.com/search?q=site:+wikipedia.org+%s',

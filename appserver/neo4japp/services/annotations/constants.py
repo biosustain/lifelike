@@ -165,8 +165,8 @@ SEARCH_LINKS = {
     'ncbi': 'https://www.ncbi.nlm.nih.gov/gene/?term=',
     'uniprot': 'https://www.uniprot.org/uniprot/?sort=score&query=',
     'mesh': 'https://www.ncbi.nlm.nih.gov/mesh/?term=',
-    'chebi': 'https://www.google.com/search?q=site:ebi.ac.uk/+',
-    'pubchem': 'https://www.google.com/search?q=site:ncbi.nlm.nih.gov/+',
+    'chebi': 'https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=',
+    'pubchem': 'https://pubchem.ncbi.nlm.nih.gov/#query=',
     'wikipedia': 'https://www.google.com/search?q=site:+wikipedia.org+',
     'google': 'https://www.google.com/search?q=',
 }
