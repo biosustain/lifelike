@@ -1,12 +1,11 @@
-<ng-container>
-  <form [formGroup]="form" (ngSubmit)="submit()">
-    <div class="form-group">
-      <label for="file">Upload user manual</label>
-      <input type="file" name="file" class="form-control-file" id="file"
-              accept="application/pdf" (change)="fileChanged($event)">
-    </div>
-    <button type="submit" class="btn btn-primary">
-      Upload
-    </button>
-  </form>
-</ng-container>
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div class="form-group">
+    <label for="file">Upload user manual</label>
+    <input type="file" name="file" class="form-control-file" id="file"
+            accept="application/pdf" (change)="fileChanged($event)">
+  </div>
+  <button type="submit" class="btn btn-primary">
+    Upload
+  </button>
+</form>
+
