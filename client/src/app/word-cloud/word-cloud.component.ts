@@ -5,13 +5,10 @@ import { uniqueId } from 'lodash';
 
 import { combineLatest, Subscription } from 'rxjs';
 
-import { NodeLegend } from 'app/interfaces';
-import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { LegendService } from 'app/shared/services/legend.service';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-
 import { WordCloudService } from './services/word-cloud.service';
 
 import * as d3 from 'd3';
@@ -22,43 +19,37 @@ import * as cloud from 'd3.layout.cloud';
   templateUrl: './word-cloud.component.html',
   styleUrls: ['./word-cloud.component.scss']
 })
-
 export class WordCloudComponent {
   id = uniqueId('WordCloudComponent-');
 
   projectName: string;
   fileId: string;
-  fileName: string;
+  windowTitle: string;
 
-  loadTask: BackgroundTask<[], [PdfFile, NodeLegend, string]>;
+  loadTask: BackgroundTask<[], any>;
   annotationsLoadedSub: Subscription;
 
-  wordVisibilityMap: Map<string, boolean>;
-  annotationData: WordCloudAnnotationFilterEntity[];
+  wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
+  annotationData: WordCloudAnnotationFilterEntity[] = [];
 
-  legend: Map<string, string>;
+  legend: Map<string, string> = new Map<string, string>();
 
-  filtersPanelOpened: boolean;
+  filtersPanelOpened = false;
 
   WORD_CLOUD_MARGIN = 10;
 
   constructor(
       readonly route: ActivatedRoute,
-      private pdf: PdfFilesService,
-      private wordCloudService: WordCloudService,
-      private legendService: LegendService,
+      public pdf: PdfFilesService,
+      public wordCloudService: WordCloudService,
+      public legendService: LegendService,
   ) {
     this.projectName = this.route.snapshot.params.project_name;
     this.fileId = this.route.snapshot.params.file_id;
-    this.fileName = '';
+    this.initWordCloud();
+  }
 
-    this.wordVisibilityMap = new Map<string, boolean>();
-    this.annotationData = [];
-
-    this.legend = new Map<string, string>();
-
-    this.filtersPanelOpened = false;
-
+  initDataFetch() {
     this.loadTask = new BackgroundTask(() => {
       return combineLatest(
         this.pdf.getFileMeta(this.fileId, this.projectName),
@@ -66,59 +57,22 @@ export class WordCloudComponent {
         this.wordCloudService.getCombinedAnnotations(this.projectName, this.fileId),
       );
     });
+  }
 
+  initWordCloud() {
+    this.initDataFetch();
     this.annotationsLoadedSub = this.loadTask.results$.subscribe(({
       result: [pdfFile, legend, annotationExport],
       value: [],
     }) => {
-      // Reset filename
-      this.fileName = pdfFile.filename;
+      this.windowTitle = pdfFile.filename;
 
       // Reset legend
       Object.keys(legend).forEach(label => {
         this.legend.set(label.toLowerCase(), legend[label].color);
       });
 
-      // Reset annotation data
-      this.annotationData = [];
-      this.wordVisibilityMap.clear();
-
-      const tempIdTypePairSet = new Map<string, number>();
-      const annotationList = annotationExport.split('\n');
-
-      // remove the headers from tsv response
-      annotationList.shift();
-      // remove empty line at the end of the tsv response
-      annotationList.pop();
-      annotationList.forEach(e => {
-        //  entity_id	  type	  text	  count
-        //  col[0]      col[1]  col[2]  col[3]
-        const cols = e.split('\t');
-        const idTypePair = cols[0] + cols[1];
-
-        if (!tempIdTypePairSet.has(idTypePair)) {
-          const annotation = {
-            id: cols[0],
-            type: cols[1],
-            color: this.legend.get(cols[1].toLowerCase()), // Set lowercase to match the legend
-            text: cols[2],
-            frequency: parseInt(cols[3], 10),
-            shown: true,
-          } as WordCloudAnnotationFilterEntity;
-          this.wordVisibilityMap.set(annotation.text, true);
-          this.annotationData.push(annotation);
-          tempIdTypePairSet.set(idTypePair, this.annotationData.length - 1);
-        } else {
-          // Add the frequency of the synonym to the original word
-          this.annotationData[tempIdTypePairSet.get(idTypePair)].frequency += parseInt(cols[3], 10);
-
-          // TODO: In the future, we may want to show "synonyms" somewhere, or even allow the user to swap out the most frequent term for a
-          // synonym
-        }
-      });
-
-      // Need to sort the data, since we may have squashed some terms down and messed with the order given by the API
-      this.annotationData = this.annotationData.sort((a, b) => b.frequency - a.frequency);
+      this.setAnnotationData(annotationExport);
 
       // Need a slight delay between the data having been loaded and drawing the word cloud, seems like the BackgroundTask doesn't quite
       // adhere to the normal change detection cycle.
@@ -127,14 +81,61 @@ export class WordCloudComponent {
       }, 10);
     });
 
-    this.getAnnotationsForFile();
+    this.getAnnotations();
+  }
+
+  getAnnotationIdentifier(annotation: WordCloudAnnotationFilterEntity) {
+    return annotation.id + annotation.type + annotation.text;
   }
 
   /**
    * Sends a request to the BackgroundTask object for new annotations data.
    */
-  getAnnotationsForFile() {
+  getAnnotations() {
     this.loadTask.update([]);
+  }
+
+  setAnnotationData(annotationExport: any) {
+    // Reset annotation data
+    this.annotationData = [];
+    this.wordVisibilityMap.clear();
+
+    const uniquePairMap = new Map<string, number>();
+    const annotationList = annotationExport.split('\n');
+
+    // remove the headers from tsv response
+    annotationList.shift();
+    // remove empty line at the end of the tsv response
+    annotationList.pop();
+    annotationList.forEach(e => {
+      //  entity_id	  type	  text	  count
+      //  col[0]      col[1]  col[2]  col[3]
+      const cols = e.split('\t');
+      const uniquePair = cols[0] === '' ? cols[1] + cols[2] : cols[0] + cols[1];
+
+      if (!uniquePairMap.has(uniquePair)) {
+        const annotation = {
+          id: cols[0],
+          type: cols[1],
+          color: this.legend.get(cols[1].toLowerCase()), // Set lowercase to match the legend
+          text: cols[2],
+          frequency: parseInt(cols[3], 10),
+          shown: true,
+        } as WordCloudAnnotationFilterEntity;
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), annotation.frequency > 1);
+        this.annotationData.push(annotation);
+        uniquePairMap.set(uniquePair, this.annotationData.length - 1);
+      } else {
+        // Add the frequency of the synonym to the original word
+        this.annotationData[uniquePairMap.get(uniquePair)].frequency += parseInt(cols[3], 10);
+
+        // TODO: In the future, we may want to show "synonyms" somewhere, or even allow the user to swap out the most frequent term for a
+        // synonym
+      }
+    });
+
+    // Need to sort the data, since we may have squashed some terms down and messed with the order given by the API
+    this.annotationData = this.annotationData.sort((a, b) => b.frequency - a.frequency);
   }
 
   /**
@@ -160,6 +161,24 @@ export class WordCloudComponent {
     this.filtersPanelOpened = !this.filtersPanelOpened;
   }
 
+  copyWordCloudToClipboard() {
+    const hiddenTextAreaWrapper = document.getElementById(`${this.id}-hidden-text-area-wrapper`);
+    hiddenTextAreaWrapper.style.display = 'block';
+    const tempTextArea = document.createElement('textarea');
+
+    hiddenTextAreaWrapper.appendChild(tempTextArea);
+    this.annotationData.forEach(annotation => {
+      if (this.wordVisibilityMap.get(annotation.text)) {
+        tempTextArea.value += `${annotation.text}\n`;
+      }
+    });
+    tempTextArea.select();
+    document.execCommand('copy');
+
+    hiddenTextAreaWrapper.removeChild(tempTextArea);
+    hiddenTextAreaWrapper.style.display = 'none';
+  }
+
   /**
    * Generates a copy of the annotation data. The reason we do this is the word cloud layout algorithm actually mutates the input data. To
    * keep our API response data pure, we deep copy it and give the copy to the layout algorithm instead.
@@ -171,8 +190,8 @@ export class WordCloudComponent {
   /**
    * Gets a filtered copy of the annotation data. Any word not mapped to 'true' in the wordVisibilityMap will be filtered out.
    */
-  private getFilteredAnnotationDeepCopy() {
-    return this.getAnnotationDataDeepCopy().filter(annotation => this.wordVisibilityMap.get(annotation.text));
+  getFilteredAnnotationDeepCopy() {
+    return this.getAnnotationDataDeepCopy().filter(annotation => this.wordVisibilityMap.get(this.getAnnotationIdentifier(annotation)));
   }
 
   /**
@@ -199,7 +218,7 @@ export class WordCloudComponent {
         word.shown = true;
       } else {
         // If it wasn't returned BUT it's been filtered, we don't need to show a warning
-        if (!this.wordVisibilityMap.get(word.text)) {
+        if (!this.wordVisibilityMap.get(this.getAnnotationIdentifier(word))) {
           word.shown = true;
         } else {
           // If it wasn't returned but it HASN'T been filtered, we need to show a warning
@@ -308,7 +327,7 @@ export class WordCloudComponent {
    * Draws a word cloud with the given AnnotationFilterEntity inputs using the d3.layout.cloud library.
    * @param data represents a collection of AnnotationFilterEntity data
    */
-  private drawWordCloud(data: WordCloudAnnotationFilterEntity[], initial: boolean) {
+  drawWordCloud(data: WordCloudAnnotationFilterEntity[], initial: boolean) {
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
     const {width, height} = this.getCloudSvgDimensions();
     const maximumCount = Math.max(...data.map(annotation => annotation.frequency as number));

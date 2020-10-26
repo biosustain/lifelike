@@ -1,3 +1,0 @@
-- hosts: "{{ webserver }}"
-  roles:
-    - role: ssl-renew

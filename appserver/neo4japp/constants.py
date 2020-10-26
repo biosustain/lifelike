@@ -61,182 +61,107 @@ GRAPH_INDEX = 'graph'
 
 
 def is_db_name(s: str):
-    """ check if a str is db name"""
+    """check if a str is db name"""
     return s in [DB_CHEBI, DB_NCBI, DB_GO] or s.lower().endswith('cyc')
 
 
-ANNOTATION_STYLES = [{
-        "color": '#673ab7',
-        "label": "gene",
-    },
-    {
-        "color": '#ff9800',
-        "label": "disease",
-    },
-    {
-        "color": '#4caf50',
-        "label": "chemical",
-    },
-    {
-        "color": '#4caf50',
-        "label": "compound",
-    },
-    {
-        "color": '#5d4037',
-        "label": "mutation",
-    },
-    {
-        "color": '#0277bd',
-        "label": "species",
-    },
-    {
-        "color": '#d62728',
-        "label": "company",
-    },
-    {
-        "color": '#17becf',
-        "label": "study",
-    },
-    {
-        "color": '#bcbd22',
-        "label": "protein",
-    },
-    {
-        "color": '#e377c2',
-        "label": "pathway",
-    },
-    {
-        "color": '#edc949',
-        "label": "phentotype",
-    },
-    {
-        "label": "ENTITY",
-        "color": '#7f7f7f'
-    },
-    {
-        "label": "LINK",
-        "color": '#7f7f7f'
-    },
-    # Non - Entity Types
-    {
-        "label": "correlation",
-        "color": '#d7d9f8'
-    },
-    {
-        "label": "cause",
-        "color": '#d7d9f8'
-    },
-    {
-        "label": "effect",
-        "color": '#d7d9f8'
-    },
-    {
-        "label": "observation",
-        "color": '#d7d9f8'
-    },
-    {
-        "label": "association",
-        "color": '#d7d9f8'
-    },
-    {
-        "color": '#0277bd',
-        "label": "map",
-    },
-    {
-        "color": '#edc949',
-        "label": "note",
-    },
-]
-
 ANNOTATION_STYLES_DICT = {
-    "gene": {
-        "color": '#673ab7',
-        "label": "gene",
+    'gene': {
+        'color': '#673ab7',
+        'label': 'gene',
     },
-    "disease": {
-        "color": '#ff9800',
-        "label": "disease",
+    'disease': {
+        'color': '#ff9800',
+        'label': 'disease',
     },
-    "chemical": {
-        "color": '#4caf50',
-        "label": "chemical",
+    'chemical': {
+        'color': '#4caf50',
+        'label': 'chemical',
     },
-    "compound": {
-        "color": '#4caf50',
-        "label": "compound",
+    'compound': {
+        'color': '#4caf50',
+        'label': 'compound',
     },
-    "mutation": {
-        "color": '#5d4037',
-        "label": "mutation",
+    'mutation': {
+        'color': '#5d4037',
+        'label': 'mutation',
     },
-    "species": {
-        "color": '#0277bd',
-        "label": "species",
+    'species': {
+        'color': '#0277bd',
+        'label': 'species',
     },
-    "company": {
-        "color": '#d62728',
-        "label": "company",
+    'company': {
+        'color': '#d62728',
+        'label': 'company',
     },
-    "study": {
-        "color": '#17becf',
-        "label": "study",
+    'study': {
+        'color': '#17becf',
+        'label': 'study',
     },
-    "protein": {
-        "color": '#bcbd22',
-        "label": "protein",
+    'protein': {
+        'color': '#bcbd22',
+        'label': 'protein',
     },
-    "pathway": {
-        "color": '#e377c2',
-        "label": "pathway",
+    'pathway': {
+        'color': '#e377c2',
+        'label': 'pathway',
     },
-    "phenotype": {
-        "color": '#edc949',
-        "label": "phenotype",
+    'phenotype': {
+        'color': '#edc949',
+        'label': 'phenotype',
     },
-    "entity": {
-        "label": "ENTITY",
-        "color": '#7f7f7f'
+    'food': {
+        'color': '#8eff69',
+        'label': 'food',
     },
-    "link": {
-        "label": "link",
-        "color": '#669999'
+    'anatomy': {
+        'color': '#0202bd',
+        'label': 'anatomy',
     },
-    "map": {
-        "label": "map",
-        "color": '#0277BD'
+    'entity': {
+        'label': 'ENTITY',
+        'color': '#7f7f7f'
     },
-    "note": {
-        "label": "note",
-        "color": "#EDC949"
+    'link': {
+        'label': 'link',
+        'color': '#669999'
+    },
+    'map': {
+        'label': 'map',
+        'color': '#0277BD'
+    },
+    'note': {
+        'label': 'note',
+        'color': '#EDC949'
     },
     # Non - Entity Types
-    "correlation": {
-        "label": "correlation",
-        "color": '#d7d9f8'
+    'correlation': {
+        'label': 'correlation',
+        'color': '#d7d9f8'
     },
-    "label": {
-        "label": "cause",
-        "color": '#d7d9f8'
+    'label': {
+        'label': 'cause',
+        'color': '#d7d9f8'
     },
-    "effect": {
-        "label": "effect",
-        "color": '#d7d9f8'
+    'effect': {
+        'label': 'effect',
+        'color': '#d7d9f8'
     },
-    "observation": {
-        "label": "observation",
-        "color": '#d7d9f8'
+    'observation': {
+        'label': 'observation',
+        'color': '#d7d9f8'
     },
-    "association": {
-        "label": "association",
-        "color": '#d7d9f8'
+    'association': {
+        'label': 'association',
+        'color': '#d7d9f8'
     },
-    "species": {
-        "color": '#0277bd',
-        "label": "species",
+    'species': {
+        'color': '#0277bd',
+        'label': 'species',
     },
-    "phentotype": {
-        "color": '#edc949',
-        "label": "phentotype",
+    'phentotype': {
+        'color': '#edc949',
+        'label': 'phentotype',
     },
 }
 
