@@ -17,9 +17,11 @@ from neo4japp.services.annotations.constants import (
     EntityType,
     ManualAnnotationType,
     OrganismCategory,
+    ANATOMY_MESH_LMDB,
     CHEMICALS_CHEBI_LMDB,
     COMPOUNDS_BIOCYC_LMDB,
     DISEASES_MESH_LMDB,
+    FOODS_MESH_LMDB,
     GENES_NCBI_LMDB,
     PHENOTYPES_MESH_LMDB,
     PROTEINS_UNIPROT_LMDB,
@@ -34,6 +36,20 @@ directory = path.realpath(path.dirname(__file__))
 
 
 # Start LMDB Data Helpers
+def lmdb_anatomy_factory(
+    anatomy_id: str,
+    id_type: str,
+    name: str,
+    synonym: str,
+):
+    return {
+        'anatomy_id': anatomy_id,
+        'id_type': id_type,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
 def lmdb_chemical_factory(
     chemical_id: str,
     id_type: str,
@@ -70,6 +86,20 @@ def lmdb_disease_factory(
 ):
     return {
         'disease_id': disease_id,
+        'id_type': id_type,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
+def lmdb_food_factory(
+    food_id: str,
+    id_type: str,
+    name: str,
+    synonym: str,
+):
+    return {
+        'food_id': food_id,
         'id_type': id_type,
         'name': name,
         'synonym': synonym,
@@ -312,9 +342,11 @@ def default_lmdb_setup(app, request):
     )
 
     entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
         (CHEMICALS_CHEBI_LMDB, 'chemicals', [adenosine, arginine, hypofluorite, histidine]),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', [adenosine2, guanosine]),
         (DISEASES_MESH_LMDB, 'diseases', [cold_sore]),
+        (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [bola3, hyp27_gene, serpina1_gene, serpina1_gene2]),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', [whey_protein]),
         (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein, wasabi, ns2a, NS2A]),
@@ -349,11 +381,91 @@ def abbreviation_lmdb_setup(app, request):
     )
 
     entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
         (CHEMICALS_CHEBI_LMDB, 'chemicals', [ppp]),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
         (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', []),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', [pathway]),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', []),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+
+@pytest.fixture(scope='function')
+def food_lmdb_setup(app, request):
+    sweetener = lmdb_food_factory(
+        food_id='MESH:D013549',
+        id_type=DatabaseType.MESH.value,
+        name='Sweetening Agents',
+        synonym='Artificial Sweeteners',
+    )
+
+    bacon = lmdb_food_factory(
+        food_id='MESH:D000080305',
+        id_type=DatabaseType.MESH.value,
+        name='Pork Meat',
+        synonym='Bacon',
+    )
+
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', [bacon, sweetener]),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', []),
+    ]
+    for db_name, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_name, data)
+
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+
+@pytest.fixture(scope='function')
+def anatomy_lmdb_setup(app, request):
+    filamin = lmdb_anatomy_factory(
+        anatomy_id='MESH:D064448',
+        id_type=DatabaseType.MESH.value,
+        name='Filamins',
+        synonym='280 kDa Actin Binding Protein',
+    )
+
+    claws = lmdb_anatomy_factory(
+        anatomy_id='MESH:D006724',
+        id_type=DatabaseType.MESH.value,
+        name='Hoof and Claw',
+        synonym='Claws',
+    )
+
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', [claws, filamin]),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', []),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
         (SPECIES_NCBI_LMDB, 'species', []),
     ]
@@ -406,9 +518,11 @@ def bola_human_monkey_gene(app, request):
     )
 
     entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
         (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
         (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [bola3, bola3_monkey]),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
@@ -455,9 +569,11 @@ def human_gene_pdf_lmdb_setup(app, request):
     )
 
     entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
         (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
         (DISEASES_MESH_LMDB, 'diseases', [covid_19]),
+        (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [ace2]),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
@@ -528,9 +644,11 @@ def gene_organism_escherichia_coli_pdf_lmdb_setup(app, request):
     )
 
     entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
         (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
         (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [purA, purB, purC, purD, purF]),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
@@ -574,9 +692,11 @@ def protein_organism_escherichia_coli_pdf_lmdb_setup(app, request):
     )
 
     entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
         (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
         (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', []),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', [ydhb, ydhc]),
@@ -631,9 +751,11 @@ def human_rat_gene_lmdb_setup(app, request):
     )
 
     entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
         (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
         (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [edem3, edem3_caps]),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
@@ -688,9 +810,11 @@ def fish_gene_lmdb_setup(app, request):
     )
 
     entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
         (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
         (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [IL7, il7]),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
@@ -1147,8 +1271,10 @@ def entity_inclusion_setup(get_annotation_n4j, get_lmdb):
 @pytest.fixture(scope='function')
 def get_lmdb():
     for db_name, entity in [
+        (ANATOMY_MESH_LMDB, 'anatomy'),
         (CHEMICALS_CHEBI_LMDB, 'chemicals'),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds'),
+        (FOODS_MESH_LMDB, 'foods'),
         (GENES_NCBI_LMDB, 'genes'),
         (DISEASES_MESH_LMDB, 'diseases'),
         (PROTEINS_UNIPROT_LMDB, 'proteins'),
@@ -1157,22 +1283,26 @@ def get_lmdb():
     ]:
         create_empty_lmdb(f'lmdb/{entity}', db_name)
 
-    genes_lmdb_path = path.join(directory, 'lmdb/genes')
+    anatomy_lmdb_path = path.join(directory, 'lmdb/anatomy')
     chemicals_lmdb_path = path.join(directory, 'lmdb/chemicals')
     compounds_lmdb_path = path.join(directory, 'lmdb/compounds')
+    diseases_lmdb_path = path.join(directory, 'lmdb/diseases')
+    foods_lmdb_path = path.join(directory, 'lmdb/foods')
+    genes_lmdb_path = path.join(directory, 'lmdb/genes')
+    phenotypes_lmdb_path = path.join(directory, 'lmdb/phenotypes')
     proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
     species_lmdb_path = path.join(directory, 'lmdb/species')
-    diseases_lmdb_path = path.join(directory, 'lmdb/diseases')
-    phenotypes_lmdb_path = path.join(directory, 'lmdb/phenotypes')
 
     return LMDBDao(
         genes_lmdb_path=genes_lmdb_path,
+        anatomy_lmdb_path=anatomy_lmdb_path,
         chemicals_lmdb_path=chemicals_lmdb_path,
         compounds_lmdb_path=compounds_lmdb_path,
         proteins_lmdb_path=proteins_lmdb_path,
         species_lmdb_path=species_lmdb_path,
         diseases_lmdb_path=diseases_lmdb_path,
         phenotypes_lmdb_path=phenotypes_lmdb_path,
+        foods_lmdb_path=foods_lmdb_path
     )
 
 

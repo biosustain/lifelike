@@ -88,6 +88,17 @@ def get_visualizer_service():
     return g.visualizer_service
 
 
+def get_enrichment_table_service():
+    if 'enrichment_table_service' not in g:
+        from neo4japp.services import EnrichmentTableService
+        graph = _connect_to_neo4j()
+        g.enrichment_table_service = EnrichmentTableService(
+            graph=graph,
+            session=db.session,
+        )
+    return g.enrichment_table_service
+
+
 def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService

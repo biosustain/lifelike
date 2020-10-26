@@ -2,7 +2,7 @@ import re
 
 from bisect import bisect_left
 from math import inf
-from typing import cast, Dict, List, Optional, Set, Tuple, Union
+from typing import cast, Dict, List, Set, Tuple, Union
 from uuid import uuid4
 
 from flask import current_app
@@ -21,13 +21,10 @@ from .constants import (
     OrganismCategory,
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
-    GOOGLE_LINK,
     HOMO_SAPIENS_TAX_ID,
-    NCBI_LINK,
     ORGANISM_DISTANCE_THRESHOLD,
     PDF_NEW_LINE_THRESHOLD,
-    UNIPROT_LINK,
-    WIKIPEDIA_LINK,
+    SEARCH_LINKS,
 )
 from .lmdb_dao import LMDBDao
 from .util import normalize_str, standardize_str
@@ -59,15 +56,21 @@ class AnnotationsService:
 
     def get_entities_to_annotate(
         self,
+        anatomy: bool = True,
         chemical: bool = True,
         compound: bool = True,
         disease: bool = True,
+        food: bool = True,
         gene: bool = True,
         phenotype: bool = True,
         protein: bool = True,
         species: bool = True,
     ) -> List[Tuple[str, str]]:
         entity_type_and_id_pairs: List[Tuple[str, str]] = []
+
+        if anatomy:
+            entity_type_and_id_pairs.append(
+                (EntityType.ANATOMY.value, EntityIdStr.ANATOMY.value))
 
         if chemical:
             entity_type_and_id_pairs.append(
@@ -80,6 +83,10 @@ class AnnotationsService:
         if disease:
             entity_type_and_id_pairs.append(
                 (EntityType.DISEASE.value, EntityIdStr.DISEASE.value))
+
+        if food:
+            entity_type_and_id_pairs.append(
+                (EntityType.FOOD.value, EntityIdStr.FOOD.value))
 
         if phenotype:
             entity_type_and_id_pairs.append(
@@ -257,10 +264,7 @@ class AnnotationsService:
                 id_type=entity['id_type'],
                 id_hyperlink=cast(str, hyperlink),
                 links=OrganismAnnotation.OrganismMeta.Links(
-                    ncbi=NCBI_LINK + link_search_term,
-                    uniprot=UNIPROT_LINK + link_search_term,
-                    wikipedia=WIKIPEDIA_LINK + link_search_term,
-                    google=GOOGLE_LINK + link_search_term,
+                    **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
                 all_text=link_search_term,
             )
@@ -289,10 +293,7 @@ class AnnotationsService:
                 id_type=entity['id_type'],
                 id_hyperlink=cast(str, hyperlink),
                 links=OrganismAnnotation.OrganismMeta.Links(
-                    ncbi=NCBI_LINK + link_search_term,
-                    uniprot=UNIPROT_LINK + link_search_term,
-                    wikipedia=WIKIPEDIA_LINK + link_search_term,
-                    google=GOOGLE_LINK + link_search_term,
+                    **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
                 all_text=link_search_term,
             )
@@ -316,10 +317,7 @@ class AnnotationsService:
                 id_type=entity['id_type'],
                 id_hyperlink=cast(str, hyperlink),
                 links=Annotation.Meta.Links(
-                    ncbi=NCBI_LINK + link_search_term,
-                    uniprot=UNIPROT_LINK + link_search_term,
-                    wikipedia=WIKIPEDIA_LINK + link_search_term,
-                    google=GOOGLE_LINK + link_search_term,
+                    **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
                 all_text=link_search_term,
             )
@@ -519,9 +517,11 @@ class AnnotationsService:
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
+        gene_names_list = list(gene_names)
+
         gene_organism_matches = \
             self.annotation_neo4j.get_gene_to_organism_match_result(
-                genes=list(gene_names),
+                genes=gene_names_list,
                 matched_organism_ids=list(self.organism_frequency.keys()),
             )
 
@@ -531,7 +531,7 @@ class AnnotationsService:
         if self.specified_organism.synonym:
             fallback_gene_organism_matches = \
                 self.annotation_neo4j.get_gene_to_organism_match_result(
-                    genes=list(gene_names),
+                    genes=gene_names_list,
                     matched_organism_ids=[self.specified_organism.organism_id],
                 )
 
@@ -575,6 +575,21 @@ class AnnotationsService:
                 matches.append(annotation)
         return matches
 
+    def _annotate_anatomy(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_anatomy,
+            token_type=EntityType.ANATOMY.value,
+            color=EntityColor.ANATOMY.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
     def _annotate_chemicals(
         self,
         entity_id_str: str,
@@ -605,6 +620,51 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
+    def _annotate_diseases(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_diseases,
+            token_type=EntityType.DISEASE.value,
+            color=EntityColor.DISEASE.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
+    def _annotate_foods(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_foods,
+            token_type=EntityType.FOOD.value,
+            color=EntityColor.FOOD.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
+    def _annotate_phenotypes(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_phenotypes,
+            token_type=EntityType.PHENOTYPE.value,
+            color=EntityColor.PHENOTYPE.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
     def _annotate_proteins(
         self,
         entity_id_str: str,
@@ -629,9 +689,11 @@ class AnnotationsService:
 
                     entity_tokenpos_pairs.append((entity, token_positions))
 
+        protein_names_list = list(protein_names)
+
         protein_organism_matches = \
             self.annotation_neo4j.get_proteins_to_organisms(
-                proteins=list(protein_names),
+                proteins=protein_names_list,
                 organisms=list(self.organism_frequency.keys()),
             )
 
@@ -641,7 +703,7 @@ class AnnotationsService:
         if self.specified_organism.synonym:
             fallback_protein_organism_matches = \
                 self.annotation_neo4j.get_proteins_to_organisms(
-                    proteins=list(protein_names),
+                    proteins=protein_names_list,
                     organisms=[self.specified_organism.organism_id],
                 )
 
@@ -789,36 +851,6 @@ class AnnotationsService:
         # don't return the custom annotations because they should stay as custom
         return species_annotations
 
-    def _annotate_diseases(
-        self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            tokens=self.matched_diseases,
-            token_type=EntityType.DISEASE.value,
-            color=EntityColor.DISEASE.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
-        )
-
-    def _annotate_phenotypes(
-        self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
-    ) -> List[Annotation]:
-        return self._get_annotation(
-            tokens=self.matched_phenotypes,
-            token_type=EntityType.PHENOTYPE.value,
-            color=EntityColor.PHENOTYPE.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
-        )
-
     def annotate(
         self,
         annotation_type: str,
@@ -828,12 +860,14 @@ class AnnotationsService:
         organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
         funcs = {
+            EntityType.ANATOMY.value: self._annotate_anatomy,
             EntityType.CHEMICAL.value: self._annotate_chemicals,
             EntityType.COMPOUND.value: self._annotate_compounds,
-            EntityType.PROTEIN.value: self._annotate_proteins,
-            EntityType.SPECIES.value: self._annotate_species,
             EntityType.DISEASE.value: self._annotate_diseases,
+            EntityType.FOOD.value: self._annotate_foods,
             EntityType.PHENOTYPE.value: self._annotate_phenotypes,
+            EntityType.SPECIES.value: self._annotate_species,
+            EntityType.PROTEIN.value: self._annotate_proteins,
             EntityType.GENE.value: self._annotate_genes,
         }
 
@@ -1060,9 +1094,11 @@ class AnnotationsService:
         """Create annotations based on semantic rules."""
         self.local_species_inclusion = entity_results.local_species_inclusion
         self.matched_local_species_inclusion = entity_results.matched_local_species_inclusion
+        self.matched_anatomy = entity_results.matched_anatomy
         self.matched_chemicals = entity_results.matched_chemicals
         self.matched_compounds = entity_results.matched_compounds
         self.matched_diseases = entity_results.matched_diseases
+        self.matched_foods = entity_results.matched_foods
         self.matched_genes = entity_results.matched_genes
         self.matched_phenotypes = entity_results.matched_phenotypes
         self.matched_proteins = entity_results.matched_proteins
