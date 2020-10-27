@@ -6,6 +6,6 @@ ul {
   padding-inline-start: 20px;
 }
 
-td .div {
-  white-space:pre-wrap;
+table, th, td {
+  border: 1px ridge black !important;
 }
