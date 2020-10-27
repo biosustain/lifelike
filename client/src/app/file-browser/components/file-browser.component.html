@@ -224,7 +224,9 @@
                           <a [appLink]="getObjectCommands(object)" [queryParams]="getObjectQueryParams()"
                              [newTab]="object.type !== 'dir'">
                             <ng-container *ngIf="object.type !== 'dir'; else dirLabel">
-                              {{ object.name }}
+                              <div *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'">{{ object.name }} </div>
+                              <div *ngIf="object.name.slice(object.name.length - 11) === '.enrichment'">{{ object.name.slice(0, -11) }} </div>
+
                             </ng-container>
                             <ng-template #dirLabel>
                               <strong>{{ object.name }}</strong>
