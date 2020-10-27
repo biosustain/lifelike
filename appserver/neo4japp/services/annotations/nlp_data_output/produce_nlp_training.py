@@ -184,7 +184,8 @@ def create_annotations_from_text(text, title):
         try:
             annotations, bioc_json = create_annotations_helper(
                 annotation_method='Rules Based',
-                specified_organism='',
+                specified_organism_synonym='',
+                specified_organism_tax_id='',
                 document=text,
                 filename=title
             )
