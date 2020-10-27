@@ -18,10 +18,7 @@ Thumbs.db
 .local/
 
 # IDE - VSCode
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
+.vscode/
 
 # ignore db files
 neo4j/data/*
@@ -60,6 +57,7 @@ outputs/
 
 # LMDB files
 appserver/neo4japp/services/annotations/**/*.mdb
+appserver/neo4japp/services/annotations/**/*.mdb.old
 appserver/neo4japp/services/annotations/datasets/**/*.csv
 appserver/neo4japp/services/annotations/datasets/**/*.tsv
 
@@ -73,3 +71,9 @@ appserver/neo4japp/services/annotations/nlp_data_output/*.txt
 
 # Backups
 *.backup
+
+# gcloud service accounts
+*ansible_service_account*
+
+# ansible secrets
+.vault_secrets_pw

@@ -21,13 +21,10 @@ from .constants import (
     OrganismCategory,
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
-    GOOGLE_LINK,
     HOMO_SAPIENS_TAX_ID,
-    NCBI_LINK,
     ORGANISM_DISTANCE_THRESHOLD,
     PDF_NEW_LINE_THRESHOLD,
-    UNIPROT_LINK,
-    WIKIPEDIA_LINK,
+    SEARCH_LINKS,
 )
 from .lmdb_dao import LMDBDao
 from .util import normalize_str, standardize_str
@@ -267,10 +264,7 @@ class AnnotationsService:
                 id_type=entity['id_type'],
                 id_hyperlink=cast(str, hyperlink),
                 links=OrganismAnnotation.OrganismMeta.Links(
-                    ncbi=NCBI_LINK + link_search_term,
-                    uniprot=UNIPROT_LINK + link_search_term,
-                    wikipedia=WIKIPEDIA_LINK + link_search_term,
-                    google=GOOGLE_LINK + link_search_term,
+                    **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
                 all_text=link_search_term,
             )
@@ -299,10 +293,7 @@ class AnnotationsService:
                 id_type=entity['id_type'],
                 id_hyperlink=cast(str, hyperlink),
                 links=OrganismAnnotation.OrganismMeta.Links(
-                    ncbi=NCBI_LINK + link_search_term,
-                    uniprot=UNIPROT_LINK + link_search_term,
-                    wikipedia=WIKIPEDIA_LINK + link_search_term,
-                    google=GOOGLE_LINK + link_search_term,
+                    **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
                 all_text=link_search_term,
             )
@@ -326,10 +317,7 @@ class AnnotationsService:
                 id_type=entity['id_type'],
                 id_hyperlink=cast(str, hyperlink),
                 links=Annotation.Meta.Links(
-                    ncbi=NCBI_LINK + link_search_term,
-                    uniprot=UNIPROT_LINK + link_search_term,
-                    wikipedia=WIKIPEDIA_LINK + link_search_term,
-                    google=GOOGLE_LINK + link_search_term,
+                    **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
                 all_text=link_search_term,
             )

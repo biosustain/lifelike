@@ -181,3 +181,217 @@ class KgService(HybridDBDao):
         """Get all properties of a label."""
         props = self.graph.run(f'match (n: {node_label}) unwind keys(n) as key return distinct key').data()  # noqa
         return {node_label: [prop['key'] for prop in props]}
+
+    def get_uniprot_genes(
+        self,
+        ncbi_gene_ids: List[int],
+    ):
+        query = self.get_uniprot_genes_query()
+        result = self.graph.run(
+            query,
+            {
+                'ncbi_gene_ids': ncbi_gene_ids,
+            }
+        ).data()
+        result_list = []
+        domain = self.session.query(DomainURLsMap).filter(
+                                        DomainURLsMap.domain == 'uniprot').one()
+        for meta_result in result:
+            item = {'result': meta_result['x']}
+            if (meta_result['x'] is not None):
+                meta_id = meta_result['x']['id']
+                item['link'] = domain.base_URL.format(meta_id)
+            result_list.append(item)
+        return result_list
+
+    def get_string_genes(
+        self,
+        ncbi_gene_ids: List[int],
+    ):
+        query = self.get_string_genes_query()
+        result = self.graph.run(
+            query,
+            {
+                'ncbi_gene_ids': ncbi_gene_ids,
+            }
+        ).data()
+        result_list = []
+        for meta_result in result:
+            item = {'result': meta_result['x']}
+            if (meta_result['x'] is not None):
+                refseq = meta_result['x']['refseq']
+                item['link'] = f'https://string-db.org/cgi/network?identifiers={refseq}'
+            result_list.append(item)
+        return result_list
+
+    def get_molecular_go_genes(
+        self,
+        ncbi_gene_ids: List[int],
+    ):
+        query = self.get_molecular_go_genes_query()
+        result = self.graph.run(
+            query,
+            {
+                'ncbi_gene_ids': ncbi_gene_ids,
+            }
+        ).data()
+        result_list = []
+        domain = self.session.query(DomainURLsMap).filter(
+                                        DomainURLsMap.domain == 'go').one()
+        for meta_result in result:
+            xArray = meta_result['xArray']
+            item = {'result': xArray}
+            if (xArray is not None):
+                link_list = []
+                for go in xArray:
+                    link_list.append(domain.base_URL.format(go['id']))
+                item['linkList'] = link_list
+            result_list.append(item)
+        return result_list
+
+    def get_biological_go_genes(
+        self,
+        ncbi_gene_ids: List[int],
+    ):
+        query = self.get_biological_go_genes_query()
+        result = self.graph.run(
+            query,
+            {
+                'ncbi_gene_ids': ncbi_gene_ids,
+            }
+        ).data()
+        result_list = []
+        domain = self.session.query(DomainURLsMap).filter(
+                                        DomainURLsMap.domain == 'go').one()
+        for meta_result in result:
+            xArray = meta_result['xArray']
+            item = {'result': xArray}
+            if (xArray is not None):
+                link_list = []
+                for go in xArray:
+                    link_list.append(domain.base_URL.format(go['id']))
+                item['linkList'] = link_list
+            result_list.append(item)
+        return result_list
+
+    def get_cellular_go_genes(
+        self,
+        ncbi_gene_ids: List[int],
+    ):
+        query = self.get_cellular_go_genes_query()
+        result = self.graph.run(
+            query,
+            {
+                'ncbi_gene_ids': ncbi_gene_ids,
+            }
+        ).data()
+        result_list = []
+        domain = self.session.query(DomainURLsMap).filter(
+                                        DomainURLsMap.domain == 'go').one()
+        for meta_result in result:
+            xArray = meta_result['xArray']
+            item = {'result': xArray}
+            if (xArray is not None):
+                link_list = []
+                for go in xArray:
+                    link_list.append(domain.base_URL.format(go['id']))
+                item['linkList'] = link_list
+            result_list.append(item)
+        return result_list
+
+    def get_biocyc_genes(
+        self,
+        ncbi_gene_ids: List[int],
+    ):
+        query = self.get_biocyc_genes_query()
+        result = self.graph.run(
+            query,
+            {
+                'ncbi_gene_ids': ncbi_gene_ids,
+            }
+        ).data()
+        result_list = []
+        for meta_result in result:
+            item = {'result': meta_result['x']}
+            if (meta_result['x'] is not None):
+                biocyc_id = meta_result['x']['biocyc_id']
+                item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
+            result_list.append(item)
+        return result_list
+
+    def get_regulon_genes(
+        self,
+        ncbi_gene_ids: List[int],
+    ):
+        query = self.get_regulon_genes_query()
+        result = self.graph.run(
+            query,
+            {
+                'ncbi_gene_ids': ncbi_gene_ids,
+            }
+        ).data()
+        result_list = []
+        for meta_result in result:
+            item = {'result': meta_result['x']}
+            if (meta_result['x'] is not None):
+                regulondb_id = meta_result['x']['regulondb_id']
+                item['link'] = f'http://regulondb.ccg.unam.mx/gene?term={regulondb_id}' \
+                    '&organism=ECK12&format=jsp&type=gene'
+            result_list.append(item)
+        return result_list
+
+    def get_uniprot_genes_query(self):
+        return """
+        MATCH (g:Gene:db_NCBI)
+        WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:HAS_GENE]-(x:db_UniProt)
+        RETURN x
+        """
+
+    def get_string_genes_query(self):
+        return """
+        MATCH (g:Gene:db_NCBI)
+        WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:GENE_LINK]-(x:db_STRING)
+        RETURN x
+        """
+
+    def get_molecular_go_genes_query(self):
+        return """
+        MATCH (g:Gene:db_NCBI)
+        WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:GO_LINK]-(x:MolecularFunction:db_GO)
+        RETURN g, collect(x) as xArray
+        """
+
+    def get_biological_go_genes_query(self):
+        return """
+        MATCH (g:Gene:db_NCBI)
+        WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:GO_LINK]-(x:BiologicalProcess:db_GO)
+        RETURN g, collect(x) as xArray
+        """
+
+    def get_cellular_go_genes_query(self):
+        return """
+        MATCH (g:Gene:db_NCBI)
+        WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:GO_LINK]-(x:CellularComponent:db_GO)
+        RETURN g, collect(x) as xArray
+        """
+
+    def get_biocyc_genes_query(self):
+        return """
+        MATCH (g:Gene:db_NCBI)
+        WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:IS]-(x:db_BioCyc)
+        RETURN x
+        """
+
+    def get_regulon_genes_query(self):
+        return """
+        MATCH (g:Gene:db_NCBI)
+        WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:IS]-(x:db_RegulonDB)
+        RETURN x
+        """

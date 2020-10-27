@@ -99,10 +99,10 @@ ENTITY_TYPE_PRECEDENCE = {
     EntityType.GENE.value: 8,
     EntityType.PROTEIN.value: 7,
     EntityType.PHENOTYPE.value: 6,
-    EntityType.ANATOMY.value: 5,
-    EntityType.CHEMICAL.value: 4,
-    EntityType.COMPOUND.value: 3,
-    EntityType.DISEASE.value: 2,
+    EntityType.CHEMICAL.value: 5,
+    EntityType.COMPOUND.value: 4,
+    EntityType.DISEASE.value: 3,
+    EntityType.ANATOMY.value: 2,
     EntityType.FOOD.value: 1,
 }
 
@@ -161,10 +161,15 @@ class ManualAnnotationType(Enum):
 # these links are used in annotations and custom annotations
 # first are search links
 # then entity hyperlinks
-NCBI_LINK = 'https://www.ncbi.nlm.nih.gov/gene/?term='
-UNIPROT_LINK = 'https://www.uniprot.org/uniprot/?sort=score&query='
-WIKIPEDIA_LINK = 'https://www.google.com/search?q=site:+wikipedia.org+'
-GOOGLE_LINK = 'https://www.google.com/search?q='
+SEARCH_LINKS = {
+    'ncbi': 'https://www.ncbi.nlm.nih.gov/gene/?term=',
+    'uniprot': 'https://www.uniprot.org/uniprot/?sort=score&query=',
+    'mesh': 'https://www.ncbi.nlm.nih.gov/mesh/?term=',
+    'chebi': 'https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=',
+    'pubchem': 'https://pubchem.ncbi.nlm.nih.gov/#query=',
+    'wikipedia': 'https://www.google.com/search?q=site:+wikipedia.org+',
+    'google': 'https://www.google.com/search?q=',
+}
 ENTITY_HYPERLINKS = {
     DatabaseType.CHEBI.value: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
     DatabaseType.MESH.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
@@ -174,5 +179,5 @@ ENTITY_HYPERLINKS = {
         EntityType.SPECIES.value: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
     },
     DatabaseType.BIOCYC.value: 'https://biocyc.org/compound?orgid=META&id=',
-    DatabaseType.CUSTOM.value: GOOGLE_LINK
+    DatabaseType.CUSTOM.value: SEARCH_LINKS['google'],
 }

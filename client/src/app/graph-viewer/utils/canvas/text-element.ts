@@ -14,6 +14,10 @@ interface TextboxOptions {
   strokeStyle?: string;
   verticalAlign?: TextAlignment;
   horizontalAlign?: TextAlignment;
+  topInset?: number;
+  bottomInset?: number;
+  leftInset?: number;
+  rightInset?: number;
 }
 
 /**
@@ -39,9 +43,15 @@ export class TextElement {
   readonly lineMetrics: TextMetrics;
   readonly actualWidth: number;
   readonly actualHeight: number;
+  readonly actualWidthWithInsets: number;
+  readonly actualHeightWithInsets: number;
   readonly yOffset: number;
   readonly horizontalOverflow: boolean;
   readonly verticalOverflow: boolean;
+  readonly topInset = 0;
+  readonly bottomInset = 0;
+  readonly leftInset = 0;
+  readonly rightInset = 0;
 
   /**
    * Create a new instance.
@@ -66,9 +76,11 @@ export class TextElement {
     this.horizontalOverflow = horizontalOverflow;
     this.verticalOverflow = verticalOverflow;
     this.actualWidth = actualWidth;
+    this.actualWidthWithInsets = this.actualWidth + this.leftInset + this.rightInset;
 
     // Calculate vertical alignment
     this.actualHeight = this.lines.length * this.actualLineHeight - this.lineMetrics.actualBoundingBoxDescent;
+    this.actualHeightWithInsets = this.actualHeight + this.topInset + this.bottomInset;
     this.yOffset = this.calculateElementTopOffset(this.actualHeight);
   }
 
@@ -130,11 +142,11 @@ export class TextElement {
    */
   private getEffectiveWidth() {
     if (this.width != null && this.maxWidth != null) {
-      return Math.min(this.width, this.maxWidth);
+      return Math.max(0, Math.min(this.width, this.maxWidth) - this.leftInset - this.rightInset);
     } else if (this.width != null) {
-      return this.width;
+      return Math.max(0, this.width - this.leftInset - this.rightInset);
     } else {
-      return this.maxWidth;
+      return Math.max(0, this.maxWidth - this.leftInset - this.rightInset);
     }
   }
 
@@ -144,11 +156,11 @@ export class TextElement {
    */
   private getEffectiveHeight() {
     if (this.height != null && this.maxHeight != null) {
-      return Math.min(this.height, this.maxHeight);
+      return Math.max(0, Math.min(this.height, this.maxHeight) - this.topInset - this.bottomInset);
     } else if (this.height != null) {
-      return this.height;
+      return Math.max(0, this.height - this.topInset - this.bottomInset);
     } else {
-      return this.maxHeight;
+      return Math.max(0, this.maxHeight - this.topInset - this.bottomInset);
     }
   }
 
@@ -305,8 +317,8 @@ export class TextElement {
    * @param y center Y
    */
   drawCenteredAt(x: number, y: number) {
-    const width = this.width != null ? this.width : this.actualWidth;
-    const height = this.height != null ? this.height : this.actualHeight;
+    const width = this.width != null ? this.width : this.actualWidthWithInsets;
+    const height = this.height != null ? this.height : this.actualHeightWithInsets;
     this.draw(x - width / 2, y - height / 2);
   }
 
@@ -316,6 +328,11 @@ export class TextElement {
    * @param minY top left Y
    */
   draw(minX: number, minY: number) {
+    minX += this.leftInset;
+    minY += this.topInset;
+
+    const effectiveWidth = this.getEffectiveWidth();
+
     this.ctx.font = this.font;
     for (let i = 0; i < this.lines.length; i++) {
       const line = this.lines[i];
@@ -333,16 +350,20 @@ export class TextElement {
         }
       } else {
         if (this.fillStyle) {
-          this.ctx.save();
-          this.ctx.fillStyle = this.fillStyle;
-          this.ctx.globalAlpha = 0.2;
-          this.ctx.fillRect(
-            minX,
-            minY + this.yOffset + (i * this.actualLineHeight),
-            this.width != null ? this.width : this.actualWidth,
-            this.lineMetrics.actualBoundingBoxDescent + this.lineMetrics.actualBoundingBoxAscent
-          );
-          this.ctx.restore();
+          // Width can be <= 0 if the textbox has a negative width, which
+          // users shouldn't be doing but will do anyway
+          if (effectiveWidth > 0) {
+            this.ctx.save();
+            this.ctx.fillStyle = this.fillStyle;
+            this.ctx.globalAlpha = 0.2;
+            this.ctx.fillRect(
+              minX,
+              minY + this.yOffset + (i * this.actualLineHeight),
+              this.width != null ? effectiveWidth : this.actualWidth,
+              this.lineMetrics.actualBoundingBoxDescent + this.lineMetrics.actualBoundingBoxAscent
+            );
+            this.ctx.restore();
+          }
         }
       }
     }
