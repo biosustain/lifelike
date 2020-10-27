@@ -10,6 +10,8 @@ if [ "${FLASK_ENV}" = "development" ]; then
     ${__dir__}/wait-for-postgres
     # wait for neo4j
     ${__dir__}/wait-for-neo4j
+    #wait for elastic
+    ${__dir__}/wait-for-elastic
     # setup db
     ${__dir__}/dev-db-setup
     # Start in server directory

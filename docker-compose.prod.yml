@@ -7,6 +7,8 @@ services:
         env_file:
             - ./.env
         volumes:
+            # Service account file needs access to Google Cloud Storage (Bucket)
+            - ${GCP_SERVICE_ACCOUNT:-/home/ansible/ansible_service_account.json}:/home/n4j/ansible_service_account.json
             - ${LMDB_DIR:-/home/ansible/lmdb}:/home/n4j/neo4japp/services/annotations/lmdb
         networks:
             - frontend
@@ -16,12 +18,6 @@ services:
         ports:
             - 80:80
             - 443:443
-        volumes:
-            - ${DH_PARAM_FILE:-/home/ansible/dh-param/dhparam-2048.pem}:/etc/ssl/certs/dhparam-2048.pem
-            - ${CERTBOT_CERT_DIR:-/home/ansible/certbot/etc/letsencrypt/live}/${DOMAIN}/fullchain.pem:/etc/letsencrypt/live/${DOMAIN}/fullchain.pem
-            - ${CERTBOT_CERT_DIR:-/home/ansible/certbot/etc/letsencrypt/live}/${DOMAIN}/privkey.pem:/etc/letsencrypt/live/${DOMAIN}/privkey.pem
-            # Used to renew TLS/SSL certificates
-            - ${CERTBOT_CERT_DIR:-/home/ansible/certbot/www}:/var/www/certbot
         networks:
             - frontend
 

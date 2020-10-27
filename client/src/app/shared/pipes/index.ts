@@ -4,8 +4,12 @@ import {
 import {
   TruncatePipe
 } from './truncate.pipe';
+import {
+  ScrubHtmlPipe
+} from './scrub-html.pipe';
 
 export {
   TruncatePipe,
-  FriendlyDateStrPipe
+  FriendlyDateStrPipe,
+  ScrubHtmlPipe
 };

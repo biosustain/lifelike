@@ -8,10 +8,6 @@
       tags: ["docker"]
     - role: gcloud-auth
       tags: ["gcloud-auth"]
-    - role: ssl-cert
-      tags: ["ssl"]
-    - role: dh-params
-      tags: ["dh"]
 
   tasks:
     - name: Allow Docker to access Google Cloud Registry
@@ -123,4 +119,21 @@
             - always
       tags:
         - lmdb
+        - deploy
+
+    - name: Seed Elasticsearch with Global Annotations
+      include_role:
+        name: global-annotation
+        apply:
+          tags:
+            - always
+      tags:
+        - annotation
+        - deploy
+
+    - name: Warm up LMDB
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver python3 neo4japp/services/annotations/warm_up/lmdb_warmup.py"
+      tags:
         - deploy

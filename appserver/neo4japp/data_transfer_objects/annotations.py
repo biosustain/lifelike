@@ -11,7 +11,7 @@ from neo4japp.util import CamelDictMixin
 class AnnotationRequest(CamelDictMixin):
     annotation_method: str = attr.ib()
     file_ids: List[str] = attr.ib(default=attr.Factory(list))
-    organism: str = attr.ib(default='')
+    organism: dict = attr.ib(default=attr.Factory(dict))
 
 
 @attr.s(frozen=True)
@@ -26,6 +26,7 @@ class PDFParsedCharacters(CamelDictMixin):
 class PDFTokenPositions(CamelDictMixin):
     page_number: int = attr.ib()
     keyword: str = attr.ib()
+    normalized_keyword: str = attr.ib()
     char_positions: Dict[int, str] = attr.ib()
     # used in NLP because it returns the type
     token_type: Optional[str] = attr.ib(default='')
@@ -59,6 +60,9 @@ class Annotation(CamelDictMixin):
         class Links(CamelDictMixin):
             ncbi: str = attr.ib(default='')
             uniprot: str = attr.ib(default='')
+            mesh: str = attr.ib(default='')
+            chebi: str = attr.ib(default='')
+            pubchem: str = attr.ib(default='')
             wikipedia: str = attr.ib(default='')
             google: str = attr.ib(default='')
 
@@ -120,13 +124,15 @@ class LMDBMatch(CamelDictMixin):
 class EntityResults(CamelDictMixin):
     local_species_inclusion: Dict[str, List[dict]] = attr.ib()
     matched_local_species_inclusion: Dict[str, List[PDFTokenPositions]] = attr.ib()
-    matched_genes: Dict[str, LMDBMatch] = attr.ib()
+    matched_anatomy: Dict[str, LMDBMatch] = attr.ib()
     matched_chemicals: Dict[str, LMDBMatch] = attr.ib()
     matched_compounds: Dict[str, LMDBMatch] = attr.ib()
+    matched_diseases: Dict[str, LMDBMatch] = attr.ib()
+    matched_foods: Dict[str, LMDBMatch] = attr.ib()
+    matched_genes: Dict[str, LMDBMatch] = attr.ib()
+    matched_phenotypes: Dict[str, LMDBMatch] = attr.ib()
     matched_proteins: Dict[str, LMDBMatch] = attr.ib()
     matched_species: Dict[str, LMDBMatch] = attr.ib()
-    matched_diseases: Dict[str, LMDBMatch] = attr.ib()
-    matched_phenotypes: Dict[str, LMDBMatch] = attr.ib()
 
 
 @attr.s(frozen=True)
