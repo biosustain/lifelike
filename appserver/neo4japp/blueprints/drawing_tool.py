@@ -42,7 +42,8 @@ from neo4japp.database import (
     get_projects_service,
 )
 from neo4japp.exceptions import (
-    InvalidFileNameException, RecordNotFoundException, NotAuthorizedException, InvalidArgumentsException
+    InvalidFileNameException, RecordNotFoundException,
+    NotAuthorizedException, InvalidArgumentsException
 )
 from neo4japp.models import (
     AccessActionType,
