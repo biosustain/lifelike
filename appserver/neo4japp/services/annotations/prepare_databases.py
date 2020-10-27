@@ -104,48 +104,31 @@ def prepare_lmdb_chemicals_database(filename: str):
         db = env.open_db(CHEMICALS_CHEBI_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
-            reader = csv.reader(f, delimiter=',', quotechar='"')
+            reader = csv.reader(f, delimiter='\t', quotechar='"')
             # skip headers
-            # n.chebi_id,n.common_name,n.synonyms
+            # id	name	synonym
             headers = next(reader)
             for line in reader:
                 chemical_id = line[0]
                 chemical_name = line[1]
-                synonyms = line[2].split('|')
+                synonym = line[2]
 
-                if chemical_name != 'null':
-                    chemical = create_chemical_for_ner(
-                        id_=chemical_id,
-                        name=chemical_name,
-                        synonym=chemical_name,
+                chemical = create_chemical_for_ner(
+                    id_=chemical_id,
+                    name=chemical_name,
+                    synonym=synonym,
+                )
+
+                try:
+                    transaction.put(
+                        normalize_str(synonym).encode('utf-8'),
+                        json.dumps(chemical).encode('utf-8'),
                     )
-
-                    try:
-                        transaction.put(
-                            normalize_str(chemical_name).encode('utf-8'),
-                            json.dumps(chemical).encode('utf-8'),
-                        )
-
-                        if synonyms:
-                            for synonym_term in synonyms:
-                                if synonym_term != 'null':
-                                    normalized_key = normalize_str(synonym_term)
-
-                                    synonym = create_chemical_for_ner(
-                                        id_=chemical_id,
-                                        name=chemical_name,
-                                        synonym=synonym_term,
-                                    )
-
-                                    transaction.put(
-                                        normalized_key.encode('utf-8'),
-                                        json.dumps(synonym).encode('utf-8'),
-                                    )
-                    except lmdb.BadValsizeError:
-                        # ignore any keys that are too large
-                        # LMDB has max key size 512 bytes
-                        # can change but larger keys mean performance issues
-                        continue
+                except lmdb.BadValsizeError:
+                    # ignore any keys that are too large
+                    # LMDB has max key size 512 bytes
+                    # can change but larger keys mean performance issues
+                    continue
 
 
 def prepare_lmdb_compounds_database(filename: str):
@@ -275,9 +258,9 @@ def prepare_lmdb_diseases_database(filename: str):
         db = env.open_db(DISEASES_MESH_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
-            reader = csv.reader(f, delimiter=',', quotechar='"')
+            reader = csv.reader(f, delimiter='\t', quotechar='"')
             # skip headers
-            # ID,DiseaseName,Synonym
+            # MeshID	Name	Synonym
             headers = next(reader)
             for line in reader:
                 disease_id = line[0]
@@ -422,7 +405,7 @@ if __name__ == '__main__':
     prepare_lmdb_anatomy_database(filename='datasets/anatomy.tsv')
 
     # chemical
-    prepare_lmdb_chemicals_database(filename='datasets/chebi.csv')
+    prepare_lmdb_chemicals_database(filename='datasets/chebi.tsv')
 
     # compound
     prepare_lmdb_compounds_database(filename='datasets/compounds.csv')
@@ -431,8 +414,11 @@ if __name__ == '__main__':
     prepare_lmdb_genes_database(filename='datasets/genes.tsv')
 
     # disease
-    prepare_lmdb_diseases_database(filename='datasets/disease.csv')
-    prepare_lmdb_diseases_database(filename='datasets/covid19_disease.csv')
+    prepare_lmdb_diseases_database(filename='datasets/disease.tsv')
+    # this is now included in disease.tsv
+    # it was needed before because the data was new and not in disease.tsv
+    # keep as record in case it's removed from disease.tsv later
+    # prepare_lmdb_diseases_database(filename='datasets/covid19_disease.tsv')
 
     # food
     prepare_lmdb_foods_database(filename='datasets/food.tsv')
@@ -448,9 +434,13 @@ if __name__ == '__main__':
 
     # organism
     prepare_lmdb_species_database(filename='datasets/taxonomy.tsv')
-    prepare_lmdb_species_database(filename='datasets/covid19_taxonomy.tsv')
-    prepare_lmdb_species_database(filename='datasets/cdiff_taxonomy.tsv')
-    prepare_lmdb_species_database(filename='datasets/ecoli_taxonomy.tsv')
-    prepare_lmdb_species_database(filename='datasets/pseudomonas_aerug_taxonomy.tsv')
-    prepare_lmdb_species_database(filename='datasets/staph_aureus_taxonomy.tsv')
-    prepare_lmdb_species_database(filename='datasets/yeast_taxonomy.tsv')
+    prepare_lmdb_species_database(filename='datasets/covid19_taxonomy2.tsv')
+    # # these are no longer needed as they're in the main taxonomy.tsv now
+    # # keep the covid19-taxonomy.tsv as record because one term from it
+    # # is appearing in papers and not in taxonomy.tsv, the rest are now in taxonomy.tsv
+    # prepare_lmdb_species_database(filename='datasets/covid19_taxonomy.tsv')
+    # prepare_lmdb_species_database(filename='datasets/cdiff_taxonomy.tsv')
+    # prepare_lmdb_species_database(filename='datasets/ecoli_taxonomy.tsv')
+    # prepare_lmdb_species_database(filename='datasets/pseudomonas_aerug_taxonomy.tsv')
+    # prepare_lmdb_species_database(filename='datasets/staph_aureus_taxonomy.tsv')
+    # prepare_lmdb_species_database(filename='datasets/yeast_taxonomy.tsv')
