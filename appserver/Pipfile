@@ -42,6 +42,7 @@ xlsxwriter = "~=1.2.9"
 python-json-logger = "*"
 intervaltree = "==3.1.0"
 py2neo = "==2020.0.0"
+google-cloud-storage = "*"
 
 [requires]
 python_version = "3.8.2"

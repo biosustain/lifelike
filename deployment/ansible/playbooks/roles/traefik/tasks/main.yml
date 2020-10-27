@@ -1,0 +1,56 @@
+- include_vars: traefik.yml
+- include_vars: vars.yml
+
+- name: Create traefik directory
+  file:
+    path: /opt/traefik
+    state: directory
+    owner: root
+    group: root
+
+- name: Create acme.json
+  file:
+    path: /opt/traefik/acme.json
+    state: touch
+    owner: root
+    group: root
+    mode: "600"
+
+- name: Copy traefik config file
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+  with_items:
+    - {
+        src: "templates/traefik.yml",
+        dest: "/opt/traefik/traefik.yml",
+    }
+
+- name: Copy traefik services file
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+  with_items:
+    - {
+        src: "templates/services.yml",
+        dest: /opt/traefik/services.yml,
+    }
+
+- name: Build and deploy traefik
+  community.general.docker_container:
+    name: traefik
+    image: "{{ traefik_docker_image }}"
+    state: started
+    restart: yes
+    ports:
+        - 80:80
+        - 443:443
+    volumes:
+        - /opt/traefik/traefik.yml:/traefik.yml
+        - /opt/traefik/services.yml:/services.yml
+        - /opt/traefik/acme.json:/acme.json
+        - /var/run/docker.sock:/var/run/docker.sock:ro

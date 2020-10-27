@@ -1,9 +1,8 @@
 <ng-template #rt let-r="result" let-t="term">
-  <ngb-highlight [result]="r.synonym" [term]="t"></ngb-highlight>
-  <span><em> ({{ r.organism_name }})</em></span>
+  <ngb-highlight [result]="r.organism_name" [term]="t"></ngb-highlight>
 </ng-template>
 
-<div class="input-group" style="width: 200px">
+<div class="input-group">
   <input type="text" class="form-control"
     [class.is-invalid]="fetchFailed" [(ngModel)]="organism"
     [editable]='false' [inputFormatter]="formatter" [ngbTypeahead]="searcher" [resultTemplate]="rt"

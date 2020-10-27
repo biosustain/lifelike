@@ -25,8 +25,8 @@ import { WorkspaceManager } from './shared/workspace-manager';
 import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
 import { DashboardComponent } from './dashboard.component';
 import { KgImportModule } from './kg-import/kg-import.module';
-import { WordCloudModule } from './word-cloud/word-cloud.module';
 import { AppVersionDialogComponent } from './app-version-dialog.component';
+import { FileNavigatorModule } from './file-navigator/file-navigator.module';
 
 @NgModule({
   declarations: [
@@ -57,7 +57,7 @@ import { AppVersionDialogComponent } from './app-version-dialog.component';
     ChartsModule,
     DrawingToolModule,
     NgbModule,
-    WordCloudModule,
+    FileNavigatorModule,
   ],
   providers: [
     httpInterceptorProviders,

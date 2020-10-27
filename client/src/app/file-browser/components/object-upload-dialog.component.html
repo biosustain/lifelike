@@ -29,6 +29,11 @@
     <div class="mt-2">
       <app-form-row for="filename" label="Filename" [control]="form.get('filename')">
         <input type="text" formControlName="filename" id="filename" [appFormInput]="form.get('filename')">
+        <div *ngIf="form.get('filename')?.errors" class="text-danger mb-2">
+          <small>
+            {{ errorMsg }}
+          </small>
+        </div>
       </app-form-row>
 
       <app-form-row for="description" label="Description" [control]="form.get('description')">
