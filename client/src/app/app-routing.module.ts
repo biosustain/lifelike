@@ -234,10 +234,10 @@ const routes: Routes = [
     },
   },
   {
-    path: 'word-cloud/:project_name',
+    path: 'entity-cloud/:project_name',
     component: WordCloudProjectComponent,
     data: {
-      title: 'Word Cloud',
+      title: 'Project Entity Cloud',
       fontAwesomeIcon: 'cloud',
     }
   },
