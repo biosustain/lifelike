@@ -78,14 +78,14 @@ def main():
     ]
 
     session = init_database_connection()
-    cloud_sql_results = {
-        l.name: l.date for l in session.query(LMDBsDates).all()}
-    # New database, initialize the table
-    if len(cloud_sql_results) == 0:
-        for category in LMDB_CATEGORIES:
+    # Add new categories if they do not exists
+    for category in LMDB_CATEGORIES:
+        lmdb_db = session.query(LMDBsDates).filter_by(name=category).one_or_none()
+        if lmdb_db is None:
             lmdb = LMDBsDates(name=category, date=datetime.utcnow())
             session.add(lmdb)
             session.commit()
+    cloud_sql_results = {l.name: l.date for l in session.query(LMDBsDates).all()}
     gcp_blobs = init_gcp_storage_connection('lmdb_database')
     data_blobs = [b for b in gcp_blobs if b.name.endswith('data.mdb')]
     for gcp_blob in data_blobs:
