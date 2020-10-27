@@ -2,7 +2,7 @@ import os
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from flask import Blueprint, current_app, g, make_response
 
@@ -29,6 +29,7 @@ from neo4japp.models import (
     Files,
     GlobalList,
     Projects,
+    FallbackOrganism
 )
 import neo4japp.models.files_queries as files_queries
 from neo4japp.services.annotations.constants import (
@@ -44,12 +45,13 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 def annotate(
     doc: Files,
-    specified_organism: str = '',
+    specified_organism: Optional[FallbackOrganism] = None,
     annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
 ):
     _, annotations_json = create_annotations(
         annotation_method=annotation_method,
-        specified_organism=specified_organism,
+        specified_organism_synonym=specified_organism.organism_synonym if specified_organism else '',  # noqa
+        specified_organism_tax_id=specified_organism.organism_taxonomy_id if specified_organism else '',  # noqa
         document=doc,
         filename=doc.filename
     )
@@ -57,11 +59,51 @@ def annotate(
     current_app.logger.debug(
         f'File successfully annotated: {doc.file_id}, {doc.filename}')
 
-    return {
+    update = {
         'id': doc.id,
         'annotations': annotations_json,
         'annotations_date': datetime.now(TIMEZONE),
     }
+
+    if specified_organism:
+        update['fallback_organism'] = specified_organism
+        update['fallback_organism_id'] = specified_organism.id
+    return update
+
+
+@bp.route('/<string:project_name>', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_all_annotations_from_project(project_name):
+    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if project is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
+    user = g.current_user
+    yield user, project
+    annotation_service = get_manual_annotations_service()
+    combined_annotations = annotation_service.get_combined_annotations_in_project(project.id)
+    distinct_annotations = {}
+    for annotation in combined_annotations:
+        annotation_data = (
+            annotation['meta']['id'],
+            annotation['meta']['type'],
+            annotation['meta']['allText'],
+        )
+        if distinct_annotations.get(annotation_data, None) is not None:
+            distinct_annotations[annotation_data] += 1
+        else:
+            distinct_annotations[annotation_data] = 1
+    sorted_distintct_annotations = sorted(
+        distinct_annotations,
+        key=lambda annotation: distinct_annotations[annotation],
+        reverse=True,
+    )
+    result = 'entity_id\ttype\ttext\tcount\n'
+    for annotation_data in sorted_distintct_annotations:
+        result += f"{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t{distinct_annotations[annotation_data]}\n"  # noqa
+    response = make_response(result)
+    response.headers['Content-Type'] = 'text/tsv'
+    yield response
 
 
 @bp.route('/<string:project_name>/<string:file_id>', methods=['POST'])
@@ -82,12 +124,22 @@ def annotate_file(req: AnnotationRequest, project_name: str, file_id: str):
     if not doc:
         raise RecordNotFoundException(f'File with file id {file_id} not found.')
 
+    fallback = None
+    if req.organism:
+        fallback = FallbackOrganism(
+            organism_name=req.organism['organism_name'],
+            organism_synonym=req.organism['synonym'],
+            organism_taxonomy_id=req.organism['tax_id']
+        )
+        db.session.add(fallback)
+        db.session.flush()
+
     annotated: List[dict] = []
     annotated.append(
         annotate(
             doc=doc,
             annotation_method=req.annotation_method,
-            specified_organism=req.organism
+            specified_organism=fallback
         )
     )
 
@@ -133,7 +185,9 @@ def reannotate(req: AnnotationRequest, project_name: str):
 
     for f in files:
         try:
-            annotations = annotate(doc=f)
+            annotations = annotate(
+                doc=f,
+                specified_organism=FallbackOrganism.query.get(f.fallback_organism_id))
         except AnnotationError as e:
             current_app.logger.error(
                 'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
@@ -168,7 +222,11 @@ def export_global_inclusions():
 
         if inclusion.file_id is not None:
             domain = os.environ.get('DOMAIN')
-            hyperlink = f'{domain}/api/files/download/{inclusion.file_id}'
+            file = Files.query.filter_by(content_id=inclusion.file_id).first()
+            if file is not None:
+                project = Projects.query.filter_by(id=file.project).one_or_none()
+                if project is not None:
+                    hyperlink = f'{domain}/projects/{project.project_name}/files/{file.file_id}'
 
         missing_data = any([
             inclusion.annotation['meta'].get('id', None) is None,
@@ -218,7 +276,11 @@ def export_global_exclusions():
 
         if exclusion.file_id is not None:
             domain = os.environ.get('DOMAIN')
-            hyperlink = f'{domain}/api/files/download/{exclusion.file_id}'
+            file = Files.query.filter_by(content_id=exclusion.file_id).first()
+            if file is not None:
+                project = Projects.query.filter_by(id=file.project).one_or_none()
+                if project is not None:
+                    hyperlink = f'{domain}/projects/{project.project_name}/files/{file.file_id}'
 
         missing_data = any([
             exclusion.annotation.get('text', None) is None,
@@ -252,7 +314,7 @@ def export_global_exclusions():
     yield response
 
 
-@bp.route('/<string:project_name>/<string:file_id>')
+@bp.route('/<string:project_name>/<string:file_id>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
 def get_all_annotations_from_file(project_name, file_id):
@@ -264,10 +326,6 @@ def get_all_annotations_from_file(project_name, file_id):
 
     # yield to requires_project_permission
     yield user, project
-
-    file = Files.query.filter_by(file_id=file_id, project=project.id).one_or_none()
-    if not file:
-        raise RecordNotFoundException('File does not exist')
 
     manual_annotations_service = get_manual_annotations_service()
     combined_annotations = manual_annotations_service.get_combined_annotations(project.id, file_id)

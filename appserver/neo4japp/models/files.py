@@ -44,6 +44,15 @@ class Files(RDBMSBase, TimestampMixin):  # type: ignore
     doi = db.Column(db.String(1024), nullable=True)
     upload_url = db.Column(db.String(2048), nullable=True)
     excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
+    fallback_organism_id = db.Column(
+        db.Integer,
+        # CAREFUL do not allow cascade ondelete
+        # fallback organism can be deleted
+        db.ForeignKey('fallback_organism.id'),
+        index=True,
+        nullable=True,
+    )
+    fallback_organism = db.relationship('FallbackOrganism', foreign_keys=fallback_organism_id)
 
 
 # Files table ORM event listeners
@@ -85,6 +94,13 @@ class LMDBsDates(RDBMSBase):
     __tablename__ = 'lmdbs_dates'
     name = db.Column(db.String(256), primary_key=True)
     date = db.Column(TIMESTAMP(timezone=True), nullable=False)
+
+
+class FallbackOrganism(RDBMSBase):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    organism_name = db.Column(db.String(200), nullable=False)
+    organism_synonym = db.Column(db.String(200), nullable=False)
+    organism_taxonomy_id = db.Column(db.String(50), nullable=False)
 
 
 class Directory(RDBMSBase, TimestampMixin):

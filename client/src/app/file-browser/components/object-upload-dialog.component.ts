@@ -28,12 +28,12 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent imple
 
   readonly uploadType = UploadType;
   readonly userRoles$: Observable<string[]>;
-  organismChoice: string;
 
   // select annotation method
   readonly annotationMethods = ['NLP', 'Rules Based'];
 
   errorMsg = '';
+  organismChoice = '';
   validFilename = true;
 
   readonly form: FormGroup = new FormGroup({
@@ -144,6 +144,6 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent imple
   }
 
   setOrganism(organism: OrganismAutocomplete | null) {
-    this.form.get('organism').setValue(organism ? `${organism.synonym}#${organism.tax_id}` : null);
+    this.form.get('organism').setValue(organism ? organism : null);
   }
 }

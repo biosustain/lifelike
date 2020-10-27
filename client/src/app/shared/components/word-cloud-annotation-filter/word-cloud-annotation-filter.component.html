@@ -1,7 +1,6 @@
 <div class="border-bottom border-secondary pb-3 mb-3">
   <form [formGroup]="filtersForm"
-        class="d-flex flex-column justify-content-between"
-        (ngSubmit)="submitFiltersForm()">
+        class="d-flex flex-column justify-content-between">
     <fieldset class="fieldset-properties">
       <legend class="m-0">Filters</legend>
 
@@ -30,8 +29,9 @@
         </div>
       </div>
 
+      <!-- TODO: Removing this for now, may bring back in the future -->
       <!-- Maximum frequency input -->
-      <div class="form-group d-flex align-items-start">
+      <!-- <div class="form-group d-flex align-items-start">
         <label class="mt-2 mr-2 text-nowrap" [for]="maximumFrequencyInputId">Max. Entity Frequency:</label>
         <div>
           <input [id]="maximumFrequencyInputId"
@@ -53,13 +53,7 @@
             Max frequency must be a whole number!
           </div>
         </div>
-      </div>
-
-      <div class="d-flex justify-content-end mt-2">
-        <button class="btn btn-primary text-nowrap"
-              type="submit"
-              [disabled]="!filtersForm.valid">Apply Filters</button>
-        </div>
+      </div> -->
     </fieldset>
   </form>
 
@@ -75,7 +69,8 @@
       </select>
     </div>
 
-    <div class="form-group d-flex align-items-center">
+    <!-- TODO: Maybe bring these back in the future when we have additional options -->
+    <!-- <div class="form-group d-flex align-items-center">
       <label [for]="id + '-order-by-options'" class="my-0 mr-2 text-nowrap">Order By:</label>
       <select [(ngModel)]="selectedOrderByOption" class="custom-select" [id]="id + '-order-by-options'" (change)="groupAndSortData()">
         <option *ngFor="let option of orderByOptions" [value]="option">
@@ -91,7 +86,7 @@
           {{option}}
         </option>
       </select>
-    </div>
+    </div> -->
   </fieldset>
 </div>
 
@@ -110,17 +105,38 @@
           ngbTooltip="Click a checkbox to filter annotations of that type">Legend</legend>
 
   <div *ngFor="let keyvalue of legend | keyvalue">
-    <div class="custom-control custom-checkbox">
-      <input [id]="id + '-legend-filter-' + keyvalue.key"
-             class="custom-control-input"
-             type="checkbox"
-             value="1"
-             [checked]="isTypeVisible(keyvalue.key)"
-             (change)="changeTypeVisibility(keyvalue.key, $event)">
-      <label class="custom-control-label text-nowrap" [for]="id + '-legend-filter-' + keyvalue.key">
-        <span class="entity-type-legend" [ngStyle]="{background: keyvalue.value}"></span> {{keyvalue.key}}
-      </label>
+    <div *ngIf="disabledTypeMap.get(keyvalue.key); else notDisabled">
+      <div class="custom-control custom-checkbox">
+        <input [id]="id + '-legend-filter-' + keyvalue.key"
+               class="custom-control-input"
+               type="checkbox"
+               value="1"
+               [checked]="isTypeVisible(keyvalue.key)"
+               (change)="changeTypeVisibility(keyvalue.key, $event)">
+        <label class="custom-control-label text-nowrap"
+               [for]="id + '-legend-filter-' + keyvalue.key"
+               [autoClose]="false"
+               container="body"
+               placement="right bottom top"
+               ngbTooltip="Entities of this type are not visible with the filters above.">
+          <span class="entity-type-legend" [ngStyle]="{background: keyvalue.value}"></span> {{keyvalue.key}}
+          <i class="fa fa-exclamation-triangle text-danger ml-2"></i>
+        </label>
+      </div>
     </div>
+    <ng-template #notDisabled>
+      <div class="custom-control custom-checkbox">
+        <input [id]="id + '-legend-filter-' + keyvalue.key"
+               class="custom-control-input"
+               type="checkbox"
+               value="1"
+               [checked]="isTypeVisible(keyvalue.key)"
+               (change)="changeTypeVisibility(keyvalue.key, $event)">
+        <label class="custom-control-label text-nowrap" [for]="id + '-legend-filter-' + keyvalue.key">
+          <span class="entity-type-legend" [ngStyle]="{background: keyvalue.value}"></span> {{keyvalue.key}}
+        </label>
+      </div>
+    </ng-template>
   </div>
 </fieldset>
 
@@ -128,14 +144,14 @@
   <legend>Annotations</legend>
   <div *ngFor="let data of annotationData">
     <div class="custom-control custom-checkbox">
-      <input [id]="id + 'filter-' + data.text"
+      <input [id]="id + 'filter-' + getAnnotationIdentifier(data)"
           class="custom-control-input"
           type="checkbox"
           value="1"
-          [checked]="isWordVisible(data.text)"
-          (change)="changeWordVisibility(data.text, $event)">
+          [checked]="isWordVisible(getAnnotationIdentifier(data))"
+          (change)="changeWordVisibility(getAnnotationIdentifier(data), $event)">
       <label class="custom-control-label text-nowrap"
-            [for]="id + 'filter-' + data.text"
+            [for]="id + 'filter-' + getAnnotationIdentifier(data)"
             placement="right bottom top"
             container="body"
             [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">

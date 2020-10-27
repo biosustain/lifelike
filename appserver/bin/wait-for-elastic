@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo "Waiting for Elastic"
+
+ELASTIC_STATUS="000"
+
+until [ "$ELASTIC_STATUS" = "200" ]
+do
+    ELASTIC_STATUS=`curl -s -o /dev/null -I -w "%{http_code}" http://elasticsearch:9200`
+    echo "Status of Elastic: $ELASTIC_STATUS"
+    sleep 2
+done
+
+# Run command | https://docs.docker.com/compose/startup-order/
+>&2 echo "Elastic started - executing command"
+exec $@

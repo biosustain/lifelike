@@ -11,7 +11,7 @@ from neo4japp.util import CamelDictMixin
 class AnnotationRequest(CamelDictMixin):
     annotation_method: str = attr.ib()
     file_ids: List[str] = attr.ib(default=attr.Factory(list))
-    organism: str = attr.ib(default='')
+    organism: dict = attr.ib(default=attr.Factory(dict))
 
 
 @attr.s(frozen=True)
@@ -60,6 +60,9 @@ class Annotation(CamelDictMixin):
         class Links(CamelDictMixin):
             ncbi: str = attr.ib(default='')
             uniprot: str = attr.ib(default='')
+            mesh: str = attr.ib(default='')
+            chebi: str = attr.ib(default='')
+            pubchem: str = attr.ib(default='')
             wikipedia: str = attr.ib(default='')
             google: str = attr.ib(default='')
 
