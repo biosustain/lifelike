@@ -59,6 +59,8 @@ services:
             - REDIS_PORT=6379
             # Other
             - DOMAIN=http://localhost
+            # Fetch this using "gsutil cp gs://kg-secrets/ansible_service_account.json ./appserver"
+            - GOOGLE_APPLICATION_CREDENTIALS=ansible_service_account.json
         # Allow debugging w/ IPython or pdb
         stdin_open: true
         tty: true
