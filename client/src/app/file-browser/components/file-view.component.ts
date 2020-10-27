@@ -545,25 +545,31 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   displayEditDialog() {
-    const dialogRef = this.modalService.open(FileEditDialogComponent);
-    dialogRef.componentInstance.file = cloneDeep(this.pdfFile);
-    dialogRef.result.then(newFile => {
-      if (newFile) {
-        this.filesService.updateFileMeta(
-          this.projectName,
-          this.pdfFile.file_id,
-          newFile.filename,
-          newFile.description,
-        )
-          .pipe(this.errorHandler.create())
-          .subscribe(() => {
-            this.pdfFile.filename = newFile.filename;
-            this.pdfFile.description = newFile.description;
-            this.emitModuleProperties();
-            this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
-          });
-      }
-    }, () => {
+    this.filesService.getFileFallbackOrganism(
+      this.projectName, this.pdfFile.file_id
+    ).subscribe(organismTaxId => {
+      const dialogRef = this.modalService.open(FileEditDialogComponent);
+      dialogRef.componentInstance.organism = organismTaxId;
+      dialogRef.componentInstance.file = cloneDeep(this.pdfFile);
+
+      dialogRef.result.then(newFile => {
+        if (newFile) {
+          this.filesService.updateFileMeta(
+            this.projectName,
+            this.pdfFile.file_id,
+            newFile.filename,
+            newFile.organism,
+            newFile.description,
+          )
+            .pipe(this.errorHandler.create())
+            .subscribe(() => {
+              this.pdfFile.filename = newFile.filename;
+              this.pdfFile.description = newFile.description;
+              this.emitModuleProperties();
+              this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
+            });
+        }
+      }, () => {});
     });
   }
 
@@ -594,8 +600,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       + `${this.projectName}/files/${this.currentFileId}?fromWorkspace`;
   }
 
-  openWordCloudPane() {
-    const url = `/word-cloud/${this.projectName}/${this.pdfFile.file_id}`;
+  openFileNavigatorPane() {
+    const url = `/file-navigator/${this.projectName}/${this.pdfFile.file_id}`;
     this.workSpaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
   }
 }
