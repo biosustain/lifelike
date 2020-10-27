@@ -3,6 +3,7 @@ import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { PdfFile, PdfFileUpload, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
+import { OrganismAutocomplete } from 'app/interfaces/neo4j.interface';
 import { AbstractService } from './abstract-service';
 import { map } from 'rxjs/operators';
 
@@ -41,9 +42,45 @@ export class PdfFilesService extends AbstractService {
       });
   }
 
+  getFileFallbackOrganism(projectName: string, fileId: string): Observable<string> {
+    return this.http.get<{result: string}>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files/${encodeURIComponent(fileId)}/fallback-organism`,
+      this.getHttpOptions(true),
+    ).pipe(map(res => res.result));
+  }
+
   // ========================================
   // CRUD
   // ========================================
+  validateFilename(parentDirId, filename): Observable<boolean> {
+    return this.http.get<{result: boolean}>(
+      `${this.PROJECTS_BASE_URL}/directory/${parentDirId}/${filename}`,
+      this.getHttpOptions(true)
+    ).pipe(map(resp => resp.result));
+  }
+
+  addGeneList(projectName, directoryId, enrichmentData: string, description: string, filename: string): Observable<any> {
+    return this.http.post<{result: any}>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/enrichment-table`,
+      {description, filename, enrichmentData, directoryId},
+      {...this.getHttpOptions(true)},
+    );
+  }
+
+  editGeneList(projectName, fileId, enrichmentData, name, description): Observable<any> {
+    return this.http.patch<{result: any}>(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/enrichment-table/${encodeURIComponent(fileId)}`,
+      {enrichmentData, name, description},
+      {...this.getHttpOptions(true)},
+    );
+  }
+
+  getEnrichmentData(projectName, fileId): Observable<any> {
+    return this.http.get(
+      `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/enrichment-table/${encodeURIComponent(fileId)}`, {
+        ...this.getHttpOptions(true),
+      });
+  }
 
   uploadFile(projectName, parentDir, data: UploadPayload): Observable<PdfFileUpload> {
     const formData: FormData = new FormData();
@@ -70,7 +107,12 @@ export class PdfFilesService extends AbstractService {
     ).pipe(map(res => res.result));
   }
 
-  annotateFile(projectName: string, fileId: string, annotationMethod: string, organism: string): Observable<HttpEvent<object>> {
+  annotateFile(
+    projectName: string,
+    fileId: string,
+    annotationMethod: string,
+    organism: OrganismAutocomplete
+  ): Observable<HttpEvent<object>> {
     return this.http.post<object>(
       `${this.ANNOTATIONS_BASE_URL}/${encodeURIComponent(projectName)}/${fileId}`,
       {annotationMethod, organism},
@@ -82,10 +124,20 @@ export class PdfFilesService extends AbstractService {
     );
   }
 
-  updateFileMeta(projectName: string, id: string, filename: string, description: string = ''): Observable<any> {
+  updateFileMeta(
+    projectName: string,
+    id: string,
+    filename: string,
+    fallbackOrganism: OrganismAutocomplete,
+    description: string = '',
+  ): Observable<any> {
     const formData: FormData = new FormData();
     formData.append('filename', filename.substring(0, this.FILENAME_MAX_LENGTH));
     formData.append('description', description.substring(0, this.DESCRIPTION_MAX_LENGTH));
+
+    if (fallbackOrganism) {
+      formData.append('organism', JSON.stringify(fallbackOrganism));
+    }
     return this.http.patch<string>(
       `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files/${encodeURIComponent(id)}`,
       formData,

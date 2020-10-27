@@ -1,7 +1,7 @@
 from datetime import datetime
 import io
 import uuid
-
+from sqlalchemy import and_
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
@@ -210,23 +210,34 @@ class ManualAnnotationsService:
         if file is None:
             raise RecordNotFoundException('File does not exist')
 
+        return self._get_file_annotations(file)
+
+    def _get_file_annotations(self, file):
         def isExcluded(exclusions, annotation):
             for exclusion in exclusions:
                 if annotation['meta']['type'] == exclusion['type'] and \
                         annotation['textInDocument'] == exclusion['text']:
                     return True
             return False
-
         if len(file.annotations) == 0:
             return file.custom_annotations
-
         annotations = file.annotations['documents'][0]['passages'][0]['annotations']
         filtered_annotations = [
             annotation for annotation in annotations
             if not isExcluded(file.excluded_annotations, annotation)
         ]
-
         return filtered_annotations + file.custom_annotations
+
+    def get_combined_annotations_in_project(self, project_id):
+        files = Files.query.filter(
+            and_(
+                Files.project == project_id,
+                Files.annotations != []
+            )).all()
+        annotations = []
+        for fi in files:
+            annotations.extend(self._get_file_annotations(fi))
+        return annotations
 
     def add_to_global_list(self, annotation, type, file_id):
         """ Adds inclusion or exclusion to a global_list table

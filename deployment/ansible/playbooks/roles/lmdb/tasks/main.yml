@@ -1,5 +1,12 @@
 - include_vars: gcp_bucket_credentials.yml
 
+- name: Install Python virtualenv
+  become: yes
+  pip:
+    name:
+      - virtualenv
+    umask: "0022"
+
 - name: Install Python dependencies
   pip:
     name:
@@ -7,8 +14,11 @@
       - sqlalchemy
       - google-cloud-storage
       - psycopg2-binary
+      - six>1.13.0
     umask: "0022"
-    executable: /usr/bin/pip3
+    virtualenv: "{{ deploy_dir }}/.venv"
+    virtualenv_command: "virtualenv"
+    virtualenv_python: python3
 
 - name: Create LMDB Database Directories
   file:
@@ -17,9 +27,11 @@
     owner: "{{ deploy_user }}"
     group: 1000
   loop:
+    - anatomy
     - chemicals
-    - diseases
     - compounds
+    - diseases
+    - foods
     - genes
     - phenotypes
     - proteins
@@ -35,9 +47,11 @@
     gs_secret_key: "{{ gce_bucket_secret_key }}"
     force: yes
   loop:
+    - anatomy
     - chemicals
-    - diseases
     - compounds
+    - diseases
+    - foods
     - genes
     - phenotypes
     - proteins
@@ -53,9 +67,11 @@
     gs_secret_key: "{{ gce_bucket_secret_key }}"
     force: yes
   loop:
+    - anatomy
     - chemicals
-    - diseases
     - compounds
+    - diseases
+    - foods
     - genes
     - phenotypes
     - proteins
@@ -81,6 +97,6 @@
     POSTGRES_DB: "{{ POSTGRES_DB }}"
   register: outcome
   args:
-    executable: /usr/bin/python3
+    executable: "{{ deploy_dir }}/.venv/bin/python"
 
 - debug: msg="{{ outcome.stdout }}"

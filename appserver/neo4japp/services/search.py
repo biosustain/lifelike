@@ -305,7 +305,8 @@ class SearchService(GraphBaseDao):
             with t, collect(node.name) as synonyms LIMIT $limit
             RETURN t.id AS tax_id, t.name AS organism_name, synonyms[0] AS synonym
         """
-
+        terms = query_term.split(' ')
+        query_term = ' AND '.join(terms)
         nodes = self.graph.run(
             cypher_query,
             parameters={
