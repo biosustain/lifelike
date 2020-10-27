@@ -715,9 +715,11 @@ def project_backup_post(hash_id_, **data):
     try:
         validate_map(graph)
     except JsonSchemaException as e:
-        # currently we don't prevent saving just in case the UI generates invalid data and we
-        # don't want the user to lose their data
-        pass
+        current_app.logger.info(
+            f'Map backup data validation error: {project.id}',
+            extra=UserEventLog(username=g.current_user.username, event_type='map backup')
+                .to_dict()
+        )
 
     old_backup = ProjectBackup.query.filter_by(
         hash_id=hash_id_,
