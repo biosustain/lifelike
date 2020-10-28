@@ -21,13 +21,10 @@ from .constants import (
     OrganismCategory,
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
-    GOOGLE_LINK,
     HOMO_SAPIENS_TAX_ID,
-    NCBI_LINK,
     ORGANISM_DISTANCE_THRESHOLD,
     PDF_NEW_LINE_THRESHOLD,
-    UNIPROT_LINK,
-    WIKIPEDIA_LINK,
+    SEARCH_LINKS,
 )
 from .lmdb_dao import LMDBDao
 from .util import normalize_str, standardize_str
@@ -267,10 +264,7 @@ class AnnotationsService:
                 id_type=entity['id_type'],
                 id_hyperlink=cast(str, hyperlink),
                 links=OrganismAnnotation.OrganismMeta.Links(
-                    ncbi=NCBI_LINK + link_search_term,
-                    uniprot=UNIPROT_LINK + link_search_term,
-                    wikipedia=WIKIPEDIA_LINK + link_search_term,
-                    google=GOOGLE_LINK + link_search_term,
+                    **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
                 all_text=link_search_term,
             )
@@ -299,10 +293,7 @@ class AnnotationsService:
                 id_type=entity['id_type'],
                 id_hyperlink=cast(str, hyperlink),
                 links=OrganismAnnotation.OrganismMeta.Links(
-                    ncbi=NCBI_LINK + link_search_term,
-                    uniprot=UNIPROT_LINK + link_search_term,
-                    wikipedia=WIKIPEDIA_LINK + link_search_term,
-                    google=GOOGLE_LINK + link_search_term,
+                    **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
                 all_text=link_search_term,
             )
@@ -326,10 +317,7 @@ class AnnotationsService:
                 id_type=entity['id_type'],
                 id_hyperlink=cast(str, hyperlink),
                 links=Annotation.Meta.Links(
-                    ncbi=NCBI_LINK + link_search_term,
-                    uniprot=UNIPROT_LINK + link_search_term,
-                    wikipedia=WIKIPEDIA_LINK + link_search_term,
-                    google=GOOGLE_LINK + link_search_term,
+                    **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
                 all_text=link_search_term,
             )
@@ -1001,8 +989,13 @@ class AnnotationsService:
             if text_in_document not in abbrevs:
                 if all([c.isupper() for c in text_in_document]) and \
                     (len(text_in_document) == 3 or len(text_in_document) == 4):  # noqa
-                    begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
-                    end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
+                    try:
+                        begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
+                        end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
+                    except IndexError:
+                        # if index out of range than
+                        # last character is end of paper
+                        return False
                     if begin == '(' and end == ')':
                         i = bisect_left(word_index_list, annotation.lo_location_offset)
                         abbrev = ''
@@ -1041,7 +1034,7 @@ class AnnotationsService:
                     keyword_from_annotation = annotation.keyword.split('-')
                     if len(keyword_from_annotation) >= len(text_in_document):
                         fixed_annotations.append(annotation)
-            elif isinstance(annotation, GeneAnnotation):
+            elif isinstance(annotation, GeneAnnotation) or annotation.meta.type == EntityType.PROTEIN.value:  # noqa
                 text_in_document = text_in_document[0]  # type: ignore
                 if text_in_document == annotation.keyword:
                     if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):

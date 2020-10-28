@@ -580,9 +580,6 @@ def test_protein_organism_escherichia_coli_pdf(
 
     keywords = {o.keyword: o.meta.id for o in annotations}
 
-    assert 'YdhB' in keywords
-    assert keywords['YdhB'] == 'P0ACR2'
-
     assert 'YdhC' in keywords
     assert keywords['YdhC'] == 'P37597'
 
@@ -606,6 +603,9 @@ def test_custom_annotations_gene_organism_matching_has_match(
             'color': '#0277bd',
             'links': {
                 'ncbi': 'https://www.ncbi.nlm.nih.gov/gene/?query=hooman',
+                'mesh': 'https://www.ncbi.nlm.nih.gov/mesh/?term=hooman',
+                'chebi': 'https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=hooman',
+                'pubchem': 'https://pubchem.ncbi.nlm.nih.gov/#query=hooman',
                 'google': 'https://www.google.com/search?q=hooman',
                 'uniprot': 'https://www.uniprot.org/uniprot/?sort=score&query=hooman',
                 'wikipedia': 'https://www.google.com/search?q=site:+wikipedia.org+hooman',
@@ -988,12 +988,12 @@ def test_tokens_gene_vs_protein_serpina1_cases(
         assert annotations[1].keyword == 'human'
         assert annotations[1].meta.type == EntityType.SPECIES.value
     elif index == 5:
-        assert len(annotations) == 2
-        assert annotations[0].keyword == 'Serpin A1'
-        assert annotations[0].meta.type == EntityType.PROTEIN.value
+        assert len(annotations) == 1
+        # assert annotations[0].keyword == 'Serpin A1'
+        # assert annotations[0].meta.type == EntityType.PROTEIN.value
 
-        assert annotations[1].keyword == 'human'
-        assert annotations[1].meta.type == EntityType.SPECIES.value
+        assert annotations[0].keyword == 'human'
+        assert annotations[0].meta.type == EntityType.SPECIES.value
 
 
 @pytest.mark.parametrize(
@@ -1068,6 +1068,95 @@ def test_tokens_gene_vs_protein_serpina1_cases(
     ],
 )
 def test_fix_false_positive_gene_annotations(get_annotations_service, index, annotations):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(
+        create_mock_tokens(annotations))
+
+    fixed = annotation_service._get_fixed_false_positive_unified_annotations(
+        annotations_list=annotations,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        word_index_dict=word_index_dict
+    )
+
+    # do exact case matching for genes
+    if index == 1:
+        assert len(fixed) == 0
+    elif index == 2:
+        assert len(fixed) == 0
+    elif index == 3:
+        assert len(fixed) == 1
+
+
+@pytest.mark.parametrize(
+    'index, annotations',
+    [
+        (1, [
+            Annotation(
+                page_number=1,
+                keyword='SidE',
+                lo_location_offset=5,
+                hi_location_offset=8,
+                keyword_length=4,
+                text_in_document='side',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    type=EntityType.PROTEIN.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+                uuid='',
+            ),
+        ]),
+        (2, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='Tir',
+                lo_location_offset=5,
+                hi_location_offset=7,
+                keyword_length=3,
+                text_in_document='TIR',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    type=EntityType.PROTEIN.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+                uuid='',
+            ),
+        ]),
+        (3, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='TraF',
+                lo_location_offset=5,
+                hi_location_offset=7,
+                keyword_length=3,
+                text_in_document='TraF',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    type=EntityType.PROTEIN.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+                uuid='',
+            ),
+        ]),
+    ],
+)
+def test_fix_false_positive_protein_annotations(get_annotations_service, index, annotations):
     annotation_service = get_annotations_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(

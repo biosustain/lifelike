@@ -264,6 +264,18 @@ def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
                             "url": "https://www.ncbi.nlm.nih.gov/gene/?query=E. coli"
                         },
                         {
+                            "domain": "mesh",
+                            "url": "https://www.ncbi.nlm.nih.gov/mesh/?term=E. coli"
+                        },
+                        {
+                            "domain": "chebi",
+                            "url": "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=E. coli"  # noqa
+                        },
+                        {
+                            "domain": "pubchem",
+                            "url": "https://pubchem.ncbi.nlm.nih.gov/#query=E. coli"
+                        },
+                        {
                             "domain": "uniprot",
                             "url": "https://www.uniprot.org/uniprot/?sort=score&query=E. coli"
                         },
