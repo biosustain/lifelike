@@ -8,6 +8,8 @@ ul {
 
 table, th, td {
   border: 1px ridge black !important;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 th {
