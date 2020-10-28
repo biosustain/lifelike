@@ -519,6 +519,15 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       this.pendingAnnotationHighlightId = annotationId;
       return;
     }
+    if (annotationId != null) {
+      for (const annotation of this.annotations) {
+        if (annotation.meta.id === annotationId) {
+          this.entityTypeVisibilityMap.set(annotation.meta.type, true);
+          this.invalidateEntityTypeVisibility();
+          break;
+        }
+      }
+    }
     this.highlightAnnotations.next(annotationId);
   }
 
