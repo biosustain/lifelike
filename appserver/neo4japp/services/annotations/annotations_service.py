@@ -989,8 +989,13 @@ class AnnotationsService:
             if text_in_document not in abbrevs:
                 if all([c.isupper() for c in text_in_document]) and \
                     (len(text_in_document) == 3 or len(text_in_document) == 4):  # noqa
-                    begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
-                    end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
+                    try:
+                        begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
+                        end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
+                    except IndexError:
+                        # if index out of range than
+                        # last character is end of paper
+                        return False
                     if begin == '(' and end == ')':
                         i = bisect_left(word_index_list, annotation.lo_location_offset)
                         abbrev = ''
@@ -1029,7 +1034,7 @@ class AnnotationsService:
                     keyword_from_annotation = annotation.keyword.split('-')
                     if len(keyword_from_annotation) >= len(text_in_document):
                         fixed_annotations.append(annotation)
-            elif isinstance(annotation, GeneAnnotation):
+            elif isinstance(annotation, GeneAnnotation) or annotation.meta.type == EntityType.PROTEIN.value:  # noqa
                 text_in_document = text_in_document[0]  # type: ignore
                 if text_in_document == annotation.keyword:
                     if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):

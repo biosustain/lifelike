@@ -79,11 +79,6 @@
                 <i class="fa fa-fw fa-upload"></i> Upload
               </button>
 
-              <button class="btn btn-secondary ml-2" ngbTooltip="Word Cloud"
-                      (click)="openWordCloudPane()">
-                <i class="fas fa-fw fa-compass"></i>
-              </button>
-
               <button class="btn btn-secondary ml-2"
                       [disabled]="results.selection.length === 0"
                       (click)="reannotate(results.selection)" ngbTooltip="Re-annotate document"
@@ -95,6 +90,11 @@
                       [disabled]="results.selection.length === 0"
                       (click)="displayDeleteDialog(results.selection)">
                 <i class="fa fa-fw fa-trash"></i>
+              </button>
+
+              <button class="btn btn-secondary ml-4" ngbTooltip="Project Entity Cloud"
+                      (click)="openEntityCloudPane()">
+                <i class="fas fa-fw fa-compass"></i>
               </button>
             </div>
 
@@ -224,7 +224,9 @@
                           <a [appLink]="getObjectCommands(object)" [queryParams]="getObjectQueryParams()"
                              [newTab]="object.type !== 'dir'">
                             <ng-container *ngIf="object.type !== 'dir'; else dirLabel">
-                              {{ object.name }}
+                              <div *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'">{{ object.name }} </div>
+                              <div *ngIf="object.name.slice(object.name.length - 11) === '.enrichment'">{{ object.name.slice(0, -11) }} </div>
+
                             </ng-container>
                             <ng-template #dirLabel>
                               <strong>{{ object.name }}</strong>
