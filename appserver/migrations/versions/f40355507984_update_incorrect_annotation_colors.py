@@ -5,9 +5,13 @@ Revises: 64838825541f
 Create Date: 2020-10-26 23:37:59.053698
 
 """
+from flask import current_app
+
 from alembic import context
 from alembic import op
 import sqlalchemy as sa
+
+from neo4japp.utils import EventLog
 
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
@@ -71,9 +75,20 @@ def data_upgrades():
                 updated_annotations.append(annotation)
 
             f.annotations['documents'][0]['passages'][0]['annotations'] = updated_annotations
-            session.execute(
-                files_table.update().where(
-                    files_table.c.id == f.id).values(annotations=f.annotations))
+
+            try:
+                session.execute(
+                    files_table.update().where(
+                        files_table.c.id == f.id).values(annotations=f.annotations))
+            except Exception as e:
+                current_app.logger.error(
+                    f'Failed to complete migration f40355507984',
+                    exc_info=e,
+                    extra=EventLog(event_type='migration').to_dict()
+                )
+                session.rollback()
+                session.close()
+                raise
 
         if f.custom_annotations:
             custom_annotations_list = f.custom_annotations
@@ -88,11 +103,32 @@ def data_upgrades():
 
                 updated_custom_annotations.append(custom_annotation)
 
-            session.execute(
-                files_table.update().where(
-                    files_table.c.id == f.id).values(custom_annotations=updated_custom_annotations))
+            try:
+                session.execute(
+                    files_table.update().where(
+                        files_table.c.id == f.id).values(custom_annotations=updated_custom_annotations))
+            except Exception:
+                current_app.logger.error(
+                    f'Failed to complete migration f40355507984',
+                    exc_info=e,
+                    extra=EventLog(event_type='migration').to_dict()
+                )
+                session.rollback()
+                session.close()
+                raise
 
-    session.commit()
+    try:
+        session.commit()
+        session.close()
+    except Exception:
+        current_app.logger.error(
+            f'Failed to complete migration f40355507984',
+            exc_info=e,
+            extra=EventLog(event_type='migration').to_dict()
+        )
+        session.rollback()
+        session.close()
+        raise
 
 
 def data_downgrades():
