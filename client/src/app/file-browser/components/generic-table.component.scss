@@ -9,3 +9,10 @@ ul {
 table, th, td {
   border: 1px ridge black !important;
 }
+
+th {
+  background-color: #ceeee0;
+}
+
+thead tr:nth-child(1) th { position: sticky; top: 0; }
+thead tr:nth-child(2) th { position: sticky; top: 33px; }
