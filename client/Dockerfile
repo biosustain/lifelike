@@ -69,7 +69,6 @@ ENV ANGULAR_DIR $CLIENT_HOME/client
 ENV PATH $ANGULAR_DIR/node_modules/.bin:$PATH
 WORKDIR $ANGULAR_DIR
 COPY --from=build /home/node/client .
-ARG build_environment
 RUN yarn build --configuration="production" --output-path=dist
 
 # ========================================
@@ -77,7 +76,6 @@ RUN yarn build --configuration="production" --output-path=dist
 # ========================================
 # Set the nginx conf file to use
 FROM nginx:latest AS webserver
-ARG nginx_conf
 RUN mkdir -p /home/node/client/dist
 RUN mkdir -p /home/node/client/landing/dist
 COPY --from=compile /home/node/client/dist /usr/share/nginx/html
