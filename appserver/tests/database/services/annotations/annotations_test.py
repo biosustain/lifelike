@@ -580,9 +580,6 @@ def test_protein_organism_escherichia_coli_pdf(
 
     keywords = {o.keyword: o.meta.id for o in annotations}
 
-    assert 'YdhB' in keywords
-    assert keywords['YdhB'] == 'P0ACR2'
-
     assert 'YdhC' in keywords
     assert keywords['YdhC'] == 'P37597'
 
@@ -991,12 +988,12 @@ def test_tokens_gene_vs_protein_serpina1_cases(
         assert annotations[1].keyword == 'human'
         assert annotations[1].meta.type == EntityType.SPECIES.value
     elif index == 5:
-        assert len(annotations) == 2
-        assert annotations[0].keyword == 'Serpin A1'
-        assert annotations[0].meta.type == EntityType.PROTEIN.value
+        assert len(annotations) == 1
+        # assert annotations[0].keyword == 'Serpin A1'
+        # assert annotations[0].meta.type == EntityType.PROTEIN.value
 
-        assert annotations[1].keyword == 'human'
-        assert annotations[1].meta.type == EntityType.SPECIES.value
+        assert annotations[0].keyword == 'human'
+        assert annotations[0].meta.type == EntityType.SPECIES.value
 
 
 @pytest.mark.parametrize(
