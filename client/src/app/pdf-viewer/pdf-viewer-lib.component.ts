@@ -44,7 +44,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Input() debugMode: boolean;
   @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
   @Input() filterChanges: Observable<void>;
-  private previousHighlightAnnotationId: string | undefined;
+  previousHighlightAnnotationId: string | undefined;
   private filterChangeSubscription: Subscription;
 
   @Input()
@@ -832,16 +832,31 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     this.previousHighlightAnnotationId = id;
 
     let found = 0;
+    let firstElement = null;
+    let firstPageNumber = null;
+    let matchedAnnotation: Annotation = null;
 
-    for (const page of Object.values(this.pageRef)) {
+    for (const pageIndex of Object.keys(this.pageRef)) {
+      const page = this.pageRef[pageIndex];
       const overlays = (page as any).div.querySelectorAll('.system-annotation');
       for (const overlay of overlays) {
         if (overlay.dataset.annotationId === id) {
           overlay.classList.add('annotation-highlight');
           found++;
+          if (firstElement == null) {
+            firstElement = overlay;
+            firstPageNumber = parseInt(pageIndex);
+          }
         } else {
           overlay.classList.remove('annotation-highlight');
         }
+      }
+    }
+
+    for (const annotation of this.annotations) {
+      if (annotation.meta.id === id) {
+        matchedAnnotation = annotation;
+        break;
       }
     }
 
@@ -852,13 +867,27 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       });
 
       if (found) {
-        this.snackBar.open(`Highlighted ${found} annotation${found === 1 ? '' : 's'}  `
-            + `in the document.`, 'Close', {duration: 5000});
+        this.snackBar.open(`Highlighted ${found} instance${found === 1 ? '' : 's'}  `
+            + (matchedAnnotation != null ? `of '${matchedAnnotation.meta.allText}' ` : '')
+            + `in the document, starting on page ${firstPageNumber}.`,
+            'Close', {duration: 5000});
+
+        setTimeout(() => {
+          firstElement.scrollIntoView();
+        }, 100);
       } else {
         this.snackBar.open(`The annotation could not be found in the document.`,
             'Close', {duration: 5000});
       }
     }
+  }
+
+  clearResults() {
+    this.highlightAllAnnotations(null);
+    this.searchQueryChanged({
+      keyword: '',
+      findPrevious: true,
+    });
   }
 
   addHighlightItem(pageNum: number, highlightRect: number[]) {
