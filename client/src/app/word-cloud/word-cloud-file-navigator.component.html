@@ -61,6 +61,8 @@
               </div>
               <app-word-cloud-annotation-filter
                 [annotationData]="annotationData"
+                [clickableWords]="true"
+                (wordOpen)="wordOpen.emit($event)"
                 (wordVisibilityOutput)="updateWordVisibilityMap($event)"
               ></app-word-cloud-annotation-filter>
             </div>

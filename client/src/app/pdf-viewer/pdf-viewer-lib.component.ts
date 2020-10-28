@@ -40,6 +40,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
   @Input() goToPosition: Subject<Location>;
+  @Input() highlightAnnotations: Subject<string>;
   @Input() debugMode: boolean;
   @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
   @Input() filterChanges: Observable<void>;
@@ -183,6 +184,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.highlightAnnotations.subscribe((sub) => {
+      if (!this.isLoadCompleted && sub) {
+        // Pdf viewer is not ready to go to a position
+        return;
+      }
+      this.highlightAllAnnotations(sub);
+    });
+
     if (this.debugMode) {
       jQuery(document).on('click', '.system-annotation', event => {
         const target = event.target;
@@ -267,6 +276,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       overlayDiv.addEventListener('dragstart', event => {
         this.annotationDragStart.emit(event);
       });
+      overlayDiv.dataset.annotationId = annotation.meta.id;
       overlayDiv.setAttribute('class', 'system-annotation');
       overlayDiv.setAttribute('location', JSON.stringify(location));
       overlayDiv.setAttribute('meta', JSON.stringify(annotation.meta));
@@ -811,6 +821,37 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
+  highlightAllAnnotations(id: string | undefined) {
+    let found = 0;
+
+    for (const page of Object.values(this.pageRef)) {
+      const overlays = (page as any).div.querySelectorAll('.system-annotation');
+      for (const overlay of overlays) {
+        if (overlay.dataset.annotationId === id) {
+          overlay.classList.add('annotation-highlight');
+          found++;
+        } else {
+          overlay.classList.remove('annotation-highlight');
+        }
+      }
+    }
+
+    if (id != null) {
+      this.searchQueryChanged({
+        keyword: '',
+        findPrevious: true,
+      });
+
+      if (found) {
+        this.snackBar.open(`Highlighted ${found} annotation${found === 1 ? '' : 's'}  `
+            + `in the document.`, 'Close', {duration: 5000});
+      } else {
+        this.snackBar.open(`The annotation could not be found in the document.`,
+            'Close', {duration: 5000});
+      }
+    }
+  }
+
   addHighlightItem(pageNum: number, highlightRect: number[]) {
     const pdfPageView = this.pageRef[pageNum];
     if (!pdfPageView) {
@@ -861,6 +902,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   searchQueryChanged(newQuery: { keyword: string, findPrevious: boolean }) {
+    if (newQuery.keyword.trim().length) {
+      this.highlightAllAnnotations(null);
+    }
     if (newQuery.keyword !== this.pdfQuery) {
       this.pdfQuery = newQuery.keyword;
       this.searchCommand = "find";
