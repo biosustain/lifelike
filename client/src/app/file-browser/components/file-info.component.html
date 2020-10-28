@@ -1,32 +1,32 @@
 <div class="d-flex flex-column h-100">
   <div class="module-body">
     <div class="mb-3">
-      <app-file-type-label [object]="object"></app-file-type-label>
+      <app-file-type-label [object]="_object"></app-file-type-label>
     </div>
 
-    <h5 (click)="objectEdit.emit(object)">{{ object.name }}</h5>
+    <h5 (click)="objectEdit.emit(_object)">{{ _object.name }}</h5>
 
-    <div class="paragraph-truncate-3 mt-3" *ngIf="object.description" (click)="objectEdit.emit(object)">
-      {{ object.description }}
+    <div class="paragraph-truncate-3 mt-3" *ngIf="_object.description" (click)="objectEdit.emit(_object)">
+      {{ _object.description }}
     </div>
 
     <hr class="my-3">
 
     <ul class="list-unstyled mt-3 mb-0">
-      <li *ngIf="object.annotationDate">
-        <strong>Annotated:</strong> {{ object.annotationDate | date: 'short' }}
+      <li *ngIf="_object.annotationDate">
+        <strong>Annotated:</strong> {{ _object.annotationDate | date: 'short' }}
       </li>
-      <li *ngIf="object.modificationDate">
-        <strong>Modified:</strong> {{ object.modificationDate | date: 'short' }}
+      <li *ngIf="_object.modificationDate">
+        <strong>Modified:</strong> {{ _object.modificationDate | date: 'short' }}
       </li>
-      <li *ngIf="object.creationDate">
-        <strong>Created:</strong> {{ object.creationDate | date: 'short' }}
+      <li *ngIf="_object.creationDate">
+        <strong>Created:</strong> {{ _object.creationDate | date: 'short' }}
       </li>
-      <li *ngIf="object.creator">
-        <strong>Author:</strong> {{ object.creator.username }}
+      <li *ngIf="_object.creator">
+        <strong>Author:</strong> {{ _object.creator.username }}
       </li>
     </ul>
-    <div *ngIf="object.type === 'file' && object.highlight" class="mt-5">
+    <div *ngIf="_object.type === 'file' && _object.highlight" class="mt-5">
       <h5>Term matches in document:</h5>
       <div *ngFor="let highlight of shownHighlights">
         <hr class="my-3">
@@ -42,10 +42,10 @@
       </div>
     </div>
   </div>
-  <div class="flex-grow-1 position-relative" *ngIf="object.type === 'map'">
+  <div class="flex-grow-1 position-relative" *ngIf="_object.type === 'map'">
     <div class="border-bottom h-100">
-      <ng-container *ngIf="object.type === 'map'">
-        <app-map [locator]="{projectName: object.project.projectName, hashId: object.id}" [highlightTerms]="highlightTerms"></app-map>
+      <ng-container *ngIf="_object.type === 'map'">
+        <app-map [locator]="{projectName: _object.project.projectName, hashId: _object.id}" [highlightTerms]="highlightTerms"></app-map>
       </ng-container>
     </div>
   </div>
