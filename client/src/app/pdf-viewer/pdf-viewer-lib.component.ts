@@ -44,6 +44,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Input() debugMode: boolean;
   @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
   @Input() filterChanges: Observable<void>;
+  private previousHighlightAnnotationId: string | undefined;
   private filterChangeSubscription: Subscription;
 
   @Input()
@@ -822,6 +823,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   highlightAllAnnotations(id: string | undefined) {
+    if (id != null) {
+      if (this.previousHighlightAnnotationId === id) {
+        id = null;
+      }
+    }
+
+    this.previousHighlightAnnotationId = id;
+
     let found = 0;
 
     for (const page of Object.values(this.pageRef)) {

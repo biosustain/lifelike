@@ -78,7 +78,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
   searchQuery = '';
   goToPosition: Subject<Location> = new Subject<Location>();
-  highlightAnnotations: BehaviorSubject<string> = new BehaviorSubject<string>(null);
+  highlightAnnotations: Subject<string> = new Subject<string>();
   loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]>;
   pendingScroll: Location;
   pendingAnnotationHighlightId: string;
@@ -519,15 +519,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       this.pendingAnnotationHighlightId = annotationId;
       return;
     }
-    if (annotationId != null) {
-      if (this.highlightAnnotations.value === annotationId) {
-        this.highlightAnnotations.next(null);
-      } else {
-        this.highlightAnnotations.next(annotationId);
-      }
-    } else {
-      this.highlightAnnotations.next(annotationId);
-    }
+    this.highlightAnnotations.next(annotationId);
   }
 
   loadCompleted(status) {
