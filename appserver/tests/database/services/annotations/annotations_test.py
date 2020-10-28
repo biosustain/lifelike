@@ -1095,6 +1095,95 @@ def test_fix_false_positive_gene_annotations(get_annotations_service, index, ann
     'index, annotations',
     [
         (1, [
+            Annotation(
+                page_number=1,
+                keyword='SidE',
+                lo_location_offset=5,
+                hi_location_offset=8,
+                keyword_length=4,
+                text_in_document='side',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    type=EntityType.PROTEIN.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+                uuid='',
+            ),
+        ]),
+        (2, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='Tir',
+                lo_location_offset=5,
+                hi_location_offset=7,
+                keyword_length=3,
+                text_in_document='TIR',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    type=EntityType.PROTEIN.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+                uuid='',
+            ),
+        ]),
+        (3, [
+            GeneAnnotation(
+                page_number=1,
+                keyword='TraF',
+                lo_location_offset=5,
+                hi_location_offset=7,
+                keyword_length=3,
+                text_in_document='TraF',
+                keywords=[''],
+                rects=[[1, 2]],
+                meta=Annotation.Meta(
+                    type=EntityType.PROTEIN.value,
+                    color='',
+                    id='',
+                    id_type='',
+                    id_hyperlink='',
+                    links=Annotation.Meta.Links(),
+                ),
+                uuid='',
+            ),
+        ]),
+    ],
+)
+def test_fix_false_positive_protein_annotations(get_annotations_service, index, annotations):
+    annotation_service = get_annotations_service
+
+    char_coord_objs_in_pdf, word_index_dict = process_tokens(
+        create_mock_tokens(annotations))
+
+    fixed = annotation_service._get_fixed_false_positive_unified_annotations(
+        annotations_list=annotations,
+        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+        word_index_dict=word_index_dict
+    )
+
+    # do exact case matching for genes
+    if index == 1:
+        assert len(fixed) == 0
+    elif index == 2:
+        assert len(fixed) == 0
+    elif index == 3:
+        assert len(fixed) == 1
+
+
+@pytest.mark.parametrize(
+    'index, annotations',
+    [
+        (1, [
             GeneAnnotation(
                 page_number=1,
                 keyword='IL7',
