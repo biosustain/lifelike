@@ -1,3 +1,3 @@
-<ng-container *ngIf="node"><div class="highlight-container"
+<div class="highlight-container" *ngIf="node"
       [draggable]="node.tagName === 'annotation'" (dragstart)="dragStarted($event)"
-      [class.highlight-term]="node.tagName === 'highlight'"><div *ngIf="node.tagName === 'annotation'" class="annotation" [style.background]="annotationColor"></div><app-highlight-text *ngFor="let child of childNodes" [highlight]="child"></app-highlight-text>{{ node.nodeValue }}</div></ng-container>
+      [class.highlight-term]="node.tagName === 'highlight'"><div *ngIf="node.tagName === 'annotation'" class="annotation" [style.background]="annotationColor"></div><app-highlight-text *ngFor="let child of childNodes" [highlight]="child"></app-highlight-text>{{ node.nodeValue }}</div>
