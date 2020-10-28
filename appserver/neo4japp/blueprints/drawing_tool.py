@@ -4,15 +4,11 @@ import os
 import re
 from datetime import datetime
 
-import fastjsonschema
-from fastjsonschema import JsonSchemaException
-
-from neo4japp.constants import TIMEZONE
-
 import graphviz as gv
 import sqlalchemy
 from PyPDF4 import PdfFileReader, PdfFileWriter
 from PyPDF4.generic import NameObject, ArrayObject
+from fastjsonschema import JsonSchemaException
 from flask import (
     current_app,
     request,
@@ -25,7 +21,6 @@ from flask_apispec import use_kwargs
 from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload, aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy_searchable import search
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
@@ -33,6 +28,7 @@ from neo4japp.blueprints.permissions import requires_project_permission
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import ANNOTATION_STYLES_DICT
+from neo4japp.constants import TIMEZONE
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.data_transfer_objects import PublicMap
 from neo4japp.data_transfer_objects.common import ResultList
@@ -718,8 +714,8 @@ def project_backup_post(hash_id_, **data):
     except JsonSchemaException as e:
         current_app.logger.info(
             f'Map backup data validation error: {project.id}',
-            extra=UserEventLog(username=g.current_user.username, event_type='map backup')
-                .to_dict()
+            extra=UserEventLog(username=g.current_user.username,
+                               event_type='map backup').to_dict()
         )
 
     old_backup = ProjectBackup.query.filter_by(
