@@ -25,6 +25,7 @@ import { BrowserComponent } from './file-browser/components/browser/browser.comp
 import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
 import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
+import { EnrichmentTableViewerComponent } from './file-browser/components/enrichment-table-viewer.component';
 import { FileNavigatorComponent } from './file-navigator/file-navigator.component';
 import { WordCloudProjectComponent } from './word-cloud/word-cloud-project.component';
 
@@ -94,6 +95,14 @@ const routes: Routes = [
     data: {
       title: 'Search',
       fontAwesomeIcon: 'search',
+    },
+  },
+  {
+    path: 'projects/:project_name/enrichment-table/:file_id',
+    component: EnrichmentTableViewerComponent,
+    data: {
+      title: 'Enrichment Table',
+      fontAwesomeIcon: 'table',
     },
   },
   {
@@ -225,10 +234,10 @@ const routes: Routes = [
     },
   },
   {
-    path: 'word-cloud/:project_name',
+    path: 'entity-cloud/:project_name',
     component: WordCloudProjectComponent,
     data: {
-      title: 'Word Cloud',
+      title: 'Project Entity Cloud',
       fontAwesomeIcon: 'cloud',
     }
   },

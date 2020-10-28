@@ -41,7 +41,7 @@ export class WordCloudProjectComponent extends WordCloudComponent {
       result: [legend, annotationExport],
       value: [],
     }) => {
-      this.windowTitle = this.projectName;
+      this.windowTitle = `Project Entity Cloud (${this.projectName})`;
 
       // Reset legend
       Object.keys(legend).forEach(label => {

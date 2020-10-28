@@ -84,6 +84,10 @@ export class WordCloudComponent {
     this.getAnnotations();
   }
 
+  getAnnotationIdentifier(annotation: WordCloudAnnotationFilterEntity) {
+    return annotation.id + annotation.type + annotation.text;
+  }
+
   /**
    * Sends a request to the BackgroundTask object for new annotations data.
    */
@@ -96,7 +100,7 @@ export class WordCloudComponent {
     this.annotationData = [];
     this.wordVisibilityMap.clear();
 
-    const tempIdTypePairSet = new Map<string, number>();
+    const uniquePairMap = new Map<string, number>();
     const annotationList = annotationExport.split('\n');
 
     // remove the headers from tsv response
@@ -107,9 +111,9 @@ export class WordCloudComponent {
       //  entity_id	  type	  text	  count
       //  col[0]      col[1]  col[2]  col[3]
       const cols = e.split('\t');
-      const idTypePair = cols[0] + cols[1];
+      const uniquePair = cols[0] === '' ? cols[1] + cols[2] : cols[0] + cols[1];
 
-      if (!tempIdTypePairSet.has(idTypePair)) {
+      if (!uniquePairMap.has(uniquePair)) {
         const annotation = {
           id: cols[0],
           type: cols[1],
@@ -118,13 +122,15 @@ export class WordCloudComponent {
           frequency: parseInt(cols[3], 10),
           shown: true,
         } as WordCloudAnnotationFilterEntity;
-        this.wordVisibilityMap.set(annotation.text, annotation.frequency > 1);
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), annotation.frequency > 1);
         this.annotationData.push(annotation);
-        tempIdTypePairSet.set(idTypePair, this.annotationData.length - 1);
+        uniquePairMap.set(uniquePair, this.annotationData.length - 1);
       } else {
         // Add the frequency of the synonym to the original word
-        this.annotationData[tempIdTypePairSet.get(idTypePair)].frequency += parseInt(cols[3], 10);
-        this.wordVisibilityMap.set(this.annotationData[tempIdTypePairSet.get(idTypePair)].text, true);
+        this.annotationData[uniquePairMap.get(uniquePair)].frequency += parseInt(cols[3], 10);
+
+        // And also update the word visibility, since the original frequency might have been 1
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(this.annotationData[uniquePairMap.get(uniquePair)]), true);
 
         // TODO: In the future, we may want to show "synonyms" somewhere, or even allow the user to swap out the most frequent term for a
         // synonym
@@ -165,7 +171,7 @@ export class WordCloudComponent {
 
     hiddenTextAreaWrapper.appendChild(tempTextArea);
     this.annotationData.forEach(annotation => {
-      if (this.wordVisibilityMap.get(annotation.text)) {
+      if (this.wordVisibilityMap.get(this.getAnnotationIdentifier(annotation))) {
         tempTextArea.value += `${annotation.text}\n`;
       }
     });
@@ -188,7 +194,7 @@ export class WordCloudComponent {
    * Gets a filtered copy of the annotation data. Any word not mapped to 'true' in the wordVisibilityMap will be filtered out.
    */
   getFilteredAnnotationDeepCopy() {
-    return this.getAnnotationDataDeepCopy().filter(annotation => this.wordVisibilityMap.get(annotation.text));
+    return this.getAnnotationDataDeepCopy().filter(annotation => this.wordVisibilityMap.get(this.getAnnotationIdentifier(annotation)));
   }
 
   /**
@@ -215,7 +221,7 @@ export class WordCloudComponent {
         word.shown = true;
       } else {
         // If it wasn't returned BUT it's been filtered, we don't need to show a warning
-        if (!this.wordVisibilityMap.get(word.text)) {
+        if (!this.wordVisibilityMap.get(this.getAnnotationIdentifier(word))) {
           word.shown = true;
         } else {
           // If it wasn't returned but it HASN'T been filtered, we need to show a warning
