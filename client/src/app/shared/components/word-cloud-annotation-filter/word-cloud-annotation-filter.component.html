@@ -146,7 +146,8 @@
 
 <fieldset class="fieldset-properties mt-2">
   <legend>Annotations</legend>
-  <div *ngFor="let data of annotationData">
+  <div *ngFor="let data of annotationData"
+       [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">
     <div class="d-flex align-items-center text-overflow">
       <div class="custom-control custom-checkbox">
         <input [id]="id + 'filter-' + getAnnotationIdentifier(data)"
@@ -158,8 +159,7 @@
         <label class="custom-control-label text-nowrap"
                [for]="id + 'filter-' + getAnnotationIdentifier(data)"
                placement="right bottom top"
-               container="body"
-               [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">
+               container="body">
           <ng-container *ngIf="!clickableWords">
             <div class="text-overflow">
               <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}}
