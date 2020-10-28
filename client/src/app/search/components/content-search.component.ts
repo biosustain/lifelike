@@ -91,14 +91,36 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   }
 
   highlightDisplayLimitChanged(object: DirectoryObject, change: HighlightDisplayLimitChange) {
-    this.contentSearchService.annotate({
-      texts: object.highlight.slice(change.previous, change.limit),
-    }).subscribe(result => {
-      this.zone.run(() => {
-        for (let i = 0, j = change.previous; j < change.limit; i++, j++) {
-          object.highlight[j] = result.texts[i];
-        }
+    const queue: {
+      index: number,
+      text: string,
+    }[] = [];
+
+    if (!object.highlightAnnotated) {
+      object.highlightAnnotated = [];
+    }
+
+    for (let i = change.previous; i < change.limit; i++) {
+      if (!object.highlightAnnotated[i]) {
+        queue.push({
+          index: i,
+          text: object.highlight[i],
+        });
+      }
+    }
+
+    if (queue.length) {
+      this.contentSearchService.annotate({
+        texts: queue.map(item => item.text),
+      }).subscribe(result => {
+        this.zone.run(() => {
+          for (let i = 0, j = change.previous; j < change.limit; i++, j++) {
+            const index = queue[i].index;
+            object.highlight[index] = result.texts[i];
+            object.highlightAnnotated[index] = true;
+          }
+        });
       });
-    });
+    }
   }
 }

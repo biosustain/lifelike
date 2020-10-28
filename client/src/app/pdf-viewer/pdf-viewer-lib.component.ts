@@ -183,7 +183,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
           const simplified = sub.jumpText.replace(/[\s\r\n]/g, ' ').trim();
           const words = simplified.split(/ /g);
           const prefixQuery = words.splice(0, 4).join(' ');
-          console.log('find', prefixQuery);
           this.pdfComponent.pdfFindController.executeCommand('find', {
             query: prefixQuery,
             highlightAll: true,
