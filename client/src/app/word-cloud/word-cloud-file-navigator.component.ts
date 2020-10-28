@@ -77,7 +77,7 @@ export class WordCloudFileNavigatorComponent extends WordCloudComponent
                                                                     result: [legend, annotationExport],
                                                                     value: [],
                                                                   }) => {
-      this.windowTitle = 'Word Cloud';
+      this.windowTitle = 'Entity Cloud';
 
       // Reset legend
       Object.keys(legend).forEach(label => {
