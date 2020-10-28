@@ -180,11 +180,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     unmatchedGenes.forEach((gene) => {
       const cell: TableCell[] = [];
       cell.push({ text: gene, highlight: true });
+      cell.push({ text: 'No match found.', highlight: true });
       const colNum = Math.max.apply(null, this.tableHeader.map(x => x.reduce((a, b) => a + parseInt(b.span, 10), 0)));
-      for (let i = 0; i < colNum - 1; i++) {
+      for (let i = 0; i < colNum - 2; i++) {
         cell.push({ text: '', highlight: true });
       }
-      this.tableEntries.unshift(cell);
+      this.tableEntries.push(cell);
     });
     this.unmatchedGenes = unmatchedGenes.join(', ');
   }
