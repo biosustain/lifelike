@@ -579,8 +579,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  openWordCloudPane() {
-    const url = `/word-cloud/${this.projectName}`;
+  openEntityCloudPane() {
+    const url = `/entity-cloud/${this.projectName}`;
     this.workspaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
   }
 
