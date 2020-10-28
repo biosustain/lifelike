@@ -230,15 +230,15 @@ const routes: Routes = [
     component: FileNavigatorComponent,
     data: {
       title: 'File Navigator',
-      fontAwesomeIcon: 'cloud',
+      fontAwesomeIcon: 'fas fa-compass',
     },
   },
   {
     path: 'word-cloud/:project_name',
     component: WordCloudProjectComponent,
     data: {
-      title: 'Word Cloud',
-      fontAwesomeIcon: 'cloud',
+      title: 'Entity Cloud',
+      fontAwesomeIcon: 'fas fa-compass',
     }
   },
   // Old links
