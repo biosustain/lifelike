@@ -27,3 +27,17 @@
 .word-cloud-title {
   min-width: 2rem;
 }
+
+.cloud-word {
+  cursor: default;
+}
+
+.cloud-word-clickable {
+  cursor: pointer;
+
+  &:hover {
+    fill: black !important;
+    outline: 4px solid rgba(255, 0, 0, 0.3);
+  }
+}
+
