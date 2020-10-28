@@ -113,9 +113,9 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
       this.legend.set(annotation.type, annotation.color);
     });
 
-    // Set each type's visibility to false at first, we'll figure out what the visibility actually is in `applyFilters` below.
+    // Set each type's visibility to true at first, we'll figure out what the visibility actually is in `applyFilters` below.
     this.legend.forEach((_, key) => {
-      this.typeVisibilityMap.set(key, false);
+      this.typeVisibilityMap.set(key, true);
     });
 
     this.applyFilters();
@@ -311,8 +311,9 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   // looping...Not a huge problem because the lists are generally going to be relatively small, but it may be a problem in the future.
 
   /**
-   * Determines whether any words in the word cloud have been filtered. By default words are not filtered, so if any of them are, then we
-   * know that the user changed the filter. We use this to determine which (if any) of the buttons on the widget to disable/enable.
+   * Determines whether any words in the word cloud have been filtered. We use this to determine which (if any) of the buttons on the
+   * widget to disable/enable. If any word not below the current frequency filter has been manually filtered, we show "Show All". If all
+   * words not below the filter are shown, then we show "Hide All".
    */
   private invalidateWordVisibility() {
     // Keep track if the user has some entity types disabled
@@ -363,12 +364,12 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Helper function for applying all filter and grouping methods simultaneously. Used by the filter form submission function.
+   * Helper function for applying all filter and grouping methods simultaneously. Used by the filter form submission/on-changes function.
    */
   private applyFilters() {
     for (const annotation of this.annotationData) {
       const state = this.filterByFrequency(annotation);
-      this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), state);
+      this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), state && this.typeVisibilityMap.get(annotation.type));
     }
     this.invalidateTypeVisibility();
     this.invalidateWordVisibility();
