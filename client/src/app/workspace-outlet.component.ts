@@ -84,7 +84,6 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnIni
   }
 
   focusedInside() {
-    console.log('focusin');
     this.outletFocus.emit();
   }
 
