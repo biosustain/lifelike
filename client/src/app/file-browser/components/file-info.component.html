@@ -4,7 +4,10 @@
       <app-file-type-label [object]="_object"></app-file-type-label>
     </div>
 
-    <h5 (click)="objectEdit.emit(_object)">{{ _object.name }}</h5>
+    <h5 (click)="objectEdit.emit(_object)">
+      <div *ngIf="_object.name.slice(_object.name.length - 11) !== '.enrichment'">{{ _object.name }}</div>
+      <div *ngIf="_object.name.slice(_object.name.length - 11) === '.enrichment'">{{ _object.name.slice(0, -11) }}</div>
+    </h5>
 
     <div class="paragraph-truncate-3 mt-3" *ngIf="_object.description" (click)="objectEdit.emit(_object)">
       {{ _object.description }}

@@ -33,6 +33,8 @@ import moment from 'moment';
 import { getObjectCommands } from '../utils/objects';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { nullCoalesce } from '../../shared/utils/types';
+import { EnrichmentTableCreateDialogComponent } from './enrichment-table-create-dialog.component';
+import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
 
 interface PathLocator {
   projectName?: string;
@@ -245,6 +247,38 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
+  displayEnrichmentTableCreateDialog() {
+    const dialogRef = this.modalService.open(EnrichmentTableCreateDialogComponent);
+    dialogRef.result.then((result) => {
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
+      this.filesService.addGeneList(this.locator.projectName, this.directory.id, enrichmentData, result.description, result.name)
+      .pipe(this.errorHandler.create())
+      .subscribe((file) => {
+        this.refresh();
+        this.snackBar.open(`'${file.filename}' created`, 'Close', {duration: 5000});
+      });
+    },
+    () => {
+    });
+  }
+
+  displayEnrichmentTableEditDialog(objects: AnnotatedDirectoryObject[]) {
+    const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
+    dialogRef.componentInstance.fileId = objects[0].id;
+    dialogRef.componentInstance.projectName = this.locator.projectName;
+    dialogRef.result.then((result) => {
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
+      this.filesService.editGeneList(this.locator.projectName, objects[0].id, enrichmentData, result.name, result.description)
+      .pipe(this.errorHandler.create())
+      .subscribe((update) => {
+        this.refresh();
+        this.snackBar.open('Enrichment Table Updated', 'Close', {duration: 5000});
+      });
+    },
+    () => {
+    });
+  }
+
   displayEditDialog(object: AnnotatedDirectoryObject) {
     if (object.type === 'dir') {
       const dialogRef = this.ngbModal.open(DirectoryEditDialogComponent);
@@ -377,7 +411,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   reannotate(objects: readonly AnnotatedDirectoryObject[]) {
     const files: PdfFile[] = objects
-      .filter(object => object.type === 'file')
+      .filter(object => object.type === 'file' && object.name.slice(object.name.length - 11) !== '.enrichment')
       .map(file => file.data as PdfFile);
 
     if (files.length) {
@@ -545,8 +579,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  openWordCloudPane() {
-    const url = `/word-cloud/${this.projectName}`;
+  openEntityCloudPane() {
+    const url = `/entity-cloud/${this.projectName}`;
     this.workspaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
   }
 

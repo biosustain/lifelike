@@ -43,8 +43,7 @@
                ngbTooltip="Open default search link">{{ linkTemplates[i].domain }}</a>:
           </label>
           <div class="col-sm-9">
-            <input type="text" [formControl]="link" class="form-control" [id]="'annotation-link-' + i"
-                   [placeholder]="substituteLink(linkTemplates[i].url, form.get('text').value)">
+            <input type="text" [formControl]="link" class="form-control" [id]="'annotation-link-' + i">
             <app-form-input-feedback [control]="link" [errors]="errors"></app-form-input-feedback>
           </div>
         </div>

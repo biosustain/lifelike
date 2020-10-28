@@ -222,7 +222,11 @@ def export_global_inclusions():
 
         if inclusion.file_id is not None:
             domain = os.environ.get('DOMAIN')
-            hyperlink = f'{domain}/api/files/download/{inclusion.file_id}'
+            file = Files.query.filter_by(content_id=inclusion.file_id).first()
+            if file is not None:
+                project = Projects.query.filter_by(id=file.project).one_or_none()
+                if project is not None:
+                    hyperlink = f'{domain}/projects/{project.project_name}/files/{file.file_id}'
 
         missing_data = any([
             inclusion.annotation['meta'].get('id', None) is None,
@@ -272,7 +276,11 @@ def export_global_exclusions():
 
         if exclusion.file_id is not None:
             domain = os.environ.get('DOMAIN')
-            hyperlink = f'{domain}/api/files/download/{exclusion.file_id}'
+            file = Files.query.filter_by(content_id=exclusion.file_id).first()
+            if file is not None:
+                project = Projects.query.filter_by(id=file.project).one_or_none()
+                if project is not None:
+                    hyperlink = f'{domain}/projects/{project.project_name}/files/{file.file_id}'
 
         missing_data = any([
             exclusion.annotation.get('text', None) is None,

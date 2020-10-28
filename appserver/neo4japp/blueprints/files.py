@@ -101,6 +101,160 @@ def search_doi(content: bytes) -> Optional[str]:
     return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
+@newbp.route('/<string:projects_name>/enrichment-table', methods=['POST'])
+@auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
+def add_gene_list(projects_name: str):
+    data = request.get_json()
+    user = g.current_user
+
+    try:
+        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Project could not be found.')
+    yield g.current_user, projects
+
+    dir_id = data['directoryId']
+    enrichment_data = data['enrichmentData'].encode('utf-8')
+
+    try:
+        checksum_sha256 = hashlib.sha256(enrichment_data).digest()
+
+        try:
+            # First look for an existing copy of this file
+            file_content = db.session.query(FileContent.id) \
+                .filter(FileContent.checksum_sha256 == checksum_sha256) \
+                .one()
+        except NoResultFound:
+            # Otherwise, let's add the file content to the database
+            file_content = FileContent(
+                raw_file=enrichment_data,
+                checksum_sha256=checksum_sha256
+            )
+            db.session.add(file_content)
+            db.session.flush()
+
+        file_id = str(uuid.uuid4())
+        filename = data['filename']
+
+        file = Files(
+            file_id=file_id,
+            filename=filename + '.enrichment',
+            description=data['description'],
+            content_id=file_content.id,
+            user_id=user.id,
+            project=projects.id,
+            dir_id=dir_id,
+        )
+
+        db.session.add(file)
+        db.session.commit()
+
+        current_app.logger.info(
+            f'User uploaded file: <{filename}>',
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='file upload').to_dict())
+    except Exception:
+        raise FileUploadError('Your file could not be saved. Please try creating again.')
+
+    yield jsonify({'status': 'success', 'filename': filename + '.enrichment'}), 200
+
+
+@newbp.route('/<string:projects_name>/enrichment-table/<string:fileId>', methods=['PATCH'])
+@auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
+def edit_gene_list(projects_name: str, fileId: str):
+    data = request.get_json()
+    user = g.current_user
+
+    try:
+        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Project could not be found.')
+    yield g.current_user, projects
+
+    enrichment_data = data['enrichmentData'].encode('utf-8')
+    checksum_sha256 = hashlib.sha256(enrichment_data).digest()
+    file_name = data['name']
+
+    try:
+        entry_file = Files.query.filter(
+            Files.file_id == fileId,
+            Files.project == projects.id
+        ).one()
+
+        # If file type enrichment table add .enrichment to new name if it doesn't have .enrichment.
+        if (file_name[-11:] != '.enrichment' and entry_file.filename[-11:] == '.enrichment'):
+            file_name = file_name + '.enrichment'
+
+        # If file type enrichment table remove .enrichment from new name if it has .enrichment.
+        if (file_name[-11:] == '.enrichment' and entry_file.filename[-11:] != '.enrichment'):
+            file_name = file_name[:-11]
+
+        try:
+            # First look for an existing copy of this file
+            file_content = db.session.query(FileContent.id) \
+                .filter(FileContent.checksum_sha256 == checksum_sha256) \
+                .one()
+        except NoResultFound:
+            # Otherwise, let's add the file content to the database
+            file_content = FileContent(
+                raw_file=enrichment_data,
+                checksum_sha256=checksum_sha256
+            )
+            db.session.add(file_content)
+            db.session.flush()
+
+        entry_file.filename = file_name
+        entry_file.description = data['description']
+        entry_file.content_id = file_content.id
+
+        db.session.add(entry_file)
+        db.session.commit()
+
+    except NoResultFound:
+        raise RecordNotFoundException('Requested file not found.')
+
+    yield jsonify({'status': 'success'}), 200
+
+
+@newbp.route('/<string:projects_name>/enrichment-table/<string:id>', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_enrichment_data(id: str, projects_name: str):
+
+    user = g.current_user
+
+    try:
+        projects = Projects.query.filter(Projects.project_name == projects_name).one()
+    except NoResultFound:
+        raise RecordNotFoundException(f'Project {projects_name} not found')
+
+    yield user, projects
+
+    try:
+        entry = db.session.query(
+            Files.id,
+            Files.filename,
+            Files.description,
+            FileContent.raw_file
+        ).join(
+            FileContent,
+            FileContent.id == Files.content_id
+        ).filter(
+            Files.file_id == id,
+            Files.project == projects.id
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested file not found.')
+
+    yield jsonify({
+        'status': 'success',
+        'data': entry.raw_file.decode('utf-8'),
+        'name': entry.filename,
+        'description': entry.description}), 200
+
+
 @newbp.route('/directory/<int:directory_id>/<string:filename>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
@@ -456,22 +610,32 @@ def get_pdf(id: str, project_name: str):
             # TODO: maybe move these into a separate service file?
             update: Dict[str, str] = {}
             if filename and filename != file.filename:
+                # If name ends in .enrichment remove .enrichment.
+                if (filename[-11:] == '.enrichment'):
+                    filename = filename[:-11]
                 update['filename'] = filename
 
             if description != file.description:
                 update['description'] = description
 
+            if update:
+                try:
+                    db.session.query(Files).filter(Files.file_id == id).update(update)
+                except SQLAlchemyError:
+                    db.session.rollback()
+                    raise DatabaseError('Failed to update PDF filename and/or description.')  # noqa
+
             curr_fallback = FallbackOrganism.query.get(file.fallback_organism_id)
 
             if not fallback_organism:
-                # fallback organism was removed
-                try:
-                    file.fallback_organism = None
-                    db.session.delete(curr_fallback)
-                    db.session.commit()
-                except SQLAlchemyError:
-                    db.session.rollback()
-                    raise DatabaseError(f'Failed to delete fallback organism from file <{file.file_id}>.')  # noqa
+                if curr_fallback:
+                    # fallback organism was removed
+                    try:
+                        file.fallback_organism = None
+                        db.session.delete(curr_fallback)
+                    except SQLAlchemyError:
+                        db.session.rollback()
+                        raise DatabaseError('Failed to delete fallback organism from the PDF.')  # noqa
             else:
                 if (not curr_fallback or
                     (curr_fallback.organism_name != fallback_organism['organism_name']
@@ -491,14 +655,15 @@ def get_pdf(id: str, project_name: str):
                         file.fallback_organism = new_fallback
                         if curr_fallback:
                             db.session.delete(curr_fallback)
-                        db.session.commit()
                     except SQLAlchemyError:
                         db.session.rollback()
-                        raise DatabaseError(f'There was a problem updating fallback organism from file <{file.file_id}>.')  # noqa
+                        raise DatabaseError('There was a problem updating fallback organism for the PDF.')  # noqa
 
-            if update:
-                db.session.query(Files).filter(Files.file_id == id).update(update)
+            try:
                 db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback()
+                raise DatabaseError('Unexpected error occurred updating PDF.')
         yield ''
 
     try:
