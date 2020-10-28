@@ -30,7 +30,7 @@ export class EnrichmentTableCreateDialogComponent extends CommonFormDialogCompon
   }
 
   setOrganism(organism: OrganismAutocomplete | null) {
-    this.form.get('organism').setValue(organism ? organism.tax_id : null);
+    this.form.get('organism').setValue(organism ? organism.tax_id + '/' + organism.organism_name : null);
   }
 }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 
 import { TableHeader, TableCell, TableLink } from './generic-table.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -11,6 +11,7 @@ import {
 } from '../services/enrichment-table.service';
 import { ActivatedRoute } from '@angular/router';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+import { ModuleProperties } from 'app/shared/modules';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -18,6 +19,8 @@ import { PdfFilesService } from 'app/shared/services/pdf-files.service';
   styleUrls: ['./enrichment-table-viewer.component.scss'],
 })
 export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+
   // Inputs for Generic Table Component
   tableEntries: TableCell[][];
   tableHeader: TableHeader[][] = [
@@ -29,7 +32,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       { name: 'Uniprot Function', span: '1' },
       { name: 'String Annotation', span: '1' },
       { name: 'Go Enrichment', span: '3' },
-      { name: 'Biocyc', span: '1' },
+      { name: 'Biocyc Pathways', span: '1' },
     ],
     // Secondary headers
     [
@@ -57,6 +60,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   projectName: string;
   fileId: string;
   geneNames: string[];
+  taxID: string;
   organism: string;
   loadTask: BackgroundTask<null, EnrichmentData>;
   loadTaskSubscription: Subscription;
@@ -83,13 +87,15 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       this.filesService.getEnrichmentData(this.projectName, this.fileId)
     );
     this.loadTaskSubscription = this.loadTask.results$.subscribe((result) => {
-      // digest the file content to get gene list and organism
+      // digest the file content to get gene list and organism tax id and name
       this.sheetname = result.result.name.slice(0, -11);
+      this.emitModuleProperties();
       const resultArray = result.result.data.split('/');
       this.importGenes = resultArray[0]
         .split(',')
         .filter((gene) => gene !== '');
-      this.organism = resultArray[1];
+      this.taxID = resultArray[1];
+      this.organism = resultArray[2];
       this.removeDuplicates(this.importGenes);
       this.currentPage = 1;
       this.pageSize = 10;
@@ -103,6 +109,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.loadTaskSubscription.unsubscribe();
   }
 
+  emitModuleProperties() {
+    this.modulePropertiesChange.emit({
+      title: this.sheetname ? this.sheetname : 'Enrichment Table',
+      fontAwesomeIcon: 'table',
+    });
+  }
+
   goToPage(page: number) {
     this.matchNCBINodes(page);
   }
@@ -113,7 +126,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       (page - 1) * this.pageSize + this.pageSize
     );
     this.worksheetViewerService
-      .matchNCBINodes(this.currentGenes, this.organism)
+      .matchNCBINodes(this.currentGenes, this.taxID)
       .subscribe((result) => {
         this.ncbiNodes = result.map((wrapper) => wrapper.x);
         this.ncbiIds = result.map((wrapper) => wrapper.neo4jID);
@@ -212,7 +225,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       : { text: '' });
     result.push(wrapper.string.result
       ? {
-          text: wrapper.string.result.annotation,
+          text: wrapper.string.result.annotation !== 'annotation not available' ? wrapper.string.result.annotation : '',
           singleLink: { link: wrapper.string.link, linkText: 'String Link' },
         }
       : { text: '' });
@@ -250,7 +263,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
             singleLink: {link: wrapper.biocyc.link, linkText: 'Biocyc Link'}
           }
         : {
-            text: 'Pathways not found.',
+            text: '',
             singleLink: { link: wrapper.biocyc.link, linkText: 'Biocyc Link' },
           }
       : { text: '' });
