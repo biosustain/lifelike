@@ -20,11 +20,11 @@
           <div>{{ entry.text }}</div>
           <ng-container *ngIf="entry.multiLink">
             <ul *ngFor="let link of entry.multiLink">
-              <li><a href="{{ link.link }}">{{ link.linkText }}</a></li>
+              <li><a target="_blank" rel="noopener noreferrer" href="{{ link.link }}">{{ link.linkText }}</a></li>
             </ul>
           </ng-container>
           <ng-container *ngIf="entry.singleLink">
-            <a href="{{ entry.singleLink.link }}">{{
+            <a target="_blank" rel="noopener noreferrer" href="{{ entry.singleLink.link }}">{{
               entry.singleLink.linkText
             }}</a>
           </ng-container>

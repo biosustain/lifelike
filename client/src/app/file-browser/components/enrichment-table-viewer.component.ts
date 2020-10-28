@@ -25,7 +25,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     [
       { name: 'Imported Gene Name', span: '1' },
       { name: 'NCBI Gene Full Name', span: '1' },
-      { name: 'Regulon Gene Product Name', span: '3' },
+      { name: 'Regulon Data', span: '3' },
       { name: 'Uniprot Function', span: '1' },
       { name: 'String Annotation', span: '1' },
       { name: 'Go Enrichment', span: '3' },
@@ -185,19 +185,23 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
             text: wrapper.regulon.result.regulator_family,
             singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
           }
-        : { text: '' });
+        : { text: '', singleLink: {link: wrapper.regulon.link, linkText: 'Regulon Link'}});
       result.push(wrapper.regulon.result.activated_by
         ? {
             text: wrapper.regulon.result.activated_by.join('; '),
             singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
           }
-        : { text: '' });
+        : { text: '', singleLink: {link: wrapper.regulon.link, linkText: 'Regulon Link'}});
       result.push(wrapper.regulon.result.repressed_by
         ? {
             text: wrapper.regulon.result.repressed_by.join('; '),
             singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
           }
-        : { text: '' });
+        : { text: '', singleLink: {link: wrapper.regulon.link, linkText: 'Regulon Link'}});
+    } else {
+      for (let i = 0; i < 3; i++) {
+        result.push({text: ''});
+      }
     }
 
     result.push(wrapper.uniprot.result
@@ -242,10 +246,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     result.push(wrapper.biocyc.result
       ? wrapper.biocyc.result.pathways
         ? {
-            text: '',
-            multiLink: this.processBiocycWrapper(
-              wrapper.biocyc.result.pathways, wrapper.biocyc.link
-            )
+            text: wrapper.biocyc.result.pathways.join('; '),
+            singleLink: {link: wrapper.biocyc.link, linkText: 'Biocyc Link'}
           }
         : {
             text: 'Pathways not found.',
