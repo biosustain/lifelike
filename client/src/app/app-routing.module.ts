@@ -101,7 +101,7 @@ const routes: Routes = [
     path: 'projects/:project_name/enrichment-table/:file_id',
     component: EnrichmentTableViewerComponent,
     data: {
-      title: 'Worksheet Viewer',
+      title: 'Enrichment Table',
       fontAwesomeIcon: 'table',
     },
   },

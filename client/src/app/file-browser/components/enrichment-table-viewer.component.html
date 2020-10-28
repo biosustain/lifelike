@@ -10,6 +10,7 @@
             {{ sheetname }}
           </h1>
         </div>
+        <div *ngIf="organism"> Organism name: {{ organism }} (Taxonomy ID: {{ taxID }}) </div>
         <div class="warning" *ngIf="unmatchedGenes">
           Warning! Genes that were not matched are highlighted in red.
         </div>
