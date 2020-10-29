@@ -220,9 +220,9 @@ class SearchService(GraphBaseDao):
         for x in domains_list:
             if x in filter:
                 result_domains.append(x)
-        for x in entities_list:
-            if x in filter:
-                result_entities.append(x)
+        for y in entities_list:
+            if y in filter:
+                result_entities.append(y)
         return '(%s) AND (%s)' % (' OR '.join(result_domains), ' OR '.join(result_entities))
 
     def visualizer_search_temp(
