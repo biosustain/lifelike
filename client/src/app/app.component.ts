@@ -12,7 +12,8 @@ import { Observable } from 'rxjs';
 
 import { AppUser } from 'app/interfaces';
 import { Title } from '@angular/platform-browser';
-import { NgbModalConfig, NgbPaginationConfig } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalConfig, NgbPaginationConfig } from '@ng-bootstrap/ng-bootstrap';
+import { AppVersionDialogComponent } from './app-version-dialog.component';
 
 /**
  * Root of the application that creates the left menu and the content section.
@@ -33,6 +34,7 @@ export class AppComponent {
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
     private readonly titleService: Title,
+    private readonly modalService: NgbModal,
     private readonly ngbModalConfig: NgbModalConfig,
     private readonly ngbPaginationConfig: NgbPaginationConfig,
     private storage: StorageService,
@@ -52,6 +54,12 @@ export class AppComponent {
       }
     });
 
+  }
+  /**
+   * View Lifelike meta information
+   */
+  buildInfo() {
+    this.modalService.open(AppVersionDialogComponent);
   }
 
   /**
