@@ -101,7 +101,7 @@ const routes: Routes = [
     path: 'projects/:project_name/enrichment-table/:file_id',
     component: EnrichmentTableViewerComponent,
     data: {
-      title: 'Worksheet Viewer',
+      title: 'Enrichment Table',
       fontAwesomeIcon: 'table',
     },
   },
@@ -230,15 +230,15 @@ const routes: Routes = [
     component: FileNavigatorComponent,
     data: {
       title: 'File Navigator',
-      fontAwesomeIcon: 'cloud',
+      fontAwesomeIcon: 'fas fa-compass',
     },
   },
   {
-    path: 'word-cloud/:project_name',
+    path: 'entity-cloud/:project_name',
     component: WordCloudProjectComponent,
     data: {
-      title: 'Word Cloud',
-      fontAwesomeIcon: 'cloud',
+      title: 'Project Entity Cloud',
+      fontAwesomeIcon: 'fas fa-compass',
     }
   },
   // Old links

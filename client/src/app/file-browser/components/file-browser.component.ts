@@ -250,7 +250,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   displayEnrichmentTableCreateDialog() {
     const dialogRef = this.modalService.open(EnrichmentTableCreateDialogComponent);
     dialogRef.result.then((result) => {
-      const enrichmentData = result.entitiesList.replace(/\n/ig, ',') + '/' + result.organism;
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
       this.filesService.addGeneList(this.locator.projectName, this.directory.id, enrichmentData, result.description, result.name)
       .pipe(this.errorHandler.create())
       .subscribe((file) => {
@@ -267,7 +267,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     dialogRef.componentInstance.fileId = objects[0].id;
     dialogRef.componentInstance.projectName = this.locator.projectName;
     dialogRef.result.then((result) => {
-      const enrichmentData = result.entitiesList.replace(/\n/ig, ',') + '/' + result.organism;
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
       this.filesService.editGeneList(this.locator.projectName, objects[0].id, enrichmentData, result.name, result.description)
       .pipe(this.errorHandler.create())
       .subscribe((update) => {
@@ -579,8 +579,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  openWordCloudPane() {
-    const url = `/word-cloud/${this.projectName}`;
+  openEntityCloudPane() {
+    const url = `/entity-cloud/${this.projectName}`;
     this.workspaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
   }
 

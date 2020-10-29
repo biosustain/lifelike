@@ -120,6 +120,14 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
       event.returnValue = 'Leave page? Changes you made may not be saved';
     }
   }
+
+  calculateFontAwesomeIcon(s: string) {
+    if (s.includes(' ')) {
+      return s;
+    } else {
+      return 'fa fa-' + s;
+    }
+  }
 }
 
 class PlacedPane {

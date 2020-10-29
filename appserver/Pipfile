@@ -44,6 +44,7 @@ intervaltree = "==3.1.0"
 py2neo = "==2020.0.0"
 paramiko = "==2.7.2"
 google-cloud-storage = "*"
+fastjsonschema = "*"
 
 [requires]
 python_version = "3.8.2"

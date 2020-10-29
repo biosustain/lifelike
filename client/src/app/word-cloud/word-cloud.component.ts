@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { uniqueId } from 'lodash';
@@ -17,10 +17,13 @@ import * as cloud from 'd3.layout.cloud';
 @Component({
   selector: 'app-word-cloud',
   templateUrl: './word-cloud.component.html',
-  styleUrls: ['./word-cloud.component.scss']
+  styleUrls: ['./word-cloud.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class WordCloudComponent {
   id = uniqueId('WordCloudComponent-');
+
+  @Output() wordOpen = new EventEmitter<WordCloudAnnotationFilterEntity>();
 
   projectName: string;
   fileId: string;
@@ -36,6 +39,7 @@ export class WordCloudComponent {
 
   filtersPanelOpened = false;
 
+  clickableWords = false;
   WORD_CLOUD_MARGIN = 10;
 
   constructor(
@@ -268,6 +272,10 @@ export class WordCloudComponent {
       .data(words, (d) => d.text)
       .enter()
       .append('text')
+        .on('click', (item: WordCloudAnnotationFilterEntity) => {
+          this.wordOpen.emit(item);
+        })
+        .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
         .style('fill', (d) => d.color)
         .attr('text-anchor', 'middle')
         .style('font-size', (d) =>  d.size + 'px')
