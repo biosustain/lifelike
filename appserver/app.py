@@ -289,11 +289,19 @@ def bulk_upload_files(gcp_source, project_name, username):
     import re
     import io
     from google.cloud import storage
+    from sqlalchemy import and_
     from sqlalchemy.orm.exc import NoResultFound
     from neo4japp.services import ProjectsService
-    from neo4japp.models import Files, FileContent, Projects
+    from neo4japp.models import (
+        AppRole,
+        AppUser,
+        Files,
+        FileContent,
+        Projects,
+        projects_collaborator_role,
+    )
     import neo4japp.models.files_queries as files_queries
-    from neo4japp.exceptions import DuplicateRecord
+    from neo4japp.exceptions import AnnotationError
     from neo4japp.blueprints.files import extract_doi
     from neo4japp.blueprints.annotations import annotate
     from pdfminer import high_level
@@ -308,7 +316,26 @@ def bulk_upload_files(gcp_source, project_name, username):
         storage_client = storage.Client()
         bucket = storage_client.get_bucket(gcp_source)
 
-        project = db.session.query(Projects.id).filter_by(project_name=project_name).one_or_none()
+        project = db.session.query(
+            Projects.id
+        ).filter(
+            Projects.project_name == project_name
+        ).join(
+            projects_collaborator_role,
+            Projects.id == projects_collaborator_role.c.projects_id,
+        ).join(
+            AppUser,
+            AppUser.id == projects_collaborator_role.c.appuser_id,
+        ).join(
+            AppRole,
+            AppRole.id == projects_collaborator_role.c.app_role_id
+        ).filter(
+            and_(
+                AppUser.id == user.id,
+                AppRole.name == 'project-admin',
+            )
+        ).one_or_none()
+
         if project is None:
             new_project = Projects(project_name=project_name, description='', users=[user.id])
             project = projects_service.create_projects(user, new_project)
@@ -344,8 +371,10 @@ def bulk_upload_files(gcp_source, project_name, username):
                 directory_id=***ARANGO_USERNAME***_dir.id,
                 project_id=project.id,
             )
+
             if exists:
-                raise DuplicateRecord('Filename already exists, please choose a different one.')
+                app.logger.info(f'Filename {filename} already exists. Failed to load.')
+                return None
 
             new_file = Files(
                 file_id=file_id,
@@ -366,14 +395,20 @@ def bulk_upload_files(gcp_source, project_name, username):
             print(f'Loading file [{fi.name}]...')
             raw_content = fi.download_as_bytes()
             new_file = load_file(raw_content, fi.name)
-            new_file_ids.append(new_file.file_id)
+            if new_file is not None:
+                new_file_ids.append(new_file.file_id)
 
         docs = files_queries.get_all_files_and_content_by_id(
             file_ids=new_file_ids,
             project_id=project.id,
         ).all()
 
-        annotated_files = [annotate(doc) for doc in docs]
+        annotated_files = []
+        for doc in docs:
+            try:
+                annotated_files.append(annotate(doc))
+            except AnnotationError:
+                app.logger.info(f'Filename {filename} failed to annotate.')
 
         db.session.bulk_update_mappings(Files, annotated_files)
         db.session.commit()
