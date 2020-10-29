@@ -59,11 +59,7 @@ export class AppComponent {
    * View Lifelike meta information
    */
   buildInfo() {
-    const modalRef = this.modalService.open(AppVersionDialogComponent);
-    modalRef.componentInstance.buildVersion = 'version 10';
-    modalRef.componentInstance.buildTimestamp = '10 o clock';
-    modalRef.componentInstance.buildCommitHash = 'i39r3as';
-
+    this.modalService.open(AppVersionDialogComponent);
   }
 
   /**

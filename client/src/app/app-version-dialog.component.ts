@@ -10,11 +10,6 @@ import { BuildInfo } from 'app/interfaces';
 })
 export class AppVersionDialogComponent {
 
-  appVersion: string;
-  appBuildNumber: number;
-  buildTimestamp: string;
-  buildCommitHash: string;
-
   readonly buildInfo$: Observable<BuildInfo>;
 
   constructor(
