@@ -18,15 +18,23 @@
           <h2 class="module-section-header-title m-0">{{ windowTitle }}</h2>
           <div class="btn-group ml-auto d-flex align-items-stretch" role="group">
             <button class="btn btn-secondary text-nowrap"
-                    (click)="copyWordCloudToClipboard()">Copy Cloud to Clipboard</button>
+                    ngbTooltip="Copy Cloud to Clipboard"
+                    placement="bottom top left right"
+                    (click)="copyWordCloudToClipboard()">
+              <i class="fas fa-fw fa-copy"></i>
+            </button>
             <button class="btn btn-secondary text-nowrap"
-                    (click)="fitCloudToWindow()">Fit Cloud to Window</button>
+                    ngbTooltip="Fit Cloud to Window"
+                    placement="bottom top left right"
+                    (click)="fitCloudToWindow()">
+              <i class="fas fa-fw fa-expand-arrows-alt"></i>
+            </button>
             <button class="btn btn-secondary"
                     ngbTooltip="Reload Annotations"
                     container="body"
                     placement="bottom top left right"
                     (click)="getAnnotations()">
-              <i class="fa fa-fw fa-redo"></i>
+              <i class="fa fa-fw fa-sync"></i>
             </button>
             <button class="btn btn-secondary"
                     (click)="toggleFiltersPanel()"
@@ -61,6 +69,8 @@
               </div>
               <app-word-cloud-annotation-filter
                 [annotationData]="annotationData"
+                [clickableWords]="true"
+                (wordOpen)="wordOpen.emit($event)"
                 (wordVisibilityOutput)="updateWordVisibilityMap($event)"
               ></app-word-cloud-annotation-filter>
             </div>

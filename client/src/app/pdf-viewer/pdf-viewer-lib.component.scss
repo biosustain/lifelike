@@ -2,14 +2,28 @@
 
 .pdf-viewer-container {
   position: relative;
+  counter-reset: annotation-highlight-index;
 }
 
 // The box that says the PDF is loading
 .pdf-loading-box {
   position: absolute;
-  top: $spacer;
+  top: 0;
   left: $spacer;
   z-index: 100;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: 0;
+}
+
+.search-status-box {
+  position: absolute;
+  top: 0;
+  right: #{$spacer + 1rem};
+  z-index: 100;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: 0;
 }
 
 .pdf-tooltip-collapse-control:after {
@@ -20,4 +34,42 @@
 
 .pdf-tooltip-collapse-control.collapsed:after {
   content: '\f078';
+}
+
+.system-annotation {
+  scroll-margin: 10rem;
+  mix-blend-mode: multiply;
+}
+
+.annotation-highlight {
+  outline: 4px solid red;
+  position: relative;
+
+  &:before {
+    position: absolute;
+    top: -0.7rem;
+    right: -1rem;
+    padding: 0 3px;
+    counter-increment: annotation-highlight-index;
+    content: counter(annotation-highlight-index);
+    color: #fff;
+    background: red;
+    animation: annotation-highlight-index-effect 2s 1 step-start forwards;
+    pointer-events: none;
+  }
+
+  &:hover {
+    &:before {
+      opacity: 1 !important;
+    }
+  }
+}
+
+@keyframes annotation-highlight-index-effect {
+  99% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }

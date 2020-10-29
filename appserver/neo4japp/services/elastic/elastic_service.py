@@ -316,16 +316,10 @@ class ElasticService():
 
     # Begin search methods
 
-    def _build_query_clause(
+    def get_words_and_phrases_from_search_term(
         self,
         search_term: str,
-        fields: List[str],
-        punc_boost_field: str,
-        query_filter,
-        highlight,
     ):
-        search_term = search_term.strip()
-
         term = ''
         parsing_phrase = False
         word_stack = []
@@ -355,30 +349,49 @@ class ElasticService():
             # word_stack.
             word_stack.extend(term.split(' '))
 
+        return word_stack, phrase_stack
+
+    def get_text_match_objs(
+        self,
+        fields: List[str],
+        boost_fields: Dict[str, int],
+        word: str
+    ):
+        multi_match_obj = {
+            'multi_match': {
+                'query': word,
+                'type': 'phrase',
+                'fields': [f'{field}^{boost_fields[field]}' for field in fields]
+            }
+        }
+
+        term_objs = [
+            {
+                'term': {
+                    field: {
+                        'value': word,
+                        'boost': boost_fields[field]
+                    }
+                }
+            } for field in fields
+        ]
+
+        return [multi_match_obj] + term_objs  # type:ignore
+
+    def get_text_match_queries(
+        self,
+        words: List[str],
+        phrases: List[str],
+        text_fields: List[str],
+        text_field_boosts: Dict[str, int]
+    ):
         word_operands = []
-        for word in word_stack:
+        for word in words:
             if any([c in string.punctuation for c in word]):
                 word_operands.append(
                     {
                         'bool': {
-                            'should': [
-                                {
-                                    'multi_match': {
-                                        'query': word,
-                                        'type': 'phrase',
-                                        'fields': fields
-                                    }
-                                },
-                                {
-                                    'term': {
-                                        punc_boost_field: {
-                                            'value': word,
-                                            'boost': 2.0
-                                        }
-                                    }
-                                }
-
-                            ]
+                            'should': self.get_text_match_objs(text_fields, text_field_boosts, word)
                         }
                     }
                 )
@@ -387,44 +400,116 @@ class ElasticService():
                     'multi_match': {
                         'query': word,  # type:ignore
                         'type': 'phrase',  # type:ignore
-                        'fields': fields  # type:ignore
+                        'fields': [f'{field}^{text_field_boosts[field]}' for field in text_fields]
                     }
                 })
 
         phrase_operands = []
-        for phrase in phrase_stack:
+        for phrase in phrases:
             phrase_operands.append({
                 'multi_match': {
                     'query': phrase,
                     'type': 'phrase',
-                    'fields': fields
+                    'fields': [f'{field}^{text_field_boosts[field]}' for field in text_fields]
                 }
             })
 
         return {
+            'bool': {
+                'must': word_operands + phrase_operands,  # type:ignore
+            }
+        }
+
+    def get_keyword_match_queries(
+        self,
+        search_term: str,
+        keyword_fields: List[str],
+        keyword_field_boosts: Dict[str, int]
+    ):
+        return {
+            'bool': {
+                'should': [
+                    {
+                        'term': {
+                            field: {
+                                'value': search_term,
+                                'boost': keyword_field_boosts[field]
+                            }
+                        }
+                    } for field in keyword_fields
+                ]
+            }
+        }
+
+    def _build_query_clause(
+        self,
+        search_term: str,
+        text_fields: List[str],
+        text_field_boosts: Dict[str, int],
+        keyword_fields: List[str],
+        keyword_field_boosts: Dict[str, int],
+        query_filter,
+        highlight,
+    ):
+        search_term = search_term.strip()
+        words, phrases = self.get_words_and_phrases_from_search_term(search_term)
+
+        search_queries = []
+        if len(text_fields) > 0:
+            search_queries.append(
+                self.get_text_match_queries(
+                    words,
+                    phrases,
+                    text_fields,
+                    text_field_boosts
+                )
+            )
+
+        if len(keyword_fields) > 0:
+            search_queries.append(
+                self.get_keyword_match_queries(
+                    search_term,
+                    keyword_fields,
+                    keyword_field_boosts
+                )
+            )
+
+        return {
             'query': {
                 'bool': {
-                    'must': word_operands + phrase_operands,  # type:ignore
-                    'filter': query_filter
+                    'must': [
+                        {
+                            'bool': {
+                                'should': search_queries,
+
+                            }
+                        },
+                        query_filter,
+                    ],
                 }
             },
             'highlight': highlight
-        }, phrase_stack + word_stack
+        }, phrases + words
 
     def search(
         self,
         index_id: str,
-        user_query: str,
-        match_fields: List[str],
+        search_term: str,
+        text_fields: List[str],
+        text_field_boosts: Dict[str, int],
+        keyword_fields: List[str],
+        keyword_field_boosts: Dict[str, int],
         offset: int = 0,
         limit: int = 10,
         query_filter=None,
         highlight=None
     ):
         es_query, search_phrases = self._build_query_clause(
-            search_term=user_query,
-            fields=match_fields,
-            punc_boost_field='data.content',  # TODO: TEMP
+            search_term=search_term,
+            text_fields=text_fields,
+            text_field_boosts=text_field_boosts,
+            keyword_fields=keyword_fields,
+            keyword_field_boosts=keyword_field_boosts,
             query_filter=query_filter,
             highlight=highlight,
         )
