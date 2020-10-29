@@ -62,7 +62,8 @@
 
     <div class="form-group d-flex align-items-center">
       <label [for]="id + '-group-by-options'" class="my-0 mr-2 text-nowrap">Group By:</label>
-      <select [(ngModel)]="selectedGroupByOption" class="custom-select" [id]="id + '-group-by-options'" (change)="groupAndSortData()">
+      <select [(ngModel)]="selectedGroupByOption" class="custom-select" [id]="id + '-group-by-options'"
+              (change)="groupAndSortData()">
         <option *ngFor="let option of groupByOptions" [value]="option">
           {{option}}
         </option>
@@ -93,16 +94,19 @@
 <div class="d-flex justify-content-center mb-2 text-nowrap">
   <button *ngIf="!wordVisibilityChanged"
           class="btn btn-secondary btn-block"
-          (click)="setAllWordsVisibility(false)">Hide All</button>
+          (click)="setAllWordsVisibility(false)">Hide All
+  </button>
   <button *ngIf="wordVisibilityChanged"
           class="btn btn-secondary btn-block"
-          (click)="setAllWordsVisibility(true)">Show All</button>
+          (click)="setAllWordsVisibility(true)">Show All
+  </button>
 </div>
 
 <fieldset class="fieldset-properties mt-2">
   <legend placement="top left right"
           container="body"
-          ngbTooltip="Click a checkbox to filter annotations of that type">Legend</legend>
+          ngbTooltip="Click a checkbox to filter annotations of that type">Legend
+  </legend>
 
   <div *ngFor="let keyvalue of legend | keyvalue">
     <div *ngIf="disabledTypeMap.get(keyvalue.key); else notDisabled">
@@ -142,22 +146,36 @@
 
 <fieldset class="fieldset-properties mt-2">
   <legend>Annotations</legend>
-  <div *ngFor="let data of annotationData">
-    <div class="custom-control custom-checkbox">
-      <input [id]="id + 'filter-' + getAnnotationIdentifier(data)"
-          class="custom-control-input"
-          type="checkbox"
-          value="1"
-          [checked]="isWordVisible(getAnnotationIdentifier(data))"
-          (change)="changeWordVisibility(getAnnotationIdentifier(data), $event)">
-      <label class="custom-control-label text-nowrap"
-            [for]="id + 'filter-' + getAnnotationIdentifier(data)"
-            placement="right bottom top"
-            container="body"
-            [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">
-        <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}} <span>({{data.frequency}})</span>
-        <i *ngIf="!data.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
-      </label>
+  <div *ngFor="let data of annotationData"
+       [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">
+    <div class="d-flex align-items-center text-overflow">
+      <div class="custom-control custom-checkbox">
+        <input [id]="id + 'filter-' + getAnnotationIdentifier(data)"
+               class="custom-control-input"
+               type="checkbox"
+               value="1"
+               [checked]="isWordVisible(getAnnotationIdentifier(data))"
+               (change)="changeWordVisibility(getAnnotationIdentifier(data), $event)">
+        <label class="custom-control-label text-nowrap"
+               [for]="id + 'filter-' + getAnnotationIdentifier(data)"
+               placement="right bottom top"
+               container="body">
+          <ng-container *ngIf="!clickableWords">
+            <div class="text-overflow">
+              <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}}
+              <span>({{data.frequency}})</span>
+              <i *ngIf="!data.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
+            </div>
+          </ng-container>
+        </label>
+      </div>
+      <ng-container *ngIf="clickableWords">
+        <a class="text-overflow" href="#" (click)="wordOpen.emit(data); $event.preventDefault()">
+          <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}}
+          <span>({{data.frequency}})</span>
+          <i *ngIf="!data.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
+        </a>
+      </ng-container>
     </div>
   </div>
 </fieldset>

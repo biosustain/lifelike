@@ -18,7 +18,7 @@
                       <span class="d-block text-truncate">
                         <i class="fas fa-spinner fa-pulse fa-fw" *ngIf="tab.loading; else notLoading"></i>
                         <ng-template #notLoading>
-                          <i [class]="'fa fa-fw fa-' + (tab.fontAwesomeIcon || 'window-maximize')"></i>
+                          <i [class]="'fa-fw ' + (calculateFontAwesomeIcon(tab.fontAwesomeIcon) || 'fa window-maximize')"></i>
                         </ng-template>
                         {{tab.title}}
                       </span>
