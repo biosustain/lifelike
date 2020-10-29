@@ -264,6 +264,122 @@ def reannotate_all():
     db.session.commit()
 
 
+@app.cli.command('bulk-upload')
+@click.argument('gcp_source', nargs=1)
+@click.argument('project_name', nargs=1)
+@click.argument('username', nargs=1)
+def bulk_upload_files(gcp_source, project_name, username):
+    """ Performs a bulk upload of files and annotation from
+    a given Google Storage Bucket.
+
+    Example usage:
+
+    > flask bulk-upload cag-data test admin
+
+    This will create a project called 'cag-data'
+    and load PDF files from a Google Cloud storage.
+
+    NOTE: This is meant for an emergency backup. A more
+    robust system should be designed for this or this
+    should be refactored once we have a user facing
+    bulk interface.
+    """
+    import hashlib
+    import uuid
+    import re
+    import io
+    from google.cloud import storage
+    from sqlalchemy.orm.exc import NoResultFound
+    from neo4japp.services import ProjectsService
+    from neo4japp.models import Files, FileContent, Projects
+    import neo4japp.models.files_queries as files_queries
+    from neo4japp.exceptions import DuplicateRecord
+    from neo4japp.blueprints.files import extract_doi
+    from neo4japp.blueprints.annotations import annotate
+    from pdfminer import high_level
+    from flask import g
+
+    with app.app_context():
+        user = db.session.query(AppUser).filter_by(username=username).one()
+        g.current_user = user
+
+        projects_service = ProjectsService(session=db.session)
+
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(gcp_source)
+
+        project = db.session.query(Projects.id).filter_by(project_name=project_name).one_or_none()
+        if project is None:
+            new_project = Projects(project_name=project_name, description='', users=[user.id])
+            project = projects_service.create_projects(user, new_project)
+
+        ***ARANGO_USERNAME***_dir = projects_service.get_***ARANGO_USERNAME***_dir(project)
+
+        def load_file(raw_content, filename):
+            max_fname_length = Files.filename.property.columns[0].type.length
+            if len(filename) > max_fname_length:
+                name, extension = os.path.splitext(filename)
+                if len(extension) > max_fname_length:
+                    extension = '.dat'
+                filename = name[:max(0, max_fname_length - len(extension))] + extension
+            checksum_sha256 = hashlib.sha256(raw_content).digest()
+            try:
+                file_content = db.session.query(
+                    FileContent.id
+                ).filter(
+                    FileContent.checksum_sha256 == checksum_sha256
+                ).one()
+            except NoResultFound:
+                file_content = FileContent(
+                    raw_file=raw_content,
+                    checksum_sha256=checksum_sha256,
+                )
+                db.session.add(file_content)
+                db.session.flush()
+
+            file_id = str(uuid.uuid4())
+            doi = extract_doi(raw_content, file_id, filename)
+            exists = files_queries.filename_exist(
+                filename=filename,
+                directory_id=***ARANGO_USERNAME***_dir.id,
+                project_id=project.id,
+            )
+            if exists:
+                raise DuplicateRecord('Filename already exists, please choose a different one.')
+
+            new_file = Files(
+                file_id=file_id,
+                filename=filename,
+                description='',
+                content_id=file_content.id,
+                user_id=user.id,
+                project=project.id,
+                dir_id=***ARANGO_USERNAME***_dir.id,
+                upload_url='',
+            )
+            db.session.add(new_file)
+            db.session.commit()
+            return new_file
+
+        new_file_ids = []
+        for fi in bucket.list_blobs():
+            print(f'Loading file [{fi.name}]...')
+            raw_content = fi.download_as_bytes()
+            new_file = load_file(raw_content, fi.name)
+            new_file_ids.append(new_file.file_id)
+
+        docs = files_queries.get_all_files_and_content_by_id(
+            file_ids=new_file_ids,
+            project_id=project.id,
+        ).all()
+
+        annotated_files = [annotate(doc) for doc in docs]
+
+        db.session.bulk_update_mappings(Files, annotated_files)
+        db.session.commit()
+        print('Done')
+
+
 @app.cli.command('global-annotation')
 @click.argument('filename', nargs=1)
 def seed_global_annotation_list(filename):
