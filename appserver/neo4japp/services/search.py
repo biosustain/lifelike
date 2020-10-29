@@ -212,14 +212,18 @@ class SearchService(GraphBaseDao):
         return formatted_results
 
     def sanitize_filter(self, filter):
-        filter_list = ['n:db_CHEBI', 'n:db_GO', 'n:db_Literature', 'n:db_MESH', 'n:db_NCBI',
-                       'n:db_UniProt', 'n:Chemical', 'n:Disease', 'n:Gene', 'n:Protein',
-                       'n:Taxonomy']
-        result_list = []
-        for x in filter_list:
+        domains_list = ['n:db_CHEBI', 'n:db_GO', 'n:db_Literature', 'n:db_MESH', 'n:db_NCBI',
+                        'n:db_UniProt']
+        entities_list = ['n:Chemical', 'n:Disease', 'n:Gene', 'n:Protein', 'n:Taxonomy']
+        result_domains = []
+        result_entities = []
+        for x in domains_list:
             if x in filter:
-                result_list.append(x)
-        return ' OR '.join(result_list)
+                result_domains.append(x)
+        for x in entities_list:
+            if x in filter:
+                result_entities.append(x)
+        return '(%s) AND (%s)' % (' OR '.join(result_domains), ' OR '.join(result_entities))
 
     def visualizer_search_temp(
         self,
