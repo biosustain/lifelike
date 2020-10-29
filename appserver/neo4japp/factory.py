@@ -54,7 +54,7 @@ for mod in module_logs:
     logging.getLogger(mod).setLevel(logging.WARNING)
 
 # Commit Hash (Version) of Application
-GITHUB_HASH = os.environ.get('GITHUB_HASH', 'unspecified')
+GITHUB_HASH = os.environ.get('GITHUB_HASH', 'undefined')
 
 # Used for registering blueprints
 BLUEPRINT_PACKAGE = __package__ + '.blueprints'
