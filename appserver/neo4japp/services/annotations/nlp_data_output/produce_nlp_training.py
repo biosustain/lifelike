@@ -245,8 +245,16 @@ def mp_text_to_pubtator2(line):
     title = f'{pmcid}.no-anns.txt'
 
     stdin, stdout, stderr = client.exec_command(f'cat {file_path}/{title}')
-    if not stderr.read():
-        text = list(stdout)[0]
+    ltext = list(stdout)
+    if not stderr.read() and ltext:
+        try:
+            text = ltext[0]
+        except Exception:
+            with open(error_file_path, 'a') as error_file:
+                print(line.replace('\n', ''), file=error_file)
+            sftp.close()
+            client.close()
+            return
         results = create_annotations_from_text(text, f'{title}')
 
         add_offset = False
@@ -290,7 +298,7 @@ def mp_text_to_pubtator2(line):
 def text_to_pubtator2():
     def get_data():
         with open(os.path.join(directory, 'abstracts/data-1602546717626.csv')) as path_file:
-            for line in islice(path_file, 0, 5000):
+            for line in islice(path_file, 0, 10000):
                 yield line
 
     with mp.Pool(processes=3) as pool:

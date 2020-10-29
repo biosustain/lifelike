@@ -29,10 +29,7 @@ def main():
             processed_file_path = os.path.join(directory, f'processed/{pmcid}.dict.txt')
             processed_file = Path(processed_file_path)
 
-            if processed_file.is_file():
-                # it's been processed
-                continue
-            else:
+            if not processed_file.is_file():
                 # hasn't been processed so add it to file
                 print(line.replace('\n', ''), file=mem_file)
 
