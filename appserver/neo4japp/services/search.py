@@ -212,18 +212,21 @@ class SearchService(GraphBaseDao):
         return formatted_results
 
     def sanitize_filter(self, filter):
-        domains_list = ['n:db_CHEBI', 'n:db_GO', 'n:db_Literature', 'n:db_MESH', 'n:db_NCBI',
-                        'n:db_UniProt']
-        entities_list = ['n:Chemical', 'n:Disease', 'n:Gene', 'n:Protein', 'n:Taxonomy']
+        domains_list = {'ChEBI': 'n:db_CHEBI', 'GO': 'n:db_GO', 'Literature': 'n:db_Literature',
+                        'MeSH': 'n:db_MESH', 'NCBI': 'n:db_NCBI', 'UniProt': 'n:db_UniProt'}
+        entities_list = {'Chemicals': 'n:Chemical', 'Diseases': 'n:Disease', 'Genes': 'n:Gene',
+                         'Proteins': 'n:Protein', 'Taxonomy': 'n:Taxonomy'}
         result_domains = []
         result_entities = []
         for x in domains_list:
             if x in filter:
-                result_domains.append(x)
+                result_domains.append(domains_list[x])
         for y in entities_list:
             if y in filter:
-                result_entities.append(y)
-        return '(%s) AND (%s)' % (' OR '.join(result_domains), ' OR '.join(result_entities))
+                result_entities.append(entities_list[y])
+        domains = 'n:null' if len(result_domains) == 0 else ' OR '.join(result_domains)
+        entities = 'n:null' if len(result_entities) == 0 else ' OR '.join(result_entities)
+        return f'({domains}) AND {entities}'
 
     def visualizer_search_temp(
         self,
