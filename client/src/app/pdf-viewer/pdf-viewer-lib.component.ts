@@ -357,9 +357,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       <div class="collapse" id="${collapseTargetId}">
     `;
     // links should be sorted in the order that they appear in SEARCH_LINKS
-    for (const { domain, } of SEARCH_LINKS) {
-      const url = an.meta.links[domain.toLowerCase()];
-      collapseHtml += `<a target="_blank" href="${escape(url)}">${escape(domain)}</a><br/>`;
+    for (const { domain, url} of SEARCH_LINKS) {
+      const link = an.meta.links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(an.meta.allText));
+      collapseHtml += `<a target="_blank" href="${escape(link)}">${escape(domain)}</a><br/>`;
     }
     collapseHtml += `
       </div>
