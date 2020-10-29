@@ -43,7 +43,6 @@
 
 .annotation-highlight {
   outline: 4px solid red;
-  animation: annotation-highlight-effect 0.5s 4 alternate backwards;
   position: relative;
 
   &:before {
@@ -72,14 +71,5 @@
   }
   100% {
     opacity: 0;
-  }
-}
-
-@keyframes annotation-highlight-effect {
-  0% {
-    opacity: 0.3;
-  }
-  100% {
-    opacity: 0.5;
   }
 }
