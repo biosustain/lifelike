@@ -40,9 +40,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
   @Input() goToPosition: Subject<Location>;
+  @Input() highlightAnnotations: Subject<string>;
   @Input() debugMode: boolean;
   @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
   @Input() filterChanges: Observable<void>;
+  previousHighlightAnnotationId: string | undefined;
   private filterChangeSubscription: Subscription;
 
   @Input()
@@ -183,6 +185,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.highlightAnnotations.subscribe((sub) => {
+      if (!this.isLoadCompleted && sub) {
+        // Pdf viewer is not ready to go to a position
+        return;
+      }
+      this.highlightAllAnnotations(sub);
+    });
+
     if (this.debugMode) {
       jQuery(document).on('click', '.system-annotation', event => {
         const target = event.target;
@@ -267,6 +277,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       overlayDiv.addEventListener('dragstart', event => {
         this.annotationDragStart.emit(event);
       });
+      overlayDiv.dataset.annotationId = annotation.meta.id;
       overlayDiv.setAttribute('class', 'system-annotation');
       overlayDiv.setAttribute('location', JSON.stringify(location));
       overlayDiv.setAttribute('meta', JSON.stringify(annotation.meta));
@@ -357,9 +368,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       <div class="collapse" id="${collapseTargetId}">
     `;
     // links should be sorted in the order that they appear in SEARCH_LINKS
-    for (const { domain, } of SEARCH_LINKS) {
-      const url = an.meta.links[domain.toLowerCase()];
-      collapseHtml += `<a target="_blank" href="${escape(url)}">${escape(domain)}</a><br/>`;
+    for (const { domain, url} of SEARCH_LINKS) {
+      const link = an.meta.links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(an.meta.allText));
+      collapseHtml += `<a target="_blank" href="${escape(link)}">${escape(domain)}</a><br/>`;
     }
     collapseHtml += `
       </div>
@@ -811,6 +822,74 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
+  highlightAllAnnotations(id: string | undefined) {
+    if (id != null) {
+      if (this.previousHighlightAnnotationId === id) {
+        id = null;
+      }
+    }
+
+    this.previousHighlightAnnotationId = id;
+
+    let found = 0;
+    let firstElement = null;
+    let firstPageNumber = null;
+    let matchedAnnotation: Annotation = null;
+
+    for (const pageIndex of Object.keys(this.pageRef)) {
+      const page = this.pageRef[pageIndex];
+      const overlays = (page as any).div.querySelectorAll('.system-annotation');
+      for (const overlay of overlays) {
+        if (overlay.dataset.annotationId === id) {
+          overlay.classList.add('annotation-highlight');
+          found++;
+          if (firstElement == null) {
+            firstElement = overlay;
+            firstPageNumber = parseInt(pageIndex);
+          }
+        } else {
+          overlay.classList.remove('annotation-highlight');
+        }
+      }
+    }
+
+    for (const annotation of this.annotations) {
+      if (annotation.meta.id === id) {
+        matchedAnnotation = annotation;
+        break;
+      }
+    }
+
+    if (id != null) {
+      this.searchQueryChanged({
+        keyword: '',
+        findPrevious: true,
+      });
+
+      if (found) {
+        this.snackBar.open(`Highlighted ${found} instance${found === 1 ? '' : 's'}  `
+            + (matchedAnnotation != null ? `of '${matchedAnnotation.meta.allText}' ` : '')
+            + `in the document, starting on page ${firstPageNumber}.`,
+            'Close', {duration: 5000});
+
+        setTimeout(() => {
+          firstElement.scrollIntoView();
+        }, 100);
+      } else {
+        this.snackBar.open(`The annotation could not be found in the document.`,
+            'Close', {duration: 5000});
+      }
+    }
+  }
+
+  clearResults() {
+    this.highlightAllAnnotations(null);
+    this.searchQueryChanged({
+      keyword: '',
+      findPrevious: true,
+    });
+  }
+
   addHighlightItem(pageNum: number, highlightRect: number[]) {
     const pdfPageView = this.pageRef[pageNum];
     if (!pdfPageView) {
@@ -861,6 +940,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   searchQueryChanged(newQuery: { keyword: string, findPrevious: boolean }) {
+    if (newQuery.keyword.trim().length) {
+      this.highlightAllAnnotations(null);
+    }
     if (newQuery.keyword !== this.pdfQuery) {
       this.pdfQuery = newQuery.keyword;
       this.searchCommand = "find";
