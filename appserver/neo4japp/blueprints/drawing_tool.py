@@ -3,12 +3,12 @@ import json
 import os
 import re
 from datetime import datetime
-from neo4japp.constants import TIMEZONE
 
 import graphviz as gv
 import sqlalchemy
 from PyPDF4 import PdfFileReader, PdfFileWriter
 from PyPDF4.generic import NameObject, ArrayObject
+from fastjsonschema import JsonSchemaException
 from flask import (
     current_app,
     request,
@@ -21,7 +21,6 @@ from flask_apispec import use_kwargs
 from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload, aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy_searchable import search
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
@@ -29,6 +28,7 @@ from neo4japp.blueprints.permissions import requires_project_permission
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import ANNOTATION_STYLES_DICT
+from neo4japp.constants import TIMEZONE
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.data_transfer_objects import PublicMap
 from neo4japp.data_transfer_objects.common import ResultList
@@ -38,7 +38,8 @@ from neo4japp.database import (
     get_projects_service,
 )
 from neo4japp.exceptions import (
-    InvalidFileNameException, RecordNotFoundException, NotAuthorizedException
+    InvalidFileNameException, RecordNotFoundException,
+    NotAuthorizedException, InvalidArgumentsException
 )
 from neo4japp.models import (
     AccessActionType,
@@ -53,6 +54,7 @@ from neo4japp.models import (
 )
 from neo4japp.models.schema import ProjectSchema, ProjectVersionSchema
 from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
+from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.util import CasePreservedDict
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.request import paginate_from_args
@@ -262,6 +264,14 @@ def add_project(projects_name: str):
 
     yield user, projects
 
+    graph = data.get("graph", {'nodes': [], 'edges': []})
+
+    try:
+        validate_map(graph)
+    except JsonSchemaException as e:
+        raise InvalidArgumentsException(f'There is something wrong with the map data and '
+                                        f'it cannot be saved. {e.message}') from e
+
     modified_date = datetime.strptime(
         data.get('modified_date', ''),
         '%Y-%m-%dT%H:%M:%S.%fZ'
@@ -276,7 +286,7 @@ def add_project(projects_name: str):
         description=data.get('description', ''),
         modified_date=modified_date,
         public=data.get("public", False),
-        graph=data.get("graph", {'nodes': [], 'edges': []}),
+        graph=graph,
         user_id=user.id,
         dir_id=dir_id,
         creation_date=datetime.now(TIMEZONE),
@@ -355,6 +365,12 @@ def update_project(hash_id: str, projects_name: str):
     if 'label' in data:
         project.label = data['label']
     if 'graph' in data:
+        try:
+            validate_map(data['graph'])
+        except JsonSchemaException as e:
+            raise InvalidArgumentsException(f'There is something wrong with the map data and '
+                                            f'it cannot be saved. {e.message}') from e
+
         project.graph = data['graph']
     if not project.graph:
         project.graph = {"edges": [], "nodes": []}
@@ -690,6 +706,17 @@ def project_backup_post(hash_id_, **data):
     # to the project
     if project is None:
         raise NotAuthorizedException('Wrong project id or you do not own the project.')
+
+    graph = data.get("graph", {'nodes': [], 'edges': []})
+
+    try:
+        validate_map(graph)
+    except JsonSchemaException as e:
+        current_app.logger.info(
+            f'Map backup data validation error: {project.id}',
+            extra=UserEventLog(username=g.current_user.username,
+                               event_type='map backup').to_dict()
+        )
 
     old_backup = ProjectBackup.query.filter_by(
         hash_id=hash_id_,

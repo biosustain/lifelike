@@ -16,14 +16,27 @@ jobs:
 
     outputs:
       output1: ${{ steps.timestamp.outputs.commit_timestamp }}
+      output2: ${{ steps.commitcount.outputs.build_number }}
+      output3: ${{ steps.buildversion.outputs.build_version}}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Set git commit timestamp
         id: timestamp
         run: echo ::set-output name=commit_timestamp::$(git log -1 --format=%cI)
+
+      - name: Set commit counts as build number
+        id: commitcount
+        run: echo ::set-output name=build_number::$(git rev-list --count HEAD)
+
+      # Uses the commit tag as the version
+      - name: Set build version
+        id: buildversion
+        run: echo ::set-output name=build_version::$(echo "${GITHUB_REF#refs/*/}")
 
       # Setup gcloud CLI
       # https://github.com/GoogleCloudPlatform/github-actions
@@ -58,7 +71,6 @@ jobs:
           image_tag: ${{ github.sha }}
           context: ./client
           dockerfile: ./Dockerfile
-          build_extra_args: "--build-arg=build_environment=staging --build-arg=nginx_conf=staging.conf"
 
       - name: Build Redis
         uses: whoan/docker-build-with-cache-action@v5
@@ -102,6 +114,10 @@ jobs:
           vault_password: ${{ secrets.ANSIBLE_VAULT }}
           ssh_key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
           options: |
-            --extra-vars webserver=staging --extra-vars docker_img_hash=${{ github.sha }} --extra-vars git_timestamp=${{ needs.build.outputs.output1 }}
+            --extra-vars webserver=staging
+            --extra-vars set_docker_img_hash=${{ github.sha }}
+            --extra-vars set_git_timestamp=${{ needs.build.outputs.output1 }}
+            --extra-vars set_app_build_number=${{ needs.build.outputs.output2 }}
+            --extra-vars set_app_version=${{ needs.build.outputs.output3 }}
             --user ansible
             --verbose
