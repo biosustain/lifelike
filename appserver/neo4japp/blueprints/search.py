@@ -140,9 +140,14 @@ def search(q, types, limit, page):
     search_phrases = []
 
     if search_term:
-        match_fields = ['filename', 'description', 'data.content']
-        snippets = {
-            'fields': {'data.content': {}},
+        text_fields = ['description', 'data.content', 'filename']
+        text_field_boosts = {'description': 1, 'data.content': 1, 'filename': 3}
+        keyword_fields = []
+        keyword_field_boosts = {}
+        highlight = {
+            'fields': {
+                'data.content': {},
+            },
             # Need to be very careful with this option. If fragment_size is too large, search
             # will be slow because elastic has to generate large highlight fragments. Setting to
             # default for now.
@@ -180,35 +185,36 @@ def search(q, types, limit, page):
         )
 
         accessible_project_ids = [project_id for project_id, in query]
-        query_filter = [  # type:ignore
-            {
-                'bool': {
-                    'must': [
-                        # The document must have the specified type
-                        {'terms': {'type': types}},
-                        # And...
-                        {
-                            'bool': {
-                                'should': [
-                                    # If the user has access to the project the document is in...
-                                    {'terms': {'project_id': accessible_project_ids}},
-                                    # OR if the document is public...
-                                    {'term': {'public': True}}
-                                ]
-                            }
+        query_filter = {
+            'bool': {
+                'must': [
+                    # The document must have the specified type
+                    {'terms': {'type': types}},
+                    # And...
+                    {
+                        'bool': {
+                            'should': [
+                                # If the user has access to the project the document is in...
+                                {'terms': {'project_id': accessible_project_ids}},
+                                # OR if the document is public...
+                                {'term': {'public': True}}
+                            ]
                         }
-                    ]
-                }
+                    }
+                ]
             }
-        ]
+        }
 
         elastic_service = get_elastic_service()
         res, search_phrases = elastic_service.search(
             index_id=FILE_INDEX_ID,
-            user_query=search_term,
+            search_term=search_term,
             offset=offset,
             limit=limit,
-            match_fields=match_fields,
+            text_fields=text_fields,
+            text_field_boosts=text_field_boosts,
+            keyword_fields=keyword_fields,
+            keyword_field_boosts=keyword_field_boosts,
             query_filter=query_filter,
             highlight=snippets
         )

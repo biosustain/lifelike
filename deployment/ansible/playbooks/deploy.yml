@@ -1,8 +1,10 @@
 - hosts: "{{ webserver }}"
   become: true
   vars:
-    docker_img_hash: "{{ git_hash | default('latest') }}"
-    git_timestamp: "{{ git_commit_timestamp | default('not specified') }}"
+    docker_img_hash: "{{ set_docker_img_hash | default('latest') }}"
+    git_timestamp: "{{ set_git_timestamp | default('not specified') }}"
+    app_build_number: "{{ set_app_build_number | default('not specified') }}"
+    app_version: "{{ set_app_version | default('not specified') }}"
   roles:
     - role: docker
       tags: ["docker"]
@@ -62,6 +64,8 @@
           REDIS_PORT={{ REDIS_PORT }}
           DOMAIN={{ DOMAIN }}
           GITHUB_HASH={{ docker_img_hash }}
+          APP_VERSION={{ app_version }}
+          APP_BUILD_NUMBER={{ app_build_number }}
         dest: "{{ deploy_dir }}/.env"
         owner: "{{ deploy_user }}"
         group: "{{ deploy_user }}"

@@ -15,5 +15,12 @@ health of the application
 def build_version():
     build_timestamp = current_app.config.get('GITHUB_LAST_COMMIT_TIMESTAMP')
     git_commit_hash = current_app.config.get('GITHUB_HASH')
-    result = BuildInformation(build_timestamp=build_timestamp, git_hash=git_commit_hash)
+    app_build_number = current_app.config.get('APP_BUILD_NUMBER')
+    app_version = current_app.config.get('APP_VERSION')
+    result = BuildInformation(
+        build_timestamp=build_timestamp,
+        git_hash=git_commit_hash,
+        app_build_number=app_build_number,
+        app_version=app_version,
+    )
     return SuccessResponse(result=result, status_code=200)
