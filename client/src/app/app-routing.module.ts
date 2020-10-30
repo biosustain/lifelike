@@ -210,6 +210,7 @@ const routes: Routes = [
       fontAwesomeIcon: 'project-diagram',
     },
   },
+  /* TODO Refactor import
   {
     path: 'kg-import',
     canActivate: [AuthGuard],
@@ -218,6 +219,7 @@ const routes: Routes = [
       {path: 'genes', component: GeneImportWizardComponent},
     ],
   },
+  */
   {
     path: 'kg-statistics',
     component: KgStatisticsComponent,
