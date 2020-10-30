@@ -41,6 +41,8 @@ export class FilesystemService {
       };
       object.directory = result.dir;
       object.path = result.path;
+      object.id = result.dir.id;
+      object.name = result.dir.directoryParentId ? result.dir.name : locator.projectName;
 
       const children = result.objects.map(o => {
         const child = new FilesystemObject();

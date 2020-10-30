@@ -61,8 +61,10 @@
     </ng-template>
   </app-modal-body>
 
-  <app-modal-footer>
+  <app-modal-footer class="text-truncate">
     <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
-    <button type="submit" class="btn btn-primary">Select</button>
+    <button type="submit" class="btn btn-primary text-truncate">
+      Select {{ getSelectionText() }}
+    </button>
   </app-modal-footer>
 </form>

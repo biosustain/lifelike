@@ -44,6 +44,23 @@ export class FileSelectionDialogComponent implements OnDestroy {
     };
   }
 
+  getSelectionText(): string {
+    if (this.objectSelect.object != null) {
+      const selection = this.objectSelect.object.children.selection;
+      if (selection.length) {
+        if (selection.length === 1) {
+          return `'${selection[0].name}'`;
+        } else {
+          return `(${selection.length})`;
+        }
+      } else {
+        return 'This';
+      }
+    } else {
+      return '';
+    }
+  }
+
   cancel() {
     this.modal.dismiss();
   }
@@ -58,7 +75,7 @@ export class FileSelectionDialogComponent implements OnDestroy {
     } else {
       this.messageDialog.display({
         title: 'No Selection',
-        message: 'Please make a selection.',
+        message: 'You need to select a project first.',
         type: MessageType.Error,
       });
     }
