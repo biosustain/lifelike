@@ -16,6 +16,7 @@ import { map } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { emptyIfNull } from '../../shared/utils/types';
 
 @Component({
   selector: 'app-map',
@@ -148,7 +149,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       const highlights: GraphEntity[] = [];
 
       for (const node of this.map.graph.nodes) {
-        const text = (node.display_name + ' ' + node.data.detail).toLowerCase();
+        const text = (emptyIfNull(node.display_name) + ' ' + emptyIfNull(node.data.detail)).toLowerCase();
         if (pattern.test(text)) {
           highlights.push({
             type: GraphEntityType.Node,
@@ -158,7 +159,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       }
 
       for (const edge of this.map.graph.edges) {
-        const text = (edge.label + ' ' + edge.data.detail).toLowerCase();
+        const text = (emptyIfNull(edge.label) + ' ' + emptyIfNull(edge.data.detail)).toLowerCase();
         if (pattern.test(text)) {
           highlights.push({
             type: GraphEntityType.Edge,
