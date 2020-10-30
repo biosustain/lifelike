@@ -763,7 +763,6 @@ class AnnotationsService:
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
-        organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
             tokens=self.matched_species,
@@ -783,7 +782,6 @@ class AnnotationsService:
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
-        organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
         funcs = {
             EntityType.ANATOMY.value: self._annotate_anatomy,
@@ -798,19 +796,11 @@ class AnnotationsService:
         }
 
         annotate_entities = funcs[annotation_type]
-        if annotation_type == EntityType.SPECIES.value:
-            return annotate_entities(
-                entity_id_str=entity_id_str,
-                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                cropbox_in_pdf=cropbox_in_pdf,
-                organisms_from_custom_annotations=organisms_from_custom_annotations,
-            )  # type: ignore
-        else:
-            return annotate_entities(
-                entity_id_str=entity_id_str,
-                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                cropbox_in_pdf=cropbox_in_pdf,
-            )  # type: ignore
+        return annotate_entities(
+            entity_id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
 
     def _update_entity_frequency_map(
         self,
@@ -981,7 +971,6 @@ class AnnotationsService:
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
         types_to_annotate: List[Tuple[str, str]],
-        organisms_from_custom_annotations: List[dict],
     ) -> List[Annotation]:
         """Create annotations.
 
@@ -1008,7 +997,6 @@ class AnnotationsService:
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 cropbox_in_pdf=cropbox_in_pdf,
-                organisms_from_custom_annotations=organisms_from_custom_annotations,
             )
             unified_annotations.extend(annotations)
 
@@ -1017,7 +1005,6 @@ class AnnotationsService:
     def create_rules_based_annotations(
         self,
         tokens: PDFTokenPositionsList,
-        custom_annotations: List[dict],
         entity_results: EntityResults,
         entity_type_and_id_pairs: List[Tuple[str, str]],
         specified_organism: SpecifiedOrganismStrain,
@@ -1039,7 +1026,6 @@ class AnnotationsService:
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             types_to_annotate=entity_type_and_id_pairs,
-            organisms_from_custom_annotations=custom_annotations,
         )
         return self._clean_annotations(
             annotations=annotations,
@@ -1062,7 +1048,6 @@ class AnnotationsService:
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
             types_to_annotate=entity_type_and_id_pairs,
-            organisms_from_custom_annotations=custom_annotations,
         )
 
         unified_annotations = species_annotations + nlp_annotations
