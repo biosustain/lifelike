@@ -44,10 +44,12 @@ class AnnotationsPDFParser:
     ) -> None:
         def space_exists_between_lt_chars(a: LTChar, b: LTChar):
             """Determines if a space character exists between two LTChars."""
+            # if x1's are not equal that means horizontal and new line
+            # otherwise new line but rotated text so shouldn't have space
             return (
                 (b.x0 - a.x1 > a.width * PDF_CHARACTER_SPACING_THRESHOLD) or
                 (abs(b.y0 - a.y0) > a.height * PDF_NEW_LINE_THRESHOLD)
-            )
+            ) and b.x1 != a.x1
 
         def should_add_virtual_space(
             prev_char: Union[LTAnno, LTChar],
@@ -134,8 +136,10 @@ class AnnotationsPDFParser:
                     char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                     compiled_regex=compiled_regex,
                 )
-            elif isinstance(lt_obj, LTChar) or (isinstance(lt_obj, LTAnno) and lt_obj.get_text() != '\n'):  # noqa
+            elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
                 lt_obj_text = lt_obj.get_text()
+                if lt_obj_text == '\n':
+                    lt_obj._text = ' '
                 # ignore CID fonts
                 # these are arithmetic or other symbols the parser
                 # was not able to translate

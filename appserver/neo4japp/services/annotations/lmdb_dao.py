@@ -4,7 +4,7 @@ import json
 from os import path
 from typing import List
 
-from neo4japp.exceptions import AnnotationError
+from neo4japp.exceptions import AnnotationError, LMDBError
 from neo4japp.services.annotations.constants import (
     ANATOMY_MESH_LMDB,
     CHEMICALS_CHEBI_LMDB,
@@ -14,7 +14,7 @@ from neo4japp.services.annotations.constants import (
     GENES_NCBI_LMDB,
     PHENOTYPES_MESH_LMDB,
     PROTEINS_UNIPROT_LMDB,
-    CHEMICALS_PUBCHEM_LMDB,
+    # CHEMICALS_PUBCHEM_LMDB,
     SPECIES_NCBI_LMDB,
 )
 
@@ -36,63 +36,86 @@ class LMDBDao:
         proteins_lmdb_path: str = 'lmdb/proteins',
         species_lmdb_path: str = 'lmdb/species',
     ) -> None:
-        if all([
-            anatomy_lmdb_path,
-            chemicals_lmdb_path,
-            compounds_lmdb_path,
-            diseases_lmdb_path,
-            foods_lmdb_path,
-            genes_lmdb_path,
-            phenotypes_lmdb_path,
-            proteins_lmdb_path,
-            species_lmdb_path,
-        ]):
+        self.anatomy_lmdb_path = anatomy_lmdb_path
+        self.chemicals_lmdb_path = chemicals_lmdb_path
+        self.compounds_lmdb_path = compounds_lmdb_path
+        self.diseases_lmdb_path = diseases_lmdb_path
+        self.foods_lmdb_path = foods_lmdb_path
+        self.genes_lmdb_path = genes_lmdb_path
+        self.phenotypes_lmdb_path = phenotypes_lmdb_path
+        self.proteins_lmdb_path = proteins_lmdb_path
+        self.species_lmdb_path = species_lmdb_path
+
+        self.anatomy_env = None
+        self.chemicals_env = None
+        self.compounds_env = None
+        self.diseases_env = None
+        self.foods_env = None
+        self.genes_env = None
+        self.phenotypes_env = None
+        self.proteins_env = None
+        self.species_env = None
+
+        self.anatomy_txn = None
+        self.chemicals_txn = None
+        self.compounds_txn = None
+        self.diseases_txn = None
+        self.foods_txn = None
+        self.genes_txn = None
+        self.phenotypes_txn = None
+        self.proteins_txn = None
+        self.species_txn = None
+
+    def open_envs(self):
+        try:
             self.anatomy_env = lmdb.open(
-                path=path.join(directory, anatomy_lmdb_path),
+                path=path.join(directory, self.anatomy_lmdb_path),
                 readonly=True,
                 max_dbs=2,
             )
             self.chemicals_env = lmdb.open(
-                path=path.join(directory, chemicals_lmdb_path),
+                path=path.join(directory, self.chemicals_lmdb_path),
                 readonly=True,
                 max_dbs=2,
             )
             self.compounds_env = lmdb.open(
-                path=path.join(directory, compounds_lmdb_path),
+                path=path.join(directory, self.compounds_lmdb_path),
                 readonly=True,
                 max_dbs=2,
             )
             self.diseases_env = lmdb.open(
-                path=path.join(directory, diseases_lmdb_path),
+                path=path.join(directory, self.diseases_lmdb_path),
                 readonly=True,
                 max_dbs=2,
             )
             self.foods_env = lmdb.open(
-                path=path.join(directory, foods_lmdb_path),
+                path=path.join(directory, self.foods_lmdb_path),
                 readonly=True,
                 max_dbs=2,
             )
             self.genes_env = lmdb.open(
-                path=path.join(directory, genes_lmdb_path),
+                path=path.join(directory, self.genes_lmdb_path),
                 readonly=True,
                 max_dbs=2,
             )
             self.phenotypes_env = lmdb.open(
-                path=path.join(directory, phenotypes_lmdb_path),
+                path=path.join(directory, self.phenotypes_lmdb_path),
                 readonly=True,
                 max_dbs=2,
             )
             self.proteins_env = lmdb.open(
-                path=path.join(directory, proteins_lmdb_path),
+                path=path.join(directory, self.proteins_lmdb_path),
                 readonly=True,
                 max_dbs=2,
             )
             self.species_env = lmdb.open(
-                path=path.join(directory, species_lmdb_path),
+                path=path.join(directory, self.species_lmdb_path),
                 readonly=True,
                 max_dbs=2,
             )
-
+        except Exception:
+            raise LMDBError('An error occurred opening LMDB environment.')
+        else:
             """
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             IMPORTANT NOTE: As of lmdb 0.98
@@ -141,7 +164,8 @@ class LMDBDao:
             ]
         self.close_transactions()
         for env in envs:
-            env.close()
+            if env:
+                env.close()
 
     def close_transactions(self, txns=[]):
         # temp solution for now
@@ -160,7 +184,8 @@ class LMDBDao:
                 self.species_txn
             ]
         for txn in txns:
-            txn.abort()
+            if txn:
+                txn.abort()
 
     def get_lmdb_values(self, txn, key, token_type) -> List[dict]:
         """Return all values for an lmdb key."""
