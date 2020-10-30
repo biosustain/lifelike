@@ -1,6 +1,7 @@
 from py2neo import cypher
 import re
 from typing import Any, Dict, List
+from flask import current_app
 
 from neo4japp.data_transfer_objects import (
     FTSQueryRecord,
@@ -216,14 +217,18 @@ class SearchService(GraphBaseDao):
                         'MeSH': 'n:db_MESH', 'NCBI': 'n:db_NCBI', 'UniProt': 'n:db_UniProt'}
         entities_list = {'Chemicals': 'n:Chemical', 'Diseases': 'n:Disease', 'Genes': 'n:Gene',
                          'Proteins': 'n:Protein', 'Taxonomy': 'n:Taxonomy'}
+        filter_list = filter.split(', ')
         result_domains = []
         result_entities = []
-        for x in domains_list:
-            if x in filter:
+
+        for x in filter_list:
+            if x in domains_list:
                 result_domains.append(domains_list[x])
-        for y in entities_list:
-            if y in filter:
-                result_entities.append(entities_list[y])
+            elif x in entities_list:
+                result_entities.append(entities_list[x])
+            else:
+                current_app.logger.info(f'Filter not found: {x}')
+
         domains = 'n:null' if len(result_domains) == 0 else ' OR '.join(result_domains)
         entities = 'n:null' if len(result_entities) == 0 else ' OR '.join(result_entities)
         return f'({domains}) AND {entities}'
