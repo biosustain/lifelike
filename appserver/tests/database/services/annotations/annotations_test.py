@@ -643,8 +643,10 @@ def test_custom_annotations_gene_organism_matching_has_match(
                     synonym='', organism_id='', category='')
         )
 
-    assert len(annotations) == 1
-    assert annotations[0].meta.id == '388962'  # human gene
+    # custom annotations inclusions are taken into account
+    # when annotating
+    assert len(annotations) == 3
+    assert annotations[1].meta.id == '388962'  # human gene
 
 
 def test_human_gene_pdf(

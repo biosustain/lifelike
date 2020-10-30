@@ -46,20 +46,29 @@ class EntityRecognitionService:
         self.lmdb_session = lmdb_session
         self.annotation_neo4j = annotation_neo4j
 
-        # for the global and local, structured the same as LMDB
+        # for the global and local inclusions/exclusions,
+        # structured the same as LMDB
+        self._local_anatomy_inclusion: Dict[str, List[dict]] = {}
+        self._local_chemical_inclusion: Dict[str, List[dict]] = {}
+        self._local_compound_inclusion: Dict[str, List[dict]] = {}
+        self._local_disease_inclusion: Dict[str, List[dict]] = {}
+        self._local_food_inclusion: Dict[str, List[dict]] = {}
+        self._local_gene_inclusion: Dict[str, List[dict]] = {}
+        self._local_phenotype_inclusion: Dict[str, List[dict]] = {}
+        self._local_protein_inclusion: Dict[str, List[dict]] = {}
         self._local_species_inclusion: Dict[str, List[dict]] = {}
 
-        self.global_anatomy_inclusion: Dict[str, List[dict]] = {}
-        self.global_chemical_inclusion: Dict[str, List[dict]] = {}
-        self.global_compound_inclusion: Dict[str, List[dict]] = {}
-        self.global_disease_inclusion: Dict[str, List[dict]] = {}
-        self.global_food_inclusion: Dict[str, List[dict]] = {}
-        self.global_gene_inclusion: Dict[str, List[dict]] = {}
-        self.global_phenotype_inclusion: Dict[str, List[dict]] = {}
-        self.global_protein_inclusion: Dict[str, List[dict]] = {}
-        self.global_species_inclusion: Dict[str, List[dict]] = {}
+        self._global_anatomy_inclusion: Dict[str, List[dict]] = {}
+        self._global_chemical_inclusion: Dict[str, List[dict]] = {}
+        self._global_compound_inclusion: Dict[str, List[dict]] = {}
+        self._global_disease_inclusion: Dict[str, List[dict]] = {}
+        self._global_food_inclusion: Dict[str, List[dict]] = {}
+        self._global_gene_inclusion: Dict[str, List[dict]] = {}
+        self._global_phenotype_inclusion: Dict[str, List[dict]] = {}
+        self._global_protein_inclusion: Dict[str, List[dict]] = {}
+        self._global_species_inclusion: Dict[str, List[dict]] = {}
 
-        self.gene_collection: List[Tuple[str, str, str]] = []
+        self._gene_collection: List[Tuple[str, str, str]] = []
 
         self._matched_anatomy: Dict[str, LMDBMatch] = {}
         self._matched_chemicals: Dict[str, LMDBMatch] = {}
@@ -70,8 +79,6 @@ class EntityRecognitionService:
         self._matched_proteins: Dict[str, LMDBMatch] = {}
         self._matched_phenotypes: Dict[str, LMDBMatch] = {}
         self._matched_species: Dict[str, LMDBMatch] = {}
-
-        self._matched_local_species_inclusion: Dict[str, List[PDFTokenPositions]] = {}
 
         # TODO: could potentially put into a cache if these words will not be updated
         # often. But future feature will allow users to upload and add
@@ -104,16 +111,92 @@ class EntityRecognitionService:
             ]
 
     @property
+    def gene_collection(self) -> List[Tuple[str, str, str]]:
+        return self._gene_collection
+
+    @gene_collection.setter
+    def gene_collection(self, gc):
+        self._gene_collection = gc
+
+    @property
+    def local_anatomy_inclusion(self) -> Dict[str, List[dict]]:
+        return self._local_anatomy_inclusion
+
+    @property
+    def local_chemical_inclusion(self) -> Dict[str, List[dict]]:
+        return self._local_chemical_inclusion
+
+    @property
+    def local_compound_inclusion(self) -> Dict[str, List[dict]]:
+        return self._local_compound_inclusion
+
+    @property
+    def local_disease_inclusion(self) -> Dict[str, List[dict]]:
+        return self._local_disease_inclusion
+
+    @property
+    def local_food_inclusion(self) -> Dict[str, List[dict]]:
+        return self._local_food_inclusion
+
+    @property
+    def local_gene_inclusion(self) -> Dict[str, List[dict]]:
+        return self._local_gene_inclusion
+
+    @property
+    def local_phenotype_inclusion(self) -> Dict[str, List[dict]]:
+        return self._local_phenotype_inclusion
+
+    @property
+    def local_protein_inclusion(self) -> Dict[str, List[dict]]:
+        return self._local_protein_inclusion
+
+    @property
     def local_species_inclusion(self) -> Dict[str, List[dict]]:
         return self._local_species_inclusion
 
     @property
-    def matched_local_species_inclusion(self) -> Dict[str, List[PDFTokenPositions]]:
-        return self._matched_local_species_inclusion
+    def global_anatomy_inclusion(self) -> Dict[str, List[dict]]:
+        return self._global_anatomy_inclusion
+
+    @property
+    def global_chemical_inclusion(self) -> Dict[str, List[dict]]:
+        return self._global_chemical_inclusion
+
+    @property
+    def global_compound_inclusion(self) -> Dict[str, List[dict]]:
+        return self._global_compound_inclusion
+
+    @property
+    def global_disease_inclusion(self) -> Dict[str, List[dict]]:
+        return self._global_disease_inclusion
+
+    @property
+    def global_food_inclusion(self) -> Dict[str, List[dict]]:
+        return self._global_food_inclusion
+
+    @property
+    def global_gene_inclusion(self) -> Dict[str, List[dict]]:
+        return self._global_gene_inclusion
+
+    @property
+    def global_phenotype_inclusion(self) -> Dict[str, List[dict]]:
+        return self._global_phenotype_inclusion
+
+    @property
+    def global_protein_inclusion(self) -> Dict[str, List[dict]]:
+        return self._global_protein_inclusion
+
+    @property
+    def global_species_inclusion(self) -> Dict[str, List[dict]]:
+        return self._global_species_inclusion
 
     @property
     def matched_anatomy(self) -> Dict[str, LMDBMatch]:
         return self._matched_anatomy
+
+    @matched_anatomy.setter
+    def matched_anatomy(self, anatomy):
+        self._matched_anatomy = anatomy
 
     @property
     def matched_chemicals(self) -> Dict[str, LMDBMatch]:
@@ -205,8 +288,6 @@ class EntityRecognitionService:
 
     def get_entity_match_results(self) -> EntityResults:
         return EntityResults(
-            local_species_inclusion=self.local_species_inclusion,
-            matched_local_species_inclusion=self.matched_local_species_inclusion,
             matched_anatomy=self.matched_anatomy,
             matched_chemicals=self.matched_chemicals,
             matched_compounds=self.matched_compounds,
@@ -270,99 +351,91 @@ class EntityRecognitionService:
             normalize_str(exclusion.get('text')) for exclusion in self.global_annotations_to_exclude if  # noqa
                 exclusion.get('type') == EntityType.SPECIES.value and exclusion.get('text'))  # noqa
 
-    def _get_global_inclusion_pairs(self) -> List[Tuple[str, str, Any, Any]]:
+    def _get_global_inclusion_pairs(self) -> List[Tuple[List[dict], str, str, Any, Any]]:
         return [
-            (EntityType.ANATOMY.value, EntityIdStr.ANATOMY.value, self.global_anatomy_inclusion, create_anatomy_for_ner),  # noqa
-            (EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value, self.global_chemical_inclusion, create_chemical_for_ner),  # noqa
-            (EntityType.COMPOUND.value, EntityIdStr.COMPOUND.value, self.global_compound_inclusion, create_compound_for_ner),  # noqa
-            (EntityType.DISEASE.value, EntityIdStr.DISEASE.value, self.global_disease_inclusion, create_disease_for_ner),  # noqa
-            (EntityType.FOOD.value, EntityIdStr.FOOD.value, self.global_food_inclusion, create_food_for_ner),  # noqa
-            (EntityType.GENE.value, EntityIdStr.GENE.value, self.global_gene_inclusion, create_gene_for_ner),  # noqa
-            (EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value, self.global_phenotype_inclusion, create_phenotype_for_ner),  # noqa
-            (EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value, self.global_protein_inclusion, create_protein_for_ner),  # noqa
-            (EntityType.SPECIES.value, EntityIdStr.SPECIES.value, self.global_species_inclusion, create_species_for_ner),  # noqa
+            (self.global_annotations_to_include, EntityType.ANATOMY.value, EntityIdStr.ANATOMY.value, self.global_anatomy_inclusion, create_anatomy_for_ner),  # noqa
+            (self.global_annotations_to_include, EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value, self.global_chemical_inclusion, create_chemical_for_ner),  # noqa
+            (self.global_annotations_to_include, EntityType.COMPOUND.value, EntityIdStr.COMPOUND.value, self.global_compound_inclusion, create_compound_for_ner),  # noqa
+            (self.global_annotations_to_include, EntityType.DISEASE.value, EntityIdStr.DISEASE.value, self.global_disease_inclusion, create_disease_for_ner),  # noqa
+            (self.global_annotations_to_include, EntityType.FOOD.value, EntityIdStr.FOOD.value, self.global_food_inclusion, create_food_for_ner),  # noqa
+            (self.global_annotations_to_include, EntityType.GENE.value, EntityIdStr.GENE.value, self.global_gene_inclusion, create_gene_for_ner),  # noqa
+            (self.global_annotations_to_include, EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value, self.global_phenotype_inclusion, create_phenotype_for_ner),  # noqa
+            (self.global_annotations_to_include, EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value, self.global_protein_inclusion, create_protein_for_ner),  # noqa
+            (self.global_annotations_to_include, EntityType.SPECIES.value, EntityIdStr.SPECIES.value, self.global_species_inclusion, create_species_for_ner),  # noqa
         ]
 
-    def _set_local_species_inclusion(self, custom_annotations: List[dict]) -> None:
-        """Creates a dictionary structured very similar to LMDB.
-        Used for local species custom annotation lookups.
-        """
-        for custom in custom_annotations:
-            if custom.get('meta', None):
-                if custom['meta'].get('type', None) == EntityType.SPECIES.value:
-                    species_id = custom['meta'].get('id', None)
-                    species_name = custom['meta'].get('allText', None)
-                    normalized_species_name = normalize_str(species_name)
+    def _get_local_inclusion_pairs(self) -> List[Tuple[str, str, Any, Any]]:
+        return [
+            (EntityType.ANATOMY.value, EntityIdStr.ANATOMY.value, self.local_anatomy_inclusion, create_anatomy_for_ner),  # noqa
+            (EntityType.CHEMICAL.value, EntityIdStr.CHEMICAL.value, self.local_chemical_inclusion, create_chemical_for_ner),  # noqa
+            (EntityType.COMPOUND.value, EntityIdStr.COMPOUND.value, self.local_compound_inclusion, create_compound_for_ner),  # noqa
+            (EntityType.DISEASE.value, EntityIdStr.DISEASE.value, self.local_disease_inclusion, create_disease_for_ner),  # noqa
+            (EntityType.FOOD.value, EntityIdStr.FOOD.value, self.local_food_inclusion, create_food_for_ner),  # noqa
+            (EntityType.GENE.value, EntityIdStr.GENE.value, self.local_gene_inclusion, create_gene_for_ner),  # noqa
+            (EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value, self.local_phenotype_inclusion, create_phenotype_for_ner),  # noqa
+            (EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value, self.local_protein_inclusion, create_protein_for_ner),  # noqa
+            (EntityType.SPECIES.value, EntityIdStr.SPECIES.value, self.local_species_inclusion, create_species_for_ner),  # noqa
+        ]
 
-                    if species_id and species_name:
-                        if normalized_species_name in self.local_species_inclusion:
-                            self.local_species_inclusion[normalized_species_name].append(
-                                create_species_for_ner(
-                                    id_=species_id,
-                                    name=species_name,
-                                    synonym=species_name,
-                                )
-                            )
-                        else:
-                            self.local_species_inclusion[normalized_species_name] = [
-                                create_species_for_ner(
-                                    id_=species_id,
-                                    name=species_name,
-                                    synonym=species_name,
-                                )
-                            ]
-
-    def _set_global_inclusions(
+    def _set_annotation_inclusions(
         self,
-        entity_type: str,
+        annotations_to_include: List[dict],
+        entity_type_to_include: str,
         entity_id_str: str,
-        global_inclusion: Dict[str, List[dict]],
+        inclusion_collection: Dict[str, List[dict]],
         create_entity_ner_func,
     ) -> None:
         """Creates a dictionary structured very similar to LMDB.
         Used for global entity custom annotation lookups.
         """
-        for inclusion in self.global_annotations_to_include:
-            if inclusion.get('meta', None):
-                if inclusion['meta'].get('type', None) == entity_type:
-                    entity_id = inclusion['meta'].get('id', None)
-                    entity_name = inclusion['meta'].get('allText', None)
-                    normalized_entity_name = normalize_str(entity_name)
+        for inclusion in annotations_to_include:
+            try:
+                entity_id = inclusion['meta']['id']
+                entity_name = inclusion['meta']['allText']
+                entity_type = inclusion['meta']['type']
+            except KeyError:
+                current_app.logger.info(
+                    f'Error creating annotation inclusion {inclusion} for entity type {entity_type}',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            else:
+                normalized_entity_name = normalize_str(entity_name)
 
-                    if entity_id and entity_name:
-                        entity = {}  # to avoid UnboundLocalError
-                        if entity_type in {
-                            EntityType.CHEMICAL.value,
-                            EntityType.COMPOUND.value,
-                            EntityType.DISEASE.value,
-                            EntityType.FOOD.value,
-                            EntityType.PHENOTYPE.value,
-                            EntityType.SPECIES.value
-                        }:
+                if entity_id and entity_name and entity_type == entity_type_to_include:
+                    entity = {}  # to avoid UnboundLocalError
+                    if entity_type_to_include in {
+                        EntityType.ANATOMY.value,
+                        EntityType.CHEMICAL.value,
+                        EntityType.COMPOUND.value,
+                        EntityType.DISEASE.value,
+                        EntityType.FOOD.value,
+                        EntityType.PHENOTYPE.value,
+                        EntityType.SPECIES.value
+                    }:
+                        entity = create_entity_ner_func(
+                            id_=entity_id,
+                            name=entity_name,
+                            synonym=entity_name
+                        )
+                    else:
+                        if entity_type == EntityType.GENE.value:
+                            self.gene_collection.append(
+                                (entity_id, entity_name, normalized_entity_name))
+                            continue
+                        elif entity_type == EntityType.PROTEIN.value:
+                            # protein is a bit different for now
                             entity = create_entity_ner_func(
-                                id_=entity_id,
                                 name=entity_name,
                                 synonym=entity_name
                             )
-                        else:
-                            if entity_type == EntityType.GENE.value:
-                                self.gene_collection.append(
-                                    (entity_id, entity_name, normalized_entity_name))
-                                continue
-                            elif entity_type == EntityType.PROTEIN.value:
-                                # protein is a bit different for now
-                                entity = create_entity_ner_func(
-                                    name=entity_name,
-                                    synonym=entity_name
-                                )
 
-                        # differentiate between LMDB
-                        entity['inclusion'] = True
+                    # differentiate between LMDB
+                    entity['inclusion'] = True
 
-                        if normalized_entity_name in global_inclusion:
-                            global_inclusion[normalized_entity_name].append(entity)
-                        else:
-                            global_inclusion[normalized_entity_name] = [entity]
+                    if normalized_entity_name in inclusion_collection:
+                        inclusion_collection[normalized_entity_name].append(entity)
+                    else:
+                        inclusion_collection[normalized_entity_name] = [entity]
 
     def entity_lookup_for_anatomy(
         self,
@@ -413,12 +486,20 @@ class EntityRecognitionService:
                     # didn't find in LMDB so look in global inclusion
                     anatomy_val = self.global_anatomy_inclusion.get(lookup_key, [])
 
-                if anatomy_val:
+                if anatomy_val or lookup_key in self.local_anatomy_inclusion:  # noqa
                     if token.keyword in self.matched_anatomy:
                         self.matched_anatomy[token.keyword].tokens.append(token)
                     else:
-                        self.matched_anatomy[token.keyword] = LMDBMatch(entities=anatomy_val, tokens=[token])  # noqa
-
+                        if lookup_key in self.local_anatomy_inclusion:
+                            self.matched_anatomy[token.keyword] = LMDBMatch(
+                                entities=self.local_anatomy_inclusion[lookup_key],  # type: ignore
+                                tokens=[token]
+                            )
+                        elif anatomy_val:
+                            self.matched_anatomy[token.keyword] = LMDBMatch(
+                                entities=anatomy_val,  # type: ignore
+                                tokens=[token]
+                            )
         return anatomy_val
 
     def entity_lookup_for_chemicals(
@@ -470,12 +551,20 @@ class EntityRecognitionService:
                     # didn't find in LMDB so look in global inclusion
                     chem_val = self.global_chemical_inclusion.get(lookup_key, [])
 
-                if chem_val:
+                if chem_val or lookup_key in self.local_chemical_inclusion:  # noqa
                     if token.keyword in self.matched_chemicals:
                         self.matched_chemicals[token.keyword].tokens.append(token)
                     else:
-                        self.matched_chemicals[token.keyword] = LMDBMatch(entities=chem_val, tokens=[token])  # noqa
-
+                        if lookup_key in self.local_chemical_inclusion:
+                            self.matched_chemicals[token.keyword] = LMDBMatch(
+                                entities=self.local_chemical_inclusion[lookup_key],  # type: ignore
+                                tokens=[token]
+                            )
+                        elif chem_val:
+                            self.matched_chemicals[token.keyword] = LMDBMatch(
+                                entities=chem_val,  # type: ignore
+                                tokens=[token]
+                            )
         return chem_val
 
     def entity_lookup_for_compounds(
@@ -527,12 +616,20 @@ class EntityRecognitionService:
                     # didn't find in LMDB so look in global inclusion
                     comp_val = self.global_compound_inclusion.get(lookup_key, [])
 
-                if comp_val:
+                if comp_val or lookup_key in self.local_compound_inclusion:  # noqa
                     if token.keyword in self.matched_compounds:
                         self.matched_compounds[token.keyword].tokens.append(token)
                     else:
-                        self.matched_compounds[token.keyword] = LMDBMatch(entities=comp_val, tokens=[token])  # noqa
-
+                        if lookup_key in self.local_compound_inclusion:
+                            self.matched_compounds[token.keyword] = LMDBMatch(
+                                entities=self.local_compound_inclusion[lookup_key],  # type: ignore
+                                tokens=[token]
+                            )
+                        elif comp_val:
+                            self.matched_compounds[token.keyword] = LMDBMatch(
+                                entities=comp_val,  # type: ignore
+                                tokens=[token]
+                            )
         return comp_val
 
     def entity_lookup_for_diseases(
@@ -584,12 +681,20 @@ class EntityRecognitionService:
                     # didn't find in LMDB so look in global inclusion
                     diseases_val = self.global_disease_inclusion.get(lookup_key, [])
 
-                if diseases_val:
+                if diseases_val or lookup_key in self.local_disease_inclusion:  # noqa
                     if token.keyword in self.matched_diseases:
                         self.matched_diseases[token.keyword].tokens.append(token)
                     else:
-                        self.matched_diseases[token.keyword] = LMDBMatch(entities=diseases_val, tokens=[token])  # noqa
-
+                        if lookup_key in self.local_disease_inclusion:
+                            self.matched_diseases[token.keyword] = LMDBMatch(
+                                entities=self.local_disease_inclusion[lookup_key],  # type: ignore
+                                tokens=[token]
+                            )
+                        elif diseases_val:
+                            self.matched_diseases[token.keyword] = LMDBMatch(
+                                entities=diseases_val,  # type: ignore
+                                tokens=[token]
+                            )
         return diseases_val
 
     def entity_lookup_for_foods(
@@ -641,12 +746,20 @@ class EntityRecognitionService:
                     # didn't find in LMDB so look in global inclusion
                     food_val = self.global_food_inclusion.get(lookup_key, [])
 
-                if food_val:
+                if food_val or lookup_key in self.local_food_inclusion:  # noqa
                     if token.keyword in self.matched_foods:
                         self.matched_foods[token.keyword].tokens.append(token)
                     else:
-                        self.matched_foods[token.keyword] = LMDBMatch(entities=food_val, tokens=[token])  # noqa
-
+                        if lookup_key in self.local_food_inclusion:
+                            self.matched_foods[token.keyword] = LMDBMatch(
+                                entities=self.local_food_inclusion[lookup_key],  # type: ignore
+                                tokens=[token]
+                            )
+                        elif food_val:
+                            self.matched_foods[token.keyword] = LMDBMatch(
+                                entities=food_val,  # type: ignore
+                                tokens=[token]
+                            )
         return food_val
 
     def entity_lookup_for_genes(
@@ -698,12 +811,20 @@ class EntityRecognitionService:
                     # didn't find in LMDB so look in global inclusion
                     gene_val = self.global_gene_inclusion.get(lookup_key, [])
 
-                if gene_val:
+                if gene_val or lookup_key in self.local_gene_inclusion:  # noqa
                     if token.keyword in self.matched_genes:
                         self.matched_genes[token.keyword].tokens.append(token)
                     else:
-                        self.matched_genes[token.keyword] = LMDBMatch(entities=gene_val, tokens=[token])  # noqa
-
+                        if lookup_key in self.local_gene_inclusion:
+                            self.matched_genes[token.keyword] = LMDBMatch(
+                                entities=self.local_gene_inclusion[lookup_key],  # type: ignore
+                                tokens=[token]
+                            )
+                        elif gene_val:
+                            self.matched_genes[token.keyword] = LMDBMatch(
+                                entities=gene_val,  # type: ignore
+                                tokens=[token]
+                            )
         return gene_val
 
     def entity_lookup_for_phenotypes(
@@ -755,12 +876,20 @@ class EntityRecognitionService:
                     # didn't find in LMDB so look in global inclusion
                     phenotype_val = self.global_phenotype_inclusion.get(lookup_key, [])
 
-                if phenotype_val:
+                if phenotype_val or lookup_key in self.local_phenotype_inclusion:  # noqa
                     if token.keyword in self.matched_phenotypes:
                         self.matched_phenotypes[token.keyword].tokens.append(token)
                     else:
-                        self.matched_phenotypes[token.keyword] = LMDBMatch(entities=phenotype_val, tokens=[token])  # noqa
-
+                        if lookup_key in self.local_phenotype_inclusion:
+                            self.matched_phenotypes[token.keyword] = LMDBMatch(
+                                entities=self.local_phenotype_inclusion[lookup_key],  # type: ignore
+                                tokens=[token]
+                            )
+                        elif phenotype_val:
+                            self.matched_phenotypes[token.keyword] = LMDBMatch(
+                                entities=phenotype_val,  # type: ignore
+                                tokens=[token]
+                            )
         return phenotype_val
 
     def entity_lookup_for_proteins(
@@ -817,12 +946,20 @@ class EntityRecognitionService:
                     # didn't find in LMDB so look in global inclusion
                     protein_val = self.global_protein_inclusion.get(lookup_key, [])
 
-                if protein_val:
+                if protein_val or lookup_key in self.local_protein_inclusion:  # noqa
                     if token.keyword in self.matched_proteins:
                         self.matched_proteins[token.keyword].tokens.append(token)
                     else:
-                        self.matched_proteins[token.keyword] = LMDBMatch(entities=protein_val, tokens=[token])  # noqa
-
+                        if lookup_key in self.local_protein_inclusion:
+                            self.matched_proteins[token.keyword] = LMDBMatch(
+                                entities=self.local_protein_inclusion[lookup_key],  # type: ignore
+                                tokens=[token]
+                            )
+                        elif protein_val:
+                            self.matched_proteins[token.keyword] = LMDBMatch(
+                                entities=protein_val,  # type: ignore
+                                tokens=[token]
+                            )
         return protein_val
 
     def entity_lookup_for_species(
@@ -884,20 +1021,19 @@ class EntityRecognitionService:
                     species_val = self.global_species_inclusion.get(lookup_key, [])
 
                 if species_val or lookup_key in self.local_species_inclusion:  # noqa
-                    if lookup_key in self.local_species_inclusion:
-                        if token.keyword in self.matched_local_species_inclusion:
-                            self.matched_local_species_inclusion[token.keyword].append(token)
-                        else:
-                            self.matched_local_species_inclusion[token.keyword] = [token]
+                    if token.keyword in self.matched_species:
+                        self.matched_species[token.keyword].tokens.append(token)
                     else:
-                        if token.keyword in self.matched_species:
-                            self.matched_species[token.keyword].tokens.append(token)
-                        else:
+                        if lookup_key in self.local_species_inclusion:
+                            self.matched_species[token.keyword] = LMDBMatch(
+                                entities=self.local_species_inclusion[lookup_key],  # type: ignore
+                                tokens=[token]
+                            )
+                        elif species_val:
                             self.matched_species[token.keyword] = LMDBMatch(
                                 entities=species_val,  # type: ignore
                                 tokens=[token]
                             )
-
         return species_val
 
     def _entity_lookup_dispatch(
@@ -1113,13 +1249,13 @@ class EntityRecognitionService:
                     token=token
                 )
 
-    def set_entity_inclusions(
+    def _query_genes_from_kg(
         self,
-        custom_annotations: List[dict],
+        gene_inclusion: Dict[str, List[dict]]
     ) -> None:
-        self._set_local_species_inclusion(custom_annotations)
-        deque(starmap(self._set_global_inclusions, self._get_global_inclusion_pairs()), maxlen=0)  # noqa
-
+        """Uses self.gene_collection and queries the knowledge
+        graph for any matches.
+        """
         # do this separately to make only one call to KG
         gene_ids = [i for i, _, _ in self.gene_collection]
         gene_names = self.annotation_neo4j.get_genes_from_gene_ids(
@@ -1139,10 +1275,25 @@ class EntityRecognitionService:
                 # differentiate between LMDB
                 entity['inclusion'] = True
 
-                if normalized_name in self.global_gene_inclusion:
-                    self.global_gene_inclusion[normalized_name].append(entity)
+                if normalized_name in gene_inclusion:
+                    gene_inclusion[normalized_name].append(entity)
                 else:
-                    self.global_gene_inclusion[normalized_name] = [entity]
+                    gene_inclusion[normalized_name] = [entity]
+
+    def set_entity_inclusions(
+        self,
+        custom_annotations: List[dict],
+    ) -> None:
+        deque(starmap(
+            self._set_annotation_inclusions,
+            self._get_global_inclusion_pairs()), maxlen=0)
+        self._query_genes_from_kg(self.global_gene_inclusion)
+        self.gene_collection = []
+
+        deque(starmap(
+            self._set_annotation_inclusions,
+            [(custom_annotations, a, b, c, d) for a, b, c, d in self._get_local_inclusion_pairs()]), maxlen=0)  # noqa
+        self._query_genes_from_kg(self.local_gene_inclusion)
 
     def identify_entities(
         self,
