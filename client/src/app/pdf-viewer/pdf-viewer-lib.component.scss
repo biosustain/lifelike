@@ -44,32 +44,4 @@
 .annotation-highlight {
   outline: 4px solid red;
   position: relative;
-
-  &:before {
-    position: absolute;
-    top: -0.7rem;
-    right: -1rem;
-    padding: 0 3px;
-    counter-increment: annotation-highlight-index;
-    content: counter(annotation-highlight-index);
-    color: #fff;
-    background: red;
-    animation: annotation-highlight-index-effect 2s 1 step-start forwards;
-    pointer-events: none;
-  }
-
-  &:hover {
-    &:before {
-      opacity: 1 !important;
-    }
-  }
-}
-
-@keyframes annotation-highlight-index-effect {
-  99% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
 }
