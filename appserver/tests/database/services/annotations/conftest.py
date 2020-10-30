@@ -1269,6 +1269,16 @@ def entity_inclusion_setup(get_annotation_n4j, get_lmdb):
 
 
 @pytest.fixture(scope='function')
+def entity_exclusion_setup(get_annotation_n4j, get_lmdb):
+    entity_service = EntityRecognitionService(
+        annotation_neo4j=get_annotation_n4j,
+        lmdb_session=get_lmdb
+    )
+    entity_service.set_entity_exclusions(excluded_annotations=[])
+    return entity_service
+
+
+@pytest.fixture(scope='function')
 def get_lmdb():
     for db_name, entity in [
         (ANATOMY_MESH_LMDB, 'anatomy'),
@@ -1312,6 +1322,7 @@ def get_lmdb():
 def get_annotations_service(
     get_annotation_n4j,
     entity_inclusion_setup,
+    entity_exclusion_setup,
     request
 ):
     def teardown():
