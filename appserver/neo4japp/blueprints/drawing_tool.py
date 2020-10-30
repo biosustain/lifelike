@@ -24,7 +24,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_project_permission
+from neo4japp.blueprints.permissions import requires_project_permission, check_project_permission
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import ANNOTATION_STYLES_DICT
@@ -54,6 +54,7 @@ from neo4japp.models import (
 )
 from neo4japp.models.schema import ProjectSchema, ProjectVersionSchema
 from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
+from neo4japp.request_schemas.filesystem import MoveFileRequest, DirectoryDestination
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.util import CasePreservedDict
 from neo4japp.utils.logger import UserEventLog
@@ -760,3 +761,38 @@ def project_backup_delete(hash_id):
             extra=UserEventLog(
                 username=g.current_user.username, event_type='map delete backup').to_dict())
     return ''
+
+
+@newbp.route('/<string:project_name>/maps/<string:id>/move', methods=['POST'])
+@auth.login_required
+@use_kwargs(MoveFileRequest)
+def move_map(destination: DirectoryDestination, id: str, project_name: str):
+    user = g.current_user
+
+    target_map, target_directory, target_project = db.session.query(Project, Directory, Projects) \
+        .join(Directory, Directory.id == Project.dir_id) \
+        .join(Projects, Projects.id == Directory.projects_id) \
+        .filter(Project.hash_id == id,
+                Projects.project_name == project_name) \
+        .one()
+
+    check_project_permission(target_project, user, AccessActionType.WRITE)
+
+    destination_dir, destination_project = db.session.query(Directory, Projects) \
+        .join(Projects, Projects.id == Directory.projects_id) \
+        .filter(Directory.id == destination['directoryId']) \
+        .one()
+
+    if destination_project.id != target_project.id:
+        check_project_permission(destination_project, user, AccessActionType.WRITE)
+
+    if target_directory.id == destination_dir.id:
+        raise InvalidArgumentsException(
+            'The destination directory is the same as the current directory.')
+
+    target_map.dir_id = destination_dir.id
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+    })

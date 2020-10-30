@@ -18,7 +18,8 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_project_permission, requires_role
+from neo4japp.blueprints.permissions import requires_project_permission, \
+    requires_role, check_project_permission
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import FILE_INDEX_ID, TIMEZONE
@@ -30,6 +31,7 @@ from neo4japp.exceptions import (
     FileUploadError,
     RecordNotFoundException,
     NotAuthorizedException,
+    InvalidArgumentsException,
 )
 from neo4japp.models import (
     AccessActionType,
@@ -42,6 +44,7 @@ from neo4japp.models import (
     LMDBsDates
 )
 import neo4japp.models.files_queries as files_queries
+from neo4japp.request_schemas.filesystem import MoveFileRequest, DirectoryDestination
 from neo4japp.request_schemas.annotations import (
     AnnotationAdditionSchema,
     AnnotationSchema,
@@ -930,3 +933,38 @@ def get_file_fallback_organism(project_name: str, file_id):
     if file.fallback_organism:
         organism_taxonomy_id = file.fallback_organism.organism_taxonomy_id
     yield jsonify({'result': organism_taxonomy_id})
+
+
+@newbp.route('/<string:project_name>/files/<string:id>/move', methods=['POST'])
+@auth.login_required
+@use_kwargs(MoveFileRequest)
+def move_file(destination: DirectoryDestination, id: str, project_name: str):
+    user = g.current_user
+
+    target_file, target_directory, target_project = db.session.query(Files, Directory, Projects) \
+        .join(Directory, Directory.id == Files.dir_id) \
+        .join(Projects, Projects.id == Directory.projects_id) \
+        .filter(Files.file_id == id,
+                Projects.project_name == project_name) \
+        .one()
+
+    check_project_permission(target_project, user, AccessActionType.WRITE)
+
+    destination_dir, destination_project = db.session.query(Directory, Projects) \
+        .join(Projects, Projects.id == Directory.projects_id) \
+        .filter(Directory.id == destination['directoryId']) \
+        .one()
+
+    if destination_project.id != target_project.id:
+        check_project_permission(destination_project, user, AccessActionType.WRITE)
+
+    if target_directory.id == destination_dir.id:
+        raise InvalidArgumentsException(
+            'The destination directory is the same as the current directory.')
+
+    target_file.dir_id = destination_dir.id
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+    })
