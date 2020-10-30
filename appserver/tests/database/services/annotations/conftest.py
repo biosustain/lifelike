@@ -1293,7 +1293,7 @@ def get_lmdb():
     proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
     species_lmdb_path = path.join(directory, 'lmdb/species')
 
-    return LMDBDao(
+    lmdb = LMDBDao(
         genes_lmdb_path=genes_lmdb_path,
         anatomy_lmdb_path=anatomy_lmdb_path,
         chemicals_lmdb_path=chemicals_lmdb_path,
@@ -1304,6 +1304,8 @@ def get_lmdb():
         phenotypes_lmdb_path=phenotypes_lmdb_path,
         foods_lmdb_path=foods_lmdb_path
     )
+    lmdb.open_envs()
+    return lmdb
 
 
 @pytest.fixture(scope='function')

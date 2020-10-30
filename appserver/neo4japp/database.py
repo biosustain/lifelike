@@ -148,6 +148,7 @@ def get_lmdb_dao():
     if 'lmdb_dao' not in g:
         from neo4japp.services.annotations import LMDBDao
         g.lmdb_dao = LMDBDao()
+        g.lmdb_dao.open_envs()
     return g.lmdb_dao
 
 
