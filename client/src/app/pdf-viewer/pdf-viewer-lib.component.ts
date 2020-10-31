@@ -44,7 +44,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Input() debugMode: boolean;
   @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
   @Input() filterChanges: Observable<void>;
-  previousHighlightAnnotationId: string | undefined;
+  currentHighlightAnnotationId: string | undefined;
   private filterChangeSubscription: Subscription;
 
   @Input()
@@ -278,7 +278,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         this.annotationDragStart.emit(event);
       });
       overlayDiv.dataset.annotationId = annotation.meta.id;
-      overlayDiv.setAttribute('class', 'system-annotation');
+      overlayDiv.setAttribute('class', 'system-annotation'
+          + (this.currentHighlightAnnotationId === annotation.meta.id
+              ? ' annotation-highlight' : ''));
       overlayDiv.setAttribute('location', JSON.stringify(location));
       overlayDiv.setAttribute('meta', JSON.stringify(annotation.meta));
       top = this.normalizeTopCoordinate(top, annotation);
@@ -824,17 +826,26 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   highlightAllAnnotations(id: string | undefined) {
     if (id != null) {
-      if (this.previousHighlightAnnotationId === id) {
+      if (this.currentHighlightAnnotationId === id) {
         id = null;
       }
     }
 
-    this.previousHighlightAnnotationId = id;
+    this.currentHighlightAnnotationId = id;
 
     let found = 0;
-    let firstElement = null;
     let firstPageNumber = null;
-    let matchedAnnotation: Annotation = null;
+    let firstAnnotation: Annotation = null;
+
+    for (const annotation of this.annotations) {
+      if (annotation.meta.id === id) {
+        found++;
+        if (!firstAnnotation) {
+          firstAnnotation = annotation;
+          firstPageNumber = annotation.pageNumber;
+        }
+      }
+    }
 
     for (const pageIndex of Object.keys(this.pageRef)) {
       const page = this.pageRef[pageIndex];
@@ -842,24 +853,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       for (const overlay of overlays) {
         if (overlay.dataset.annotationId === id) {
           overlay.classList.add('annotation-highlight');
-          found++;
-          if (firstElement == null) {
-            firstElement = overlay;
-            firstPageNumber = parseInt(pageIndex);
-          }
         } else {
           overlay.classList.remove('annotation-highlight');
         }
       }
     }
-
-    for (const annotation of this.annotations) {
-      if (annotation.meta.id === id) {
-        matchedAnnotation = annotation;
-        break;
-      }
-    }
-
     if (id != null) {
       this.searchQueryChanged({
         keyword: '',
@@ -868,13 +866,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
       if (found) {
         this.snackBar.open(`Highlighted ${found} instance${found === 1 ? '' : 's'}  `
-            + (matchedAnnotation != null ? `of '${matchedAnnotation.meta.allText}' ` : '')
+            + (firstAnnotation != null ? `of '${firstAnnotation.meta.allText}' ` : '')
             + `in the document, starting on page ${firstPageNumber}.`,
             'Close', {duration: 5000});
 
-        setTimeout(() => {
-          firstElement.scrollIntoView();
-        }, 100);
+        this.scrollToPage(firstPageNumber, firstAnnotation.rects[0]);
       } else {
         this.snackBar.open(`The annotation could not be found in the document.`,
             'Close', {duration: 5000});
