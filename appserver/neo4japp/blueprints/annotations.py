@@ -4,7 +4,14 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
 
-from flask import Blueprint, current_app, g, make_response
+from flask import (
+    Blueprint,
+    current_app,
+    g,
+    make_response,
+    request,
+    jsonify,
+)
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import (
@@ -18,7 +25,8 @@ from neo4japp.database import (
     get_excel_export_service,
     get_manual_annotations_service,
 )
-from neo4japp.data_transfer_objects import AnnotationRequest
+from neo4japp.data_transfer_objects import AnnotationRequest, GlobalAnnotationData
+from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.exceptions import (
     AnnotationError,
     RecordNotFoundException
@@ -38,7 +46,12 @@ from neo4japp.services.annotations.constants import (
     ManualAnnotationType,
 )
 from neo4japp.services.annotations.service_helpers import create_annotations
-from neo4japp.util import jsonify_with_class, SuccessResponse
+from neo4japp.util import (
+    CasePreservedDict,
+    jsonify_with_class,
+    SuccessResponse,
+)
+from neo4japp.utils.request import paginate_from_args
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
@@ -312,6 +325,75 @@ def export_global_exclusions():
     response.headers['Content-Disposition'] = \
         f'attachment; filename={exporter.get_filename("global_exclusions")}'
     yield response
+
+
+@bp.route('/global-list', methods=['GET'])
+@auth.login_required
+@requires_role('admin')
+def get_annotations():
+    # ?sort=-dateModified,+label&page=1&limit=3
+
+    yield g.current_user
+
+    query = db.session.query(
+        Files.file_id,
+        Files.filename,
+        AppUser.email,
+        GlobalList.id,
+        GlobalList.annotation,
+        GlobalList.type,
+        GlobalList.reviewed,
+        GlobalList.approved,
+        GlobalList.creation_date,
+        GlobalList.modified_date
+    ).join(
+        AppUser,
+        AppUser.id == GlobalList.annotation['user_id'].as_integer()
+    ).join(
+        Files,
+        Files.id == GlobalList.file_id
+    )
+    query = paginate_from_args(
+        query,
+        request.args,
+        columns={
+            'dateModified': GlobalList.modified_date,
+        },
+        default_sort='dateModified',
+        upper_limit=200,
+    )
+
+    response = ResultList(
+        total=query.total,
+        results=[GlobalAnnotationData(
+            file_id=r[0],
+            filename=r[1],
+            user_email=r[2],
+            id=r[3],
+            annotation=CasePreservedDict(r[4]),
+            type=r[5],
+            reviewed=r[6],
+            approved=r[7],
+            creation_date=r[8],
+            modified_date=r[9],
+        ) for r in query.items],
+        query=None)
+
+    yield jsonify(response.to_dict())
+
+
+@bp.route('/global-list/<int:gid>', methods=['DELETE'])
+@auth.login_required
+@requires_role('admin')
+def delete_annotations(gid: int):
+    yield g.current_user
+
+    query = GlobalList.__table__.delete().where(
+        GlobalList.id == gid
+    )
+    db.session.execute(query)
+    db.session.commit()
+    yield jsonify(dict(result='success'))
 
 
 @bp.route('/<string:project_name>/<string:file_id>', methods=['GET'])
