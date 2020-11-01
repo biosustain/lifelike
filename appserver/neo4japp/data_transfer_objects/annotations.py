@@ -140,3 +140,17 @@ class SpecifiedOrganismStrain(CamelDictMixin):
     synonym: str = attr.ib()
     organism_id: str = attr.ib()
     category: str = attr.ib()
+
+
+@attr.s(frozen=True)
+class GlobalAnnotationData(CamelDictMixin):
+    file_id: str = attr.ib()
+    filename: str = attr.ib()
+    user_email: str = attr.ib()
+    id: int = attr.ib()
+    annotation: dict = attr.ib()
+    type: str = attr.ib()
+    reviewed: bool = attr.ib()
+    approved: bool = attr.ib()
+    creation_date: str = attr.ib()
+    modified_date: str = attr.ib()

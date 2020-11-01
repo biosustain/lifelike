@@ -182,6 +182,13 @@ def get_annotations_service():
     )
 
 
+def get_global_annotations_service():
+    if 'global_annotations_service' not in g:
+        from neo4japp.services.global_annotations_service import GlobalAnnotationsService
+        g.global_annotations_service = GlobalAnnotationsService(session=db.session)
+    return g.global_annotations_service
+
+
 def get_entity_recognition():
     from neo4japp.services.annotations import EntityRecognitionService
     return EntityRecognitionService(
