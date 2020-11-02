@@ -341,7 +341,7 @@ class EntityRecognitionService:
             (EntityType.SPECIES.value, EntityIdStr.SPECIES.value, self.species_inclusion, create_species_for_ner)  # noqa
         ]
 
-    def _get_exclusion_pairs(self) -> List[Tuple[Any, Any]]:
+    def _get_exclusion_pairs(self) -> List[Tuple[Set[str], Any]]:
         return [
             (self.anatomy_exclusion, self._get_anatomy_annotations_to_exclude),
             (self.chemical_exclusion, self._get_chemical_annotations_to_exclude),
@@ -363,7 +363,7 @@ class EntityRecognitionService:
         create_entity_ner_func,
     ) -> None:
         """Creates a dictionary structured very similar to LMDB.
-        Used for global entity custom annotation lookups.
+        Used for entity custom annotation lookups.
         """
         for inclusion in annotations_to_include:
             try:
@@ -421,7 +421,7 @@ class EntityRecognitionService:
         create_exclusion_set_func,
     ) -> None:
         """Creates a set of words to exclude.
-        Used for global entity custom annotation lookups.
+        Used for entity custom annotation lookups.
         """
         exclusion_set = create_exclusion_set_func(annotations_to_exclude)
 

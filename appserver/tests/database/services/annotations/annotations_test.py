@@ -514,11 +514,11 @@ def test_gene_organism_escherichia_coli_pdf(
     gene_organism_escherichia_coli_pdf_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     pdf = path.join(directory, f'pdf_samples/ecoli_gene_test.pdf')
 
@@ -560,11 +560,11 @@ def test_protein_organism_escherichia_coli_pdf(
     protein_organism_escherichia_coli_pdf_lmdb_setup,
     mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     pdf = path.join(directory, f'pdf_samples/ecoli_protein_test.pdf')
 
@@ -592,11 +592,11 @@ def test_custom_annotations_gene_organism_matching_has_match(
     default_lmdb_setup,
     mock_general_human_genes,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     pdf = path.join(directory, f'pdf_samples/custom_annotations_gene_matching.pdf')
 
@@ -655,12 +655,13 @@ def test_custom_annotations_gene_organism_matching_has_match(
 def test_custom_local_annotations(
     default_lmdb_setup,
     mock_general_human_genes,
+    mock_gene_exclusion,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     pdf = path.join(directory, f'pdf_samples/custom_annotations_gene_matching.pdf')
 
@@ -736,11 +737,11 @@ def test_human_gene_pdf(
     human_gene_pdf_gene_and_organism_network,
     mock_get_gene_to_organism_match_result_for_human_gene_pdf,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     pdf = path.join(directory, f'pdf_samples/human_gene_test.pdf')
 
@@ -772,11 +773,11 @@ def test_human_gene_pdf(
 def test_foods_pdf(
     food_lmdb_setup,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     pdf = path.join(directory, f'pdf_samples/food-test.pdf')
 
@@ -805,11 +806,11 @@ def test_foods_pdf(
 def test_anatomy_pdf(
     anatomy_lmdb_setup,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     pdf = path.join(directory, f'pdf_samples/anatomy-test.pdf')
 
@@ -875,10 +876,10 @@ def test_tokens_gene_vs_protein(
     mock_get_gene_to_organism_match_result,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -1021,10 +1022,10 @@ def test_tokens_gene_vs_protein_serpina1_cases(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -1405,10 +1406,10 @@ def test_gene_annotation_uses_id_from_knowledge_graph(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -1470,10 +1471,10 @@ def test_gene_annotation_human_vs_rat(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -1537,10 +1538,10 @@ def test_ignore_terms_length_two_or_less(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -1600,10 +1601,10 @@ def test_global_excluded_chemical_annotations(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -1658,14 +1659,14 @@ def test_global_excluded_chemical_annotations(
 )
 def test_global_excluded_compound_annotations(
     default_lmdb_setup,
-    mock_global_compound_exclusion,
+    mock_compound_exclusion,
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -1720,14 +1721,14 @@ def test_global_excluded_compound_annotations(
 )
 def test_global_excluded_disease_annotations(
     default_lmdb_setup,
-    mock_global_disease_exclusion,
+    mock_disease_exclusion,
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -1782,14 +1783,14 @@ def test_global_excluded_disease_annotations(
 )
 def test_global_excluded_gene_annotations(
     default_lmdb_setup,
-    mock_global_gene_exclusion,
+    mock_gene_exclusion,
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -1844,14 +1845,14 @@ def test_global_excluded_gene_annotations(
 )
 def test_global_excluded_phenotype_annotations(
     default_lmdb_setup,
-    mock_global_phenotype_exclusion,
+    mock_phenotype_exclusion,
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -1906,14 +1907,14 @@ def test_global_excluded_phenotype_annotations(
 )
 def test_global_excluded_protein_annotations(
     default_lmdb_setup,
-    mock_global_protein_exclusion,
+    mock_protein_exclusion,
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -1968,14 +1969,14 @@ def test_global_excluded_protein_annotations(
 )
 def test_global_excluded_species_annotations(
     default_lmdb_setup,
-    mock_global_species_exclusion,
+    mock_species_exclusion,
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -2035,10 +2036,10 @@ def test_global_excluded_annotations_does_not_interfere_with_other_entities(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -2084,10 +2085,10 @@ def test_lmdb_match_protein_by_exact_case_if_multiple_matches(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -2133,10 +2134,10 @@ def test_global_chemical_inclusion_annotation(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -2182,10 +2183,10 @@ def test_global_compound_inclusion_annotation(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -2242,10 +2243,10 @@ def test_global_gene_inclusion_annotation(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -2293,10 +2294,10 @@ def test_global_disease_inclusion_annotation(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -2342,10 +2343,10 @@ def test_global_phenotype_inclusion_annotation(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -2391,10 +2392,10 @@ def test_global_protein_inclusion_annotation(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -2440,10 +2441,10 @@ def test_global_species_inclusion_annotation(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens)
 
@@ -2473,11 +2474,11 @@ def test_primary_organism_strain(
     bola_human_monkey_gene,
     mock_get_gene_specified_strain,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
     pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     pdf = path.join(directory, f'pdf_samples/primary-organism-strain-bola3.pdf')
 
@@ -2546,10 +2547,10 @@ def test_no_annotation_for_abbreviation(
     index,
     mock_tokens,
     get_annotations_service,
-    entity_inclusion_setup
+    entity_service
 ):
     annotation_service = get_annotations_service
-    entity_service = entity_inclusion_setup
+    entity_service = entity_service
 
     char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens, abbrev=True, index=1)
 
