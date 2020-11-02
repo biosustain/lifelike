@@ -4,6 +4,9 @@
   </app-modal-header>
 
   <app-modal-body>
+    <app-form-row for="text" label="Text">
+      <input type="text" class="form-control" id="text" [value]="text" disabled>
+    </app-form-row>
     <app-form-row for="reason" label="Reason" [control]="form.get('reason')">
       <div class="custom-control custom-radio" *ngFor="let choice of reasonChoices; index as i">
         <input type="radio" id="reason-{{ i }}" name="reason" class="custom-control-input"
