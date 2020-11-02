@@ -4,6 +4,7 @@ from flask import Blueprint, request
 
 from typing import List
 
+from neo4japp.blueprints.auth import auth
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import get_visualizer_service
 
@@ -19,6 +20,7 @@ bp = Blueprint('visualizer-api', __name__, url_prefix='/visualizer')
 
 
 @bp.route('/batch', methods=['GET'])
+@auth.login_required
 @jsonify_with_class()
 def get_batch():
     """ Uses a home-brew query language
@@ -37,6 +39,7 @@ def get_batch():
 
 
 @bp.route('/expand', methods=['POST'])
+@auth.login_required
 @jsonify_with_class(ExpandNodeRequest)
 def expand_graph_node(req: ExpandNodeRequest):
     visualizer = get_visualizer_service()
@@ -45,6 +48,7 @@ def expand_graph_node(req: ExpandNodeRequest):
 
 
 @bp.route('/get-reference-table-data', methods=['POST'])
+@auth.login_required
 @jsonify_with_class(ReferenceTableDataRequest)
 def get_reference_table_data(req: ReferenceTableDataRequest):
     visualizer = get_visualizer_service()
@@ -55,6 +59,7 @@ def get_reference_table_data(req: ReferenceTableDataRequest):
 
 
 @bp.route('/get-snippets-for-edge', methods=['POST'])
+@auth.login_required
 @jsonify_with_class(GetSnippetsForEdgeRequest)
 def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
     visualizer = get_visualizer_service()
@@ -67,6 +72,7 @@ def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
 
 
 @bp.route('/get-snippets-for-cluster', methods=['POST'])
+@auth.login_required
 @jsonify_with_class(GetSnippetsForClusterRequest)
 def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
     visualizer = get_visualizer_service()
@@ -79,6 +85,7 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
 
 
 @bp.route('/get-annotation-legend', methods=['GET'])
+@auth.login_required
 @jsonify_with_class()
 def get_annotation_legend():
     return SuccessResponse(result=ANNOTATION_STYLES_DICT, status_code=200)

@@ -39,6 +39,7 @@ bp = Blueprint('search', __name__, url_prefix='/search')
 
 
 @bp.route('/search', methods=['POST'])
+@auth.login_required
 @jsonify_with_class(SearchRequest)
 def fulltext_search(req: SearchRequest):
     search_dao = get_search_service_dao()
@@ -47,6 +48,7 @@ def fulltext_search(req: SearchRequest):
 
 
 @bp.route('/simple-search', methods=['POST'])
+@auth.login_required
 @jsonify_with_class(SimpleSearchRequest)
 def simple_full_text_search(req: SimpleSearchRequest):
     search_dao = get_search_service_dao()
@@ -58,6 +60,7 @@ def simple_full_text_search(req: SimpleSearchRequest):
 # search service consistent with both the visualizer and the drawing tool.
 # This will need tests if we decide to maintain it as a standalone service.
 @bp.route('/viz-search-temp', methods=['POST'])
+@auth.login_required
 @jsonify_with_class(VizSearchRequest)
 def visualizer_search_temp(req: VizSearchRequest):
     search_dao = get_search_service_dao()
@@ -70,14 +73,6 @@ def visualizer_search_temp(req: VizSearchRequest):
     )
     return SuccessResponse(result=results, status_code=200)
 
-
-# // TODO: Re-enable once we have a proper predictive/autocomplete implemented
-# @bp.route('/search', methods=['POST'])
-# @jsonify_with_class(SearchRequest)
-# def predictive_search(req: SearchRequest):
-#     search_dao = get_search_service_dao()
-#     results = search_dao.predictive_search(req.query)
-#     return SuccessResponse(result=results, status_code=200)
 
 # TODO: Probably should rename this to something else...not sure what though
 @bp.route('/content', methods=['GET'])
@@ -207,6 +202,7 @@ def search(q, types, limit, page):
 
 
 @bp.route('/organism/<string:organism_tax_id>', methods=['GET'])
+@auth.login_required
 @jsonify_with_class()
 def get_organism(organism_tax_id: str):
     search_dao = get_search_service_dao()
@@ -215,6 +211,7 @@ def get_organism(organism_tax_id: str):
 
 
 @bp.route('/organisms', methods=['POST'])
+@auth.login_required
 @jsonify_with_class(OrganismRequest)
 def get_organisms(req: OrganismRequest):
     search_dao = get_search_service_dao()
@@ -223,6 +220,7 @@ def get_organisms(req: OrganismRequest):
 
 
 @bp.route('/genes_filtered_by_organism_and_others', methods=['POST'])
+@auth.login_required
 @jsonify_with_class(GeneFilteredRequest)
 def get_genes_filtering_by_organism(req: GeneFilteredRequest):
     search_dao = get_search_service_dao()
