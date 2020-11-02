@@ -318,10 +318,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       .subscribe(
         response => {
           this.addedAnnotationExclusion = exclusionData;
-          this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
+          this.snackBar.open(`${exclusionData.text}: annotation has been excluded`, 'Close', {duration: 10000});
         },
         err => {
-          this.snackBar.open(`Error: failed to exclude annotation`, 'Close', {duration: 10000});
+          this.snackBar.open(`${exclusionData.text}: failed to exclude annotation`, 'Close', {duration: 10000});
         },
       );
   }
