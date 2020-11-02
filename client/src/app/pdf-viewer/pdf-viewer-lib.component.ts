@@ -700,6 +700,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     jQuery('.system-annotation').qtip('hide');
 
     const dialogRef = this.modalService.open(AnnotationExcludeDialogComponent);
+    dialogRef.componentInstance.text = annExclusion.text;
     dialogRef.result.then(exclusionData => {
       this.annotationExclusionAdded.emit({ ...exclusionData, ...annExclusion });
     }, () => {
