@@ -78,8 +78,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
   searchQuery = '';
   goToPosition: Subject<Location> = new Subject<Location>();
+  highlightAnnotations: Subject<string> = new Subject<string>();
   loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]>;
   pendingScroll: Location;
+  pendingAnnotationHighlightId: string;
   openPdfSub: Subscription;
   ready = false;
   pdfFile: PdfFile;
@@ -153,7 +155,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       const linkedFileId = this.route.snapshot.params.file_id;
       const fragment = this.route.snapshot.fragment || '';
       // TODO: Do proper query string parsing
-      this.openPdf(new DummyFile(linkedFileId), this.parseLocationFromUrl(fragment));
+      this.openPdf(new DummyFile(linkedFileId),
+          this.parseLocationFromUrl(fragment),
+          this.parseHighlightFromUrl(fragment));
     }
   }
 
@@ -314,10 +318,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       .subscribe(
         response => {
           this.addedAnnotationExclusion = exclusionData;
-          this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
+          this.snackBar.open(`${exclusionData.text}: annotation has been excluded`, 'Close', {duration: 10000});
         },
         err => {
-          this.snackBar.open(`Error: failed to exclude annotation`, 'Close', {duration: 10000});
+          this.snackBar.open(`${exclusionData.text}: failed to exclude annotation`, 'Close', {duration: 10000});
         },
       );
   }
@@ -435,15 +439,20 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
    * Open pdf by file_id along with location to scroll to
    * @param file - represent the pdf to open
    * @param loc - the location of the annotation we want to scroll to
+   * @param annotationHighlightId - the ID of an annotation to highlight, if any
    */
-  openPdf(file: PdfFile, loc: Location = null) {
+  openPdf(file: PdfFile, loc: Location = null, annotationHighlightId: string = null) {
     if (this.currentFileId === file.file_id) {
       if (loc) {
         this.scrollInPdf(loc);
       }
+      if (annotationHighlightId != null) {
+        this.highlightAnnotation(annotationHighlightId);
+      }
       return;
     }
     this.pendingScroll = loc;
+    this.pendingAnnotationHighlightId = annotationHighlightId;
     this.pdfFileLoaded = false;
     this.ready = false;
 
@@ -505,11 +514,34 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.goToPosition.next(loc);
   }
 
+  highlightAnnotation(annotationId: string) {
+    if (!this.pdfFileLoaded) {
+      this.pendingAnnotationHighlightId = annotationId;
+      return;
+    }
+    if (annotationId != null) {
+      for (const annotation of this.annotations) {
+        if (annotation.meta.id === annotationId) {
+          this.entityTypeVisibilityMap.set(annotation.meta.type, true);
+          this.invalidateEntityTypeVisibility();
+          break;
+        }
+      }
+    }
+    this.highlightAnnotations.next(annotationId);
+  }
+
   loadCompleted(status) {
     this.pdfFileLoaded = status;
-    if (this.pdfFileLoaded && this.pendingScroll) {
-      this.scrollInPdf(this.pendingScroll);
-      this.pendingScroll = null;
+    if (this.pdfFileLoaded) {
+      if (this.pendingScroll) {
+        this.scrollInPdf(this.pendingScroll);
+        this.pendingScroll = null;
+      }
+      if (this.pendingAnnotationHighlightId) {
+        this.highlightAnnotation(this.pendingAnnotationHighlightId);
+        this.pendingAnnotationHighlightId = null;
+      }
     }
   }
 
@@ -609,6 +641,14 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       ] : null,
       jumpText: jumpMatch,
     };
+  }
+
+  parseHighlightFromUrl(fragment: string): string | undefined {
+    if (window.URLSearchParams) {
+      const params = new URLSearchParams(fragment);
+      return params.get('annotation');
+    }
+    return null;
   }
 
   displayShareDialog() {

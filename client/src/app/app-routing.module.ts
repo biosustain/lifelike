@@ -210,6 +210,7 @@ const routes: Routes = [
       fontAwesomeIcon: 'project-diagram',
     },
   },
+  /* TODO Refactor import
   {
     path: 'kg-import',
     canActivate: [AuthGuard],
@@ -218,6 +219,7 @@ const routes: Routes = [
       {path: 'genes', component: GeneImportWizardComponent},
     ],
   },
+  */
   {
     path: 'kg-statistics',
     component: KgStatisticsComponent,
@@ -230,7 +232,7 @@ const routes: Routes = [
     component: FileNavigatorComponent,
     data: {
       title: 'File Navigator',
-      fontAwesomeIcon: 'cloud',
+      fontAwesomeIcon: 'fas fa-compass',
     },
   },
   {
@@ -238,7 +240,7 @@ const routes: Routes = [
     component: WordCloudProjectComponent,
     data: {
       title: 'Project Entity Cloud',
-      fontAwesomeIcon: 'cloud',
+      fontAwesomeIcon: 'fas fa-compass',
     }
   },
   // Old links

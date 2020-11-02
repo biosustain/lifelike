@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { combineLatest } from 'rxjs';
@@ -14,6 +14,7 @@ import { WordCloudComponent } from './word-cloud.component';
   selector: 'app-word-cloud-project',
   templateUrl: './word-cloud.component.html',
   styleUrls: ['./word-cloud.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class WordCloudProjectComponent extends WordCloudComponent {
 
