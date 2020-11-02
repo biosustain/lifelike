@@ -570,10 +570,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  clearSearchQuery() {
+  clearSearchQuery(focus = true) {
     this.searchQuery = '';
     this.searchQueryChanged();
-    this.searchElement.nativeElement.focus();
+    if (focus) {
+      this.searchElement.nativeElement.focus();
+    }
   }
 
   displayEditDialog() {

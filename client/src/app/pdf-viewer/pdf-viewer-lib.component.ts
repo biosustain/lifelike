@@ -103,6 +103,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Output('custom-annotation-removed') annotationRemoved = new EventEmitter();
   @Output('annotation-exclusion-added') annotationExclusionAdded = new EventEmitter();
   @Output('annotation-exclusion-removed') annotationExclusionRemoved = new EventEmitter();
+  @Output() searchClear = new EventEmitter<any>();
 
   /**
    * Stores a mapping of annotations to the HTML elements that are used to show it.
@@ -939,6 +940,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   searchQueryChanged(newQuery: { keyword: string, findPrevious: boolean }) {
     if (newQuery.keyword.trim().length) {
       this.highlightAllAnnotations(null);
+    } else {
+      this.searchClear.emit();
     }
     if (newQuery.keyword !== this.pdfQuery) {
       this.pdfQuery = newQuery.keyword;
