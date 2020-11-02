@@ -25,29 +25,33 @@ export class FileInfoComponent implements OnInit {
     });
   }
 
+  get object() {
+    return this._object;
+  }
+
   ngOnInit() {
     this.highlightDisplayLimitChange.emit({
       previous: 0,
       limit: Math.min(this.highlightLimit,
-          this._object.highlight != null ? this._object.highlight.length : 0),
+          this.object.highlight != null ? this.object.highlight.length : 0),
     });
   }
 
   get shownHighlights() {
-    return this._object.highlight.slice(0, this.highlightLimit);
+    return this.object.highlight.slice(0, this.highlightLimit);
   }
 
   get reachedHighlightLimit() {
-    return this.highlightLimit >= this._object.highlight.length;
+    return this.highlightLimit >= this.object.highlight.length;
   }
 
   displayMoreHighlights() {
     const previous = this.highlightLimit;
-    this.highlightLimit = Math.min(this._object.highlight.length, this.highlightLimit + 5);
+    this.highlightLimit = Math.min(this.object.highlight.length, this.highlightLimit + 5);
     this.highlightDisplayLimitChange.emit({
       previous,
       limit: Math.min(this.highlightLimit,
-          this._object.highlight != null ? this._object.highlight.length : 0),
+          this.object.highlight != null ? this.object.highlight.length : 0),
     });
   }
 }

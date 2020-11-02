@@ -1,6 +1,7 @@
 from py2neo import cypher
 import re
 from typing import Any, Dict, List
+from flask import current_app
 
 from neo4japp.data_transfer_objects import (
     FTSQueryRecord,
@@ -159,13 +160,14 @@ class SearchService(GraphBaseDao):
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:
             return FTSResult(query_term, [], 0, page, limit)
+        result_filters = self.sanitize_filter(filter)
         cypher_query = 'CALL db.index.fulltext.queryNodes("synonymIdx", $search_term) ' \
                        'YIELD node, score WITH node, score MATCH (node)-[]-(n) ' \
                        'WHERE %s' \
                        'WITH node, score, n optional MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy) ' \
                        'RETURN DISTINCT n as node, score, t.id AS taxonomy_id,' \
                        ' t.name AS taxonomy_name, n.namespace as go_class ' \
-                       'LIMIT $limit' % filter
+                       'LIMIT $limit' % result_filters
 
         results = self.graph.run(
             cypher_query,
@@ -210,6 +212,27 @@ class SearchService(GraphBaseDao):
             ))
         return formatted_results
 
+    def sanitize_filter(self, filter):
+        domains_list = {'ChEBI': 'n:db_CHEBI', 'GO': 'n:db_GO', 'Literature': 'n:db_Literature',
+                        'MeSH': 'n:db_MESH', 'NCBI': 'n:db_NCBI', 'UniProt': 'n:db_UniProt'}
+        entities_list = {'Chemicals': 'n:Chemical', 'Diseases': 'n:Disease', 'Genes': 'n:Gene',
+                         'Proteins': 'n:Protein', 'Taxonomy': 'n:Taxonomy'}
+        filter_list = filter.split(', ')
+        result_domains = []
+        result_entities = []
+
+        for x in filter_list:
+            if x in domains_list:
+                result_domains.append(domains_list[x])
+            elif x in entities_list:
+                result_entities.append(entities_list[x])
+            else:
+                current_app.logger.info(f'Filter not found: {x}')
+
+        domains = 'n:null' if len(result_domains) == 0 else ' OR '.join(result_domains)
+        entities = 'n:null' if len(result_entities) == 0 else ' OR '.join(result_entities)
+        return f'({domains}) AND {entities}'
+
     def visualizer_search_temp(
         self,
         term: str,
@@ -227,11 +250,13 @@ class SearchService(GraphBaseDao):
         else:
             organism_match_string = 'OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)'
 
+        result_filters = self.sanitize_filter(filter)
+
         cypher_query = f"""
             CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
             YIELD node, score
             MATCH (node)-[]-(n)
-            WHERE {filter}
+            WHERE {result_filters}
             WITH score, n
             ORDER BY score DESC
             {organism_match_string}
@@ -259,7 +284,7 @@ class SearchService(GraphBaseDao):
             CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
             YIELD node
             MATCH (node)-[]-(n)
-            WHERE {filter}
+            WHERE {result_filters}
             {organism_match_string}
             RETURN COUNT(DISTINCT n) as total
         """
@@ -328,6 +353,8 @@ class SearchService(GraphBaseDao):
         if not query_term:
             return FTSResult(query_term, [], 0, 1, 0)
 
+        result_filters = self.sanitize_filter(filter)
+
         cypher_query = '''
             CALL db.index.fulltext.queryNodes('synonymIdx', $gene_term)
             YIELD node, score
@@ -339,7 +366,7 @@ class SearchService(GraphBaseDao):
                 t.id AS taxonomy_id,
                 t.name AS taxonomy_name,
                 n.namespace as go_class
-        ''' % filters
+        ''' % result_filters
 
         nodes = self.graph.run(
             cypher_query,
