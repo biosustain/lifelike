@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
@@ -9,10 +9,12 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
   templateUrl: './annotation-exclude-dialog.component.html',
 })
 export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent {
+  @Input() text: string;
   readonly reasonChoices = [
     'Not an entity',
     'Wrong annotation type',
     'Exclude from the synonym list',
+    'Incorrect context',
     'Other',
   ];
 

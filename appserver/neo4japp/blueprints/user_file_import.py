@@ -66,6 +66,7 @@ def upload_node_mapping(req: Neo4jColumnMapping):
     return SuccessResponse(result='', status_code=200)
 
 
+""" TODO refactor import
 @bp.route('/import-genes', methods=['POST'])
 @jsonify_with_class(ImportGenesRequest, has_file=True)
 def import_genes(req: ImportGenesRequest):
@@ -79,3 +80,4 @@ def import_genes(req: ImportGenesRequest):
     )
 
     return SuccessResponse(result=result, status_code=200)
+"""

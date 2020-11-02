@@ -322,6 +322,10 @@ export class WordCloudComponent {
         .style('fill', (d) => d.color)
         .attr('text-anchor', 'middle')
         .text((d) => d.text)
+        .on('click', (item: WordCloudAnnotationFilterEntity) => {
+          this.wordOpen.emit(item);
+        })
+        .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
         .style('font-size', (d) =>  d.size + 'px')
         .transition()
         .attr('transform', (d) => {

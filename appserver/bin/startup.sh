@@ -21,7 +21,7 @@ if [ "${FLASK_ENV}" = "development" ]; then
     flask run --host 0.0.0.0
 elif [ "${FLASK_ENV}" = "production" ]; then
     echo "Setting up production environment"
-    gunicorn -b 0.0.0.0:5000 -w 4 app:app --timeout 120
+    gunicorn -b 0.0.0.0:5000 -w 4 app:app --timeout 1200
 else
     echo "No environment setup for ${FLASK_ENV}"
 fi
