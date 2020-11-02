@@ -136,10 +136,8 @@ class AnnotationsPDFParser:
                     char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                     compiled_regex=compiled_regex,
                 )
-            elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno):
+            elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno) and lt_obj.get_text() != '\n':  # noqa
                 lt_obj_text = lt_obj.get_text()
-                if lt_obj_text == '\n':
-                    lt_obj._text = ' '
                 # ignore CID fonts
                 # these are arithmetic or other symbols the parser
                 # was not able to translate
