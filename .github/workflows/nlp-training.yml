@@ -100,7 +100,7 @@ jobs:
           vault_password: ${{ secrets.ANSIBLE_VAULT }}
           ssh_key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
           options: |
-            --extra-vars webserver=staging
+            --extra-vars webserver=nlptraining
             --extra-vars set_docker_img_hash=${{ github.sha }}
             --extra-vars set_git_timestamp=${{ needs.build.outputs.output1 }}
             --extra-vars set_app_build_number=${{ needs.build.outputs.output2 }}
