@@ -22,6 +22,7 @@
       with_items:
         - kg-appserver
         - kg-webserver
+        - kg-cache-service
       tags:
         - deploy
 
