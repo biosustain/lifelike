@@ -142,16 +142,16 @@
 
 <fieldset class="fieldset-properties mt-2">
   <legend>Annotations</legend>
-  <div *ngFor="let data of annotationData">
+  <div *ngFor="let data of annotationVisibility">
     <div class="custom-control custom-checkbox">
-      <input [id]="id + 'filter-' + getAnnotationIdentifier(data)"
+      <input [id]="id + 'filter-' + data.identifier"
           class="custom-control-input"
           type="checkbox"
           value="1"
-          [checked]="isWordVisible(getAnnotationIdentifier(data))"
-          (change)="changeWordVisibility(getAnnotationIdentifier(data), $event)">
-      <label class="custom-control-label" [for]="id + 'filter-' + getAnnotationIdentifier(data)">
-        <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}} <span>({{data.frequency}})</span>
+          [checked]="data.visible"
+          (change)="changeWordVisibility(data.identifier, $event)">
+      <label class="custom-control-label" [for]="id + 'filter-' + data.identifier">
+        <span class="entity-type-legend" [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}} <span>({{data.entity.frequency}})</span>
       </label>
     </div>
   </div>
