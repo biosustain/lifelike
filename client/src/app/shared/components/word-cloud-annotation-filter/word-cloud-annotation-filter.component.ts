@@ -22,5 +22,6 @@ export class WordCloudAnnotationFilterComponent extends AnnotationFilterComponen
 
   ngOnInit() {
     super.ngOnInit();
+    super.updateVisibility();
   }
 }

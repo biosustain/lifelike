@@ -146,34 +146,34 @@
 
 <fieldset class="fieldset-properties mt-2">
   <legend>Annotations</legend>
-  <div *ngFor="let data of annotationData"
-       [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">
+  <div *ngFor="let data of annotationVisibility"
+       [ngbTooltip]="!data.entity.shown ? NOT_SHOWN_TOOLTIP : null">
     <div class="d-flex align-items-center text-overflow">
       <div class="custom-control custom-checkbox">
-        <input [id]="id + 'filter-' + getAnnotationIdentifier(data)"
+        <input [id]="id + 'filter-' + data.identifier"
                class="custom-control-input"
                type="checkbox"
                value="1"
-               [checked]="isWordVisible(getAnnotationIdentifier(data))"
-               (change)="changeWordVisibility(getAnnotationIdentifier(data), $event)">
+               [checked]="data.visible"
+               (change)="changeWordVisibility(data.identifier, $event)">
         <label class="custom-control-label text-nowrap"
-               [for]="id + 'filter-' + getAnnotationIdentifier(data)"
+               [for]="id + 'filter-' + data.identifier"
                placement="right bottom top"
                container="body">
           <ng-container *ngIf="!clickableWords">
             <div class="text-overflow">
-              <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}}
-              <span>({{data.frequency}})</span>
-              <i *ngIf="!data.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
+              <span class="entity-type-legend" [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}}
+              <span>({{data.entity.frequency}})</span>
+              <i *ngIf="!data.entity.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
             </div>
           </ng-container>
         </label>
       </div>
       <ng-container *ngIf="clickableWords">
-        <a class="text-overflow" href="#" (click)="wordOpen.emit(data); $event.preventDefault()">
-          <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}}
-          <span>({{data.frequency}})</span>
-          <i *ngIf="!data.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
+        <a class="text-overflow" href="#" (click)="wordOpen.emit(data.entity); $event.preventDefault()">
+          <span class="entity-type-legend" [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}}
+          <span>({{data.entity.frequency}})</span>
+          <i *ngIf="!data.entity.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
         </a>
       </ng-container>
     </div>
