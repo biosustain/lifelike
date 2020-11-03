@@ -20,9 +20,9 @@
         name: "{{ container_registry }}/{{ item }}:{{ docker_img_hash }}"
         source: pull
       with_items:
-        - kg-appserver
-        - kg-webserver
-        - kg-cache-service
+        - nlp-training-appserver
+        - nlp-training-webserver
+        - nlp-training-cache-service
       tags:
         - deploy
 
