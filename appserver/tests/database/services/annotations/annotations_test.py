@@ -989,9 +989,6 @@ def test_tokens_gene_vs_protein_serpina1_cases(
         assert annotations[1].meta.type == EntityType.SPECIES.value
     elif index == 5:
         assert len(annotations) == 1
-        # assert annotations[0].keyword == 'Serpin A1'
-        # assert annotations[0].meta.type == EntityType.PROTEIN.value
-
         assert annotations[0].keyword == 'human'
         assert annotations[0].meta.type == EntityType.SPECIES.value
 
@@ -2458,59 +2455,31 @@ def test_primary_organism_strain(
     assert bola[0].meta.id == '388962'
 
 
-@pytest.mark.parametrize(
-    'index, mock_tokens',
-    [
-        (1, [
-                PDFTokenPositions(
-                    page_number=1,
-                    keyword='pentose phosphate pathway',
-                    char_positions={
-                        i: c for i, c in enumerate('pentose phosphate pathway')
-                    },
-                    normalized_keyword='pentosephosphatepathway'
-                ),
-                PDFTokenPositions(
-                    page_number=1,
-                    keyword='PPP',
-                    char_positions={
-                        # add extra 1 due to parenthesis (PPP)
-                        # which were stripped out in parser
-                        i + len('pentose phosphate pathway') + 2: c for i, c in enumerate('PPP')
-                    },
-                    normalized_keyword='ppp'
-                ),
-        ]),
-    ],
-)
 def test_no_annotation_for_abbreviation(
     abbreviation_lmdb_setup,
-    index,
-    mock_tokens,
     get_annotations_service,
     entity_inclusion_setup
 ):
     annotation_service = get_annotations_service
+    pdf_parser = get_annotations_pdf_parser()
     entity_service = entity_inclusion_setup
 
-    char_coord_objs_in_pdf, word_index_dict = process_tokens(mock_tokens, abbrev=True, index=1)
+    pdf = path.join(directory, f'pdf_samples/abbreviation-test.pdf')
 
-    tokens = PDFTokenPositionsList(
-        token_positions=mock_tokens,
-        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-        cropbox_in_pdf=(5, 5),
-        min_idx_in_page={0: 1},
-        word_index_dict=word_index_dict
-    )
-    lookup_entities(entity_service=entity_service, tokens=tokens)
-    annotations = annotation_service.create_rules_based_annotations(
-        tokens=tokens,
-        custom_annotations=[],
-        entity_results=entity_service.get_entity_match_results(),
-        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-        specified_organism=SpecifiedOrganismStrain(
-                synonym='', organism_id='', category='')
-    )
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
 
-    assert len(annotations) == 1
+        lookup_entities(entity_service=entity_service, tokens=tokens)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
+        )
+
+    assert len(annotations) == 2
     assert annotations[0].keyword == 'Pentose Phosphate Pathway'
+    assert annotations[1].keyword == 'Pentose Phosphate Pathway'
