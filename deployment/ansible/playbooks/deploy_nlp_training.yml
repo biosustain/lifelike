@@ -1,4 +1,4 @@
-- hosts: "{{ nlptraining }}"
+- hosts: "{{ webserver }}"
   become: true
   vars:
     docker_img_hash: "{{ set_docker_img_hash | default('latest') }}"
@@ -98,16 +98,6 @@
             - always
       tags:
         - lmdb
-        - deploy
-
-    - name: Seed Elasticsearch with Global Annotations
-      include_role:
-        name: global-annotation
-        apply:
-          tags:
-            - always
-      tags:
-        - annotation
         - deploy
 
     - name: Warm up LMDB
