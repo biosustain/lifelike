@@ -331,7 +331,6 @@ def export_global_exclusions():
 @auth.login_required
 @requires_role('admin')
 def get_annotations():
-    # ?sort=-dateModified,+label&page=1&limit=3
 
     yield g.current_user
 
