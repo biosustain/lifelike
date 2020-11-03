@@ -1045,7 +1045,8 @@ class AnnotationsService:
 
             # TODO: Does the order of these checks matter?
 
-            if isinstance(annotation, GeneAnnotation) or annotation.meta.type == EntityType.PROTEIN.value:  # noqa
+            if isinstance(annotation, GeneAnnotation) or \
+            (annotation.meta.type == EntityType.PROTEIN.value and len(text_in_document) == 1):  # noqa
                 text_in_document = text_in_document[0]  # type: ignore
                 if text_in_document == annotation.keyword:
                     if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):
