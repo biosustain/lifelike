@@ -7,14 +7,14 @@ import { Hyperlink, DatabaseType, AnnotationType } from 'app/shared/constants';
 import { PdfAnnotationsService } from '../../drawing-tool/services';
 
 import { cloneDeep } from 'lodash';
+import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import {
-  AddedAnnotationExclsuion,
+  AddedAnnotationExclusion,
   Annotation,
   Location,
   Meta,
   RemovedAnnotationExclusion,
-  UniversalGraphNode,
-} from '../../drawing-tool/services/interfaces';
+} from '../../pdf-viewer/annotation-type';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
@@ -97,7 +97,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   sortedEntityTypeEntries: EntityTypeEntry[] = [];
   entityTypeVisibilityChanged = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  addedAnnotationExclusion: AddedAnnotationExclsuion;
+  addedAnnotationExclusion: AddedAnnotationExclusion;
   addAnnotationExclusionSub: Subscription;
   showExcludedAnnotations = false;
   removeAnnotationExclusionSub: Subscription;
@@ -310,7 +310,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  annotationExclusionAdded(exclusionData: AddedAnnotationExclsuion) {
+  annotationExclusionAdded(exclusionData: AddedAnnotationExclusion) {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
       this.currentFileId, exclusionData, this.projectName,
     )

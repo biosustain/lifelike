@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Annotation, RemovedAnnotationExclsuion, Location, Meta, Rect } from './annotation-type';
+import { AddedAnnotationExclusion, Annotation, RemovedAnnotationExclusion, Location, Meta, Rect } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { PDFPageViewport } from 'pdfjs-dist';
@@ -71,14 +71,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   @Input()
-  set addedAnnotationExclusion(exclusionData: AddedAnnotationExclsuion) {
+  set addedAnnotationExclusion(exclusionData: AddedAnnotationExclusion) {
     if (exclusionData) {
       this.changeAnnotationExclusionMark(true, exclusionData);
     }
   }
 
   @Input()
-  set removedAnnotationExclusion(exclusionData: RemovedAnnotationExclsuion) {
+  set removedAnnotationExclusion(exclusionData: RemovedAnnotationExclusion) {
     if (exclusionData) {
       this.changeAnnotationExclusionMark(false, exclusionData);
     }
@@ -982,7 +982,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     this.annotationRemoved.emit(uuid);
   }
 
-  changeAnnotationExclusionMark(isExcluded, exclusionData: AddedAnnotationExclsuion | RemovedAnnotationExclsuion) {
+  changeAnnotationExclusionMark(isExcluded, exclusionData: AddedAnnotationExclusion | RemovedAnnotationExclusion) {
     this.annotations.forEach((ann: Annotation) => {
       if (ann.meta.type === exclusionData.type && ann.textInDocument === exclusionData.text) {
         const ref = this.annotationHighlightElementMap.get(ann);
