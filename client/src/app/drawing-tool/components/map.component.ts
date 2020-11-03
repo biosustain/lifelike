@@ -149,7 +149,8 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       const highlights: GraphEntity[] = [];
 
       for (const node of this.map.graph.nodes) {
-        const text = (emptyIfNull(node.display_name) + ' ' + emptyIfNull(node.data.detail)).toLowerCase();
+        const data: { detail?: string } = node.data != null ? node.data : {};
+        const text = (emptyIfNull(node.display_name) + ' ' + emptyIfNull(data.detail)).toLowerCase();
         if (pattern.test(text)) {
           highlights.push({
             type: GraphEntityType.Node,
@@ -159,7 +160,8 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       }
 
       for (const edge of this.map.graph.edges) {
-        const text = (emptyIfNull(edge.label) + ' ' + emptyIfNull(edge.data.detail)).toLowerCase();
+        const data: { detail?: string } = edge.data != null ? edge.data : {};
+        const text = (emptyIfNull(edge.label) + ' ' + emptyIfNull(data.detail)).toLowerCase();
         if (pattern.test(text)) {
           highlights.push({
             type: GraphEntityType.Edge,
