@@ -216,7 +216,7 @@ def search(q, types, limit, page):
             keyword_fields=keyword_fields,
             keyword_field_boosts=keyword_field_boosts,
             query_filter=query_filter,
-            highlight=snippets
+            highlight=highlight
         )
         res = res['hits']
     else:
