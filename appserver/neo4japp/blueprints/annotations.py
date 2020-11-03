@@ -13,6 +13,8 @@ from flask import (
     jsonify,
 )
 
+from flask_apispec import use_kwargs
+
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import (
     requires_role,
@@ -27,6 +29,7 @@ from neo4japp.database import (
 )
 from neo4japp.data_transfer_objects import AnnotationRequest, GlobalAnnotationData
 from neo4japp.data_transfer_objects.common import ResultList
+from neo4japp.request_schemas.annotations import GlobalAnnotationsDeleteSchema
 from neo4japp.exceptions import (
     AnnotationError,
     RecordNotFoundException
@@ -52,6 +55,8 @@ from neo4japp.util import (
     SuccessResponse,
 )
 from neo4japp.utils.request import paginate_from_args
+from neo4japp.utils.logger import UserEventLog
+
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
@@ -381,16 +386,20 @@ def get_annotations():
     yield jsonify(response.to_dict())
 
 
-@bp.route('/global-list/<int:gid>', methods=['DELETE'])
+@bp.route('/global-list', methods=['POST', 'DELETE'])
 @auth.login_required
+@use_kwargs(GlobalAnnotationsDeleteSchema)
 @requires_role('admin')
-def delete_annotations(gid: int):
+def delete_global_annotations(pids):
     yield g.current_user
-
-    query = GlobalList.__table__.delete().where(
-        GlobalList.id == gid
+    query = db.session.query(GlobalList).filter(
+        GlobalList.id.in_(pids)
+    ).delete(synchronize_session=False)
+    current_app.logger.info(
+        f'Deleted {len(pids)} global annotations',
+        UserEventLog(
+            username=g.current_user.username, event_type='global annotation delete').to_dict()
     )
-    db.session.execute(query)
     db.session.commit()
     yield jsonify(dict(result='success'))
 

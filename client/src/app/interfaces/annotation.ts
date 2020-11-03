@@ -57,4 +57,5 @@ export interface GlobalAnnotationRow {
     reason: string;
     entityType: string;
     annotationId: string;
+    comment: string;
 }

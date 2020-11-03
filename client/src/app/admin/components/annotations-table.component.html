@@ -8,6 +8,12 @@
               ngbTooltip="Delete annotation(s)">
         Delete
       </button>
+      <button class="btn btn-primary ml-2"
+              ngbTooltip="Export to csv"
+              [disabled]="true">
+        <i class="fa fa-fw fa-file-export"></i>
+        Export
+      </button>
     </div>
   </div>
 
@@ -46,14 +52,13 @@
           </div>
         </td>
         <td class="align-middle text-nowrap">{{ object.text }}</td>
-        <td class="align-middle">{{ object.type }}</td>
-        <td class="align-middle">{{ object.entityType }}</td>
+        <td class="align-middle text-nowrap">{{ object.type }}</td>
+        <td class="align-middle text-nowrap">{{ object.entityType }}</td>
         <td class="align-middle text-nowrap">{{ object.annotationId }}</td>
-        <td class="align-middle text-nowrap text-truncate">
-          {{ object.filename }}
-        </td>
-        <td class="align-middle">{{ object.addedBy }}</td>
+        <td class="align-middle text-nowrap">{{ object.filename }}</td>
+        <td class="align-middle text-nowrap">{{ object.addedBy }}</td>
         <td class="align-middle text-nowrap">{{ object.reason }}</td>
+        <td class="align-middle text-nowrap">{{ object.comment }}</td>
         <td class="align-middle text-nowrap">{{ object.creationDate }}</td>
       </tr>
     </tbody>
