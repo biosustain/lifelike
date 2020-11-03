@@ -149,10 +149,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
       const identifier = this.getAnnotationIdentifier(entity);
       return {
         identifier,
-        visible:
-          this.wordVisibilityMap.get(identifier) !== undefined
-            ? this.wordVisibilityMap.get(identifier)
-            : true,
+        visible: this.isWordVisible(identifier),
         entity,
       };
     });
@@ -169,7 +166,6 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   }
 
   isWordVisible(identifier: string) {
-    console.log('iswordvisible');
     const value = this.wordVisibilityMap.get(identifier);
     if (value === undefined) {
       return true;
@@ -312,6 +308,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   groupAndSortData() {
     this.sortData();
     this.groupData();
+    this.updateVisibility();
   }
 
   private sortByFrequency(
