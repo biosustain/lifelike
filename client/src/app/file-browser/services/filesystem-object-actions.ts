@@ -50,15 +50,30 @@ export class FilesystemObjectActions {
               private readonly errorHandler: ErrorHandler) {
   }
 
+  protected createProgressDialog(message: string, title = 'Working...') {
+    const progressObservable = new BehaviorSubject<Progress>(new Progress({
+      status: message,
+    }));
+    return this.progressDialog.display({
+      title,
+      progressObservable,
+    });
+  }
+
   openDirectoryCreateDialog(parent: FilesystemObject): Promise<any> {
     const dialogRef = this.ngbModal.open(DirectoryEditDialogComponent);
     return dialogRef.result.then((resp: Directory) => {
+      const progressDialogRef = this.createProgressDialog('Creating folder...');
+
       return this.projectPageService.createDirectory(
           parent.locator.projectName,
           parent.directory.id,
           resp.name,
       )
-          .pipe(this.errorHandler.create())
+          .pipe(
+              this.errorHandler.create(),
+              finalize(() => progressDialogRef.close()),
+          )
           .toPromise();
     });
   }
@@ -66,6 +81,8 @@ export class FilesystemObjectActions {
   openMapCreateDialog(parent: FilesystemObject): Promise<any> {
     const dialogRef = this.modalService.open(MapCreateDialogComponent);
     return dialogRef.result.then((newMap: KnowledgeMap) => {
+      const progressDialogRef = this.createProgressDialog('Creating map...');
+
       return this.mapService.createMap(
           parent.locator.projectName,
           parent.directory.id,
@@ -73,7 +90,10 @@ export class FilesystemObjectActions {
           newMap.description,
           newMap.public,
       )
-          .pipe(this.errorHandler.create())
+          .pipe(
+              this.errorHandler.create(),
+              finalize(() => progressDialogRef.close()),
+          )
           .toPromise();
     });
   }
@@ -81,9 +101,14 @@ export class FilesystemObjectActions {
   openEnrichmentTableCreateDialog(parent: FilesystemObject): Promise<any> {
     const dialogRef = this.modalService.open(EnrichmentTableCreateDialogComponent);
     return dialogRef.result.then((result) => {
+      const progressDialogRef = this.createProgressDialog('Creating map...');
+
       const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
       return this.filesService.addGeneList(parent.locator.projectName, parent.directory.id, enrichmentData, result.description, result.name)
-          .pipe(this.errorHandler.create())
+          .pipe(
+              this.errorHandler.create(),
+              finalize(() => progressDialogRef.close()),
+          )
           .toPromise();
     });
   }
@@ -108,6 +133,8 @@ export class FilesystemObjectActions {
     dialogRef.componentInstance.fileId = target.id;
     dialogRef.componentInstance.projectName = target.locator.projectName;
     return dialogRef.result.then((result) => {
+      const progressDialogRef = this.createProgressDialog('Saving changes...');
+
       const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
       return this.filesService.editGeneList(
           target.locator.projectName,
@@ -116,7 +143,10 @@ export class FilesystemObjectActions {
           result.name,
           result.description,
       )
-          .pipe(this.errorHandler.create())
+          .pipe(
+              this.errorHandler.create(),
+              finalize(() => progressDialogRef.close()),
+          )
           .toPromise();
     });
   }
@@ -130,15 +160,8 @@ export class FilesystemObjectActions {
       };
       return dialogRef.result.then((destinations: FilesystemObject[]) => {
         const destination = destinations[0];
-        // Let's show some progress!
-        const progressObservable = new BehaviorSubject<Progress>(new Progress({
-          status: `Moving ${target.name}...`,
-        }));
-        const name = target.name;
-        const progressDialogRef = this.progressDialog.display({
-          title: 'File Move',
-          progressObservable,
-        });
+
+        const progressDialogRef = this.createProgressDialog('Moving item...');
 
         if (target.type === 'file') {
           return this.filesService.moveFile(
@@ -146,8 +169,10 @@ export class FilesystemObjectActions {
               (target.data as PdfFile).file_id,
               parseInt(destination.locator.directoryId, 10),
           )
-              .pipe(this.errorHandler.create(),
-                  finalize(() => progressDialogRef.close()))
+              .pipe(
+                  this.errorHandler.create(),
+                  finalize(() => progressDialogRef.close()),
+              )
               .toPromise();
         } else if (target.type === 'map') {
           return this.mapService.moveMap(
@@ -155,8 +180,10 @@ export class FilesystemObjectActions {
               (target.data as KnowledgeMap).hash_id,
               parseInt(destination.locator.directoryId, 10),
           )
-              .pipe(this.errorHandler.create(),
-                  finalize(() => progressDialogRef.close()))
+              .pipe(
+                  this.errorHandler.create(),
+                  finalize(() => progressDialogRef.close()),
+              )
               .toPromise();
         } else {
           progressDialogRef.close();
@@ -179,12 +206,17 @@ export class FilesystemObjectActions {
       dialogRef.componentInstance.editing = true;
       dialogRef.componentInstance.directory = cloneDeep(target.data);
       return dialogRef.result.then((resp: Directory) => {
+        const progressDialogRef = this.createProgressDialog('Renaming directory...');
+
         return this.projectPageService.renameDirectory(
             target.locator.projectName,
             (target.data as Directory).id,
             resp.name,
         )
-            .pipe(this.errorHandler.create())
+            .pipe(
+                this.errorHandler.create(),
+                finalize(() => progressDialogRef.close()),
+            )
             .toPromise();
       });
     } else if (target.type === 'file') {
@@ -205,6 +237,8 @@ export class FilesystemObjectActions {
               dialogRef.componentInstance.file = file;
               dialogRef.result.then(data => {
                 if (data) {
+                  const progressDialogRef = this.createProgressDialog('Saving changes...');
+
                   this.filesService.updateFileMeta(
                       target.locator.projectName,
                       file.file_id,
@@ -214,6 +248,7 @@ export class FilesystemObjectActions {
                   )
                       .pipe(
                           this.errorHandler.create(),
+                          finalize(() => progressDialogRef.close()),
                           tap(accept),
                           catchError(error => {
                             reject();
@@ -235,10 +270,16 @@ export class FilesystemObjectActions {
     } else if (target.type === 'map') {
       const dialogRef = this.modalService.open(MapEditDialogComponent);
       dialogRef.componentInstance.map = cloneDeep(target.data);
-      return dialogRef.result.then(newMap =>
-          this.mapService.updateMap(target.locator.projectName, newMap)
-              .pipe(this.errorHandler.create())
-              .toPromise());
+      return dialogRef.result.then(newMap => {
+        const progressDialogRef = this.createProgressDialog('Saving changes...');
+
+        return this.mapService.updateMap(target.locator.projectName, newMap)
+            .pipe(
+                this.errorHandler.create(),
+                finalize(() => progressDialogRef.close()),
+            )
+            .toPromise();
+      });
     } else {
       throw new Error(`unsupported type: ${target.type}`);
     }
@@ -349,6 +390,7 @@ export class FilesystemObjectActions {
 
   delete(objects: readonly FilesystemObject[]): Promise<any> {
     const failed: { object: DirectoryObject, message: string }[] = [];
+    const progressDialogRef = this.createProgressDialog('Deleting...');
 
     return combineLatest(
         objects.map(object => this.deleteObject(object).pipe(
@@ -374,6 +416,9 @@ export class FilesystemObjectActions {
                 this.snackBar.open(`Deletion completed.`, 'Close', {duration: 5000});
               }
             }),
+        )
+        .pipe(
+            finalize(() => progressDialogRef.close())
         )
         .toPromise();
   }
