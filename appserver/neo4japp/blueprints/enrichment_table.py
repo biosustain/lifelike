@@ -5,6 +5,7 @@ from flask import Blueprint, request, jsonify, make_response
 from typing import List
 from sqlalchemy.orm.exc import NoResultFound
 
+from neo4japp.blueprints.auth import auth
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import get_enrichment_table_service, db
 from neo4japp.models import (
@@ -26,6 +27,7 @@ bp = Blueprint('enrichment-table-api', __name__, url_prefix='/enrichment-table')
 
 
 @bp.route('/get-neo4j-worksheet/<string:worksheet_id>', methods=['GET'])
+@auth.login_required
 def get_neo4j_worksheet(worksheet_id: str):
     try:
         worksheets = Worksheet.query.filter(Worksheet.id == worksheet_id).one()
@@ -36,6 +38,7 @@ def get_neo4j_worksheet(worksheet_id: str):
 
 
 @bp.route('/match-ncbi-nodes', methods=['POST'])
+@auth.login_required
 def match_ncbi_nodes():
     data = request.get_json()
     geneNames = data['geneNames']
