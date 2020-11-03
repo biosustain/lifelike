@@ -245,7 +245,7 @@
 
       <!-- Body -->
       <div class="flex-fill overflow-auto">
-        <app-file-list [parent]="result.value"
+        <app-file-list [parent]="result.value" [appLinks]="true"
                        (locatorChange)="load($event)"
                        (objectOpen)="openObject($event)"></app-file-list>
       </div>
