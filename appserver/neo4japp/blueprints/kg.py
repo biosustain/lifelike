@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify
 from typing import List
 from sqlalchemy.orm.exc import NoResultFound
 
-
+from neo4japp.blueprints.auth import auth
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import get_kg_service
 from neo4japp.models import (
@@ -27,6 +27,7 @@ bp = Blueprint('kg-api', __name__, url_prefix='/knowledge-graph')
 
 
 @bp.route('/get-ncbi-nodes/uniprot', methods=['POST'])
+@auth.login_required
 def get_ncbi_uniprot_nodes():
     data = request.get_json()
     node_ids = data['nodeIds']
@@ -36,6 +37,7 @@ def get_ncbi_uniprot_nodes():
 
 
 @bp.route('/get-ncbi-nodes/string', methods=['POST'])
+@auth.login_required
 def get_ncbi_string_nodes():
     data = request.get_json()
     node_ids = data['nodeIds']
@@ -45,6 +47,7 @@ def get_ncbi_string_nodes():
 
 
 @bp.route('/get-ncbi-nodes/molecular-go', methods=['POST'])
+@auth.login_required
 def get_ncbi_molecular_go_nodes():
     data = request.get_json()
     node_ids = data['nodeIds']
@@ -54,6 +57,7 @@ def get_ncbi_molecular_go_nodes():
 
 
 @bp.route('/get-ncbi-nodes/biological-go', methods=['POST'])
+@auth.login_required
 def get_ncbi_biological_go_nodes():
     data = request.get_json()
     node_ids = data['nodeIds']
@@ -63,6 +67,7 @@ def get_ncbi_biological_go_nodes():
 
 
 @bp.route('/get-ncbi-nodes/cellular-go', methods=['POST'])
+@auth.login_required
 def get_ncbi_cellular_go_nodes():
     data = request.get_json()
     node_ids = data['nodeIds']
@@ -72,6 +77,7 @@ def get_ncbi_cellular_go_nodes():
 
 
 @bp.route('/get-ncbi-nodes/biocyc', methods=['POST'])
+@auth.login_required
 def get_ncbi_biocyc_nodes():
     data = request.get_json()
     node_ids = data['nodeIds']
@@ -81,6 +87,7 @@ def get_ncbi_biocyc_nodes():
 
 
 @bp.route('/get-ncbi-nodes/regulon', methods=['POST'])
+@auth.login_required
 def get_ncbi_regulon_nodes():
     data = request.get_json()
     node_ids = data['nodeIds']
@@ -90,6 +97,7 @@ def get_ncbi_regulon_nodes():
 
 
 @bp.route('/get-ncbi-nodes/enrichment-domains', methods=['POST'])
+@auth.login_required
 def get_ncbi_enrichment_domains():
     data = request.get_json()
     node_ids = data['nodeIds']

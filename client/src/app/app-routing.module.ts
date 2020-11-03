@@ -34,6 +34,7 @@ const routes: Routes = [
   {
     path: '',
     component: DashboardComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'Dashboard',
       fontAwesomeIcon: 'home',
@@ -42,6 +43,7 @@ const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'Dashboard',
       fontAwesomeIcon: 'home',
@@ -84,6 +86,7 @@ const routes: Routes = [
   {
     path: 'search/graph',
     component: GraphSearchComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'Visualizer',
       fontAwesomeIcon: 'search',
@@ -91,6 +94,7 @@ const routes: Routes = [
   },
   {
     path: 'search/content',
+    canActivate: [AuthGuard],
     component: ContentSearchComponent,
     data: {
       title: 'Search',
@@ -99,6 +103,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/enrichment-table/:file_id',
+    canActivate: [AuthGuard],
     component: EnrichmentTableViewerComponent,
     data: {
       title: 'Enrichment Table',
@@ -113,10 +118,12 @@ const routes: Routes = [
         path: '',
         redirectTo: '/search',
         pathMatch: 'full',
+        canActivate: [AuthGuard],
       },
       {
         path: 'graph',
         component: VisualizationComponent,
+        canActivate: [AuthGuard],
         data: {
           title: 'Visualizer',
           fontAwesomeIcon: 'search',
@@ -194,6 +201,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/maps/:hash_id',
+    canActivate: [AuthGuard],
     component: MapViewComponent,
     data: {
       title: 'Map',
@@ -223,6 +231,7 @@ const routes: Routes = [
   {
     path: 'kg-statistics',
     component: KgStatisticsComponent,
+    canActivate: [AuthGuard],
     data: {
       fontAwesomeIcon: 'tachometer-alt',
     },
@@ -230,6 +239,7 @@ const routes: Routes = [
   {
     path: 'file-navigator/:project_name/:file_id',
     component: FileNavigatorComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'File Navigator',
       fontAwesomeIcon: 'fas fa-compass',
@@ -238,6 +248,7 @@ const routes: Routes = [
   {
     path: 'entity-cloud/:project_name',
     component: WordCloudProjectComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'Project Entity Cloud',
       fontAwesomeIcon: 'fas fa-compass',
