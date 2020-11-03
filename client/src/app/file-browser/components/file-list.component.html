@@ -60,7 +60,7 @@
                 </div>
 
                 <div class="d-inline-block text-truncate">
-                  <a [appLink]="object.getCommands()" (click)="objectOpen.next(object); $event.preventDefault()">
+                  <a [appLink]="object.getCommands()" [handleClick]="appLinks" (click)="objectOpen.next(object); $event.preventDefault()">
                     <ng-container *ngIf="object.type !== 'dir'; else dirLabel">
                       <div
                           *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'">{{ object.name }} </div>

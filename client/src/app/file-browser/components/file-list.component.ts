@@ -17,6 +17,7 @@ import { uniqueId } from 'lodash';
 export class FileListComponent {
   id = uniqueId('FileListComponent-');
 
+  @Input() appLinks: false;
   @Input() parent: FilesystemObject;
   @Input() objectControls = true;
   @Output() locatorChange = new EventEmitter<PathLocator>();
