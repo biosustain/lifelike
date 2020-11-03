@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { AbstractService } from './abstract-service';
 import { GlobalAnnotation } from 'app/interfaces/annotation';
@@ -21,5 +22,13 @@ export class GlobalAnnotationService extends AbstractService {
             params: options as any,
             }
         );
+    }
+
+    deleteAnnotations(pids: number[]): Observable<string> {
+        return this.http.post<{result: string}>(
+            `${this.baseUrl}/global-list`,
+            {pids},
+            {...this.getHttpOptions(true)}
+        ).pipe(map(res => res.result));
     }
 }

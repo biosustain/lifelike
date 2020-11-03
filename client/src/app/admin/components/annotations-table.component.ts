@@ -55,6 +55,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         'File Reference',
         'Added by',
         'Reason',
+        'Comment',
         'Date Added',
     ];
 
@@ -118,18 +119,21 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
             let reason: string;
             let entityType: string;
             let annotationId: string;
+            let comment: string;
             if (g.type === 'inclusion') {
                 annotation = g.annotation as GlobalInclusion;
                 text = annotation.meta.allText;
                 reason = '-';
                 entityType = annotation.meta.type;
                 annotationId = annotation.meta.id;
+                comment = '-';
             } else {
                 annotation = g.annotation as GlobalExclusion;
                 text = annotation.text;
                 reason = annotation.reason;
                 entityType = annotation.type;
                 annotationId = annotation.id;
+                comment = annotation.comment;
             }
             return {
                 pid: g.id,
@@ -141,6 +145,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
                 entityType,
                 creationDate: g.creationDate,
                 annotationId,
+                comment,
             } as GlobalAnnotationRow;
         });
     }
@@ -149,7 +154,9 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         this.loadTask.update(this.locator);
     }
 
-    deleteAnnotation(objects: readonly GlobalAnnotation[]) {
-        console.log(objects);
+    deleteAnnotation(objects: readonly GlobalAnnotationRow[]) {
+        const pids = objects.map((r: GlobalAnnotationRow) => r.pid);
+        this.globalAnnotationService.deleteAnnotations(pids).pipe(first()).subscribe();
+        this.refresh();
     }
 }
