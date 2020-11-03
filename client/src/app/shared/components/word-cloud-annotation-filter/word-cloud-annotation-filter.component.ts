@@ -14,8 +14,6 @@ export class WordCloudAnnotationFilterComponent extends AnnotationFilterComponen
   @Input() annotationData: WordCloudAnnotationFilterEntity[];
   @Output() wordOpen = new EventEmitter<WordCloudAnnotationFilterEntity>();
 
-  NOT_SHOWN_TOOLTIP = 'Could not fit this term in the cloud. Try expanding the window or filtering other terms.';
-
   constructor() {
     super();
   }
