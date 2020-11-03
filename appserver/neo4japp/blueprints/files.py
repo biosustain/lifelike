@@ -698,6 +698,7 @@ def get_pdf(id: str, project_name: str):
 
 # TODO: Convert this? Where is this getting used
 @bp.route('/bioc', methods=['GET'])
+@auth.login_required
 def transform_to_bioc():
     TEMPLATE_PATH = os.path.abspath(os.getcwd()) + '/templates/bioc.json'
     with open(TEMPLATE_PATH, 'r') as f:
