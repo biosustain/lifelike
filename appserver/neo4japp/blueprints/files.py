@@ -962,6 +962,7 @@ def move_file(destination: DirectoryDestination, id: str, project_name: str):
         raise InvalidArgumentsException(
             'The destination directory is the same as the current directory.')
 
+    target_file.project = destination_project.id
     target_file.dir_id = destination_dir.id
     db.session.commit()
 
