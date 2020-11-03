@@ -4,19 +4,25 @@
   </app-modal-header>
 
   <app-modal-body>
-    <div class="text-muted mb-3" *ngIf="!form.controls.text.disabled">
-      <i class="fas fa-info-circle"></i> Please select the correct text to annotate from the dropdown:
-    </div>
     <app-form-row for="text" label="Text" [control]="form.get('text')">
-      <select formControlName="text" class="custom-select w-100" id="text" appAutoFocus [setFocus]="!form.controls.text.disabled">
-        <option *ngFor="let option of allTextOptions" [value]="option">
-          {{option}}
-        </option>
-      </select>
+      <div class="input-group">
+        <input formControlName="text" type="text" class="form-control" id="text">
+        <div class="input-group-append">
+          <button class="btn btn-secondary" type="button" ngbTooltip="Make a correction">
+            <i class="fas fa-edit" type="button" (click)="enableTextField()"></i>
+          </button>
+        </div>
+      </div>
     </app-form-row>
+    <div class="row justify-content-end mb-3" *ngIf="isTextEnabled">
+      <div class="text-muted col-sm-9">
+        <i class="fas fa-exclamation-circle"></i>
+        Editing this field might affect the ability to find the term in the document and annotate it.
+      </div>
+    </div>
 
     <app-form-row for="entity-type" label="Type" [control]="form.get('entityType')">
-      <select formControlName="entityType" class="custom-select w-100" id="entity-type" appAutoFocus [setFocus]="form.controls.text.disabled">
+      <select formControlName="entityType" class="custom-select w-100" id="entity-type" appAutoFocus>
         <option *ngFor="let choice of entityTypeChoices" [value]="choice.name">
           {{choice.name | titlecase}}
         </option>
