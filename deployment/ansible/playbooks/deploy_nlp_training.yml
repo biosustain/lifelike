@@ -89,30 +89,6 @@
       tags:
         - deploy
 
-    - name: Run database migrations and backups
-      block:
-        - name: Fetch cloud_sql_service_account
-          shell: "gcloud sql instances describe --format='value(serviceAccountEmailAddress)' {{ CLOUD_SQL_ALIAS }}"
-          register: cloud_sql_bucket_account
-
-        - name: Grant access to Google Cloud Bucket Storage
-          shell: "gsutil acl ch -u {{ cloud_sql_bucket_account.stdout }}:W gs://{{ GCE_BACKUP_BUCKET }}"
-
-        - name: Generate backup ID
-          shell: "echo {{ CLOUD_SQL_ALIAS }}_$(date +%Y%m%d_%H-%M-%S).sqldump.gz"
-          register: BACKUP_ID
-
-        - name: Generate backup
-          shell: "gcloud sql export sql {{ CLOUD_SQL_ALIAS }} gs://{{ GCE_BACKUP_BUCKET }}/{{ BACKUP_ID.stdout }} --database={{ POSTGRES_DB }}"
-
-        - name: Run the migration
-          shell:
-            chdir: "{{ deploy_dir }}"
-            cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver bin/migrate-db --upgrade --data-migrate"
-      when: CLOUD_BACKUP|bool
-      tags:
-        - deploy
-
     - name: Create/Update LMDB database
       include_role:
         name: lmdb
