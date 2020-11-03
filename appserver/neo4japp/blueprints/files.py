@@ -5,33 +5,33 @@ import os
 import re
 import urllib.request
 import uuid
-
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
 from urllib.error import URLError
 
 from flask import Blueprint, current_app, request, jsonify, g, make_response
+from flask_apispec import use_kwargs, marshal_with
+from pdfminer import high_level
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
-from werkzeug.utils import secure_filename
 
+import neo4japp.models.files_queries as files_queries
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_permission, \
     requires_role, check_project_permission
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
-from neo4japp.constants import FILE_INDEX_ID, TIMEZONE
-from neo4japp.database import db, get_manual_annotations_service, get_elastic_service
+from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.data_transfer_objects import FileUpload
+from neo4japp.database import db, get_manual_annotations_service, get_elastic_service
 from neo4japp.exceptions import (
     DatabaseError,
     DuplicateRecord,
     FileUploadError,
     RecordNotFoundException,
-    NotAuthorizedException,
     InvalidArgumentsException,
 )
 from neo4japp.models import (
@@ -44,19 +44,16 @@ from neo4japp.models import (
     Projects,
     LMDBsDates
 )
-import neo4japp.models.files_queries as files_queries
-from neo4japp.request_schemas.filesystem import MoveFileRequest, DirectoryDestination
 from neo4japp.request_schemas.annotations import (
     AnnotationAdditionSchema,
     AnnotationSchema,
     AnnotationRemovalSchema,
     AnnotationExclusionSchema,
 )
-from neo4japp.utils.network import read_url
+from neo4japp.request_schemas.filesystem import MoveFileRequest, DirectoryDestination
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog
-from flask_apispec import use_kwargs, marshal_with
-from pdfminer import high_level
+from neo4japp.utils.network import read_url
 
 URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
 URL_FETCH_TIMEOUT = 10
