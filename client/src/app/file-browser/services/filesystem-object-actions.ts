@@ -130,13 +130,24 @@ export class FilesystemObjectActions {
       };
       return dialogRef.result.then((destinations: FilesystemObject[]) => {
         const destination = destinations[0];
+        // Let's show some progress!
+        const progressObservable = new BehaviorSubject<Progress>(new Progress({
+          status: `Moving ${target.name}...`,
+        }));
+        const name = target.name;
+        const progressDialogRef = this.progressDialog.display({
+          title: 'File Move',
+          progressObservable,
+        });
+
         if (target.type === 'file') {
           return this.filesService.moveFile(
               target.locator.projectName,
               (target.data as PdfFile).file_id,
               parseInt(destination.locator.directoryId, 10),
           )
-              .pipe(this.errorHandler.create())
+              .pipe(this.errorHandler.create(),
+                  finalize(() => progressDialogRef.close()))
               .toPromise();
         } else if (target.type === 'map') {
           return this.mapService.moveMap(
@@ -144,9 +155,11 @@ export class FilesystemObjectActions {
               (target.data as KnowledgeMap).hash_id,
               parseInt(destination.locator.directoryId, 10),
           )
-              .pipe(this.errorHandler.create())
+              .pipe(this.errorHandler.create(),
+                  finalize(() => progressDialogRef.close()))
               .toPromise();
         } else {
+          progressDialogRef.close();
           throw new Error('unknown type of file for moving');
         }
       });
