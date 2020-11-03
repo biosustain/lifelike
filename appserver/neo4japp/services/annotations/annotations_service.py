@@ -764,6 +764,7 @@ class AnnotationsService:
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
+        word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
             tokens=self.matched_species,
@@ -773,6 +774,15 @@ class AnnotationsService:
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
         )
+
+        # clean species annotations first
+        # because genes depend on them
+        species_annotations = self._clean_annotations(
+            annotations=species_annotations,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            word_index_dict=word_index_dict
+        )
+
         self.organism_frequency, self.organism_locations, self.organism_categories = \
             self._get_entity_frequency_location_and_category(annotations=species_annotations)
         return species_annotations
@@ -783,6 +793,7 @@ class AnnotationsService:
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
+        word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
         funcs = {
             EntityType.ANATOMY.value: self._annotate_anatomy,
@@ -797,11 +808,19 @@ class AnnotationsService:
         }
 
         annotate_entities = funcs[annotation_type]
-        return annotate_entities(
-            entity_id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
-        )
+        if annotation_type == EntityType.SPECIES.value:
+            return annotate_entities(
+                entity_id_str=entity_id_str,
+                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                cropbox_in_pdf=cropbox_in_pdf,
+                word_index_dict=word_index_dict
+            )  # type: ignore
+        else:
+            return annotate_entities(
+                entity_id_str=entity_id_str,
+                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                cropbox_in_pdf=cropbox_in_pdf
+            )  # type: ignore
 
     def _update_entity_frequency_map(
         self,
@@ -992,6 +1011,7 @@ class AnnotationsService:
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
         types_to_annotate: List[Tuple[str, str]],
+        word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
         """Create annotations.
 
@@ -1018,6 +1038,7 @@ class AnnotationsService:
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 cropbox_in_pdf=cropbox_in_pdf,
+                word_index_dict=word_index_dict
             )
             unified_annotations.extend(annotations)
 
@@ -1047,6 +1068,7 @@ class AnnotationsService:
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             types_to_annotate=entity_type_and_id_pairs,
+            word_index_dict=tokens.word_index_dict
         )
         return self._clean_annotations(
             annotations=annotations,
@@ -1069,6 +1091,7 @@ class AnnotationsService:
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
             types_to_annotate=entity_type_and_id_pairs,
+            word_index_dict=word_index_dict
         )
 
         unified_annotations = species_annotations + nlp_annotations
