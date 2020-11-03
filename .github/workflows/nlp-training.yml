@@ -1,4 +1,4 @@
-name: Staging Deployment
+name: NLP Training Deployment
 
 on:
   push:
@@ -53,7 +53,7 @@ jobs:
           username: _json_key
           password: ${{ secrets.GCE_SA_KEY }}
           registry: gcr.io
-          image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
+          image_name: ${{ secrets.GCE_PROJECT }}/nlp-training-appserver
           image_tag: ${{ github.sha }}
           context: ./appserver
           dockerfile: ./Dockerfile
@@ -64,7 +64,7 @@ jobs:
           username: _json_key
           password: ${{ secrets.GCE_SA_KEY }}
           registry: gcr.io
-          image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
+          image_name: ${{ secrets.GCE_PROJECT }}/nlp-training-webserver
           image_tag: ${{ github.sha }}
           context: ./client
           dockerfile: ./Dockerfile
@@ -75,7 +75,7 @@ jobs:
           username: _json_key
           password: ${{ secrets.GCE_SA_KEY }}
           registry: gcr.io
-          image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
+          image_name: ${{ secrets.GCE_PROJECT }}/nlp-training-cache-service
           image_tag: ${{ github.sha }}
           context: ./cache-invalidator
           dockerfile: ./Dockerfile
