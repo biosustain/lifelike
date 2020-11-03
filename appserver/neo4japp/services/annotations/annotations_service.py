@@ -19,6 +19,7 @@ from .constants import (
     EntityIdStr,
     EntityType,
     OrganismCategory,
+    ABBREVIATION_WORD_LENGTH,
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
     HOMO_SAPIENS_TAX_ID,
@@ -986,23 +987,42 @@ class AnnotationsService:
         gene 'marA' is correct, but 'mara' is not.
         """
         def is_abbrev(text_in_document, annotation, word_index_list, abbrevs) -> bool:
+            """Determine if a word is an abbreviation. If wrapped inside parenthesis,
+            look at x previous words. Start from closest word to abbreviation, and
+            check the first character.
+            """
             if text_in_document not in abbrevs:
                 if all([c.isupper() for c in text_in_document]) and \
-                    (len(text_in_document) == 3 or len(text_in_document) == 4):  # noqa
+                    len(text_in_document) in ABBREVIATION_WORD_LENGTH:  # noqa
                     try:
                         begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
                         end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
                     except IndexError:
                         # if index out of range than
-                        # last character is end of paper
+                        # character is beginning/end of paper
                         return False
                     if begin == '(' and end == ')':
                         i = bisect_left(word_index_list, annotation.lo_location_offset)
                         abbrev = ''
 
-                        for idx in word_index_list[i-len(text_in_document):i]:
-                            abbrev += word_index_dict[idx][0]
+                        for idx in reversed(word_index_list[i-len(text_in_document):i]):
+                            word = word_index_dict[idx]
+                            if '-' in word or '/' in word:
+                                word_split = []
+                                if '-' in word:
+                                    word_split = word.split('-')
+                                elif '/' in word:
+                                    word_split = word.split('/')
 
+                                for split in reversed(word_split):
+                                    if len(abbrev) == len(text_in_document):
+                                        break
+                                    else:
+                                        abbrev = split[0] + abbrev
+                                if len(abbrev) == len(text_in_document):
+                                    break
+                            else:
+                                abbrev = word[0] + abbrev
                         if abbrev.lower() != text_in_document.lower():
                             return False
                         else:
@@ -1025,7 +1045,15 @@ class AnnotationsService:
 
             # TODO: Does the order of these checks matter?
 
-            if len(text_in_document) > 1:
+            if isinstance(annotation, GeneAnnotation) or \
+            (annotation.meta.type == EntityType.PROTEIN.value and len(text_in_document) == 1):  # noqa
+                text_in_document = text_in_document[0]  # type: ignore
+                if text_in_document == annotation.keyword:
+                    if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):
+                        abbrevs.add(text_in_document)  # type: ignore
+                    else:
+                        fixed_annotations.append(annotation)
+            elif len(text_in_document) > 1:
                 keyword_from_annotation = annotation.keyword.split(' ')
                 if len(keyword_from_annotation) >= len(text_in_document):
                     fixed_annotations.append(annotation)
@@ -1033,13 +1061,6 @@ class AnnotationsService:
                     # consider case such as `ferredoxin 2` vs `ferredoxin-2` in lmdb
                     keyword_from_annotation = annotation.keyword.split('-')
                     if len(keyword_from_annotation) >= len(text_in_document):
-                        fixed_annotations.append(annotation)
-            elif isinstance(annotation, GeneAnnotation) or annotation.meta.type == EntityType.PROTEIN.value:  # noqa
-                text_in_document = text_in_document[0]  # type: ignore
-                if text_in_document == annotation.keyword:
-                    if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):
-                        abbrevs.add(text_in_document)  # type: ignore
-                    else:
                         fixed_annotations.append(annotation)
             else:
                 text_in_document = text_in_document[0]  # type: ignore
