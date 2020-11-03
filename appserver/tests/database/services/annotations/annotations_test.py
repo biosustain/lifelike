@@ -2532,7 +2532,6 @@ def test_no_annotation_for_abbreviation(
         lookup_entities(entity_service=entity_service, tokens=tokens)
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
-            custom_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
