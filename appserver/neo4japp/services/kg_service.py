@@ -3,6 +3,8 @@ from typing import Dict, List
 
 from flask import current_app
 
+from neo4japp.constants import BIOCYC_ORG_ID_DICT
+
 from neo4japp.services.common import HybridDBDao
 from neo4japp.models import (
     DomainURLsMap,
@@ -312,13 +314,12 @@ class KgService(HybridDBDao):
             }
         ).data()
         result_list = []
-        biocyc_org_id = {'9606': 'HUMAN', '511145': 'ECOLI', '559292': 'YEAST'}
         for meta_result in result:
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 biocyc_id = meta_result['x']['biocyc_id']
-                if taxID in biocyc_org_id.keys():
-                    orgID = biocyc_org_id[taxID]
+                if taxID in BIOCYC_ORG_ID_DICT.keys():
+                    orgID = BIOCYC_ORG_ID_DICT[taxID]
                     item['link'] = f'https://biocyc.org/gene?orgid={orgID}&id={biocyc_id}'
                 else:
                     item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
