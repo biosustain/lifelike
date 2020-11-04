@@ -72,14 +72,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Input()
   set addedAnnotationExclusion(exclusionData: AddedAnnotationExclusion) {
     if (exclusionData) {
-      this.changeAnnotationExclusionMark(true, exclusionData);
+      this.markAnnotationExclusions(exclusionData);
     }
   }
 
   @Input()
   set removedAnnotationExclusion(exclusionData: RemovedAnnotationExclusion) {
     if (exclusionData) {
-      this.changeAnnotationExclusionMark(false, exclusionData);
+      this.unmarkAnnotationExclusions(exclusionData);
     }
   }
 
@@ -982,16 +982,34 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     this.annotationRemoved.emit(uuid);
   }
 
-  changeAnnotationExclusionMark(isExcluded, exclusionData: AddedAnnotationExclusion | RemovedAnnotationExclusion) {
+  termsMatch(termInExclusion, termInAnnotation, isCaseInsensitive) {
+    if (isCaseInsensitive) {
+      return termInExclusion.toLowerCase() === termInAnnotation.toLowerCase();
+    }
+    return termInExclusion === termInAnnotation;
+  }
+
+  markAnnotationExclusions(exclusionData: AddedAnnotationExclusion) {
     this.annotations.forEach((ann: Annotation) => {
-      if (ann.meta.type === exclusionData.type && ann.textInDocument === exclusionData.text) {
+      if (ann.meta.type === exclusionData.type && this.termsMatch(exclusionData.text, ann.textInDocument, exclusionData.isCaseInsensitive)) {
         const ref = this.annotationHighlightElementMap.get(ann);
         jQuery(ref).remove();
-        ann.meta.isExcluded = isExcluded;
-        if ('reason' in exclusionData && 'comment' in exclusionData) {
-          ann.meta.exclusionReason = exclusionData.reason;
-          ann.meta.exclusionComment = exclusionData.comment;
-        }
+        ann.meta.isExcluded = true;
+        ann.meta.exclusionReason = exclusionData.reason;
+        ann.meta.exclusionComment = exclusionData.comment;
+        ann.meta.isCaseInsensitive = exclusionData.isCaseInsensitive;
+        this.addAnnotation(ann, ann.pageNumber);
+      }
+    });
+    this.renderFilterSettings();
+  }
+
+  unmarkAnnotationExclusions(exclusionData: RemovedAnnotationExclusion) {
+    this.annotations.forEach((ann: Annotation) => {
+      if (ann.meta.type === exclusionData.type && this.termsMatch(exclusionData.text, ann.textInDocument, ann.meta.isCaseInsensitive)) {
+        const ref = this.annotationHighlightElementMap.get(ann);
+        jQuery(ref).remove();
+        ann.meta.isExcluded = false;
         this.addAnnotation(ann, ann.pageNumber);
       }
     });
