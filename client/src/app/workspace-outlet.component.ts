@@ -1,9 +1,9 @@
 import {
   AfterViewInit,
   ChangeDetectorRef,
-  Component, EventEmitter,
+  Component, ElementRef, EventEmitter,
   HostListener,
-  Input, OnDestroy, Output,
+  Input, NgZone, OnChanges, OnDestroy, OnInit, Output,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
@@ -14,7 +14,7 @@ import { Container } from './shared/workspace-manager';
   template: `
     <ng-container #child></ng-container>`,
 })
-export class WorkspaceOutletComponent implements AfterViewInit, OnDestroy {
+export class WorkspaceOutletComponent implements AfterViewInit, OnChanges, OnInit, OnDestroy {
   @Input() name: string;
   @Output() outletFocus = new EventEmitter<any>();
   @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
@@ -22,7 +22,16 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnDestroy {
   private previouslyActive = false;
   private currentContainer: Container<any>;
 
-  constructor(private changeDetectorRef: ChangeDetectorRef) {
+  constructor(private changeDetectorRef: ChangeDetectorRef,
+              private ngZone: NgZone,
+              private hostElement: ElementRef) {
+  }
+
+  ngOnInit() {
+    this.ngZone.runOutsideAngular(() => {
+      this.hostElement.nativeElement.addEventListener('focusin', this.focusedInside.bind(this), true);
+      this.hostElement.nativeElement.addEventListener('click', this.focusedInside.bind(this), true);
+    });
   }
 
   ngOnDestroy(): void {
@@ -58,6 +67,12 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  ngOnChanges(): void {
+    if (this.active && this.viewComponentRef && this.currentContainer && !this.currentContainer.attached) {
+      this.attachComponent();
+    }
+  }
+
   private attachComponent(): void {
     if (this.viewComponentRef) {
       this.viewComponentRef.detach(0);
@@ -68,13 +83,7 @@ export class WorkspaceOutletComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('focusin')
   focusedInside() {
-    this.outletFocus.emit();
-  }
-
-  @HostListener('click')
-  clicked() {
     this.outletFocus.emit();
   }
 

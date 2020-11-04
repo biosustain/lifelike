@@ -1,6 +1,7 @@
 import hashlib
 import os
 
+from elasticsearch import Elasticsearch
 from flask import g, current_app
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -48,11 +49,13 @@ def _connect_to_neo4j():
     return Graph(
         host=current_app.config.get("NEO4J_HOST"),
         auth=current_app.config.get('NEO4J_AUTH').split('/'),
-        # max time in seconds to keep connection in pool
-        # good for long processing before querying the graph
-        # as the connection could be stale and the pool
-        # is maxed out so new connections can't be added
-        max_age=60,
+    )
+
+
+def _connect_to_elastic():
+    return Elasticsearch(
+        timeout=180,
+        hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
     )
 
 
@@ -63,18 +66,43 @@ def get_neo4j():
     return g.neo4j
 
 
-def get_neo4j_service_dao():
-    if 'neo4j_service_dao' not in g:
-        from neo4japp.services import Neo4JService
+def get_kg_service():
+    if 'kg_service' not in g:
+        from neo4japp.services import KgService
+        graph = get_neo4j()
+        g.kg_service = KgService(
+            graph=graph,
+            session=db.session,
+        )
+    return g.kg_service
+
+
+def get_visualizer_service():
+    if 'visualizer_service' not in g:
+        from neo4japp.services import VisualizerService
+        graph = get_neo4j()
+        g.visualizer_service = VisualizerService(
+            graph=graph,
+            session=db.session,
+        )
+    return g.visualizer_service
+
+
+def get_enrichment_table_service():
+    if 'enrichment_table_service' not in g:
+        from neo4japp.services import EnrichmentTableService
         graph = _connect_to_neo4j()
-        g.neo4j_service_dao = Neo4JService(graph=graph)
-    return g.neo4j_service_dao
+        g.enrichment_table_service = EnrichmentTableService(
+            graph=graph,
+            session=db.session,
+        )
+    return g.enrichment_table_service
 
 
 def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
-        graph = _connect_to_neo4j()
+        graph = get_neo4j()
         g.current_user_file_import_service = UserFileImportService(graph=graph, session=db.session)
     return g.current_user_file_import_service
 
@@ -82,7 +110,7 @@ def get_user_file_import_service():
 def get_search_service_dao():
     if 'search_dao' not in g:
         from neo4japp.services import SearchService
-        graph = _connect_to_neo4j()
+        graph = get_neo4j()
         g.search_service_dao = SearchService(graph=graph)
     return g.search_service_dao
 
@@ -108,11 +136,26 @@ def get_projects_service():
     return g.projects_service
 
 
+def get_elastic_service():
+    if 'elastic_service' not in g:
+        from neo4japp.services.elastic import ElasticService
+        elastic = _connect_to_elastic()
+        g.elastic_service = ElasticService(elastic=elastic)
+    return g.elastic_service
+
+
 def get_lmdb_dao():
     if 'lmdb_dao' not in g:
         from neo4japp.services.annotations import LMDBDao
         g.lmdb_dao = LMDBDao()
     return g.lmdb_dao
+
+
+def close_graph(e=None):
+    graph = g.pop('neo4j_graph', None)
+    if graph:
+        # close all graph connections to neo4j
+        graph.service.forget_all()
 
 
 def close_lmdb(e=None):
@@ -124,18 +167,25 @@ def close_lmdb(e=None):
 def get_annotation_neo4j():
     if 'annotation_neo4j' not in g:
         from neo4japp.services.annotations import AnnotationsNeo4jService
-        neo4j = get_neo4j_service_dao()
+        graph = get_neo4j()
         g.annotation_neo4j = AnnotationsNeo4jService(
             session=db.session,
-            neo4j_service=neo4j,
+            graph=graph,
         )
     return g.annotation_neo4j
 
 
-def get_annotations_service(lmdb_dao):
+def get_annotations_service():
     from neo4japp.services.annotations import AnnotationsService
     return AnnotationsService(
-        lmdb_session=lmdb_dao,
+        annotation_neo4j=get_annotation_neo4j(),
+    )
+
+
+def get_entity_recognition():
+    from neo4japp.services.annotations import EntityRecognitionService
+    return EntityRecognitionService(
+        lmdb_session=get_lmdb_dao(),
         annotation_neo4j=get_annotation_neo4j(),
     )
 
@@ -167,7 +217,7 @@ def reset_dao():
     handy for production later.
     """
     for dao in [
-        'neo4j_service_dao',
+        'kg_service',
         'user_file_import_service',
         'search_dao',
         'authorization_service',
@@ -175,6 +225,8 @@ def reset_dao():
         'projects_service',
         'lmdb_dao',
         'annotation_neo4j',
+        'visualizer_service',
+        'neo4j',
     ]:
         if dao in g:
             g.pop(dao)

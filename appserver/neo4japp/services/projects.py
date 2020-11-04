@@ -1,11 +1,15 @@
+from typing import Sequence, Optional, Tuple
+
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import Session
+
+from neo4japp.database import db, get_authorization_service
 from neo4japp.exceptions import (
     DirectoryError,
     DuplicateRecord, NameUnavailableError,
 )
-from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import (
     AppUser,
     AppRole,
@@ -15,7 +19,8 @@ from neo4japp.models import (
     Files,
     Project,
 )
-from typing import Sequence, Optional, Union, Tuple
+from neo4japp.services.common import RDBMSBaseDao
+from neo4japp.util import AttrDict
 
 
 class ProjectsService(RDBMSBaseDao):
@@ -23,25 +28,33 @@ class ProjectsService(RDBMSBaseDao):
     def __init__(self, session: Session):
         super().__init__(session)
 
-    def projects_users_have_access_2(self, user: AppUser) -> Sequence[Projects]:
+    def get_accessible_projects(self, user: AppUser, filter=None) -> Sequence[Projects]:
         """ Return list a of projects that user either has collab rights to
             or owns it
         """
-        proj_collab_roles = self.session.execute(
-            projects_collaborator_role.select().where(
-                and_(
-                    projects_collaborator_role.c.appuser_id == user.id,
-                )
-            )
-        ).fetchall()
 
-        projects = []
-        for p_c_r in proj_collab_roles:
-            user_id, role_id, proj_id = p_c_r
-            proj = Projects.query.get(proj_id)
-            projects.append(proj)
+        t_role = aliased(AppRole)
+        t_user = aliased(AppUser)
 
-        return projects
+        project_role_sq = db.session.query(projects_collaborator_role, t_role.name) \
+            .join(t_role, t_role.id == projects_collaborator_role.c.app_role_id) \
+            .join(t_user, t_user.id == projects_collaborator_role.c.appuser_id) \
+            .subquery()
+
+        query = db.session.query(Projects) \
+            .outerjoin(project_role_sq,
+                       and_(project_role_sq.c.projects_id == Projects.id,
+                            project_role_sq.c.appuser_id == user.id,
+                            project_role_sq.c.name.in_(
+                                ['project-read', 'project-write', 'project-admin'])))
+
+        if filter:
+            query = query.filter(filter)
+
+        if not get_authorization_service().has_role(user, 'private-data-access'):
+            query = query.filter(project_role_sq.c.name.isnot(None))
+
+        return query.all()
 
     def create_projects(self, user: AppUser, projects: Projects) -> Projects:
         try:
@@ -90,11 +103,11 @@ class ProjectsService(RDBMSBaseDao):
 
         self.session.execute(
             projects_collaborator_role.insert(),
-            [dict(
-                appuser_id=user.id,
-                app_role_id=role.id,
-                projects_id=projects.id,
-            )]
+            [{
+                'appuser_id': user.id,
+                'app_role_id': role.id,
+                'projects_id': projects.id,
+            }]
         )
 
         self.session.commit()
@@ -247,19 +260,25 @@ class ProjectsService(RDBMSBaseDao):
         return ***ARANGO_USERNAME***_dirs
 
     def get_dir_content(
-        self,
-        projects: Projects,
-        current_dir: Directory
+            self,
+            projects: Projects,
+            current_dir: Directory
     ) -> Tuple[
-            Sequence[Tuple[Directory, str]],
-            Sequence[Tuple[Files, str]],
-            Sequence[Tuple[Project, str]]
+        Sequence[Tuple[Directory, str]],
+        Sequence[Tuple[Files, str]],
+        Sequence[Tuple[Project, str]]
     ]:
         """ Return list of content in directory
             with ownership
         """
         dirs = self.session.query(
-            Directory,
+            Directory.id,
+            Directory.name,
+            Directory.directory_parent_id,
+            Directory.projects_id,
+            Directory.user_id,
+            Directory.creation_date,
+            Directory.modified_date,
             AppUser.username,
         ).join(
             AppUser, Directory.user_id == AppUser.id
@@ -267,8 +286,39 @@ class ProjectsService(RDBMSBaseDao):
             Directory.directory_parent_id == current_dir.id
         ).all()
 
+        def process_directory(tuple_val):
+            tuple_key = (
+                'id',
+                'name',
+                'directory_parent_id',
+                'projects_id',
+                'user_id',
+                'creation_date',
+                'modified_date',
+                'username'
+            )
+
+            d = dict(zip(tuple_key, tuple_val))
+            d = AttrDict(d)
+
+            return d
+
+        dirs = list(map(process_directory, dirs))
+
         files = self.session.query(
-            Files,
+            Files.id,
+            Files.file_id,
+            Files.filename,
+            Files.description,
+            Files.content_id,
+            Files.user_id,
+            Files.creation_date,
+            Files.modified_date,
+            Files.annotations_date,
+            Files.project,
+            Files.dir_id,
+            Files.doi,
+            Files.upload_url,
             AppUser.username,
         ).join(
             AppUser, Files.user_id == AppUser.id
@@ -276,13 +326,69 @@ class ProjectsService(RDBMSBaseDao):
             Files.dir_id == current_dir.id
         ).all()
 
+        def process_file(tuple_val):
+            tuple_key = (
+                'id',
+                'file_id',
+                'filename',
+                'description',
+                'content_id',
+                'user_id',
+                'creation_date',
+                'modified_date',
+                'annotations_date',
+                'project',
+                'dir_id',
+                'doi',
+                'upload_url',
+                'username',
+            )
+
+            f = dict(zip(tuple_key, tuple_val))
+            f = AttrDict(f)
+
+            return f
+
+        files = list(map(process_file, files))
+
         maps = self.session.query(
-            Project,
-            AppUser.username,
+            Project.id,
+            Project.label,
+            Project.description,
+            Project.creation_date,
+            Project.modified_date,
+            Project.author,
+            Project.public,
+            Project.user_id,
+            Project.dir_id,
+            Project.hash_id,
+            AppUser.username
         ).join(
             AppUser, Project.user_id == AppUser.id
         ).filter(
             Project.dir_id == current_dir.id
         ).all()
+
+        def process_map(tuple_val):
+            tuple_key = (
+                'id',
+                'label',
+                'description',
+                'creation_date',
+                'modified_date',
+                'author',
+                'public',
+                'user_id',
+                'dir_id',
+                'hash_id',
+                'username'
+            )
+
+            m = dict(zip(tuple_key, tuple_val))
+            m = AttrDict(m)
+
+            return m
+
+        maps = list(map(process_map, maps))
 
         return dirs, files, maps

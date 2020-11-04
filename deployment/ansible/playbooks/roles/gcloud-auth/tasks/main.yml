@@ -1,0 +1,11 @@
+- name: copy service account file
+  copy:
+    src: ./files/gcp_service_account.json
+    dest: "{{ deploy_dir }}/ansible_service_account.json"
+    owner: "{{ deploy_user }}"
+    group: docker
+    mode: u=rw,g=r,o=r
+    decrypt: yes
+
+- name: Log into Google Cloud
+  shell: "gcloud auth activate-service-account --key-file={{ deploy_dir }}/ansible_service_account.json"

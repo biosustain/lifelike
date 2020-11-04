@@ -1,0 +1,27 @@
+- name: Create Nginx Directory
+  file:
+    path: "{{ nginx_conf_dir }}"
+    state: directory
+
+- name: Copy nginx ssl config
+  template:
+    src: templates/nginx-ssl.conf
+    dest: "{{ nginx_conf_dir }}/{{ elk_server_name }}.conf"
+  notify: restart nginx container
+
+- name: Start nginx container
+  docker_container:
+    name: ng01
+    image: "{{ nginx_image }}"
+    ports:
+        - 9200:9200
+        - 80:80
+        - 443:443
+    volumes:
+        - "{{ nginx_conf_dir }}/:/etc/nginx/conf.d/:ro"
+    networks:
+        - name: "{{ network_name }}"
+    log_driver: "{{ log_driver }}"
+    log_options:
+        max-size: "{{ log_max_size }}"
+        max-file: "{{ log_max_file }}"

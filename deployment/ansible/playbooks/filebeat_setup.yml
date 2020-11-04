@@ -1,4 +1,4 @@
-- hosts: "{{ webserver | default('demo') }}"
+- hosts: "{{ webserver }}"
   become: true
   roles:
     - role: filebeat

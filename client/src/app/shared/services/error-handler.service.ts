@@ -20,6 +20,8 @@ export class ErrorHandler {
     let title = 'Problem Encountered';
     let message = 'The server encountered a problem. No further details are currently available.';
     let detail = null;
+    // A transaction id for log audits with Sentry (Sentry.io)
+    let transactionId = null;
 
     if (error instanceof HttpErrorResponse) {
       const res = error as HttpErrorResponse;
@@ -34,12 +36,15 @@ export class ErrorHandler {
       } else if (res.status === 500) {
         title = 'Unexpected Application Problem';
         message = 'Lifelike has encountered some unexpected problems. Please try again later.';
-      } else if (res.error) {
+      } else if (res.error && res.error.apiHttpError && res.error.apiHttpError.message != null) {
         message = (res.error as ServerError).apiHttpError.message;
       }
 
       if (res.error && res.error.detail) {
         detail = res.error.detail;
+      }
+      if (res.error && res.error.transactionId) {
+        transactionId = res.error.transactionId;
       }
     } else if (error instanceof UserError) {
       const userError = error as UserError;
@@ -47,6 +52,7 @@ export class ErrorHandler {
       title = userError.title;
       message = userError.message;
       detail = userError.detail;
+      transactionId = userError.transactionId;
 
       if (error.cause != null) {
         const causeUserError = this.createUserError(error.cause);
@@ -60,17 +66,18 @@ export class ErrorHandler {
       }
     }
 
-    return new UserError(title, message, detail, error);
+    return new UserError(title, message, detail, error, transactionId);
   }
 
   create<T>(): UnaryFunction<Observable<T>, Observable<T>> {
     return pipe(catchError(error => {
-      const {title, message, detail} = this.createUserError(error);
+      const {title, message, detail, transactionId} = this.createUserError(error);
 
       this.messageDialog.display({
         title,
         message,
         detail,
+        transactionId,
         type: MessageType.Error,
       });
 

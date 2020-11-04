@@ -164,10 +164,12 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                         to: {
                             primaryLabel: toNode.primaryLabel,
                             displayName: toNode.displayName,
+                            url: toNode.entityUrl,
                         } as NodeDisplayInfo,
                         from: {
                             primaryLabel: fromNode.primaryLabel,
                             displayName: fromNode.displayName,
+                            url: fromNode.entityUrl,
                         } as NodeDisplayInfo,
                         association: result.snippetData.association,
                         snippets: result.snippetData.snippets,
@@ -196,10 +198,12 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                         to: {
                             primaryLabel: toNode.primaryLabel,
                             displayName: toNode.displayName,
+                            url: toNode.entityUrl,
                         } as NodeDisplayInfo,
                         from: {
                             primaryLabel: fromNode.primaryLabel,
                             displayName: fromNode.displayName,
+                            url: fromNode.entityUrl,
                         } as NodeDisplayInfo,
                         association: snippetResult.association,
                         snippets: snippetResult.snippets,
@@ -399,6 +403,10 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                 filterLabels,
             });
         }
+    }
+
+    fitToScreen(event: EventEmitter<any>) {
+        this.networkGraph.fit();
     }
 
     /**
@@ -624,6 +632,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
             expanded: duplicateNode.expanded,
             color: duplicateNode.color,
             font: duplicateNode.font,
+            entityUrl: duplicateNode.entityUrl,
         } as VisNode;
     }
 
@@ -859,20 +868,21 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
         } as ReferenceTableDataRequest;
 
         this.visService.getReferenceTableData(referenceTableDataRequest).subscribe(result => {
-            // Remove any existing clusters connected to the origin node on this relationship first. Any
+            const {referenceTableRows, direction} = result;
+            const url = this.createClusterSvg(referenceTableRows);
+
+            // Remove any existing clusters connected to the origin node on this relationship/direction first. Any
             // nodes within should have been included in the duplicateNodeEdgePairs array sent to the appserver.
             this.networkGraph.getConnectedNodes(originNode).forEach(nodeId => {
                 if (this.networkGraph.isCluster(nodeId)) {
-                    if (this.clusters.get(nodeId).relationship === relationship) {
+                    const cluster = this.clusters.get(nodeId);
+                    if (cluster.relationship === relationship && cluster.direction === direction) {
                         this.destroyCluster(nodeId);
                     }
                 }
             });
 
             this.updateGraphWithDuplicates(duplicateNodeEdgePairs);
-
-            const referenceTableRows = result.referenceTableRows;
-            const url = this.createClusterSvg(referenceTableRows);
 
             // TODO: Would be nice to have some indication that the cluster has been selected.
             // A bit tricky, since clusters are SVGs, but maybe this can be done.
@@ -896,7 +906,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                 },
                 processProperties: (clusterOptions) => {
                     const newClusterId = `cluster:${uuidv4()}`;
-                    this.clusters.set(newClusterId, {referenceTableRows, relationship});
+                    this.clusters.set(newClusterId, {referenceTableRows, relationship, direction});
                     return {...clusterOptions, id: newClusterId};
                 }
             });

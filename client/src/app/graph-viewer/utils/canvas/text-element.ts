@@ -1,4 +1,4 @@
-import { nullCoalesce } from '../types';
+import { nullCoalesce } from '../../../shared/utils/types';
 
 interface TextboxOptions {
   width?: number;
@@ -14,6 +14,10 @@ interface TextboxOptions {
   strokeStyle?: string;
   verticalAlign?: TextAlignment;
   horizontalAlign?: TextAlignment;
+  topInset?: number;
+  bottomInset?: number;
+  leftInset?: number;
+  rightInset?: number;
 }
 
 /**
@@ -39,9 +43,15 @@ export class TextElement {
   readonly lineMetrics: TextMetrics;
   readonly actualWidth: number;
   readonly actualHeight: number;
+  readonly actualWidthWithInsets: number;
+  readonly actualHeightWithInsets: number;
   readonly yOffset: number;
   readonly horizontalOverflow: boolean;
   readonly verticalOverflow: boolean;
+  readonly topInset = 0;
+  readonly bottomInset = 0;
+  readonly leftInset = 0;
+  readonly rightInset = 0;
 
   /**
    * Create a new instance.
@@ -50,6 +60,9 @@ export class TextElement {
    */
   constructor(private ctx: CanvasRenderingContext2D, options: TextboxOptions) {
     Object.assign(this, options);
+    if (this.text == null) {
+      this.text = '';
+    }
 
     ctx.font = this.font;
 
@@ -63,9 +76,11 @@ export class TextElement {
     this.horizontalOverflow = horizontalOverflow;
     this.verticalOverflow = verticalOverflow;
     this.actualWidth = actualWidth;
+    this.actualWidthWithInsets = this.actualWidth + this.leftInset + this.rightInset;
 
     // Calculate vertical alignment
     this.actualHeight = this.lines.length * this.actualLineHeight - this.lineMetrics.actualBoundingBoxDescent;
+    this.actualHeightWithInsets = this.actualHeight + this.topInset + this.bottomInset;
     this.yOffset = this.calculateElementTopOffset(this.actualHeight);
   }
 
@@ -127,11 +142,11 @@ export class TextElement {
    */
   private getEffectiveWidth() {
     if (this.width != null && this.maxWidth != null) {
-      return Math.min(this.width, this.maxWidth);
+      return Math.max(0, Math.min(this.width, this.maxWidth) - this.leftInset - this.rightInset);
     } else if (this.width != null) {
-      return this.width;
+      return Math.max(0, this.width - this.leftInset - this.rightInset);
     } else {
-      return this.maxWidth;
+      return Math.max(0, this.maxWidth - this.leftInset - this.rightInset);
     }
   }
 
@@ -141,11 +156,11 @@ export class TextElement {
    */
   private getEffectiveHeight() {
     if (this.height != null && this.maxHeight != null) {
-      return Math.min(this.height, this.maxHeight);
+      return Math.max(0, Math.min(this.height, this.maxHeight) - this.topInset - this.bottomInset);
     } else if (this.height != null) {
-      return this.height;
+      return Math.max(0, this.height - this.topInset - this.bottomInset);
     } else {
-      return this.maxHeight;
+      return Math.max(0, this.maxHeight - this.topInset - this.bottomInset);
     }
   }
 
@@ -177,44 +192,49 @@ export class TextElement {
       let boxHorizontalOverflow = false;
       let boxVerticalOverflow = true;
       let actualWidth = 0;
-      const tokens = this.text.split(/ +/g);
       const lines: ComputedLine[] = [];
+      const blocks = this.text.split(/\r?\n/g);
 
-      for (const {line, metrics, remainingTokens} of this.getWidthFittedLines(tokens, effectiveWidth)) {
-        const lineHorizontalOverflow = metrics.width > effectiveWidth;
+      blockLoop:
+      for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+        const tokens = blocks[blockIndex].split(/ +/g);
 
-        if (lineHorizontalOverflow) {
-          // If this line overflows, make sure to mark the box as overflowing and
-          // update the width of the box
-          boxHorizontalOverflow = true;
-          actualWidth = effectiveWidth;
-        } else if (metrics.width > actualWidth) {
-          // If the line isn't overflowing but this line's width is longer than the
-          // running actual width, update that
-          actualWidth = metrics.width;
+        for (const {line, metrics, remainingTokens} of this.getWidthFittedLines(tokens, effectiveWidth)) {
+          const lineHorizontalOverflow = metrics.width > effectiveWidth;
+
+          if (lineHorizontalOverflow) {
+            // If this line overflows, make sure to mark the box as overflowing and
+            // update the width of the box
+            boxHorizontalOverflow = true;
+            actualWidth = effectiveWidth;
+          } else if (metrics.width > actualWidth) {
+            // If the line isn't overflowing but this line's width is longer than the
+            // running actual width, update that
+            actualWidth = metrics.width;
+          }
+
+          lines.push({
+            text: line,
+            metrics,
+            xOffset: 0, // We'll update later
+            horizontalOverflow: lineHorizontalOverflow,
+          });
+
+          // We've overflow the height if we add another line
+          if ((remainingTokens || blockIndex < blocks.length - 1) && (
+            (effectiveHeight != null && (lines.length + 1) * this.actualLineHeight > effectiveHeight)
+            || (this.maxLines != null && lines.length >= this.maxLines))
+          ) {
+            boxVerticalOverflow = true;
+            break blockLoop;
+          }
         }
 
-        lines.push({
-          text: line,
-          metrics,
-          xOffset: 0, // We'll update later
-          horizontalOverflow: lineHorizontalOverflow,
-        });
-
-        // We've overflow the height if we add another line
-        if (remainingTokens && (
-          (effectiveHeight != null && (lines.length + 1) * this.actualLineHeight > effectiveHeight)
-          || (this.maxLines != null && lines.length >= this.maxLines))
-        ) {
-          boxVerticalOverflow = true;
-          break;
+        // Do X offset for center and other alignments
+        // Do this in a second phase because actualWidth is still being calculated
+        for (const line of lines) {
+          line.xOffset = this.calculateComputedLineLeftOffset(line.metrics, actualWidth);
         }
-      }
-
-      // Do X offset for center and other alignments
-      // Do this in a second phase because actualWidth is still being calculated
-      for (const line of lines) {
-        line.xOffset = this.calculateComputedLineLeftOffset(line.metrics, actualWidth);
       }
 
       return {
@@ -297,8 +317,8 @@ export class TextElement {
    * @param y center Y
    */
   drawCenteredAt(x: number, y: number) {
-    const width = this.width != null ? this.width : this.actualWidth;
-    const height = this.height != null ? this.height : this.actualHeight;
+    const width = this.width != null ? this.width : this.actualWidthWithInsets;
+    const height = this.height != null ? this.height : this.actualHeightWithInsets;
     this.draw(x - width / 2, y - height / 2);
   }
 
@@ -308,6 +328,11 @@ export class TextElement {
    * @param minY top left Y
    */
   draw(minX: number, minY: number) {
+    minX += this.leftInset;
+    minY += this.topInset;
+
+    const effectiveWidth = this.getEffectiveWidth();
+
     this.ctx.font = this.font;
     for (let i = 0; i < this.lines.length; i++) {
       const line = this.lines[i];
@@ -325,16 +350,20 @@ export class TextElement {
         }
       } else {
         if (this.fillStyle) {
-          this.ctx.save();
-          this.ctx.fillStyle = this.fillStyle;
-          this.ctx.globalAlpha = 0.2;
-          this.ctx.fillRect(
-            minX,
-            minY + this.yOffset + (i * this.actualLineHeight),
-            this.width != null ? this.width : this.actualWidth,
-            this.lineMetrics.actualBoundingBoxDescent + this.lineMetrics.actualBoundingBoxAscent
-          );
-          this.ctx.restore();
+          // Width can be <= 0 if the textbox has a negative width, which
+          // users shouldn't be doing but will do anyway
+          if (effectiveWidth > 0) {
+            this.ctx.save();
+            this.ctx.fillStyle = this.fillStyle;
+            this.ctx.globalAlpha = 0.2;
+            this.ctx.fillRect(
+              minX,
+              minY + this.yOffset + (i * this.actualLineHeight),
+              this.width != null ? effectiveWidth : this.actualWidth,
+              this.lineMetrics.actualBoundingBoxDescent + this.lineMetrics.actualBoundingBoxAscent
+            );
+            this.ctx.restore();
+          }
         }
       }
     }

@@ -4,6 +4,8 @@
 - [FAQ](#faq)
   - [Table of Contents](#table-of-contents)
   - [How do I set up my developer environment?](#how-do-i-set-up-my-developer-environment)
+    - [Automated setup](#automated-setup)
+    - [Manual setup](#manual-setup)
   - [How do I add new packages to package.json?](#how-do-i-add-new-packages-to-packagejson)
   - [How do I connect to the neo4j container?](#how-do-i-connect-to-the-neo4j-container)
   - [How do I connect to the postgres container?](#how-do-i-connect-to-the-postgres-container)
@@ -15,14 +17,47 @@
   - [How do I run linting checks?](#how-do-i-run-linting-checks)
   - [How do I create a postgres schema diagram?](#how-do-i-create-a-postgres-schema-diagram)
   - [How can I seed a local database with data from sql dump files?](#how-can-i-seed-a-local-database-with-data-from-sql-dump-files)
+    - [With production database](#with-production-database)
   - [Where can I find common design patterns?](#where-can-i-find-common-design-patterns)
 
 ## How do I set up my developer environment?
-To build run the application, first create the docker images
+To build run the application, follow either **Automated Setup** or **Manual Setup**
 
+:warning: Before you start :warning:
+You will need access to
+1. Google Cloud
+2. Install Google Cloud SDK to use the CLI tool
+   - https://cloud.google.com/sdk
+
+### Automated setup
+In the parent directory, there's a `makefile` that will build your environment.
+
+First time users should run
+```bash
+make init
+```
+
+After, run to spin up the application
+```bash
+make docker-run
+```
+
+To clean up, run
+```bash
+make clean
+```
+
+
+### Manual setup
 __Build__
 ```bash
 docker-compose build --no-cache
+```
+
+__Intermediate__
+Before running docker-compose up, a Google Service Account file must be present to be volume mounted. Some features such as uploading the user manual requires access to Google Cloud (You will need a Google Cloud account for this).
+```bash
+gsutil cp gs://kg-secrets/ansible_service_account.json ./appserver
 ```
 
 __Run__
@@ -34,7 +69,7 @@ OR the *less verbose version*
 docker-compose up -d
 ```
 
-Lastly, set up the local neo4j index through running
+Set up the local neo4j index through running
 
 ```bash
 docker-compose exec appserver flask init-neo4j
@@ -54,6 +89,7 @@ docker-compose exec appserver flask seed
 ```
 
 3. To work with the NLP (nlpapi) service, the script `fetch-ai-models.sh` must be ran to populate the `models` folder.
+
 
 
 ## How do I add new packages to package.json?

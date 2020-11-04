@@ -5,13 +5,13 @@ from neo4japp.util import camel_to_snake_dict
 
 
 def user_factory(uid):
-    return dict(
-        username=f'appuser-{uid}',
-        firstName=f'firstname-{uid}',
-        lastName=f'lastname-{uid}',
-        email=f'appuser{uid}@***ARANGO_DB_NAME***.bio',
-        roles=['user'],
-    )
+    return {
+        'username': f'appuser-{uid}',
+        'firstName': f'firstname-{uid}',
+        'lastName': f'lastname-{uid}',
+        'email': f'appuser{uid}@***ARANGO_DB_NAME***.bio',
+        'roles': ['user'],
+    }
 
 
 @pytest.mark.parametrize('user_attribute, new_value', [
@@ -27,7 +27,7 @@ def test_can_update_user(session, account_service, user_attribute, new_value):
     session.add(user)
     session.flush()
 
-    attributes = user.to_dict(exclude=['id'])
+    attributes = user.to_dict(exclude=['id', 'creation_date', 'modified_date'])
 
     attributes.update({user_attribute: new_value})
     attributes['password'] = password
@@ -46,7 +46,7 @@ def test_can_update_password(session, account_service):
     session.add(user)
     session.flush()
 
-    attributes = user.to_dict(exclude=['id'])
+    attributes = user.to_dict(exclude=['id', 'creation_date', 'modified_date'])
     attributes['newPassword'] = 'mickies'
     attributes['password'] = password
     attributes = camel_to_snake_dict(attributes, {})

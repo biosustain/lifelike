@@ -1,9 +1,10 @@
 import { Component, Input } from '@angular/core';
-import { FTSQueryRecord, SearchParameters } from 'app/interfaces';
+import { FTSQueryRecord } from 'app/interfaces';
 import { stringToHex } from 'app/shared/utils';
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { getLink } from '../utils/records';
 import { getQueryParams } from '../utils/search';
+import { GraphSearchParameters } from '../graph-search';
 
 @Component({
   selector: 'app-search-record-node',
@@ -15,7 +16,7 @@ export class SearchRecordNodeComponent {
   private currentNode: FTSQueryRecord;
   nodeURL: string;
 
-  @Input() params: SearchParameters;
+  @Input() params: GraphSearchParameters;
 
   @Input() legend: Map<string, string>;
 
@@ -37,7 +38,14 @@ export class SearchRecordNodeComponent {
       label: this.node.node.label.toLowerCase(),
       sub_labels: [],
       data: {
-        hyperlink: getLink(this.node),
+        hyperlinks: [{
+          domain: 'Visualizer',
+          url: getLink(this.node),
+        }],
+        references: [{
+          type: 'DATABASE',
+          id: getLink(this.node),
+        }],
       },
     } as Partial<UniversalGraphNode>));
   }

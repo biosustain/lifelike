@@ -21,23 +21,36 @@ import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { MapEditDialogComponent } from '../map-edit-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
+import { MapVersionDialogComponent } from '../map-version-dialog.component';
 
 @Component({
   selector: 'app-drawing-tool',
   templateUrl: './map-editor.component.html',
-  styleUrls: ['./map-editor.component.scss'],
+  styleUrls: [
+    '../map.component.scss',
+    './map-editor.component.scss',
+  ],
 })
 export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implements OnInit, OnDestroy {
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
-  connectionHintShown = false;
 
   ngOnInit() {
     this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
       if (changed) {
         this.saveBackup();
       }
+    });
+
+    this.ngZone.runOutsideAngular(() => {
+      this.canvasChild.nativeElement.addEventListener('dragover', e => {
+        this.dragOver(e);
+      });
+
+      this.canvasChild.nativeElement.addEventListener('drop', e => {
+        this.drop(e);
+      });
     });
   }
 
@@ -81,7 +94,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizable(this.graphCanvas), 0);
-    this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 100);
+    this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 1);
   }
 
   save() {
@@ -92,7 +105,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
   saveBackup() {
     if (this.map) {
       this.map.graph = this.graphCanvas.getGraph();
-      this.map.date_modified = new Date().toISOString();
+      this.map.modified_date = new Date().toISOString();
       const observable = this.mapService.createOrUpdateBackup(this.locator.projectName, cloneDeep(this.map));
       observable.subscribe();
       return observable;
@@ -116,6 +129,21 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
         },
       ));
       this.unsavedChanges$.next(true);
+    }, () => {
+    });
+  }
+
+  mapVersionDialog() {
+    const dialogRef = this.modalService.open(MapVersionDialogComponent);
+    dialogRef.componentInstance.map = cloneDeep(this.map);
+    dialogRef.componentInstance.projectName = this.locator.projectName;
+    dialogRef.result.then((newMap: Observable<{version: KnowledgeMap}>) => {
+      newMap.subscribe(result => {
+        this.graphCanvas.setGraph(result.version.graph);
+        this.snackBar.open('Map reverted to Version from ' + result.version.modified_date, null, {
+          duration: 3000,
+        });
+      });
     }, () => {
     });
   }
@@ -150,13 +178,6 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
           },
         }, true,
       ));
-
-      if (!this.connectionHintShown) {
-        this.snackBar.open('Double click a node to connect it to another node.', null, {
-          duration: 3000,
-        });
-        this.connectionHintShown = true;
-      }
     }
   }
 }

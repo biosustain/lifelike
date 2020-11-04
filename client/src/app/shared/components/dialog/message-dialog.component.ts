@@ -14,6 +14,7 @@ export class MessageDialogComponent {
   @Input() title: string;
   @Input() message: string;
   @Input() detail: string;
+  @Input() transactionId: string;
   @Input() type: MessageType;
 
   constructor(

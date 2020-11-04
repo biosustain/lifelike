@@ -18,7 +18,7 @@
                       <span class="d-block text-truncate">
                         <i class="fas fa-spinner fa-pulse fa-fw" *ngIf="tab.loading; else notLoading"></i>
                         <ng-template #notLoading>
-                          <i [class]="'fa fa-fw fa-' + (tab.fontAwesomeIcon || 'window-maximize')"></i>
+                          <i [class]="'fa-fw ' + (calculateFontAwesomeIcon(tab.fontAwesomeIcon) || 'fa window-maximize')"></i>
                         </ng-template>
                         {{tab.title}}
                       </span>
@@ -45,8 +45,11 @@
                       <button class="dropdown-item" (click)="addTab(pane, '/projects')">
                         File Browser
                       </button>
-                      <button class="dropdown-item" (click)="addTab(pane, '/kg-visualizer')">
+                      <button class="dropdown-item" (click)="addTab(pane, '/search/graph')">
                         Visualizer
+                      </button>
+                      <button class="dropdown-item" (click)="addTab(pane, '/search/content')">
+                        Search
                       </button>
                     </div>
                   </div>
@@ -87,10 +90,18 @@
                     </div>
                   </div>
                   <div class="mx-2" *ngIf="pane.id === 'right'">
-                    <button type="button" class="btn btn-secondary" (click)="closeRightPane()"
-                            ngbTooltip="Collapse this pane">
-                      <i class="fa fa-caret-right"></i><br>
-                      <i class="fa fa-caret-right"></i>
+                    <button type="button" class="btn btn-secondary" (click)="closeRightPane()">
+                      <div class="d-flex flex-column align-items-center">
+                        <div>
+                          <i class="fa fa-caret-right"></i>
+                        </div>
+                        <div class="side-pane-close-text">
+                          Hide Side Pane
+                        </div>
+                        <div>
+                          <i class="fa fa-caret-right"></i>
+                        </div>
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -100,11 +111,13 @@
         </as-split-area>
       </as-split>
     </div>
-    <div *ngIf="canAddPane()" class="workspace-split-pane-placeholder" (click)="addPane()"
-         ngbTooltip="Open side pane" placement="left">
-      <div>
+    <div *ngIf="canAddPane()" class="workspace-split-pane-placeholder" (click)="addPane()">
+      <div class="d-flex flex-column align-items-center">
         <div>
           <i class="fa fa-caret-left"></i>
+        </div>
+        <div class="side-pane-open-text">
+          Open Side Pane
         </div>
         <div>
           <i class="fa fa-caret-left"></i>
