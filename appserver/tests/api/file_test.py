@@ -276,6 +276,7 @@ CUSTOM_ANNOTATION_1 = {
         'idHyperlink': '',
         'isCustom': True,
         'allText': 'gyrA',
+        'isCaseInsensitive': False,
         'links': {
             'ncbi': '',
             'uniprot': '',
@@ -302,6 +303,7 @@ CUSTOM_ANNOTATION_2 = {
         'idHyperlink': '',
         'isCustom': True,
         'allText': 'gyrA',
+        'isCaseInsensitive': False,
         'links': {
             'ncbi': '',
             'uniprot': '',
