@@ -52,4 +52,5 @@ export interface AddedAnnotationExclusion {
   rects: Rect[];
   pageNumber: number;
   excludeGlobally: boolean;
+  isCaseInsensitive: boolean;
 }

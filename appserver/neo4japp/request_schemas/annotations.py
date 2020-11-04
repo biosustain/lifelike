@@ -57,3 +57,4 @@ class AnnotationExclusionSchema(StrictSchema):
     reason = ma.String(required=True)
     comment = ma.String(required=True)
     excludeGlobally = ma.Boolean(required=True)
+    isCaseInsensitive = ma.Boolean(required=True)

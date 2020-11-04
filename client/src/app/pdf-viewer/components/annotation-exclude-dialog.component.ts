@@ -3,6 +3,7 @@ import { CommonFormDialogComponent } from '../../shared/components/dialog/common
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { AnnotationType } from 'app/shared/constants';
 
 @Component({
   selector: 'app-annotation-exclude-dialog',
@@ -10,6 +11,14 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 })
 export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent {
   @Input() text: string;
+  @Input() set type(type: AnnotationType) {
+    if (type === AnnotationType.Gene || type === AnnotationType.Protein) {
+      this.isGeneOrProtein = true;
+      this.form.patchValue({
+        isCaseInsensitive: false
+      });
+    }
+  }
   readonly reasonChoices = [
     'Not an entity',
     'Wrong annotation type',
@@ -21,8 +30,10 @@ export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent 
   readonly form: FormGroup = new FormGroup({
     reason: new FormControl(this.reasonChoices[0], Validators.required),
     comment: new FormControl(''),
+    isCaseInsensitive: new FormControl(true),
     excludeGlobally: new FormControl(false),
   });
+  isGeneOrProtein = false;
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
