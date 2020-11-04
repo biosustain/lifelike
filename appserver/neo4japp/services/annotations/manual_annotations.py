@@ -53,8 +53,8 @@ class ManualAnnotationsService:
 
         def annotation_exists(new_annotation):
             for annotation in file.custom_annotations:
-                if annotation['meta']['allText'] == term and \
-                        len(annotation['rects']) == len(new_annotation['rects']):
+                if (self._terms_match(term, annotation['meta']['allText'], annotation['meta']['isCaseInsensitive']) and  # noqa
+                            len(annotation['rects']) == len(new_annotation['rects'])):
                     # coordinates can have a small difference depending on
                     # where they come from: annotator or pdf viewer
                     all_rects_match = all(list(map(
@@ -75,9 +75,9 @@ class ManualAnnotationsService:
             fp.close()
             tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
             annotator = get_annotations_service()
-            keyword_type = custom_annotation['meta']['type']
+            is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
             matches = annotator.get_matching_manual_annotations(
-                keyword=term, keyword_type=keyword_type, tokens=tokens
+                keyword=term, is_case_insensitive=is_case_insensitive, tokens=tokens
             )
 
             def add_annotation(new_annotation):
@@ -139,7 +139,7 @@ class ManualAnnotationsService:
             removed_annotation_uuids = [
                 annotation['uuid']
                 for annotation in file.custom_annotations
-                if annotation['meta']['allText'] == term and
+                if self._terms_match(term, annotation['meta']['allText'], annotation['meta']['isCaseInsensitive']) and  # noqa
                 annotation['meta']['type'] == entity_type
             ]
         else:
@@ -188,16 +188,11 @@ class ManualAnnotationsService:
         if file is None:
             raise RecordNotFoundException('File does not exist')
 
-        def terms_match(term_to_exclude, term_in_exclusion, is_case_insensitive):
-            if is_case_insensitive:
-                return term_to_exclude.lower() == term_in_exclusion.lower()
-            return term_to_exclude == term_in_exclusion
-
         initial_length = len(file.excluded_annotations)
         file.excluded_annotations = [
             exclusion for exclusion in file.excluded_annotations
             if not (exclusion['type'] == entity_type and
-                    terms_match(term, exclusion['text'], exclusion['isCaseInsensitive']))
+                    self._terms_match(term, exclusion['text'], exclusion['isCaseInsensitive']))
         ]
 
         if initial_length == len(file.excluded_annotations):
@@ -256,3 +251,8 @@ class ManualAnnotationsService:
 
         db.session.add(global_list_annotation)
         db.session.commit()
+
+    def _terms_match(self, term1, term2, is_case_insensitive):
+        if is_case_insensitive:
+            return term1.lower() == term2.lower()
+        return term1 == term2
