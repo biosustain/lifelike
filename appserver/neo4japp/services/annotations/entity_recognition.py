@@ -809,6 +809,7 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
+            # use token.keyword because case sensitive
             if token.keyword in self.exclusion_type_gene:
                 current_app.logger.info(
                     f'Found a match in genes entity lookup but token "{token.keyword}" is an exclusion.',  # noqa
@@ -925,6 +926,7 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
+            # use token.keyword because case sensitive
             if token.keyword in self.exclusion_type_protein:
                 current_app.logger.info(
                     f'Found a match in proteins entity lookup but token "{token.keyword}" is an exclusion.',  # noqa
@@ -1051,7 +1053,8 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
-            if lowered_word in self.exclusion_type_company:
+            # use token.keyword because case sensitive
+            if token.keyword in self.exclusion_type_company:
                 current_app.logger.info(
                     f'Found a match in company entity lookup but token "{token.keyword}" is an exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
@@ -1096,7 +1099,8 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
-            if lowered_word in self.exclusion_type_entity:
+            # use token.keyword because case sensitive
+            if token.keyword in self.exclusion_type_entity:
                 current_app.logger.info(
                     f'Found a match in entity lookup but token "{token.keyword}" is an exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
