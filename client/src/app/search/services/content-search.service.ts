@@ -36,9 +36,6 @@ export class ContentSearchService extends AbstractService {
           ...serializePaginatedParams(params, false),
           q: params.q,
           types: params.types.map(value => value.id).join(';'),
-          sort: params.sort,
-          page: params.page + '',
-          limit: params.limit + '',
         } as Record<keyof ContentSearchOptions, string>,
       },
     );
