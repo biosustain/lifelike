@@ -325,6 +325,27 @@ class KgService(HybridDBDao):
             result_list.append(item)
         return result_list
 
+    def get_go_genes(
+        self,
+        ncbi_gene_ids: List[int],
+    ):
+        query = self.get_go_genes_query()
+        result = self.graph.run(
+            query,
+            {
+                'ncbi_gene_ids': ncbi_gene_ids,
+            }
+        ).data()
+        result_list = []
+        domain = 'http://amigo.geneontology.org/amigo/gene_product/UniProtKB:'
+        for meta_result in result:
+            xArray = meta_result['xArray']
+            item = {'result': xArray}
+            if (xArray is not None):
+                item['link'] = domain
+            result_list.append(item)
+        return result_list
+
     def get_regulon_genes(
         self,
         ncbi_gene_ids: List[int],
@@ -383,6 +404,14 @@ class KgService(HybridDBDao):
         MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
         OPTIONAL MATCH (g)-[:GO_LINK]-(x:CellularComponent:db_GO)
+        RETURN g, collect(x) as xArray
+        """
+
+    def get_go_genes_query(self):
+        return """
+        MATCH (g:Gene:db_NCBI)
+        WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:GO_LINK]-(x:db_GO)
         RETURN g, collect(x) as xArray
         """
 
