@@ -1,0 +1,70 @@
+<form (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
+    {{ title }}
+  </app-modal-header>
+
+  <app-modal-body>
+    <div class="mb-3" *ngIf="objectSelect.locator != null">
+      <button class="btn btn-secondary" type="button" (click)="objectSelect.goUp()">
+        <i class="fa fa-fw fa-arrow-left" aria-hidden="true"></i> Back
+      </button>
+    </div>
+
+    <ng-container *ngIf="objectSelect.locator != null; else projectList">
+      <ng-container *ngIf="(objectSelect.object$ | addStatus | async) as result">
+        <ng-template [ngIf]="result.error">
+          <app-module-error [error]="result.error" class="d-block p-4">
+          </app-module-error>
+        </ng-template>
+
+        <ng-template [ngIf]="result.loading">
+          Loading...
+        </ng-template>
+
+        <ng-template [ngIf]="result.value">
+          <div class="flex-fill overflow-auto">
+            <app-file-list [parent]="result.value" (locatorChange)="objectSelect.load($event)"
+                           (objectOpen)="objectSelect.open($event)"
+                           [objectControls]="false"></app-file-list>
+          </div>
+        </ng-template>
+      </ng-container>
+    </ng-container>
+    <ng-template #projectList>
+      <ng-container *ngIf="(objectSelect.projectList$ | addStatus | async) as result">
+        <ng-template [ngIf]="result.error">
+          <app-module-error [error]="result.error" class="d-block p-4">
+          </app-module-error>
+        </ng-template>
+
+        <ng-template [ngIf]="result.loading">
+          Loading...
+        </ng-template>
+
+        <ng-template [ngIf]="result.value">
+          <div class="tile-deck tile-deck-sm">
+            <div *ngFor="let p of result.value.results.view" class="tile tile-sm d-flex flex-column">
+              <div class="flex-fill d-flex justify-content-center align-items-center my-2">
+                <a (click)="openProject(p); $event.preventDefault()" href="#" class="text-muted">
+                  <i class="fas fa-layer-group fa-4x"></i>
+                </a>
+              </div>
+              <div class="text-truncate text-center">
+                <a (click)="openProject(p); $event.preventDefault()" href="#" class="d-block text-truncate">
+                  <strong>{{ p.projectName }}</strong>
+                </a>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ng-container>
+    </ng-template>
+  </app-modal-body>
+
+  <app-modal-footer class="text-truncate">
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary text-truncate">
+      Select {{ getSelectionText() }}
+    </button>
+  </app-modal-footer>
+</form>
