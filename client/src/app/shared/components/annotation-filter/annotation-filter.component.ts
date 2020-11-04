@@ -130,7 +130,6 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
       .pipe(debounceTime(250))
       .subscribe(() => {
         this.wordVisibilityOutput.emit(this.wordVisibilityMap);
-        this.updateVisibility();
       });
 
     // Anytime the frequency filters change, output to the parent so the word cloud is redrawn.
@@ -192,6 +191,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     this.wordVisibilityMap.set(identifier, event.target.checked);
     this.invalidateWordVisibility();
     this.invalidateTypeVisibility();
+    this.updateVisibility();
     this.outputSubject.next();
   }
 
@@ -245,6 +245,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     }
     this.invalidateWordVisibility();
     this.invalidateTypeVisibility();
+    this.updateVisibility();
     this.outputSubject.next();
   }
 

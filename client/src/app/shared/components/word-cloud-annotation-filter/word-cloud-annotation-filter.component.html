@@ -150,8 +150,8 @@
     <strong>NOTE: Any terms that could not be drawn in the cloud with the available window dimensions will be denoted by a</strong>
     <i class="fa fa-exclamation-triangle text-danger ml-2"></i>
   </div>
-  <cdk-virtual-scroll-viewport itemSize="22" class="virual-scroll-viewport w-100">
-    <div *cdkVirtualFor="let data of annotationVisibility; templateCacheSize: 0" class="virual-scroll-item">
+  <cdk-virtual-scroll-viewport itemSize="22" class="virtual-scroll-viewport w-100">
+    <div *cdkVirtualFor="let data of annotationVisibility; templateCacheSize: 0" class="virtual-scroll-item">
       <div class="d-flex align-items-center text-overflow">
         <div class="custom-control custom-checkbox">
           <input [id]="id + 'filter-' + data.identifier"
