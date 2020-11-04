@@ -1,6 +1,7 @@
 import html
 import json
 import re
+from collections import defaultdict
 
 import sqlalchemy
 from flask import Blueprint, jsonify, g
@@ -21,7 +22,7 @@ from neo4japp.database import get_search_service_dao, db, get_elastic_service
 from neo4japp.models import (
     Projects,
     AppRole,
-    projects_collaborator_role
+    projects_collaborator_role, AppUser, Directory, Project, Files
 )
 from neo4japp.request_schemas.search import (
     ContentSearchSchema, AnnotateRequestSchema,
@@ -124,6 +125,59 @@ def annotate(texts):
     })
 
 
+def hydrate_search_results(es_results):
+    es_mapping = defaultdict(lambda: {})
+
+    for doc in es_results['hits']:
+        es_mapping[doc['_source']['type']][doc['_source']['id']] = doc
+
+    t_owner = aliased(AppUser)
+    t_directory = aliased(Directory)
+    t_project = aliased(Projects)
+
+    map_query = db.session.query(Project.hash_id.label('id'),
+                                 Project.label.label('name'),
+                                 Project.description.label('description'),
+                                 sqlalchemy.literal_column('NULL').label('annotation_date'),
+                                 Project.creation_date.label('creation_date'),
+                                 Project.modified_date.label('modification_date'),
+                                 t_owner.id.label('owner_id'),
+                                 t_owner.username.label('owner_username'),
+                                 t_owner.first_name.label('owner_first_name'),
+                                 t_owner.last_name.label('owner_last_name'),
+                                 t_project.project_name.label('project_name'),
+                                 sqlalchemy.literal_column('\'map\'').label('type')) \
+        .join(t_owner, t_owner.id == Project.user_id) \
+        .join(t_directory, t_directory.id == Project.dir_id) \
+        .join(t_project, t_project.id == t_directory.projects_id) \
+        .filter(Project.hash_id.in_(es_mapping['map'].keys()))
+
+    file_query = db.session.query(Files.file_id.label('id'),
+                                  Files.filename.label('name'),
+                                  Files.description.label('description'),
+                                  Files.annotations_date.label('annotation_date'),
+                                  Files.creation_date.label('creation_date'),
+                                  Files.modified_date.label('modification_date'),
+                                  t_owner.id.label('owner_id'),
+                                  t_owner.username.label('owner_username'),
+                                  t_owner.first_name.label('owner_first_name'),
+                                  t_owner.last_name.label('owner_last_name'),
+                                  t_project.project_name.label('project_name'),
+                                  sqlalchemy.literal_column('\'pdf\'').label('type')) \
+        .join(t_owner, t_owner.id == Files.user_id) \
+        .join(t_directory, t_directory.id == Files.dir_id) \
+        .join(t_project, t_project.id == t_directory.projects_id) \
+        .filter(Files.file_id.in_(es_mapping['pdf'].keys()))
+
+    combined_query = sqlalchemy.union_all(map_query, file_query).alias('combined_results')
+    query = db.session.query(combined_query).distinct()
+
+    for row in query.all():
+        row = row._asdict()
+        doc = es_mapping[row['type']][row['id']]
+        doc['_db'] = row
+
+
 # TODO: Probably should rename this to something else...not sure what though
 @bp.route('/content', methods=['GET'])
 @auth.login_required
@@ -214,6 +268,8 @@ def search(q, types, limit, page):
             highlight=highlight
         )
         res = res['hits']
+
+        hydrate_search_results(res)
     else:
         res = {'hits': [], 'max_score': None, 'total': 0}
 
@@ -222,6 +278,8 @@ def search(q, types, limit, page):
     results = []
     for doc in res['hits']:
         snippets = None
+
+        db_data = doc.get('_db', defaultdict(lambda: None))
 
         if doc.get('highlight', None) is not None:
             if doc['highlight'].get('data.content', None) is not None:
@@ -238,16 +296,18 @@ def search(q, types, limit, page):
                 # TODO LL-1723: Need to add complete file path here
                 'type': 'file' if doc['_source']['type'] == 'pdf' else 'map',
                 'id': doc['_source']['id'],
-                'name': doc['_source']['filename'],
-                'description': doc['_source']['description'],
+                'name': db_data['name'] or doc['_source']['filename'],
+                'description': db_data['description'] or doc['_source']['description'],
                 'highlight': snippets,
                 'doi': doc['_source']['doi'],
-                'creation_date': doc['_source']['uploaded_date'],
+                'creation_date': db_data['creation_date'] or doc['_source']['uploaded_date'],
+                'modification_date': db_data['modification_date'],
+                'annotation_date': db_data['annotation_date'],
                 'project': {
-                    'project_name': doc['_source']['project_name'],
+                    'project_name': db_data['project_name'] or doc['_source']['project_name'],
                 },
                 'creator': {
-                    'username': doc['_source']['username'],
+                    'username': db_data['owner_username'] or doc['_source']['username'],
                 },
             },
             'rank': doc['_score'],
