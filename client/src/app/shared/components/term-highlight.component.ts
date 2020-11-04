@@ -19,7 +19,6 @@ export class TermHighlightComponent implements OnChanges {
           phrase => escapeRegExp(phrase).replace(/ +/g, ' +'),
         ).join('|');
         const pattern = `\\b(${phrasePatterns})\\b`;
-        console.log(pattern);
         const regex = new RegExp(pattern, 'gi');
         this.highlight = '<snippet>' + escape(this.text)
           .replace(regex, '<highlight>$1</highlight>') + '</snippet>';
