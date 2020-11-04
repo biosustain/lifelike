@@ -1,7 +1,7 @@
 from neo4japp.services.annotations.constants import DatabaseType, EntityIdStr
 
 
-def create_anatomy_for_ner(
+def create_ner_type_anatomy(
     id_: str,
     name: str,
     synonym: str
@@ -14,7 +14,7 @@ def create_anatomy_for_ner(
     }
 
 
-def create_chemical_for_ner(id_: str, name: str, synonym: str) -> dict:
+def create_ner_type_chemical(id_: str, name: str, synonym: str) -> dict:
     return {
         EntityIdStr.CHEMICAL.value: id_,
         'id_type': DatabaseType.CHEBI.value,
@@ -23,7 +23,7 @@ def create_chemical_for_ner(id_: str, name: str, synonym: str) -> dict:
     }
 
 
-def create_compound_for_ner(id_: str, name: str, synonym: str) -> dict:
+def create_ner_type_compound(id_: str, name: str, synonym: str) -> dict:
     return {
         EntityIdStr.COMPOUND.value: id_,
         'id_type': DatabaseType.BIOCYC.value,
@@ -32,7 +32,7 @@ def create_compound_for_ner(id_: str, name: str, synonym: str) -> dict:
     }
 
 
-def create_disease_for_ner(id_: str, name: str, synonym: str) -> dict:
+def create_ner_type_disease(id_: str, name: str, synonym: str) -> dict:
     return {
         EntityIdStr.DISEASE.value: id_,
         'id_type': DatabaseType.MESH.value,
@@ -41,7 +41,7 @@ def create_disease_for_ner(id_: str, name: str, synonym: str) -> dict:
     }
 
 
-def create_food_for_ner(
+def create_ner_type_food(
     id_: str,
     name: str,
     synonym: str
@@ -54,7 +54,7 @@ def create_food_for_ner(
     }
 
 
-def create_gene_for_ner(name: str, synonym: str) -> dict:
+def create_ner_type_gene(name: str, synonym: str) -> dict:
     return {
         'id_type': DatabaseType.NCBI.value,
         'name': name,
@@ -62,7 +62,7 @@ def create_gene_for_ner(name: str, synonym: str) -> dict:
     }
 
 
-def create_phenotype_for_ner(
+def create_ner_type_phenotype(
     id_: str,
     name: str,
     synonym: str,
@@ -76,7 +76,7 @@ def create_phenotype_for_ner(
     }
 
 
-def create_protein_for_ner(name: str, synonym: str) -> dict:
+def create_ner_type_protein(name: str, synonym: str) -> dict:
     # changed protein_id to protein_name for now (JIRA LL-671)
     # will eventually change back to protein_id
     return {
@@ -87,7 +87,7 @@ def create_protein_for_ner(name: str, synonym: str) -> dict:
     }
 
 
-def create_species_for_ner(
+def create_ner_type_species(
     id_: str,
     name: str,
     synonym: str,
@@ -99,4 +99,22 @@ def create_species_for_ner(
         'category': category,
         'name': name,
         'synonym': synonym,
+    }
+
+
+def create_ner_type_company(name: str, synonym: str) -> dict:
+    return {
+        EntityIdStr.COMPANY.value: 'Unknown',
+        'id_type': DatabaseType.CUSTOM.value,
+        'name': name,
+        'synonym': synonym
+    }
+
+
+def create_ner_type_entity(name: str, synonym: str) -> dict:
+    return {
+        EntityIdStr.ENTITY.value: 'Unknown',
+        'id_type': DatabaseType.CUSTOM.value,
+        'name': name,
+        'synonym': synonym
     }
