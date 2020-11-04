@@ -1,10 +1,9 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-
-import { cloneDeep } from 'lodash';
-import { UniversalGraphNode } from '../../services/interfaces';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { cloneDeep, startCase } from 'lodash';
+import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode } from '../../services/interfaces';
 import { LINE_TYPES } from '../../services/line-types';
 import { annotationTypes, annotationTypesMap } from '../../../shared/annotation-styles';
-import { RecursivePartial } from '../../../graph-viewer/utils/types';
+import { nullIfEmpty, RecursivePartial } from '../../../shared/utils/types';
 import { openLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
 import { isNullOrUndefined } from 'util';
@@ -13,7 +12,8 @@ import { isNullOrUndefined } from 'util';
   selector: 'app-node-form',
   templateUrl: './node-form.component.html',
 })
-export class NodeFormComponent {
+export class NodeFormComponent implements AfterViewInit {
+  @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
 
   nodeTypeChoices = annotationTypes;
   lineTypeChoices = [
@@ -35,6 +35,11 @@ export class NodeFormComponent {
   @Output() sourceOpen = new EventEmitter<string>();
 
   activeTab: string;
+  previousLabel: string;
+
+  ngAfterViewInit() {
+    setTimeout(() => this.focus(), 10);
+  }
 
   get nodeSubtypeChoices() {
     const type = annotationTypesMap.get(this.node.label);
@@ -56,14 +61,57 @@ export class NodeFormComponent {
   // tslint:disable-next-line: adjacent-overload-signatures
   @Input()
   set node(node) {
+    this.previousLabel = node.label;
+
     this.originalNode = cloneDeep(node);
     this.originalNode.style = this.originalNode.style || {};
 
     this.updatedNode = cloneDeep(node);
     this.updatedNode.style = this.updatedNode.style || {};
+
+    setTimeout(() => this.focus(), 10);
   }
 
-  checkSubtype() {
+  handleTypeChange() {
+    const fromDetailNode = DETAIL_NODE_LABELS.has(this.previousLabel);
+    const toDetailNode = DETAIL_NODE_LABELS.has(this.node.label);
+
+    // Swap node display name and detail when switching to a Note or Link (LL-1946)
+    if (!fromDetailNode && toDetailNode) {
+      // If we are changing to a detail node, swap the detail and display name (sometimes)
+      if (nullIfEmpty(this.node.data.detail) === null
+          && this.node.display_name != null
+          && !isCommonNodeDisplayName(this.previousLabel, this.node.display_name)) {
+        this.node.style.showDetail = true;
+        this.node.data.detail = this.node.display_name;
+        this.node.display_name = startCase(this.node.label);
+      } else if (nullIfEmpty(this.node.data.detail) !== null) {
+        // If we aren't swapping, but we already have detail, turn on detail mode
+        // to keep the behavior consistent
+        this.node.style.showDetail = true;
+      }
+    } else if (fromDetailNode && !toDetailNode) {
+      // If we are moving away from a detail node, restore the display name (sometimes)
+      if ((nullIfEmpty(this.node.display_name) === null
+          || isCommonNodeDisplayName(this.previousLabel, this.node.display_name))
+          && nullIfEmpty(this.node.data.detail) !== null
+          && this.node.data.detail.length <= 50) {
+        this.node.display_name = this.node.data.detail;
+        this.node.data.detail = '';
+      }
+    } else if (fromDetailNode && toDetailNode) {
+      // If we go from detail node to detail node type (i.e. link -> note), we actually
+      // need to update the display name if it's a common name (like Link if used
+      // on a link node, or Note if used on a note node), because we
+      // use that to figure out whether to replace the display name with
+      // the detail (above)
+      if (isCommonNodeDisplayName(this.previousLabel, this.node.display_name)) {
+        this.node.display_name = startCase(this.node.label);
+      }
+    }
+
+    this.previousLabel = this.node.label;
+
     if (this.node.data && this.node.data.subtype) {
       let found = false;
       for (const subtype of this.nodeSubtypeChoices) {
@@ -82,7 +130,6 @@ export class NodeFormComponent {
     this.save.next({
       originalData: {
         data: {
-          hyperlink: this.originalNode.data.hyperlink,
           hyperlinks: this.originalNode.data.hyperlinks,
           detail: this.originalNode.data.detail,
           subtype: this.originalNode.data.subtype,
@@ -100,7 +147,6 @@ export class NodeFormComponent {
       },
       updatedData: {
         data: {
-          hyperlink: this.updatedNode.data.hyperlink,
           hyperlinks: this.updatedNode.data.hyperlinks,
           detail: this.updatedNode.data.detail,
           subtype: this.updatedNode.data.subtype,
@@ -163,6 +209,14 @@ export class NodeFormComponent {
   }
 
   mayShowDetailText() {
-    return this.node.label === 'note';
+    return this.node.label === 'note' || this.node.label === 'link';
+  }
+
+  focus() {
+    if (this.displayNameRef != null) {
+      const element = this.displayNameRef.nativeElement;
+      element.focus();
+      element.select();
+    }
   }
 }

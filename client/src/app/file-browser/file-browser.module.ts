@@ -16,6 +16,13 @@ import { CommunityBrowserComponent } from './components/community-browser.compon
 import { BrowserComponent } from './components/browser/browser.component';
 import { BrowserCommunityListComponent } from './components/browser/browser-community-list.component';
 import { BrowserContextComponent } from './components/browser/browser-context.component';
+import { FileInfoComponent } from './components/file-info.component';
+import { DrawingToolModule } from '../drawing-tool/drawing-tool.module';
+import { FileTypeLabelComponent } from './components/file-type-label.component';
+import { EnrichmentTableViewerComponent } from './components/enrichment-table-viewer.component';
+import { GenericTableComponent } from './components/generic-table.component';
+import { EnrichmentTableCreateDialogComponent } from './components/enrichment-table-create-dialog.component';
+import { EnrichmentTableEditDialogComponent } from './components/enrichment-table-edit-dialog.component';
 
 @NgModule({
   declarations: [
@@ -34,10 +41,17 @@ import { BrowserContextComponent } from './components/browser/browser-context.co
     ProjectCreateDialogComponent,
     DirectoryEditDialogComponent,
     CommunityBrowserComponent,
+    FileInfoComponent,
+    FileTypeLabelComponent,
+    EnrichmentTableViewerComponent,
+    GenericTableComponent,
+    EnrichmentTableCreateDialogComponent,
+    EnrichmentTableEditDialogComponent
   ],
   imports: [
     SharedModule,
     PdfViewerLibModule,
+    DrawingToolModule,
   ],
   entryComponents: [
     FileEditDialogComponent,
@@ -48,8 +62,13 @@ import { BrowserContextComponent } from './components/browser/browser-context.co
     ProjectEditDialogComponent,
     DirectoryEditDialogComponent,
     ObjectDeletionResultDialogComponent,
+    EnrichmentTableCreateDialogComponent,
+    EnrichmentTableEditDialogComponent
   ],
-  exports: [],
+  exports: [
+    FileInfoComponent,
+    FileTypeLabelComponent,
+  ],
 })
 export class FileBrowserModule {
 }

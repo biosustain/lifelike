@@ -18,7 +18,9 @@ export class QuickSearchComponent implements OnChanges {
 
   ngOnChanges() {
     if (this.links != null && this.links.length) {
-      this.shownLinks = this.links.concat().sort((a, b) => a.domain.localeCompare(b.domain));
+      // links should be sorted in the order that they appear in SEARCH_LINKS
+      const sortOrder = SEARCH_LINKS.map(link => link.domain.toLowerCase());
+      this.shownLinks = this.links.sort((linkA, linkB) => sortOrder.indexOf(linkA.domain) - sortOrder.indexOf(linkB.domain));
       this.generated = false;
       if (this.normalizeDomains) {
         const normalizedMapping = new Map<string, string>();
@@ -36,7 +38,7 @@ export class QuickSearchComponent implements OnChanges {
       this.shownLinks = this.linkTemplates.map(link => ({
         domain: link.domain,
         url: link.url.replace('%s', encodeURIComponent(this.query)),
-      })).concat().sort((a, b) => a.domain.localeCompare(b.domain));
+      }));
       this.generated = true;
     } else {
       this.shownLinks = [];

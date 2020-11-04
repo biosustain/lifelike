@@ -4,9 +4,22 @@
   </app-modal-header>
 
   <app-modal-body>
-    <app-form-row for="text" label="Text">
-      <input type="text" class="form-control" id="text" [value]="allText" disabled>
+    <app-form-row for="text" label="Text" [control]="form.get('text')">
+      <div class="input-group">
+        <input formControlName="text" type="text" class="form-control" id="text">
+        <div class="input-group-append">
+          <button class="btn btn-secondary" type="button" ngbTooltip="Make a correction">
+            <i class="fas fa-edit" type="button" (click)="enableTextField()"></i>
+          </button>
+        </div>
+      </div>
     </app-form-row>
+    <div class="row justify-content-end mb-3" *ngIf="isTextEnabled">
+      <div class="text-muted col-sm-9">
+        <i class="fas fa-exclamation-circle"></i>
+        Editing this field might affect the ability to find the term in the document and annotate it.
+      </div>
+    </div>
 
     <app-form-row for="entity-type" label="Type" [control]="form.get('entityType')">
       <select formControlName="entityType" class="custom-select w-100" id="entity-type" appAutoFocus>
@@ -31,13 +44,12 @@
         <div class="form-group row"
              *ngFor="let link of links.controls; index as i">
           <label [for]="'annotation-link-' + i" class="col-form-label col-sm-3">
-            <a [href]="substituteLink(linkTemplates[i].url, allText)"
+            <a [href]="substituteLink(linkTemplates[i].url, form.get('text').value)"
                target="_blank" class="mt-1 text-truncate"
                ngbTooltip="Open default search link">{{ linkTemplates[i].domain }}</a>:
           </label>
           <div class="col-sm-9">
-            <input type="text" [formControl]="link" class="form-control" [id]="'annotation-link-' + i"
-                   [placeholder]="substituteLink(linkTemplates[i].url, allText)">
+            <input type="text" [formControl]="link" class="form-control" [id]="'annotation-link-' + i">
             <app-form-input-feedback [control]="link" [errors]="errors"></app-form-input-feedback>
           </div>
         </div>

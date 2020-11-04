@@ -17,11 +17,101 @@ from neo4japp.models import (
     FileContent,
     Files,
     DomainURLsMap,
-    AnnotationStyle
+    AnnotationStyle,
+    FallbackOrganism
 )
-from neo4japp.services import Neo4JService
-from neo4japp.services.annotations import ManualAnnotationsService
+from neo4japp.services.annotations import AnnotationsNeo4jService, ManualAnnotationsService
 from neo4japp.services.annotations.constants import EntityType
+from neo4japp.services.elastic import ElasticService
+
+
+#################
+# Service mocks
+################
+
+@pytest.fixture(scope='function')
+def mock_get_combined_annotations_result(monkeypatch):
+    def get_combined_annotations_result(*args, **kwargs):
+        return [
+            {
+                'meta': {
+                    'type': EntityType.GENE.value,
+                    'id': '59272',
+                    'allText': 'ace2'
+                }
+            },
+            {
+                'meta': {
+                    'type': EntityType.SPECIES.value,
+                    'id': '9606',
+                    'allText': 'human'
+                }
+            },
+        ]
+
+    monkeypatch.setattr(
+        ManualAnnotationsService,
+        'get_combined_annotations',
+        get_combined_annotations_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_get_organisms_from_gene_ids_result(monkeypatch):
+    def get_organisms_from_gene_ids_result(*args, **kwargs):
+        return [
+            {
+                'gene_id': '59272',
+                'gene_name': 'ACE2',
+                'taxonomy_id': '9606',
+                'species_name': 'Homo sapiens',
+            }
+        ]
+
+    monkeypatch.setattr(
+        AnnotationsNeo4jService,
+        'get_organisms_from_gene_ids',
+        get_organisms_from_gene_ids_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_index_files(monkeypatch):
+    def index_files(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(
+        ElasticService,
+        'index_files',
+        index_files,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_index_maps(monkeypatch):
+    def index_maps(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(
+        ElasticService,
+        'index_maps',
+        index_maps,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_delete_elastic_documents(monkeypatch):
+    def delete_documents_with_index(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(
+        ElasticService,
+        'delete_documents_with_index',
+        delete_documents_with_index,
+    )
+####################
+# End service mocks
+####################
 
 
 @pytest.fixture(scope='function')
@@ -35,7 +125,8 @@ def fix_api_owner(session, account_user) -> AppUser:
     )
     user.set_password('password')
     admin_role = account_user.get_or_create_role('admin')
-    user.roles.extend([admin_role])
+    private_data_access_role = account_user.get_or_create_role('private-data-access')
+    user.roles.extend([admin_role, private_data_access_role])
     session.add(user)
     session.flush()
     return user
@@ -87,6 +178,15 @@ def test_user_with_pdf(
         session.add(file_content)
         session.flush()
 
+        fallback = FallbackOrganism(
+            organism_name='Homo sapiens',
+            organism_synonym='Homo sapiens',
+            organism_taxonomy_id='9606'
+        )
+
+        session.add(fallback)
+        session.flush()
+
         fake_file = Files(
             file_id='unknown',
             filename='example3.pdf',
@@ -95,6 +195,7 @@ def test_user_with_pdf(
             creation_date=datetime.now(),
             project=fix_project.id,
             dir_id=fix_directory.id,
+            fallback_organism_id=fallback.id
         )
         session.add(fake_file)
         session.flush()
@@ -118,11 +219,11 @@ def fix_project(test_user, session):
 
     session.execute(
         projects_collaborator_role.insert(),
-        [dict(
-            appuser_id=test_user.id,
-            app_role_id=role.id,
-            projects_id=project.id,
-        )]
+        [{
+            'appuser_id': test_user.id,
+            'app_role_id': role.id,
+            'projects_id': project.id,
+        }]
     )
     session.flush()
     return project
@@ -161,6 +262,18 @@ def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
                         {
                             "domain": "ncbi",
                             "url": "https://www.ncbi.nlm.nih.gov/gene/?query=E. coli"
+                        },
+                        {
+                            "domain": "mesh",
+                            "url": "https://www.ncbi.nlm.nih.gov/mesh/?term=E. coli"
+                        },
+                        {
+                            "domain": "chebi",
+                            "url": "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=E. coli"  # noqa
+                        },
+                        {
+                            "domain": "pubchem",
+                            "url": "https://pubchem.ncbi.nlm.nih.gov/#query=E. coli"
                         },
                         {
                             "domain": "uniprot",
@@ -202,7 +315,7 @@ def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
 
 def login_as_user(self, email, password):
     """ Returns the authenticated JWT tokens """
-    credentials = dict(email=email, password=password)
+    credentials = {'email': email, 'password': password}
     login_resp = self.post(
         '/auth/login',
         data=json.dumps(credentials),
@@ -239,49 +352,3 @@ def uri_fixture(client, session):
 
 
 # TODO: Need to create actual mock data for these
-
-
-@pytest.fixture(scope='function')
-def mock_get_combined_annotations_result(monkeypatch):
-    def get_combined_annotations_result(*args, **kwargs):
-        return [
-            {
-                'meta': {
-                    'type': EntityType.Gene.value,
-                    'id': '59272',
-                    'allText': 'ace2'
-                }
-            },
-            {
-                'meta': {
-                    'type': EntityType.Species.value,
-                    'id': '9606',
-                    'allText': 'human'
-                }
-            },
-        ]
-
-    monkeypatch.setattr(
-        ManualAnnotationsService,
-        'get_combined_annotations',
-        get_combined_annotations_result,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_get_organisms_from_gene_ids_result(monkeypatch):
-    def get_organisms_from_gene_ids_result(*args, **kwargs):
-        return [
-            {
-                'gene_id': '59272',
-                'gene_name': 'ACE2',
-                'taxonomy_id': '9606',
-                'species_name': 'Homo sapiens',
-            }
-        ]
-
-    monkeypatch.setattr(
-        Neo4JService,
-        'get_organisms_from_gene_ids',
-        get_organisms_from_gene_ids_result,
-    )

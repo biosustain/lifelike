@@ -3,15 +3,10 @@ from enum import Enum
 from sqlalchemy.dialects import postgresql
 
 from neo4japp.database import db
-from neo4japp.models.common import RDBMSBase
+from neo4japp.models.common import RDBMSBase, TimestampMixin
 
 
-class InclusionExclusionType(Enum):
-    INCLUSION = 'inclusion'
-    EXCLUSION = 'exclusion'
-
-
-class GlobalList(RDBMSBase):
+class GlobalList(RDBMSBase, TimestampMixin):
     __tablename__ = 'global_list'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     annotation = db.Column(postgresql.JSON, nullable=False)

@@ -12,6 +12,7 @@ export interface GraphNode {
   data: {[key: string]: any};
   subLabels: Array<string>;
   displayName: string;
+  entityUrl: string;
 }
 
 /** Edge represenattion from the backend */
@@ -96,20 +97,25 @@ export interface FTSResult {
   limit: number;
 }
 
-export interface SearchParameters {
-  query: string;
-  domains?: Domain[];
-  entityTypes?: EntityType[];
-  page: number;
-  limit: number;
-}
-
 export interface SearchRecord {
   nodeId: number;
   label: string;
   subLabels: Array<string>;
   data: string;
   dataId: string;
+}
+
+export interface OrganismsResult {
+  limit: number;
+  nodes: OrganismAutocomplete;
+  query: string;
+  total: number;
+}
+
+export interface OrganismAutocomplete {
+  organism_name: string;
+  synonym: string;
+  tax_id: string;
 }
 
 export interface Domain {

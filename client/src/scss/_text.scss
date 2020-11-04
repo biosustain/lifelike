@@ -1,0 +1,8 @@
+@for $n from 1 through 3 {
+  .paragraph-truncate-#{$n} {
+    display: -webkit-box;
+    -webkit-line-clamp: $n;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

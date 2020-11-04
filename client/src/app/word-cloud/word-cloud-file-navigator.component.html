@@ -1,0 +1,83 @@
+<div class="d-flex flex-column position-relative h-100" *ngIf="(loadTask?.status$ | async) as status">
+  <app-module-progress *ngIf="status.running" class="position-absolute w-100 h-100 bg-white p-4"
+                       style="z-index: 2">
+    <div>
+      Downloading annotations...
+    </div>
+  </app-module-progress>
+
+  <app-module-error *ngIf="status.failedErrorShown" class="position-absolute w-100 h-100 bg-white p-4"
+                    [error]="status.error" style="z-index: 2">
+    <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
+  </app-module-error>
+
+  <div *ngIf="status.resultsShown" class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
+    <div class="module-section w-100 h-100">
+      <div class="module-section-header mb-2">
+        <div class="module-title-bar">
+          <h2 class="module-section-header-title m-0">{{ windowTitle }}</h2>
+          <div class="btn-group ml-auto d-flex align-items-stretch" role="group">
+            <button class="btn btn-secondary text-nowrap"
+                    ngbTooltip="Copy Cloud to Clipboard"
+                    placement="bottom top left right"
+                    (click)="copyWordCloudToClipboard()">
+              <i class="fas fa-fw fa-copy"></i>
+            </button>
+            <button class="btn btn-secondary text-nowrap"
+                    ngbTooltip="Fit Cloud to Window"
+                    placement="bottom top left right"
+                    (click)="fitCloudToWindow()">
+              <i class="fas fa-fw fa-expand-arrows-alt"></i>
+            </button>
+            <button class="btn btn-secondary"
+                    ngbTooltip="Reload Annotations"
+                    container="body"
+                    placement="bottom top left right"
+                    (click)="getAnnotations()">
+              <i class="fa fa-fw fa-sync"></i>
+            </button>
+            <button class="btn btn-secondary"
+                    (click)="toggleFiltersPanel()"
+                    ngbTooltip="Show Annotation Filters"
+                    container="body"
+                    placement="bottom top left right">
+              <i class="fa fa-fw fa-filter"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="module-section-body w-100 h-100">
+        <as-split unit="pixel"
+                  direction="horizontal"
+                  [gutterSize]="5">
+          <as-split-area [order]="0">
+            <ng-container *ngIf="annotationData.length === 0">
+              <ngb-alert [dismissible]="false">
+                <strong>NOTICE:</strong> No annotations were found within the project.
+              </ngb-alert>
+            </ng-container>
+            <div [id]="id + 'cloud-wrapper'" class="h-100 w-100 overflow-hidden"></div>
+          </as-split-area>
+          <as-split-area *ngIf="filtersPanelOpened" size="340" [order]="1" class="border">
+            <div class="w-100 h-100 p-3">
+              <div class="annotation-filter-btns-container">
+                <button class="btn btn-danger annotation-filter-close-btn"
+                      type="button"
+                      (click)="toggleFiltersPanel()">
+                  <i class="fa fa-close"></i>
+                </button>
+              </div>
+              <app-word-cloud-annotation-filter
+                [annotationData]="annotationData"
+                [clickableWords]="true"
+                (wordOpen)="wordOpen.emit($event)"
+                (wordVisibilityOutput)="updateWordVisibilityMap($event)"
+              ></app-word-cloud-annotation-filter>
+            </div>
+          </as-split-area>
+        </as-split>
+      </div>
+    </div>
+  </div>
+</div>
+<div [id]="id + '-hidden-text-area-wrapper'" style="display: none;"></div>

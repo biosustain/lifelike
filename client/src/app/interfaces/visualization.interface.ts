@@ -19,6 +19,7 @@ export interface AssociationSnippet {
 export interface ClusterData {
     referenceTableRows: ReferenceTableRow[];
     relationship: string;
+    direction: Direction;
 }
 
 export enum Direction {
@@ -118,6 +119,7 @@ export interface SidenavNodeEntity {
 export interface NodeDisplayInfo {
     primaryLabel: string;
     displayName: string;
+    url: string;
 }
 
 export interface SidenavSnippetData {
@@ -182,6 +184,7 @@ export interface GetClusterSnippetsResult {
 
 export interface GetReferenceTableDataResult {
     referenceTableRows: ReferenceTableRow[];
+    direction: Direction;
 }
 
 export interface GetSnippetsResult {

@@ -1,0 +1,44 @@
+{
+    "settings": {
+      "highlight": {
+        "max_analyzed_offset": "100000000"
+      }
+    },
+    "mappings": {
+        "properties": {
+            "filename": {
+                "type": "text"
+            },
+            "description": {
+                "type": "text"
+            },
+            "uploaded_date": {
+                "type": "date"
+            },
+            "user_id": {
+                "type": "integer"
+            },
+            "username": {
+                "type": "keyword"
+            },
+            "project_id": {
+                "type": "integer"
+            },
+            "project_name": {
+                "type": "text"
+            },
+            "doi": {
+                "type": "keyword"
+            },
+            "public": {
+                "type": "boolean"
+            },
+            "id": {
+                "type": "keyword"
+            },
+            "type": {
+                "type": "keyword"
+            }
+        }
+    }
+}

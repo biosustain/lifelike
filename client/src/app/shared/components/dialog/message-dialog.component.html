@@ -8,6 +8,12 @@
       {{message}}
     </div>
 
+    <!-- This is only empty if its a client side error only
+    TODO: Make mandatory once JS SentrySDK integrated -->
+    <div *ngIf="transactionId" class="mt-4 text-muted">
+      Transaction Id: {{transactionId}}
+    </div>
+
     <div *ngIf="detail" class="detail">
       <div class="detail-title">Error Detail (Visible due to app being in debug mode)</div>
       <pre>{{detail}}</pre>

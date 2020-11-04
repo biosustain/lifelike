@@ -2,7 +2,7 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/cor
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, combineLatest, from, Observable, Subscription, throwError } from 'rxjs';
-import { mergeMap, map } from 'rxjs/operators';
+import { catchError, map, mergeMap } from 'rxjs/operators';
 import { PdfFile, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
@@ -14,7 +14,7 @@ import { ObjectDeleteDialogComponent } from './object-delete-dialog.component';
 import { ObjectUploadDialogComponent } from './object-upload-dialog.component';
 import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { Directory, ProjectSpaceService } from '../services/project-space.service';
+import { Directory } from '../services/project-space.service';
 import { ProjectPageService } from '../services/project-page.service';
 import { DirectoryEditDialogComponent } from './directory-edit-dialog.component';
 import { DirectoryContent, DirectoryObject } from '../../interfaces/projects.interface';
@@ -28,8 +28,13 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ModuleProperties } from '../../shared/modules';
 import { KnowledgeMap, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
-import { catchError } from 'rxjs/operators';
 import { ObjectDeletionResultDialogComponent } from './object-deletion-result-dialog.component';
+import moment from 'moment';
+import { getObjectCommands } from '../utils/objects';
+import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
+import { nullCoalesce } from '../../shared/utils/types';
+import { EnrichmentTableCreateDialogComponent } from './enrichment-table-create-dialog.component';
+import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
 
 interface PathLocator {
   projectName?: string;
@@ -61,12 +66,32 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       } else if (a.type !== 'dir' && b.type === 'dir') {
         return 1;
       } else {
-        return a.name.localeCompare(b.name);
+        const aDate = nullCoalesce(a.modificationDate, a.creationDate);
+        const bDate = nullCoalesce(b.modificationDate, b.creationDate);
+
+        if (aDate != null && bDate != null) {
+          const aMoment = moment(aDate);
+          const bMoment = moment(bDate);
+          if (aMoment.isAfter(bMoment)) {
+            return -1;
+          } else if (aMoment.isBefore(bMoment)) {
+            return 1;
+          } else {
+            return a.name.localeCompare(b.name);
+          }
+        } else if (aDate != null) {
+          return -1;
+        } else if (bDate != null) {
+          return 1;
+        } else {
+          return a.name.localeCompare(b.name);
+        }
       }
     },
   });
 
   lmdbsDates = {};
+  projectName: string;
 
   constructor(private readonly filesService: PdfFilesService,
               private readonly router: Router,
@@ -75,7 +100,6 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
               private readonly progressDialog: ProgressDialog,
               private readonly errorHandler: ErrorHandler,
               private readonly route: ActivatedRoute,
-              private readonly projectSpaceService: ProjectSpaceService,
               private readonly projectPageService: ProjectPageService,
               private readonly workspaceManager: WorkspaceManager,
               private readonly mapService: MapService,
@@ -114,6 +138,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         projectName: params.project_name,
         directoryId: params.dir_id,
       };
+
+      this.projectName = params.project_name;
 
       this.modulePropertiesChange.emit({
         title: this.locator.projectName,
@@ -172,6 +198,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   displayUploadDialog() {
     const dialogRef = this.modalService.open(ObjectUploadDialogComponent);
+    dialogRef.componentInstance.directoryId = this.directory.id;
     dialogRef.result.then(data => {
       this.upload(data);
     }, () => {
@@ -220,6 +247,38 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
+  displayEnrichmentTableCreateDialog() {
+    const dialogRef = this.modalService.open(EnrichmentTableCreateDialogComponent);
+    dialogRef.result.then((result) => {
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
+      this.filesService.addGeneList(this.locator.projectName, this.directory.id, enrichmentData, result.description, result.name)
+      .pipe(this.errorHandler.create())
+      .subscribe((file) => {
+        this.refresh();
+        this.snackBar.open(`'${file.filename}' created`, 'Close', {duration: 5000});
+      });
+    },
+    () => {
+    });
+  }
+
+  displayEnrichmentTableEditDialog(objects: AnnotatedDirectoryObject[]) {
+    const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
+    dialogRef.componentInstance.fileId = objects[0].id;
+    dialogRef.componentInstance.projectName = this.locator.projectName;
+    dialogRef.result.then((result) => {
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
+      this.filesService.editGeneList(this.locator.projectName, objects[0].id, enrichmentData, result.name, result.description)
+      .pipe(this.errorHandler.create())
+      .subscribe((update) => {
+        this.refresh();
+        this.snackBar.open('Enrichment Table Updated', 'Close', {duration: 5000});
+      });
+    },
+    () => {
+    });
+  }
+
   displayEditDialog(object: AnnotatedDirectoryObject) {
     if (object.type === 'dir') {
       const dialogRef = this.ngbModal.open(DirectoryEditDialogComponent);
@@ -243,23 +302,30 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       );
     } else if (object.type === 'file') {
       const file = object.data as PdfFile;
-      const dialogRef = this.modalService.open(FileEditDialogComponent);
-      dialogRef.componentInstance.file = file;
-      dialogRef.result.then(data => {
-        if (data) {
-          this.filesService.updateFileMeta(
-            this.locator.projectName,
-            file.file_id,
-            data.filename,
-            data.description,
-          )
-            .pipe(this.errorHandler.create())
-            .subscribe(() => {
-              this.refresh();
-              this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
-            });
-        }
-      }, () => {
+      this.filesService.getFileFallbackOrganism(
+        this.locator.projectName, file.file_id
+      ).subscribe(organismTaxId => {
+        const dialogRef = this.modalService.open(FileEditDialogComponent);
+        dialogRef.componentInstance.organism = organismTaxId;
+        dialogRef.componentInstance.file = file;
+
+        dialogRef.result.then(data => {
+          if (data) {
+            this.filesService.updateFileMeta(
+              this.locator.projectName,
+              file.file_id,
+              data.filename,
+              data.organism,
+              data.description,
+            )
+              .pipe(this.errorHandler.create())
+              .subscribe(() => {
+                this.refresh();
+                this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
+              });
+          }
+        }, () => {
+        });
       });
     } else if (object.type === 'map') {
       const dialogRef = this.modalService.open(MapEditDialogComponent);
@@ -310,7 +376,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       .pipe(
         map(res => res.file_id),
         mergeMap(fileId => this.filesService.annotateFile(
-          this.locator.projectName, fileId, data.annotationMethod))
+          this.locator.projectName, fileId, data.annotationMethod, data.organism)),
       )
       .pipe(this.errorHandler.create())
       .subscribe(event => {
@@ -345,7 +411,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
 
   reannotate(objects: readonly AnnotatedDirectoryObject[]) {
     const files: PdfFile[] = objects
-      .filter(object => object.type === 'file')
+      .filter(object => object.type === 'file' && object.name.slice(object.name.length - 11) !== '.enrichment')
       .map(file => file.data as PdfFile);
 
     if (files.length) {
@@ -446,21 +512,24 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  getObjectCommands(object: AnnotatedDirectoryObject): any[] {
+  getObjectId(object: AnnotatedDirectoryObject): any {
     switch (object.type) {
       case 'dir':
         const directory = object.data as Directory;
-        // TODO: Convert to hash ID
-        return ['/projects', this.locator.projectName, 'folders', directory.id];
+        return directory.id;
       case 'file':
         const file = object.data as PdfFile;
-        return ['/projects', this.locator.projectName, 'files', file.file_id];
+        return file.file_id;
       case 'map':
         const _map = object.data as KnowledgeMap;
-        return ['/projects', this.locator.projectName, 'maps', _map.hash_id, 'edit'];
+        return _map.hash_id;
       default:
         throw new Error(`unknown directory object type: ${object.type}`);
     }
+  }
+
+  getObjectCommands(object: AnnotatedDirectoryObject): any[] {
+    return getObjectCommands(object);
   }
 
   getObjectQueryParams() {
@@ -482,7 +551,14 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       label: object.type === 'map' ? 'map' : 'link',
       sub_labels: [],
       data: {
-        source: this.getObjectCommands(object).join('/'),
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.getObjectId(object) + '',
+        }],
+        sources: [{
+          domain: 'File Source',
+          url: this.getObjectCommands(object).join('/'),
+        }],
       },
     } as Partial<UniversalGraphNode>));
   }
@@ -491,16 +567,36 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     if (this.path != null) {
       if (this.path.length > 2) {
         this.workspaceManager.navigate(
-          ['/projects', this.locator.projectName, 'folders', this.path[this.path.length - 2].id]
+          ['/projects', this.locator.projectName, 'folders', this.path[this.path.length - 2].id],
         );
       } else if (this.path.length === 2) {
-          this.workspaceManager.navigate(
-            ['/projects', this.locator.projectName]
-          );
+        this.workspaceManager.navigate(
+          ['/projects', this.locator.projectName],
+        );
       } else {
         this.workspaceManager.navigate(['/projects']);
       }
     }
+  }
+
+  openEntityCloudPane() {
+    const url = `/entity-cloud/${this.projectName}`;
+    this.workspaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
+  }
+
+  // ========================================
+  // Template
+  // ========================================
+
+  getDateShown(object: DirectoryObject) {
+    return nullCoalesce(object.modificationDate, object.creationDate);
+  }
+
+  displayShareDialog() {
+    const modalRef = this.modalService.open(ShareDialogComponent);
+    modalRef.componentInstance.url = `${window.location.origin}/projects/`
+      + `${this.locator.projectName}` + (this.locator.directoryId ? `/folders/${this.locator.directoryId}` : '')
+      + '?fromWorkspace';
   }
 }
 

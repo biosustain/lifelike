@@ -9,6 +9,9 @@ class StrictSchema(ma.Schema):
 class LinksSchema(StrictSchema):
     ncbi = ma.String(required=True)
     uniprot = ma.String(required=True)
+    chebi = ma.String(required=True)
+    pubchem = ma.String(required=True)
+    mesh = ma.String(required=True)
     wikipedia = ma.String(required=True)
     google = ma.String(required=True)
 

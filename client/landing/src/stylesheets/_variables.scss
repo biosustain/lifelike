@@ -1,0 +1,17 @@
+@import "~bootstrap/scss/functions";
+
+$primary: #056981;
+$secondary: #ED9C27;
+$border-radius: 10px;
+$font-family-base: 'Noto Sans', Helvetica, Arial, sans-serif;
+$font-logo: $font-family-base;
+$font-intro: 'Patua One', $font-family-base;
+
+@import "~bootstrap/scss/variables";
+
+$body-bg: $gray-200;
+$site-main-bg: $white;
+$wrapper-width: map-get($grid-breakpoints, xl);
+$wrapper-padding-x-lg: $spacer * 3;
+$wrapper-padding-x: $spacer * 2;
+$edge-angle-size: 60px;
