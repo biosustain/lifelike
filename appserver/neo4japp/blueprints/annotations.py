@@ -1,5 +1,6 @@
 import os
 
+import sqlalchemy as sa
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
@@ -339,33 +340,64 @@ def get_annotations():
 
     yield g.current_user
 
-    query = db.session.query(
+    # Exclusions
+    query_1 = db.session.query(
         Files.file_id,
         Files.filename,
         AppUser.email,
         GlobalList.id,
-        GlobalList.annotation,
         GlobalList.type,
         GlobalList.reviewed,
         GlobalList.approved,
         GlobalList.creation_date,
-        GlobalList.modified_date
+        GlobalList.modified_date,
+        GlobalList.annotation['text'].astext.label('text'),
+        GlobalList.annotation['reason'].astext.label('reason'),
+        GlobalList.annotation['type'].astext.label('entityType'),
+        GlobalList.annotation['id'].astext.label('annotationId'),
+        GlobalList.annotation['comment'].astext.label('comment')
     ).join(
         AppUser,
         AppUser.id == GlobalList.annotation['user_id'].as_integer()
     ).join(
         Files,
         Files.id == GlobalList.file_id
-    )
-    query = paginate_from_args(
-        query,
-        request.args,
-        columns={
-            'dateModified': GlobalList.modified_date,
-        },
-        default_sort='dateModified',
-        upper_limit=200,
-    )
+    ).filter(GlobalList.type == 'exclusion')
+    # Inclusions
+    query_2 = db.session.query(
+        Files.file_id,
+        Files.filename,
+        AppUser.email,
+        GlobalList.id,
+        GlobalList.type,
+        GlobalList.reviewed,
+        GlobalList.approved,
+        GlobalList.creation_date,
+        GlobalList.modified_date,
+        GlobalList.annotation['meta']['allText'].astext.label('text'),
+        sa.sql.null().label('reason'),
+        GlobalList.annotation['meta']['type'].astext.label('entityType'),
+        GlobalList.annotation['meta']['id'].astext.label('annotationId'),
+        sa.sql.null().label('comment')
+    ).join(
+        AppUser,
+        AppUser.id == GlobalList.annotation['user_id'].as_integer()
+    ).join(
+        Files,
+        Files.id == GlobalList.file_id
+    ).filter(GlobalList.type == 'inclusion')
+
+    union_query = query_1.union(query_2)
+
+    # TODO: Refactor to work with paginate_from_args
+    limit = request.args.get('limit', 200)
+    limit = min(200, int(limit))
+    page = request.args.get('page', 1)
+    page = max(1, int(page))
+
+    # The order by clause is using a synthetic column
+    # NOTE: We want to keep this ordering case insensitive
+    query = union_query.order_by((sa.asc('text'))).paginate(page, limit, False)
 
     response = ResultList(
         total=query.total,
@@ -374,12 +406,16 @@ def get_annotations():
             filename=r[1],
             user_email=r[2],
             id=r[3],
-            annotation=CasePreservedDict(r[4]),
-            type=r[5],
-            reviewed=r[6],
-            approved=r[7],
-            creation_date=r[8],
-            modified_date=r[9],
+            type=r[4],
+            reviewed=r[5],
+            approved=r[6],
+            creation_date=r[7],
+            modified_date=r[8],
+            text=r[9],
+            reason=r[10],
+            entity_type=r[11],
+            annotation_id=r[12],
+            comment=r[13],
         ) for r in query.items],
         query=None)
 
