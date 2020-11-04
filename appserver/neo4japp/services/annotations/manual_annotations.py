@@ -188,10 +188,16 @@ class ManualAnnotationsService:
         if file is None:
             raise RecordNotFoundException('File does not exist')
 
+        def terms_match(term_to_exclude, term_in_exclusion, is_case_insensitive):
+            if is_case_insensitive:
+                return term_to_exclude.lower() == term_in_exclusion.lower()
+            return term_to_exclude == term_in_exclusion
+
         initial_length = len(file.excluded_annotations)
         file.excluded_annotations = [
             exclusion for exclusion in file.excluded_annotations
-            if not (exclusion['type'] == entity_type and exclusion['text'] == term)
+            if not (exclusion['type'] == entity_type and
+                    terms_match(term, exclusion['text'], exclusion['isCaseInsensitive']))
         ]
 
         if initial_length == len(file.excluded_annotations):

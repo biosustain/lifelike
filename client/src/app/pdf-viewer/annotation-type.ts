@@ -24,6 +24,7 @@ export interface Meta {
   exclusionComment?: string;
   primaryLink?: string;
   includeGlobally?: boolean;
+  isCaseInsensitive?: boolean;
 }
 
 export type Rect = number[];
