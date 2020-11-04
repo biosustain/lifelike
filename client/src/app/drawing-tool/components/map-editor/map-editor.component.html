@@ -32,7 +32,7 @@
         </div>
 
         <div class="module-toolbar d-flex align-items-center mt-2">
-          <div class="btn-group">
+          <div class="btn-group mr-2">
             <button type="button" class="btn btn-secondary"
                     [disabled]="(unsavedChanges$ | async) == null"
                     ngbTooltip="Save" placement="bottom" container="body"
@@ -46,7 +46,7 @@
             </button>
           </div>
 
-          <div class="btn-group ml-2">
+          <div class="btn-group mr-2">
             <button type="button" class="btn btn-secondary"
                     ngbTooltip="Undo" placement="bottom" container="body"
                     (click)="undo()"
@@ -61,11 +61,26 @@
             </button>
           </div>
 
-          <div class="btn-group ml-2">
+          <div class="btn-group mr-2">
             <button type="button" class="btn btn-secondary" container="body"
-                    ngbTooltip="Make map fit on screen" placement="bottom"
+                    ngbTooltip="Fit Map to Window" placement="bottom"
                     (click)="zoomToFit()">
-              Fit to Map
+              <i class="fas fa-expand-arrows-alt"></i>
+            </button>
+          </div>
+
+          <div class="btn-group mr-2">
+            <button type="button" class="btn btn-secondary"
+                    (click)="displayShareDialog()">
+              <i class="fa fa-fw fa-share-square"></i> Share
+            </button>
+          </div>
+
+          <div class="btn-group">
+            <button type="button" class="btn btn-secondary" container="body"
+                    ngbTooltip="Map Version History" placement="bottom"
+                    (click)="mapVersionDialog()">
+              Version History
             </button>
           </div>
 
@@ -92,7 +107,7 @@
 
       <div class="position-relative overflow-hidden flex-fill">
         <div class="graph-container">
-          <canvas #canvas class="graph-view" (dragover)="dragOver($event)" (drop)="drop($event)"></canvas>
+          <canvas #canvas class="graph-view"></canvas>
         </div>
       </div>
     </div>
@@ -108,7 +123,7 @@
         </div>
 
         <ng-container *ngIf="(graphCanvas?.selection.changeObservable | async) as selected">
-          <div class="info-panel" *ngIf="selected[0].length > 0">
+          <div class="info-panel" *ngIf="selected[0].length === 1">
             <app-info-panel [selected]="selected[0][0]"
                             (actionCreated)="graphCanvas.execute($event)">
             </app-info-panel>

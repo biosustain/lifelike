@@ -67,6 +67,7 @@ describe('SnippetDisplayComponentComponent', () => {
             },
             subLabels: [],
             displayName: 'Mock Reference Display Name',
+            entityUrl: null,
         } as Reference;
 
         mockAssociationSnippets = [
@@ -82,11 +83,13 @@ describe('SnippetDisplayComponentComponent', () => {
             from: {
                 displayName: 'Mock Node 1',
                 primaryLabel: 'MockNode1',
+                url: null,
             },
             to:
             {
                 displayName: 'Mock Node 2',
                 primaryLabel: 'MockNode2',
+                url: null,
             },
             association: 'Mock Association',
             snippets: mockAssociationSnippets,
@@ -171,7 +174,7 @@ describe('SnippetDisplayComponentComponent', () => {
 
         const confidenceScoreContainer = confidenceScoreContainers[0];
 
-        expect(confidenceScoreContainer.textContent).toEqual('Snippet Confidence Score:1.000');
+        expect(confidenceScoreContainer.textContent).toEqual('Snippet Score:1.000');
     });
 
     it('should show "Showing 0 - 0" of 0" and no page limit selector if there are no results', () => {

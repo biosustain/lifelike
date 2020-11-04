@@ -3,13 +3,17 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { select, Store } from '@ngrx/store';
 import { State } from 'app/root-store';
 
+import { downloader } from 'app/shared/utils';
+import { StorageService } from 'app/shared/services/storage.service';
+
 import * as AuthActions from 'app/auth/store/actions';
 import { AuthSelectors } from 'app/auth/store';
 import { Observable } from 'rxjs';
 
 import { AppUser } from 'app/interfaces';
 import { Title } from '@angular/platform-browser';
-import { NgbModalConfig, NgbPaginationConfig } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalConfig, NgbPaginationConfig } from '@ng-bootstrap/ng-bootstrap';
+import { AppVersionDialogComponent } from './app-version-dialog.component';
 
 /**
  * Root of the application that creates the left menu and the content section.
@@ -23,14 +27,17 @@ export class AppComponent {
   readonly appUser$: Observable<AppUser>;
   readonly userRoles$: Observable<string[]>;
   readonly loggedIn$: Observable<boolean>;
+  helpDeskUrl = 'https://sbrgsoftware.atlassian.net/servicedesk/customer/portal/1/group/1/create/9';
 
   constructor(
     private readonly store: Store<State>,
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
     private readonly titleService: Title,
+    private readonly modalService: NgbModal,
     private readonly ngbModalConfig: NgbModalConfig,
     private readonly ngbPaginationConfig: NgbPaginationConfig,
+    private storage: StorageService,
   ) {
     this.ngbModalConfig.backdrop = 'static';
     this.ngbPaginationConfig.maxSize = 5;
@@ -46,6 +53,13 @@ export class AppComponent {
         titleService.setTitle(child.snapshot.data.title ? `Lifelike: ${child.snapshot.data.title}` : 'Lifelike');
       }
     });
+
+  }
+  /**
+   * View Lifelike meta information
+   */
+  buildInfo() {
+    this.modalService.open(AppVersionDialogComponent);
   }
 
   /**
@@ -60,5 +74,12 @@ export class AppComponent {
    */
   logout() {
     this.store.dispatch(AuthActions.logout());
+  }
+
+  downloadManual() {
+    this.storage.getUserManual().subscribe(resp => {
+      const filename = resp.headers.get('content-disposition').split('=')[1];
+      downloader(resp.body, 'application/pdf', filename);
+    });
   }
 }

@@ -1,7 +1,4 @@
-<as-split
-  unit="pixel"
-  direction="horizontal"
-  [gutterSize]="5">
+<as-split unit="pixel" direction="horizontal" [gutterSize]="5">
   <as-split-area [order]="0">
     <div class="h-100 position-relative">
       <app-legend [legend]="legend"></app-legend>
@@ -9,6 +6,7 @@
       <app-visualization-settings
         [legendLabels]="legendLabels"
         (settingsFormChanges)="updateSettings($event)"
+        (fitClickEvent)="fitToScreen($event)"
       ></app-visualization-settings>
 
       <div [id]="networkContainerId" class="h-100"></div>
@@ -20,7 +18,9 @@
         [selectedEdgeIds]="selectedEdges"
         [selectedNodeEdgeLabelData]="selectedNodeEdgeLabelData"
         [selectedClusterNodeData]="selectedClusterNodeData"
-        (groupNeighborsWithRelationship)="groupNeighborsWithRelationship($event)"
+        (groupNeighborsWithRelationship)="
+          groupNeighborsWithRelationship($event)
+        "
         (removeNodes)="removeNodes($event)"
         (removeEdges)="removeEdges($event)"
         (selectNeighbors)="selectNeighbors($event)"
@@ -32,13 +32,12 @@
   <as-split-area *ngIf="sidenavOpened" size="640" [order]="1">
     <div id="sidenav-container">
       <div id="sidenav-panel-btns-container">
-        <button
-          type="button"
-          id="sidenav-panel-close-btn"
-          class="btn btn-danger"
-          (click)="closeSidenav()">
-        <i class="fa fa-close"></i>
-      </button>
+        <button id="sidenav-panel-close-btn"
+                type="button"
+                class="btn btn-danger"
+                (click)="closeSidenav()">
+          <i class="fa fa-close"></i>
+        </button>
       </div>
       <!-- Each switch case appears to be lazy loaded, so switching between two cases will destroy the old case, and create the new case. -->
       <div [ngSwitch]="sidenavEntityType">
@@ -68,7 +67,10 @@
         </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.EMPTY">
           <h1>Canvas Data View</h1>
-          <h4>(Right-click something on the canvas and select "Show Data in Sidenav" to see some data!)</h4>
+          <h4>
+            (Right-click something on the canvas and select "Show Data in
+            Sidenav" to see some data!)
+          </h4>
         </div>
       </div>
     </div>

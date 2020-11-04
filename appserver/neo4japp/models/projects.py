@@ -1,19 +1,27 @@
 import enum
 import re
-from neo4japp.database import db
-from sqlalchemy import event
+
+from sqlalchemy import (
+    and_,
+    event,
+    join,
+    select
+)
 from sqlalchemy.orm import validates
 from sqlalchemy.orm.query import Query
-from .common import RDBMSBase
 
-from .auth import (
+from neo4japp.constants import FILE_INDEX_ID
+from neo4japp.database import db, get_elastic_service
+from neo4japp.models.auth import (
     AccessActionType,
     AccessControlPolicy,
     AccessRuleType,
     AppRole,
     AppUser,
 )
-from .files import Directory
+from neo4japp.models import Files, Project
+from neo4japp.models.common import RDBMSBase, TimestampMixin
+from neo4japp.models.files import Directory
 
 
 projects_collaborator_role = db.Table(
@@ -42,12 +50,11 @@ projects_collaborator_role = db.Table(
 )
 
 
-class Projects(RDBMSBase):  # type: ignore
+class Projects(RDBMSBase, TimestampMixin):  # type: ignore
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     project_name = db.Column(db.String(250), unique=True, nullable=False)
     description = db.Column(db.Text)
-    creation_date = db.Column(db.DateTime, default=db.func.now())
     users = db.Column(db.ARRAY(db.Integer), nullable=False)
 
     directories = db.relationship('Directory')
@@ -82,10 +89,8 @@ def init_default_access(mapper, connection, target):
     read_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-read'
     )).fetchone()
-    # read_role = AppRole.query.filter(AppRole.name == 'project-read').one_or_none()
     if read_role is None:
         connection.execute(AppRole.__table__.insert().values(name='project-read'))
-        # read_role = AppRole.query.filter(AppRole.name == 'project-read').one()
         read_role = connection.execute(AppRole.__table__.select().where(
             AppRole.__table__.c.name == 'project-read'
         )).fetchone()
@@ -111,10 +116,8 @@ def init_default_access(mapper, connection, target):
     write_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-write'
     )).fetchone()
-    # write_role = AppRole.query.filter(AppRole.name == 'project-write').one_or_none()
     if write_role is None:
         connection.execute(AppRole.__table__.insert().values(name='project-write'))
-        # write_role = AppRole.query.filter(AppRole.name == 'project-write').one()
         write_role = connection.execute(AppRole.__table__.select().where(
             AppRole.__table__.c.name == 'project-write'
         )).fetchone()
@@ -140,7 +143,6 @@ def init_default_access(mapper, connection, target):
     admin_role = connection.execute(AppRole.__table__.select().where(
         AppRole.__table__.c.name == 'project-admin'
     )).fetchone()
-    # admin_role = AppRole.query.filter(AppRole.name == 'project-admin').one_or_none()
     if admin_role is None:
         connection.execute(AppRole.__table__.insert().values(name='project-admin'))
         admin_role = connection.execute(AppRole.__table__.select().where(
@@ -163,3 +165,59 @@ def init_default_access(mapper, connection, target):
         principal_id=admin_role.id,
         rule_type=AccessRuleType.ALLOW,
     ))
+
+
+@event.listens_for(Projects, 'after_update')
+def projects_after_update(mapper, connection, target):
+    """listen for the `after_update` event"""
+
+    # Need to re-index all files/maps which use this project, since the name may have changed
+    map_id_pairs = connection.execute(
+        select([
+            Project.__table__.c.id,
+            Project.__table__.c.hash_id
+        ]).select_from(
+            join(
+                Project.__table__,
+                Directory.__table__,
+                Directory.__table__.c.id == Project.__table__.c.dir_id
+            ).join(
+                Projects.__table__,
+                and_(
+                    Projects.__table__.c.id == target.id,
+                    Projects.__table__.c.id == Directory.__table__.c.projects_id,
+                )
+            )
+        )
+    ).fetchall()
+
+    file_id_pairs = connection.execute(
+        select([
+            Files.__table__.c.id,
+            Files.__table__.c.file_id
+        ]).where(
+            Files.__table__.c.project == target.id
+        )
+    ).fetchall()
+
+    hash_ids = []
+    pdf_ids = []
+    map_ids = []
+    for map_id, hash_id in map_id_pairs:
+        map_ids.append(map_id)
+        hash_ids.append(hash_id)
+
+    for pdf_id, hash_id in file_id_pairs:
+        pdf_ids.append(pdf_id)
+        hash_ids.append(hash_id)
+
+    elastic_service = get_elastic_service()
+    elastic_service.delete_documents_with_index(
+        file_ids=hash_ids,
+        index_id=FILE_INDEX_ID
+    )
+    elastic_service.index_maps(map_ids)
+    elastic_service.index_files(pdf_ids)
+
+# TODO: I suppose we may need a `after_delete` here for updating elastic as well?
+# Not sure how we want to handle documents in elastic that have no corresponding project

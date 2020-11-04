@@ -1,11 +1,12 @@
+import { ReferenceType } from '../../shared/references';
+
 export interface UniversalEntityData {
-  hyperlink?: string;
+  references?: Reference[];
   hyperlinks?: Hyperlink[];
   detail?: string;
-  source?: string;
   search?: Hyperlink[];
   subtype?: string;
-  sources?: Hyperlink[];
+  sources?: Source[];
 }
 
 export interface UniversalNodeStyle {
@@ -78,9 +79,21 @@ export interface Hyperlink {
   domain: string;
 }
 
+export interface Source {
+  type?: ReferenceType;
+  url: string;
+  domain?: string;
+}
+
+export interface Reference {
+  type: ReferenceType;
+  id: string;
+}
+
 export interface Location {
   pageNumber: number;
   rect: Rect;
+  jumpText: string;
 }
 
 export interface Links {
@@ -144,13 +157,15 @@ export interface KnowledgeMap {
   /** JSON representation of graph */
   graph: UniversalGraph;
   /** ISO-8601 timestamp of when project was last updated */
-  date_modified?: string;
+  modified_date?: string;
   /** Whether or not project is public to userbase */
   public?: boolean;
   /** URI for project */
   hash_id?: string;
   /** ID of the user who made the project */
   user_id?: number;
+  /** Name of the project this map is found in */
+  project_name?: string;
 }
 
 export interface RemovedAnnotationExclusion {
@@ -172,3 +187,9 @@ export interface AddedAnnotationExclsuion {
 
 export const MAP_TYPE_ID = 'LifelikeKnowledgeMap/1';
 export const NODE_TYPE_ID = 'LifelikeKnowledgeNode/1';
+
+export const DETAIL_NODE_LABELS = new Set(['note', 'link']);
+
+export function isCommonNodeDisplayName(label: string, displayName: string) {
+  return displayName.toLowerCase() === label.toLowerCase();
+}

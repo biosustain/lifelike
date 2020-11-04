@@ -1,0 +1,14 @@
+server_name: demo.lifelike.bio
+
+nginx_image: nginx:1.19.1-alpine
+nginx_hostname: ng01
+nginx_conf_dir: /home/ansible/nginx
+
+certbot_image: certbot/certbot
+certbot_hostname: cb01
+certbot_conf_dir: /home/ansible/certbot
+certbot_email: dbour@eng.ucsd.edu
+
+dh_param_dir: /home/ansible/dh-param
+
+elastic_file_content_index_id: file_demo

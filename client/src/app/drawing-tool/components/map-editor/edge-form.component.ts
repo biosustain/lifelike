@@ -1,10 +1,10 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 
 import { cloneDeep } from 'lodash';
 import { UniversalGraphEdge, UniversalGraphNode } from '../../services/interfaces';
 import { LINE_HEAD_TYPES } from '../../services/line-head-types';
 import { LINE_TYPES } from '../../services/line-types';
-import { RecursivePartial } from '../../../graph-viewer/utils/types';
+import { RecursivePartial } from '../../../shared/utils/types';
 import { openLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
 import { isNullOrUndefined } from 'util';
@@ -13,7 +13,9 @@ import { isNullOrUndefined } from 'util';
   selector: 'app-edge-form',
   templateUrl: './edge-form.component.html',
 })
-export class EdgeFormComponent {
+export class EdgeFormComponent implements AfterViewInit {
+
+  @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
 
   lineTypeChoices = [
     [null, {
@@ -43,6 +45,10 @@ export class EdgeFormComponent {
 
   activeTab: string;
 
+  ngAfterViewInit() {
+    setTimeout(() => this.focus(), 10);
+  }
+
   get edge() {
     return this.updatedEdge;
   }
@@ -61,6 +67,8 @@ export class EdgeFormComponent {
     this.updatedEdge = cloneDeep(edge);
     this.updatedEdge.data = this.updatedEdge.data || {};
     this.updatedEdge.style = this.updatedEdge.style || {};
+
+    setTimeout(() => this.focus(), 10);
   }
 
   doSave() {
@@ -68,7 +76,6 @@ export class EdgeFormComponent {
       originalData: {
         label: this.originalEdge.label,
         data: {
-          hyperlink: this.originalEdge.data.hyperlink,
           hyperlinks: this.originalEdge.data.hyperlinks,
           detail: this.originalEdge.data.detail,
         },
@@ -84,7 +91,6 @@ export class EdgeFormComponent {
       updatedData: {
         label: this.updatedEdge.label,
         data: {
-          hyperlink: this.updatedEdge.data.hyperlink,
           hyperlinks: this.updatedEdge.data.hyperlinks,
           detail: this.updatedEdge.data.detail,
         },
@@ -138,6 +144,14 @@ export class EdgeFormComponent {
    */
   goToSource(url): void {
     this.sourceOpen.next(url);
+  }
+
+  focus() {
+    if (this.displayNameRef != null) {
+      const element = this.displayNameRef.nativeElement;
+      element.focus();
+      element.select();
+    }
   }
 
 }

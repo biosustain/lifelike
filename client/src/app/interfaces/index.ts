@@ -5,3 +5,4 @@ export * from './error.interface';
 export * from './admin.interface';
 export * from './auth.interface';
 export * from './metadata.interface';
+export * from './elasticsearch.interface';

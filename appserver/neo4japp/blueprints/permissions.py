@@ -55,14 +55,14 @@ def requires_project_permission(action: AccessActionType):
                 auth = get_authorization_service()
 
                 # SUPER USER ADMIN overrides all permissions
-                is_superuser = auth.has_role(user, 'admin')
+                private_data_access = auth.has_role(user, 'private-data-access')
 
-                if not is_superuser:
+                if not private_data_access:
                     proj = get_projects_service()
                     role = proj.has_role(user, projects)
                     if role is None or not auth.is_allowed(role, action, projects):
                         raise NotAuthorizedException(
-                            f'{user.username} does not have {action.name} priviledge'
+                            f'{user.username} does not have {action.name} privilege'
                         )
                 retval = next(gen)
             finally:

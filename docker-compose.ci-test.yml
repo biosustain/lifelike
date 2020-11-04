@@ -15,25 +15,15 @@ services:
             -  ./postgres/db:/var/lib/postgresql/data
 
     appserver:
-        container_name: n4j-appserver
-        command: [
-            'bin/wait-for-postgres',
-            'bin/wait-for-neo4j',
-            'bin/start-dev',
-        ]
-        build:
-            # use different Dockerfile for ci because
-            # we change user with USER cmd
-            # only root has write permission in GITHUB_WORKSPACE
-            # which is used by github actions
-            context: ./appserver
-            dockerfile: Dockerfile.test
+        container_name: appserver
+        image: gcr.io/able-goods-221820/kg-appserver:${GITHUB_HASH}
         ports:
             - "5000:5000"
         environment:
             - NEO4J_HOST=n4j-database
             - NEO4J_AUTH=neo4j/password
             - FLASK_DEBUG=1
+            - FLASK_ENV=development
             - FLASK_APP=app
             - FLASK_APP_CONFIG=Development
             - POSTGRES_HOST=pgdatabase
@@ -43,16 +33,17 @@ services:
             - POSTGRES_PASSWORD=postgres
             - POSTGRES_DB=postgres
             - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+            - ELASTIC_FILE_INDEX_ID=file_ci
+            - GOOGLE_APPLICATION_CREDENTIALS=ansible_service_account.json
+        volumes:
+            - ./appserver/ansible_service_account.json:/home/n4j/ansible_service_account.json
+            - ./appserver/neo4japp/tests/database/services/annotations/lmdb:/home/n4j/tests/database/services/annotations/lmdb
         networks:
             - frontend
             - backend
-        volumes:
-            - ./appserver:/home/n4j
         depends_on:
             - database
             - pgdatabase
-        stdin_open: true
-        tty: true
 
     database:
         container_name: n4j-database

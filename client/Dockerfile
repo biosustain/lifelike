@@ -1,45 +1,88 @@
-# TODO: Consider using a smaller image for deployment, using the base image to
-# enable installing Chrome for Karma testing
-FROM node:13.10.1 as build
+FROM node:13.10.1 as base
+# ========================================
+# Landing page
+# ========================================
 
-# OPTIONAL: Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
-RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb
-RUN dpkg -i dumb-init_*.deb
-ENTRYPOINT ["dumb-init"]
-
-# Install Google Chrome (for Karma testing)
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-RUN apt-get update && apt-get install -y google-chrome-stable
-
+FROM base as landing
 # Clean up the image cache (see the Docker best practices guide: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run)
 RUN apt-get autoclean && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
-ENV N4J_USER node
-ENV N4J_HOME /home/$N4J_USER
-ENV N4J_CLIENT $N4J_HOME/client
+ENV CLIENT_USER node
+ENV CLIENT_HOME /home/$CLIENT_USER
+ENV LANDING_DIR $CLIENT_HOME/client/landing
 
-ENV PATH $N4J_CLIENT/node_modules/.bin:$PATH
+ENV PATH $LANDING_DIR/node_modules/.bin:$PATH
 
-WORKDIR $N4J_CLIENT
+WORKDIR $LANDING_DIR
 
-COPY --chown=$N4J_USER:$N4J_USER package.json $N4J_CLIENT/package.json
-COPY --chown=$N4J_USER:$N4J_USER yarn.lock $N4J_CLIENT/yarn.lock
-RUN yarn install && chown -R $N4J_USER:$N4J_USER node_modules
+COPY --chown=$CLIENT_USER:$CLIENT_USER landing/package.json .
+COPY --chown=$CLIENT_USER:$CLIENT_USER landing/yarn.lock .
+RUN yarn install \
+    && chown -R $CLIENT_USER:$CLIENT_USER node_modules
 
-COPY . $N4J_CLIENT
-RUN yarn build --configuration=staging --output-path=dist
+COPY landing .
+RUN yarn build
 
-FROM nginx:latest
-RUN mkdir -p /home/node/client/dist && chown $N4J_USER:$N4J_USER /home/node/client/dist
-COPY --from=build /home/node/client/dist /usr/share/nginx/html
+# ========================================
+# Angular app
+# ========================================
+FROM base as build
+# OPTIONAL: Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
+RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb \
+    && dpkg -i dumb-init_*.deb
+ENTRYPOINT ["dumb-init"]
+
+# Install Google Chrome (for Karma testing)
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+# Clean up the image cache (see the Docker best practices guide: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run)
+RUN apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && apt-get autoclean \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV CLIENT_USER node
+ENV CLIENT_HOME /home/$CLIENT_USER
+ENV ANGULAR_DIR $CLIENT_HOME/client
+
+ENV PATH $ANGULAR_DIR/node_modules/.bin:$PATH
+
+WORKDIR $ANGULAR_DIR
+
+COPY --chown=$CLIENT_USER:$CLIENT_USER package.json .
+COPY --chown=$CLIENT_USER:$CLIENT_USER yarn.lock .
+RUN yarn install \
+    && chown -R $CLIENT_USER:$CLIENT_USER node_modules
+
+COPY . $ANGULAR_DIR
+
+FROM build as compile
+# ========================================
+# angular bundle compilation
+# ========================================
+ENV CLIENT_USER node
+ENV CLIENT_HOME /home/$CLIENT_USER
+ENV ANGULAR_DIR $CLIENT_HOME/client
+ENV PATH $ANGULAR_DIR/node_modules/.bin:$PATH
+WORKDIR $ANGULAR_DIR
+COPY --from=build /home/node/client .
+RUN yarn build --configuration="production" --output-path=dist
+
+# ========================================
+# nginx
+# ========================================
+# Set the nginx conf file to use
+FROM nginx:latest AS webserver
+RUN mkdir -p /home/node/client/dist
+RUN mkdir -p /home/node/client/landing/dist
+COPY --from=compile /home/node/client/dist /usr/share/nginx/html
+COPY --from=landing /home/node/client/landing/dist /usr/share/nginx/html
 RUN rm /etc/nginx/conf.d/default.conf
-COPY --from=build /home/node/client/nginx/dev.conf /etc/nginx/conf.d/default.conf
+COPY --from=build "/home/node/client/nginx/nginx.conf" /etc/nginx/conf.d/default.conf
 
-USER $N4J_USER
-
-EXPOSE 80
+EXPOSE 80 443
 
 CMD ["nginx", "-g", "daemon off;"]

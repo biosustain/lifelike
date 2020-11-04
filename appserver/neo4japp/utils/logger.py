@@ -14,3 +14,11 @@ class EventLog():
 class UserEventLog(EventLog):
     """ Used to describe an event triggered by a user """
     username: str = attr.ib()
+
+
+@attr.s(frozen=True)
+class ErrorLog(UserEventLog, EventLog):
+    """ Used to describe errors """
+    error_name: str = attr.ib()
+    expected: bool = attr.ib()
+    transaction_id: str = attr.ib()

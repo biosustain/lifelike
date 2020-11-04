@@ -10,9 +10,10 @@ from neo4japp.database import (
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
-    get_lmdb_dao,
+    # get_lmdb_dao,
+    get_entity_recognition
 )
-from neo4japp.data_transfer_objects import Annotation
+from neo4japp.data_transfer_objects import Annotation, SpecifiedOrganismStrain
 from neo4japp.factory import create_app
 from neo4japp.services.annotations.constants import EntityType, OrganismCategory
 from neo4japp.util import compute_hash
@@ -71,24 +72,24 @@ def write_to_file(
         keyword_type = annotation.meta.type
         id = annotation.meta.id
 
-        if keyword_type == EntityType.Chemical.value:
+        if keyword_type == EntityType.CHEMICAL.value:
             print(
                 f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
                 file=chemical_pubtator,
             )
-        elif keyword_type == EntityType.Gene.value:
+        elif keyword_type == EntityType.GENE.value:
             print(
                 f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
                 file=gene_pubtator,
             )
-        elif keyword_type == EntityType.Disease.value:
+        elif keyword_type == EntityType.DISEASE.value:
             print(
                 f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
                 file=disease_pubtator,
             )
-        elif keyword_type == EntityType.Species.value:
+        elif keyword_type == EntityType.SPECIES.value:
             # only Bacteria for now
-            if annotation.meta.category == OrganismCategory.Bacteria.value:
+            if annotation.meta.category == OrganismCategory.BACTERIA.value:
                 print(
                     f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
                     file=species_pubtator,
@@ -104,19 +105,16 @@ def create_annotations(
     filename,
     pdf_parser,
     doc,
-    method='pdf'
+    entity_service,
 ):
-    if method == 'pdf':
-        parsed = pdf_parser.parse_pdf(pdf=doc)
-    else:
-        # pubtator
-        parsed = pdf_parser.parse_pubtator(pubtator=doc)
+    parsed = pdf_parser.parse_pdf(pdf=doc)
 
     pdf_text_list = pdf_parser.combine_chars_into_words(parsed)
     pdf_text = ' '.join([text for text, _ in pdf_text_list])
     annotations = annotations_service.create_rules_based_annotations(
         tokens=pdf_parser.extract_tokens(parsed_chars=parsed),
         custom_annotations=[],
+        specified_organism=SpecifiedOrganismStrain('', '', '')
     )
 
     bioc = bioc_service.read(text=pdf_text, file_uri=filename)
@@ -139,7 +137,7 @@ def pdf_to_pubtator(
             app = create_app('Functional Test Flask App', config='config.Testing')
             with app.app_context():
                 bioc_service = get_bioc_document_service()
-                service = get_annotations_service(lmdb_dao=get_lmdb_dao())
+                service = get_annotations_service()
                 parser = get_annotations_pdf_parser()
 
                 if fn.lower().endswith('.pdf'):
@@ -169,6 +167,62 @@ def pdf_to_pubtator(
                     )
 
 
+def create_annotations_from_text(doc, title):
+    nlp_annotations_list = []
+    # title = None
+    text = None
+
+    for line in doc:
+        app = create_app('Functional Test Flask App', config='config.Testing')
+        with app.app_context():
+            try:
+                bioc_service = get_bioc_document_service()
+                annotator = get_annotations_service()
+                parser = get_annotations_pdf_parser()
+                entity_service = get_entity_recognition()
+
+                # line_split = line.split('|')
+                # if len(line_split) > 1:
+                #     if 't' in line_split:
+                #         title = line_split[-1]
+                #     elif 'a' in line_split:
+                #         text = line_split[-1]
+
+                # if title and text:
+                text = line
+                parsed_text = parser.parse_text(abstract=text)
+
+                tokens = parser.extract_tokens(parsed_chars=parsed_text)
+                entity_service.set_entity_inclusions(custom_annotations=[])
+
+                entity_service.identify_entities(
+                    tokens=tokens.token_positions,
+                    check_entities_in_lmdb=entity_service.get_entities_to_identify()
+                )
+
+                annotations = annotator.create_rules_based_annotations(
+                    tokens=tokens,
+                    custom_annotations=[],
+                    entity_results=entity_service.get_entity_match_results(),
+                    entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
+                    specified_organism=SpecifiedOrganismStrain('', '', '')
+                )
+
+                bioc = bioc_service.read(text=text, file_uri=title)
+                bioc_json = bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+                nlp_annotations_list.append((NLPAnnotations(
+                    filename=title,
+                    text=text,
+                    annotations=annotations,
+                ), bioc_json))
+
+                # text = None  # indent these once code above is uncommented
+                # title = None  # indent these once code above is uncommented
+            except Exception as ex:
+                raise ex
+    return nlp_annotations_list
+
+
 def pubtator_to_pubtator(
     chemical_pubtator,
     gene_pubtator,
@@ -177,28 +231,16 @@ def pubtator_to_pubtator(
 ):
     for parent, subfolders, filenames in os.walk(os.path.join(directory, 'abstracts/')):
         for fn in filenames:
-            app = create_app('Functional Test Flask App', config='config.Testing')
-            with app.app_context():
-                bioc_service = get_bioc_document_service()
-                service = get_annotations_service(lmdb_dao=get_lmdb_dao())
-                parser = get_annotations_pdf_parser()
+            if fn.lower().endswith('.txt'):
+                with open(os.path.join(parent, fn), 'r') as f:
+                    try:
+                        results = create_annotations_from_text(doc=f, title=fn)
+                    except Exception as ex:
+                        raise ex
 
-                if fn.lower().endswith('.txt'):
-                    with open(os.path.join(parent, fn), 'r') as f:
-                        try:
-                            annotations, bioc_json = create_annotations(
-                                annotations_service=service,
-                                bioc_service=bioc_service,
-                                filename=fn,
-                                pdf_parser=parser,
-                                doc=f,
-                                method='pubtator',
-                            )
-                        except Exception as ex:
-                            print(f'Failed to annotate PDF {fn}: {str(ex)}')
-                            continue
-
-                    annotation_file = os.path.join(directory, f'annotations/{fn}.json')
+                for (annotations, bioc_json) in results:
+                    annotation_file = os.path.join(
+                        directory, f'annotations/{annotations.filename}.json')
                     with open(annotation_file, 'w+') as a_f:
                         json.dump(bioc_json, a_f)
 

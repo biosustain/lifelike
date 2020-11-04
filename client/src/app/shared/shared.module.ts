@@ -22,8 +22,10 @@ import { ProgressDialogComponent } from './components/dialog/progress-dialog.com
 import { TooltipComponent } from './components/tooltip.component';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
-import { FriendlyDateStrPipe, TruncatePipe } from './pipes';
+import { FriendlyDateStrPipe, TruncatePipe, ScrubHtmlPipe } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
+import { OrganismAutocompleteComponent } from './components/organism-autocomplete.component';
+import { SharedSearchService } from './services/shared-search.service';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { SortLegendComponent } from './components/sort-legend.component';
 import { ConfirmDialogComponent } from './components/dialog/confirm-dialog.component';
@@ -45,8 +47,14 @@ import { GenericFileUploadComponent } from './components/generic-file-upload/gen
 import { SourcesComponent } from './components/sources/sources.component';
 import { ModuleErrorComponent } from './components/module-error.component';
 import { ModuleProgressComponent } from './components/module-progress.component';
+import { ShareDialogComponent } from './components/dialog/share-dialog.component';
+import { AnnotationFilterComponent } from './components/annotation-filter/annotation-filter.component';
+import { WordCloudAnnotationFilterComponent } from './components/word-cloud-annotation-filter/word-cloud-annotation-filter.component';
+import { HighlightTextComponent } from './components/highlight-text.component';
 
 const components = [
+  AnnotationFilterComponent,
+  WordCloudAnnotationFilterComponent,
   MessageDialogComponent,
   ProgressDialogComponent,
   HighlightSnippetComponent,
@@ -55,6 +63,7 @@ const components = [
   TooltipComponent,
   SortLegendComponent,
   ConfirmDialogComponent,
+  OrganismAutocompleteComponent,
   FormInputFeedbackComponent,
   BackgroundTaskProgressComponent,
   FormRowComponent,
@@ -73,12 +82,15 @@ const components = [
   SourcesComponent,
   ModuleErrorComponent,
   ModuleProgressComponent,
+  ShareDialogComponent,
+  HighlightTextComponent,
 ];
 
 @NgModule({
   entryComponents: [
     MessageDialogComponent,
     ProgressDialogComponent,
+    ShareDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -100,8 +112,12 @@ const components = [
     TruncatePipe,
     FriendlyDateStrPipe,
     NodeTextStylePipe,
+    ScrubHtmlPipe,
   ],
-  providers: [SharedNgrxEffects],
+  providers: [
+    SharedNgrxEffects,
+    SharedSearchService,
+  ],
   // exported modules are visible to modules that import this one
   exports: [
     // Modules
@@ -119,6 +135,7 @@ const components = [
     // Components
     ...components,
     TruncatePipe,
+    ScrubHtmlPipe,
     FriendlyDateStrPipe,
     NodeTextStylePipe,
     NgbModule,

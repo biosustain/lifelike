@@ -3,20 +3,18 @@
   <div class="vertical-nav d-flex flex-column flex-wrap overflow-auto flex-shrink-0">
     <!-- Top buttons -->
     <div class="d-flex flex-column">
-      <a routerLink="/" placement="right" ngbTooltip="Dashboard">
-        <i class="fa fa-home"></i>
-      </a>
       <a routerLink="/workspaces/local" placement="right" ngbTooltip="Workbench">
         <i class="far fa-window-restore"></i>
       </a>
       <div class="button-divider"></div>
-      <a routerLink="/projects" placement="right" ngbTooltip="File Browser">
-        <i class="fa fa-folder"></i>
-      </a>
-      <a routerLink="/kg-import" placement="right" ngbTooltip="Knowledge Graph Import">
+      <!-- Hiding this for now, we'll re-enable it once we have a view for imported data -->
+      <!-- <a routerLink="/kg-import" placement="right" ngbTooltip="Knowledge Graph Import">
         <i class="fa fa-cloud-upload"></i>
+      </a> -->
+      <a routerLink="/search/graph" placement="right" ngbTooltip="Visualizer">
+        <i class="fa fa-database"></i>
       </a>
-      <a routerLink="/kg-visualizer" placement="right" ngbTooltip="Visualizer">
+      <a routerLink="/search/content" placement="right" ngbTooltip="Search">
         <i class="fa fa-search"></i>
       </a>
       <a routerLink="kg-statistics" placement="right" ngbTooltip="Knowledge Graph Statistics">
@@ -31,15 +29,25 @@
         <i class="fa fa-grip-vertical"></i>
       </a>
 
+      <a [href]="helpDeskUrl" target="_blank" placement="right" triggers="hover" ngbTooltip="Feedback and Questions">
+        <i class="fa fa-comment"></i>
+      </a>
+
       <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
         <div ngbDropdown placement="top-left" container="body">
           <a id="account-dropdown" ngbDropdownToggle ngbTooltip="Options" container="body">
             <i class="fa fa-user"></i>
           </a>
           <div ngbDropdownMenu aria-labelledby="account-dropdown" class="dropdown-menu">
+            <a class="dropdown-item" (click)="buildInfo()" placement="right">
+              Lifelike Info
+            </a>
             <a class="dropdown-item" *ngIf="(userRoles$ | async)?.includes('admin')" [routerLink]="['/admin']"
                placement="right">
               Administration
+            </a>
+            <a class="dropdown-item" (click)="downloadManual()" placement="right">
+              User Guide
             </a>
             <a class="dropdown-item" [routerLink]="['/users', (appUser$ | async)?.username]" placement="right">
               Account

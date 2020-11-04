@@ -1,0 +1,335 @@
+@import "./_variables.scss";
+@import "./bootstrap";
+
+body {
+  overflow-x: hidden;
+}
+
+.wrapper {
+  max-width: $wrapper-width;
+  margin: auto;
+  padding: 0 $wrapper-padding-x-lg;
+
+  @include media-breakpoint-down(sm) {
+    padding: 0 $wrapper-padding-x;
+  }
+}
+
+.site-main {
+  background: $site-main-bg;
+}
+
+// ========================================
+// Navbar
+// ========================================
+
+.site-top {
+  position: relative;
+  z-index: 1;
+  margin-bottom: -$edge-angle-size;
+  padding-bottom: $edge-angle-size + 5px;
+  background: $primary url(/assets/img/intro_people_bg.jpg);
+  background-position: center top;
+  background-size: cover;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - #{$edge-angle-size}), 0 100%);
+
+  @include media-breakpoint-down(sm) {
+    background-position: left top;
+  }
+}
+
+.site-header-container {
+  padding: ($spacer * 1.8) 0 ($spacer);
+  color: #fff;
+
+  a {
+    &:link, &:visited {
+      color: #fff;
+    }
+
+    &:hover, &:active {
+      color: #ccc;
+    }
+  }
+}
+
+.site-logo {
+  h1 {
+    font-family: $font-logo;
+    font-weight: normal;
+    font-size: 24pt;
+  }
+}
+
+// ========================================
+// Intro
+// ========================================
+
+.section-intro {
+  padding: ($spacer * 1) 0;
+  color: #fff;
+
+  @include media-breakpoint-down(sm) {
+    padding-top: 0;
+  }
+}
+
+.intro-title {
+  font-family: $font-intro;
+  font-weight: normal;
+  font-size: 280%;
+}
+
+.intro-left {
+  @include media-breakpoint-up(md) {
+    width: 50%;
+  }
+}
+
+.intro-title {
+  margin-bottom: ($spacer * 1);
+}
+
+.intro-subtitle {
+  width: 80%;
+  opacity: 0.8;
+  margin-bottom: ($spacer * 2);
+  font-size: 120%;
+}
+
+.btn-intro {
+  background: #fff;
+
+  &, &:link, &:visited {
+    color: #222;
+  }
+}
+
+.btn-intro-primary {
+  background: $secondary;
+
+  &, &:link, &:visited {
+    color: #fff;
+  }
+}
+
+.btn-intro, .btn-intro-primary {
+  border-radius: ($border-radius * 4);
+  padding: $btn-padding-y-lg ($btn-padding-x-lg * 2);
+
+  @include hover() {
+    background: $black;
+    color: $white;
+  }
+}
+
+// ========================================
+// Spotlight
+// ========================================
+
+.section-spotlight {
+  padding: ($spacer * 5);
+}
+
+.spotlight-title {
+  margin: 0 0 ($spacer * 1);
+  font-weight: bold;
+  font-size: 180%;
+  color: $secondary;
+}
+
+.spotlight-text {
+  margin: 0 0 ($spacer * 3);
+  max-width: 60%;
+  font-size: 105%;
+}
+
+.spotlight-video {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border-radius: ($border-radius * 2);
+}
+
+// ========================================
+// Features
+// ========================================
+
+.section-features {
+}
+
+.feature-table {
+  max-width: $wrapper-width;
+  margin: auto;
+
+  @include media-breakpoint-up(lg) {
+    display: flex;
+  }
+}
+
+.feature-item {
+  position: relative;
+
+  @include media-breakpoint-down(md) {
+    border-bottom: 1px solid $gray-300;
+    padding: ($spacer * 3.5) $wrapper-padding-x;
+
+    &:first-child {
+      padding-top: calc(#{$spacer * 2} + #{$edge-angle-size});
+    }
+
+    &:last-child {
+      padding-bottom: calc(#{$spacer * 4} + #{$edge-angle-size});
+    }
+
+    &:not(:last-child):before {
+      content: '\f111';
+      font-family: "Font Awesome 5 Free", sans-serif;
+      font-size: 200%;
+      position: absolute;
+      bottom: -0.8em;
+      left: calc(50% - 0.5em);
+      font-weight: 900;
+      color: #fff;
+      z-index: 1;
+    }
+
+    &:not(:last-child):after {
+      content: '\f0ab';
+      font-family: FontAwesome, sans-serif;
+      font-size: 200%;
+      position: absolute;
+      bottom: -0.8em;
+      left: calc(50% - 0.5em);
+      color: $primary;
+      z-index: 2;
+    }
+  }
+
+  @include media-breakpoint-up(lg) {
+    border-right: 1px solid $gray-300;
+    padding: ($spacer * 5) $wrapper-padding-x-lg;
+
+    img {
+      max-height: 180px;
+    }
+
+    &:last-child {
+      position: relative;
+
+      // Move the head up more
+      img {
+        position: relative;
+        margin-top: -20px;
+        margin-bottom: 34px;
+        max-height: 190px;
+      }
+    }
+
+    &:not(:last-child):before {
+      content: '\f111';
+      font-family: "Font Awesome 5 Free", sans-serif;
+      font-size: 200%;
+      position: absolute;
+      top: 50%;
+      right: -0.5em;
+      font-weight: 900;
+      color: #fff;
+      z-index: 1;
+    }
+
+    &:not(:last-child):after {
+      content: '\f138';
+      font-family: FontAwesome, sans-serif;
+      font-size: 200%;
+      position: absolute;
+      top: 50%;
+      right: -0.5em;
+      color: $primary;
+      z-index: 2;
+    }
+  }
+
+  &:last-child {
+    border: 0;
+  }
+}
+
+.feature-icon {
+  margin: 0 0 ($spacer * 1.5) 0;
+  color: $primary;
+
+  img {
+    display: block;
+    margin: auto;
+    max-width: 100%;
+  }
+}
+
+.feature-title {
+  max-width: 400px;
+  margin: 0 auto ($spacer * 1);
+  font-size: 105%;
+  line-height: 1.5;
+  font-weight: bold;
+}
+
+.feature-description {
+  max-width: 400px;
+  margin: auto;
+}
+
+// ========================================
+// Catcher
+// ========================================
+
+.section-catcher {
+  background: $gray-100;
+  margin-top: -$edge-angle-size;
+  clip-path: polygon(0 0, 100% #{$edge-angle-size}, 100% 100%, 0 100%);
+  padding: ($spacer * 5) 0 ($spacer * 1) 0;
+}
+
+.catcher-title {
+  color: $primary;
+  font-size: 180%;
+}
+
+.catcher-subtitle {
+  color: $gray-500;
+  font-size: 140%;
+}
+
+.catcher-body {
+  padding: ($spacer * 2) 0;
+}
+
+// ========================================
+// Footer
+// ========================================
+
+.site-footer {
+  color: $gray-600;
+  font-size: $font-size-sm;
+  margin-top: -$edge-angle-size;
+  padding: ($spacer * 7) 0 ($spacer * 4) 0;
+}
+
+.footer-logos {
+  img {
+    margin: 20px;
+    max-width: 100%;
+  }
+}
+
+// ========================================
+// Utilities
+// ========================================
+
+.flex-spaced-wrap {
+  flex-wrap: wrap;
+  margin-top: $spacer * -0.25;
+
+  & > * {
+    margin-top: $spacer * 0.25;
+  }
+}
+
