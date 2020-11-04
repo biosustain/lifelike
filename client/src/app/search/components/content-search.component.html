@@ -85,9 +85,9 @@
                     </div>
                     <div class="search-results-item-header text-truncate">
                       <h5 class="text-truncate" [style.padding]="'1px 0'">
-                        <a [appLink]="['/projects', result.item.project.projectName]" [newTab]="true">{{ result.item.project.projectName }}</a>
+                        <a [appLink]="['/projects', result.item.project.projectName]" [newTab]="true" [sideBySide]="true">{{ result.item.project.projectName }}</a>
                         /
-                        <a [appLink]="getObjectCommands(result.item)" [newTab]="true">
+                        <a [appLink]="getObjectCommands(result.item)" [newTab]="true" [sideBySide]="true">
                           <app-term-highlight [text]="result.item.name" [highlightTerms]="resultQuery ? resultQuery.phrases : []"></app-term-highlight>
                         </a>
                       </h5>
