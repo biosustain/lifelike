@@ -36,6 +36,7 @@ from neo4japp.data_transfer_objects import (
     GeneAnnotation,
     LMDBMatch,
     OrganismAnnotation,
+    PDFChar,
     PDFTokenPositions,
     PDFTokenPositionsList,
     SpecifiedOrganismStrain
@@ -111,7 +112,7 @@ class AnnotationsService:
 
     def _create_keyword_objects(
         self,
-        curr_page_coor_obj: List[Union[LTChar, LTAnno]],
+        curr_page_coor_obj: List[PDFChar],
         indexes: List[int],
         cropbox: Tuple[int, int],
         keyword_positions: List[Annotation.TextPosition] = [],
@@ -132,11 +133,11 @@ class AnnotationsService:
             E. Coli -> [{keyword: 'E. Coli', x: ..., ...}]
         """
         def _skip_lt_anno(
-            curr_page_coor_obj: List[Union[LTChar, LTAnno]],
+            curr_page_coor_obj: List[PDFChar],
             pos_idx: int,
         ) -> int:
             i = pos_idx
-            while i >= 0 and isinstance(curr_page_coor_obj[i], LTAnno):
+            while i >= 0 and curr_page_coor_obj[i].space:
                 i -= 1
             return i
 
@@ -148,8 +149,11 @@ class AnnotationsService:
         keyword = ''
         for i, pos_idx in enumerate(indexes):
             try:
-                if isinstance(curr_page_coor_obj[pos_idx], LTChar):
-                    lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox  # noqa
+                if not curr_page_coor_obj[pos_idx].space:
+                    lower_x = curr_page_coor_obj[pos_idx].x0
+                    lower_y = curr_page_coor_obj[pos_idx].y0
+                    upper_x = curr_page_coor_obj[pos_idx].x1
+                    upper_y = curr_page_coor_obj[pos_idx].y1
 
                     if (start_lower_x is None and
                             start_lower_y is None and
@@ -160,7 +164,7 @@ class AnnotationsService:
                         end_upper_x = upper_x
                         end_upper_y = upper_y
 
-                        keyword += curr_page_coor_obj[pos_idx].get_text()
+                        keyword += curr_page_coor_obj[pos_idx].text
                     else:
                         if lower_y != start_lower_y:
                             diff = abs(lower_y - start_lower_y)
@@ -187,7 +191,7 @@ class AnnotationsService:
                                 if upper_x > end_upper_x:
                                     end_upper_x = upper_x
 
-                                keyword += curr_page_coor_obj[pos_idx].get_text()
+                                keyword += curr_page_coor_obj[pos_idx].text
                         else:
                             if upper_y > end_upper_y:
                                 end_upper_y = upper_y
@@ -195,7 +199,7 @@ class AnnotationsService:
                             if upper_x > end_upper_x:
                                 end_upper_x = upper_x
 
-                            keyword += curr_page_coor_obj[pos_idx].get_text()
+                            keyword += curr_page_coor_obj[pos_idx].text
             except IndexError:
                 raise AnnotationError(
                     'An indexing error occurred when creating annotation keyword objects.')
@@ -219,7 +223,7 @@ class AnnotationsService:
     def _create_annotation_object(
         self,
         token_positions: PDFTokenPositions,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
         token_type: str,
         entity: dict,
@@ -342,7 +346,7 @@ class AnnotationsService:
         token_type: str,
         color: str,
         id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         """Create annotation objects for tokens.
@@ -486,7 +490,7 @@ class AnnotationsService:
     def _annotate_genes(
         self,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
@@ -586,7 +590,7 @@ class AnnotationsService:
     def _annotate_anatomy(
         self,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         return self._get_annotation(
@@ -601,7 +605,7 @@ class AnnotationsService:
     def _annotate_chemicals(
         self,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         return self._get_annotation(
@@ -616,7 +620,7 @@ class AnnotationsService:
     def _annotate_compounds(
         self,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         return self._get_annotation(
@@ -631,7 +635,7 @@ class AnnotationsService:
     def _annotate_diseases(
         self,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         return self._get_annotation(
@@ -646,7 +650,7 @@ class AnnotationsService:
     def _annotate_foods(
         self,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         return self._get_annotation(
@@ -661,7 +665,7 @@ class AnnotationsService:
     def _annotate_phenotypes(
         self,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         return self._get_annotation(
@@ -676,7 +680,7 @@ class AnnotationsService:
     def _annotate_proteins(
         self,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         """Nearly identical to `self._annotate_genes`. Return a list of
@@ -762,7 +766,7 @@ class AnnotationsService:
     def _annotate_species(
         self,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
         word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
@@ -791,7 +795,7 @@ class AnnotationsService:
         self,
         annotation_type: str,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
         word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
@@ -930,8 +934,8 @@ class AnnotationsService:
                 if all([c.isupper() for c in text_in_document]) and \
                     len(text_in_document) in ABBREVIATION_WORD_LENGTH:  # noqa
                     try:
-                        begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
-                        end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
+                        begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].text  # noqa
+                        end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].text  # noqa
                     except IndexError:
                         # if index out of range than
                         # character is beginning/end of paper
@@ -1008,7 +1012,7 @@ class AnnotationsService:
 
     def _create_annotations(
         self,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
         types_to_annotate: List[Tuple[str, str]],
         word_index_dict: Dict[int, str]
