@@ -564,6 +564,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
+  searchQueryChangedFromViewer(keyword: string) {
+    this.searchQuery = keyword;
+  }
+
   findNext() {
     this.searchQueryChanged();
   }
