@@ -48,7 +48,7 @@ export interface BiocycNode {
 }
 
 interface GoWrapper {
-  linkList: string[];
+  link: string;
   result: GoNode[];
 }
 
@@ -103,9 +103,7 @@ export interface UniprotNode {
 
 export interface EnrichmentWrapper {
   biocyc: BiocycWrapper;
-  biologicalGo: GoWrapper;
-  cellularGo: GoWrapper;
-  molecularGo: GoWrapper;
+  go: GoWrapper;
   regulon: RegulonWrapper;
   string: StringWrapper;
   uniprot: UniprotWrapper;
