@@ -141,10 +141,10 @@ export class EnrichmentTableService extends AbstractService {
     );
   }
 
-  getNCBIEnrichmentDomains(nodeIds): Observable<EnrichmentWrapper[]> {
+  getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<EnrichmentWrapper[]> {
     return this.http.post<{result: EnrichmentWrapper[]}>(
       `${this.kgAPI}/get-ncbi-nodes/enrichment-domains`,
-      {nodeIds},
+      {nodeIds, taxID},
       this.getHttpOptions(true),
     ).pipe(
       map((resp: any) => resp.result),

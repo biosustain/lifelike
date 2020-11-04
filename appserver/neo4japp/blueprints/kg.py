@@ -101,9 +101,10 @@ def get_ncbi_regulon_nodes():
 def get_ncbi_enrichment_domains():
     data = request.get_json()
     node_ids = data['nodeIds']
+    taxID = data['taxID']
     kg = get_kg_service()
     regulon = kg.get_regulon_genes(node_ids)
-    biocyc = kg.get_biocyc_genes(node_ids)
+    biocyc = kg.get_biocyc_genes(node_ids, taxID)
     cellular = kg.get_cellular_go_genes(node_ids)
     biological = kg.get_biological_go_genes(node_ids)
     molecular = kg.get_molecular_go_genes(node_ids)
