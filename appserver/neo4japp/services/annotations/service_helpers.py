@@ -6,21 +6,24 @@ import time
 from io import BytesIO
 from flask import current_app
 from typing import Dict, List, Tuple
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.datastructures import FileStorage
 
 from neo4japp.database import (
+    db,
     get_annotations_service,
     get_annotations_pdf_parser,
     get_bioc_document_service,
     get_entity_recognition
 )
-
-from neo4japp.exceptions import AnnotationError
 from neo4japp.data_transfer_objects import (
+    PDFChar,
     PDFTokenPositions,
     PDFTokenPositionsList,
     SpecifiedOrganismStrain
 )
+from neo4japp.exceptions import AnnotationError
+from neo4japp.models import FileContent
 from neo4japp.services.annotations.constants import AnnotationMethod, NLP_ENDPOINT
 from neo4japp.services.annotations.util import normalize_str
 from neo4japp.utils.logger import EventLog
@@ -161,17 +164,33 @@ def create_annotations(
 
     custom_annotations = []
     excluded_annotations = []
+    parsed = None
 
     start = time.time()
     try:
         if type(document) is str:
             parsed = parser.parse_text(abstract=document)
-        else:
+        elif not document.parsed_content:
             fp = FileStorage(BytesIO(document.raw_file), filename)
             parsed = parser.parse_pdf(pdf=fp)
             fp.close()
             custom_annotations = document.custom_annotations
             excluded_annotations = document.excluded_annotations
+
+            # cache it
+            try:
+                db.session.bulk_update_mappings(
+                    FileContent,
+                    [
+                        {
+                            'id': document.file_content_id,
+                            'parsed_content': json.dumps([d.to_dict() for d in parsed])
+                        }
+                    ]
+                )
+                db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback()
     except AnnotationError:
         raise AnnotationError(
             'Your file could not be parsed. Please check if it is a valid PDF.'
@@ -183,8 +202,28 @@ def create_annotations(
     )
 
     start = time.time()
-    tokens = parser.extract_tokens(parsed_chars=parsed)
-    pdf_text = parser.combine_all_chars(parsed_chars=parsed)
+    if not parsed:
+        pdf_text = ''.join([c['text'] for c in document.parsed_content])
+        tokens = parser.extract_tokens(
+            [
+                PDFChar(
+                    x0=parsed['x0'],
+                    y0=parsed['y0'],
+                    x1=parsed['x1'],
+                    y1=parsed['y1'],
+                    text=parsed['text'],
+                    height=parsed['height'],
+                    width=parsed['width'],
+                    space=parsed['space'],
+                    lower_cropbox=parsed['lower_cropbox'],
+                    upper_cropbox=parsed['upper_cropbox'],
+                    min_idx_in_page=parsed['min_idx_in_page']
+                ) for parsed in json.loads(document.parsed_content)]
+
+        )
+    else:
+        pdf_text = ''.join([c.text for c in parsed])
+        tokens = parser.extract_tokens(parsed)
 
     if annotation_method == AnnotationMethod.RULES.value:
         entity_recog.set_entity_inclusions(custom_annotations=custom_annotations)

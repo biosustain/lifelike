@@ -15,6 +15,7 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 
 from neo4japp.data_transfer_objects import (
+    PDFChar,
     PDFParsedCharacters,
     PDFTokenPositions,
     PDFTokenPositionsList,
@@ -39,10 +40,10 @@ class AnnotationsPDFParser:
     def _get_lt_char(
         self,
         layout: Any,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        char_coord_objs_in_pdf: List[PDFChar],
         compiled_regex: re.Pattern,
     ) -> None:
-        def space_exists_between_lt_chars(a: LTChar, b: LTChar):
+        def space_exists_between_lt_chars(a: PDFChar, b: PDFChar):
             """Determines if a space character exists between two LTChars."""
             # if x1's are not equal that means horizontal and new line
             # otherwise new line but rotated text so shouldn't have space
@@ -52,81 +53,63 @@ class AnnotationsPDFParser:
             ) and b.x1 != a.x1
 
         def should_add_virtual_space(
-            prev_char: Union[LTAnno, LTChar],
-            curr_char: Union[LTAnno, LTChar]
+            prev_char: PDFChar,
+            curr_char: PDFChar
         ):
-            return (
-                isinstance(prev_char, LTChar) and self._not_whitespace(char=prev_char.get_text()) and  # noqa
-                isinstance(curr_char, LTChar) and self._not_whitespace(char=curr_char.get_text()) and  # noqa
-                space_exists_between_lt_chars(prev_char, curr_char)
-            )
+            return self._not_whitespace(char=prev_char.text) and \
+                self._not_whitespace(char=curr_char.text) and \
+                    space_exists_between_lt_chars(prev_char, curr_char)  # noqa
 
-        def expand_ligatures(ligature_str: str):
-            ligatures_list: List[Union[LTChar, LTAnno]] = []
-            ligature_str_len = len(ligature_str)
+        def expand_ligatures(ligature_char: PDFChar):
+            ligatures_list: List[PDFChar] = []
+            ligature_str_len = len(ligature_char.text)
 
-            original_lig_end_x = lt_obj.x1
+            original_lig_end_x = ligature_char.x1
+            original_lig_str = ligature_char.text
 
             if ligature_str_len == 2:
                 # for two characters ligatures
-                lt_obj.set_bbox(
-                    (
-                        lt_obj.x0,
-                        lt_obj.y0,
-                        lt_obj.x0 + lt_obj.width/2 - 0.01,
-                        lt_obj.y1,
-                    ),
-                )
-                lt_obj._text = ligature_str[0]
+                ligature_char.x1 = ligature_char.x0 + ligature_char.width/2 - .01
+                ligature_char.text = ligature_char.text[0]
 
-                lt_obj_cp = deepcopy(lt_obj)
-                lt_obj_cp.set_bbox(
-                    (
-                        lt_obj.x0 + lt_obj.width/2 + 0.01,
-                        lt_obj.y0,
-                        original_lig_end_x,
-                        lt_obj.y1,
-                    ),
+                ligature_char_copy2 = PDFChar(
+                    x0=ligature_char.x0 + ligature_char.width/2 + .01,
+                    y0=ligature_char.y0,
+                    x1=original_lig_end_x,
+                    y1=ligature_char.y1,
+                    text=original_lig_str[1],
+                    height=ligature_char.height,
+                    width=ligature_char.width
                 )
-                lt_obj_cp._text = ligature_str[1]
-                ligatures_list.append(lt_obj_cp)
+                ligatures_list.append(ligature_char_copy2)
             elif ligature_str_len == 3:
                 # for three characters ligatures
-                lt_obj.set_bbox(
-                    (
-                        lt_obj.x0,
-                        lt_obj.y0,
-                        lt_obj.x0 + lt_obj.width/3 - 0.01,
-                        lt_obj.y1,
-                    ),
-                )
-                lt_obj._text = ligature_str[0]
+                ligature_char.x1 = ligature_char.x0 + ligature_char.width/3 - .01
+                ligature_char.text = ligature_char.text[0]
 
                 # second char in ligature
-                lt_obj_c2 = deepcopy(lt_obj)
-                lt_obj_c2.set_bbox(
-                    (
-                        lt_obj.x0 + lt_obj.width/3 + 0.01,
-                        lt_obj.y0,
-                        lt_obj.x0 + 2 * lt_obj.width/3 - 0.01,
-                        lt_obj.y1,
-                    ),
+                ligature_char_copy2 = PDFChar(
+                    x0=ligature_char.x0 + ligature_char.width/3 + .01,
+                    y0=ligature_char.y0,
+                    x1=ligature_char.x0 + 2 * ligature_char.width/3 - .01,
+                    y1=ligature_char.y1,
+                    text=original_lig_str[1],
+                    height=ligature_char.height,
+                    width=ligature_char.width
                 )
-                lt_obj_c2._text = ligature_str[1]
-                ligatures_list.append(lt_obj_c2)
+                ligatures_list.append(ligature_char_copy2)
 
                 # third char in ligature
-                lt_obj_c3 = deepcopy(lt_obj)
-                lt_obj_c3.set_bbox(
-                    (
-                        lt_obj.x0 + 2 * lt_obj.width/3 + 0.01,
-                        lt_obj.y0,
-                        original_lig_end_x,
-                        lt_obj.y1,
-                    ),
+                ligature_char_copy3 = PDFChar(
+                    x0=ligature_char.x0 + 2 * ligature_char.width/3 + .01,
+                    y0=ligature_char.y0,
+                    x1=original_lig_end_x,
+                    y1=ligature_char.y1,
+                    text=original_lig_str[-1],
+                    height=ligature_char.height,
+                    width=ligature_char.width
                 )
-                lt_obj_c3._text = ligature_str[-1]
-                ligatures_list.append(lt_obj_c3)
+                ligatures_list.append(ligature_char_copy3)
             return ligatures_list
 
         for lt_obj in layout:
@@ -137,100 +120,91 @@ class AnnotationsPDFParser:
                     compiled_regex=compiled_regex,
                 )
             elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno) and lt_obj.get_text() != '\n':  # noqa
-                lt_obj_text = lt_obj.get_text()
+                is_ltchar = isinstance(lt_obj, LTChar)
+                pdf_char_obj = PDFChar(
+                    x0=lt_obj.x0 if is_ltchar else 0,
+                    y0=lt_obj.y0 if is_ltchar else 0,
+                    x1=lt_obj.x1 if is_ltchar else 0,
+                    y1=lt_obj.y1 if is_ltchar else 0,
+                    text=lt_obj.get_text(),
+                    height=lt_obj.height if is_ltchar else 0,
+                    width=lt_obj.width if is_ltchar else 0
+                )
+
                 # ignore CID fonts
                 # these are arithmetic or other symbols the parser
                 # was not able to translate
                 # usually requires a license or better algorithm from parser
-                if not re.search(compiled_regex, lt_obj_text):
+                if not re.search(compiled_regex, pdf_char_obj.text):
                     ligatures_list: List[LTChar] = []
                     char_unicode = None
 
                     try:
-                        char_unicode = ord(lt_obj_text)
+                        char_unicode = ord(pdf_char_obj.text)
                     except Exception:
                         # pdfminer sometimes parses ligatures as actually two chars
                         # in one LTChar object
-                        ligatures_list.extend(expand_ligatures(lt_obj_text))
+                        ligatures_list = expand_ligatures(pdf_char_obj)
+                        ligatures_list.extend(ligatures_list)
 
                     # first check for ligatures, e.g `fi`, `ffi`, etc
                     # the ligatures are one char, so need to expand them
                     # essentially creating new chars for each supposed chars
                     # in the ligature
-                    if char_unicode:
-                        if char_unicode in LIGATURES:
-                            decoded_str = LIGATURES[char_unicode]
-                            ligatures_list.extend(expand_ligatures(decoded_str))
+                    if char_unicode and char_unicode in LIGATURES:
+                        decoded_str = LIGATURES[char_unicode]
+                        pdf_char_obj.text = decoded_str
+                        ligatures_list = expand_ligatures(pdf_char_obj)
+                        ligatures_list.extend(ligatures_list)
 
                     if char_coord_objs_in_pdf:
                         prev_char = char_coord_objs_in_pdf[-1]
 
-                        if should_add_virtual_space(prev_char, lt_obj):
-                            virtual_space_char = LTAnno(' ')
+                        if should_add_virtual_space(prev_char, pdf_char_obj):
+                            virtual_space_char = PDFChar(
+                                x0=0, y0=0, x1=0, y1=0,
+                                text=' ', height=0, width=0, space=True)
                             char_coord_objs_in_pdf.append(virtual_space_char)
                             prev_char = virtual_space_char
-                        if self._is_whitespace(char=lt_obj.get_text()):
-                            if self._not_whitespace(char=prev_char.get_text()):
+
+                        if self._is_whitespace(char=pdf_char_obj.text):
+                            if self._not_whitespace(char=prev_char.text):
                                 # only append if previous is not a whitespace
-                                char_coord_objs_in_pdf.append(lt_obj)
+                                char_coord_objs_in_pdf.append(pdf_char_obj)
                         else:
-                            char_coord_objs_in_pdf.append(lt_obj)
+                            char_coord_objs_in_pdf.append(pdf_char_obj)
                     else:
-                        char_coord_objs_in_pdf.append(lt_obj)
+                        char_coord_objs_in_pdf.append(pdf_char_obj)
                     if ligatures_list:
                         char_coord_objs_in_pdf.extend(ligatures_list)
 
     def parse_pdf_high_level(self, pdf) -> str:
         return high_level.extract_text(pdf)
 
-    def parse_text(self, abstract: str) -> PDFParsedCharacters:
+    def parse_text(self, abstract: str) -> List[PDFChar]:
         """Parse a Pubtator file and produces similar results to
         self.parse_pdf(). The only difference would be the LTChar
         objects will not actual PDF coordinates.
         """
-        @attr.s(frozen=True)
-        class Font():
-            fontname: str = attr.ib()
-
-            def is_vertical(self):
-                return False
-
-            def get_descent(self):
-                return 0
-
-        chars_in_abstract: List[str] = []
-        lt_chars: List[LTChar] = []
-        cropbox_in_pdf = (1, 1)
-        min_idx_in_page = {0: 1}
+        pdf_chars: List[PDFChar] = []
+        # cropbox_in_pdf = (1, 1)
+        # min_idx_in_page = {0: 1}
 
         for c in abstract:
             # create a fake LTChar
-            lt_chars.append(
-                LTChar(
-                    text=c,
-                    matrix=(0, 0, 0, 0, 0, 0),
-                    font=Font(fontname=''),
-                    fontsize=0,
-                    scaling=0,
-                    rise=0,
-                    textwidth=0,
-                    textdisp=None,
-                    ncs=None,
-                    graphicstate=None,
+            pdf_chars.append(
+                PDFChar(
+                    x0=0, y0=0, x1=0, y1=0,
+                    text=c, height=0, width=0,
+                    lower_cropbox=1,
+                    upper_cropbox=1,
+                    min_idx_in_page='0#1'
                 )
             )
 
-        for lt_char in lt_chars:
-            chars_in_abstract.append(lt_char.get_text())
+        return pdf_chars
 
-        return PDFParsedCharacters(
-            char_coord_objs_in_pdf=lt_chars,
-            chars_in_pdf=chars_in_abstract,
-            cropbox_in_pdf=cropbox_in_pdf,
-            min_idx_in_page=min_idx_in_page,
-        )
-
-    def parse_pdf(self, pdf) -> PDFParsedCharacters:
+    def parse_pdf(self, pdf) -> List[PDFChar]:
         """Parse a PDF and create two dictionaries; one
         containing individual LTChar objects with coordinate
         positions, and the other the string character representation.
@@ -242,7 +216,7 @@ class AnnotationsPDFParser:
         interpreter = PDFPageInterpreter(rsrcmgr=rsrcmgr, device=device)
 
         min_idx_in_page: Dict[int, int] = {}
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = []
+        char_coord_objs_in_pdf: List[PDFChar] = []
         cropbox_in_pdf: Tuple[int, int] = None  # type: ignore
 
         compiled_regex = re.compile(r'cid:\d+')
@@ -272,12 +246,17 @@ class AnnotationsPDFParser:
                 compiled_regex=compiled_regex,
             )
 
-        return PDFParsedCharacters(
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            chars_in_pdf=[lt_char.get_text() for lt_char in char_coord_objs_in_pdf],
-            cropbox_in_pdf=cropbox_in_pdf,
-            min_idx_in_page=min_idx_in_page,
-        )
+        min_idx_in_page_str = ''
+        for k, v in min_idx_in_page.items():
+            min_idx_in_page_str += f'{k}#{v},'
+        min_idx_in_page_str = min_idx_in_page_str[:-1]
+
+        for pdf_char in char_coord_objs_in_pdf:
+            pdf_char.lower_cropbox = cropbox_in_pdf[0]
+            pdf_char.upper_cropbox = cropbox_in_pdf[1]
+            pdf_char.min_idx_in_page = min_idx_in_page_str
+
+        return char_coord_objs_in_pdf
 
     def _is_whitespace(self, char: str) -> bool:
         return char in whitespace or char == '\xa0'
@@ -383,26 +362,6 @@ class AnnotationsPDFParser:
                 'Index key error occurred when stripping leading and trailing punctuation.'
                 f' For word "{word}"')
         return word_copy, char_map_copy
-
-    def combine_all_chars(
-        self,
-        parsed_chars: PDFParsedCharacters,
-    ) -> str:
-        """Combines a list of char into a large string. Cannot use
-        pdfminer.high_level() because it produces different string
-        compared to the chars produced with coordinates.
-
-        Different from self.combine_chars_into_words() because that one
-        combines into individual words while ignoring unneeded chars to use
-        in our sequential walking combination. So the chars and coordinate
-        index mapping will not match with the results returned from the
-        NLP service.
-
-        For NLP, use this function instead. This function also produces
-        exactly what pdfminer outputs.
-        """
-        char_list = parsed_chars.chars_in_pdf
-        return ''.join(char_list)
 
     def combine_chars_into_words(
         self,
@@ -563,7 +522,7 @@ class AnnotationsPDFParser:
 
     def extract_tokens(
         self,
-        parsed_chars: PDFParsedCharacters,
+        parsed_chars_list: List[PDFChar]
     ) -> PDFTokenPositionsList:
         """Extract word tokens from the parsed characters.
 
@@ -572,6 +531,20 @@ class AnnotationsPDFParser:
         in the list will contain the keyword, and the index of
         each char in the keyword.
         """
+        min_idx_in_page: Dict[int, int] = {}
+        for pair_to_split in parsed_chars_list[0].min_idx_in_page.split(','):  # type: ignore
+            k, v = pair_to_split.split('#')
+            min_idx_in_page[int(k)] = int(v)
+
+        parsed_chars = PDFParsedCharacters(
+            char_coord_objs_in_pdf=parsed_chars_list,
+            chars_in_pdf=[pdf_char.text for pdf_char in parsed_chars_list],
+            cropbox_in_pdf=(
+                parsed_chars_list[0].lower_cropbox,
+                parsed_chars_list[0].upper_cropbox),  # type: ignore
+            min_idx_in_page=min_idx_in_page,
+        )
+
         # first combine the chars into words
         words_with_char_idx = self.combine_chars_into_words(parsed_chars=parsed_chars)
 
