@@ -107,7 +107,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // The very first time we get the annotationData, set the default values for the frequency filters
-    this.filtersForm.get('minimumFrequency').setValue(2);
+    this.filtersForm.get('minimumFrequency').setValue(1);
     // TODO: Uncomment if we bring back max frequency
     // this.filtersForm.get('maximumFrequency').setValue(this.annotationData[0].frequency);
 
