@@ -338,7 +338,7 @@ class KgService(HybridDBDao):
             }
         ).data()
         result_list = []
-        domain = 'http://amigo.geneontology.org/amigo/gene_product/UniProtKB:'
+        domain = 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
         for meta_result in result:
             xArray = meta_result['xArray']
             item = {'result': xArray}
