@@ -1,8 +1,6 @@
 import attr
 
-from typing import Any, Dict, List, Optional, Tuple, Union
-
-from pdfminer.layout import LTAnno, LTChar
+from typing import Any, Dict, List, Optional, Tuple
 
 from neo4japp.util import CamelDictMixin
 
@@ -14,16 +12,37 @@ class AnnotationRequest(CamelDictMixin):
     organism: dict = attr.ib(default=attr.Factory(dict))
 
 
+@attr.s(frozen=False)
+class PDFChar():
+    text: str = attr.ib()
+    height: float = attr.ib()
+    width: float = attr.ib()
+    x0: float = attr.ib()
+    y0: float = attr.ib()
+    x1: float = attr.ib()
+    y1: float = attr.ib()
+    lower_cropbox: Optional[int] = attr.ib(default=None)
+    upper_cropbox: Optional[int] = attr.ib(default=None)
+    # min_idx_in_page: Optional[Dict[int, int]] = attr.ib(default=None)
+    # TODO: figure out a better way
+    # attr transforms the Dict[int, int] into Dict[str, int] with asdict()
+    min_idx_in_page: Optional[str] = attr.ib(default=None)
+    space: bool = attr.ib(default=False)
+
+    def to_dict(self):
+        return attr.asdict(self)
+
+
 @attr.s(frozen=True)
-class PDFParsedCharacters(CamelDictMixin):
+class PDFParsedCharacters():
     chars_in_pdf: List[str] = attr.ib()
-    char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
+    char_coord_objs_in_pdf: List[PDFChar] = attr.ib()
     cropbox_in_pdf: Tuple[int, int] = attr.ib()
     min_idx_in_page: Dict[int, int] = attr.ib()
 
 
 @attr.s(frozen=True)
-class PDFTokenPositions(CamelDictMixin):
+class PDFTokenPositions():
     page_number: int = attr.ib()
     keyword: str = attr.ib()
     normalized_keyword: str = attr.ib()
@@ -33,9 +52,9 @@ class PDFTokenPositions(CamelDictMixin):
 
 
 @attr.s(frozen=True)
-class PDFTokenPositionsList(CamelDictMixin):
+class PDFTokenPositionsList():
     token_positions: Any = attr.ib()
-    char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
+    char_coord_objs_in_pdf: List[PDFChar] = attr.ib()
     cropbox_in_pdf: Tuple[int, int] = attr.ib()
     min_idx_in_page: Dict[int, int] = attr.ib()
     word_index_dict: Dict[int, str] = attr.ib(default=attr.Factory(list))
@@ -115,13 +134,13 @@ class GeneAnnotation(Annotation):
 
 
 @attr.s(frozen=False)
-class LMDBMatch(CamelDictMixin):
+class LMDBMatch():
     entities: List[dict] = attr.ib()
     tokens: List[PDFTokenPositions] = attr.ib()
 
 
 @attr.s(frozen=True)
-class EntityResults(CamelDictMixin):
+class EntityResults():
     matched_anatomy: Dict[str, LMDBMatch] = attr.ib()
     matched_chemicals: Dict[str, LMDBMatch] = attr.ib()
     matched_compounds: Dict[str, LMDBMatch] = attr.ib()
@@ -134,7 +153,7 @@ class EntityResults(CamelDictMixin):
 
 
 @attr.s(frozen=True)
-class SpecifiedOrganismStrain(CamelDictMixin):
+class SpecifiedOrganismStrain():
     synonym: str = attr.ib()
     organism_id: str = attr.ib()
     category: str = attr.ib()
