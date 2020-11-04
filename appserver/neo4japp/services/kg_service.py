@@ -3,6 +3,8 @@ from typing import Dict, List
 
 from flask import current_app
 
+from neo4japp.constants import BIOCYC_ORG_ID_DICT
+
 from neo4japp.services.common import HybridDBDao
 from neo4japp.models import (
     DomainURLsMap,
@@ -302,6 +304,7 @@ class KgService(HybridDBDao):
     def get_biocyc_genes(
         self,
         ncbi_gene_ids: List[int],
+        taxID: str
     ):
         query = self.get_biocyc_genes_query()
         result = self.graph.run(
@@ -315,7 +318,32 @@ class KgService(HybridDBDao):
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 biocyc_id = meta_result['x']['biocyc_id']
-                item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
+                if taxID in BIOCYC_ORG_ID_DICT.keys():
+                    orgID = BIOCYC_ORG_ID_DICT[taxID]
+                    item['link'] = f'https://biocyc.org/gene?orgid={orgID}&id={biocyc_id}'
+                else:
+                    item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
+            result_list.append(item)
+        return result_list
+
+    def get_go_genes(
+        self,
+        ncbi_gene_ids: List[int],
+    ):
+        query = self.get_go_genes_query()
+        result = self.graph.run(
+            query,
+            {
+                'ncbi_gene_ids': ncbi_gene_ids,
+            }
+        ).data()
+        result_list = []
+        domain = 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
+        for meta_result in result:
+            xArray = meta_result['xArray']
+            item = {'result': xArray}
+            if (xArray is not None):
+                item['link'] = domain
             result_list.append(item)
         return result_list
 
@@ -377,6 +405,14 @@ class KgService(HybridDBDao):
         MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
         OPTIONAL MATCH (g)-[:GO_LINK]-(x:CellularComponent:db_GO)
+        RETURN g, collect(x) as xArray
+        """
+
+    def get_go_genes_query(self):
+        return """
+        MATCH (g:Gene:db_NCBI)
+        WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:GO_LINK]-(x:db_GO)
         RETURN g, collect(x) as xArray
         """
 
