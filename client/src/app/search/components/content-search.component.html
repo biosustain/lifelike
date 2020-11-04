@@ -84,19 +84,23 @@
                       <app-file-type-label [object]="result.item"></app-file-type-label>
                     </div>
                     <div class="search-results-item-header text-truncate">
-                      <h5 class="text-truncate">
+                      <h5 class="text-truncate" [style.padding]="'1px 0'">
                         <a [appLink]="['/projects', result.item.project.projectName]" [newTab]="true">{{ result.item.project.projectName }}</a>
                         /
-                        <a [appLink]="getObjectCommands(result.item)" [newTab]="true">{{ result.item.name }}</a>
+                        <a [appLink]="getObjectCommands(result.item)" [newTab]="true">
+                          <app-term-highlight [text]="result.item.name" [highlightTerms]="resultQuery ? resultQuery.phrases : []"></app-term-highlight>
+                        </a>
                       </h5>
                     </div>
                     <div class="mt-2 text-truncate"><i>Created by user {{ result.item.creator.username }} on {{ result.item.creationDate | date: 'fullDate'}}</i></div>
                     <div class="mt-2 paragraph-truncate-3">
-                      {{ result.item.description }}
+                      <app-term-highlight [text]="result.item.description" [highlightTerms]="resultQuery ? resultQuery.phrases : []"></app-term-highlight>
                     </div>
                     <ng-container *ngIf="result.item.type == 'file' && result.item.highlight">
                       <div class="dropdown-divider"></div>
-                      <div class="mt-2 paragraph-truncate-3" [innerHTML]="result.item.highlight[0] + '...' | scrubHtml"></div>
+                      <div class="mt-2 paragraph-truncate-3">
+                        <app-highlight-text [highlight]="result.item.highlight[0]"></app-highlight-text>
+                      </div>
                       <div class="d-flex align-items-center justify-content-end">
                         <a
                         *ngIf="result.item.doi"
