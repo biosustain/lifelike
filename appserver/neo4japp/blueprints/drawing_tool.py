@@ -148,7 +148,7 @@ def upload_map(projects_name: str):
     drawing_map.set_hash_id()
     db.session.commit()
 
-    return jsonify(result={'hashId': drawing_map.hash_id}), 200
+    yield jsonify(result={'hashId': drawing_map.hash_id}), 200
 
 
 @bp.route('/community', methods=['GET'])
