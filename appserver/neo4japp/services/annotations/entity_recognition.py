@@ -135,73 +135,37 @@ class EntityRecognitionService:
     def anatomy_exclusion(self) -> Set[str]:
         return self._anatomy_exclusion
 
-    @anatomy_exclusion.setter
-    def anatomy_exclusion(self, anatomy):
-        self._anatomy_exclusion = anatomy
-
     @property
     def chemical_exclusion(self) -> Set[str]:
         return self._chemical_exclusion
-
-    @chemical_exclusion.setter
-    def chemical_exclusion(self, chemicals):
-        self._chemical_exclusion = chemicals
 
     @property
     def compound_exclusion(self) -> Set[str]:
         return self._compound_exclusion
 
-    @compound_exclusion.setter
-    def compound_exclusion(self, compounds):
-        self._compound_exclusion = compounds
-
     @property
     def disease_exclusion(self) -> Set[str]:
         return self._disease_exclusion
-
-    @disease_exclusion.setter
-    def disease_exclusion(self, diseases):
-        self._disease_exclusion = diseases
 
     @property
     def food_exclusion(self) -> Set[str]:
         return self._food_exclusion
 
-    @food_exclusion.setter
-    def food_exclusion(self, foods):
-        self._food_exclusion = foods
-
     @property
     def gene_exclusion(self) -> Set[str]:
         return self._gene_exclusion
-
-    @gene_exclusion.setter
-    def gene_exclusion(self, genes):
-        self._gene_exclusion = genes
 
     @property
     def phenotype_exclusion(self) -> Set[str]:
         return self._phenotype_exclusion
 
-    @phenotype_exclusion.setter
-    def phenotype_exclusion(self, phenotypes):
-        self._phenotype_exclusion = phenotypes
-
     @property
     def protein_exclusion(self) -> Set[str]:
         return self._protein_exclusion
 
-    @protein_exclusion.setter
-    def protein_exclusion(self, proteins):
-        self._protein_exclusion = proteins
-
     @property
     def species_exclusion(self) -> Set[str]:
         return self._species_exclusion
-
-    @species_exclusion.setter
-    def species_exclusion(self, species):
-        self._species_exclusion = species
 
     @property
     def matched_anatomy(self) -> Dict[str, LMDBMatch]:
@@ -276,57 +240,93 @@ class EntityRecognitionService:
             matched_species=self.matched_species
         )
 
-    def _get_anatomy_annotations_to_exclude(self, exclusion_list: List[dict]):
+    def _get_anatomy_annotations_to_exclude(
+        self,
+        exclusion_collection: Set[str],
+        exclusion_list: List[dict]
+    ):
         # case insensitive
-        return set(
-            normalize_str(exclusion.get('text')) for exclusion in exclusion_list if  # noqa
-                exclusion.get('type') == EntityType.ANATOMY.value and exclusion.get('text'))  # noqa
+        for exclusion in exclusion_list:
+            if exclusion.get('text') and exclusion.get('type') == EntityType.ANATOMY.value:
+                exclusion_collection.add(normalize_str(exclusion.get('text')))
 
-    def _get_chemical_annotations_to_exclude(self, exclusion_list: List[dict]):
+    def _get_chemical_annotations_to_exclude(
+        self,
+        exclusion_collection: Set[str],
+        exclusion_list: List[dict]
+    ):
         # case insensitive
-        return set(
-            normalize_str(exclusion.get('text')) for exclusion in exclusion_list if  # noqa
-                exclusion.get('type') == EntityType.CHEMICAL.value and exclusion.get('text'))  # noqa
+        for exclusion in exclusion_list:
+            if exclusion.get('text') and exclusion.get('type') == EntityType.CHEMICAL.value:
+                exclusion_collection.add(normalize_str(exclusion.get('text')))
 
-    def _get_compound_annotations_to_exclude(self, exclusion_list: List[dict]):
+    def _get_compound_annotations_to_exclude(
+        self,
+        exclusion_collection: Set[str],
+        exclusion_list: List[dict]
+    ):
         # case insensitive
-        return set(
-            normalize_str(exclusion.get('text')) for exclusion in exclusion_list if  # noqa
-                exclusion.get('type') == EntityType.COMPOUND.value and exclusion.get('text'))  # noqa
+        for exclusion in exclusion_list:
+            if exclusion.get('text') and exclusion.get('type') == EntityType.COMPOUND.value:
+                exclusion_collection.add(normalize_str(exclusion.get('text')))
 
-    def _get_disease_annotations_to_exclude(self, exclusion_list: List[dict]):
+    def _get_disease_annotations_to_exclude(
+        self,
+        exclusion_collection: Set[str],
+        exclusion_list: List[dict]
+    ):
         # case insensitive
-        return set(
-            normalize_str(exclusion.get('text')) for exclusion in exclusion_list if  # noqa
-                exclusion.get('type') == EntityType.DISEASE.value and exclusion.get('text'))  # noqa
+        for exclusion in exclusion_list:
+            if exclusion.get('text') and exclusion.get('type') == EntityType.DISEASE.value:
+                exclusion_collection.add(normalize_str(exclusion.get('text')))
 
-    def _get_food_annotations_to_exclude(self, exclusion_list: List[dict]):
+    def _get_food_annotations_to_exclude(
+        self,
+        exclusion_collection: Set[str],
+        exclusion_list: List[dict]
+    ):
         # case insensitive
-        return set(
-            normalize_str(exclusion.get('text')) for exclusion in exclusion_list if  # noqa
-                exclusion.get('type') == EntityType.FOOD.value and exclusion.get('text'))  # noqa
+        for exclusion in exclusion_list:
+            if exclusion.get('text') and exclusion.get('type') == EntityType.FOOD.value:
+                exclusion_collection.add(normalize_str(exclusion.get('text')))
 
-    def _get_gene_annotations_to_exclude(self, exclusion_list: List[dict]):
-        return set(
-            exclusion.get('text') for exclusion in exclusion_list if
-                exclusion.get('type') == EntityType.GENE.value and exclusion.get('text'))  # noqa
+    def _get_gene_annotations_to_exclude(
+        self,
+        exclusion_collection: Set[str],
+        exclusion_list: List[dict]
+    ):
+        for exclusion in exclusion_list:
+            if exclusion.get('text') and exclusion.get('type') == EntityType.GENE.value:
+                exclusion_collection.add(exclusion.get('text'))  # type: ignore
 
-    def _get_phenotype_annotations_to_exclude(self, exclusion_list: List[dict]):
+    def _get_phenotype_annotations_to_exclude(
+        self,
+        exclusion_collection: Set[str],
+        exclusion_list: List[dict]
+    ):
         # case insensitive
-        return set(
-            normalize_str(exclusion.get('text')) for exclusion in exclusion_list if  # noqa
-                exclusion.get('type') == EntityType.PHENOTYPE.value and exclusion.get('text'))  # noqa
+        for exclusion in exclusion_list:
+            if exclusion.get('text') and exclusion.get('type') == EntityType.PHENOTYPE.value:
+                exclusion_collection.add(normalize_str(exclusion.get('text')))
 
-    def _get_protein_annotations_to_exclude(self, exclusion_list: List[dict]):
-        return set(
-            exclusion.get('text') for exclusion in exclusion_list if
-                exclusion.get('type') == EntityType.PROTEIN.value and exclusion.get('text'))  # noqa
+    def _get_protein_annotations_to_exclude(
+        self,
+        exclusion_collection: Set[str],
+        exclusion_list: List[dict]
+    ):
+        for exclusion in exclusion_list:
+            if exclusion.get('text') and exclusion.get('type') == EntityType.PROTEIN.value:
+                exclusion_collection.add(exclusion.get('text'))  # type: ignore
 
-    def _get_species_annotations_to_exclude(self, exclusion_list: List[dict]):
+    def _get_species_annotations_to_exclude(
+        self,
+        exclusion_collection: Set[str],
+        exclusion_list: List[dict]
+    ):
         # case insensitive
-        return set(
-            normalize_str(exclusion.get('text')) for exclusion in exclusion_list if  # noqa
-                exclusion.get('type') == EntityType.SPECIES.value and exclusion.get('text'))  # noqa
+        for exclusion in exclusion_list:
+            if exclusion.get('text') and exclusion.get('type') == EntityType.SPECIES.value:
+                exclusion_collection.add(normalize_str(exclusion.get('text')))
 
     def _get_inclusion_pairs(self) -> List[Tuple[str, str, Any, Any]]:
         return [
@@ -413,17 +413,6 @@ class EntityRecognitionService:
                         inclusion_collection[normalized_entity_name].append(entity)
                     else:
                         inclusion_collection[normalized_entity_name] = [entity]
-
-    def _set_annotation_exclusions(
-        self,
-        annotations_to_exclude: List[dict],
-        exclusion_set: Set[str],
-        create_exclusion_set_func,
-    ) -> None:
-        """Creates a set of words to exclude.
-        Used for entity custom annotation lookups.
-        """
-        exclusion_set = create_exclusion_set_func(annotations_to_exclude)
 
     def entity_lookup_for_anatomy(
         self,
@@ -1227,7 +1216,7 @@ class EntityRecognitionService:
                 )
             ]
         deque(starmap(
-            self._set_annotation_exclusions,
+            lambda to_exclude, exclude_collection, func: func(exclude_collection, to_exclude),
             [
                 (
                     global_annotations_to_exclude + excluded_annotations,
