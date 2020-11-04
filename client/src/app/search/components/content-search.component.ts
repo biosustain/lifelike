@@ -88,6 +88,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     const commands = this.getObjectCommands(object);
     this.workspaceManager.navigate(commands, {
       fragment: `jump=${encodeURIComponent(text)}`,
+      newTab: true,
+      sideBySide: true,
     });
   }
 
