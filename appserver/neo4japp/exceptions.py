@@ -18,13 +18,19 @@ class BaseException(Exception):
 
 
 class AnnotationError(BaseException):
-    """AN error occured during the annotation process"""
+    """An error occured during the annotation process"""
     def __init__(self, message, additional_msgs=[]) -> None:
         super().__init__('Annotation Error', message, additional_msgs)
 
 
+class LMDBError(BaseException):
+    """An error occured during the LMDB process"""
+    def __init__(self, message, additional_msgs=[]) -> None:
+        super().__init__('LMDB Error', message, additional_msgs)
+
+
 class FileUploadError(BaseException):
-    """AN error occured during the file upload process"""
+    """An error occured during the file upload process"""
     def __init__(self, message, additional_msgs=[]) -> None:
         super().__init__('File Upload Error', message, additional_msgs)
 
