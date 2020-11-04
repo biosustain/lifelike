@@ -267,7 +267,8 @@ def reannotate_all():
 @app.cli.command('files2gcp')
 @click.argument('bucket_name', nargs=1)
 @click.argument('project_name', nargs=1)
-def files2gcp(bucket_name, project_name):
+@click.argument('username', nargs=1)
+def files2gcp(bucket_name, project_name, username):
     """ Fetches all the raw PDF files along
     with some meta data information on the
     Files and uploads them into Google Cloud
@@ -275,7 +276,7 @@ def files2gcp(bucket_name, project_name):
     seed a different database environment.
 
     Example usage:
-    > flask files2gcp cag-data cag-data
+    > flask files2gcp cag-data cag-data testuser
 
     NOTE: This is meant for an emergency transfer
     of files to different envrionments.
@@ -285,7 +286,9 @@ def files2gcp(bucket_name, project_name):
     import json
     from google.cloud import storage
     from google.cloud.exceptions import NotFound
+    from sqlalchemy import and_
     from neo4japp.models import (
+        AppUser,
         Files,
         FileContent,
         Projects,
@@ -310,8 +313,14 @@ def files2gcp(bucket_name, project_name):
         ).join(
             Projects,
             Files.project == Projects.id,
+        ).join(
+            AppUser,
+            Files.user_id == AppUser.id,
         ).filter(
-            Projects.project_name == project_name
+            and_(
+                Projects.project_name == project_name,
+                AppUser.username == username,
+            )
         )
         for fi, fi_content in query.all():
             if fi.filename.find('.enrichment') > -1:
