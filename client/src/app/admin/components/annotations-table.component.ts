@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { GlobalAnnotationService } from 'app/shared/services/global-annotation-service';
-import { GlobalAnnotation, GlobalAnnotationRow, GlobalExclusion, GlobalInclusion } from 'app/interfaces/annotation';
+import { GlobalAnnotation, GlobalAnnotationRow } from 'app/interfaces/annotation';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { PaginatedRequestOptions, ResultList, StandardRequestOptions } from 'app/interfaces/shared.interface';
 import { CollectionModal } from 'app/shared/utils/collection-modal';
@@ -24,7 +24,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
     private readonly defaultLocator: StandardRequestOptions = {
         limit: 100,
         page: 1,
-        sort: '-dateModified',
+        sort: '',
     };
 
     readonly filterForm: FormGroup = new FormGroup({
@@ -40,7 +40,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         ...this.defaultLocator,
     };
 
-    readonly results = new CollectionModal<GlobalAnnotationRow>([], {
+    readonly results = new CollectionModal<GlobalAnnotation>([], {
         multipleSelection: true,
     });
 
@@ -67,8 +67,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: annotations}) => {
             this.collectionSize = annotations.total;
-            const results = this.toTableFormat(annotations.results);
-            this.results.replace(results);
+            this.results.replace(annotations.results);
         });
 
         this.routerParamSubscription = this.route.queryParams.pipe(
@@ -95,7 +94,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         this.locator = {...this.locator, page};
         this.globalAnnotationService.getAnnotations(this.locator).pipe(first()).subscribe(
             (({results: annotations}) => {
-                this.results.replace(this.toTableFormat(annotations));
+                this.results.replace(annotations);
             })
         );
     }
@@ -110,44 +109,6 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         if (this.isAllSelected()) {
 
         }
-    }
-
-    private toTableFormat(annotations: GlobalAnnotation[]): GlobalAnnotationRow[] {
-        return annotations.map((g: GlobalAnnotation) => {
-            let annotation: GlobalInclusion | GlobalExclusion;
-            let text: string;
-            let reason: string;
-            let entityType: string;
-            let annotationId: string;
-            let comment: string;
-            if (g.type === 'inclusion') {
-                annotation = g.annotation as GlobalInclusion;
-                text = annotation.meta.allText;
-                reason = '-';
-                entityType = annotation.meta.type;
-                annotationId = annotation.meta.id;
-                comment = '-';
-            } else {
-                annotation = g.annotation as GlobalExclusion;
-                text = annotation.text;
-                reason = annotation.reason;
-                entityType = annotation.type;
-                annotationId = annotation.id;
-                comment = annotation.comment;
-            }
-            return {
-                pid: g.id,
-                text,
-                type: g.type,
-                filename: g.filename,
-                addedBy: g.userEmail,
-                reason,
-                entityType,
-                creationDate: g.creationDate,
-                annotationId,
-                comment,
-            } as GlobalAnnotationRow;
-        });
     }
 
     refresh() {
