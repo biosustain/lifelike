@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpEvent } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { from, Observable } from 'rxjs';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { PdfFile, PdfFileUpload, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
 import { OrganismAutocomplete } from 'app/interfaces/neo4j.interface';
@@ -149,6 +149,20 @@ export class PdfFilesService extends AbstractService {
     return this.http.post(
       `${this.ANNOTATIONS_BASE_URL}/${projectName}/reannotate`,
       {annotationMethod, fileIds}, this.getHttpOptions(true));
+  }
+
+  moveFile(projectName: string,
+           fileId: string,
+           destinationDirectoryId: number): Observable<any> {
+    return this.http.post<PdfFile>(
+        `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/files/${encodeURIComponent(fileId)}/move`, {
+          destination: {
+            directoryId: destinationDirectoryId,
+          },
+        },
+        this.getHttpOptions(true),
+    );
+
   }
 
   deleteFile(projectName, fileId): Observable<any> {
