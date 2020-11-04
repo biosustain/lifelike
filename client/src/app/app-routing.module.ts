@@ -22,8 +22,8 @@ import { MapEditorComponent } from './drawing-tool/components/map-editor/map-edi
 import { MapViewComponent } from './drawing-tool/components/map-view.component';
 import { CommunityBrowserComponent } from './file-browser/components/community-browser.component';
 import { BrowserComponent } from './file-browser/components/browser/browser.component';
-import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
-import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
+// import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
+// import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
 import { EnrichmentTableViewerComponent } from './file-browser/components/enrichment-table-viewer.component';
 import { FileNavigatorComponent } from './file-navigator/file-navigator.component';
