@@ -95,6 +95,11 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         .split(',')
         .filter((gene) => gene !== '');
       this.taxID = resultArray[1];
+      if (this.taxID === '562' || this.taxID === '83333') {
+        this.taxID = '511145';
+      } else if (this.taxID === '4932') {
+        this.taxID = '559292';
+      }
       this.organism = resultArray[2];
       this.removeDuplicates(this.importGenes);
       this.currentPage = 1;
@@ -153,7 +158,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   // Get data from enrichment domains.
   getDomains() {
     this.worksheetViewerService
-      .getNCBIEnrichmentDomains(this.ncbiIds)
+      .getNCBIEnrichmentDomains(this.ncbiIds, this.taxID)
       .subscribe((result) => {
         this.tableEntries = result.map((wrapper) =>
           this.processEnrichmentNodeArray(wrapper)

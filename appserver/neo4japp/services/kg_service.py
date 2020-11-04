@@ -302,6 +302,7 @@ class KgService(HybridDBDao):
     def get_biocyc_genes(
         self,
         ncbi_gene_ids: List[int],
+        taxID: str
     ):
         query = self.get_biocyc_genes_query()
         result = self.graph.run(
@@ -311,11 +312,16 @@ class KgService(HybridDBDao):
             }
         ).data()
         result_list = []
+        biocyc_org_id = {'9606': 'HUMAN', '511145': 'ECOLI', '559292': 'YEAST'}
         for meta_result in result:
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 biocyc_id = meta_result['x']['biocyc_id']
-                item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
+                if taxID in biocyc_org_id.keys():
+                    orgID = biocyc_org_id[taxID]
+                    item['link'] = f'https://biocyc.org/gene?orgid={orgID}&id={biocyc_id}'
+                else:
+                    item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
             result_list.append(item)
         return result_list
 
