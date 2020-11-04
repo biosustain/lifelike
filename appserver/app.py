@@ -279,6 +279,8 @@ def files2gcp(bucket_name, project_name):
 
     NOTE: This is meant for an emergency transfer
     of files to different envrionments.
+
+    NOTE: This may pick up non-pdf files
     """
     import json
     from google.cloud import storage
@@ -312,22 +314,25 @@ def files2gcp(bucket_name, project_name):
             Projects.project_name == project_name
         )
         for fi, fi_content in query.all():
-            app.logger.info(f'Processing file {fi.filename}...')
-            filename = f"{fi.filename.replace('.pdf', '')}.pdf"
-            blob = bucket.blob(f'raw_file/{filename}')
-            blob.upload_from_string(fi_content.raw_file, 'application/pdf')
+            if fi.filename.find('.enrichment') > -1:
+                app.logger.info(f'File "{fi.filename}" looks like an enrichment file. Skipping')
+            else:
+                app.logger.info(f'Processing file {fi.filename}...')
+                filename = f"{fi.filename.replace('.pdf', '')}.pdf"
+                blob = bucket.blob(f'raw_file/{filename}')
+                blob.upload_from_string(fi_content.raw_file, 'application/pdf')
 
-            meta_filename = f"{fi.filename.replace('.pdf', '')}.json"
-            meta_blob = bucket.blob(f'meta_data/{meta_filename}')
-            meta_blob.upload_from_string(
-                json.dumps(fi.to_dict(include=[
-                    'annotations',
-                    'custom_annotations',
-                    'excluded_annotations',
-                    'filename',
-                    'description',
-                    'upload_url'
-                ])), 'application/json')
+                meta_filename = f"{fi.filename.replace('.pdf', '')}.json"
+                meta_blob = bucket.blob(f'meta_data/{meta_filename}')
+                meta_blob.upload_from_string(
+                    json.dumps(fi.to_dict(include=[
+                        'annotations',
+                        'custom_annotations',
+                        'excluded_annotations',
+                        'filename',
+                        'description',
+                        'upload_url'
+                    ])), 'application/json')
         app.logger.info(f'Finished loading all files')
 
 
@@ -343,18 +348,25 @@ def bulk_upload_files(gcp_source, project_name, username):
 
     > flask bulk-upload cag-data test admin
 
-    This will create a project called 'cag-data'
-    and load PDF files from a Google Cloud storage.
+    This will:
+        1. create a project called 'cag-data'
+        2. load PDF files from a Google Cloud Storage
+        3. load the corresponding file's 'metadata' such as
+        custom annotations
+        4. modify all references of 'user_id' in the
+        any annotations to the user specified in the CLI
 
     NOTE: This is meant for an emergency backup. A more
     robust system should be designed for this or this
     should be refactored once we have a user facing
     bulk interface.
     """
+    import copy
     import hashlib
     import uuid
     import re
     import io
+    import json
     from google.cloud import storage
     from sqlalchemy import and_
     from sqlalchemy.orm.exc import NoResultFound
@@ -409,7 +421,20 @@ def bulk_upload_files(gcp_source, project_name, username):
 
         ***ARANGO_USERNAME***_dir = projects_service.get_***ARANGO_USERNAME***_dir(project)
 
-        def load_file(raw_content, filename):
+        def format_annotations(metadata):
+            """ Swaps the user_ids in the annotations """
+            exclusions = metadata['excludedAnnotations']
+            custom_annotations = metadata['customAnnotations']
+            for excl in exclusions:
+                excl.update({'user_id': user.id})
+            for c in custom_annotations:
+                c.update({'user_id': user.id})
+            return metadata
+
+        def load_file(raw_content, filename, metadata):
+            meta_json = json.loads(metadata)
+            meta_json = format_annotations(meta_json)
+
             max_fname_length = Files.filename.property.columns[0].type.length
             if len(filename) > max_fname_length:
                 name, extension = os.path.splitext(filename)
@@ -446,24 +471,33 @@ def bulk_upload_files(gcp_source, project_name, username):
             new_file = Files(
                 file_id=file_id,
                 filename=filename,
-                description='',
+                description=meta_json['description'],
                 content_id=file_content.id,
                 user_id=user.id,
                 project=project.id,
                 dir_id=***ARANGO_USERNAME***_dir.id,
-                upload_url='',
+                upload_url=meta_json['uploadUrl'],
+                excluded_annotations=meta_json['excludedAnnotations'],
+                custom_annotations=meta_json['customAnnotations'],
             )
             db.session.add(new_file)
             db.session.commit()
             return new_file
 
         new_file_ids = []
-        for fi in bucket.list_blobs():
-            print(f'Loading file [{fi.name}]...')
+
+        for fi in bucket.list_blobs(prefix='raw_file'):
+            _, filename = fi.name.split('/')
+            metadata = bucket.get_blob(f"meta_data/{filename.replace('.pdf', '.json')}")
+            print(f'Loading file [{filename}]...')
             raw_content = fi.download_as_bytes()
-            new_file = load_file(raw_content, fi.name)
-            if new_file is not None:
-                new_file_ids.append(new_file.file_id)
+            try:
+                new_file = load_file(raw_content, filename, metadata.download_as_bytes())
+                if new_file is not None:
+                    new_file_ids.append(new_file.file_id)
+            except Exception as e:
+                print('Failed to load file: {filename}', str(e))
+                pass
 
         docs = files_queries.get_all_files_and_content_by_id(
             file_ids=new_file_ids,
@@ -474,7 +508,7 @@ def bulk_upload_files(gcp_source, project_name, username):
         for doc in docs:
             try:
                 annotated_files.append(annotate(doc))
-            except AnnotationError:
+            except (AnnotationError, Exception):
                 app.logger.info(f'Filename {filename} failed to annotate.')
 
         db.session.bulk_update_mappings(Files, annotated_files)
@@ -497,7 +531,7 @@ def seed_global_annotation_list(filename):
     # Make the file_id column nullable if we
     # don't use it, or refactor this function
     # to use a "meaningful" file_id
-    random_file = FileContent.query.first()
+    random_file_id = 0
     with open(os.path.join(FIXTURE_PATH, filename)) as fi:
         fix = json.load(fi)
         inclusions = fix['inclusions']
@@ -507,7 +541,7 @@ def seed_global_annotation_list(filename):
             gl = GlobalList(
                 annotation=new_incl,
                 type='inclusion',
-                file_id=random_file.id,
+                file_id=random_file_id,
                 reviewed=False,
                 approved=False,
                 creation_date=new_incl.get('inclusion_date', current_time),
@@ -518,7 +552,7 @@ def seed_global_annotation_list(filename):
             gl = GlobalList(
                 annotation=new_excl,
                 type='exclusion',
-                file_id=random_file.id,
+                file_id=random_file_id,
                 reviewed=False,
                 approved=False,
                 creation_date=new_incl.get('exclusion_date', current_time),
