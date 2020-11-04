@@ -20,7 +20,6 @@ import { AnnotationEditDialogComponent } from './components/annotation-edit-dial
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { AddedAnnotationExclsuion } from 'app/drawing-tool/services/interfaces';
 import { escape, uniqueId } from 'lodash';
 import { SEARCH_LINKS } from 'app/shared/links';
 
@@ -701,6 +700,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
     const dialogRef = this.modalService.open(AnnotationExcludeDialogComponent);
     dialogRef.componentInstance.text = annExclusion.text;
+    dialogRef.componentInstance.type = annExclusion.type;
     dialogRef.result.then(exclusionData => {
       this.annotationExclusionAdded.emit({ ...exclusionData, ...annExclusion });
     }, () => {
