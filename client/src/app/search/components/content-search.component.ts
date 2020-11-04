@@ -20,7 +20,8 @@ import { HighlightDisplayLimitChange } from '../../file-browser/components/file-
   templateUrl: './content-search.component.html',
 })
 export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchOptions,
-    RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
+  RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
+  @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   private readonly defaultLimit = 20;
@@ -91,36 +92,38 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   }
 
   highlightDisplayLimitChanged(object: DirectoryObject, change: HighlightDisplayLimitChange) {
-    const queue: {
-      index: number,
-      text: string,
-    }[] = [];
+    if (this.snippetAnnotations) {
+      const queue: {
+        index: number,
+        text: string,
+      }[] = [];
 
-    if (!object.highlightAnnotated) {
-      object.highlightAnnotated = [];
-    }
+      if (!object.highlightAnnotated) {
+        object.highlightAnnotated = [];
+      }
 
-    for (let i = change.previous; i < change.limit; i++) {
-      if (!object.highlightAnnotated[i]) {
-        queue.push({
-          index: i,
-          text: object.highlight[i],
+      for (let i = change.previous; i < change.limit; i++) {
+        if (!object.highlightAnnotated[i]) {
+          queue.push({
+            index: i,
+            text: object.highlight[i],
+          });
+        }
+      }
+
+      if (queue.length) {
+        this.contentSearchService.annotate({
+          texts: queue.map(item => item.text),
+        }).subscribe(result => {
+          this.zone.run(() => {
+            for (let i = 0, j = change.previous; j < change.limit; i++, j++) {
+              const index = queue[i].index;
+              object.highlight[index] = result.texts[i];
+              object.highlightAnnotated[index] = true;
+            }
+          });
         });
       }
-    }
-
-    if (queue.length) {
-      this.contentSearchService.annotate({
-        texts: queue.map(item => item.text),
-      }).subscribe(result => {
-        this.zone.run(() => {
-          for (let i = 0, j = change.previous; j < change.limit; i++, j++) {
-            const index = queue[i].index;
-            object.highlight[index] = result.texts[i];
-            object.highlightAnnotated[index] = true;
-          }
-        });
-      });
     }
   }
 }
