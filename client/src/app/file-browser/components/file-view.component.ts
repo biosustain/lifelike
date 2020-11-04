@@ -136,6 +136,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
                                                           result: [pdfFile, pdfFileContent, ann],
                                                           value: [file, loc],
                                                         }) => {
+      // Could be an old link that we're loading
+      if ((pdfFile as any).project_name.toLowerCase() !== this.projectName.toLowerCase()) {
+        this.projectName = (pdfFile as any).project_name;
+      }
+
       this.pdfData = {data: new Uint8Array(pdfFileContent)};
       this.annotations = ann;
       this.updateAnnotationIndex();
