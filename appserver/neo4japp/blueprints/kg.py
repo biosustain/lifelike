@@ -105,9 +105,7 @@ def get_ncbi_enrichment_domains():
     kg = get_kg_service()
     regulon = kg.get_regulon_genes(node_ids)
     biocyc = kg.get_biocyc_genes(node_ids, taxID)
-    cellular = kg.get_cellular_go_genes(node_ids)
-    biological = kg.get_biological_go_genes(node_ids)
-    molecular = kg.get_molecular_go_genes(node_ids)
+    go = kg.get_go_genes(node_ids)
     string = kg.get_string_genes(node_ids)
     uniprot = kg.get_uniprot_genes(node_ids)
     nodes = []
@@ -115,9 +113,7 @@ def get_ncbi_enrichment_domains():
         node = {'regulon': regulon[i],
                 'uniprot': uniprot[i],
                 'string': string[i],
-                'molecularGo': molecular[i],
-                'biologicalGo': biological[i],
-                'cellularGo': cellular[i],
+                'go': go[i],
                 'biocyc': biocyc[i]
                 }
         nodes.append(node)
