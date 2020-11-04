@@ -264,6 +264,73 @@ def reannotate_all():
     db.session.commit()
 
 
+@app.cli.command('files2gcp')
+@click.argument('bucket_name', nargs=1)
+@click.argument('project_name', nargs=1)
+def files2gcp(bucket_name, project_name):
+    """ Fetches all the raw PDF files along
+    with some meta data information on the
+    Files and uploads them into Google Cloud
+    Storage. This data can then be used to
+    seed a different database environment.
+
+    Example usage:
+    > flask files2gcp cag-data cag-data
+
+    NOTE: This is meant for an emergency transfer
+    of files to different envrionments.
+    """
+    import json
+    from google.cloud import storage
+    from google.cloud.exceptions import NotFound
+    from neo4japp.models import (
+        Files,
+        FileContent,
+        Projects,
+    )
+
+    storage_client = storage.Client()
+
+    try:
+        bucket = storage_client.get_bucket(bucket_name)
+    except NotFound:
+        bucket = storage_client.bucket(bucket_name)
+        bucket = storage_client.create_bucket(bucket, location='us')
+        app.logger.info(f'Created Google Cloud Bucket : {bucket_name}')
+
+    with app.app_context():
+        query = db.session.query(
+            Files,
+            FileContent,
+        ).join(
+            Files,
+            Files.content_id == FileContent.id
+        ).join(
+            Projects,
+            Files.project == Projects.id,
+        ).filter(
+            Projects.project_name == project_name
+        )
+        for fi, fi_content in query.all():
+            app.logger.info(f'Processing file {fi.filename}...')
+            filename = f"{fi.filename.replace('.pdf', '')}.pdf"
+            blob = bucket.blob(f'raw_file/{filename}')
+            blob.upload_from_string(fi_content.raw_file, 'application/pdf')
+
+            meta_filename = f"{fi.filename.replace('.pdf', '')}.json"
+            meta_blob = bucket.blob(f'meta_data/{meta_filename}')
+            meta_blob.upload_from_string(
+                json.dumps(fi.to_dict(include=[
+                    'annotations',
+                    'custom_annotations',
+                    'excluded_annotations',
+                    'filename',
+                    'description',
+                    'upload_url'
+                ])), 'application/json')
+        app.logger.info(f'Finished loading all files')
+
+
 @app.cli.command('bulk-upload')
 @click.argument('gcp_source', nargs=1)
 @click.argument('project_name', nargs=1)
