@@ -170,7 +170,7 @@ def hydrate_search_results(es_results):
         .filter(Files.file_id.in_(es_mapping['pdf'].keys()))
 
     combined_query = sqlalchemy.union_all(map_query, file_query).alias('combined_results')
-    query = db.session.query(combined_query).distinct()
+    query = db.session.query(combined_query)
 
     for row in query.all():
         row = row._asdict()
