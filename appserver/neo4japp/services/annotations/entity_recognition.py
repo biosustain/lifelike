@@ -293,95 +293,101 @@ class EntityRecognitionService:
             matched_type_entity=self.matched_type_entity
         )
 
-    def _get_anatomy_annotations_to_exclude(
+    def _get_annotation_type_anatomy_to_exclude(
         self,
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
     ):
-        # case insensitive
+        # case insensitive NOT punctuation insensitive
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.ANATOMY.value:
-                exclusion_collection.add(normalize_str(exclusion.get('text')))
+                exclusion_collection.add(exclusion.get('text').lower())  # type: ignore
 
-    def _get_chemical_annotations_to_exclude(
+    def _get_annotation_type_chemical_to_exclude(
         self,
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
     ):
-        # case insensitive
+        # case insensitive NOT punctuation insensitive
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.CHEMICAL.value:
-                exclusion_collection.add(normalize_str(exclusion.get('text')))
+                exclusion_collection.add(exclusion.get('text').lower())  # type: ignore
 
-    def _get_compound_annotations_to_exclude(
+    def _get_annotation_type_compound_to_exclude(
         self,
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
     ):
-        # case insensitive
+        # case insensitive NOT punctuation insensitive
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.COMPOUND.value:
-                exclusion_collection.add(normalize_str(exclusion.get('text')))
+                exclusion_collection.add(exclusion.get('text').lower())  # type: ignore
 
-    def _get_disease_annotations_to_exclude(
+    def _get_annotation_type_disease_to_exclude(
         self,
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
     ):
-        # case insensitive
+        # case insensitive NOT punctuation insensitive
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.DISEASE.value:
-                exclusion_collection.add(normalize_str(exclusion.get('text')))
+                exclusion_collection.add(exclusion.get('text').lower())  # type: ignore
 
-    def _get_food_annotations_to_exclude(
+    def _get_annotation_type_food_to_exclude(
         self,
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
     ):
-        # case insensitive
+        # case insensitive NOT punctuation insensitive
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.FOOD.value:
-                exclusion_collection.add(normalize_str(exclusion.get('text')))
+                exclusion_collection.add(exclusion.get('text').lower())  # type: ignore
 
-    def _get_gene_annotations_to_exclude(
+    def _get_annotation_type_gene_to_exclude(
         self,
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
     ):
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.GENE.value:
-                exclusion_collection.add(exclusion.get('text'))  # type: ignore
+                term = exclusion.get('text')
+                if exclusion.get('isCaseInsensitive'):
+                    term.lower()  # type: ignore
+                exclusion_collection.add(term)  # type: ignore
 
-    def _get_phenotype_annotations_to_exclude(
+    def _get_annotation_type_phenotype_to_exclude(
         self,
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
     ):
-        # case insensitive
+        # case insensitive NOT punctuation insensitive
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.PHENOTYPE.value:
-                exclusion_collection.add(normalize_str(exclusion.get('text')))
+                exclusion_collection.add(exclusion.get('text').lower())  # type: ignore
 
-    def _get_protein_annotations_to_exclude(
+    def _get_annotation_type_protein_to_exclude(
         self,
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
     ):
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.PROTEIN.value:
-                exclusion_collection.add(exclusion.get('text'))  # type: ignore
+                term = exclusion.get('text')
+                if exclusion.get('isCaseInsensitive'):
+                    term.lower()  # type: ignore
+                exclusion_collection.add(term)  # type: ignore
 
-    def _get_species_annotations_to_exclude(
+    def _get_annotation_type_species_to_exclude(
         self,
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
     ):
-        # case insensitive
+        # case insensitive NOT punctuation insensitive
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.SPECIES.value:
-                exclusion_collection.add(normalize_str(exclusion.get('text')))
+                exclusion_collection.add(exclusion.get('text').lower())  # type: ignore
 
-    def _get_company_annotations_to_exclude(
+    def _get_annotation_type_company_to_exclude(
         self,
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
@@ -390,7 +396,7 @@ class EntityRecognitionService:
             if exclusion.get('text') and exclusion.get('type') == EntityType.COMPANY.value:
                 exclusion_collection.add(exclusion.get('text'))  # type: ignore
 
-    def _get_entity_type_entity_annotations_to_exclude(
+    def _get_annotation_type_entity_to_exclude(
         self,
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
@@ -417,17 +423,17 @@ class EntityRecognitionService:
 
     def _get_exclusion_pairs(self) -> List[Tuple[Set[str], Any]]:
         return [
-            (self.exclusion_type_anatomy, self._get_anatomy_annotations_to_exclude),
-            (self.exclusion_type_chemical, self._get_chemical_annotations_to_exclude),
-            (self.exclusion_type_compound, self._get_compound_annotations_to_exclude),
-            (self.exclusion_type_disease, self._get_disease_annotations_to_exclude),
-            (self.exclusion_type_food, self._get_food_annotations_to_exclude),
-            (self.exclusion_type_gene, self._get_gene_annotations_to_exclude),
-            (self.exclusion_type_phenotype, self._get_phenotype_annotations_to_exclude),
-            (self.exclusion_type_protein, self._get_protein_annotations_to_exclude),
-            (self.exclusion_type_species, self._get_species_annotations_to_exclude),
-            (self.exclusion_type_company, self._get_company_annotations_to_exclude),
-            (self.exclusion_type_entity, self._get_entity_type_entity_annotations_to_exclude)
+            (self.exclusion_type_anatomy, self._get_annotation_type_anatomy_to_exclude),
+            (self.exclusion_type_chemical, self._get_annotation_type_chemical_to_exclude),
+            (self.exclusion_type_compound, self._get_annotation_type_compound_to_exclude),
+            (self.exclusion_type_disease, self._get_annotation_type_disease_to_exclude),
+            (self.exclusion_type_food, self._get_annotation_type_food_to_exclude),
+            (self.exclusion_type_gene, self._get_annotation_type_gene_to_exclude),
+            (self.exclusion_type_phenotype, self._get_annotation_type_phenotype_to_exclude),
+            (self.exclusion_type_protein, self._get_annotation_type_protein_to_exclude),
+            (self.exclusion_type_species, self._get_annotation_type_species_to_exclude),
+            (self.exclusion_type_company, self._get_annotation_type_company_to_exclude),
+            (self.exclusion_type_entity, self._get_annotation_type_entity_to_exclude)
         ]
 
     def _set_annotation_inclusions(
