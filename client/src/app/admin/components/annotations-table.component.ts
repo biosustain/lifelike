@@ -1,14 +1,19 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { GlobalAnnotationService } from 'app/shared/services/global-annotation-service';
-import { GlobalAnnotation, GlobalAnnotationRow } from 'app/interfaces/annotation';
+import { GlobalAnnotation } from 'app/interfaces/annotation';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { PaginatedRequestOptions, ResultList, StandardRequestOptions } from 'app/interfaces/shared.interface';
 import { CollectionModal } from 'app/shared/utils/collection-modal';
 import { tap, first } from 'rxjs/operators';
 import { FormControl, FormGroup } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
+import { downloader } from 'app/shared/utils';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { HttpEventType } from '@angular/common/http';
+import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 
 @Component({
     selector: 'app-annotations-table',
@@ -62,6 +67,8 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
     constructor(
         private globalAnnotationService: GlobalAnnotationService,
         private readonly route: ActivatedRoute,
+        private readonly errorHandler: ErrorHandler,
+        private readonly progressDialog: ProgressDialog,
     ) {}
 
     ngOnInit() {
@@ -92,7 +99,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
     goToPage(page: number) {
         this.currentPage = page;
         this.locator = {...this.locator, page};
-        this.globalAnnotationService.getAnnotations(this.locator).pipe(first()).subscribe(
+        this.globalAnnotationService.getAnnotations(this.locator).pipe().subscribe(
             (({results: annotations}) => {
                 this.results.replace(annotations);
             })
@@ -115,9 +122,77 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         this.loadTask.update(this.locator);
     }
 
-    deleteAnnotation(objects: readonly GlobalAnnotationRow[]) {
-        const pids = objects.map((r: GlobalAnnotationRow) => r.pid);
+    deleteAnnotation(objects: readonly GlobalAnnotation[]) {
+        const pids = objects.map((r: GlobalAnnotation) => r.id);
         this.globalAnnotationService.deleteAnnotations(pids).pipe(first()).subscribe();
         this.refresh();
+    }
+
+    exportGlobalExclusions() {
+        const progressObservable = new BehaviorSubject<Progress>(new Progress({
+            status: 'Preparing file for download...'
+        }));
+        const progressDialogRef = this.progressDialog.display({
+            title: `Exporting global exclusions`,
+            progressObservable,
+        });
+
+        this.globalAnnotationService.exportGlobalExclusions().pipe(
+            this.errorHandler.create()
+        ).subscribe(event => {
+            if (event.type === HttpEventType.DownloadProgress) {
+                if (event.loaded >= event.total) {
+                    progressObservable.next(new Progress({
+                        mode: ProgressMode.Buffer,
+                        status: '...',
+                        value: event.loaded / event.total,
+                    }));
+                } else {
+                    progressObservable.next(new Progress({
+                        mode: ProgressMode.Determinate,
+                        status: '...',
+                        value: event.loaded / event.total,
+                    }));
+                }
+            } else if (event.type === HttpEventType.Response) {
+                progressDialogRef.close();
+                const filename = event.headers.get('content-disposition').split('=')[1];
+                downloader(event.body, 'application/vnd.ms-excel', filename);
+            }
+        });
+    }
+
+    exportGlobalInclusions() {
+        const progressObservable = new BehaviorSubject<Progress>(new Progress({
+            status: 'Preparing file for download...'
+        }));
+        const progressDialogRef = this.progressDialog.display({
+            title: `Exporting global inclusions`,
+            progressObservable,
+        });
+
+        this.globalAnnotationService.exportGlobalInclusions().pipe(
+            this.errorHandler.create()
+        ).subscribe(event => {
+            if (event.type === HttpEventType.DownloadProgress) {
+                if (event.loaded >= event.total) {
+                    progressObservable.next(new Progress({
+                        mode: ProgressMode.Buffer,
+                        status: '...',
+                        value: event.loaded / event.total,
+                    }));
+                } else {
+                    progressObservable.next(new Progress({
+                        mode: ProgressMode.Determinate,
+                        status: '...',
+                        value: event.loaded / event.total,
+                    }));
+                }
+            } else if (event.type === HttpEventType.Response) {
+                progressDialogRef.close();
+                const filename = event.headers.get('content-disposition').split('=')[1];
+                downloader(event.body, 'application/vnd.ms-excel', filename);
+            }
+        });
     }
 }

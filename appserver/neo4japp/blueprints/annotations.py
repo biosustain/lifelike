@@ -1,6 +1,7 @@
 import os
 
 import sqlalchemy as sa
+from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
@@ -356,10 +357,10 @@ def get_annotations():
         GlobalList.annotation['type'].astext.label('entityType'),
         GlobalList.annotation['id'].astext.label('annotationId'),
         GlobalList.annotation['comment'].astext.label('comment')
-    ).join(
+    ).outerjoin(
         AppUser,
         AppUser.id == GlobalList.annotation['user_id'].as_integer()
-    ).join(
+    ).outerjoin(
         Files,
         Files.id == GlobalList.file_id
     ).filter(GlobalList.type == 'exclusion')
@@ -379,10 +380,10 @@ def get_annotations():
         GlobalList.annotation['meta']['type'].astext.label('entityType'),
         GlobalList.annotation['meta']['id'].astext.label('annotationId'),
         sa.sql.null().label('comment')
-    ).join(
+    ).outerjoin(
         AppUser,
         AppUser.id == GlobalList.annotation['user_id'].as_integer()
-    ).join(
+    ).outerjoin(
         Files,
         Files.id == GlobalList.file_id
     ).filter(GlobalList.type == 'inclusion')
@@ -428,15 +429,21 @@ def get_annotations():
 @requires_role('admin')
 def delete_global_annotations(pids):
     yield g.current_user
-    query = db.session.query(GlobalList).filter(
+
+    query = GlobalList.__table__.delete().where(
         GlobalList.id.in_(pids)
-    ).delete(synchronize_session=False)
-    current_app.logger.info(
-        f'Deleted {len(pids)} global annotations',
-        UserEventLog(
-            username=g.current_user.username, event_type='global annotation delete').to_dict()
     )
-    db.session.commit()
+    try:
+        db.session.execute(query)
+    except SQLAlchemyError:
+        db.session.rollback()
+    else:
+        db.session.commit()
+        current_app.logger.info(
+            f'Deleted {len(pids)} global annotations',
+            UserEventLog(
+                username=g.current_user.username, event_type='global annotation delete').to_dict()
+        )
     yield jsonify(dict(result='success'))
 
 
