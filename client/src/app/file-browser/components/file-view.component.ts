@@ -1,12 +1,10 @@
-import { uniqueId } from 'lodash';
+import { cloneDeep, uniqueId } from 'lodash';
 import { Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, Subject, Subscription, BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, combineLatest, Subject, Subscription } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { Hyperlink, DatabaseType, AnnotationType } from 'app/shared/constants';
+import { AnnotationType, DatabaseType, Hyperlink } from 'app/shared/constants';
 
 import { PdfAnnotationsService } from '../../drawing-tool/services';
-
-import { cloneDeep } from 'lodash';
 import {
   AddedAnnotationExclsuion,
   Annotation,
@@ -30,7 +28,7 @@ import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
-import { Pane, WorkspaceManager } from '../../shared/workspace-manager';
+import { WorkspaceManager } from '../../shared/workspace-manager';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -116,7 +114,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     private route: ActivatedRoute,
     private readonly errorHandler: ErrorHandler,
     private readonly progressDialog: ProgressDialog,
-    private readonly workSpaceManager: WorkspaceManager
+    private readonly workSpaceManager: WorkspaceManager,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
 
@@ -161,8 +159,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       const fragment = this.route.snapshot.fragment || '';
       // TODO: Do proper query string parsing
       this.openPdf(new DummyFile(linkedFileId),
-          this.parseLocationFromUrl(fragment),
-          this.parseHighlightFromUrl(fragment));
+        this.parseLocationFromUrl(fragment),
+        this.parseHighlightFromUrl(fragment));
     }
   }
 
@@ -366,20 +364,20 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     const sources = [{
       domain: 'File Source',
-      url: source
+      url: source,
     }];
 
     if (this.pdfFile.doi) {
       sources.push({
         domain: 'DOI',
-        url: this.pdfFile.doi
+        url: this.pdfFile.doi,
       });
     }
 
     if (this.pdfFile.upload_url) {
       sources.push({
         domain: 'Upload URL',
-        url: this.pdfFile.upload_url
+        url: this.pdfFile.upload_url,
       });
     }
 
@@ -418,7 +416,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       },
       style: {
         showDetail: meta.type === 'link',
-      }
+      },
     } as Partial<UniversalGraphNode>));
   }
 
@@ -589,7 +587,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   displayEditDialog() {
     this.filesService.getFileFallbackOrganism(
-      this.projectName, this.pdfFile.file_id
+      this.projectName, this.pdfFile.file_id,
     ).subscribe(organismTaxId => {
       const dialogRef = this.modalService.open(FileEditDialogComponent);
       dialogRef.componentInstance.organism = organismTaxId;
@@ -612,7 +610,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
               this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
             });
         }
-      }, () => {});
+      }, () => {
+      });
     });
   }
 
@@ -671,5 +670,18 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   openFileNavigatorPane() {
     const url = `/file-navigator/${this.projectName}/${this.pdfFile.file_id}`;
     this.workSpaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
+  }
+
+  isPendingScroll() {
+    return this.pendingScroll != null && this.pendingScroll.pageNumber != null;
+  }
+
+  isPendingJump() {
+    return this.pendingScroll != null && this.pendingScroll.jumpText != null;
+  }
+
+  isPendingPostLoadAction() {
+    return this.isPendingScroll() || this.isPendingJump()
+      || this.pendingAnnotationHighlightId != null;
   }
 }
