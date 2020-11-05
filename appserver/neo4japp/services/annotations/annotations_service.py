@@ -254,7 +254,7 @@ class AnnotationsService:
         # see services/annotations/util.py for definition
         keyword_starting_idx = char_indexes[0]
         keyword_ending_idx = char_indexes[-1]
-        link_search_term = entity['synonym']
+        link_search_term = token_positions.keyword
         if entity['id_type'] != DatabaseType.NCBI.value:
             hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
         else:
@@ -277,7 +277,7 @@ class AnnotationsService:
                 links=OrganismAnnotation.OrganismMeta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
-                all_text=link_search_term,
+                all_text=entity['synonym'],
             )
             # the `keywords` property here is to allow us to know
             # what coordinates map to what text in the PDF
@@ -287,7 +287,7 @@ class AnnotationsService:
                 page_number=token_positions.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
-                keyword=link_search_term,
+                keyword=entity['synonym'],
                 text_in_document=token_positions.keyword,
                 keyword_length=len(token_positions.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -306,13 +306,13 @@ class AnnotationsService:
                 links=OrganismAnnotation.OrganismMeta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
-                all_text=link_search_term,
+                all_text=entity['synonym'],
             )
             annotation = GeneAnnotation(
                 page_number=token_positions.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
-                keyword=link_search_term,
+                keyword=entity['synonym'],
                 text_in_document=token_positions.keyword,
                 keyword_length=len(token_positions.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -330,13 +330,13 @@ class AnnotationsService:
                 links=Annotation.Meta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
-                all_text=link_search_term,
+                all_text=entity['synonym'],
             )
             annotation = Annotation(
                 page_number=token_positions.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
-                keyword=link_search_term,
+                keyword=entity['synonym'],
                 text_in_document=token_positions.keyword,
                 keyword_length=len(token_positions.keyword),
                 lo_location_offset=keyword_starting_idx,
