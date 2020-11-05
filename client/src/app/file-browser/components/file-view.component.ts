@@ -626,29 +626,16 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     let pageMatch;
     let coordMatch;
     let jumpMatch;
-    if (window.URLSearchParams) {
-      const params = new URLSearchParams(fragment);
-      pageMatch = params.get('page');
-      const coords = params.get('coords');
-      if (coords != null) {
-        coordMatch = coords.split(/,/g);
-      }
-      jumpMatch = params.get('jump');
-    } else {
-      const pageMatch0 = fragment.match(/page=([0-9]+)/);
-      if (pageMatch0 != null) {
-        pageMatch = pageMatch0[1];
-      }
-      coordMatch = fragment.match(/coords=([0-9.]+),([0-9.]+),([0-9.]+),([0-9.]+)/);
+    const params = new URLSearchParams(fragment);
+    pageMatch = params.get('page');
+    const coords = params.get('coords');
+    if (coords != null) {
+      coordMatch = coords.split(/,/g);
     }
+    jumpMatch = params.get('jump');
     return {
       pageNumber: pageMatch != null ? parseInt(pageMatch, 10) : null,
-      rect: coordMatch != null ? [
-        parseFloat(coordMatch[1]),
-        parseFloat(coordMatch[2]),
-        parseFloat(coordMatch[3]),
-        parseFloat(coordMatch[4]),
-      ] : null,
+      rect: coordMatch != null ? coordMatch.map(parseFloat) : null,
       jumpText: jumpMatch,
     };
   }
