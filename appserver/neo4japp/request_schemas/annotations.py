@@ -27,6 +27,7 @@ class MetaSchema(StrictSchema):
     links = ma.Nested(LinksSchema, required=True)
     primaryLink = ma.String(required=True)
     includeGlobally = ma.Boolean(required=True)
+    isCaseInsensitive = ma.Boolean(required=True)
 
 
 class AnnotationSchema(StrictSchema):
@@ -57,7 +58,9 @@ class AnnotationExclusionSchema(StrictSchema):
     reason = ma.String(required=True)
     comment = ma.String(required=True)
     excludeGlobally = ma.Boolean(required=True)
+    isCaseInsensitive = ma.Boolean(required=True)
 
 
 class GlobalAnnotationsDeleteSchema(ma.Schema):
     pids = ma.List(ma.Integer())
+
