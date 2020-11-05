@@ -25,6 +25,7 @@ export interface Meta {
   exclusionComment?: string;
   primaryLink?: string;
   includeGlobally?: boolean;
+  isCaseInsensitive?: boolean;
 }
 
 export type Rect = number[];
@@ -38,12 +39,12 @@ export interface Annotation {
   textInDocument?: string;
 }
 
-export interface RemovedAnnotationExclsuion {
+export interface RemovedAnnotationExclusion {
   type: string;
   text: string;
 }
 
-export interface AddedAnnotationExclsuion {
+export interface AddedAnnotationExclusion {
   type: string;
   text: string;
   id: string;
@@ -52,4 +53,6 @@ export interface AddedAnnotationExclsuion {
   comment: string;
   rects: Rect[];
   pageNumber: number;
+  excludeGlobally: boolean;
+  isCaseInsensitive: boolean;
 }
