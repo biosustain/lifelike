@@ -429,11 +429,12 @@ def get_child_directories(current_dir_id: int, project_name: str):
     contents = DirectoryContent(
         dir=dir.to_dict(),
         path=[{
-            'id': d[0],
-            'name': d[1],
-            'directoryParentId': d[2],
-            'projectsId': d[3],  # TODO: get_absolute_dir_path() should return Directory[]
-        } for d in reversed(parents)],
+            'id': d['id'],
+            'name': d['name'],
+            'directoryParentId': d['directory_parent_id'],
+            'projectsId': d['projects_id'],
+            # TODO: get_absolute_dir_path() should return Directory[]
+        } for d in reversed([d._asdict() for d in parents])],
         objects=[
             *[{
                 'id': c.id,

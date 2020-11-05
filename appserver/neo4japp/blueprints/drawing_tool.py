@@ -5,7 +5,6 @@ import re
 from datetime import datetime
 
 import graphviz as gv
-import sqlalchemy
 from PyPDF4 import PdfFileReader, PdfFileWriter
 from PyPDF4.generic import NameObject, ArrayObject
 from fastjsonschema import JsonSchemaException
@@ -24,7 +23,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_project_permission
+from neo4japp.blueprints.permissions import requires_project_permission, check_project_permission
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import ANNOTATION_STYLES_DICT
@@ -49,17 +48,41 @@ from neo4japp.models import (
     Directory,
     ProjectBackup,
     AppUser,
-    AppRole,
-    projects_collaborator_role,
 )
 from neo4japp.models.schema import ProjectSchema, ProjectVersionSchema
 from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
+from neo4japp.request_schemas.filesystem import MoveFileRequest, DirectoryDestination
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.util import CasePreservedDict
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.request import paginate_from_args
 
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
+
+
+def get_map(hash_id: str, user: AppUser, check_access: AccessActionType):
+    t_owner = aliased(AppUser)
+    t_directory = aliased(Directory)
+    t_project = aliased(Projects)
+
+    map_query = db.session.query(Project) \
+        .join(t_owner, t_owner.id == Project.user_id) \
+        .join(t_directory, t_directory.id == Project.dir_id) \
+        .join(t_project, t_project.id == t_directory.projects_id) \
+        .options(contains_eager(Project.user, alias=t_owner),
+                 contains_eager(Project.dir, alias=t_directory)
+                 .contains_eager(Directory.project, t_project)) \
+        .filter(Project.hash_id == hash_id)
+
+    # Pull up map by hash_id
+    try:
+        map = map_query.one()
+    except NoResultFound:
+        raise RecordNotFoundException('Map not found.')
+
+    check_project_permission(map.dir.project, user, check_access)
+
+    return map
 
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['GET'])
@@ -69,40 +92,7 @@ def get_map_by_hash(hash_id: str, projects_name: str):
     Get a map by its hash.
     """
 
-    t_owner = aliased(AppUser)
-    t_directory = aliased(Directory)
-    t_project = aliased(Projects)
-    t_project_role_role = aliased(AppRole)
-    t_project_role_user = aliased(AppUser)
-
-    # Role table used to check if we have permission
-    project_role_sq = db.session.query(projects_collaborator_role) \
-        .join(t_project_role_role,
-              t_project_role_role.id == projects_collaborator_role.c.app_role_id) \
-        .join(t_project_role_user,
-              t_project_role_user.id == projects_collaborator_role.c.appuser_id) \
-        .subquery()
-
-    map_query = db.session.query(Project) \
-        .join(t_owner, t_owner.id == Project.user_id) \
-        .join(t_directory, t_directory.id == Project.dir_id) \
-        .join(t_project, t_project.id == t_directory.projects_id) \
-        .outerjoin(project_role_sq, project_role_sq.c.projects_id == t_project.id) \
-        .options(contains_eager(Project.user, alias=t_owner),
-                 contains_eager(Project.dir, alias=t_directory)
-                 .contains_eager(Directory.project, t_project)) \
-        .filter(Project.hash_id == hash_id,
-                t_project.project_name == projects_name,
-                sqlalchemy.or_(Project.public.is_(True),
-                               sqlalchemy.and_(t_project_role_user.id == g.current_user.id,
-                                               t_project_role_role.name == 'project-read')))
-
-    # Pull up map by hash_id
-    try:
-        map = map_query.one()
-    except NoResultFound:
-        raise RecordNotFoundException('Map not found or you do not have permission to view it.')
-
+    map = get_map(hash_id, g.current_user, AccessActionType.READ)
     map_schema = ProjectSchema()
 
     return jsonify({'project': map_schema.dump(map)})
@@ -110,32 +100,15 @@ def get_map_by_hash(hash_id: str, projects_name: str):
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/download', methods=['GET'])
 @auth.login_required
-@requires_project_permission(AccessActionType.READ)
 def download_map(hash_id: str, projects_name: str):
     """ Exports map to JSON format """
-    user = g.current_user
+    map = get_map(hash_id, g.current_user, AccessActionType.READ)
 
-    projects = Projects.query.filter(Projects.project_name == projects_name).one()
-
-    yield user, projects
-
-    try:
-        project = Project.query.filter(
-            Project.hash_id == hash_id,
-        ).join(
-            Directory,
-            Directory.id == Project.dir_id,
-        ).filter(
-            Directory.projects_id == projects.id,
-        ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('not found :( ')
-
-    project_data = json.dumps(project.graph)
-    yield Response(
+    project_data = json.dumps(map.graph)
+    return Response(
         project_data,
         mimetype='application/json',
-        headers={'Content-Disposition': f'attachment;filename={project.label}.json'}
+        headers={'Content-Disposition': f'attachment;filename={map.label}.json'}
     )
 
 
@@ -319,51 +292,34 @@ def add_project(projects_name: str):
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['PATCH'])
 @auth.login_required
-@requires_project_permission(AccessActionType.WRITE)
 def update_project(hash_id: str, projects_name: str):
     """ Update the project's content and its metadata. """
     user = g.current_user
     data = request.get_json()
 
-    projects = Projects.query.filter(Projects.project_name == projects_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {projects_name} not found')
-
-    yield user, projects
-
-    try:
-        project = Project.query.filter(
-            Project.hash_id == hash_id,
-        ).join(
-            Directory,
-            Directory.id == Project.dir_id,
-        ).filter(
-            Directory.projects_id == projects.id,
-        ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('not found :-( ')
+    map = get_map(hash_id, g.current_user, AccessActionType.WRITE)
 
     current_app.logger.info(
-        f'User updated map: <{project.label}>',
+        f'User updated map: <{map.label}>',
         extra=UserEventLog(username=g.current_user.username, event_type='map update').to_dict())
 
     # Create new project version
     project_version = ProjectVersion(
-        label=project.label,
-        description=project.description,
+        label=map.label,
+        description=map.description,
         modified_date=datetime.now(),
-        public=project.public,
-        graph=project.graph,
+        public=map.public,
+        graph=map.graph,
         user_id=user.id,
-        dir_id=project.dir_id,
-        project_id=project.id,
+        dir_id=map.dir_id,
+        project_id=map.id,
     )
 
     # Update project's attributes
     if 'description' in data:
-        project.description = data['description']
+        map.description = data['description']
     if 'label' in data:
-        project.label = data['label']
+        map.label = data['label']
     if 'graph' in data:
         try:
             validate_map(data['graph'])
@@ -371,119 +327,69 @@ def update_project(hash_id: str, projects_name: str):
             raise InvalidArgumentsException(f'There is something wrong with the map data and '
                                             f'it cannot be saved. {e.message}') from e
 
-        project.graph = data['graph']
-    if not project.graph:
-        project.graph = {"edges": [], "nodes": []}
-    project.modified_date = datetime.now()
+        map.graph = data['graph']
+    if not map.graph:
+        map.graph = {"edges": [], "nodes": []}
+    map.modified_date = datetime.now()
     if 'public' in data:
-        project.public = data['public']
+        map.public = data['public']
 
     # Commit to db
-    db.session.add(project)
+    db.session.add(map)
     db.session.add(project_version)
     db.session.commit()
 
-    yield jsonify({'status': 'success'}), 200
+    return jsonify({'status': 'success'}), 200
 
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>', methods=['DELETE'])
 @auth.login_required
-@requires_project_permission(AccessActionType.WRITE)
 def delete_project(hash_id: str, projects_name: str):
     """ Delete object owned by user """
-    user = g.current_user
-
-    projects = Projects.query.filter(Projects.project_name == projects_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {projects_name} not found')
-
-    yield user, projects
-
-    try:
-        project = Project.query.filter(
-            Project.hash_id == hash_id,
-        ).join(
-            Directory,
-            Directory.id == Project.dir_id,
-        ).filter(
-            Directory.projects_id == projects.id,
-        ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('not found :-( ')
+    map = get_map(hash_id, g.current_user, AccessActionType.WRITE)
 
     # Commit to db
-    db.session.delete(project)
+    db.session.delete(map)
     db.session.commit()
 
-    yield jsonify({'status': 'success'}), 200
+    return jsonify({'status': 'success'}), 200
 
 
 @bp.route('/<string:projects_name>/map/<string:hash_id>/version/', methods=['GET'])
 @auth.login_required
-@requires_project_permission(AccessActionType.READ)
 def get_versions(projects_name: str, hash_id: str):
     """ Return a list of all map versions underneath map """
     user = g.current_user
 
-    try:
-        projects = Projects.query.filter(Projects.project_name == projects_name).one()
-    except NoResultFound:
-        raise RecordNotFoundException('Project not found')
+    map = get_map(hash_id, g.current_user, AccessActionType.READ)
 
-    try:
-        target_map = Project.query.filter(Project.hash_id == hash_id).one()
-    except NoResultFound:
-        raise RecordNotFoundException('Target Map not found')
-
-    yield user, projects
-
-    try:
-        project_versions = ProjectVersion.query.with_entities(
-            ProjectVersion.id, ProjectVersion.modified_date).filter(
-            ProjectVersion.project_id == target_map.id
-        ).join(
-            Directory,
-            Directory.id == ProjectVersion.dir_id,
-        ).filter(
-            Directory.projects_id == projects.id,
-        ).all()
-    except NoResultFound:
-        raise RecordNotFoundException('not found :-( ')
+    project_versions = ProjectVersion.query.with_entities(
+        ProjectVersion.id, ProjectVersion.modified_date).filter(
+        ProjectVersion.project_id == map.id
+    ).all()
 
     version_schema = ProjectVersionSchema(many=True)
 
-    yield jsonify({'versions': version_schema.dump(project_versions)}), 200
+    return jsonify({'versions': version_schema.dump(project_versions)}), 200
 
 
 @bp.route('/<string:projects_name>/map/<string:hash_id>/version/<version_id>', methods=['GET'])
 @auth.login_required
-@requires_project_permission(AccessActionType.READ)
 def get_version(projects_name: str, hash_id: str, version_id):
     """ Return a list of all map versions underneath map """
-    user = g.current_user
-
-    try:
-        projects = Projects.query.filter(Projects.project_name == projects_name).one()
-    except NoResultFound:
-        raise RecordNotFoundException('Project not found')
-
-    yield user, projects
+    map = get_map(hash_id, g.current_user, AccessActionType.READ)
 
     try:
         project_version = ProjectVersion.query.filter(
-            ProjectVersion.id == version_id
-        ).join(
-            Directory,
-            Directory.id == ProjectVersion.dir_id,
-        ).filter(
-            Directory.projects_id == projects.id,
+            ProjectVersion.id == version_id,
+            ProjectVersion.project_id == map.id,
         ).one()
     except NoResultFound:
         raise RecordNotFoundException('not found :-( ')
 
     version_schema = ProjectVersionSchema()
 
-    yield jsonify({'version': version_schema.dump(project_version)}), 200
+    return jsonify({'version': version_schema.dump(project_version)}), 200
 
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/pdf', methods=['GET'])
@@ -637,31 +543,12 @@ def process(data_source, format='pdf'):
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/<string:format>', methods=['GET'])
 @auth.login_required
-@requires_project_permission(AccessActionType.READ)
 def get_project_image(projects_name: str, hash_id: str, format: str):
     # TODO: LL-415, what do we do with this now that we have projects?
     """ Gets a image file from the project drawing """
-    user = g.current_user
+    map = get_map(hash_id, g.current_user, AccessActionType.READ)
 
-    projects = Projects.query.filter(Projects.project_name == projects_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {projects_name} not found')
-
-    yield user, projects
-
-    try:
-        project = Project.query.filter(
-            Project.hash_id == hash_id,
-        ).join(
-            Directory,
-            Directory.id == Project.dir_id,
-        ).filter(
-            Directory.projects_id == projects.id,
-        ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('not found :-( ')
-
-    yield process(project, format)
+    return process(map, format)
 
 
 @bp.route('/map/<string:hash_id>/backup', methods=['GET'])
@@ -760,3 +647,31 @@ def project_backup_delete(hash_id):
             extra=UserEventLog(
                 username=g.current_user.username, event_type='map delete backup').to_dict())
     return ''
+
+
+@newbp.route('/<string:project_name>/maps/<string:hash_id>/move', methods=['POST'])
+@auth.login_required
+@use_kwargs(MoveFileRequest)
+def move_map(destination: DirectoryDestination, hash_id: str, project_name: str):
+    user = g.current_user
+
+    target_map = get_map(hash_id, g.current_user, AccessActionType.READ)
+
+    destination_dir, destination_project = db.session.query(Directory, Projects) \
+        .join(Projects, Projects.id == Directory.projects_id) \
+        .filter(Directory.id == destination['directoryId']) \
+        .one()
+
+    if destination_project.id != target_map.dir.project.id:
+        check_project_permission(destination_project, user, AccessActionType.WRITE)
+
+    if target_map.dir.id == destination_dir.id:
+        raise InvalidArgumentsException(
+            'The destination directory is the same as the current directory.')
+
+    target_map.dir_id = destination_dir.id
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+    })

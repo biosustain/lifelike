@@ -48,7 +48,7 @@ export interface BiocycNode {
 }
 
 interface GoWrapper {
-  linkList: string[];
+  link: string;
   result: GoNode[];
 }
 
@@ -103,9 +103,7 @@ export interface UniprotNode {
 
 export interface EnrichmentWrapper {
   biocyc: BiocycWrapper;
-  biologicalGo: GoWrapper;
-  cellularGo: GoWrapper;
-  molecularGo: GoWrapper;
+  go: GoWrapper;
   regulon: RegulonWrapper;
   string: StringWrapper;
   uniprot: UniprotWrapper;
@@ -141,10 +139,10 @@ export class EnrichmentTableService extends AbstractService {
     );
   }
 
-  getNCBIEnrichmentDomains(nodeIds): Observable<EnrichmentWrapper[]> {
+  getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<EnrichmentWrapper[]> {
     return this.http.post<{result: EnrichmentWrapper[]}>(
       `${this.kgAPI}/get-ncbi-nodes/enrichment-domains`,
-      {nodeIds},
+      {nodeIds, taxID},
       this.getHttpOptions(true),
     ).pipe(
       map((resp: any) => resp.result),
