@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
@@ -30,5 +30,26 @@ export class GlobalAnnotationService extends AbstractService {
             {pids},
             {...this.getHttpOptions(true)}
         ).pipe(map(res => res.result));
+    }
+
+    exportGlobalExclusions(): Observable<HttpEvent<Blob>> {
+        return this.http.get(
+            `${this.baseUrl}/global-list/exclusions`, {
+            ...this.getHttpOptions(true),
+            responseType: 'blob',
+            observe: 'events',
+            reportProgress: true,
+        });
+    }
+
+    exportGlobalInclusions(): Observable<HttpEvent<Blob>> {
+        return this.http.get(
+            `${this.baseUrl}/global-list/inclusions`, {
+            ...this.getHttpOptions(true),
+            responseType: 'blob',
+            observe: 'events',
+            reportProgress: true,
+            }
+        );
     }
 }
