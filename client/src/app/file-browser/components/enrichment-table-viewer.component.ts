@@ -31,7 +31,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       { name: 'Regulon Data', span: '3' },
       { name: 'Uniprot Function', span: '1' },
       { name: 'String Annotation', span: '1' },
-      { name: 'Go Enrichment', span: '1' },
+      { name: 'GO Enrichment', span: '1' },
       { name: 'Biocyc Pathways', span: '1' },
     ],
     // Secondary headers
@@ -105,7 +105,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       if (this.organism.slice(0, 16) !== 'Escherichia coli') {
         this.ecoli = false;
         this.tableHeader[0].splice(2, 1);
-        this.tableHeader[1].splice(2, 3);
+        this.tableHeader.splice(1, 1);
       } else {
         this.ecoli = true;
       }
@@ -250,7 +250,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           text: this.processGoWrapper(wrapper.go.result),
           singleLink: {
             link: wrapper.go.link + wrapper.uniprot.result.id,
-            linkText: 'Go Link'
+            linkText: 'GO Link'
           }
         }
       : { text: '' });
@@ -270,7 +270,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
 
   processGoWrapper(nodeArray: GoNode[]): string {
     if (nodeArray.length > 5) {
-      return nodeArray.map((node) => node.name).slice(0, 5).join('; ') + '...';
+      return nodeArray.map((node) => node.name).slice(0, 5).join(';\n') + '...';
     } else {
       return nodeArray.map((node) => node.name).slice(0, 5).join('; ');
     }
