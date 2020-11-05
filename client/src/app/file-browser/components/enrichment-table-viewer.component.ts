@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 
-import { TableHeader, TableCell, TableLink } from './generic-table.component';
+import { TableHeader, TableCell, TableLink } from 'app/shared/components/table/generic-table.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
 import {
@@ -31,7 +31,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       { name: 'Regulon Data', span: '3' },
       { name: 'Uniprot Function', span: '1' },
       { name: 'String Annotation', span: '1' },
-      { name: 'Go Enrichment', span: '3' },
+      { name: 'GO Enrichment', span: '1' },
       { name: 'Biocyc Pathways', span: '1' },
     ],
     // Secondary headers
@@ -43,9 +43,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       { name: 'Repressed By', span: '1' },
       { name: '', span: '1' },
       { name: '', span: '1' },
-      { name: 'Molecular Function', span: '1' },
-      { name: 'Biological Process', span: '1' },
-      { name: 'Cellular Component', span: '1' },
+      { name: '', span: '1' },
       { name: '', span: '1' },
     ],
   ];
@@ -55,6 +53,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   pageSize: number;
   collectionSize: number;
   currentGenes: string[];
+
+  // condition if ecoli org
+  ecoli: boolean;
 
   // Enrichment Table and NCBI Matching Results
   projectName: string;
@@ -95,7 +96,19 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         .split(',')
         .filter((gene) => gene !== '');
       this.taxID = resultArray[1];
+      if (this.taxID === '562' || this.taxID === '83333') {
+        this.taxID = '511145';
+      } else if (this.taxID === '4932') {
+        this.taxID = '559292';
+      }
       this.organism = resultArray[2];
+      if (this.organism.slice(0, 16) !== 'Escherichia coli') {
+        this.ecoli = false;
+        this.tableHeader[0].splice(2, 1);
+        this.tableHeader.splice(1, 1);
+      } else {
+        this.ecoli = true;
+      }
       this.removeDuplicates(this.importGenes);
       this.currentPage = 1;
       this.pageSize = 10;
@@ -153,7 +166,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   // Get data from enrichment domains.
   getDomains() {
     this.worksheetViewerService
-      .getNCBIEnrichmentDomains(this.ncbiIds)
+      .getNCBIEnrichmentDomains(this.ncbiIds, this.taxID)
       .subscribe((result) => {
         this.tableEntries = result.map((wrapper) =>
           this.processEnrichmentNodeArray(wrapper)
@@ -193,28 +206,30 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   // Process wrapper to convert domain data into string array that represents domain columns.
   processEnrichmentNodeArray(wrapper: EnrichmentWrapper): TableCell[] {
     const result: TableCell[] = [];
-    if (wrapper.regulon.result !== null) {
-      result.push(wrapper.regulon.result.regulator_family
-        ? {
-            text: wrapper.regulon.result.regulator_family,
-            singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
-          }
-        : { text: '', singleLink: {link: wrapper.regulon.link, linkText: 'Regulon Link'}});
-      result.push(wrapper.regulon.result.activated_by
-        ? {
-            text: wrapper.regulon.result.activated_by.join('; '),
-            singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
-          }
-        : { text: '', singleLink: {link: wrapper.regulon.link, linkText: 'Regulon Link'}});
-      result.push(wrapper.regulon.result.repressed_by
-        ? {
-            text: wrapper.regulon.result.repressed_by.join('; '),
-            singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
-          }
-        : { text: '', singleLink: {link: wrapper.regulon.link, linkText: 'Regulon Link'}});
-    } else {
-      for (let i = 0; i < 3; i++) {
-        result.push({text: ''});
+    if (this.ecoli) {
+      if (wrapper.regulon.result !== null) {
+        result.push(wrapper.regulon.result.regulator_family
+          ? {
+              text: wrapper.regulon.result.regulator_family,
+              singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
+            }
+          : { text: '', singleLink: {link: wrapper.regulon.link, linkText: 'Regulon Link'}});
+        result.push(wrapper.regulon.result.activated_by
+          ? {
+              text: wrapper.regulon.result.activated_by.join('; '),
+              singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
+            }
+          : { text: '', singleLink: {link: wrapper.regulon.link, linkText: 'Regulon Link'}});
+        result.push(wrapper.regulon.result.repressed_by
+          ? {
+              text: wrapper.regulon.result.repressed_by.join('; '),
+              singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
+            }
+          : { text: '', singleLink: {link: wrapper.regulon.link, linkText: 'Regulon Link'}});
+      } else {
+        for (let i = 0; i < 3; i++) {
+          result.push({text: ''});
+        }
       }
     }
 
@@ -230,31 +245,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           singleLink: { link: wrapper.string.link, linkText: 'String Link' },
         }
       : { text: '' });
-    result.push(wrapper.molecularGo.result
+    result.push(wrapper.go.result
       ? {
-          text: '',
-          multiLink: this.processGoWrapper(
-            wrapper.molecularGo.linkList,
-            wrapper.molecularGo.result
-          ),
-        }
-      : { text: '' });
-    result.push(wrapper.biologicalGo.result
-      ? {
-          text: '',
-          multiLink: this.processGoWrapper(
-            wrapper.biologicalGo.linkList,
-            wrapper.biologicalGo.result
-          ),
-        }
-      : { text: '' });
-    result.push(wrapper.cellularGo.result
-      ? {
-          text: '',
-          multiLink: this.processGoWrapper(
-            wrapper.cellularGo.linkList,
-            wrapper.cellularGo.result
-          ),
+          text: this.processGoWrapper(wrapper.go.result),
+          singleLink: {
+            link: wrapper.go.link + wrapper.uniprot.result.id,
+            linkText: 'GO Link'
+          }
         }
       : { text: '' });
     result.push(wrapper.biocyc.result
@@ -271,9 +268,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     return result;
   }
 
-  processGoWrapper(linkArray: string[], nodeArray: GoNode[]): TableLink[] {
-    const result = linkArray.map((link, i) => ({link, linkText: nodeArray[i].name}));
-    return result;
+  processGoWrapper(nodeArray: GoNode[]): string {
+    if (nodeArray.length > 5) {
+      return nodeArray.map((node) => node.name).slice(0, 5).join(';\n') + '...';
+    } else {
+      return nodeArray.map((node) => node.name).slice(0, 5).join('; ');
+    }
   }
 
   processBiocycWrapper(pathways: string[], biocycLink: string): TableLink[] {
