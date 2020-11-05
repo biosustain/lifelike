@@ -144,7 +144,7 @@ class SpecifiedOrganismStrain(CamelDictMixin):
 
 
 @attr.s(frozen=True)
-class GlobalAnnotationData(CamelDictMixin):
+class GlobalAnnotationData():
     file_id: str = attr.ib()
     filename: str = attr.ib()
     user_email: str = attr.ib()
