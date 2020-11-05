@@ -571,7 +571,7 @@ def get_associated_maps(file_id: str, project_name: str):
     results = db.session.execute(
         query,
         {
-            'url_1': f'/projects/{project_name}/files/{re.escape(file_id)}(?:#.*)?',
+            'url_1': f'/projects/(?:[^/]+)/files/{re.escape(file_id)}(?:#.*)?',
             'url_2': f'/dt/pdf/{re.escape(file_id)}(?:#.*)?',
             'user_id': g.current_user.id,
         }
