@@ -14,6 +14,9 @@ from neo4japp.data_transfer_objects.visualization import (
     GetSnippetsForClusterRequest,
     ReferenceTableDataRequest,
 )
+from neo4japp.exceptions import (
+    InvalidArgumentsException,
+)
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
 bp = Blueprint('visualizer-api', __name__, url_prefix='/visualizer')
@@ -63,6 +66,20 @@ def get_reference_table_data(req: ReferenceTableDataRequest):
 @jsonify_with_class(GetSnippetsForEdgeRequest)
 def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
     visualizer = get_visualizer_service()
+
+    # TODO: In the future would be better to refactor this request to use Marshmallow and handle
+    # the validation in the schema, but in the interest of time favoring this approach for now.
+    if not (0 <= req.limit and req.limit <= 1000):
+        raise InvalidArgumentsException(
+            message='Illegal Argument',
+            fields={
+                'limit': [
+                    f'Query limit should be between 0 and 1000 rows. Provided limit was ' +
+                    f'{req.limit}.'
+                ]
+            }
+        )
+
     edge_snippets_result = visualizer.get_snippets_for_edge(
         page=req.page,
         limit=req.limit,
@@ -76,6 +93,20 @@ def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
 @jsonify_with_class(GetSnippetsForClusterRequest)
 def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
     visualizer = get_visualizer_service()
+
+    # TODO: In the future would be better to refactor this request to use Marshmallow and handle
+    # the validation in the schema, but in the interest of time favoring this approach for now.
+    if not (0 <= req.limit and req.limit <= 1000):
+        raise InvalidArgumentsException(
+            message='Illegal Argument',
+            fields={
+                'limit': [
+                    f'Query limit should be between 0 and 1000 rows. Provided limit was ' +
+                    f'{req.limit}.'
+                ]
+            }
+        )
+
     cluster_snippets_result = visualizer.get_snippets_for_cluster(
         page=req.page,
         limit=req.limit,
