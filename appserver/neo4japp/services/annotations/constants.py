@@ -24,6 +24,8 @@ ORGANISM_DISTANCE_THRESHOLD = 200
 PDF_NEW_LINE_THRESHOLD = .30
 PDF_CHARACTER_SPACING_THRESHOLD = .325
 
+ABBREVIATION_WORD_LENGTH = {3, 4}
+
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',
     'so', 'we', 'he', 'by', 'or', 'on', 'do', 'if',
@@ -92,18 +94,24 @@ class EntityType(Enum):
     PROTEIN = 'Protein'
     SPECIES = 'Species'
 
+    # non LMDB entity types
+    COMPANY = 'Company'
+    ENTITY = 'Entity'
+
 
 ENTITY_TYPE_PRECEDENCE = {
     # larger value takes precedence
-    EntityType.SPECIES.value: 9,
-    EntityType.GENE.value: 8,
-    EntityType.PROTEIN.value: 7,
-    EntityType.PHENOTYPE.value: 6,
-    EntityType.CHEMICAL.value: 5,
-    EntityType.COMPOUND.value: 4,
-    EntityType.DISEASE.value: 3,
-    EntityType.ANATOMY.value: 2,
-    EntityType.FOOD.value: 1,
+    EntityType.SPECIES.value: 11,
+    EntityType.GENE.value: 10,
+    EntityType.PROTEIN.value: 9,
+    EntityType.PHENOTYPE.value: 8,
+    EntityType.CHEMICAL.value: 7,
+    EntityType.COMPOUND.value: 6,
+    EntityType.DISEASE.value: 5,
+    EntityType.ANATOMY.value: 4,
+    EntityType.FOOD.value: 3,
+    EntityType.COMPANY.value: 2,
+    EntityType.ENTITY.value: 1
 }
 
 
@@ -126,6 +134,10 @@ class EntityColor(Enum):
     PROTEIN = ANNOTATION_STYLES_DICT['protein']['color']
     SPECIES = ANNOTATION_STYLES_DICT['species']['color']
 
+    # non LMDB entity types
+    COMPANY = ANNOTATION_STYLES_DICT['company']['color']
+    ENTITY = ANNOTATION_STYLES_DICT['entity']['color']
+
 
 class EntityIdStr(Enum):
     ANATOMY = 'anatomy_id'
@@ -137,6 +149,10 @@ class EntityIdStr(Enum):
     PHENOTYPE = 'phenotype_id'
     PROTEIN = 'protein_id'
     SPECIES = 'tax_id'
+
+    # non LMDB entity types
+    COMPANY = 'company_id'
+    ENTITY = 'entity_id'
 
 
 class DatabaseType(Enum):
