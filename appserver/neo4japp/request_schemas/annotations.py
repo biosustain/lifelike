@@ -63,4 +63,3 @@ class AnnotationExclusionSchema(StrictSchema):
 
 class GlobalAnnotationsDeleteSchema(ma.Schema):
     pids = ma.List(ma.Integer())
-
