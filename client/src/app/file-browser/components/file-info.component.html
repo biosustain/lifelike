@@ -5,12 +5,16 @@
     </div>
 
     <h5 (click)="objectEdit.emit(object)">
-      <div *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'">{{ object.name }}</div>
-      <div *ngIf="object.name.slice(object.name.length - 11) === '.enrichment'">{{ object.name.slice(0, -11) }}</div>
+      <div *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'">
+        <app-term-highlight [text]="object.name" [highlightTerms]="highlightTerms"></app-term-highlight>
+      </div>
+      <div *ngIf="object.name.slice(object.name.length - 11) === '.enrichment'">
+        <app-term-highlight [text]="object.name.slice(0, -11)" [highlightTerms]="highlightTerms"></app-term-highlight>
+      </div>
     </h5>
 
     <div class="mt-3" [style.white-space]="'pre-wrap'" *ngIf="object.description" (click)="objectEdit.emit(object)">
-      {{ object.description }}
+      <app-term-highlight [text]="object.description" [highlightTerms]="highlightTerms"></app-term-highlight>
     </div>
 
     <hr class="my-3">
@@ -48,7 +52,8 @@
   <div class="flex-grow-1 position-relative" *ngIf="object.type === 'map'">
     <div class="border-bottom h-100">
       <ng-container *ngIf="object.type === 'map'">
-        <app-map [locator]="{projectName: object.project.projectName, hashId: object.id}" [highlightTerms]="highlightTerms"></app-map>
+        <app-map [locator]="{projectName: object.project.projectName, hashId: object.id}"
+                 [highlightTerms]="highlightTerms"></app-map>
       </ng-container>
     </div>
   </div>

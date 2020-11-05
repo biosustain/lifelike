@@ -102,7 +102,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Output('custom-annotation-removed') annotationRemoved = new EventEmitter();
   @Output('annotation-exclusion-added') annotationExclusionAdded = new EventEmitter();
   @Output('annotation-exclusion-removed') annotationExclusionRemoved = new EventEmitter();
-  @Output() searchClear = new EventEmitter<any>();
+  @Output() searchChange = new EventEmitter<string>();
 
   /**
    * Stores a mapping of annotations to the HTML elements that are used to show it.
@@ -130,6 +130,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   pdfQuery = '';
   allPages = 0;
   currentRenderedPage = 0;
+  showNextFindFeedback = false;
 
   pageRef = {};
   index: any;
@@ -188,10 +189,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
           const simplified = sub.jumpText.replace(/[\s\r\n]/g, ' ').trim();
           const words = simplified.split(/ /g);
           const prefixQuery = words.splice(0, 4).join(' ');
-          this.pdfComponent.pdfFindController.executeCommand('find', {
-            query: prefixQuery,
-            highlightAll: true,
-            phraseSearch: true,
+          this.showNextFindFeedback = false; // Count might not work yet - keep false
+          this.searchQueryChanged({
+            keyword: prefixQuery,
+            findPrevious: true,
           });
         }
       }
@@ -954,9 +955,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   searchQueryChanged(newQuery: { keyword: string, findPrevious: boolean }) {
     if (newQuery.keyword.trim().length) {
       this.highlightAllAnnotations(null);
-    } else {
-      this.searchClear.emit();
     }
+    this.searchChange.emit(newQuery.keyword.trim());
     if (newQuery.keyword !== this.pdfQuery) {
       this.pdfQuery = newQuery.keyword;
       this.searchCommand = 'find';
@@ -1041,6 +1041,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   findControlStateUpdated(event) {
+    if (this.showNextFindFeedback) {
+      if (event.state === 0 || event.state === 1) {
+        this.showNextFindFeedback = false;
+        const total = event.matchesCount.total;
+        this.snackBar.open(`Found ${total} instance${total === 1 ? '' : 's'}  `
+          + `in the document.`,
+          'Close', {duration: 5000});
+      }
+    }
     if (this.searchCommand !== 'findagain' || typeof event.previous === 'undefined') {
       return;
     }

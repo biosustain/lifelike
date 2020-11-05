@@ -78,24 +78,55 @@ export class FilesystemObjectActions {
     });
   }
 
-  openMapCreateDialog(parent: FilesystemObject): Promise<any> {
-    const dialogRef = this.modalService.open(MapCreateDialogComponent);
-    return dialogRef.result.then((newMap: KnowledgeMap) => {
-      const progressDialogRef = this.createProgressDialog('Creating map...');
 
-      return this.mapService.createMap(
+  openMapCreateDialog(parent?: FilesystemObject,
+                      options: Partial<MapCreateOptions> = {}): Promise<{
+    project: KnowledgeMap
+  }> {
+    if (parent != null) {
+      const dialogRef = this.modalService.open(MapCreateDialogComponent);
+      dialogRef.componentInstance.filename = options.filename;
+      return dialogRef.result.then((newMap: KnowledgeMap) => {
+        const progressDialogRef = this.createProgressDialog('Creating map...');
+
+        return this.mapService.createMap(
           parent.locator.projectName,
           parent.directory.id,
           newMap.label,
           newMap.description,
           newMap.public,
-      )
+        )
           .pipe(
-              this.errorHandler.create(),
-              finalize(() => progressDialogRef.close()),
+            this.errorHandler.create(),
+            finalize(() => progressDialogRef.close()),
           )
           .toPromise();
-    });
+      });
+    } else {
+      const dialogRef = this.modalService.open(FileSelectionDialogComponent);
+      dialogRef.componentInstance.title = `Select Folder for New Map`;
+      dialogRef.componentInstance.emptyDirectoryMessage = 'There are no sub-folders in this folder.';
+      dialogRef.componentInstance.objectFilter = (o: FilesystemObject) => {
+        return o.type === 'dir';
+      };
+      return dialogRef.result.then((destinations: FilesystemObject[]) => {
+        const destination = destinations[0];
+        const progressDialogRef = this.createProgressDialog('Creating map...');
+
+        return this.mapService.createMap(
+          destination.locator.projectName,
+          parseInt(destination.locator.directoryId, 10),
+          'Untitled',
+          '',
+          false,
+        )
+          .pipe(
+            this.errorHandler.create(),
+            finalize(() => progressDialogRef.close()),
+          )
+          .toPromise();
+      });
+    }
   }
 
   openEnrichmentTableCreateDialog(parent: FilesystemObject): Promise<any> {
@@ -154,7 +185,8 @@ export class FilesystemObjectActions {
   openMoveDialog(target: FilesystemObject): Promise<any> {
     if (target.type === 'map' || target.type === 'file') {
       const dialogRef = this.modalService.open(FileSelectionDialogComponent);
-      dialogRef.componentInstance.title = 'Move To';
+      dialogRef.componentInstance.title = `Move '${target.name}'`;
+      dialogRef.componentInstance.emptyDirectoryMessage = 'There are no sub-folders in this folder.';
       dialogRef.componentInstance.objectFilter = (o: FilesystemObject) => {
         return o.type === 'dir';
       };
@@ -462,4 +494,8 @@ export class FilesystemObjectActions {
 class DeletionError {
   constructor(readonly message: string) {
   }
+}
+
+export class MapCreateOptions {
+  filename?: string;
 }

@@ -13,6 +13,7 @@ import { MessageType } from '../../../interfaces/message-dialog.interface';
 })
 export class FileSelectionDialogComponent implements OnDestroy {
   @Input() title = 'Select File';
+  @Input() emptyDirectoryMessage = 'There are no items in this folder.';
 
   constructor(readonly modal: NgbActiveModal,
               readonly messageDialog: MessageDialog,
@@ -42,23 +43,6 @@ export class FileSelectionDialogComponent implements OnDestroy {
       projectName: project.projectName,
       directoryId: null,
     };
-  }
-
-  getSelectionText(): string {
-    if (this.objectSelect.object != null) {
-      const selection = this.objectSelect.object.children.selection;
-      if (selection.length) {
-        if (selection.length === 1) {
-          return `'${selection[0].name}'`;
-        } else {
-          return `(${selection.length})`;
-        }
-      } else {
-        return 'This';
-      }
-    } else {
-      return '';
-    }
   }
 
   cancel() {
