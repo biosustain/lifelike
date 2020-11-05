@@ -701,11 +701,19 @@ def get_annotations(id: str, project_name: str):
     if file.annotations:
         annotations = file.annotations['documents'][0]['passages'][0]['annotations']
 
+        def terms_match(term_in_exclusion, term_in_annotation, is_case_insensitive):
+            if is_case_insensitive:
+                return term_in_exclusion.lower() == term_in_annotation.lower()
+            return term_in_exclusion == term_in_annotation
+
         # Add additional information for annotations that were excluded
         for annotation in annotations:
             for exclusion in file.excluded_annotations:
                 if (exclusion.get('type') == annotation['meta']['type'] and
-                        exclusion.get('text', True) == annotation.get('textInDocument', False)):
+                        terms_match(
+                            exclusion.get('text', 'True'),
+                            annotation.get('textInDocument', 'False'),
+                            exclusion['isCaseInsensitive'])):
                     annotation['meta']['isExcluded'] = True
                     annotation['meta']['exclusionReason'] = exclusion['reason']
                     annotation['meta']['exclusionComment'] = exclusion['comment']

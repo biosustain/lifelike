@@ -958,7 +958,7 @@ def mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf(monkeypat
 def mock_compound_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        'compound_exclusion',
+        'exclusion_type_compound',
         {'guanosine', 'hydrogen'}
     )
 
@@ -967,7 +967,7 @@ def mock_compound_exclusion(monkeypatch):
 def mock_global_chemical_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        'chemical_exclusion',
+        'exclusion_type_chemical',
         {'hypofluorite', 'hydrogen', 'adenosine'}
     )
 
@@ -976,7 +976,7 @@ def mock_global_chemical_exclusion(monkeypatch):
 def mock_disease_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        'disease_exclusion',
+        'exclusion_type_disease',
         {'cold sore'}
     )
 
@@ -985,7 +985,7 @@ def mock_disease_exclusion(monkeypatch):
 def mock_gene_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        'gene_exclusion',
+        'exclusion_type_gene',
         {'BOLA3', 'rpoS'}
     )
 
@@ -994,7 +994,7 @@ def mock_gene_exclusion(monkeypatch):
 def mock_phenotype_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        'phenotype_exclusion',
+        'exclusion_type_phenotype',
         {'whey proteins'}
     )
 
@@ -1003,7 +1003,7 @@ def mock_phenotype_exclusion(monkeypatch):
 def mock_protein_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        'protein_exclusion',
+        'exclusion_type_protein',
         {'Wasabi receptor toxin'}
     )
 
@@ -1012,7 +1012,7 @@ def mock_protein_exclusion(monkeypatch):
 def mock_species_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        'species_exclusion',
+        'exclusion_type_species',
         {'human', 'dog'}
     )
 

@@ -276,6 +276,7 @@ CUSTOM_ANNOTATION_1 = {
         'idHyperlink': '',
         'isCustom': True,
         'allText': 'gyrA',
+        'isCaseInsensitive': False,
         'links': {
             'ncbi': '',
             'uniprot': '',
@@ -302,6 +303,7 @@ CUSTOM_ANNOTATION_2 = {
         'idHyperlink': '',
         'isCustom': True,
         'allText': 'gyrA',
+        'isCaseInsensitive': False,
         'links': {
             'ncbi': '',
             'uniprot': '',
@@ -453,7 +455,8 @@ def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_
             'pageNumber': 1,
             'reason': 'reason',
             'comment': 'comment',
-            'excludeGlobally': False
+            'excludeGlobally': False,
+            'isCaseInsensitive': False,
         }),
         content_type='application/json',
     )
