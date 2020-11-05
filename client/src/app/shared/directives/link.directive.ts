@@ -20,6 +20,7 @@ export class AbstractLinkDirective {
   @Input() state?: { [k: string]: any };
   @Input() newTab: boolean;
   @Input() sideBySide: boolean;
+  @Input() handleClick = true;
   commands: any[] = [];
 
   constructor(readonly workspaceManager: WorkspaceManager,
@@ -38,6 +39,10 @@ export class AbstractLinkDirective {
 
   @HostListener('click', ['$event.button', '$event.ctrlKey', '$event.metaKey', '$event.shiftKey'])
   onClick(button: number, ctrlKey: boolean, metaKey: boolean, shiftKey: boolean): boolean {
+    if (!this.handleClick) {
+      return true;
+    }
+
     if (button !== 0 || ctrlKey || metaKey || shiftKey) {
       return true;
     }

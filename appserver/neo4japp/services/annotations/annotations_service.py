@@ -19,6 +19,7 @@ from .constants import (
     EntityIdStr,
     EntityType,
     OrganismCategory,
+    ABBREVIATION_WORD_LENGTH,
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
     HOMO_SAPIENS_TAX_ID,
@@ -396,17 +397,21 @@ class AnnotationsService:
                         if len(common_names_in_document) != 1:
                             continue
 
-                    annotation = self._create_annotation_object(
-                        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                        cropbox_in_pdf=cropbox_in_pdf,
-                        token_positions=token_positions,
-                        token_type=token_type,
-                        entity=entity,
-                        entity_id=entity[id_str],
-                        entity_category=entity.get('category', ''),
-                        color=color,
-                    )
-                    matches.append(annotation)
+                    try:
+                        annotation = self._create_annotation_object(
+                            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                            cropbox_in_pdf=cropbox_in_pdf,
+                            token_positions=token_positions,
+                            token_type=token_type,
+                            entity=entity,
+                            entity_id=entity[id_str],
+                            entity_category=entity.get('category', ''),
+                            color=color,
+                        )
+                    except KeyError:
+                        continue
+                    else:
+                        matches.append(annotation)
         return matches
 
     def _get_closest_entity_organism_pair(
@@ -538,41 +543,44 @@ class AnnotationsService:
         for entity, token_positions in entity_tokenpos_pairs:
             gene_id = None
             category = None
-            entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
+            try:
+                entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
+            except KeyError:
+                continue
+            else:
+                if entity_synonym in gene_organism_matches:
+                    gene_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
+                        entity_position=token_positions,
+                        organism_matches=gene_organism_matches[entity_synonym]
+                    )
 
-            if entity_synonym in gene_organism_matches:
-                gene_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
-                    entity_position=token_positions,
-                    organism_matches=gene_organism_matches[entity_synonym]
-                )
+                    specified_organism_id = None
+                    if self.specified_organism.synonym and closest_distance > ORGANISM_DISTANCE_THRESHOLD:  # noqa
+                        if fallback_gene_organism_matches.get(entity_synonym, None):
+                            # if matched in KG then set to fallback strain
+                            gene_id = fallback_gene_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
+                            specified_organism_id = self.specified_organism.organism_id
 
-                specified_organism_id = None
-                if self.specified_organism.synonym and closest_distance > ORGANISM_DISTANCE_THRESHOLD:  # noqa
-                    if fallback_gene_organism_matches.get(entity_synonym, None):
-                        # if matched in KG then set to fallback strain
+                    category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
+                elif entity_synonym in fallback_gene_organism_matches:
+                    try:
                         gene_id = fallback_gene_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
-                        specified_organism_id = self.specified_organism.organism_id
+                        category = self.specified_organism.category
+                    except KeyError:
+                        raise AnnotationError('Failed to find gene id with fallback organism.')
 
-                category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
-            elif entity_synonym in fallback_gene_organism_matches:
-                try:
-                    gene_id = fallback_gene_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
-                    category = self.specified_organism.category
-                except KeyError:
-                    raise AnnotationError('Failed to find gene id with fallback organism.')
-
-            if gene_id and category:
-                annotation = self._create_annotation_object(
-                    char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                    cropbox_in_pdf=cropbox_in_pdf,
-                    token_positions=token_positions,
-                    token_type=EntityType.GENE.value,
-                    entity=entity,
-                    entity_id=gene_id,
-                    entity_category=category,
-                    color=EntityColor.GENE.value,
-                )
-                matches.append(annotation)
+                if gene_id and category:
+                    annotation = self._create_annotation_object(
+                        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                        cropbox_in_pdf=cropbox_in_pdf,
+                        token_positions=token_positions,
+                        token_type=EntityType.GENE.value,
+                        entity=entity,
+                        entity_id=gene_id,
+                        entity_category=category,
+                        color=EntityColor.GENE.value,
+                    )
+                    matches.append(annotation)
         return matches
 
     def _annotate_anatomy(
@@ -709,86 +717,54 @@ class AnnotationsService:
 
         for entity, token_positions in entity_tokenpos_pairs:
             category = entity.get('category', '')
-            protein_id = entity[EntityIdStr.PROTEIN.value]
-            entity_synonym = entity['synonym']
-
-            # TODO: code is identical to gene organism
-            # move into function later if more than these two use
-            if entity_synonym in protein_organism_matches:
-                protein_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
-                    entity_position=token_positions,
-                    organism_matches=protein_organism_matches[entity_synonym]
-                )
-
-                specified_organism_id = None
-                if self.specified_organism.synonym and closest_distance > ORGANISM_DISTANCE_THRESHOLD:  # noqa
-                    if fallback_protein_organism_matches.get(entity_synonym, None):
-                        # if matched in KG then set to fallback strain
-                        protein_id = fallback_protein_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
-                        specified_organism_id = self.specified_organism.organism_id
-
-                category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
-            elif entity_synonym in fallback_protein_organism_matches:
-                try:
-                    protein_id = fallback_protein_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
-                    category = self.specified_organism.category
-                except KeyError:
-                    continue
-
-            annotation = self._create_annotation_object(
-                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                cropbox_in_pdf=cropbox_in_pdf,
-                token_positions=token_positions,
-                token_type=EntityType.PROTEIN.value,
-                entity=entity,
-                entity_id=protein_id,
-                entity_category=category,
-                color=EntityColor.PROTEIN.value,
-            )
-            matches.append(annotation)
-        return matches
-
-    def _annotate_local_species_inclusions(
-        self,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
-    ) -> List[Annotation]:
-        """Similar to self._get_annotation() but for creating
-        annotations of custom species.
-
-        However, does not check if a synonym is used by multiple
-        common names that all appear in the document, as assume
-        user wants these custom species annotations to be
-        annotated.
-        """
-        tokens = self.matched_local_species_inclusion
-
-        custom_annotations: List[Annotation] = []
-
-        for word, token_list in tokens.items():
-            entities = self.local_species_inclusion.get(normalize_str(word), [])
-            for token_positions in token_list:
-                for entity in entities:
-                    annotation = self._create_annotation_object(
-                        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                        cropbox_in_pdf=cropbox_in_pdf,
-                        token_positions=token_positions,
-                        token_type=EntityType.SPECIES.value,
-                        entity=entity,
-                        entity_id=entity[EntityIdStr.SPECIES.value],
-                        entity_category=entity.get('category', ''),
-                        color=EntityColor.SPECIES.value,
+            try:
+                protein_id = entity[EntityIdStr.PROTEIN.value]
+                entity_synonym = entity['synonym']
+            except KeyError:
+                continue
+            else:
+                # TODO: code is identical to gene organism
+                # move into function later if more than these two use
+                if entity_synonym in protein_organism_matches:
+                    protein_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(  # noqa
+                        entity_position=token_positions,
+                        organism_matches=protein_organism_matches[entity_synonym]
                     )
 
-                    custom_annotations.append(annotation)
-        return custom_annotations
+                    specified_organism_id = None
+                    if self.specified_organism.synonym and closest_distance > ORGANISM_DISTANCE_THRESHOLD:  # noqa
+                        if fallback_protein_organism_matches.get(entity_synonym, None):
+                            # if matched in KG then set to fallback strain
+                            protein_id = fallback_protein_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
+                            specified_organism_id = self.specified_organism.organism_id
+
+                    category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
+                elif entity_synonym in fallback_protein_organism_matches:
+                    try:
+                        protein_id = fallback_protein_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
+                        category = self.specified_organism.category
+                    except KeyError:
+                        continue
+
+                annotation = self._create_annotation_object(
+                    char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                    cropbox_in_pdf=cropbox_in_pdf,
+                    token_positions=token_positions,
+                    token_type=EntityType.PROTEIN.value,
+                    entity=entity,
+                    entity_id=protein_id,
+                    entity_category=category,
+                    color=EntityColor.PROTEIN.value,
+                )
+                matches.append(annotation)
+        return matches
 
     def _annotate_species(
         self,
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
-        organisms_from_custom_annotations: List[dict],
+        word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
             tokens=self.matched_species,
@@ -799,56 +775,16 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-        species_inclusions = self._annotate_local_species_inclusions(
+        # clean species annotations first
+        # because genes depend on them
+        species_annotations = self._clean_annotations(
+            annotations=species_annotations,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
+            word_index_dict=word_index_dict
         )
 
-        def has_center_point(
-            custom_rect_coords: List[float],
-            rect_coords: List[float],
-        ) -> bool:
-            x1 = rect_coords[0]
-            y1 = rect_coords[1]
-            x2 = rect_coords[2]
-            y2 = rect_coords[3]
-
-            center_x = (x1 + x2)/2
-            center_y = (y1 + y2)/2
-
-            rect_x1 = custom_rect_coords[0]
-            rect_y1 = custom_rect_coords[1]
-            rect_x2 = custom_rect_coords[2]
-            rect_y2 = custom_rect_coords[3]
-
-            return rect_x1 <= center_x <= rect_x2 and rect_y1 <= center_y <= rect_y2
-
-        # we only want the annotations with correct coordinates
-        # because it is possible for a word to only have one
-        # of its occurrences annotated as a custom annotation
-        filtered_custom_species_annotations: List[Annotation] = []
-        for custom in organisms_from_custom_annotations:
-            for custom_anno in species_inclusions:
-                if custom.get('rects', None):
-                    if len(custom['rects']) == len(custom_anno.rects):
-                        # check if center point for each rect in custom_anno.rects
-                        # is in the corresponding rectangle from custom annotations
-                        valid = all(list(map(has_center_point, custom['rects'], custom_anno.rects)))
-
-                        # if center point is in custom annotation rectangle
-                        # then add it to list
-                        if valid:
-                            filtered_custom_species_annotations.append(custom_anno)
-                else:
-                    raise AnnotationError(
-                        'Manual annotations unexpectedly missing attribute "rects".')
-
         self.organism_frequency, self.organism_locations, self.organism_categories = \
-            self._get_entity_frequency_location_and_category(
-                annotations=species_annotations + filtered_custom_species_annotations,
-            )
-
-        # don't return the custom annotations because they should stay as custom
+            self._get_entity_frequency_location_and_category(annotations=species_annotations)
         return species_annotations
 
     def annotate(
@@ -857,7 +793,7 @@ class AnnotationsService:
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
-        organisms_from_custom_annotations: List[dict],
+        word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
         funcs = {
             EntityType.ANATOMY.value: self._annotate_anatomy,
@@ -877,13 +813,13 @@ class AnnotationsService:
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 cropbox_in_pdf=cropbox_in_pdf,
-                organisms_from_custom_annotations=organisms_from_custom_annotations,
+                word_index_dict=word_index_dict
             )  # type: ignore
         else:
             return annotate_entities(
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                cropbox_in_pdf=cropbox_in_pdf,
+                cropbox_in_pdf=cropbox_in_pdf
             )  # type: ignore
 
     def _update_entity_frequency_map(
@@ -986,23 +922,42 @@ class AnnotationsService:
         gene 'marA' is correct, but 'mara' is not.
         """
         def is_abbrev(text_in_document, annotation, word_index_list, abbrevs) -> bool:
+            """Determine if a word is an abbreviation. If wrapped inside parenthesis,
+            look at x previous words. Start from closest word to abbreviation, and
+            check the first character.
+            """
             if text_in_document not in abbrevs:
                 if all([c.isupper() for c in text_in_document]) and \
-                    (len(text_in_document) == 3 or len(text_in_document) == 4):  # noqa
+                    len(text_in_document) in ABBREVIATION_WORD_LENGTH:  # noqa
                     try:
                         begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
                         end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
                     except IndexError:
                         # if index out of range than
-                        # last character is end of paper
+                        # character is beginning/end of paper
                         return False
                     if begin == '(' and end == ')':
                         i = bisect_left(word_index_list, annotation.lo_location_offset)
                         abbrev = ''
 
-                        for idx in word_index_list[i-len(text_in_document):i]:
-                            abbrev += word_index_dict[idx][0]
+                        for idx in reversed(word_index_list[i-len(text_in_document):i]):
+                            word = word_index_dict[idx]
+                            if '-' in word or '/' in word:
+                                word_split = []
+                                if '-' in word:
+                                    word_split = word.split('-')
+                                elif '/' in word:
+                                    word_split = word.split('/')
 
+                                for split in reversed(word_split):
+                                    if len(abbrev) == len(text_in_document):
+                                        break
+                                    else:
+                                        abbrev = split[0] + abbrev
+                                if len(abbrev) == len(text_in_document):
+                                    break
+                            else:
+                                abbrev = word[0] + abbrev
                         if abbrev.lower() != text_in_document.lower():
                             return False
                         else:
@@ -1025,7 +980,15 @@ class AnnotationsService:
 
             # TODO: Does the order of these checks matter?
 
-            if len(text_in_document) > 1:
+            if isinstance(annotation, GeneAnnotation) or \
+            (annotation.meta.type == EntityType.PROTEIN.value and len(text_in_document) == 1):  # noqa
+                text_in_document = text_in_document[0]  # type: ignore
+                if text_in_document == annotation.keyword:
+                    if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):
+                        abbrevs.add(text_in_document)  # type: ignore
+                    else:
+                        fixed_annotations.append(annotation)
+            elif len(text_in_document) > 1:
                 keyword_from_annotation = annotation.keyword.split(' ')
                 if len(keyword_from_annotation) >= len(text_in_document):
                     fixed_annotations.append(annotation)
@@ -1033,13 +996,6 @@ class AnnotationsService:
                     # consider case such as `ferredoxin 2` vs `ferredoxin-2` in lmdb
                     keyword_from_annotation = annotation.keyword.split('-')
                     if len(keyword_from_annotation) >= len(text_in_document):
-                        fixed_annotations.append(annotation)
-            elif isinstance(annotation, GeneAnnotation) or annotation.meta.type == EntityType.PROTEIN.value:  # noqa
-                text_in_document = text_in_document[0]  # type: ignore
-                if text_in_document == annotation.keyword:
-                    if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):
-                        abbrevs.add(text_in_document)  # type: ignore
-                    else:
                         fixed_annotations.append(annotation)
             else:
                 text_in_document = text_in_document[0]  # type: ignore
@@ -1055,7 +1011,7 @@ class AnnotationsService:
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
         types_to_annotate: List[Tuple[str, str]],
-        organisms_from_custom_annotations: List[dict],
+        word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
         """Create annotations.
 
@@ -1082,7 +1038,7 @@ class AnnotationsService:
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 cropbox_in_pdf=cropbox_in_pdf,
-                organisms_from_custom_annotations=organisms_from_custom_annotations,
+                word_index_dict=word_index_dict
             )
             unified_annotations.extend(annotations)
 
@@ -1091,14 +1047,11 @@ class AnnotationsService:
     def create_rules_based_annotations(
         self,
         tokens: PDFTokenPositionsList,
-        custom_annotations: List[dict],
         entity_results: EntityResults,
         entity_type_and_id_pairs: List[Tuple[str, str]],
         specified_organism: SpecifiedOrganismStrain,
     ) -> List[Annotation]:
         """Create annotations based on semantic rules."""
-        self.local_species_inclusion = entity_results.local_species_inclusion
-        self.matched_local_species_inclusion = entity_results.matched_local_species_inclusion
         self.matched_anatomy = entity_results.matched_anatomy
         self.matched_chemicals = entity_results.matched_chemicals
         self.matched_compounds = entity_results.matched_compounds
@@ -1115,7 +1068,7 @@ class AnnotationsService:
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             types_to_annotate=entity_type_and_id_pairs,
-            organisms_from_custom_annotations=custom_annotations,
+            word_index_dict=tokens.word_index_dict
         )
         return self._clean_annotations(
             annotations=annotations,
@@ -1138,7 +1091,7 @@ class AnnotationsService:
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
             types_to_annotate=entity_type_and_id_pairs,
-            organisms_from_custom_annotations=custom_annotations,
+            word_index_dict=word_index_dict
         )
 
         unified_annotations = species_annotations + nlp_annotations

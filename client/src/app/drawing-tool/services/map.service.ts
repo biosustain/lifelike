@@ -9,6 +9,7 @@ import { Project } from 'app/file-browser/services/project-space.service';
 import { AppUser } from 'app/interfaces';
 import { PaginatedRequestOptions, ResultList } from 'app/interfaces/shared.interface';
 import { AbstractService } from 'app/shared/services/abstract-service';
+import { PdfFile } from '../../interfaces/pdf-files.interface';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',
@@ -71,6 +72,19 @@ export class MapService extends AbstractService {
       `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/map/${encodeURIComponent(target.hash_id)}`,
       target,
       this.getHttpOptions(true),
+    );
+  }
+
+  moveMap(projectName: string,
+          hashId: string,
+          destinationDirectoryId: number): Observable<any> {
+    return this.http.post<PdfFile>(
+        `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/maps/${encodeURIComponent(hashId)}/move`, {
+          destination: {
+            directoryId: destinationDirectoryId,
+          },
+        },
+        this.getHttpOptions(true),
     );
   }
 
