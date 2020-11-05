@@ -59,3 +59,7 @@ class AnnotationExclusionSchema(StrictSchema):
     comment = ma.String(required=True)
     excludeGlobally = ma.Boolean(required=True)
     isCaseInsensitive = ma.Boolean(required=True)
+
+
+class GlobalAnnotationsDeleteSchema(ma.Schema):
+    pids = ma.List(ma.Integer())
