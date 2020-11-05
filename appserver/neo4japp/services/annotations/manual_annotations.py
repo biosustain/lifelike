@@ -216,8 +216,11 @@ class ManualAnnotationsService:
     def _get_file_annotations(self, file):
         def isExcluded(exclusions, annotation):
             for exclusion in exclusions:
-                if annotation['meta']['type'] == exclusion['type'] and \
-                        annotation['textInDocument'] == exclusion['text']:
+                if (exclusion.get('type') == annotation['meta']['type'] and
+                        self._terms_match(
+                            exclusion.get('text', 'True'),
+                            annotation.get('textInDocument', 'False'),
+                            exclusion['isCaseInsensitive'])):
                     return True
             return False
         if len(file.annotations) == 0:
