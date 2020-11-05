@@ -64,6 +64,15 @@ export class ErrorHandler {
           }
         }
       }
+    } else if (error instanceof Error) {
+      const errorObject = error as Error;
+      detail = errorObject.message;
+
+      if (errorObject.stack) {
+        detail += '\n\n' + errorObject.stack;
+      }
+    } else {
+      detail = error + '';
     }
 
     return new UserError(title, message, detail, error, transactionId);

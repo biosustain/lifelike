@@ -20,3 +20,11 @@
 .small-font {
   font-size: $font-size-sm;
 }
+
+.virtual-scroll-viewport {
+  height: 400px;
+}
+
+.virtual-scroll-item {
+  height: 22px;
+}
