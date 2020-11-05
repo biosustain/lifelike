@@ -117,9 +117,10 @@ def data_upgrades():
 
         session.commit()
 
-    except Exception:
+    except Exception as exc:
         session.rollback()
         session.close()
+        raise Exception(exc)
 
 
 def data_downgrades():
