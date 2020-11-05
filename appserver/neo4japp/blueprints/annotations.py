@@ -363,7 +363,7 @@ def get_annotations():
     ).outerjoin(
         Files,
         Files.id == GlobalList.file_id
-    ).filter(GlobalList.type == 'exclusion')
+    ).filter(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
     # Inclusions
     query_2 = db.session.query(
         Files.file_id,
@@ -386,7 +386,7 @@ def get_annotations():
     ).outerjoin(
         Files,
         Files.id == GlobalList.file_id
-    ).filter(GlobalList.type == 'inclusion')
+    ).filter(GlobalList.type == ManualAnnotationType.INCLUSION.value)
 
     union_query = query_1.union(query_2)
 
