@@ -154,7 +154,8 @@ export class FilesystemObjectActions {
   openMoveDialog(target: FilesystemObject): Promise<any> {
     if (target.type === 'map' || target.type === 'file') {
       const dialogRef = this.modalService.open(FileSelectionDialogComponent);
-      dialogRef.componentInstance.title = 'Move To';
+      dialogRef.componentInstance.title = `Move '${target.name}'`;
+      dialogRef.componentInstance.emptyDirectoryMessage = 'There are no sub-folders in this folder.';
       dialogRef.componentInstance.objectFilter = (o: FilesystemObject) => {
         return o.type === 'dir';
       };

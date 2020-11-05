@@ -20,6 +20,7 @@ export class FileListComponent {
   @Input() appLinks: false;
   @Input() parent: FilesystemObject;
   @Input() objectControls = true;
+  @Input() emptyDirectoryMessage = 'There are no items in this folder.';
   @Output() locatorChange = new EventEmitter<PathLocator>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
 
