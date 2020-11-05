@@ -221,7 +221,7 @@ class KgService(HybridDBDao):
         for meta_result in result:
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
-                refseq = meta_result['x']['refseq']
+                refseq = meta_result['x']['id']
                 item['link'] = f'https://string-db.org/cgi/network?identifiers={refseq}'
             result_list.append(item)
         return result_list
