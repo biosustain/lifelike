@@ -136,6 +136,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
                                                           result: [pdfFile, pdfFileContent, ann],
                                                           value: [file, loc],
                                                         }) => {
+      // Could be an old link that we're loading
+      if ((pdfFile as any).project_name.toLowerCase() !== this.projectName.toLowerCase()) {
+        this.projectName = (pdfFile as any).project_name;
+      }
+
       this.pdfData = {data: new Uint8Array(pdfFileContent)};
       this.annotations = ann;
       this.updateAnnotationIndex();
@@ -318,10 +323,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       .subscribe(
         response => {
           this.addedAnnotationExclusion = exclusionData;
-          this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
+          this.snackBar.open(`${exclusionData.text}: annotation has been excluded`, 'Close', {duration: 10000});
         },
         err => {
-          this.snackBar.open(`Error: failed to exclude annotation`, 'Close', {duration: 10000});
+          this.snackBar.open(`${exclusionData.text}: failed to exclude annotation`, 'Close', {duration: 10000});
         },
       );
   }
@@ -570,10 +575,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  clearSearchQuery() {
+  clearSearchQuery(focus = true) {
     this.searchQuery = '';
     this.searchQueryChanged();
-    this.searchElement.nativeElement.focus();
+    if (focus) {
+      this.searchElement.nativeElement.focus();
+    }
   }
 
   displayEditDialog() {
@@ -613,17 +620,34 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   parseLocationFromUrl(fragment: string): Location | undefined {
-    const pageMatch = fragment.match(/page=([0-9]+)/);
-    const coordMatch = fragment.match(/coords=([0-9.]+),([0-9.]+),([0-9.]+),([0-9.]+)/);
-    return pageMatch != null && coordMatch != null ? {
-      pageNumber: parseInt(pageMatch[1], 10),
-      rect: [
+    let pageMatch;
+    let coordMatch;
+    let jumpMatch;
+    if (window.URLSearchParams) {
+      const params = new URLSearchParams(fragment);
+      pageMatch = params.get('page');
+      const coords = params.get('coords');
+      if (coords != null) {
+        coordMatch = coords.split(/,/g);
+      }
+      jumpMatch = params.get('jump');
+    } else {
+      const pageMatch0 = fragment.match(/page=([0-9]+)/);
+      if (pageMatch0 != null) {
+        pageMatch = pageMatch0[1];
+      }
+      coordMatch = fragment.match(/coords=([0-9.]+),([0-9.]+),([0-9.]+),([0-9.]+)/);
+    }
+    return {
+      pageNumber: pageMatch != null ? parseInt(pageMatch, 10) : null,
+      rect: coordMatch != null ? [
         parseFloat(coordMatch[1]),
         parseFloat(coordMatch[2]),
         parseFloat(coordMatch[3]),
         parseFloat(coordMatch[4]),
-      ],
-    } : null;
+      ] : null,
+      jumpText: jumpMatch,
+    };
   }
 
   parseHighlightFromUrl(fragment: string): string | undefined {

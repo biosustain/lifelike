@@ -14,15 +14,21 @@ import {
     ReferenceTableDataRequest,
 } from 'app/interfaces';
 
-@Injectable()
-export class VisualizationService {
-    readonly visApi = '/api/visualizer';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
+import { AbstractService } from 'app/shared/services/abstract-service';
 
-    constructor(private http: HttpClient) {}
+@Injectable()
+export class VisualizationService extends AbstractService {
+    readonly baseUrl = '/api/visualizer';
+
+    constructor(auth: AuthenticationService , http: HttpClient) {
+        super(auth, http);
+    }
 
     getBatch(query: string) {
         return this.http.get<{result: Neo4jResults}>(
-            `${this.visApi}/batch`, {params: {data: query}}
+            `${this.baseUrl}/batch`,
+            {params: {data: query}, ...this.getHttpOptions(true)}
         ).pipe(map(resp => resp.result));
     }
 
@@ -33,23 +39,28 @@ export class VisualizationService {
      */
     expandNode(nodeId: number, filterLabels: string[]) {
         return this.http.post<{result: Neo4jResults}>(
-            `${this.visApi}/expand`, {nodeId, filterLabels},
+            `${this.baseUrl}/expand`,
+            {nodeId, filterLabels},
+            {...this.getHttpOptions(true)}
         ).pipe(map(resp => resp.result));
     }
 
     getReferenceTableData(request: ReferenceTableDataRequest) {
         return this.http.post<{result: GetReferenceTableDataResult}>(
-            `${this.visApi}/get-reference-table-data`, {nodeEdgePairs: request.nodeEdgePairs},
+            `${this.baseUrl}/get-reference-table-data`,
+            {nodeEdgePairs: request.nodeEdgePairs},
+            {...this.getHttpOptions(true)}
         ).pipe(map(resp => resp.result));
     }
 
     getSnippetsForEdge(request: NewEdgeSnippetsPageRequest) {
         return this.http.post<{result: GetEdgeSnippetsResult}>(
-            `${this.visApi}/get-snippets-for-edge`, {
+            `${this.baseUrl}/get-snippets-for-edge`, {
                 page: request.page,
                 limit: request.limit,
                 edge: request.queryData,
-            }
+            },
+            {...this.getHttpOptions(true)}
         ).pipe(
             map(resp => resp.result),
             catchError(error => of(error)),
@@ -58,11 +69,12 @@ export class VisualizationService {
 
     getSnippetsForCluster(request: NewClusterSnippetsPageRequest) {
         return this.http.post<{result: GetClusterSnippetsResult}>(
-            `${this.visApi}/get-snippets-for-cluster`, {
+            `${this.baseUrl}/get-snippets-for-cluster`, {
                 page: request.page,
                 limit: request.limit,
                 edges: request.queryData,
-            }
+            },
+            {...this.getHttpOptions(true)}
         ).pipe(
             map(resp => resp.result),
             catchError(error => of(error)),
