@@ -1013,7 +1013,7 @@ def mock_species_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
         'exclusion_type_species',
-        {'human', 'dog'}
+        {'human', 'dog', 'fruit fly'}
     )
 
 
