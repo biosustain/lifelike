@@ -1,0 +1,24 @@
+.graph-type-btn-container {
+    height: 40px;
+}
+
+.route-builder-container-open {
+    position: absolute;
+    width: 400px;
+    right: 0;
+    transition: right .25s;
+}
+
+.route-builder-container-closed {
+    position: absolute;
+    width: 400px;
+    right: -400px;
+    transition: right .25s;
+}
+
+.toggle-route-builder-button {
+    height: 60px;
+    top: 8px;
+    right: 100%;
+    position: absolute;
+}
