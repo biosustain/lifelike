@@ -4,23 +4,30 @@ import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
 import { FTSResult } from 'app/interfaces';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
+import { AbstractService } from 'app/shared/services/abstract-service';
 
 @Injectable()
-export class GraphSearchService {
+export class GraphSearchService extends AbstractService {
   readonly searchApi = '/api/search';
 
-  constructor(private http: HttpClient) {
+  constructor(auth: AuthenticationService, http: HttpClient) {
+    super(auth, http);
   }
 
   fullTextSearch(query: string, page: number = 1, limit: number = 10) {
     return this.http.post<{ result: FTSResult }>(
-      `${this.searchApi}/search`, {query, page, limit},
+      `${this.searchApi}/search`,
+      {query, page, limit},
+      {...this.getHttpOptions(true)}
     ).pipe(map(resp => resp.result));
   }
 
   simpleFullTextSearch(query: string, page: number = 1, limit: number = 10, filter: string = 'labels(node)') {
     return this.http.post<{ result: FTSResult }>(
-      `${this.searchApi}/simple-search`, {query, page, filter, limit},
+      `${this.searchApi}/simple-search`,
+      {query, page, filter, limit},
+      {...this.getHttpOptions(true)}
     ).pipe(map(resp => resp.result));
   }
 
@@ -32,7 +39,9 @@ export class GraphSearchService {
       filter: string = 'labels(node)'
   ) {
     return this.http.post<{ result: FTSResult }>(
-      `${this.searchApi}/viz-search-temp`, {query, organism, page, filter, limit},
+      `${this.searchApi}/viz-search-temp`,
+      {query, organism, page, filter, limit},
+      {...this.getHttpOptions(true)}
     ).pipe(map(resp => resp.result));
   }
 
@@ -40,6 +49,7 @@ export class GraphSearchService {
     return this.http.post<{ result: FTSResult }>(
       `${this.searchApi}/genes_filtered_by_organism_and_others`,
       {query, organismId, filters},
+      {...this.getHttpOptions(true)}
     ).pipe(map(resp => resp.result));
   }
 }

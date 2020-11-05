@@ -122,17 +122,18 @@ class LMDBMatch(CamelDictMixin):
 
 @attr.s(frozen=True)
 class EntityResults(CamelDictMixin):
-    local_species_inclusion: Dict[str, List[dict]] = attr.ib()
-    matched_local_species_inclusion: Dict[str, List[PDFTokenPositions]] = attr.ib()
-    matched_anatomy: Dict[str, LMDBMatch] = attr.ib()
-    matched_chemicals: Dict[str, LMDBMatch] = attr.ib()
-    matched_compounds: Dict[str, LMDBMatch] = attr.ib()
-    matched_diseases: Dict[str, LMDBMatch] = attr.ib()
-    matched_foods: Dict[str, LMDBMatch] = attr.ib()
-    matched_genes: Dict[str, LMDBMatch] = attr.ib()
-    matched_phenotypes: Dict[str, LMDBMatch] = attr.ib()
-    matched_proteins: Dict[str, LMDBMatch] = attr.ib()
-    matched_species: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_anatomy: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_chemical: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_compound: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_disease: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_food: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_gene: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_phenotype: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_protein: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_species: Dict[str, LMDBMatch] = attr.ib()
+    # non LMDB entity types
+    matched_type_company: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_entity: Dict[str, LMDBMatch] = attr.ib()
 
 
 @attr.s(frozen=True)
