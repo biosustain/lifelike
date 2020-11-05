@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { GlobalAnnotationService } from 'app/shared/services/global-annotation-service';
+import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { GlobalAnnotation } from 'app/interfaces/annotation';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { PaginatedRequestOptions, ResultList, StandardRequestOptions } from 'app/interfaces/shared.interface';
@@ -66,6 +67,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
 
     constructor(
         private globalAnnotationService: GlobalAnnotationService,
+        private pdfFilesService: PdfFilesService,
         private readonly route: ActivatedRoute,
         private readonly errorHandler: ErrorHandler,
         private readonly progressDialog: ProgressDialog,
@@ -193,6 +195,13 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
                 const filename = event.headers.get('content-disposition').split('=')[1];
                 downloader(event.body, 'application/vnd.ms-excel', filename);
             }
+        });
+    }
+
+    downloadFileReference(pid: number) {
+        this.pdfFilesService.downloadFile(pid).subscribe(resp => {
+            const filename = resp.headers.get('content-disposition').split('=')[1];
+            downloader(resp.body, 'application/pdf', filename);
         });
     }
 }

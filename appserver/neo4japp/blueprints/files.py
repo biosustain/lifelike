@@ -429,6 +429,8 @@ def upload_pdf(request, project_name: str):
 @auth.login_required
 @requires_role('admin')
 def download(file_content_id: int):
+    FILENAME = "FileReference"
+
     yield g.current_user
 
     try:
@@ -442,7 +444,7 @@ def download(file_content_id: int):
 
     res = make_response(entry.raw_file)
     res.headers['Content-Type'] = 'application/pdf'
-
+    res.headers['Content-Disposition'] = f'attachment;filename={FILENAME}.pdf'
     yield res
 
 
