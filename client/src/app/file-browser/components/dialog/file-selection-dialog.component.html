@@ -4,12 +4,6 @@
   </app-modal-header>
 
   <app-modal-body>
-    <div class="mb-3" *ngIf="objectSelect.locator != null">
-      <button class="btn btn-secondary" type="button" (click)="objectSelect.goUp()">
-        <i class="fa fa-fw fa-arrow-left" aria-hidden="true"></i> Back
-      </button>
-    </div>
-
     <ng-container *ngIf="objectSelect.locator != null; else projectList">
       <ng-container *ngIf="(objectSelect.object$ | addStatus | async) as result">
         <ng-template [ngIf]="result.error">
@@ -18,14 +12,35 @@
         </ng-template>
 
         <ng-template [ngIf]="result.loading">
-          Loading...
+          <div class="mb-3 d-flex">
+            <button class="btn btn-secondary" type="button" disabled>
+              <i class="fa fa-fw fa-arrow-left" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div>
+            Loading...
+          </div>
         </ng-template>
 
         <ng-template [ngIf]="result.value">
-          <div class="flex-fill overflow-auto">
+          <div class="mb-3 d-flex align-items-center">
+            <button class="btn btn-secondary" type="button" (click)="objectSelect.goUp()">
+              <i class="fa fa-fw fa-arrow-left" aria-hidden="true"></i>
+            </button>
+            <div class="ml-2 text-truncate module-title d-flex align-items-center">
+              <i class="fa fa-fw fa-folder text-icon" aria-hidden="true"></i>
+              <div class="text-truncate ml-2">
+                {{ result.value.name }}
+              </div>
+            </div>
+          </div>
+
+          <div class="flex-fill overflow-auto border-top">
             <app-file-list [parent]="result.value" (locatorChange)="objectSelect.load($event)"
                            (objectOpen)="objectSelect.open($event)"
-                           [objectControls]="false"></app-file-list>
+                           [objectControls]="false"
+                           [emptyDirectoryMessage]="emptyDirectoryMessage"></app-file-list>
           </div>
         </ng-template>
       </ng-container>
@@ -64,7 +79,7 @@
   <app-modal-footer class="text-truncate">
     <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
     <button type="submit" class="btn btn-primary text-truncate">
-      Select {{ getSelectionText() }}
+      OK
     </button>
   </app-modal-footer>
 </form>
