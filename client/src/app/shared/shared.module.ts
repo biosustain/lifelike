@@ -53,6 +53,7 @@ import { WordCloudAnnotationFilterComponent } from './components/word-cloud-anno
 import { GenericTableComponent } from './components/table/generic-table.component';
 import { HighlightTextComponent } from './components/highlight-text.component';
 import { AddStatusPipe } from './pipes/add-status.pipe';
+import { TermHighlightComponent } from './components/term-highlight.component';
 
 const components = [
   AnnotationFilterComponent,
@@ -87,6 +88,7 @@ const components = [
   ShareDialogComponent,
   GenericTableComponent,
   HighlightTextComponent,
+  TermHighlightComponent,
 ];
 
 @NgModule({
