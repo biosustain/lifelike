@@ -126,7 +126,7 @@ export class WordCloudComponent {
           frequency: parseInt(cols[3], 10),
           shown: true,
         } as WordCloudAnnotationFilterEntity;
-        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), annotation.frequency > 1);
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), annotation.frequency >= 1);
         this.annotationData.push(annotation);
         uniquePairMap.set(uniquePair, this.annotationData.length - 1);
       } else {
