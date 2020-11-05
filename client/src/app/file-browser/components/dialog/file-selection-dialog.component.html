@@ -57,12 +57,6 @@
         </ng-template>
 
         <ng-template [ngIf]="result.value">
-          <div class="mb-3 d-flex align-items-center">
-            <div class="text-truncate module-title">
-              Select a Project
-            </div>
-          </div>
-
           <div class="tile-deck tile-deck-sm">
             <div *ngFor="let p of result.value.results.view" class="tile tile-sm d-flex flex-column">
               <div class="flex-fill d-flex justify-content-center align-items-center my-2">
