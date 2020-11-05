@@ -25,7 +25,10 @@ from neo4japp.models import (
     projects_collaborator_role, AppUser, Directory, Project, Files
 )
 from neo4japp.request_schemas.search import (
-    ContentSearchSchema, AnnotateRequestSchema,
+    AnnotateRequestSchema,
+    ContentSearchSchema,
+    OrganismSearchSchema,
+    VizSearchSchema
 )
 from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.services.annotations.service_helpers import create_annotations
@@ -33,23 +36,24 @@ from neo4japp.util import jsonify_with_class, SuccessResponse
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
+# NOTE: Commenting out as these are unused...do we need these?
 
-@bp.route('/search', methods=['POST'])
-@auth.login_required
-@jsonify_with_class(SearchRequest)
-def fulltext_search(req: SearchRequest):
-    search_dao = get_search_service_dao()
-    results = search_dao.fulltext_search(req.query, req.page, req.limit)
-    return SuccessResponse(result=results, status_code=200)
+# @bp.route('/search', methods=['POST'])
+# @auth.login_required
+# @jsonify_with_class(SearchRequest)
+# def fulltext_search(req: SearchRequest):
+#     search_dao = get_search_service_dao()
+#     results = search_dao.fulltext_search(req.query, req.page, req.limit)
+#     return SuccessResponse(result=results, status_code=200)
 
 
-@bp.route('/simple-search', methods=['POST'])
-@auth.login_required
-@jsonify_with_class(SimpleSearchRequest)
-def simple_full_text_search(req: SimpleSearchRequest):
-    search_dao = get_search_service_dao()
-    results = search_dao.simple_text_search(req.query, req.page, req.limit, req.filter)
-    return SuccessResponse(result=results, status_code=200)
+# @bp.route('/simple-search', methods=['POST'])
+# @auth.login_required
+# @jsonify_with_class(SimpleSearchRequest)
+# def simple_full_text_search(req: SimpleSearchRequest):
+#     search_dao = get_search_service_dao()
+#     results = search_dao.simple_text_search(req.query, req.page, req.limit, req.filter)
+#     return SuccessResponse(result=results, status_code=200)
 
 
 # TODO: Added as part of LL-1067, this is a TEMP solution until we design a
@@ -57,17 +61,19 @@ def simple_full_text_search(req: SimpleSearchRequest):
 # This will need tests if we decide to maintain it as a standalone service.
 @bp.route('/viz-search-temp', methods=['POST'])
 @auth.login_required
-@jsonify_with_class(VizSearchRequest)
-def visualizer_search_temp(req: VizSearchRequest):
+@use_kwargs(VizSearchSchema)
+def visualizer_search_temp(query, page, limit, filter, organism):
     search_dao = get_search_service_dao()
     results = search_dao.visualizer_search_temp(
-        term=req.query,
-        organism=req.organism,
-        page=req.page,
-        limit=req.limit,
-        filter=req.filter
+        term=query,
+        organism=organism,
+        page=page,
+        limit=limit,
+        filter=filter
     )
-    return SuccessResponse(result=results, status_code=200)
+    return jsonify({
+        'result': results.to_dict(),
+    })
 
 
 @bp.route('/annotate', methods=['POST'])
@@ -333,11 +339,11 @@ def get_organism(organism_tax_id: str):
 
 @bp.route('/organisms', methods=['POST'])
 @auth.login_required
-@jsonify_with_class(OrganismRequest)
-def get_organisms(req: OrganismRequest):
+@use_kwargs(OrganismSearchSchema)
+def get_organisms(query, limit):
     search_dao = get_search_service_dao()
-    results = search_dao.get_organisms(req.query, req.limit)
-    return SuccessResponse(result=results, status_code=200)
+    results = search_dao.get_organisms(query, limit)
+    return jsonify({'result': results})
 
 
 @bp.route('/genes_filtered_by_organism_and_others', methods=['POST'])
