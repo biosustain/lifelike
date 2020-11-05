@@ -131,6 +131,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   pdfQuery = '';
   allPages = 0;
   currentRenderedPage = 0;
+  showNextFindFeedback = false;
 
   pageRef = {};
   index: any;
@@ -189,6 +190,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
           const simplified = sub.jumpText.replace(/[\s\r\n]/g, ' ').trim();
           const words = simplified.split(/ /g);
           const prefixQuery = words.splice(0, 4).join(' ');
+          this.showNextFindFeedback = false; // Count might not work yet - keep false
           this.searchQueryChanged({
             keyword: prefixQuery,
             findPrevious: true,
@@ -1021,6 +1023,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   findControlStateUpdated(event) {
+    if (this.showNextFindFeedback) {
+      if (event.state === 0 || event.state === 1) {
+        this.showNextFindFeedback = false;
+        const total = event.matchesCount.total;
+        this.snackBar.open(`Found ${total} instance${total === 1 ? '' : 's'}  `
+          + `in the document.`,
+          'Close', {duration: 5000});
+      }
+    }
     if (this.searchCommand !== 'findagain' || typeof event.previous === 'undefined') {
       return;
     }

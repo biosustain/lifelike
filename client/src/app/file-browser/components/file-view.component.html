@@ -60,11 +60,12 @@
               </div>
             </div>
             <div class="ml-2 align-self-center" style="min-width: 70px">
-                {{pdfViewerLib?.matchesCount.current || 0}}/{{pdfViewerLib?.matchesCount.total || 0}}
+              {{pdfViewerLib?.matchesCount.current || 0}}/{{pdfViewerLib?.matchesCount.total || 0}}
             </div>
             <div class="btn-group ml-2">
               <button type="button" class="btn btn-secondary"
-                      [disabled]="!ready || searchQuery?.length === 0" (click)="findPrevious()" ngbTooltip="Previous result"
+                      [disabled]="!ready || searchQuery?.length === 0" (click)="findPrevious()"
+                      ngbTooltip="Previous result"
                       placement="bottom">
                 <i class="fa fa-fw fa-angle-up"></i>
               </button>
@@ -82,7 +83,7 @@
                 <i class="fa fa-fw fa-filter"></i>
               </button>
               <div ngbDropdownMenu [attr.aria-labelledby]="id + '-filters-dropdown'" [style.width]="'220px'"
-                    class="dropdown-body dropdown-menu dropdown-menu-right">
+                   class="dropdown-body dropdown-menu dropdown-menu-right">
                 <div class="mb-2">
                   <button *ngIf="!entityTypeVisibilityChanged" class="btn btn-outline-secondary btn-block"
                           (click)="setAllEntityTypesVisibility(false)">
@@ -95,12 +96,12 @@
                 </div>
 
                 <div *ngFor="let entityTypeEntry of sortedEntityTypeEntries"
-                      [style.opacity]="entityTypeEntry.annotations.length ? '' : '0.2'">
+                     [style.opacity]="entityTypeEntry.annotations.length ? '' : '0.2'">
                   <div class="custom-control custom-checkbox">
                     <input class="custom-control-input" type="checkbox" [id]="id + 'filter-' + entityTypeEntry.type.id"
-                            value="1"
-                            [checked]="isEntityTypeVisible(entityTypeEntry.type)"
-                            (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
+                           value="1"
+                           [checked]="isEntityTypeVisible(entityTypeEntry.type)"
+                           (change)="changeEntityTypeVisibility(entityTypeEntry.type, $event)">
                     <label class="custom-control-label" [for]="id + 'filter-' + entityTypeEntry.type.id">
                 <span class="entity-type-legend" [ngStyle]="{background: entityTypeEntry.type.color}">
               </span> {{entityTypeEntry.type.name}} <span *ngIf="!!entityTypeEntry.annotations.length">
@@ -113,7 +114,7 @@
                 <div class="mt-2">
                   <div class="custom-control custom-checkbox">
                     <input type="checkbox" [(ngModel)]="showExcludedAnnotations"
-                            class="custom-control-input" id="showExcludedAnnotations">
+                           class="custom-control-input" id="showExcludedAnnotations">
                     <label class="custom-control-label" for="showExcludedAnnotations">Show excluded
                       annotations</label>
                   </div>
@@ -137,34 +138,56 @@
           </div>
         </div>
       </div>
-
-      <div class="flex-fill overflow-auto" id="pdf-viewer-lib-wrapper">
-        <div *ngIf="ready">
-          <!-- PDF Viewer -->
-          <lib-pdf-viewer-lib
-            id='pdf-viewer'
-            appPdfViewer
-            [pdfSrc]="pdfData"
-            [annotations]="annotations"
-            [goToPosition]="goToPosition"
-            [highlightAnnotations]="highlightAnnotations"
-            [addedAnnotations]="addedAnnotations"
-            [removedAnnotationIds]="removedAnnotationIds"
-            [addedAnnotationExclusion]="addedAnnotationExclusion"
-            [entityTypeVisibilityMap]="entityTypeVisibilityMap"
-            [filterChanges]="filterChangeSubject"
-            [searchChanged]="searchChanged"
-            [showExcludedAnnotations]="showExcludedAnnotations"
-            [removedAnnotationExclusion]="removedAnnotationExclusion"
-            (annotationDragStart)="addAnnotationDragData($event)"
-            (annotation-exclusion-added)="annotationExclusionAdded($event)"
-            (annotation-exclusion-removed)="annotationExclusionRemoved($event)"
-            (custom-annotation-created)="annotationCreated($event)"
-            (loadCompleted)="loadCompleted($event)"
-            (custom-annotation-removed)="annotationRemoved($event)"
-            (searchChange)="searchQueryChangedFromViewer($event)"
-          >
-          </lib-pdf-viewer-lib>
+      <div class="flex-fill overflow-hidden position-relative d-flex h-100">
+        <div *ngIf="isPendingPostLoadAction()"
+             class="pending-scroll-box-container">
+          <div class="pending-scroll-box floating-toolbar d-flex align-items-center flex-column">
+            <div>
+              <i class="fas fa-circle-notch fa-spin fa-3x"></i>
+            </div>
+            <div class="mt-2">
+              <ng-container *ngIf="isPendingScroll(); else pendingJump">
+                Finding place<br>in document...
+              </ng-container>
+              <ng-template #pendingJump>
+                <ng-container *ngIf="isPendingJump(); else pendingHighlight">
+                  Finding snippet<br>in document...
+                </ng-container>
+              </ng-template>
+              <ng-template #pendingHighlight>
+                Finding entity<br>in document...
+              </ng-template>
+            </div>
+          </div>
+        </div>
+        <div class="flex-fill overflow-auto" id="pdf-viewer-lib-wrapper">
+          <div *ngIf="ready">
+            <!-- PDF Viewer -->
+            <lib-pdf-viewer-lib
+              id='pdf-viewer'
+              appPdfViewer
+              [pdfSrc]="pdfData"
+              [annotations]="annotations"
+              [goToPosition]="goToPosition"
+              [highlightAnnotations]="highlightAnnotations"
+              [addedAnnotations]="addedAnnotations"
+              [removedAnnotationIds]="removedAnnotationIds"
+              [addedAnnotationExclusion]="addedAnnotationExclusion"
+              [entityTypeVisibilityMap]="entityTypeVisibilityMap"
+              [filterChanges]="filterChangeSubject"
+              [searchChanged]="searchChanged"
+              [showExcludedAnnotations]="showExcludedAnnotations"
+              [removedAnnotationExclusion]="removedAnnotationExclusion"
+              (annotationDragStart)="addAnnotationDragData($event)"
+              (annotation-exclusion-added)="annotationExclusionAdded($event)"
+              (annotation-exclusion-removed)="annotationExclusionRemoved($event)"
+              (custom-annotation-created)="annotationCreated($event)"
+              (loadCompleted)="loadCompleted($event)"
+              (custom-annotation-removed)="annotationRemoved($event)"
+              (searchChange)="searchQueryChangedFromViewer($event)"
+            >
+            </lib-pdf-viewer-lib>
+          </div>
         </div>
       </div>
     </div>
