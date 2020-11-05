@@ -2,17 +2,21 @@
   <!-- Toolbar -->
   <div class="mb-4 d-flex">
     <div>
+      <div ngbDropdown class="d-inline-block">
+        <button class="btn btn-primary" ngbDropdownToggle>
+          <i class="fa fa-fw fa-file-export"></i>
+          Export
+        </button>
+        <div ngbDropdownMenu>
+          <button ngbDropdownItem (click)="exportGlobalExclusions()">Export Exclusions...</button>
+          <button ngbDropdownItem (click)="exportGlobalInclusions()">Export Inclusions...</button>
+        </div>
+      </div>
       <button [disabled]="results.selection.length === 0"
-              class="btn btn-danger"
+              class="btn btn-danger ml-2"
               (click)="deleteAnnotation(results.selection)"
               ngbTooltip="Delete annotation(s)">
         Delete
-      </button>
-      <button class="btn btn-primary ml-2"
-              ngbTooltip="Export to csv"
-              [disabled]="true">
-        <i class="fa fa-fw fa-file-export"></i>
-        Export
       </button>
     </div>
   </div>
