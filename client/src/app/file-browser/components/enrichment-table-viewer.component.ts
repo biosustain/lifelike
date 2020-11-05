@@ -31,7 +31,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       { name: 'Regulon Data', span: '3' },
       { name: 'Uniprot Function', span: '1' },
       { name: 'String Annotation', span: '1' },
-      { name: 'GO Enrichment', span: '1' },
+      { name: 'GO Annotation', span: '1' },
       { name: 'Biocyc Pathways', span: '1' },
     ],
     // Secondary headers
@@ -270,7 +270,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
 
   processGoWrapper(nodeArray: GoNode[]): string {
     if (nodeArray.length > 5) {
-      return nodeArray.map((node) => node.name).slice(0, 5).join(';\n') + '...';
+      return nodeArray.map((node) => node.name).slice(0, 5).join('; ') + '...';
     } else {
       return nodeArray.map((node) => node.name).slice(0, 5).join('; ');
     }
