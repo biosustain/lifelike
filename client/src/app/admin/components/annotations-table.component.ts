@@ -50,8 +50,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         multipleSelection: true,
     });
 
-    private loadTaskSubscription: Subscription;
-    private routerParamSubscription: Subscription;
+    protected subscriptions = new Subscription();
 
     readonly headers: string[] = [
         'Text',
@@ -74,12 +73,12 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit() {
-        this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: annotations}) => {
+        this.subscriptions.add(this.loadTask.results$.subscribe(({result: annotations}) => {
             this.collectionSize = annotations.total;
             this.results.replace(annotations.results);
-        });
+        }));
 
-        this.routerParamSubscription = this.route.queryParams.pipe(
+        this.subscriptions.add(this.route.queryParams.pipe(
             tap((params) => {
                 this.locator = {
                     ...this.defaultLocator,
@@ -90,22 +89,21 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
                 this.filterForm.patchValue(this.locator);
                 this.refresh();
             }),
-        ).subscribe();
+        ).subscribe());
     }
 
     ngOnDestroy() {
-        this.loadTaskSubscription.unsubscribe();
-        this.routerParamSubscription.unsubscribe();
+        this.subscriptions.unsubscribe();
     }
 
     goToPage(page: number) {
         this.currentPage = page;
         this.locator = {...this.locator, page};
-        this.globalAnnotationService.getAnnotations(this.locator).pipe().subscribe(
+        this.subscriptions.add(this.globalAnnotationService.getAnnotations(this.locator).pipe().subscribe(
             (({results: annotations}) => {
                 this.results.replace(annotations);
             })
-        );
+        ));
     }
 
     isAllSelected(): boolean {
@@ -126,7 +124,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
 
     deleteAnnotation(objects: readonly GlobalAnnotation[]) {
         const pids = objects.map((r: GlobalAnnotation) => r.id);
-        this.globalAnnotationService.deleteAnnotations(pids).pipe(first()).subscribe();
+        this.subscriptions.add(this.globalAnnotationService.deleteAnnotations(pids).pipe(first()).subscribe());
         this.refresh();
     }
 
@@ -139,7 +137,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
             progressObservable,
         });
 
-        this.globalAnnotationService.exportGlobalExclusions().pipe(
+        this.subscriptions.add(this.globalAnnotationService.exportGlobalExclusions().pipe(
             this.errorHandler.create()
         ).subscribe(event => {
             if (event.type === HttpEventType.DownloadProgress) {
@@ -161,7 +159,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
                 const filename = event.headers.get('content-disposition').split('=')[1];
                 downloader(event.body, 'application/vnd.ms-excel', filename);
             }
-        });
+        }));
     }
 
     exportGlobalInclusions() {
@@ -173,7 +171,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
             progressObservable,
         });
 
-        this.globalAnnotationService.exportGlobalInclusions().pipe(
+        this.subscriptions.add(this.globalAnnotationService.exportGlobalInclusions().pipe(
             this.errorHandler.create()
         ).subscribe(event => {
             if (event.type === HttpEventType.DownloadProgress) {
@@ -195,13 +193,13 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
                 const filename = event.headers.get('content-disposition').split('=')[1];
                 downloader(event.body, 'application/vnd.ms-excel', filename);
             }
-        });
+        }));
     }
 
     downloadFileReference(pid: number) {
-        this.pdfFilesService.downloadFile(pid).subscribe(resp => {
+        this.subscriptions.add(this.pdfFilesService.downloadFile(pid).pipe(first()).subscribe(resp => {
             const filename = resp.headers.get('content-disposition').split('=')[1];
             downloader(resp.body, 'application/pdf', filename);
-        });
+        }));
     }
 }
