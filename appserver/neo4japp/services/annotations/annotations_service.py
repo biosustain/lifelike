@@ -807,12 +807,49 @@ class AnnotationsService:
                 matches.append(annotation)
         return matches
 
-    def _annotate_species(
+    def _annotate_type_species_local(
+        self,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        """Similar to self._get_annotation() but for creating
+        annotations of custom species.
+        However, does not check if a synonym is used by multiple
+        common names that all appear in the document, as assume
+        user wants these custom species annotations to be
+        annotated.
+        """
+        tokens = self.matched_type_species_local
+
+        custom_annotations: List[Annotation] = []
+
+        for word, lmdb_match in tokens.items():
+            for token_positions in lmdb_match.tokens:
+                for entity in lmdb_match.entities:
+                    try:
+                        annotation = self._create_annotation_object(
+                            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+                            cropbox_in_pdf=cropbox_in_pdf,
+                            token_positions=token_positions,
+                            token_type=EntityType.SPECIES.value,
+                            entity=entity,
+                            entity_id=entity[EntityIdStr.SPECIES.value],
+                            entity_category=entity.get('category', ''),
+                            color=EntityColor.SPECIES.value,
+                        )
+                    except KeyError:
+                        continue
+                    else:
+                        custom_annotations.append(annotation)
+        return custom_annotations
+
+    def _annotate_type_species(
         self,
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
-        word_index_dict: Dict[int, str]
+        word_index_dict: Dict[int, str],
+        custom_annotations: List[dict]
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
             tokens=self.matched_type_species,
@@ -823,6 +860,51 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
+        species_annotations_local = self._annotate_type_species_local(
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
+        custom_annotations_species = [
+            custom for custom in custom_annotations if custom.get(
+                'meta', {}).get('type') == EntityType.SPECIES.value]
+
+        def has_center_point(
+            custom_rect_coords: List[float],
+            rect_coords: List[float],
+        ) -> bool:
+            x1 = rect_coords[0]
+            y1 = rect_coords[1]
+            x2 = rect_coords[2]
+            y2 = rect_coords[3]
+
+            center_x = (x1 + x2)/2
+            center_y = (y1 + y2)/2
+
+            rect_x1 = custom_rect_coords[0]
+            rect_y1 = custom_rect_coords[1]
+            rect_x2 = custom_rect_coords[2]
+            rect_y2 = custom_rect_coords[3]
+
+            return rect_x1 <= center_x <= rect_x2 and rect_y1 <= center_y <= rect_y2
+
+        # we only want the annotations with correct coordinates
+        # because it is possible for a word to only have one
+        # of its occurrences annotated as a custom annotation
+        filtered_species_annotations_local: List[Annotation] = []
+
+        for custom in custom_annotations_species:
+            for custom_anno in species_annotations_local:
+                if custom.get('rects') and len(custom['rects']) == len(custom_anno.rects):
+                    # check if center point for each rect in custom_anno.rects
+                    # is in the corresponding rectangle from custom annotations
+                    valid = all(list(map(has_center_point, custom['rects'], custom_anno.rects)))
+
+                    # if center point is in custom annotation rectangle
+                    # then add it to list
+                    if valid:
+                        filtered_species_annotations_local.append(custom_anno)
+
         # clean species annotations first
         # because genes depend on them
         species_annotations = self._clean_annotations(
@@ -832,7 +914,8 @@ class AnnotationsService:
         )
 
         self.organism_frequency, self.organism_locations, self.organism_categories = \
-            self._get_entity_frequency_location_and_category(annotations=species_annotations)
+            self._get_entity_frequency_location_and_category(
+                annotations=species_annotations + filtered_species_annotations_local)
         return species_annotations
 
     def _annotate_type_company(
@@ -871,7 +954,8 @@ class AnnotationsService:
         entity_id_str: str,
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
-        word_index_dict: Dict[int, str]
+        word_index_dict: Dict[int, str],
+        custom_annotations: List[dict]
     ) -> List[Annotation]:
         funcs = {
             EntityType.ANATOMY.value: self._annotate_anatomy,
@@ -880,7 +964,7 @@ class AnnotationsService:
             EntityType.DISEASE.value: self._annotate_type_disease,
             EntityType.FOOD.value: self._annotate_type_food,
             EntityType.PHENOTYPE.value: self._annotate_type_phenotype,
-            EntityType.SPECIES.value: self._annotate_species,
+            EntityType.SPECIES.value: self._annotate_type_species,
             EntityType.PROTEIN.value: self._annotate_type_protein,
             EntityType.GENE.value: self._annotate_type_gene,
             EntityType.COMPANY.value: self._annotate_type_company,
@@ -893,7 +977,8 @@ class AnnotationsService:
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 cropbox_in_pdf=cropbox_in_pdf,
-                word_index_dict=word_index_dict
+                word_index_dict=word_index_dict,
+                custom_annotations=custom_annotations
             )  # type: ignore
         else:
             return annotate_entities(
@@ -1091,7 +1176,8 @@ class AnnotationsService:
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
         types_to_annotate: List[Tuple[str, str]],
-        word_index_dict: Dict[int, str]
+        word_index_dict: Dict[int, str],
+        custom_annotations: List[dict]
     ) -> List[Annotation]:
         """Create annotations.
 
@@ -1118,7 +1204,8 @@ class AnnotationsService:
                 entity_id_str=entity_id_str,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 cropbox_in_pdf=cropbox_in_pdf,
-                word_index_dict=word_index_dict
+                word_index_dict=word_index_dict,
+                custom_annotations=custom_annotations
             )
             unified_annotations.extend(annotations)
 
@@ -1126,6 +1213,7 @@ class AnnotationsService:
 
     def create_rules_based_annotations(
         self,
+        custom_annotations: List[dict],
         tokens: PDFTokenPositionsList,
         entity_results: EntityResults,
         entity_type_and_id_pairs: List[Tuple[str, str]],
@@ -1141,6 +1229,7 @@ class AnnotationsService:
         self.matched_type_phenotype = entity_results.matched_type_phenotype
         self.matched_type_protein = entity_results.matched_type_protein
         self.matched_type_species = entity_results.matched_type_species
+        self.matched_type_species_local = entity_results.matched_type_species_local
         self.matched_type_company = entity_results.matched_type_company
         self.matched_type_entity = entity_results.matched_type_entity
 
@@ -1150,7 +1239,8 @@ class AnnotationsService:
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             types_to_annotate=entity_type_and_id_pairs,
-            word_index_dict=tokens.word_index_dict
+            word_index_dict=tokens.word_index_dict,
+            custom_annotations=custom_annotations
         )
         return self._clean_annotations(
             annotations=annotations,
@@ -1173,7 +1263,8 @@ class AnnotationsService:
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             cropbox_in_pdf=cropbox_in_pdf,
             types_to_annotate=entity_type_and_id_pairs,
-            word_index_dict=word_index_dict
+            word_index_dict=word_index_dict,
+            custom_annotations=custom_annotations
         )
 
         unified_annotations = species_annotations + nlp_annotations
