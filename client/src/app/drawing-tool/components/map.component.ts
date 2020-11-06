@@ -104,6 +104,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
     this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
       this.unsavedChanges$.next(true);
+      this.search();
     });
 
     this.unsavedChangesSubscription = this.unsavedChanges$.subscribe(value => {
