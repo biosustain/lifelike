@@ -79,6 +79,9 @@ class EntityRecognitionService:
 
         self._gene_collection: List[Tuple[str, str, str]] = []
 
+        self._type_gene_case_insensitive_exclusion: Set[str] = set()
+        self._type_protein_case_insensitive_exclusion: Set[str] = set()
+
         self._matched_type_anatomy: Dict[str, LMDBMatch] = {}
         self._matched_type_chemical: Dict[str, LMDBMatch] = {}
         self._matched_type_compound: Dict[str, LMDBMatch] = {}
@@ -108,6 +111,14 @@ class EntityRecognitionService:
     @gene_collection.setter
     def gene_collection(self, gc):
         self._gene_collection = gc
+
+    @property
+    def type_gene_case_insensitive_exclusion(self) -> Set[str]:
+        return self._type_gene_case_insensitive_exclusion
+
+    @property
+    def type_protein_case_insensitive_exclusion(self) -> Set[str]:
+        return self._type_protein_case_insensitive_exclusion
 
     @property
     def inclusion_type_anatomy(self) -> Dict[str, List[dict]]:
@@ -352,7 +363,8 @@ class EntityRecognitionService:
             if exclusion.get('text') and exclusion.get('type') == EntityType.GENE.value:
                 term = exclusion.get('text')
                 if exclusion.get('isCaseInsensitive'):
-                    term.lower()  # type: ignore
+                    self.type_gene_case_insensitive_exclusion.add(term.lower())  # type: ignore
+                    continue
                 exclusion_collection.add(term)  # type: ignore
 
     def _get_annotation_type_phenotype_to_exclude(
@@ -374,7 +386,8 @@ class EntityRecognitionService:
             if exclusion.get('text') and exclusion.get('type') == EntityType.PROTEIN.value:
                 term = exclusion.get('text')
                 if exclusion.get('isCaseInsensitive'):
-                    term.lower()  # type: ignore
+                    self.type_protein_case_insensitive_exclusion.add(term.lower())  # type: ignore
+                    continue
                 exclusion_collection.add(term)  # type: ignore
 
     def _get_annotation_type_species_to_exclude(
@@ -816,7 +829,7 @@ class EntityRecognitionService:
             lowered_word = token.keyword.lower()
 
             # use token.keyword because case sensitive
-            if token.keyword in self.exclusion_type_gene:
+            if lowered_word in self.type_gene_case_insensitive_exclusion or token.keyword in self.exclusion_type_gene:  # noqa
                 current_app.logger.info(
                     f'Found a match in genes entity lookup but token "{token.keyword}" is an exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
@@ -933,7 +946,7 @@ class EntityRecognitionService:
             lowered_word = token.keyword.lower()
 
             # use token.keyword because case sensitive
-            if token.keyword in self.exclusion_type_protein:
+            if lowered_word in self.type_protein_case_insensitive_exclusion or token.keyword in self.exclusion_type_protein:  # noqa
                 current_app.logger.info(
                     f'Found a match in proteins entity lookup but token "{token.keyword}" is an exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
