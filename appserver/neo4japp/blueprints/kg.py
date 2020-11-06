@@ -114,7 +114,8 @@ def get_ncbi_enrichment_domains():
                 'uniprot': uniprot[i],
                 'string': string[i],
                 'go': go[i],
-                'biocyc': biocyc[i]
+                'biocyc': biocyc[i],
+                'node_id': node_id
                 }
         nodes.append(node)
     return jsonify({'result': nodes}), 200
