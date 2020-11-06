@@ -22,10 +22,11 @@ class AnnotationsNeo4jService(KgService):
         self,
         genes: List[str],
         organism_ids: List[str]
-    ) -> Dict[str, Dict[str, str]]:
+    ) -> Dict[str, Dict[str, Dict[str, str]]]:
 
         result = self.session.query(
             OrganismGeneMatch.gene_name,
+            OrganismGeneMatch.synonym,
             OrganismGeneMatch.gene_id,
             OrganismGeneMatch.taxonomy_id,
         ).filter(
@@ -35,19 +36,20 @@ class AnnotationsNeo4jService(KgService):
             )
         )
 
-        gene_to_organism_map: Dict[str, Dict[str, str]] = {}
+        gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
         for row in result:
             gene_name: str = row[0]
-            gene_id: str = row[1]
-            organism_id = row[2]
+            gene_synonym: str = row[1]
+            gene_id: str = row[2]
+            organism_id: str = row[3]
 
-            # If an organism has multiple genes with the same name, we save the one appearing last
-            # in the result set. Currently no way of identifying which should be returned, however
-            # we might change this in the future.
-            if gene_to_organism_map.get(gene_name, None) is not None:
-                gene_to_organism_map[gene_name][organism_id] = gene_id
+            if gene_to_organism_map.get(gene_synonym, None) is not None:
+                if gene_to_organism_map[gene_synonym].get(gene_name, None):
+                    gene_to_organism_map[gene_synonym][gene_name][organism_id] = gene_id
+                else:
+                    gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
             else:
-                gene_to_organism_map[gene_name] = {organism_id: gene_id}
+                gene_to_organism_map[gene_synonym] = {gene_name: {organism_id: gene_id}}
 
         return gene_to_organism_map
 
@@ -60,7 +62,7 @@ class AnnotationsNeo4jService(KgService):
         self,
         genes: List[str],
         matched_organism_ids: List[str],
-    ) -> Dict[str, Dict[str, str]]:
+    ) -> Dict[str, Dict[str, Dict[str, str]]]:
         """Returns a map of gene name to gene id."""
         # First check if the gene/organism match exists in the postgres lookup table
         postgres_result = self.get_genes(genes, matched_organism_ids)
@@ -79,8 +81,8 @@ class AnnotationsNeo4jService(KgService):
         self,
         genes: List[str],
         organisms: List[str],
-    ) -> Dict[str, Dict[str, str]]:
-        gene_to_organism_map: Dict[str, Dict[str, str]] = {}
+    ) -> Dict[str, Dict[str, Dict[str, str]]]:
+        gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
 
         query = self.get_gene_to_organism_query()
         cursor = self.graph.run(
@@ -95,16 +97,18 @@ class AnnotationsNeo4jService(KgService):
         cursor.close()
 
         for row in result:
-            gene_name: str = row['gene']
+            gene_name: str = row['gene_name']
+            gene_synonym: str = row['gene_synonym']
+            gene_id: str = row['gene_id']
             organism_id: str = row['organism_id']
-            # For now just get the first gene in the list of matches, no way for us to infer which
-            # to use
-            gene_id: str = row['gene_ids'][0]
 
-            if gene_to_organism_map.get(gene_name, None) is not None:
-                gene_to_organism_map[gene_name][organism_id] = gene_id
+            if gene_to_organism_map.get(gene_synonym, None) is not None:
+                if gene_to_organism_map[gene_synonym].get(gene_name, None):
+                    gene_to_organism_map[gene_synonym][gene_name][organism_id] = gene_id
+                else:
+                    gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
             else:
-                gene_to_organism_map[gene_name] = {organism_id: gene_id}
+                gene_to_organism_map[gene_synonym] = {gene_name: {organism_id: gene_id}}
 
         return gene_to_organism_map
 
@@ -162,9 +166,9 @@ class AnnotationsNeo4jService(KgService):
         query = """
             MATCH (s:Synonym)-[]-(g:Gene)
             WHERE s.name IN $genes
-            WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p)
+            WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
             WHERE p.id IN $organisms
-            RETURN s.name AS gene, collect(g.id) AS gene_ids, p.id AS organism_id
+            RETURN g.name AS gene_name, s.name AS gene_synonym, g.id AS gene_id, p.id AS organism_id
         """
         return query
 
@@ -174,7 +178,7 @@ class AnnotationsNeo4jService(KgService):
         query = """
             MATCH (s:Synonym)-[]-(g:db_UniProt)
             WHERE s.name IN $proteins
-            WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p)
+            WITH s, g MATCH (g)-[:HAS_TAXONOMY]-(t:Taxonomy)-[:HAS_PARENT*0..2]->(p:Taxonomy)
             WHERE p.id IN $organisms
             RETURN s.name AS protein, collect(g.id) AS protein_ids, p.id AS organism_id
         """
