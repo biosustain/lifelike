@@ -148,39 +148,13 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return;
     }
 
-    if (this.highlightTerms != null && this.highlightTerms.length) {
-      const pattern = new RegExp(
-          '\\b' + this.highlightTerms.map(term => escapeRegExp(term)).join('|') + '\\b', 'i');
-      const highlights: GraphEntity[] = [];
-
-      for (const node of this.map.graph.nodes) {
-        const data: { detail?: string } = node.data != null ? node.data : {};
-        const text = (emptyIfNull(node.display_name) + ' ' + emptyIfNull(data.detail)).toLowerCase();
-        if (pattern.test(text)) {
-          highlights.push({
-            type: GraphEntityType.Node,
-            entity: node,
-          });
-        }
-      }
-
-      for (const edge of this.map.graph.edges) {
-        const data: { detail?: string } = edge.data != null ? edge.data : {};
-        const text = (emptyIfNull(edge.label) + ' ' + emptyIfNull(data.detail)).toLowerCase();
-        if (pattern.test(text)) {
-          highlights.push({
-            type: GraphEntityType.Edge,
-            entity: edge,
-          });
-        }
-      }
-
-      this.graphCanvas.highlighting.replace(highlights);
-    }
-
     this.graphCanvas.setGraph(this.map.graph);
     this.graphCanvas.zoomToFit(0);
     this.emitModuleProperties();
+
+    if (this.highlightTerms != null && this.highlightTerms.length) {
+      this.graphCanvas.highlighting.replace(this.graphCanvas.findMatching(this.highlightTerms));
+    }
   }
 
   registerGraphBehaviors() {
@@ -223,18 +197,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   search() {
     if (this.entitySearchTerm.length) {
-      const nodes = this.graphCanvas.nodes.filter(n => {
-        return n.display_name.toLowerCase().includes(this.entitySearchTerm.toLowerCase());
-      }).map(n => ({type: GraphEntityType.Node, entity: n}));
-
-      const edges = this.graphCanvas.edges.filter(n => {
-        return n.label.toLowerCase().includes(this.entitySearchTerm.toLowerCase());
-      }).map(e => ({type: GraphEntityType.Edge, entity: e}));
-
-      this.entitySearchList = [...nodes, ...edges];
+      this.entitySearchList = this.graphCanvas.findMatching(this.entitySearchTerm.split(/ +/g));
       this.entitySearchListIdx = -1;
 
-      this.graphCanvas.searchHighlighting.replace([...nodes, ...edges]);
+      this.graphCanvas.searchHighlighting.replace(this.entitySearchList);
       this.graphCanvas.searchFocus.replace([]);
       this.graphCanvas.requestRender();
 

@@ -15,6 +15,8 @@ import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 import { Subject } from 'rxjs';
+import { emptyIfNull } from '../../shared/utils/types';
+import { escapeRegExp } from 'lodash';
 
 /**
  * A rendered view of a graph.
@@ -372,6 +374,41 @@ export abstract class GraphView implements GraphActionReceiver {
     } else if (entity.type === GraphEntityType.Edge) {
       this.invalidateEdge(entity.entity as UniversalGraphEdge);
     }
+  }
+
+  /**
+   * Get all nodes and edges that match some search terms.
+   * @param terms the terms
+   */
+  findMatching(terms: string[]): GraphEntity[] {
+    const pattern = new RegExp(
+      '\\b' + terms.map(term => escapeRegExp(term)).join('|') + '\\b', 'i');
+    const matches: GraphEntity[] = [];
+
+    for (const node of this.nodes) {
+      const data: { detail?: string } = node.data != null ? node.data : {};
+      const text = (emptyIfNull(node.display_name) + ' ' + emptyIfNull(data.detail)).toLowerCase();
+
+      if (pattern.test(text)) {
+        matches.push({
+          type: GraphEntityType.Node,
+          entity: node,
+        });
+      }
+    }
+
+    for (const edge of this.edges) {
+      const data: { detail?: string } = edge.data != null ? edge.data : {};
+      const text = (emptyIfNull(edge.label) + ' ' + emptyIfNull(data.detail)).toLowerCase();
+      if (pattern.test(text)) {
+        matches.push({
+          type: GraphEntityType.Edge,
+          entity: edge,
+        });
+      }
+    }
+
+    return matches;
   }
 
   /**
