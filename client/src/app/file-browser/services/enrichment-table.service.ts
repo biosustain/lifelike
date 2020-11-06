@@ -107,6 +107,7 @@ export interface EnrichmentWrapper {
   regulon: RegulonWrapper;
   string: StringWrapper;
   uniprot: UniprotWrapper;
+  node_id: number;
 }
 
 @Injectable({
