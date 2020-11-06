@@ -235,6 +235,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.entitySearchListIdx = -1;
 
       this.graphCanvas.searchHighlighting.replace([...nodes, ...edges]);
+      this.graphCanvas.searchFocus.replace([]);
       this.graphCanvas.requestRender();
 
     } else {
