@@ -299,6 +299,7 @@ def files2gcp(bucket_name, project_name, username):
     try:
         bucket = storage_client.get_bucket(bucket_name)
     except NotFound:
+        bucket = storage_client.bucket(bucket_name)
         bucket = storage_client.create_bucket(bucket, location='us')
         app.logger.info(f'Created Google Cloud Bucket : {bucket_name}')
 
@@ -631,6 +632,7 @@ def global2gcp(bucket_name):
     try:
         bucket = storage_client.get_bucket(bucket_name)
     except NotFound:
+        bucket = storage_client.bucket(bucket_name)
         bucket = storage_client.create_bucket(bucket, location='us')
         app.logger.info(f'Created Google Cloud Bucket : {bucket_name}')
     with app.app_context():
