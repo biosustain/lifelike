@@ -475,7 +475,7 @@ class EntityRecognitionService:
             else:
                 normalized_entity_name = normalize_str(entity_name)
 
-                if entity_type in {EntityType.COMPANY.value, EntityType.ENTITY.value}:
+                if entity_type in {EntityType.COMPANY.value, EntityType.ENTITY.value} and not entity_id:  # noqa
                     # currently ID is not a required input on the UI
                     entity_id = entity_name
 
