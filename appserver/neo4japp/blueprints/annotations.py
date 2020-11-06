@@ -40,6 +40,7 @@ from neo4japp.models import (
     AccessActionType,
     AppUser,
     Files,
+    FileContent,
     GlobalList,
     Projects,
     FallbackOrganism
@@ -238,15 +239,6 @@ def export_global_inclusions():
     def get_inclusion_for_review(inclusion):
         user = AppUser.query.filter_by(id=inclusion.annotation['user_id']).one_or_none()
         username = f'{user.first_name} {user.last_name}' if user is not None else 'not found'
-        hyperlink = 'not found'
-
-        if inclusion.file_id is not None:
-            domain = os.environ.get('DOMAIN')
-            file = Files.query.filter_by(content_id=inclusion.file_id).first()
-            if file is not None:
-                project = Projects.query.filter_by(id=file.project).one_or_none()
-                if project is not None:
-                    hyperlink = f'{domain}/projects/{project.project_name}/files/{file.file_id}'
 
         missing_data = any([
             inclusion.annotation['meta'].get('id', None) is None,
@@ -265,7 +257,6 @@ def export_global_inclusions():
             'primary_link': inclusion.annotation['meta'].get('primaryLink', ''),
             'inclusion_date': inclusion.annotation.get('inclusion_date', ''),
             'user': username,
-            'hyperlink': hyperlink
         }
 
     data = [get_inclusion_for_review(inclusion) for inclusion in inclusions]
@@ -292,15 +283,6 @@ def export_global_exclusions():
     def get_exclusion_for_review(exclusion):
         user = AppUser.query.filter_by(id=exclusion.annotation['user_id']).one_or_none()
         username = f'{user.first_name} {user.last_name}' if user is not None else 'not found'
-        hyperlink = 'not found'
-
-        if exclusion.file_id is not None:
-            domain = os.environ.get('DOMAIN')
-            file = Files.query.filter_by(content_id=exclusion.file_id).first()
-            if file is not None:
-                project = Projects.query.filter_by(id=file.project).one_or_none()
-                if project is not None:
-                    hyperlink = f'{domain}/projects/{project.project_name}/files/{file.file_id}'
 
         missing_data = any([
             exclusion.annotation.get('text', None) is None,
@@ -321,7 +303,6 @@ def export_global_exclusions():
             'comment': exclusion.annotation['comment'],
             'exclusion_date': exclusion.annotation['exclusion_date'],
             'user': username,
-            'hyperlink': hyperlink
         }
 
     data = [get_exclusion_for_review(exclusion) for exclusion in exclusions]
@@ -343,8 +324,8 @@ def get_annotations():
 
     # Exclusions
     query_1 = db.session.query(
-        Files.file_id,
-        Files.filename,
+        FileContent.id,
+        sa.sql.null().label('filename'),  # TODO: Subquery to get all linked files or download link?
         AppUser.email,
         GlobalList.id,
         GlobalList.type,
@@ -361,13 +342,15 @@ def get_annotations():
         AppUser,
         AppUser.id == GlobalList.annotation['user_id'].as_integer()
     ).outerjoin(
-        Files,
-        Files.id == GlobalList.file_id
-    ).filter(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
+        FileContent,
+        FileContent.id == GlobalList.file_id
+    ).filter(
+        GlobalList.type == ManualAnnotationType.EXCLUSION.value
+    )
     # Inclusions
     query_2 = db.session.query(
-        Files.file_id,
-        Files.filename,
+        FileContent.id,
+        sa.sql.null().label('filename'),  # TODO: Subquery to get all linked files or download link?
         AppUser.email,
         GlobalList.id,
         GlobalList.type,
@@ -384,8 +367,8 @@ def get_annotations():
         AppUser,
         AppUser.id == GlobalList.annotation['user_id'].as_integer()
     ).outerjoin(
-        Files,
-        Files.id == GlobalList.file_id
+        FileContent,
+        FileContent.id == GlobalList.file_id
     ).filter(GlobalList.type == ManualAnnotationType.INCLUSION.value)
 
     union_query = query_1.union(query_2)
