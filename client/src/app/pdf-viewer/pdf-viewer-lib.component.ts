@@ -12,7 +12,14 @@ import {
 } from '@angular/core';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { AddedAnnotationExclusion, Annotation, RemovedAnnotationExclusion, Location, Meta, Rect } from './annotation-type';
+import {
+  AddedAnnotationExclusion,
+  Annotation,
+  RemovedAnnotationExclusion,
+  Location,
+  Meta,
+  Rect,
+} from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { PDFPageViewport } from 'pdfjs-dist';
@@ -189,7 +196,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
           const simplified = sub.jumpText.replace(/[\s\r\n]/g, ' ').trim();
           const words = simplified.split(/ /g);
           const prefixQuery = words.splice(0, 4).join(' ');
-          this.showNextFindFeedback = false; // Count might not work yet - keep false
+          this.showNextFindFeedback = true;
           this.searchQueryChanged({
             keyword: prefixQuery,
             findPrevious: true,
@@ -1042,12 +1049,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   findControlStateUpdated(event) {
     if (this.showNextFindFeedback) {
-      if (event.state === 0 || event.state === 1) {
+      if (event.state === 0) {
         this.showNextFindFeedback = false;
-        const total = event.matchesCount.total;
-        this.snackBar.open(`Found ${total} instance${total === 1 ? '' : 's'}  `
-          + `in the document.`,
-          'Close', {duration: 5000});
+        this.snackBar.open('Found the text in the document.', 'Close', {duration: 5000});
+      } else if (event.state === 1) {
+        this.showNextFindFeedback = false;
+        this.snackBar.open('Could not find the text in the document.', 'Close', {duration: 5000});
       }
     }
     if (this.searchCommand !== 'findagain' || typeof event.previous === 'undefined') {
