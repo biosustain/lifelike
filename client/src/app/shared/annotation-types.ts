@@ -16,7 +16,7 @@ export const ENTITY_TYPES = [
   new EntityType('Mutation', '#8b5d2e'),
   new EntityType('Chemical', '#4caf50'),
   new EntityType('Phenotype', '#edc949'),
-  new EntityType('Pathway', '#90eebf'),
+  new EntityType('Pathway', '#e377c2'),
   new EntityType('Entity', '#7f7f7f'),
   new EntityType('Compound', '#4caf50'),
   new EntityType('Food', '#8eff69'),
