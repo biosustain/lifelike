@@ -204,6 +204,8 @@ class KgService(HybridDBDao):
                 meta_id = meta_result['x']['id']
                 if (meta_id is not None):
                     item['link'] = domain.base_URL.format(meta_id)
+            else:
+                item['link'] = 'https://www.uniprot.org/'
             result_list.append(item)
         return result_list
 
@@ -324,6 +326,8 @@ class KgService(HybridDBDao):
                         item['link'] = f'https://biocyc.org/gene?orgid={orgID}&id={biocyc_id}'
                     else:
                         item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
+            else:
+                item['link'] = 'https://biocyc.org/'
             result_list.append(item)
         return result_list
 
@@ -367,6 +371,8 @@ class KgService(HybridDBDao):
                 if (regulondb_id is not None):
                     item['link'] = f'http://regulondb.ccg.unam.mx/gene?term={regulondb_id}' \
                         '&organism=ECK12&format=jsp&type=gene'
+            else:
+                item['link'] = 'http://regulondb.ccg.unam.mx/'
             result_list.append(item)
         return result_list
 
