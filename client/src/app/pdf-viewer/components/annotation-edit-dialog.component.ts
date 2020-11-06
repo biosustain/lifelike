@@ -72,7 +72,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         return [coord[0], coord[3], coord[2], coord[1]];
       }),
       meta: {
-        id: this.form.value.id,
+        id: this.form.value.includeGlobally ? this.form.value.id : (this.form.value.id || text),
         type: this.form.value.entityType,
         color: ENTITY_TYPE_MAP[this.form.value.entityType].color,
         links,
