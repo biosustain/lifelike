@@ -46,6 +46,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
 
+  entitySearchTerm = '';
+  entitySearchList: GraphEntity[] = [];
+  entitySearchListIdx = -1;
+
   constructor(
       readonly mapService: MapService,
       readonly snackBar: MatSnackBar,
@@ -210,6 +214,58 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   redo() {
     this.graphCanvas.redo();
+  }
+
+  // ========================================
+  // Search stuff
+  // ========================================
+
+  search() {
+    if (this.entitySearchTerm.length) {
+      const nodes = this.graphCanvas.nodes.filter(n => {
+        return n.display_name.toLowerCase().includes(this.entitySearchTerm.toLowerCase());
+      }).map(n => ({type: GraphEntityType.Node, entity: n}));
+
+      const edges = this.graphCanvas.edges.filter(n => {
+        return n.label.toLowerCase().includes(this.entitySearchTerm.toLowerCase());
+      }).map(e => ({type: GraphEntityType.Edge, entity: e}));
+
+      this.entitySearchList = [...nodes, ...edges];
+      this.entitySearchListIdx = -1;
+
+      this.graphCanvas.searchHighlighting.replace([...nodes, ...edges]);
+      this.graphCanvas.requestRender();
+
+    } else {
+      this.entitySearchList = [];
+      this.entitySearchListIdx = -1;
+
+      this.graphCanvas.searchHighlighting.replace([]);
+      this.graphCanvas.searchFocus.replace([]);
+      this.graphCanvas.requestRender();
+    }
+  }
+
+  next() {
+    // we need rule ...
+    this.entitySearchListIdx++;
+    if (this.entitySearchListIdx >= this.entitySearchList.length) {
+      this.entitySearchListIdx = 0;
+    }
+    this.graphCanvas.panToEntity(
+      this.entitySearchList[this.entitySearchListIdx] as GraphEntity
+    );
+  }
+
+  previous() {
+    // we need rule ..
+    this.entitySearchListIdx--;
+    if (this.entitySearchListIdx <= -1) {
+      this.entitySearchListIdx = this.entitySearchList.length - 1;
+    }
+    this.graphCanvas.panToEntity(
+      this.entitySearchList[this.entitySearchListIdx] as GraphEntity
+    );
   }
 }
 
