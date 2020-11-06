@@ -239,7 +239,6 @@ def export_global_inclusions():
     def get_inclusion_for_review(inclusion):
         user = AppUser.query.filter_by(id=inclusion.annotation['user_id']).one_or_none()
         username = f'{user.first_name} {user.last_name}' if user is not None else 'not found'
-        hyperlink = 'not found'
 
         missing_data = any([
             inclusion.annotation['meta'].get('id', None) is None,
@@ -258,7 +257,6 @@ def export_global_inclusions():
             'primary_link': inclusion.annotation['meta'].get('primaryLink', ''),
             'inclusion_date': inclusion.annotation.get('inclusion_date', ''),
             'user': username,
-            'hyperlink': hyperlink
         }
 
     data = [get_inclusion_for_review(inclusion) for inclusion in inclusions]
@@ -285,7 +283,6 @@ def export_global_exclusions():
     def get_exclusion_for_review(exclusion):
         user = AppUser.query.filter_by(id=exclusion.annotation['user_id']).one_or_none()
         username = f'{user.first_name} {user.last_name}' if user is not None else 'not found'
-        hyperlink = 'not found'
 
         missing_data = any([
             exclusion.annotation.get('text', None) is None,
@@ -306,7 +303,6 @@ def export_global_exclusions():
             'comment': exclusion.annotation['comment'],
             'exclusion_date': exclusion.annotation['exclusion_date'],
             'user': username,
-            'hyperlink': hyperlink
         }
 
     data = [get_exclusion_for_review(exclusion) for exclusion in exclusions]
