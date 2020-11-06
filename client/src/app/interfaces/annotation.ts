@@ -12,7 +12,7 @@ export interface InclusionMeta {
 
 export interface GlobalAnnotation {
     id: number;
-    file_id: string;
+    file_id: number;
     filename: string;
     userEmail: string;
     type: string;
