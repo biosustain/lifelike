@@ -7,7 +7,7 @@ import { GlobalAnnotation } from 'app/interfaces/annotation';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { PaginatedRequestOptions, ResultList, StandardRequestOptions } from 'app/interfaces/shared.interface';
 import { CollectionModal } from 'app/shared/utils/collection-modal';
-import { tap, first } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import { FormControl, FormGroup } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
 import { downloader } from 'app/shared/utils';
@@ -124,7 +124,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
 
     deleteAnnotation(objects: readonly GlobalAnnotation[]) {
         const pids = objects.map((r: GlobalAnnotation) => r.id);
-        this.subscriptions.add(this.globalAnnotationService.deleteAnnotations(pids).pipe(first()).subscribe());
+        this.subscriptions.add(this.globalAnnotationService.deleteAnnotations(pids).pipe().subscribe());
         this.refresh();
     }
 
@@ -197,7 +197,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
     }
 
     downloadFileReference(pid: number) {
-        this.subscriptions.add(this.pdfFilesService.downloadFile(pid).pipe(first()).subscribe(resp => {
+        this.subscriptions.add(this.pdfFilesService.downloadFile(pid).pipe().subscribe(resp => {
             const filename = resp.headers.get('content-disposition').split('=')[1];
             downloader(resp.body, 'application/pdf', filename);
         }));
