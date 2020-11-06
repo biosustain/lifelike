@@ -382,7 +382,9 @@ export abstract class GraphView implements GraphActionReceiver {
    */
   findMatching(terms: string[]): GraphEntity[] {
     const pattern = new RegExp(
-      '\\b' + terms.map(term => escapeRegExp(term)).join('|') + '\\b', 'i');
+      '\\b(' + terms.map(
+      term => escapeRegExp(term).replace(' ', ' +'),
+      ).join('|') + ')\\b', 'i');
     const matches: GraphEntity[] = [];
 
     for (const node of this.nodes) {

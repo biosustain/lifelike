@@ -149,7 +149,7 @@
 
     <div class="module-body">
       <div *ngIf="parent.children.viewLength === 0" class="text-center">
-        There are no items in this folder.
+        {{ emptyDirectoryMessage }}
       </div>
     </div>
   </div>
