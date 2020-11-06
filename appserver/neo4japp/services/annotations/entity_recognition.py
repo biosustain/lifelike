@@ -475,10 +475,14 @@ class EntityRecognitionService:
             else:
                 normalized_entity_name = normalize_str(entity_name)
 
-                if entity_type in {EntityType.COMPANY.value, EntityType.ENTITY.value} and not entity_id:  # noqa
+                if not entity_id:
                     # currently ID is not a required input on the UI
+                    # for some types
                     entity_id = entity_name
 
+                # entity_name could be empty strings
+                # probably a result of testing
+                # but will keep here just in case
                 if entity_id and entity_name and entity_type == entity_type_to_include:
                     entity = {}  # to avoid UnboundLocalError
                     if entity_type in {
