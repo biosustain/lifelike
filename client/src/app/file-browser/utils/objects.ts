@@ -1,7 +1,5 @@
 import { DirectoryObject } from '../../interfaces/projects.interface';
-import { Directory } from '../services/project-space.service';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { KnowledgeMap } from '../../drawing-tool/services/interfaces';
+import { escapeRegExp } from 'lodash';
 
 export function getObjectCommands(object: DirectoryObject) {
   switch (object.type) {
@@ -16,6 +14,24 @@ export function getObjectCommands(object: DirectoryObject) {
       }
     case 'map':
       return ['/projects', object.project.projectName, 'maps', object.id, 'edit'];
+    default:
+      throw new Error(`unknown directory object type: ${object.type}`);
+  }
+}
+
+export function getObjectMatchExistingTab(object: DirectoryObject) {
+  switch (object.type) {
+    case 'dir':
+      // TODO: Convert to hash ID
+      return `^/+projects/[^/]+/folders/${escapeRegExp(object.id)}([?#].*)?`;
+    case 'file':
+      if (object.name.slice(object.name.length - 11) === '.enrichment') {
+        return `^/+projects/[^/]+/enrichment-table/${escapeRegExp(object.id)}([?#].*)?`;
+      } else {
+        return `^/+projects/[^/]+/files/${escapeRegExp(object.id)}([?#].*)?`;
+      }
+    case 'map':
+      return `^/+projects/[^/]+/maps/${escapeRegExp(object.id)}/edit([?#].*)?`;
     default:
       throw new Error(`unknown directory object type: ${object.type}`);
   }
