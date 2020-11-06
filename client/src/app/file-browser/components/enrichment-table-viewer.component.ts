@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 
 import { TableHeader, TableCell, TableLink } from 'app/shared/components/table/generic-table.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -194,7 +200,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       const cell: TableCell[] = [];
       cell.push({ text: gene, highlight: true });
       cell.push({ text: 'No match found.', highlight: true });
-      const colNum = Math.max.apply(null, this.tableHeader.map(x => x.reduce((a, b) => a + parseInt(b.span, 10), 0)));
+      const colNum = Math.max.apply(
+        null,
+        this.tableHeader.map((x) =>
+          x.reduce((a, b) => a + parseInt(b.span, 10), 0)
+        )
+      );
       for (let i = 0; i < colNum - 2; i++) {
         cell.push({ text: '', highlight: true });
       }
@@ -208,76 +219,157 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     const result: TableCell[] = [];
     if (this.ecoli) {
       if (wrapper.regulon.result !== null) {
-        result.push(wrapper.regulon.result.regulator_family
-          ? {
-              text: wrapper.regulon.result.regulator_family,
-              singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
-            }
-          : { text: '', singleLink: {link: wrapper.regulon.link, linkText: 'Regulon Link'}});
-        result.push(wrapper.regulon.result.activated_by
-          ? {
-              text: wrapper.regulon.result.activated_by.join('; '),
-              singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
-            }
-          : { text: '', singleLink: {link: wrapper.regulon.link, linkText: 'Regulon Link'}});
-        result.push(wrapper.regulon.result.repressed_by
-          ? {
-              text: wrapper.regulon.result.repressed_by.join('; '),
-              singleLink: { link: wrapper.regulon.link, linkText: 'Regulon Link' },
-            }
-          : { text: '', singleLink: {link: wrapper.regulon.link, linkText: 'Regulon Link'}});
+        result.push(
+          wrapper.regulon.result.regulator_family
+            ? {
+                text: wrapper.regulon.result.regulator_family,
+                singleLink: {
+                  link: wrapper.regulon.link,
+                  linkText: 'Regulon Link',
+                },
+              }
+            : {
+                text: '',
+                singleLink: {
+                  link: wrapper.regulon.link,
+                  linkText: 'Regulon Link',
+                },
+              }
+        );
+        result.push(
+          wrapper.regulon.result.activated_by
+            ? {
+                text: wrapper.regulon.result.activated_by.join('; '),
+                singleLink: {
+                  link: wrapper.regulon.link,
+                  linkText: 'Regulon Link',
+                },
+              }
+            : {
+                text: '',
+                singleLink: {
+                  link: wrapper.regulon.link,
+                  linkText: 'Regulon Link',
+                },
+              }
+        );
+        result.push(
+          wrapper.regulon.result.repressed_by
+            ? {
+                text: wrapper.regulon.result.repressed_by.join('; '),
+                singleLink: {
+                  link: wrapper.regulon.link,
+                  linkText: 'Regulon Link',
+                },
+              }
+            : {
+                text: '',
+                singleLink: {
+                  link: wrapper.regulon.link,
+                  linkText: 'Regulon Link',
+                },
+              }
+        );
       } else {
         for (let i = 0; i < 3; i++) {
-          result.push({text: ''});
+          result.push({ text: '' });
         }
       }
     }
 
-    result.push(wrapper.uniprot.result
-      ? {
-          text: wrapper.uniprot.result.function,
-          singleLink: { link: wrapper.uniprot.link, linkText: 'Uniprot Link' },
-        }
-      : { text: '' });
-    result.push(wrapper.string.result
-      ? {
-          text: wrapper.string.result.annotation !== 'annotation not available' ? wrapper.string.result.annotation : '',
-          singleLink: { link: wrapper.string.link, linkText: 'String Link' },
-        }
-      : { text: '' });
-    result.push(wrapper.go.result
-      ? {
-          text: this.processGoWrapper(wrapper.go.result),
-          singleLink: {
-            link: wrapper.go.link + wrapper.uniprot.result.id,
-            linkText: 'GO Link'
-          }
-        }
-      : { text: '' });
-    result.push(wrapper.biocyc.result
-      ? wrapper.biocyc.result.pathways
+    result.push(
+      wrapper.uniprot.result
         ? {
-            text: wrapper.biocyc.result.pathways.join('; '),
-            singleLink: {link: wrapper.biocyc.link, linkText: 'Biocyc Link'}
+            text: wrapper.uniprot.result.function,
+            singleLink: {
+              link: wrapper.uniprot.link,
+              linkText: 'Uniprot Link',
+            },
           }
-        : {
-            text: '',
-            singleLink: { link: wrapper.biocyc.link, linkText: 'Biocyc Link' },
+        : { text: '' }
+    );
+    result.push(
+      wrapper.string.result
+        ? {
+            text:
+              wrapper.string.result.annotation !== 'annotation not available'
+                ? wrapper.string.result.annotation
+                : '',
+            singleLink: wrapper.string.result.id
+              ? {
+                  link: wrapper.string.link + wrapper.string.result.id,
+                  linkText: 'String Link',
+                }
+              : wrapper.biocyc.result.biocyc_id
+              ? {
+                  link: wrapper.string.link + wrapper.biocyc.result.biocyc_id,
+                  linkText: 'String Link',
+                }
+              : null,
           }
-      : { text: '' });
+        : { text: '' }
+    );
+    result.push(
+      wrapper.go.result
+        ? {
+            text: this.processGoWrapper(wrapper.go.result),
+            singleLink: wrapper.uniprot.result
+              ? {
+                  link: wrapper.go.link + wrapper.uniprot.result.id,
+                  linkText: 'GO Link',
+                }
+              : {
+                  link:
+                    'http://amigo.geneontology.org/amigo/search/annotation?q=' +
+                    this.ncbiNodes[this.ncbiIds.indexOf(wrapper.node_id)].name,
+                  linkText: 'GO Link',
+                },
+          }
+        : { text: '' }
+    );
+    result.push(
+      wrapper.biocyc.result
+        ? wrapper.biocyc.result.pathways
+          ? {
+              text: wrapper.biocyc.result.pathways.join('; '),
+              singleLink: {
+                link: wrapper.biocyc.link,
+                linkText: 'Biocyc Link',
+              },
+            }
+          : {
+              text: '',
+              singleLink: {
+                link: wrapper.biocyc.link,
+                linkText: 'Biocyc Link',
+              },
+            }
+        : { text: '' }
+    );
     return result;
   }
 
   processGoWrapper(nodeArray: GoNode[]): string {
     if (nodeArray.length > 5) {
-      return nodeArray.map((node) => node.name).slice(0, 5).join('; ') + '...';
+      return (
+        nodeArray
+          .map((node) => node.name)
+          .slice(0, 5)
+          .join('; ') + '...'
+      );
     } else {
-      return nodeArray.map((node) => node.name).slice(0, 5).join('; ');
+      return nodeArray
+        .map((node) => node.name)
+        .slice(0, 5)
+        .join('; ');
     }
   }
 
   processBiocycWrapper(pathways: string[], biocycLink: string): TableLink[] {
-    const result = pathways.map((pathway) => ({ link: biocycLink, linkText: pathway }));
+    const result = pathways.map((pathway) => ({
+      link: biocycLink,
+      linkText: pathway,
+    }));
     return result;
   }
 }
