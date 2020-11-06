@@ -604,7 +604,8 @@ def seed_global_annotation_from_gcp(bucket_name, mapping_file, username):
 
 @app.cli.command('global2gcp')
 @click.argument('bucket_name', nargs=1)
-def global2gcp(bucket_name):
+@click.argument('users_filter', nargs=-1)
+def global2gcp(bucket_name, users_filter):
     """ Fetches all of the raw PDF files along
     with its associated global annotations.
     This data is stored on Google Cloud Storage.
@@ -613,6 +614,11 @@ def global2gcp(bucket_name):
 
     Example usage:
     > flask global2gcp staging-annotations
+
+    Example usage 2:
+    This will filter only for global annotations by
+    the listed usernames
+    > flask global2gcp staging-annotations evetra shawib
 
     NOTE: This is meant for an emergency transfer of
     global annotations to different environments.
@@ -623,6 +629,7 @@ def global2gcp(bucket_name):
     """
     import json
     import copy
+    from sqlalchemy import or_
     from google.cloud import storage
     from google.cloud.exceptions import NotFound
     from neo4japp.models import AppUser, FileContent, GlobalList
@@ -636,12 +643,24 @@ def global2gcp(bucket_name):
         bucket = storage_client.create_bucket(bucket, location='us')
         app.logger.info(f'Created Google Cloud Bucket : {bucket_name}')
     with app.app_context():
-        query = db.session.query(
-            GlobalList,
-            FileContent
-        ).join(
-            FileContent
-        )
+        if users_filter:
+            filters = [AppUser.username == u for u in users_filter]
+            query = db.session.query(
+                GlobalList,
+                FileContent
+            ).join(
+                FileContent
+            ).join(
+                AppUser,
+                AppUser.id == GlobalList.annotation['user_id'].as_integer()
+            ).filter(or_(*filters))
+        else:
+            query = db.session.query(
+                GlobalList,
+                FileContent,
+            ).join(
+                FileContent
+            )
         data = []
         app.logger.info('Processing files...')
         # Multiple annotations can refer to a single file; only want one copy
