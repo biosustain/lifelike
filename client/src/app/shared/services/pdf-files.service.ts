@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpEvent } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpResponse } from '@angular/common/http';
 import { from, Observable } from 'rxjs';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { PdfFile, PdfFileUpload, UploadPayload, UploadType } from 'app/interfaces/pdf-files.interface';
@@ -79,6 +79,15 @@ export class PdfFilesService extends AbstractService {
     return this.http.get(
       `${this.PROJECTS_BASE_URL}/${encodeURIComponent(projectName)}/enrichment-table/${encodeURIComponent(fileId)}`, {
         ...this.getHttpOptions(true),
+      });
+  }
+
+  downloadFile(pid: number): Observable<HttpResponse<Blob>> {
+    return this.http.get(
+      `${this.FILES_BASE_URL}/download/${pid}`, {
+        ...this.getHttpOptions(true),
+        responseType: 'blob',
+        observe: 'response',
       });
   }
 

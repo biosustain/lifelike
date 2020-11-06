@@ -1,7 +1,9 @@
+@import 'src/scss/variables';
+
 #pdf-viewer {
-    float: left;
-    width: 100%;
-    height: 100%;
+  float: left;
+  width: 100%;
+  height: 100%;
 }
 
 mat-sidenav {
@@ -42,4 +44,22 @@ mat-sidenav {
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 10rem;
+}
+
+.pending-scroll-box-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.pending-scroll-box {
+  padding: ($spacer * 1);
+  text-align: center;
 }

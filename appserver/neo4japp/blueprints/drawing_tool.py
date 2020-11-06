@@ -225,8 +225,6 @@ def add_project(projects_name: str):
     data = request.get_json()
     user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == projects_name).one()
-
     dir_id = data['directoryId']
 
     try:
@@ -286,7 +284,10 @@ def add_project(projects_name: str):
 
     yield jsonify({
         'status': 'success',
-        'project': project_schema.dump(project)
+        'project': {
+            **project_schema.dump(project),
+            'project_name': projects.project_name,
+        }
     })
 
 
