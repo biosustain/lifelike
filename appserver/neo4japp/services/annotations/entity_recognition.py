@@ -405,18 +405,20 @@ class EntityRecognitionService:
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
     ):
+        # case insensitive NOT punctuation insensitive
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.COMPANY.value:
-                exclusion_collection.add(exclusion.get('text'))  # type: ignore
+                exclusion_collection.add(exclusion.get('text').lower())  # type: ignore
 
     def _get_annotation_type_entity_to_exclude(
         self,
         exclusion_collection: Set[str],
         exclusion_list: List[dict]
     ):
+        # case insensitive NOT punctuation insensitive
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.ENTITY.value:
-                exclusion_collection.add(exclusion.get('text'))  # type: ignore
+                exclusion_collection.add(exclusion.get('text').lower())  # type: ignore
 
     def _get_inclusion_pairs(self) -> List[Tuple[str, str, Any, Any]]:
         return [
@@ -473,6 +475,10 @@ class EntityRecognitionService:
             else:
                 normalized_entity_name = normalize_str(entity_name)
 
+                if entity_type in {EntityType.COMPANY.value, EntityType.ENTITY.value}:
+                    # currently ID is not a required input on the UI
+                    entity_id = entity_name
+
                 if entity_id and entity_name and entity_type == entity_type_to_include:
                     entity = {}  # to avoid UnboundLocalError
                     if entity_type in {
@@ -491,7 +497,7 @@ class EntityRecognitionService:
                         )
                     elif entity_type in {EntityType.COMPANY.value, EntityType.ENTITY.value}:
                         entity = create_entity_ner_func(
-                            name=entity_name, synonym=entity_name)
+                            id_=entity_id, name=entity_name, synonym=entity_name)
                     else:
                         if entity_type == EntityType.GENE.value:
                             self.gene_collection.append(
@@ -1072,8 +1078,7 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
-            # use token.keyword because case sensitive
-            if token.keyword in self.exclusion_type_company:
+            if lowered_word in self.exclusion_type_company:
                 current_app.logger.info(
                     f'Found a match in company entity lookup but token "{token.keyword}" is an exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
@@ -1118,8 +1123,7 @@ class EntityRecognitionService:
         if len(lookup_key) > 2:
             lowered_word = token.keyword.lower()
 
-            # use token.keyword because case sensitive
-            if token.keyword in self.exclusion_type_entity:
+            if lowered_word in self.exclusion_type_entity:
                 current_app.logger.info(
                     f'Found a match in entity lookup but token "{token.keyword}" is an exclusion.',  # noqa
                     extra=EventLog(event_type='annotations').to_dict()
