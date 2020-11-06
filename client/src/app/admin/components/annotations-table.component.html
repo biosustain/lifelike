@@ -59,7 +59,13 @@
         <td class="align-middle text-nowrap">{{ object.type }}</td>
         <td class="align-middle text-nowrap">{{ object.entityType }}</td>
         <td class="align-middle text-nowrap">{{ object.annotationId }}</td>
-        <td class="align-middle text-nowrap">{{ object.filename }}</td>
+        <td class="align-middle text-nowrap">
+          <button class="btn"
+                  ngbTooltip="Download file"
+                  (click)="downloadFileReference(object.fileId)">
+            <i class="fa fa-fw fa-file-archive text-muted"></i>
+          </button>
+        </td>
         <td class="align-middle text-nowrap">{{ object.userEmail}}</td>
         <td class="align-middle text-nowrap">{{ object.reason }}</td>
         <td class="align-middle text-nowrap">{{ object.comment }}</td>
