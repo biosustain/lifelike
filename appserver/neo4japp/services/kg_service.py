@@ -202,7 +202,8 @@ class KgService(HybridDBDao):
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 meta_id = meta_result['x']['id']
-                item['link'] = domain.base_URL.format(meta_id)
+                if (meta_id is not None):
+                    item['link'] = domain.base_URL.format(meta_id)
             result_list.append(item)
         return result_list
 
@@ -221,8 +222,7 @@ class KgService(HybridDBDao):
         for meta_result in result:
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
-                refseq = meta_result['x']['id']
-                item['link'] = f'https://string-db.org/cgi/network?identifiers={refseq}'
+                item['link'] = f'https://string-db.org/cgi/network?identifiers='
             result_list.append(item)
         return result_list
 
@@ -318,11 +318,12 @@ class KgService(HybridDBDao):
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 biocyc_id = meta_result['x']['biocyc_id']
-                if taxID in BIOCYC_ORG_ID_DICT.keys():
-                    orgID = BIOCYC_ORG_ID_DICT[taxID]
-                    item['link'] = f'https://biocyc.org/gene?orgid={orgID}&id={biocyc_id}'
-                else:
-                    item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
+                if (biocyc_id is not None):
+                    if taxID in BIOCYC_ORG_ID_DICT.keys():
+                        orgID = BIOCYC_ORG_ID_DICT[taxID]
+                        item['link'] = f'https://biocyc.org/gene?orgid={orgID}&id={biocyc_id}'
+                    else:
+                        item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
             result_list.append(item)
         return result_list
 
@@ -363,8 +364,9 @@ class KgService(HybridDBDao):
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 regulondb_id = meta_result['x']['regulondb_id']
-                item['link'] = f'http://regulondb.ccg.unam.mx/gene?term={regulondb_id}' \
-                    '&organism=ECK12&format=jsp&type=gene'
+                if (regulondb_id is not None):
+                    item['link'] = f'http://regulondb.ccg.unam.mx/gene?term={regulondb_id}' \
+                        '&organism=ECK12&format=jsp&type=gene'
             result_list.append(item)
         return result_list
 
