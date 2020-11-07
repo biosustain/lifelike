@@ -45,6 +45,7 @@ py2neo = "==2020.0.0"
 paramiko = "==2.7.2"
 google-cloud-storage = "*"
 fastjsonschema = "*"
+pexpect = "*"
 
 [requires]
 python_version = "3.8.2"

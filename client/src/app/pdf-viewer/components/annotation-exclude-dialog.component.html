@@ -4,6 +4,9 @@
   </app-modal-header>
 
   <app-modal-body>
+    <app-form-row for="text" label="Text">
+      <input type="text" class="form-control" id="text" [value]="text" disabled>
+    </app-form-row>
     <app-form-row for="reason" label="Reason" [control]="form.get('reason')">
       <div class="custom-control custom-radio" *ngFor="let choice of reasonChoices; index as i">
         <input type="radio" id="reason-{{ i }}" name="reason" class="custom-control-input"
@@ -16,6 +19,11 @@
     <app-form-row for="comment" label="Comment">
       <input type="text" class="form-control" id="comment" formControlName="comment">
     </app-form-row>
+
+    <div class="custom-control custom-checkbox mt-4" *ngIf="isGeneOrProtein">
+      <input type="checkbox" class="custom-control-input" id="case-insensitivity" formControlName="isCaseInsensitive">
+      <label class="custom-control-label" for="case-insensitivity">Exclude using case insensitivity</label>
+    </div>
 
     <div class="custom-control custom-checkbox mt-4">
       <input type="checkbox" class="custom-control-input" id="exclude-globally" formControlName="excludeGlobally">
