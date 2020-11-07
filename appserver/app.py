@@ -571,14 +571,15 @@ def seed_global_annotation_from_gcp(bucket_name, mapping_file, username):
             app.logger.info(f'Previous file found: id ({file_id})')
         # No previous file, upload it and use that id
         else:
-            new_fc = db.session.add(FileContent(
+            new_fc = FileContent(
                 raw_file=file_blob,
-                checksum_sha256=checksum_sha256
-            ))
+                checksum_sha256=checksum_sha256,
+            )
             db.session.add(new_fc)
             db.session.flush()
-            file_id = new_fc.id
-            app.logger.info(f'Adding new file: id ({file_id})')
+
+        file_id = new_fc.id
+        app.logger.info(f'Adding new file: id ({file_id})')
         annotation_json = copy.deepcopy(annotation['annotation'])
         # Not possible to transfer users across different
         # environments unless they had the same login, so
@@ -674,13 +675,12 @@ def global2gcp(bucket_name, users_filter):
             gl_dict['modifiedDate'] = str(gl_dict['modifiedDate'])
             data.append(gl_dict)
             if gl.file_id not in duplicate_files:
+                duplicate_files.add(gl.file_id)
                 gcp_filename = f'global-file_{gl.file_id}.pdf'
                 # Create a unique identifier to trace back the
                 # global annotation to the raw file
                 blob = bucket.blob(f'raw_file/{gcp_filename}')
                 blob.upload_from_string(fc.raw_file, 'application/pdf')
-            else:
-                duplicate_files.add(gl.file_id)
         annotation_blob = bucket.blob('global-annotations.json')
         annotation_blob.upload_from_string(json.dumps(
             dict(annotations=data)
