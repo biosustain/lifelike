@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MapEditDialogComponent } from './map-edit-dialog.component';
 
 @Component({
@@ -14,4 +14,11 @@ export class MapCreateDialogComponent extends MapEditDialogComponent {
       edges: [],
     },
   };
+
+  @Input()
+  set filename(filename: string) {
+    this.form.patchValue({
+      label: filename,
+    });
+  }
 }

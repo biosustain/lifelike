@@ -50,6 +50,10 @@ import { ModuleProgressComponent } from './components/module-progress.component'
 import { ShareDialogComponent } from './components/dialog/share-dialog.component';
 import { AnnotationFilterComponent } from './components/annotation-filter/annotation-filter.component';
 import { WordCloudAnnotationFilterComponent } from './components/word-cloud-annotation-filter/word-cloud-annotation-filter.component';
+import { GenericTableComponent } from './components/table/generic-table.component';
+import { HighlightTextComponent } from './components/highlight-text.component';
+import { AddStatusPipe } from './pipes/add-status.pipe';
+import { TermHighlightComponent } from './components/term-highlight.component';
 
 const components = [
   AnnotationFilterComponent,
@@ -82,6 +86,9 @@ const components = [
   ModuleErrorComponent,
   ModuleProgressComponent,
   ShareDialogComponent,
+  GenericTableComponent,
+  HighlightTextComponent,
+  TermHighlightComponent,
 ];
 
 @NgModule({
@@ -111,6 +118,7 @@ const components = [
     FriendlyDateStrPipe,
     NodeTextStylePipe,
     ScrubHtmlPipe,
+    AddStatusPipe,
   ],
   providers: [
     SharedNgrxEffects,
@@ -137,6 +145,7 @@ const components = [
     FriendlyDateStrPipe,
     NodeTextStylePipe,
     NgbModule,
+    AddStatusPipe,
   ],
 })
 export class SharedModule {
