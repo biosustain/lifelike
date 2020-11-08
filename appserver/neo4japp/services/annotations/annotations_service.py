@@ -67,6 +67,8 @@ class AnnotationsService:
         phenotype: bool = True,
         protein: bool = True,
         species: bool = True,
+        company: bool = True,
+        entity: bool = True
     ) -> List[Tuple[str, str]]:
         entity_type_and_id_pairs: List[Tuple[str, str]] = []
 
@@ -107,6 +109,14 @@ class AnnotationsService:
         if gene:
             entity_type_and_id_pairs.append(
                 (EntityType.GENE.value, EntityIdStr.GENE.value))
+
+        if company:
+            entity_type_and_id_pairs.append(
+                (EntityType.COMPANY.value, EntityIdStr.COMPANY.value))
+
+        if entity:
+            entity_type_and_id_pairs.append(
+                (EntityType.ENTITY.value, EntityIdStr.ENTITY.value))
 
         return entity_type_and_id_pairs
 
@@ -248,7 +258,7 @@ class AnnotationsService:
         # see services/annotations/util.py for definition
         keyword_starting_idx = char_indexes[0]
         keyword_ending_idx = char_indexes[-1]
-        link_search_term = entity['synonym']
+        link_search_term = token_positions.keyword
         if entity['id_type'] != DatabaseType.NCBI.value:
             hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
         else:
@@ -271,7 +281,7 @@ class AnnotationsService:
                 links=OrganismAnnotation.OrganismMeta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
-                all_text=link_search_term,
+                all_text=entity['synonym'],
             )
             # the `keywords` property here is to allow us to know
             # what coordinates map to what text in the PDF
@@ -281,7 +291,7 @@ class AnnotationsService:
                 page_number=token_positions.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
-                keyword=link_search_term,
+                keyword=entity['synonym'],
                 text_in_document=token_positions.keyword,
                 keyword_length=len(token_positions.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -300,13 +310,13 @@ class AnnotationsService:
                 links=OrganismAnnotation.OrganismMeta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
-                all_text=link_search_term,
+                all_text=entity['synonym'],
             )
             annotation = GeneAnnotation(
                 page_number=token_positions.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
-                keyword=link_search_term,
+                keyword=entity['synonym'],
                 text_in_document=token_positions.keyword,
                 keyword_length=len(token_positions.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -324,13 +334,13 @@ class AnnotationsService:
                 links=Annotation.Meta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
-                all_text=link_search_term,
+                all_text=entity['synonym'],
             )
             annotation = Annotation(
                 page_number=token_positions.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
-                keyword=link_search_term,
+                keyword=entity['synonym'],
                 text_in_document=token_positions.keyword,
                 keyword_length=len(token_positions.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -487,7 +497,7 @@ class AnnotationsService:
         # Return the gene id of the organism with the highest priority
         return organism_matches[curr_closest_organism], curr_closest_organism, closest_dist
 
-    def _annotate_genes(
+    def _annotate_type_gene(
         self,
         entity_id_str: str,
         char_coord_objs_in_pdf: List[PDFChar],
@@ -512,7 +522,7 @@ class AnnotationsService:
 
         Returns list of matched annotations
         """
-        tokens: Dict[str, LMDBMatch] = self.matched_genes
+        tokens: Dict[str, LMDBMatch] = self.matched_type_gene
 
         matches: List[Annotation] = []
 
@@ -552,23 +562,61 @@ class AnnotationsService:
             except KeyError:
                 continue
             else:
+                organisms_to_match: Dict[str, str] = {}
                 if entity_synonym in gene_organism_matches:
+                    try:
+                        # prioritize common name match over synonym
+                        organisms_to_match = gene_organism_matches[entity_synonym][entity_synonym]
+                    except KeyError:
+                        # only take the first gene for the organism
+                        # no way for us to infer which to use
+                        # logic moved from annotations_neo4j_service.py
+                        for d in list(gene_organism_matches[entity_synonym].values()):
+                            key = next(iter(d))
+                            if key not in organisms_to_match:
+                                organisms_to_match[key] = d[key]
+
                     gene_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
                         entity_position=token_positions,
-                        organism_matches=gene_organism_matches[entity_synonym]
+                        organism_matches=organisms_to_match
                     )
 
                     specified_organism_id = None
                     if self.specified_organism.synonym and closest_distance > ORGANISM_DISTANCE_THRESHOLD:  # noqa
                         if fallback_gene_organism_matches.get(entity_synonym, None):
+                            fallback_organisms_to_match: Dict[str, str] = {}
+
+                            try:
+                                # prioritize common name match over synonym
+                                fallback_organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa
+                            except KeyError:
+                                # only take the first gene for the organism
+                                # no way for us to infer which to use
+                                # logic moved from annotations_neo4j_service.py
+                                for d in list(fallback_gene_organism_matches[entity_synonym].values()):  # noqa
+                                    key = next(iter(d))
+                                    if key not in fallback_organisms_to_match:
+                                        fallback_organisms_to_match[key] = d[key]
+
                             # if matched in KG then set to fallback strain
-                            gene_id = fallback_gene_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
+                            gene_id = fallback_organisms_to_match[self.specified_organism.organism_id]  # noqa
                             specified_organism_id = self.specified_organism.organism_id
 
                     category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
                 elif entity_synonym in fallback_gene_organism_matches:
                     try:
-                        gene_id = fallback_gene_organism_matches[entity_synonym][self.specified_organism.organism_id]  # noqa
+                        # prioritize common name match over synonym
+                        organisms_to_match = fallback_gene_organism_matches[entity_synonym][entity_synonym]  # noqa
+                    except KeyError:
+                        # only take the first gene for the organism
+                        # no way for us to infer which to use
+                        # logic moved from annotations_neo4j_service.py
+                        for d in list(fallback_gene_organism_matches[entity_synonym].values()):
+                            key = next(iter(d))
+                            if key not in organisms_to_match:
+                                organisms_to_match[key] = d[key]
+                    try:
+                        gene_id = organisms_to_match[self.specified_organism.organism_id]  # noqa
                         category = self.specified_organism.category
                     except KeyError:
                         raise AnnotationError('Failed to find gene id with fallback organism.')
@@ -594,7 +642,7 @@ class AnnotationsService:
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_anatomy,
+            tokens=self.matched_type_anatomy,
             token_type=EntityType.ANATOMY.value,
             color=EntityColor.ANATOMY.value,
             id_str=entity_id_str,
@@ -602,14 +650,14 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-    def _annotate_chemicals(
+    def _annotate_type_chemical(
         self,
         entity_id_str: str,
         char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_chemicals,
+            tokens=self.matched_type_chemical,
             token_type=EntityType.CHEMICAL.value,
             color=EntityColor.CHEMICAL.value,
             id_str=entity_id_str,
@@ -617,14 +665,14 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-    def _annotate_compounds(
+    def _annotate_type_compound(
         self,
         entity_id_str: str,
         char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_compounds,
+            tokens=self.matched_type_compound,
             token_type=EntityType.COMPOUND.value,
             color=EntityColor.COMPOUND.value,
             id_str=entity_id_str,
@@ -632,14 +680,14 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-    def _annotate_diseases(
+    def _annotate_type_disease(
         self,
         entity_id_str: str,
         char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_diseases,
+            tokens=self.matched_type_disease,
             token_type=EntityType.DISEASE.value,
             color=EntityColor.DISEASE.value,
             id_str=entity_id_str,
@@ -647,14 +695,14 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-    def _annotate_foods(
+    def _annotate_type_food(
         self,
         entity_id_str: str,
         char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_foods,
+            tokens=self.matched_type_food,
             token_type=EntityType.FOOD.value,
             color=EntityColor.FOOD.value,
             id_str=entity_id_str,
@@ -662,14 +710,14 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-    def _annotate_phenotypes(
+    def _annotate_type_phenotype(
         self,
         entity_id_str: str,
         char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_phenotypes,
+            tokens=self.matched_type_phenotype,
             token_type=EntityType.PHENOTYPE.value,
             color=EntityColor.PHENOTYPE.value,
             id_str=entity_id_str,
@@ -677,18 +725,18 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-    def _annotate_proteins(
+    def _annotate_type_protein(
         self,
         entity_id_str: str,
         char_coord_objs_in_pdf: List[PDFChar],
         cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
-        """Nearly identical to `self._annotate_genes`. Return a list of
+        """Nearly identical to `self._annotate_type_gene`. Return a list of
         protein annotations with the correct protein_id. If the protein
         was not matched in the knowledge graph, then keep the original
         protein_id.
         """
-        tokens: Dict[str, LMDBMatch] = self.matched_proteins
+        tokens: Dict[str, LMDBMatch] = self.matched_type_protein
 
         matches: List[Annotation] = []
 
@@ -771,7 +819,7 @@ class AnnotationsService:
         word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
-            tokens=self.matched_species,
+            tokens=self.matched_type_species,
             token_type=EntityType.SPECIES.value,
             color=EntityColor.SPECIES.value,
             id_str=entity_id_str,
@@ -791,6 +839,36 @@ class AnnotationsService:
             self._get_entity_frequency_location_and_category(annotations=species_annotations)
         return species_annotations
 
+    def _annotate_type_company(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_type_company,
+            token_type=EntityType.COMPANY.value,
+            color=EntityColor.COMPANY.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
+    def _annotate_type_entity(
+        self,
+        entity_id_str: str,
+        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
+        cropbox_in_pdf: Tuple[int, int],
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_type_entity,
+            token_type=EntityType.ENTITY.value,
+            color=EntityColor.ENTITY.value,
+            id_str=entity_id_str,
+            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
+            cropbox_in_pdf=cropbox_in_pdf,
+        )
+
     def annotate(
         self,
         annotation_type: str,
@@ -801,14 +879,16 @@ class AnnotationsService:
     ) -> List[Annotation]:
         funcs = {
             EntityType.ANATOMY.value: self._annotate_anatomy,
-            EntityType.CHEMICAL.value: self._annotate_chemicals,
-            EntityType.COMPOUND.value: self._annotate_compounds,
-            EntityType.DISEASE.value: self._annotate_diseases,
-            EntityType.FOOD.value: self._annotate_foods,
-            EntityType.PHENOTYPE.value: self._annotate_phenotypes,
+            EntityType.CHEMICAL.value: self._annotate_type_chemical,
+            EntityType.COMPOUND.value: self._annotate_type_compound,
+            EntityType.DISEASE.value: self._annotate_type_disease,
+            EntityType.FOOD.value: self._annotate_type_food,
+            EntityType.PHENOTYPE.value: self._annotate_type_phenotype,
             EntityType.SPECIES.value: self._annotate_species,
-            EntityType.PROTEIN.value: self._annotate_proteins,
-            EntityType.GENE.value: self._annotate_genes,
+            EntityType.PROTEIN.value: self._annotate_type_protein,
+            EntityType.GENE.value: self._annotate_type_gene,
+            EntityType.COMPANY.value: self._annotate_type_company,
+            EntityType.ENTITY.value: self._annotate_type_entity
         }
 
         annotate_entities = funcs[annotation_type]
@@ -1056,15 +1136,17 @@ class AnnotationsService:
         specified_organism: SpecifiedOrganismStrain,
     ) -> List[Annotation]:
         """Create annotations based on semantic rules."""
-        self.matched_anatomy = entity_results.matched_anatomy
-        self.matched_chemicals = entity_results.matched_chemicals
-        self.matched_compounds = entity_results.matched_compounds
-        self.matched_diseases = entity_results.matched_diseases
-        self.matched_foods = entity_results.matched_foods
-        self.matched_genes = entity_results.matched_genes
-        self.matched_phenotypes = entity_results.matched_phenotypes
-        self.matched_proteins = entity_results.matched_proteins
-        self.matched_species = entity_results.matched_species
+        self.matched_type_anatomy = entity_results.matched_type_anatomy
+        self.matched_type_chemical = entity_results.matched_type_chemical
+        self.matched_type_compound = entity_results.matched_type_compound
+        self.matched_type_disease = entity_results.matched_type_disease
+        self.matched_type_food = entity_results.matched_type_food
+        self.matched_type_gene = entity_results.matched_type_gene
+        self.matched_type_phenotype = entity_results.matched_type_phenotype
+        self.matched_type_protein = entity_results.matched_type_protein
+        self.matched_type_species = entity_results.matched_type_species
+        self.matched_type_company = entity_results.matched_type_company
+        self.matched_type_entity = entity_results.matched_type_entity
 
         self.specified_organism = specified_organism
 
@@ -1320,7 +1402,7 @@ class AnnotationsService:
     def get_matching_manual_annotations(
         self,
         keyword: str,
-        keyword_type: str,
+        is_case_insensitive: bool,
         tokens: PDFTokenPositionsList
     ):
         """Returns coordinate positions and page numbers
@@ -1328,10 +1410,10 @@ class AnnotationsService:
         """
         matches = []
         for token in tokens.token_positions:
-            if keyword_type == EntityType.GENE.value:
+            if not is_case_insensitive:
                 if token.keyword != keyword:
                     continue
-            elif standardize_str(token.keyword) != standardize_str(keyword):
+            elif standardize_str(token.keyword).lower() != standardize_str(keyword).lower():
                 continue
             keyword_positions: List[Annotation.TextPosition] = []
             self._create_keyword_objects(

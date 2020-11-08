@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, EventEmitter, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { getObjectCommands } from 'app/file-browser/utils/objects';
+import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { RankedItem } from 'app/interfaces/shared.interface';
@@ -14,13 +14,16 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { ContentSearchOptions, TYPES, TYPES_MAP } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { HighlightDisplayLimitChange } from '../../file-browser/components/file-info.component';
+import { escapeRegExp } from 'lodash';
+import { FileViewComponent } from '../../file-browser/components/file-view.component';
 
 @Component({
   selector: 'app-content-search',
   templateUrl: './content-search.component.html',
 })
 export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchOptions,
-    RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
+  RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
+  @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   private readonly defaultLimit = 20;
@@ -86,41 +89,57 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     const text = parser.parseFromString(highlight, 'application/xml').documentElement.textContent;
     const commands = this.getObjectCommands(object);
     this.workspaceManager.navigate(commands, {
+      matchExistingTab: getObjectMatchExistingTab(object),
+      shouldReplaceTab: component => {
+        if (object.type === 'file') {
+          const fileViewComponent = component as FileViewComponent;
+          fileViewComponent.scrollInPdf({
+            pageNumber: null,
+            rect: null,
+            jumpText: text,
+          });
+        }
+        return false;
+      },
       fragment: `jump=${encodeURIComponent(text)}`,
+      newTab: true,
+      sideBySide: true,
     });
   }
 
   highlightDisplayLimitChanged(object: DirectoryObject, change: HighlightDisplayLimitChange) {
-    const queue: {
-      index: number,
-      text: string,
-    }[] = [];
+    if (this.snippetAnnotations) {
+      const queue: {
+        index: number,
+        text: string,
+      }[] = [];
 
-    if (!object.highlightAnnotated) {
-      object.highlightAnnotated = [];
-    }
+      if (!object.highlightAnnotated) {
+        object.highlightAnnotated = [];
+      }
 
-    for (let i = change.previous; i < change.limit; i++) {
-      if (!object.highlightAnnotated[i]) {
-        queue.push({
-          index: i,
-          text: object.highlight[i],
+      for (let i = change.previous; i < change.limit; i++) {
+        if (!object.highlightAnnotated[i]) {
+          queue.push({
+            index: i,
+            text: object.highlight[i],
+          });
+        }
+      }
+
+      if (queue.length) {
+        this.contentSearchService.annotate({
+          texts: queue.map(item => item.text),
+        }).subscribe(result => {
+          this.zone.run(() => {
+            for (let i = 0, j = change.previous; j < change.limit; i++, j++) {
+              const index = queue[i].index;
+              object.highlight[index] = result.texts[i];
+              object.highlightAnnotated[index] = true;
+            }
+          });
         });
       }
-    }
-
-    if (queue.length) {
-      this.contentSearchService.annotate({
-        texts: queue.map(item => item.text),
-      }).subscribe(result => {
-        this.zone.run(() => {
-          for (let i = 0, j = change.previous; j < change.limit; i++, j++) {
-            const index = queue[i].index;
-            object.highlight[index] = result.texts[i];
-            object.highlightAnnotated[index] = true;
-          }
-        });
-      });
     }
   }
 }
