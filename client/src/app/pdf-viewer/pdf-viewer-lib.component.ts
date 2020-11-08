@@ -12,7 +12,14 @@ import {
 } from '@angular/core';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Annotation, RemovedAnnotationExclsuion, Location, Meta, Rect } from './annotation-type';
+import {
+  AddedAnnotationExclusion,
+  Annotation,
+  RemovedAnnotationExclusion,
+  Location,
+  Meta,
+  Rect,
+} from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { PDFPageViewport } from 'pdfjs-dist';
@@ -20,7 +27,6 @@ import { AnnotationEditDialogComponent } from './components/annotation-edit-dial
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { AddedAnnotationExclsuion } from 'app/drawing-tool/services/interfaces';
 import { escape, uniqueId } from 'lodash';
 import { SEARCH_LINKS } from 'app/shared/links';
 
@@ -71,16 +77,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   @Input()
-  set addedAnnotationExclusion(exclusionData: AddedAnnotationExclsuion) {
+  set addedAnnotationExclusion(exclusionData: AddedAnnotationExclusion) {
     if (exclusionData) {
-      this.changeAnnotationExclusionMark(true, exclusionData);
+      this.markAnnotationExclusions(exclusionData);
     }
   }
 
   @Input()
-  set removedAnnotationExclusion(exclusionData: RemovedAnnotationExclsuion) {
+  set removedAnnotationExclusion(exclusionData: RemovedAnnotationExclusion) {
     if (exclusionData) {
-      this.changeAnnotationExclusionMark(false, exclusionData);
+      this.unmarkAnnotationExclusions(exclusionData);
     }
   }
 
@@ -103,7 +109,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Output('custom-annotation-removed') annotationRemoved = new EventEmitter();
   @Output('annotation-exclusion-added') annotationExclusionAdded = new EventEmitter();
   @Output('annotation-exclusion-removed') annotationExclusionRemoved = new EventEmitter();
-  @Output() searchClear = new EventEmitter<any>();
+  @Output() searchChange = new EventEmitter<string>();
 
   /**
    * Stores a mapping of annotations to the HTML elements that are used to show it.
@@ -131,6 +137,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   pdfQuery = '';
   allPages = 0;
   currentRenderedPage = 0;
+  showNextFindFeedback = false;
 
   pageRef = {};
   index: any;
@@ -189,10 +196,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
           const simplified = sub.jumpText.replace(/[\s\r\n]/g, ' ').trim();
           const words = simplified.split(/ /g);
           const prefixQuery = words.splice(0, 4).join(' ');
-          this.pdfComponent.pdfFindController.executeCommand('find', {
-            query: prefixQuery,
-            highlightAll: true,
-            phraseSearch: true,
+          this.showNextFindFeedback = true;
+          this.searchQueryChanged({
+            keyword: prefixQuery,
+            findPrevious: true,
           });
         }
       }
@@ -716,6 +723,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
     const dialogRef = this.modalService.open(AnnotationExcludeDialogComponent);
     dialogRef.componentInstance.text = annExclusion.text;
+    dialogRef.componentInstance.type = annExclusion.type;
     dialogRef.result.then(exclusionData => {
       this.annotationExclusionAdded.emit({ ...exclusionData, ...annExclusion });
     }, () => {
@@ -954,9 +962,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   searchQueryChanged(newQuery: { keyword: string, findPrevious: boolean }) {
     if (newQuery.keyword.trim().length) {
       this.highlightAllAnnotations(null);
-    } else {
-      this.searchClear.emit();
     }
+    this.searchChange.emit(newQuery.keyword.trim());
     if (newQuery.keyword !== this.pdfQuery) {
       this.pdfQuery = newQuery.keyword;
       this.searchCommand = 'find';
@@ -999,16 +1006,34 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     this.annotationRemoved.emit(uuid);
   }
 
-  changeAnnotationExclusionMark(isExcluded, exclusionData: AddedAnnotationExclsuion | RemovedAnnotationExclsuion) {
+  termsMatch(termInExclusion, termInAnnotation, isCaseInsensitive) {
+    if (isCaseInsensitive) {
+      return termInExclusion.toLowerCase() === termInAnnotation.toLowerCase();
+    }
+    return termInExclusion === termInAnnotation;
+  }
+
+  markAnnotationExclusions(exclusionData: AddedAnnotationExclusion) {
     this.annotations.forEach((ann: Annotation) => {
-      if (ann.meta.type === exclusionData.type && ann.textInDocument === exclusionData.text) {
+      if (ann.meta.type === exclusionData.type && this.termsMatch(exclusionData.text, ann.textInDocument, exclusionData.isCaseInsensitive)) {
         const ref = this.annotationHighlightElementMap.get(ann);
         jQuery(ref).remove();
-        ann.meta.isExcluded = isExcluded;
-        if ('reason' in exclusionData && 'comment' in exclusionData) {
-          ann.meta.exclusionReason = exclusionData.reason;
-          ann.meta.exclusionComment = exclusionData.comment;
-        }
+        ann.meta.isExcluded = true;
+        ann.meta.exclusionReason = exclusionData.reason;
+        ann.meta.exclusionComment = exclusionData.comment;
+        ann.meta.isCaseInsensitive = exclusionData.isCaseInsensitive;
+        this.addAnnotation(ann, ann.pageNumber);
+      }
+    });
+    this.renderFilterSettings();
+  }
+
+  unmarkAnnotationExclusions(exclusionData: RemovedAnnotationExclusion) {
+    this.annotations.forEach((ann: Annotation) => {
+      if (ann.meta.type === exclusionData.type && this.termsMatch(exclusionData.text, ann.textInDocument, ann.meta.isCaseInsensitive)) {
+        const ref = this.annotationHighlightElementMap.get(ann);
+        jQuery(ref).remove();
+        ann.meta.isExcluded = false;
         this.addAnnotation(ann, ann.pageNumber);
       }
     });
@@ -1023,6 +1048,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   findControlStateUpdated(event) {
+    if (this.showNextFindFeedback) {
+      if (event.state === 0) {
+        this.showNextFindFeedback = false;
+        this.snackBar.open('Found the text in the document.', 'Close', {duration: 5000});
+      } else if (event.state === 1) {
+        this.showNextFindFeedback = false;
+        this.snackBar.open('Could not find the text in the document.', 'Close', {duration: 5000});
+      }
+    }
     if (this.searchCommand !== 'findagain' || typeof event.previous === 'undefined') {
       return;
     }

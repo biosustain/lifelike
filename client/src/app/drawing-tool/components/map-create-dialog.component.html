@@ -5,7 +5,8 @@
 
   <app-modal-body>
     <app-form-row for="label" label="Name" [control]="form.get('label')">
-      <input type="text" formControlName="label" id="label" [appFormInput]="form.get('label')" appAutoFocus>
+      <input type="text" formControlName="label" id="label" [appFormInput]="form.get('label')" appAutoFocus
+             [autoSelect]="true">
     </app-form-row>
 
     <app-form-row for="description" label="Description" [control]="form.get('description')">

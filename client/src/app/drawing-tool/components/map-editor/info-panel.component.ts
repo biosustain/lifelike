@@ -9,6 +9,7 @@ import { GraphAction } from '../../../graph-viewer/actions/actions';
 import { MessageDialog } from '../../../shared/services/message-dialog.service';
 import { MessageType } from '../../../interfaces/message-dialog.interface';
 import { FileViewComponent } from '../../../file-browser/components/file-view.component';
+import { escapeRegExp } from 'lodash';
 
 @Component({
   selector: 'app-info-panel',
@@ -50,12 +51,12 @@ export class InfoPanelComponent {
   openSource(source: string): void {
     let m;
 
-    m = source.match(/^\/projects\/[^\/]+\/(files|maps)\/[^\/]+/);
+    m = source.match(/^\/projects\/[^\/]+\/(files|maps)\/([^\/#?]+)/);
     if (m != null) {
       this.workspaceManager.navigateByUrl(source, {
         newTab: true,
         sideBySide: true,
-        matchExistingTab: source.replace(/#.*$/g, ''),
+        matchExistingTab: `^/+projects/[^/]+/files/${escapeRegExp(m[2])}.*`,
         shouldReplaceTab: component => {
           if (m[1] === 'files') {
             const fileViewComponent = component as FileViewComponent;

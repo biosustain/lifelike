@@ -5,31 +5,34 @@ import os
 import re
 import urllib.request
 import uuid
-
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
 from urllib.error import URLError
 
 from flask import Blueprint, current_app, request, jsonify, g, make_response
+from flask_apispec import use_kwargs, marshal_with
+from pdfminer import high_level
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import FileStorage
-from werkzeug.utils import secure_filename
 
+import neo4japp.models.files_queries as files_queries
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_project_permission, requires_role
+from neo4japp.blueprints.permissions import requires_project_permission, \
+    requires_role, check_project_permission
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
-from neo4japp.constants import FILE_INDEX_ID, TIMEZONE
-from neo4japp.database import db, get_manual_annotations_service, get_elastic_service
+from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.data_transfer_objects import FileUpload
+from neo4japp.database import db, get_manual_annotations_service, get_elastic_service
 from neo4japp.exceptions import (
     DatabaseError,
     DuplicateRecord,
     FileUploadError,
     RecordNotFoundException,
-    NotAuthorizedException,
+    InvalidArgumentsException,
 )
 from neo4japp.models import (
     AccessActionType,
@@ -41,18 +44,16 @@ from neo4japp.models import (
     Projects,
     LMDBsDates
 )
-import neo4japp.models.files_queries as files_queries
 from neo4japp.request_schemas.annotations import (
     AnnotationAdditionSchema,
     AnnotationSchema,
     AnnotationRemovalSchema,
     AnnotationExclusionSchema,
 )
-from neo4japp.utils.network import read_url
+from neo4japp.request_schemas.filesystem import MoveFileRequest, DirectoryDestination
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog
-from flask_apispec import use_kwargs, marshal_with
-from pdfminer import high_level
+from neo4japp.utils.network import read_url
 
 URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
 URL_FETCH_TIMEOUT = 10
@@ -60,6 +61,37 @@ DOWNLOAD_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML
                       'Chrome/51.0.2704.103 Safari/537.36 Lifelike'
 
 bp = Blueprint('files', __name__, url_prefix='/files')
+
+
+def get_file(file_id: str, user: AppUser, check_access: AccessActionType,
+             with_content=False) -> Files:
+    t_owner = aliased(AppUser)
+    t_directory = aliased(Directory)
+    t_project = aliased(Projects)
+
+    file_query = db.session.query(Files) \
+        .join(t_owner, t_owner.id == Files.user_id) \
+        .join(t_directory, t_directory.id == Files.dir_id) \
+        .join(t_project, t_project.id == t_directory.projects_id) \
+        .options(contains_eager(Files.user, alias=t_owner),
+                 contains_eager(Files.dir, alias=t_directory)
+                 .contains_eager(Directory.project, t_project)) \
+        .filter(Files.file_id == file_id)
+
+    if with_content:
+        t_file_content = aliased(FileContent)
+        file_query = file_query.join(t_file_content, t_file_content.id == Files.content_id) \
+            .options(contains_eager(Files.content, alias=t_file_content))
+
+    # Pull up map by hash_id
+    try:
+        file = file_query.one()
+    except NoResultFound:
+        raise RecordNotFoundException('File not found.')
+
+    check_project_permission(file.dir.project, user, check_access)
+
+    return file
 
 
 def extract_doi(pdf_content: bytes, file_id: str = None, filename: str = None) -> Optional[str]:
@@ -222,7 +254,6 @@ def edit_gene_list(projects_name: str, fileId: str):
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
 def get_enrichment_data(id: str, projects_name: str):
-
     user = g.current_user
 
     try:
@@ -259,8 +290,8 @@ def get_enrichment_data(id: str, projects_name: str):
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def validate_filename(
-    directory_id: int,
-    filename: str,
+        directory_id: int,
+        filename: str,
 ):
     user = g.current_user
 
@@ -285,7 +316,6 @@ def validate_filename(
 @jsonify_with_class(FileUpload, has_file=True)
 @requires_project_permission(AccessActionType.WRITE)
 def upload_pdf(request, project_name: str):
-
     user = g.current_user
     filename = request.filename.strip()
 
@@ -399,6 +429,8 @@ def upload_pdf(request, project_name: str):
 @auth.login_required
 @requires_role('admin')
 def download(file_content_id: int):
+    FILENAME = "FileReference"
+
     yield g.current_user
 
     try:
@@ -412,7 +444,7 @@ def download(file_content_id: int):
 
     res = make_response(entry.raw_file)
     res.headers['Content-Type'] = 'application/pdf'
-
+    res.headers['Content-Disposition'] = f'attachment;filename={FILENAME}.pdf'
     yield res
 
 
@@ -421,7 +453,6 @@ def download(file_content_id: int):
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
 def list_files(project_name: str):
-
     projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if projects is None:
         raise RecordNotFoundException(f'Project {project_name} not found')
@@ -464,49 +495,22 @@ def list_files(project_name: str):
 
 @newbp.route('/<string:project_name>/files/<string:id>/info', methods=['GET', 'PATCH'])
 @auth.login_required
-@requires_project_permission(AccessActionType.READ)
 def get_file_info(id: str, project_name: str):
-
     user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
+    file = get_file(id, user, AccessActionType.READ)
 
-    yield user, projects
-
-    try:
-        row = db.session.query(
-                Files.id,
-                Files.file_id,
-                Files.filename,
-                Files.description,
-                Files.user_id,
-                AppUser.username,
-                Files.creation_date,
-                Files.modified_date,
-                Files.doi,
-                Files.upload_url
-            ).join(
-                AppUser,
-                Files.user_id == AppUser.id
-            ).filter(
-                Files.file_id == id,
-                Files.project == projects.id
-            ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('Requested PDF file not found.')
-
-    yield jsonify({
-        'id': row.id,  # TODO: is this of any use?
-        'file_id': row.file_id,
-        'filename': row.filename,
-        'description': row.description,
-        'username': row.username,
-        'creation_date': row.creation_date,
-        'modified_date': row.modified_date,
-        'doi': row.doi,
-        'upload_url': row.upload_url
+    return jsonify({
+        'id': file.id,  # TODO: is this of any use?
+        'file_id': file.file_id,
+        'filename': file.filename,
+        'description': file.description,
+        'username': file.user.username,
+        'creation_date': file.creation_date,
+        'modified_date': file.modified_date,
+        'doi': file.doi,
+        'upload_url': file.upload_url,
+        'project_name': file.project_.project_name,
     })
 
 
@@ -514,7 +518,6 @@ def get_file_info(id: str, project_name: str):
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
 def get_associated_maps(file_id: str, project_name: str):
-
     user = g.current_user
 
     projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
@@ -523,14 +526,17 @@ def get_associated_maps(file_id: str, project_name: str):
 
     yield user, projects
 
+    # Limit length of string just in case
+    file_id = file_id[:100]
+
     query = f"""
     SELECT
         DISTINCT
-        p.id
-        , p.hash_id
-        , p.label
-        , p.author
-        , p.dir_id
+        map.id
+        , map.hash_id
+        , map.label
+        , map.author
+        , map.dir_id
     FROM (
         SELECT
             p.id
@@ -545,17 +551,31 @@ def get_associated_maps(file_id: str, project_name: str):
         CROSS JOIN json_to_recordset(json_extract_path(graph, 'edges')) AS data(data JSON)
     ) data
     CROSS JOIN json_to_recordset(json_extract_path(data.data, 'sources')) AS source(url VARCHAR)
-    INNER JOIN project p ON p.id = data.id
+    INNER JOIN project map ON map.id = data.id
+    INNER JOIN directory dir ON dir.id = map.dir_id
+    INNER JOIN projects project ON project.id = dir.projects_id
+    LEFT JOIN projects_collaborator_role pcr ON pcr.projects_id = project.id
+    LEFT JOIN app_role on pcr.app_role_id = app_role.id
+    LEFT JOIN appuser role_user on pcr.appuser_id = role_user.id
     WHERE
-        url ~ :url_1
-        OR url ~ :url_2
+        (
+            url ~ :url_1
+            OR url ~ :url_2
+        )
+        AND (
+            map.public = true OR (
+                app_role.name IN ('project-read', 'project-write', 'project-admin')
+                AND role_user.id = :user_id
+            )
+        )
     """
 
     results = db.session.execute(
         query,
         {
-            'url_1': f'/projects/{project_name}/files/{file_id}(?:#.*)?',
-            'url_2': f'/dt/pdf/{file_id}(?:#.*)?'
+            'url_1': f'/projects/(?:[^/]+)/files/{re.escape(file_id)}(?:#.*)?',
+            'url_2': f'/dt/pdf/{re.escape(file_id)}(?:#.*)?',
+            'user_id': g.current_user.id,
         }
     ).fetchall()
 
@@ -586,16 +606,8 @@ def get_associated_maps(file_id: str, project_name: str):
 
 @newbp.route('/<string:project_name>/files/<string:id>', methods=['GET', 'PATCH'])
 @auth.login_required
-@requires_project_permission(AccessActionType.READ)
 def get_pdf(id: str, project_name: str):
-
     user = g.current_user
-
-    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    yield user, projects
 
     if request.method == 'PATCH':
         filename = request.form['filename'].strip()
@@ -603,8 +615,8 @@ def get_pdf(id: str, project_name: str):
         fallback_organism = json.loads(request.form.get('organism', '{}'))
 
         try:
-            file = Files.query.filter_by(file_id=id).one()
-        except NoResultFound:
+            file = get_file(id, user, AccessActionType.WRITE)
+        except RecordNotFoundException as e:
             raise RecordNotFoundException('Requested PDF file not found.')
         else:
             # TODO: maybe move these into a separate service file?
@@ -638,9 +650,9 @@ def get_pdf(id: str, project_name: str):
                         raise DatabaseError('Failed to delete fallback organism from the PDF.')  # noqa
             else:
                 if (not curr_fallback or
-                    (curr_fallback.organism_name != fallback_organism['organism_name']
-                    and curr_fallback.organism_synonym != fallback_organism['synonym']
-                    and curr_fallback.organism_taxonomy_id != fallback_organism['tax_id'])):  # noqa
+                        (curr_fallback.organism_name != fallback_organism['organism_name']
+                         and curr_fallback.organism_synonym != fallback_organism['synonym']
+                         and curr_fallback.organism_taxonomy_id != fallback_organism['tax_id'])):  # noqa
 
                     # no match so probably a new fallback organism
                     new_fallback = FallbackOrganism(
@@ -674,26 +686,13 @@ def get_pdf(id: str, project_name: str):
             except SQLAlchemyError:
                 db.session.rollback()
                 raise DatabaseError('Unexpected error occurred updating PDF.')
-        yield ''
+        return ''
 
-    try:
-        entry = db.session.query(
-            Files.id,
-            FileContent.raw_file
-        ).join(
-            FileContent,
-            FileContent.id == Files.content_id
-        ).filter(
-            Files.file_id == id,
-            Files.project == projects.id
-        ).one()
-    except NoResultFound:
-        raise RecordNotFoundException('Requested PDF file not found.')
-
-    res = make_response(entry.raw_file)
+    file = get_file(id, user, AccessActionType.READ, with_content=True)
+    res = make_response(file.content.raw_file)
     res.headers['Content-Type'] = 'application/pdf'
 
-    yield res
+    return res
 
 
 # TODO: Convert this? Where is this getting used
@@ -714,36 +713,33 @@ def transform_to_bioc():
 
 @newbp.route('/<string:project_name>/files/<string:id>/annotations', methods=['GET'])
 @auth.login_required
-@requires_project_permission(AccessActionType.READ)
 def get_annotations(id: str, project_name: str):
-
-    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
     user = g.current_user
-
-    yield user, projects
-
-    file = Files.query.filter_by(file_id=id, project=projects.id).one_or_none()
-    if not file:
-        raise RecordNotFoundException('File does not exist')
+    file = get_file(id, user, AccessActionType.READ)
 
     if file.annotations:
         annotations = file.annotations['documents'][0]['passages'][0]['annotations']
+
+        def terms_match(term_in_exclusion, term_in_annotation, is_case_insensitive):
+            if is_case_insensitive:
+                return term_in_exclusion.lower() == term_in_annotation.lower()
+            return term_in_exclusion == term_in_annotation
 
         # Add additional information for annotations that were excluded
         for annotation in annotations:
             for exclusion in file.excluded_annotations:
                 if (exclusion.get('type') == annotation['meta']['type'] and
-                        exclusion.get('text', True) == annotation.get('textInDocument', False)):
+                        terms_match(
+                            exclusion.get('text', 'True'),
+                            annotation.get('textInDocument', 'False'),
+                            exclusion['isCaseInsensitive'])):
                     annotation['meta']['isExcluded'] = True
                     annotation['meta']['exclusionReason'] = exclusion['reason']
                     annotation['meta']['exclusionComment'] = exclusion['comment']
     else:
         annotations = []
 
-    yield jsonify(annotations + file.custom_annotations)
+    return jsonify(annotations + file.custom_annotations)
 
 
 @newbp.route('/<string:project_name>/files/<string:file_id>/annotations/add', methods=['PATCH'])
@@ -931,3 +927,39 @@ def get_file_fallback_organism(project_name: str, file_id):
     if file.fallback_organism:
         organism_taxonomy_id = file.fallback_organism.organism_taxonomy_id
     yield jsonify({'result': organism_taxonomy_id})
+
+
+@newbp.route('/<string:project_name>/files/<string:id>/move', methods=['POST'])
+@auth.login_required
+@use_kwargs(MoveFileRequest)
+def move_file(destination: DirectoryDestination, id: str, project_name: str):
+    user = g.current_user
+
+    target_file, target_directory, target_project = db.session.query(Files, Directory, Projects) \
+        .join(Directory, Directory.id == Files.dir_id) \
+        .join(Projects, Projects.id == Directory.projects_id) \
+        .filter(Files.file_id == id,
+                Projects.project_name == project_name) \
+        .one()
+
+    check_project_permission(target_project, user, AccessActionType.WRITE)
+
+    destination_dir, destination_project = db.session.query(Directory, Projects) \
+        .join(Projects, Projects.id == Directory.projects_id) \
+        .filter(Directory.id == destination['directoryId']) \
+        .one()
+
+    if destination_project.id != target_project.id:
+        check_project_permission(destination_project, user, AccessActionType.WRITE)
+
+    if target_directory.id == destination_dir.id:
+        raise InvalidArgumentsException(
+            'The destination directory is the same as the current directory.')
+
+    target_file.project = destination_project.id
+    target_file.dir_id = destination_dir.id
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+    })

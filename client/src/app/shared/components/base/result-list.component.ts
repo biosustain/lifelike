@@ -19,37 +19,33 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
     multipleSelection: true,
   });
 
-  private routerParamSubscription: Subscription;
-  private valuesSubscription: Subscription;
-  private loadTaskSubscription: Subscription;
+  protected subscriptions = new Subscription();
 
   constructor(protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager) {
   }
 
   ngOnInit() {
-    this.valuesSubscription = this.loadTask.values$.subscribe(value => {
+    this.subscriptions.add(this.loadTask.values$.subscribe(value => {
       this.valueChanged(value);
-    });
+    }));
 
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: result}) => {
+    this.subscriptions.add(this.loadTask.results$.subscribe(({result: result}) => {
       this.collectionSize = result.total;
       this.resultQuery = result.query;
       this.results.replace(result.results);
-    });
+    }));
 
-    this.routerParamSubscription = this.route.queryParams.subscribe(params => {
+    this.subscriptions.add(this.route.queryParams.subscribe(params => {
       this.params = this.deserializeParams(params);
       if (this.valid) {
         this.loadTask.update(this.params);
       }
-    });
+    }));
   }
 
   ngOnDestroy() {
-    this.routerParamSubscription.unsubscribe();
-    this.loadTaskSubscription.unsubscribe();
-    this.valuesSubscription.unsubscribe();
+    this.subscriptions.unsubscribe();
   }
 
   refresh() {
