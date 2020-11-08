@@ -1,6 +1,7 @@
 import html
 import json
 import re
+from collections import defaultdict
 
 import sqlalchemy
 from flask import Blueprint, jsonify, g
@@ -21,10 +22,13 @@ from neo4japp.database import get_search_service_dao, db, get_elastic_service
 from neo4japp.models import (
     Projects,
     AppRole,
-    projects_collaborator_role
+    projects_collaborator_role, AppUser, Directory, Project, Files
 )
 from neo4japp.request_schemas.search import (
-    ContentSearchSchema, AnnotateRequestSchema,
+    AnnotateRequestSchema,
+    ContentSearchSchema,
+    OrganismSearchSchema,
+    VizSearchSchema
 )
 from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.services.annotations.service_helpers import create_annotations
@@ -32,23 +36,24 @@ from neo4japp.util import jsonify_with_class, SuccessResponse
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
+# NOTE: Commenting out as these are unused...do we need these?
 
-@bp.route('/search', methods=['POST'])
-@auth.login_required
-@jsonify_with_class(SearchRequest)
-def fulltext_search(req: SearchRequest):
-    search_dao = get_search_service_dao()
-    results = search_dao.fulltext_search(req.query, req.page, req.limit)
-    return SuccessResponse(result=results, status_code=200)
+# @bp.route('/search', methods=['POST'])
+# @auth.login_required
+# @jsonify_with_class(SearchRequest)
+# def fulltext_search(req: SearchRequest):
+#     search_dao = get_search_service_dao()
+#     results = search_dao.fulltext_search(req.query, req.page, req.limit)
+#     return SuccessResponse(result=results, status_code=200)
 
 
-@bp.route('/simple-search', methods=['POST'])
-@auth.login_required
-@jsonify_with_class(SimpleSearchRequest)
-def simple_full_text_search(req: SimpleSearchRequest):
-    search_dao = get_search_service_dao()
-    results = search_dao.simple_text_search(req.query, req.page, req.limit, req.filter)
-    return SuccessResponse(result=results, status_code=200)
+# @bp.route('/simple-search', methods=['POST'])
+# @auth.login_required
+# @jsonify_with_class(SimpleSearchRequest)
+# def simple_full_text_search(req: SimpleSearchRequest):
+#     search_dao = get_search_service_dao()
+#     results = search_dao.simple_text_search(req.query, req.page, req.limit, req.filter)
+#     return SuccessResponse(result=results, status_code=200)
 
 
 # TODO: Added as part of LL-1067, this is a TEMP solution until we design a
@@ -56,17 +61,19 @@ def simple_full_text_search(req: SimpleSearchRequest):
 # This will need tests if we decide to maintain it as a standalone service.
 @bp.route('/viz-search-temp', methods=['POST'])
 @auth.login_required
-@jsonify_with_class(VizSearchRequest)
-def visualizer_search_temp(req: VizSearchRequest):
+@use_kwargs(VizSearchSchema)
+def visualizer_search_temp(query, page, limit, filter, organism):
     search_dao = get_search_service_dao()
     results = search_dao.visualizer_search_temp(
-        term=req.query,
-        organism=req.organism,
-        page=req.page,
-        limit=req.limit,
-        filter=req.filter
+        term=query,
+        organism=organism,
+        page=page,
+        limit=limit,
+        filter=filter
     )
-    return SuccessResponse(result=results, status_code=200)
+    return jsonify({
+        'result': results.to_dict(),
+    })
 
 
 @bp.route('/annotate', methods=['POST'])
@@ -124,6 +131,59 @@ def annotate(texts):
     })
 
 
+def hydrate_search_results(es_results):
+    es_mapping = defaultdict(lambda: {})
+
+    for doc in es_results['hits']:
+        es_mapping[doc['_source']['type']][doc['_source']['id']] = doc
+
+    t_owner = aliased(AppUser)
+    t_directory = aliased(Directory)
+    t_project = aliased(Projects)
+
+    map_query = db.session.query(Project.hash_id.label('id'),
+                                 Project.label.label('name'),
+                                 Project.description.label('description'),
+                                 sqlalchemy.literal_column('NULL').label('annotation_date'),
+                                 Project.creation_date.label('creation_date'),
+                                 Project.modified_date.label('modification_date'),
+                                 t_owner.id.label('owner_id'),
+                                 t_owner.username.label('owner_username'),
+                                 t_owner.first_name.label('owner_first_name'),
+                                 t_owner.last_name.label('owner_last_name'),
+                                 t_project.project_name.label('project_name'),
+                                 sqlalchemy.literal_column('\'map\'').label('type')) \
+        .join(t_owner, t_owner.id == Project.user_id) \
+        .join(t_directory, t_directory.id == Project.dir_id) \
+        .join(t_project, t_project.id == t_directory.projects_id) \
+        .filter(Project.hash_id.in_(es_mapping['map'].keys()))
+
+    file_query = db.session.query(Files.file_id.label('id'),
+                                  Files.filename.label('name'),
+                                  Files.description.label('description'),
+                                  Files.annotations_date.label('annotation_date'),
+                                  Files.creation_date.label('creation_date'),
+                                  Files.modified_date.label('modification_date'),
+                                  t_owner.id.label('owner_id'),
+                                  t_owner.username.label('owner_username'),
+                                  t_owner.first_name.label('owner_first_name'),
+                                  t_owner.last_name.label('owner_last_name'),
+                                  t_project.project_name.label('project_name'),
+                                  sqlalchemy.literal_column('\'pdf\'').label('type')) \
+        .join(t_owner, t_owner.id == Files.user_id) \
+        .join(t_directory, t_directory.id == Files.dir_id) \
+        .join(t_project, t_project.id == t_directory.projects_id) \
+        .filter(Files.file_id.in_(es_mapping['pdf'].keys()))
+
+    combined_query = sqlalchemy.union_all(map_query, file_query).alias('combined_results')
+    query = db.session.query(combined_query)
+
+    for row in query.all():
+        row = row._asdict()
+        doc = es_mapping[row['type']][row['id']]
+        doc['_db'] = row
+
+
 # TODO: Probably should rename this to something else...not sure what though
 @bp.route('/content', methods=['GET'])
 @auth.login_required
@@ -150,7 +210,7 @@ def search(q, types, limit, page):
             'fragment_size': 0,
             'pre_tags': ['@@@@$'],
             'post_tags': ['@@@@/$'],
-            'number_of_fragments': 50,
+            'number_of_fragments': 200,
         }
 
         user_id = g.current_user.id
@@ -214,6 +274,8 @@ def search(q, types, limit, page):
             highlight=highlight
         )
         res = res['hits']
+
+        hydrate_search_results(res)
     else:
         res = {'hits': [], 'max_score': None, 'total': 0}
 
@@ -222,6 +284,8 @@ def search(q, types, limit, page):
     results = []
     for doc in res['hits']:
         snippets = None
+
+        db_data = doc.get('_db', defaultdict(lambda: None))
 
         if doc.get('highlight', None) is not None:
             if doc['highlight'].get('data.content', None) is not None:
@@ -238,16 +302,18 @@ def search(q, types, limit, page):
                 # TODO LL-1723: Need to add complete file path here
                 'type': 'file' if doc['_source']['type'] == 'pdf' else 'map',
                 'id': doc['_source']['id'],
-                'name': doc['_source']['filename'],
-                'description': doc['_source']['description'],
+                'name': db_data['name'] or doc['_source']['filename'],
+                'description': db_data['description'] or doc['_source']['description'],
                 'highlight': snippets,
                 'doi': doc['_source']['doi'],
-                'creation_date': doc['_source']['uploaded_date'],
+                'creation_date': db_data['creation_date'] or doc['_source']['uploaded_date'],
+                'modification_date': db_data['modification_date'],
+                'annotation_date': db_data['annotation_date'],
                 'project': {
-                    'project_name': doc['_source']['project_name'],
+                    'project_name': db_data['project_name'] or doc['_source']['project_name'],
                 },
                 'creator': {
-                    'username': doc['_source']['username'],
+                    'username': db_data['owner_username'] or doc['_source']['username'],
                 },
             },
             'rank': doc['_score'],
@@ -273,11 +339,11 @@ def get_organism(organism_tax_id: str):
 
 @bp.route('/organisms', methods=['POST'])
 @auth.login_required
-@jsonify_with_class(OrganismRequest)
-def get_organisms(req: OrganismRequest):
+@use_kwargs(OrganismSearchSchema)
+def get_organisms(query, limit):
     search_dao = get_search_service_dao()
-    results = search_dao.get_organisms(req.query, req.limit)
-    return SuccessResponse(result=results, status_code=200)
+    results = search_dao.get_organisms(query, limit)
+    return jsonify({'result': results})
 
 
 @bp.route('/genes_filtered_by_organism_and_others', methods=['POST'])
