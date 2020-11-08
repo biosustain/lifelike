@@ -298,10 +298,10 @@ def mp_text_to_pubtator2(line):
 def text_to_pubtator2():
     def get_data():
         with open(os.path.join(directory, 'abstracts/data-1602546717626.csv')) as path_file:
-            for line in islice(path_file, 0, 10000):
+            for line in islice(path_file, 0, 50000):
                 yield line
 
-    with mp.Pool(processes=3) as pool:
+    with mp.Pool(processes=6) as pool:
         pool.map(mp_text_to_pubtator2, get_data())
 
 
