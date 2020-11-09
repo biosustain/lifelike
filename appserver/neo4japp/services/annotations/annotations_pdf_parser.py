@@ -16,15 +16,20 @@ from pdfminer.pdfparser import PDFParser
 
 from neo4japp.data_transfer_objects import (
     PDFChar,
-    PDFParsedCharacters,
-    PDFTokenPositions,
-    PDFTokenPositionsList,
+    PDFMeta,
+    PDFWord,
+    PDFParsedContent,
+    # PDFParsedCharacters,
+    # PDFTokenPositions,
+    # PDFTokenPositionsList,
+    PDFTokensList
 )
 from neo4japp.exceptions import AnnotationError
 
 from .constants import (
     COMMON_WORDS,
     LIGATURES,
+    MAX_ABBREVIATION_WORD_LENGTH,
     MISC_SYMBOLS_AND_CHARS,
     PDF_CHARACTER_SPACING_THRESHOLD,
     PDF_NEW_LINE_THRESHOLD,
@@ -42,6 +47,8 @@ class AnnotationsPDFParser:
         layout: Any,
         char_coord_objs_in_pdf: List[PDFChar],
         compiled_regex: re.Pattern,
+        cropbox: Tuple[int, int],
+        page_number: int
     ) -> None:
         def space_exists_between_lt_chars(a: PDFChar, b: PDFChar):
             """Determines if a space character exists between two LTChars."""
@@ -79,7 +86,9 @@ class AnnotationsPDFParser:
                     y1=ligature_char.y1,
                     text=original_lig_str[1],
                     height=ligature_char.height,
-                    width=ligature_char.width
+                    width=ligature_char.width,
+                    cropbox=ligature_char.cropbox,
+                    page_number=ligature_char.page_number
                 )
                 ligatures_list.append(ligature_char_copy2)
             elif ligature_str_len == 3:
@@ -95,7 +104,9 @@ class AnnotationsPDFParser:
                     y1=ligature_char.y1,
                     text=original_lig_str[1],
                     height=ligature_char.height,
-                    width=ligature_char.width
+                    width=ligature_char.width,
+                    cropbox=ligature_char.cropbox,
+                    page_number=ligature_char.page_number
                 )
                 ligatures_list.append(ligature_char_copy2)
 
@@ -107,7 +118,9 @@ class AnnotationsPDFParser:
                     y1=ligature_char.y1,
                     text=original_lig_str[-1],
                     height=ligature_char.height,
-                    width=ligature_char.width
+                    width=ligature_char.width,
+                    cropbox=ligature_char.cropbox,
+                    page_number=ligature_char.page_number
                 )
                 ligatures_list.append(ligature_char_copy3)
             return ligatures_list
@@ -118,6 +131,8 @@ class AnnotationsPDFParser:
                     layout=lt_obj,
                     char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                     compiled_regex=compiled_regex,
+                    cropbox=cropbox,
+                    page_number=page_number
                 )
             elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno) and lt_obj.get_text() != '\n':  # noqa
                 is_ltchar = isinstance(lt_obj, LTChar)
@@ -128,7 +143,9 @@ class AnnotationsPDFParser:
                     y1=lt_obj.y1 if is_ltchar else 0,
                     text=lt_obj.get_text(),
                     height=lt_obj.height if is_ltchar else 0,
-                    width=lt_obj.width if is_ltchar else 0
+                    width=lt_obj.width if is_ltchar else 0,
+                    page_number=page_number,
+                    cropbox=cropbox
                 )
 
                 # ignore CID fonts
@@ -163,7 +180,8 @@ class AnnotationsPDFParser:
                         if should_add_virtual_space(prev_char, pdf_char_obj):
                             virtual_space_char = PDFChar(
                                 x0=0, y0=0, x1=0, y1=0,
-                                text=' ', height=0, width=0, space=True)
+                                text=' ', height=0, width=0,
+                                page_number=page_number, cropbox=cropbox, space=True)
                             char_coord_objs_in_pdf.append(virtual_space_char)
                             prev_char = virtual_space_char
 
@@ -182,29 +200,25 @@ class AnnotationsPDFParser:
         return high_level.extract_text(pdf)
 
     def parse_text(self, abstract: str) -> List[PDFChar]:
-        """Parse a Pubtator file and produces similar results to
-        self.parse_pdf(). The only difference would be the LTChar
-        objects will not actual PDF coordinates.
+        """Parse a string and produces similar results to
+        self.parse_pdf(). The only difference would be the PDFChar
+        objects will not have actual PDF coordinates.
         """
         pdf_chars: List[PDFChar] = []
-        # cropbox_in_pdf = (1, 1)
-        # min_idx_in_page = {0: 1}
 
         for c in abstract:
-            # create a fake LTChar
+            # create a fake PDFChar
             pdf_chars.append(
                 PDFChar(
                     x0=0, y0=0, x1=0, y1=0,
                     text=c, height=0, width=0,
-                    lower_cropbox=1,
-                    upper_cropbox=1,
-                    min_idx_in_page='0#1'
+                    page_number=1,
+                    cropbox=(1, 1),
                 )
             )
-
         return pdf_chars
 
-    def parse_pdf(self, pdf) -> List[PDFChar]:
+    def parse_pdf(self, pdf) -> PDFParsedContent:
         """Parse a PDF and create two dictionaries; one
         containing individual LTChar objects with coordinate
         positions, and the other the string character representation.
@@ -215,9 +229,7 @@ class AnnotationsPDFParser:
         device = PDFPageAggregator(rsrcmgr=rsrcmgr, laparams=LAParams())
         interpreter = PDFPageInterpreter(rsrcmgr=rsrcmgr, device=device)
 
-        min_idx_in_page: Dict[int, int] = {}
         char_coord_objs_in_pdf: List[PDFChar] = []
-        cropbox_in_pdf: Tuple[int, int] = None  # type: ignore
 
         compiled_regex = re.compile(r'cid:\d+')
 
@@ -235,28 +247,18 @@ class AnnotationsPDFParser:
             # in most cases, both cropboxes and mediaboxes have the
             # same values, but the pdf in JIRA LL-837 had different
             # values
-            cropbox_in_pdf = (page.mediabox[0], page.mediabox[1])
             interpreter.process_page(page)
             layout = device.get_result()
-            # key is min idx and value is page number
-            min_idx_in_page[len(char_coord_objs_in_pdf)] = i+1
             self._get_lt_char(
                 layout=layout,
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 compiled_regex=compiled_regex,
+                cropbox=(page.mediabox[0], page.mediabox[1]),
+                page_number=i+1
             )
 
-        min_idx_in_page_str = ''
-        for k, v in min_idx_in_page.items():
-            min_idx_in_page_str += f'{k}#{v},'
-        min_idx_in_page_str = min_idx_in_page_str[:-1]
-
-        for pdf_char in char_coord_objs_in_pdf:
-            pdf_char.lower_cropbox = cropbox_in_pdf[0]
-            pdf_char.upper_cropbox = cropbox_in_pdf[1]
-            pdf_char.min_idx_in_page = min_idx_in_page_str
-
-        return char_coord_objs_in_pdf
+        words = self._combine_chars_into_words(char_coord_objs_in_pdf)
+        return PDFParsedContent(words=words)
 
     def _is_whitespace(self, char: str) -> bool:
         return char in whitespace or char == '\xa0'
@@ -264,11 +266,11 @@ class AnnotationsPDFParser:
     def _not_whitespace(self, char: str) -> bool:
         return char not in whitespace and char != '\xa0'
 
-    def remove_leading_trailing_punctuation(
+    def _remove_leading_trailing_punctuation(
         self,
         word: str,
-        char_map: Dict[int, str],
-    ) -> Tuple[str, dict]:
+        pdf_meta: PDFMeta,
+    ) -> Tuple[str, PDFMeta]:
         """Only remove balanced opening and closing punctuation.
         """
         opening_punc = {'(', '[', '{'}
@@ -277,29 +279,31 @@ class AnnotationsPDFParser:
         trailing_punc = set(punctuation) - set.union(*[closing_punc, {'+', '-'}])  # type: ignore
         ending_punc = {'.', ',', '?', '!'}
 
-        char_map_copy = {k: v for k, v in char_map.items()}
+        coordinates = pdf_meta.coordinates
+        heights = pdf_meta.heights
+        widths = pdf_meta.widths
         word_copy = word
-        idx_keys = list(char_map_copy)
 
         try:
             # ending punctuation
             while word_copy and word_copy[-1] in ending_punc:
                 word_copy = word_copy[:-1]
-                del char_map_copy[idx_keys[-1]]
-                idx_keys = list(char_map_copy)
+                coordinates = coordinates[:-1]
+                heights = heights[:-1]
+                widths = widths[:-1]
 
             if word_copy:
                 # now check for other punctuations
                 # e.g (circle).
-                # the period was removed in previous if block
+                # the period was removed in previous while block
                 while word_copy and (word_copy[0] in opening_punc and word_copy[-1] in closing_punc):  # noqa
                     if word_copy[0] == '(' and word_copy[-1] == ')' or \
                         word_copy[0] == '[' and word_copy[-1] == ']' or \
                             word_copy[0] == '{' and word_copy[-1] == '}':
                         word_copy = word_copy[1:-1]
-                        del char_map_copy[idx_keys[0]]
-                        del char_map_copy[idx_keys[-1]]
-                        idx_keys = list(char_map_copy)
+                        coordinates = coordinates[1:-1]
+                        heights = heights[1:-1]
+                        widths = widths[1:-1]
                     else:
                         # did not match
                         break
@@ -322,8 +326,9 @@ class AnnotationsPDFParser:
                             # no matching closing punctuation found
                             # so delete
                             word_copy = word_copy[1:]
-                            del char_map_copy[idx_keys[0]]
-                            idx_keys = list(char_map_copy)
+                            coordinates = coordinates[1:]
+                            heights = heights[1:]
+                            widths = widths[1:]
 
                 if word_copy:
                     if word_copy[-1] in closing_punc:
@@ -343,8 +348,9 @@ class AnnotationsPDFParser:
                             # no matching opening punctuation found
                             # so delete
                             word_copy = word_copy[:-1]
-                            del char_map_copy[idx_keys[-1]]
-                            idx_keys = list(char_map_copy)
+                            coordinates = coordinates[:-1]
+                            heights = heights[:-1]
+                            widths = widths[:-1]
 
                 if word_copy:
                     # strip the first leading and trailing only
@@ -352,125 +358,202 @@ class AnnotationsPDFParser:
                     # part of word
                     if word_copy[-1] in trailing_punc:
                         word_copy = word_copy[:-1]
-                        del char_map_copy[idx_keys[-1]]
+                        coordinates = coordinates[:-1]
+                        heights = heights[:-1]
+                        widths = widths[:-1]
                     if word_copy and word_copy[0] in leading_punc:
                         word_copy = word_copy[1:]
-                        del char_map_copy[idx_keys[0]]
+                        coordinates = coordinates[1:]
+                        heights = heights[1:]
+                        widths = widths[1:]
 
         except IndexError:
             raise AnnotationError(
                 'Index key error occurred when stripping leading and trailing punctuation.'
                 f' For word "{word}"')
-        return word_copy, char_map_copy
+        return word_copy, PDFMeta(
+            coordinates=coordinates, heights=heights, widths=widths)
 
-    def combine_chars_into_words(
+    def _combine_chars_into_words(
         self,
-        parsed_chars: PDFParsedCharacters,
-    ) -> List[Tuple[str, Dict[int, str]]]:
+        parsed_chars: List[PDFChar],
+    ) -> List[PDFWord]:
         """Combines a list of char into a list of words with the
-        position index of each char in the word.
+        coordinates, height and width of each char in the word.
 
-        E.g {0: 'H', 1: 'e', 2: 'l', 3: 'l', 4: 'o', 5: ' ', 6: ' ', 7:'T', ...}
-            - this returns a list of tuples:
-            ('Hello', {0: 'H', 1: 'e', 2: 'l', 3: 'l', 4: 'o'})
-            ('There', {7: 'T', 8: 'h', 9: 'e', ...})
+        TODO: Clean this up later!
         """
-        char_list = parsed_chars.chars_in_pdf
+        pdf_words: List[PDFWord] = []
+        max_length = len(parsed_chars)
+        ending_punc = {'.', ',', '?', '!'}
 
-        words_with_char_idx: List[Tuple[str, Dict[int, str]]] = []
-        char_idx_map: Dict[int, str] = {}
-        max_length = len(char_list)
         word = ''
+        pdf_meta = PDFMeta()
+        page_number = None
+        cropbox = None
 
-        for i, char in enumerate(char_list):
+        for i, char in enumerate(parsed_chars):
+            if not page_number:
+                page_number = char.page_number
+            if not cropbox:
+                cropbox = char.cropbox
+
             try:
-                if ord(char) in MISC_SYMBOLS_AND_CHARS:
+                if ord(char.text) in MISC_SYMBOLS_AND_CHARS:
                     # need to clean because some times hyphens
                     # are parsed as a char that's represented by a
                     # unicode and doesn't match the string hyphen
-                    curr_char = clean_char(char)
+                    curr_char = clean_char(char.text)
                 else:
-                    curr_char = char
+                    curr_char = char.text
 
-                if ord(char_list[i-1]) in MISC_SYMBOLS_AND_CHARS:
-                    prev_char = clean_char(char_list[i-1])
+                if ord(parsed_chars[i-1].text) in MISC_SYMBOLS_AND_CHARS:
+                    prev_char = clean_char(parsed_chars[i-1].text)
                 else:
-                    prev_char = char_list[i-1]
+                    prev_char = parsed_chars[i-1].text
 
                 if curr_char in whitespace and prev_char != '-':
-                    if char_idx_map:
-                        if word[0] in ascii_letters and word[-1] in ascii_letters:
-                            words_with_char_idx.append((word, char_idx_map))
-                            char_idx_map = {}
-                            word = ''
-                        else:
-                            if len(word) == 2:
-                                # skip words like E., I.
-                                # basically initials like because
-                                # some possible tokens start with those
-                                if word[0] not in ascii_letters:
-                                    word, char_idx_map = self.remove_leading_trailing_punctuation(
-                                        word=word, char_map=char_idx_map,
-                                    )
-                            else:
-                                word, char_idx_map = self.remove_leading_trailing_punctuation(
-                                    word=word, char_map=char_idx_map,
-                                )
+                    # signals end of a word
+                    if pdf_meta.coordinates:
+                        open_parenthesis = False
+                        close_parenthesis = False
 
-                            if word and char_idx_map:
-                                words_with_char_idx.append((word, char_idx_map))
-                                char_idx_map = {}
+                        if word[0] in ascii_letters and word[-1] in ascii_letters:
+                            if len(word) <= 2:
+                                # skip words like E., I. etc
                                 word = ''
+                                page_number = None
+                                cropbox = None
+                                pdf_meta = PDFMeta()
+                                continue
+                            else:
+                                pdf_words.append(
+                                    PDFWord(
+                                        keyword=word,
+                                        normalized_keyword='',
+                                        page_number=page_number,
+                                        cropbox=cropbox,
+                                        meta=pdf_meta,
+                                        open_parenthesis=open_parenthesis,
+                                        close_parenthesis=close_parenthesis,
+                                        previous_words=''
+                                    )
+                                )
+                                word = ''
+                                page_number = None
+                                cropbox = None
+                                pdf_meta = PDFMeta()
+                        else:
+                            if word[0] == '(' and word[-1] == ')':
+                                open_parenthesis = True
+                                close_parenthesis = True
+
+                            if len(word) <= 2:
+                                # skip words like E., I. etc
+                                word = ''
+                                page_number = None
+                                cropbox = None
+                                pdf_meta = PDFMeta()
+                                continue
+                            else:
+                                word, pdf_meta = self._remove_leading_trailing_punctuation(
+                                    word=word, pdf_meta=pdf_meta,
+                                )
+                            if word and pdf_meta.coordinates:
+                                pdf_words.append(
+                                    PDFWord(
+                                        keyword=word,
+                                        normalized_keyword='',
+                                        page_number=page_number,
+                                        cropbox=cropbox,
+                                        meta=pdf_meta,
+                                        open_parenthesis=open_parenthesis,
+                                        close_parenthesis=close_parenthesis,
+                                        previous_words=' '.join(
+                                            [pdfw.keyword for pdfw in pdf_words[-MAX_ABBREVIATION_WORD_LENGTH:]])  # noqa
+                                            if open_parenthesis and close_parenthesis else ''  # noqa
+                                    )
+                                )
+                                word = ''
+                                page_number = None
+                                cropbox = None
+                                pdf_meta = PDFMeta()
                 else:
+                    open_parenthesis = False
+                    close_parenthesis = False
+
                     if i + 1 == max_length:
                         # reached end so add whatever is left
                         if curr_char not in whitespace:
                             word += curr_char
-                            char_idx_map[i] = curr_char
+                            pdf_meta.coordinates.append(
+                                [char.x0, char.y0, char.x1, char.y1]
+                            )
+                            pdf_meta.heights.append(char.height)
+                            pdf_meta.widths.append(char.width)
 
-                        if len(word) == 2:
-                            # skip words like E., I.
-                            # basically initials like because
-                            # some possible tokens start with those
-                            if word[0] not in ascii_letters:
-                                word, char_idx_map = self.remove_leading_trailing_punctuation(
-                                    word=word, char_map=char_idx_map,
-                                )
+                        if len(word) <= 2:
+                            # skip words like E., I. etc
+                            word = ''
+                            page_number = None
+                            cropbox = None
+                            pdf_meta = PDFMeta()
+                            continue
                         else:
-                            word, char_idx_map = self.remove_leading_trailing_punctuation(
-                                word=word, char_map=char_idx_map,
+                            if word[0] == '(' and word[-1] == ')':
+                                open_parenthesis = True
+                                close_parenthesis = True
+
+                            word, pdf_meta = self._remove_leading_trailing_punctuation(
+                                word=word, pdf_meta=pdf_meta,
                             )
 
-                        if word and char_idx_map:
-                            words_with_char_idx.append((word, char_idx_map))
-                            char_idx_map = {}
+                        if word and pdf_meta.coordinates:
+                            pdf_words.append(
+                                PDFWord(
+                                    keyword=word,
+                                    normalized_keyword='',
+                                    page_number=page_number,
+                                    cropbox=cropbox,
+                                    meta=pdf_meta,
+                                    open_parenthesis=open_parenthesis,
+                                    close_parenthesis=close_parenthesis,
+                                    previous_words=' '.join(
+                                        [pdfw.keyword for pdfw in pdf_words[-MAX_ABBREVIATION_WORD_LENGTH:]])  # noqa
+                                        if open_parenthesis and close_parenthesis else ''  # noqa
+                                )
+                            )
                             word = ''
+                            page_number = None
+                            cropbox = None
+                            pdf_meta = PDFMeta()
                     else:
-                        if ord(char_list[i+1]) in MISC_SYMBOLS_AND_CHARS:  # noqa
-                            next_char = clean_char(char_list[i+1])
+                        if ord(parsed_chars[i+1].text) in MISC_SYMBOLS_AND_CHARS:  # noqa
+                            next_char = clean_char(parsed_chars[i+1].text)
                         else:
-                            next_char = char_list[i+1]
+                            next_char = parsed_chars[i+1].text
 
                         if ((curr_char == '-' and next_char in whitespace) or
-                            (curr_char in whitespace and prev_char == '-')):  # noqa
+                            (curr_char in whitespace and prev_char == '-') or
+                            curr_char in ending_punc and next_char in whitespace):  # noqa
                             # word is possibly on new line
+                            # or end of a word
                             # so ignore the space
                             continue
                         else:
                             word += curr_char
-                            char_idx_map[i] = curr_char
+                            pdf_meta.coordinates.append(
+                                [char.x0, char.y0, char.x1, char.y1]
+                            )
+                            pdf_meta.heights.append(char.height)
+                            pdf_meta.widths.append(char.width)
             except TypeError:
                 # checking ord() failed
                 continue
 
-        return words_with_char_idx
+        return pdf_words
 
-    def _combine_sequential_words(
-        self,
-        words_with_char_idx,
-        min_idx_in_page,
-        compiled_regex,
-    ):
+    def _combine_sequential_words(self, words, compiled_regex,):
         """Generator that combines a list of words into sequentially increment words.
 
         E.g ['A', 'B', 'C', 'D', 'E'] -> ['A', 'A B', 'A B C', 'B', 'B C', ...]
@@ -479,39 +562,38 @@ class AnnotationsPDFParser:
         processed_tokens: Set[str] = set()
 
         end_idx = curr_max_words = 1
-        max_length = len(words_with_char_idx)
+        max_length = len(words)
 
         # now create keyword tokens up to self.max_word_length
-        for i, _ in enumerate(words_with_char_idx):
+        for i, _ in enumerate(words):
             while curr_max_words <= self.max_word_length and end_idx <= max_length:  # noqa
-                word_char_idx_map_pairing = words_with_char_idx[i:end_idx]
-                words = [word for word, _ in word_char_idx_map_pairing]
-                curr_char_idx_mappings = {k: v for _, d in word_char_idx_map_pairing for k, v in d.items()}  # noqa
-
-                curr_keyword = ' '.join(words)
-
-                last_char_idx_in_curr_keyword = list(curr_char_idx_mappings)[-1]
-
-                page_idx = -1
-                min_idx_list = list(min_idx_in_page)
-                for min_page_idx in min_idx_list:
-                    if last_char_idx_in_curr_keyword <= min_page_idx:
-                        # reminder: can break here because dict in python 3.8+ are
-                        # insertion order
-                        break
-                    else:
-                        page_idx = min_page_idx
+                words_subset = words[i:end_idx]
+                curr_keyword = ' '.join([word.keyword for word in words_subset])
+                coordinates = [word.meta.coordinates for word in words_subset]
+                heights = [word.meta.heights for word in words_subset]
+                widths = [word.meta.widths for word in words_subset]
 
                 if (curr_keyword.lower() not in COMMON_WORDS and
                     not compiled_regex.match(curr_keyword) and
                     curr_keyword not in ascii_letters and
                     curr_keyword not in digits):  # noqa
 
-                    token = PDFTokenPositions(
-                        page_number=min_idx_in_page[page_idx],
+                    token = PDFWord(
                         keyword=curr_keyword,
                         normalized_keyword=normalize_str(curr_keyword),
-                        char_positions=curr_char_idx_mappings,
+                        # take the page of the first word
+                        # if multi-word, consider it as part
+                        # of page of first word
+                        page_number=words_subset[0].page_number,
+                        cropbox=words_subset[0].cropbox,
+                        meta=PDFMeta(
+                            coordinates=coordinates,
+                            heights=heights,
+                            widths=widths
+                        ),
+                        open_parenthesis=words_subset[0].open_parenthesis,
+                        close_parenthesis=words_subset[0].close_parenthesis,
+                        previous_words=words_subset[0].previous_words
                     )
                     yield token
 
@@ -520,10 +602,7 @@ class AnnotationsPDFParser:
             curr_max_words = 1
             end_idx = i + 2
 
-    def extract_tokens(
-        self,
-        parsed_chars_list: List[PDFChar]
-    ) -> PDFTokenPositionsList:
+    def extract_tokens(self, parsed: PDFParsedContent) -> PDFTokensList:
         """Extract word tokens from the parsed characters.
 
         Returns a token list of sequentially concatentated
@@ -531,34 +610,12 @@ class AnnotationsPDFParser:
         in the list will contain the keyword, and the index of
         each char in the keyword.
         """
-        min_idx_in_page: Dict[int, int] = {}
-        for pair_to_split in parsed_chars_list[0].min_idx_in_page.split(','):  # type: ignore
-            k, v = pair_to_split.split('#')
-            min_idx_in_page[int(k)] = int(v)
-
-        parsed_chars = PDFParsedCharacters(
-            char_coord_objs_in_pdf=parsed_chars_list,
-            chars_in_pdf=[pdf_char.text for pdf_char in parsed_chars_list],
-            cropbox_in_pdf=(
-                parsed_chars_list[0].lower_cropbox,
-                parsed_chars_list[0].upper_cropbox),  # type: ignore
-            min_idx_in_page=min_idx_in_page,
-        )
-
-        # first combine the chars into words
-        words_with_char_idx = self.combine_chars_into_words(parsed_chars=parsed_chars)
-
         # regex to check for digits with punctuation
         compiled_regex = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
 
-        return PDFTokenPositionsList(
-            token_positions=self._combine_sequential_words(
-                words_with_char_idx=words_with_char_idx,
-                min_idx_in_page=parsed_chars.min_idx_in_page,
+        return PDFTokensList(
+            tokens=self._combine_sequential_words(
+                words=parsed.words,
                 compiled_regex=compiled_regex,
-            ),
-            char_coord_objs_in_pdf=parsed_chars.char_coord_objs_in_pdf,
-            cropbox_in_pdf=parsed_chars.cropbox_in_pdf,
-            min_idx_in_page=parsed_chars.min_idx_in_page,
-            word_index_dict={list(d)[0]: w for (w, d) in words_with_char_idx if not w.isnumeric()}
+            )
         )

@@ -178,19 +178,19 @@ def create_annotations(
             excluded_annotations = document.excluded_annotations
 
             # cache it
-            try:
-                db.session.bulk_update_mappings(
-                    FileContent,
-                    [
-                        {
-                            'id': document.file_content_id,
-                            'parsed_content': json.dumps([d.to_dict() for d in parsed])
-                        }
-                    ]
-                )
-                db.session.commit()
-            except SQLAlchemyError:
-                db.session.rollback()
+            # try:
+            #     db.session.bulk_update_mappings(
+            #         FileContent,
+            #         [
+            #             {
+            #                 'id': document.file_content_id,
+            #                 'parsed_content': json.dumps([d.to_dict() for d in parsed])
+            #             }
+            #         ]
+            #     )
+            #     db.session.commit()
+            # except SQLAlchemyError:
+            #     db.session.rollback()
     except AnnotationError:
         raise AnnotationError(
             'Your file could not be parsed. Please check if it is a valid PDF.'
@@ -202,28 +202,31 @@ def create_annotations(
     )
 
     start = time.time()
-    if not parsed:
-        pdf_text = ''.join([c['text'] for c in document.parsed_content])
-        tokens = parser.extract_tokens(
-            [
-                PDFChar(
-                    x0=parsed['x0'],
-                    y0=parsed['y0'],
-                    x1=parsed['x1'],
-                    y1=parsed['y1'],
-                    text=parsed['text'],
-                    height=parsed['height'],
-                    width=parsed['width'],
-                    space=parsed['space'],
-                    lower_cropbox=parsed['lower_cropbox'],
-                    upper_cropbox=parsed['upper_cropbox'],
-                    min_idx_in_page=parsed['min_idx_in_page']
-                ) for parsed in json.loads(document.parsed_content)]
+    # if not parsed:
+    #     pdf_text = ''.join([c['text'] for c in document.parsed_content])
+    #     tokens = parser.extract_tokens(
+    #         [
+    #             PDFChar(
+    #                 x0=parsed['x0'],
+    #                 y0=parsed['y0'],
+    #                 x1=parsed['x1'],
+    #                 y1=parsed['y1'],
+    #                 text=parsed['text'],
+    #                 height=parsed['height'],
+    #                 width=parsed['width'],
+    #                 space=parsed['space'],
+    #                 lower_cropbox=parsed['lower_cropbox'],
+    #                 upper_cropbox=parsed['upper_cropbox'],
+    #                 min_idx_in_page=parsed['min_idx_in_page']
+    #             ) for parsed in json.loads(document.parsed_content)]
 
-        )
-    else:
-        pdf_text = ''.join([c.text for c in parsed])
-        tokens = parser.extract_tokens(parsed)
+    #     )
+    # else:
+    #     pdf_text = ''.join([c.text for c in parsed])
+    #     tokens = parser.extract_tokens(parsed)
+
+    pdf_text = ' '.join([c.keyword for c in parsed.words])
+    tokens_list = parser.extract_tokens(parsed)
 
     if annotation_method == AnnotationMethod.RULES.value:
         entity_recog.set_entity_inclusions(custom_annotations=custom_annotations)
