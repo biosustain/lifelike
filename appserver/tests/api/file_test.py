@@ -286,7 +286,6 @@ CUSTOM_ANNOTATION_1 = {
             'wikipedia': '',
             'google': ''
         },
-        'primaryLink': '',
         'includeGlobally': False
     },
 }
@@ -313,7 +312,6 @@ CUSTOM_ANNOTATION_2 = {
             'wikipedia': '',
             'google': ''
         },
-        'primaryLink': '',
         'includeGlobally': False
     },
 }

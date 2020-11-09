@@ -353,7 +353,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       });
     }
 
-    const hyperlink = meta.idHyperlink || meta.primaryLink || '';
+    const hyperlink = meta.idHyperlink || '';
 
     const search = Object.keys(meta.links || []).map(k => {
       return {

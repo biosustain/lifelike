@@ -6,7 +6,6 @@ export interface InclusionMeta {
     includeGlobally: boolean;
     isCustom: boolean;
     links: object;
-    primaryLink: string;
     type: string;
 }
 
