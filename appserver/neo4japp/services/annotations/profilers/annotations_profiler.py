@@ -61,7 +61,7 @@ def profile_annotations(
         parsed = pdf_parser.parse_pdf(pdf=pdf)
         tokens = pdf_parser.extract_tokens(parsed_chars=parsed)
         entity_service.set_entity_inclusions(custom_annotations=[])
-        entity_service.set_entity_exclusions(excluded_annotations=[])
+        entity_service.set_entity_exclusions()
         entity_service.identify_entities(
             tokens=tokens.token_positions,
             check_entities_in_lmdb=entity_service.get_entities_to_identify()
