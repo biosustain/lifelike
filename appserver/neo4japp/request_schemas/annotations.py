@@ -9,6 +9,9 @@ class StrictSchema(ma.Schema):
 class LinksSchema(StrictSchema):
     ncbi = ma.String(required=True)
     uniprot = ma.String(required=True)
+    chebi = ma.String(required=True)
+    pubchem = ma.String(required=True)
+    mesh = ma.String(required=True)
     wikipedia = ma.String(required=True)
     google = ma.String(required=True)
 
@@ -24,6 +27,7 @@ class MetaSchema(StrictSchema):
     links = ma.Nested(LinksSchema, required=True)
     primaryLink = ma.String(required=True)
     includeGlobally = ma.Boolean(required=True)
+    isCaseInsensitive = ma.Boolean(required=True)
 
 
 class AnnotationSchema(StrictSchema):
@@ -54,3 +58,8 @@ class AnnotationExclusionSchema(StrictSchema):
     reason = ma.String(required=True)
     comment = ma.String(required=True)
     excludeGlobally = ma.Boolean(required=True)
+    isCaseInsensitive = ma.Boolean(required=True)
+
+
+class GlobalAnnotationsDeleteSchema(ma.Schema):
+    pids = ma.List(ma.Integer())

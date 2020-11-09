@@ -2,142 +2,122 @@ name: Staging Deployment
 
 on:
   push:
+    tags:
+      - "staging"
     branches:
-      - master
-
-env:
-    ELASTICSEARCH_HOSTS: ${{ secrets.ELASTICSEARCH_HOSTS }}
-    POSTGRES_HOST: ${{ secrets.STAGING_POSTGRES_HOST }}
-    POSTGRES_PORT: ${{ secrets.STAGING_POSTGRES_PORT }}
-    POSTGRES_USER: ${{ secrets.STAGING_POSTGRES_USER }}
-    POSTGRES_PASSWORD: ${{ secrets.STAGING_POSTGRES_PASSWORD }}
-    POSTGRES_DB: ${{ secrets.STAGING_POSTGRES_DB }}
-    NEO4J_HOST: ${{ secrets.STAGING_NEO4J_HOST }}
-    NEO4J_AUTH: ${{ secrets.STAGING_NEO4J_AUTH }}
-    FLASK_APP: ${{ secrets.STAGING_FLASK_APP }}
-    FLASK_APP_CONFIG: ${{ secrets.STAGING_FLASK_APP_CONFIG }}
-    FLASK_ENV: ${{ secrets.STAGING_FLASK_ENV }}
-    PROJECT_ID: ${{ secrets.GCE_PROJECT }}
-    GITHUB_HASH: ${{ github.sha }}
-    GCE_INSTANCE: kg-staging
-    GCE_INSTANCE_ZONE: us-central1-a
-    GCE_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
-    CLOUD_SQL_ALIAS: ${{ secrets.STAGING_CLOUD_SQL_ALIAS }}
-    GCE_BACKUP_BUCKET: ${{ secrets.POSTGRES_BACKUP_BUCKET }}
-    SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
-    REDIS_HOST: ${{ secrets.REDIS_HOST }}
-    REDIS_PORT: ${{ secrets.REDIS_PORT }}
-    DOMAIN: https://test.lifelike.bio
+      # only trigger when branches match refs/heads/staging/
+      - "staging/**"
 
 jobs:
+  build:
+    name: Setup, Build, Publish
 
-    setup-build-publish-deploy:
+    runs-on: ubuntu-latest
 
-        name: Setup, Build, Publish, and Deploy
-        runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.timestamp.outputs.commit_timestamp }}
+      output2: ${{ steps.commitcount.outputs.build_number }}
+      output3: ${{ steps.buildversion.outputs.build_version}}
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-            # Setup gcloud CLI
-            # https://github.com/GoogleCloudPlatform/github-actions
-            - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
-              with:
-                version: '286.0.0'
-                service_account_key: ${{ secrets.GCE_SA_KEY }}
-                project_id: ${{ secrets.GCE_PROJECT }}
+      - name: Set git commit timestamp
+        id: timestamp
+        run: echo ::set-output name=commit_timestamp::$(git log -1 --format=%cI)
 
-            # Configure Docker to use gcloud command line tool
-            - run: |-
-                gcloud --quiet auth configure-docker
+      - name: Set commit counts as build number
+        id: commitcount
+        run: echo ::set-output name=build_number::$(git rev-list --count HEAD)
 
-            - name: Build Appserver Image
-              uses: whoan/docker-build-with-cache-action@v5
-              with:
-                username: _json_key
-                password: ${{ secrets.GCE_SA_KEY }}
-                registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver-staging
-                image_tag: ${{ github.sha }},latest
-                context: ./appserver
-                dockerfile: ./Dockerfile.prod
+      # Uses the commit tag as the version
+      - name: Set build version
+        id: buildversion
+        run: echo ::set-output name=build_version::$(echo "${GITHUB_REF#refs/*/}")
 
-            - name: Build Client and Nginx Image
-              uses: whoan/docker-build-with-cache-action@v5
-              with:
-                username: _json_key
-                password: ${{ secrets.GCE_SA_KEY }}
-                registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver-staging
-                image_tag: ${{ github.sha }},latest
-                context: ./client
-                dockerfile: ./Dockerfile.staging
+      # Setup gcloud CLI
+      # https://github.com/GoogleCloudPlatform/github-actions
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: "286.0.0"
+          service_account_key: ${{ secrets.GCE_SA_KEY }}
+          project_id: ${{ secrets.GCE_PROJECT }}
 
-            - name: Build Redis
-              uses: whoan/docker-build-with-cache-action@v5
-              with:
-                username: _json_key
-                password: ${{ secrets.GCE_SA_KEY }}
-                registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service-staging
-                image_tag: ${{ github.sha }},latest
-                context: ./cache-invalidator
-                dockerfile: ./Dockerfile
+      # Configure Docker to use gcloud command line tool
+      - run: |-
+          gcloud --quiet auth configure-docker
 
-            - name: Build NLP
-              uses: whoan/docker-build-with-cache-action@v5
-              with:
-                username: _json_key
-                password: ${{ secrets.GCE_SA_KEY }}
-                registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi-staging
-                image_tag: ${{ github.sha }},latest
-                context: ./nlp
-                dockerfile: ./Dockerfile
+      - name: Build appserver image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
+          image_tag: ${{ github.sha }}
+          context: ./appserver
+          dockerfile: ./Dockerfile
 
-            - name: Deploy Setup
-              run: |-
-                echo "ELASTICSEARCH_HOSTS=$ELASTICSEARCH_HOSTS" >> staging.env
-                echo "POSTGRES_HOST=$POSTGRES_HOST" >> staging.env
-                echo "POSTGRES_PORT=$POSTGRES_PORT" >> staging.env
-                echo "POSTGRES_USER=$POSTGRES_USER" >> staging.env
-                echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> staging.env
-                echo "POSTGRES_DB=$POSTGRES_DB" >> staging.env
-                echo "NEO4J_HOST=$NEO4J_HOST" >> staging.env
-                echo "NEO4J_AUTH=$NEO4J_AUTH" >> staging.env
-                echo "FLASK_APP=$FLASK_APP" >> staging.env
-                echo "FLASK_APP_CONFIG=$FLASK_APP_CONFIG" >> staging.env
-                echo "FLASK_ENV=$FLASK_ENV" >> staging.env
-                echo "DOCKER_USER=_json_key" >> staging.env
-                echo "PROJECT_ID=$PROJECT_ID" >> staging.env
-                echo "CLOUD_SQL_ALIAS=$CLOUD_SQL_ALIAS" >> staging.env
-                echo "GCE_BACKUP_BUCKET=$GCE_BACKUP_BUCKET" >> staging.env
-                GITHUB_COMMIT_TIMESTAMP=$(git log -1 --format=%cI)
-                echo "GITHUB_COMMIT_TIMESTAMP=$GITHUB_COMMIT_TIMESTAMP" >> staging.env
-                echo "GITHUB_HASH=$GITHUB_HASH" >> staging.env
-                echo "SENTRY_KEY=$SENTRY_KEY" >> staging.env
-                echo "REDIS_HOST=$REDIS_HOST" >> staging.env
-                echo "REDIS_PORT=$REDIS_PORT" >> staging.env
-                echo "$GCE_SERVICE_ACCOUNT" >> keyfile.json
-                gsutil cp staging.env gs://kg-secrets
-                gcloud compute scp staging.env $GCE_INSTANCE:/srv/.env --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp keyfile.json $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp docker-compose.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp docker-compose.staging.yml $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp ./deployment/bin/startup.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute scp ./deployment/bin/migration-manager.sh $GCE_INSTANCE:/srv --zone $GCE_INSTANCE_ZONE
-                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/startup.sh';
-                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo chmod a+x /srv/migration-manager.sh';
+      - name: Build Client and Nginx Image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
+          image_tag: ${{ github.sha }}
+          context: ./client
+          dockerfile: ./Dockerfile
 
-            - name: Deploy
-              run: |-
-                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo /srv/startup.sh -t staging';
+      - name: Build Redis
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
+          image_tag: ${{ github.sha }}
+          context: ./cache-invalidator
+          dockerfile: ./Dockerfile
 
-            - name: Applying database migrations
-              run: |-
-                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo /srv/migration-manager.sh -t staging';
+      - name: Build NLP
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
+          image_tag: ${{ github.sha }}
+          context: ./nlp
+          dockerfile: ./Dockerfile
 
-            - name: Clean up images
-              run: |-
-                gcloud compute ssh $GCE_INSTANCE --zone $GCE_INSTANCE_ZONE --command='sudo docker system prune -f';
+  deploy:
+    name: Deploy
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy application
+        uses: ./.github/actions/ansible
+        with:
+          workspace_dir: 'deployment/ansible'
+          playbook_file_path: 'playbooks/deploy.yml'
+          inventory_file_path: 'inventories/hosts.yml'
+          vault_password: ${{ secrets.ANSIBLE_VAULT }}
+          ssh_key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+          options: |
+            --extra-vars webserver=staging
+            --extra-vars set_docker_img_hash=${{ github.sha }}
+            --extra-vars set_git_timestamp=${{ needs.build.outputs.output1 }}
+            --extra-vars set_app_build_number=${{ needs.build.outputs.output2 }}
+            --extra-vars set_app_version=${{ needs.build.outputs.output3 }}
+            --user ansible
+            --verbose

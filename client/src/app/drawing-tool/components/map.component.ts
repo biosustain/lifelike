@@ -1,9 +1,10 @@
+import { escapeRegExp } from 'lodash';
 import { AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Output, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { MapService } from '../services';
-import { KnowledgeMap } from '../services/interfaces';
+import { GraphEntity, GraphEntityType, KnowledgeMap } from '../services/interfaces';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ModuleProperties } from '../../shared/modules';
@@ -15,6 +16,7 @@ import { map } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { emptyIfNull } from '../../shared/utils/types';
 
 @Component({
   selector: 'app-map',
@@ -24,6 +26,7 @@ import { WorkspaceManager } from '../../shared/workspace-manager';
   ],
 })
 export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit {
+  @Input() highlightTerms: string[] | undefined;
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
@@ -42,6 +45,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   unsavedChangesSubscription: Subscription;
 
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
+
+  entitySearchTerm = '';
+  entitySearchList: GraphEntity[] = [];
+  entitySearchListIdx = -1;
 
   constructor(
       readonly mapService: MapService,
@@ -97,6 +104,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
     this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
       this.unsavedChanges$.next(true);
+      this.search();
     });
 
     this.unsavedChangesSubscription = this.unsavedChanges$.subscribe(value => {
@@ -143,6 +151,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.graphCanvas.setGraph(this.map.graph);
     this.graphCanvas.zoomToFit(0);
     this.emitModuleProperties();
+
+    if (this.highlightTerms != null && this.highlightTerms.length) {
+      this.graphCanvas.highlighting.replace(this.graphCanvas.findMatching(this.highlightTerms));
+    }
   }
 
   registerGraphBehaviors() {
@@ -177,6 +189,51 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   redo() {
     this.graphCanvas.redo();
+  }
+
+  // ========================================
+  // Search stuff
+  // ========================================
+
+  search() {
+    if (this.entitySearchTerm.length) {
+      this.entitySearchList = this.graphCanvas.findMatching(this.entitySearchTerm.split(/ +/g));
+      this.entitySearchListIdx = -1;
+
+      this.graphCanvas.searchHighlighting.replace(this.entitySearchList);
+      this.graphCanvas.searchFocus.replace([]);
+      this.graphCanvas.requestRender();
+
+    } else {
+      this.entitySearchList = [];
+      this.entitySearchListIdx = -1;
+
+      this.graphCanvas.searchHighlighting.replace([]);
+      this.graphCanvas.searchFocus.replace([]);
+      this.graphCanvas.requestRender();
+    }
+  }
+
+  next() {
+    // we need rule ...
+    this.entitySearchListIdx++;
+    if (this.entitySearchListIdx >= this.entitySearchList.length) {
+      this.entitySearchListIdx = 0;
+    }
+    this.graphCanvas.panToEntity(
+      this.entitySearchList[this.entitySearchListIdx] as GraphEntity
+    );
+  }
+
+  previous() {
+    // we need rule ..
+    this.entitySearchListIdx--;
+    if (this.entitySearchListIdx <= -1) {
+      this.entitySearchListIdx = this.entitySearchList.length - 1;
+    }
+    this.graphCanvas.panToEntity(
+      this.entitySearchList[this.entitySearchListIdx] as GraphEntity
+    );
   }
 }
 

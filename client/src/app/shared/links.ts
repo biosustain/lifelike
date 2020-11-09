@@ -7,6 +7,15 @@ export const SEARCH_LINKS: readonly Hyperlink[] = Object.freeze([{
   domain: 'UniProt',
   url: 'https://www.uniprot.org/uniprot/?sort=score&query=%s',
 }, {
+  domain: 'Mesh',
+  url: 'https://www.ncbi.nlm.nih.gov/mesh/?term=%s',
+}, {
+  domain: 'ChEBI',
+  url: 'https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=%s',
+}, {
+  domain: 'PubChem',
+  url: 'https://pubchem.ncbi.nlm.nih.gov/#query=%s',
+}, {
   domain: 'Wikipedia',
   url: 'https://www.google.com/search?q=site:+wikipedia.org+%s',
 }, {

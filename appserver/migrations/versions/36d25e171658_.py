@@ -5,13 +5,12 @@ Revises: cc345dcad75c
 Create Date: 2020-07-22 19:25:59.212662
 
 """
-import bcrypt
-import sqlalchemy as sa
 from alembic import context
 from alembic import op
+import bcrypt
+import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils.types import TSVectorType
-
 from neo4japp.models import (
     AppRole,
     AccessActionType,
@@ -20,11 +19,13 @@ from neo4japp.models import (
     projects_collaborator_role,
 )
 
+
 # revision identifiers, used by Alembic.
 revision = '36d25e171658'
 down_revision = 'cc345dcad75c'
 branch_labels = None
 depends_on = None
+
 
 # Table definitions
 t_files_content = sa.Table(
@@ -35,6 +36,7 @@ t_files_content = sa.Table(
     sa.Column('checksum_sha256', sa.Binary(32), nullable=False, index=True, unique=True),
     sa.Column('creation_date', sa.DateTime, nullable=False, default=sa.func.now()),
 )
+
 
 t_files = sa.Table(
     'files',
@@ -151,6 +153,7 @@ def upgrade():
                         name=op.f('fk_directory_projects_id_projects')
                     ), sa.PrimaryKeyConstraint('id', name=op.f('pk_directory'))
                     )
+
 
     op.create_table('projects_collaborator_role',
                     sa.Column('appuser_id', sa.Integer(), nullable=False),

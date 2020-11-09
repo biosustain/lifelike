@@ -44,32 +44,36 @@ def requires_permission(action: AccessActionType):
     return check_permission
 
 
+def check_project_permission(project, user, action: AccessActionType):
+    auth = get_authorization_service()
+
+    # SUPER USER ADMIN overrides all permissions
+    private_data_access = auth.has_role(user, 'private-data-access')
+
+    if not private_data_access:
+        proj = get_projects_service()
+        role = proj.has_role(user, project)
+        if role is None or not auth.is_allowed(role, action, project):
+            raise NotAuthorizedException(
+                f'{user.username} does not have {action.name} privilege'
+            )
+
+
 def requires_project_permission(action: AccessActionType):
     """ Returns a check project permission decorator """
-    def check_project_permission(f):
+    def check_decorator(f):
         @functools.wraps(f)
         def decorator(*args, **kwargs):
             gen = f(*args, **kwargs)
             try:
-                user, projects = next(gen)
-                auth = get_authorization_service()
-
-                # SUPER USER ADMIN overrides all permissions
-                is_superuser = auth.has_role(user, 'admin')
-
-                if not is_superuser:
-                    proj = get_projects_service()
-                    role = proj.has_role(user, projects)
-                    if role is None or not auth.is_allowed(role, action, projects):
-                        raise NotAuthorizedException(
-                            f'{user.username} does not have {action.name} privilege'
-                        )
+                user, project = next(gen)
+                check_project_permission(project, user, action)
                 retval = next(gen)
             finally:
                 gen.close()
             return retval
         return decorator
-    return check_project_permission
+    return check_decorator
 
 
 def requires_project_role(role: str):

@@ -17,6 +17,9 @@ export interface DirectoryObject {
   annotationDate?: string;
   creationDate?: string;
   modificationDate?: string;
+  doi?: string;
+  highlight?: string[];
+  highlightAnnotated?: boolean[];
   creator?: User;
   project: Pick<Project, 'projectName'>;
   data?: Directory | KnowledgeMap | PdfFile;
