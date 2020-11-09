@@ -285,8 +285,9 @@ def files2gcp(bucket_name, project_name, username):
     """
     import json
     from google.cloud import storage
-    from google.cloud.exceptions import NotFound
+    from google.cloud.exceptions import BadRequest, NotFound
     from sqlalchemy import and_
+    from neo4japp.encoders import CustomJSONEncoder
     from neo4japp.models import (
         AppUser,
         Files,
@@ -298,7 +299,7 @@ def files2gcp(bucket_name, project_name, username):
 
     try:
         bucket = storage_client.get_bucket(bucket_name)
-    except NotFound:
+    except (NotFound, BadRequest):
         bucket = storage_client.bucket(bucket_name)
         bucket = storage_client.create_bucket(bucket, location='us')
         app.logger.info(f'Created Google Cloud Bucket : {bucket_name}')
@@ -330,18 +331,10 @@ def files2gcp(bucket_name, project_name, username):
                 filename = f"{fi.filename.replace('.pdf', '')}.pdf"
                 blob = bucket.blob(f'raw_file/{filename}')
                 blob.upload_from_string(fi_content.raw_file, 'application/pdf')
-
                 meta_filename = f"{fi.filename.replace('.pdf', '')}.json"
                 meta_blob = bucket.blob(f'meta_data/{meta_filename}')
-                meta_blob.upload_from_string(
-                    json.dumps(fi.to_dict(include=[
-                        'annotations',
-                        'custom_annotations',
-                        'excluded_annotations',
-                        'filename',
-                        'description',
-                        'upload_url'
-                    ])), 'application/json')
+                fi_json = json.dumps(fi.to_dict(), cls=CustomJSONEncoder)
+                meta_blob.upload_from_string(fi_json, 'application/json')
         app.logger.info(f'Finished loading all files')
 
 
@@ -349,13 +342,19 @@ def files2gcp(bucket_name, project_name, username):
 @click.argument('gcp_source', nargs=1)
 @click.argument('project_name', nargs=1)
 @click.argument('username', nargs=1)
-def bulk_upload_files(gcp_source, project_name, username):
+@click.option('--reannotate', default=False, help='if false, does not reannotate PDF files')
+def bulk_upload_files(gcp_source, project_name, username, reannotate):
     """ Performs a bulk upload of files and annotation from
     a given Google Storage Bucket.
 
     Example usage:
 
     > flask bulk-upload cag-data test admin
+
+    Example usage 2:
+    This will add the files into the annotation pipeline
+
+    > flask bulk-upload cag-data test admin --reannotate=True
 
     This will:
         1. create a project called 'cag-data'
@@ -479,7 +478,7 @@ def bulk_upload_files(gcp_source, project_name, username):
 
             new_file = Files(
                 file_id=file_id,
-                filename=filename,
+                filename=meta_json['filename'],
                 description=meta_json['description'],
                 content_id=file_content.id,
                 user_id=user.id,
@@ -488,6 +487,10 @@ def bulk_upload_files(gcp_source, project_name, username):
                 upload_url=meta_json['uploadUrl'],
                 excluded_annotations=meta_json['excludedAnnotations'],
                 custom_annotations=meta_json['customAnnotations'],
+                creation_date=meta_json['creationDate'],
+                modified_date=meta_json['modifiedDate'],
+                annotations=meta_json['annotations'],
+                annotations_date=meta_json['annotationsDate'],
             )
             db.session.add(new_file)
             db.session.commit()
@@ -506,6 +509,7 @@ def bulk_upload_files(gcp_source, project_name, username):
                     new_file_ids.append(new_file.file_id)
             except Exception as e:
                 print('Failed to load file: {filename}', str(e))
+                db.session.rollback()
                 pass
 
         docs = files_queries.get_all_files_and_content_by_id(
@@ -513,14 +517,15 @@ def bulk_upload_files(gcp_source, project_name, username):
             project_id=project.id,
         ).all()
 
-        annotated_files = []
-        for doc in docs:
-            try:
-                annotated_files.append(annotate(doc))
-            except (AnnotationError, Exception):
-                app.logger.info(f'Filename {filename} failed to annotate.')
+        if reannotate:
+            annotated_files = []
+            for doc in docs:
+                try:
+                    annotated_files.append(annotate(doc))
+                except (AnnotationError, Exception):
+                    app.logger.info(f'Filename {filename} failed to annotate.')
 
-        db.session.bulk_update_mappings(Files, annotated_files)
+            db.session.bulk_update_mappings(Files, annotated_files)
         db.session.commit()
         print('Done')
 
