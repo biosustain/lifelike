@@ -28,7 +28,7 @@ from .constants import (
     PDF_CHARACTER_SPACING_THRESHOLD,
     PDF_NEW_LINE_THRESHOLD,
 )
-from .util import clean_char
+from .util import clean_char, normalize_str
 
 
 class AnnotationsPDFParser:
@@ -44,10 +44,12 @@ class AnnotationsPDFParser:
     ) -> None:
         def space_exists_between_lt_chars(a: LTChar, b: LTChar):
             """Determines if a space character exists between two LTChars."""
+            # if x1's are not equal that means horizontal and new line
+            # otherwise new line but rotated text so shouldn't have space
             return (
                 (b.x0 - a.x1 > a.width * PDF_CHARACTER_SPACING_THRESHOLD) or
                 (abs(b.y0 - a.y0) > a.height * PDF_NEW_LINE_THRESHOLD)
-            )
+            ) and b.x1 != a.x1
 
         def should_add_virtual_space(
             prev_char: Union[LTAnno, LTChar],
@@ -134,7 +136,7 @@ class AnnotationsPDFParser:
                     char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                     compiled_regex=compiled_regex,
                 )
-            elif isinstance(lt_obj, LTChar) or (isinstance(lt_obj, LTAnno) and lt_obj.get_text() != '\n'):  # noqa
+            elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno) and lt_obj.get_text() != '\n':  # noqa
                 lt_obj_text = lt_obj.get_text()
                 # ignore CID fonts
                 # these are arithmetic or other symbols the parser
@@ -181,57 +183,6 @@ class AnnotationsPDFParser:
     def parse_pdf_high_level(self, pdf) -> str:
         return high_level.extract_text(pdf)
 
-    def parse_pubtator(self, pubtator) -> PDFParsedCharacters:
-        """Parse a Pubtator file and produces similar results to
-        self.parse_pdf(). The only difference would be the LTChar
-        objects will not actual PDF coordinates.
-        """
-        @attr.s(frozen=True)
-        class Font():
-            fontname: str = attr.ib()
-
-            def is_vertical(self):
-                return False
-
-            def get_descent(self):
-                return 0
-
-        chars_in_abstract: List[str] = []
-        lt_chars: List[LTChar] = []
-        cropbox_in_pdf = (1, 1)
-        min_idx_in_page = {1: 1}
-
-        next(pubtator)
-        for line in pubtator:
-            abstract = line.split('|')[2]
-
-            for c in abstract:
-                # create a fake LTChar
-                lt_chars.append(
-                    LTChar(
-                        text=c,
-                        matrix=(0, 0, 0, 0, 0, 0),
-                        font=Font(fontname=''),
-                        fontsize=0,
-                        scaling=0,
-                        rise=0,
-                        textwidth=0,
-                        textdisp=None,
-                        ncs=None,
-                        graphicstate=None,
-                    )
-                )
-
-        for lt_char in lt_chars:
-            chars_in_abstract.append(lt_char.get_text())
-
-        return PDFParsedCharacters(
-            char_coord_objs_in_pdf=lt_chars,
-            chars_in_pdf=chars_in_abstract,
-            cropbox_in_pdf=cropbox_in_pdf,
-            min_idx_in_page=min_idx_in_page,
-        )
-
     def parse_text(self, abstract: str) -> PDFParsedCharacters:
         """Parse a Pubtator file and produces similar results to
         self.parse_pdf(). The only difference would be the LTChar
@@ -250,7 +201,7 @@ class AnnotationsPDFParser:
         chars_in_abstract: List[str] = []
         lt_chars: List[LTChar] = []
         cropbox_in_pdf = (1, 1)
-        min_idx_in_page = {1: 1}
+        min_idx_in_page = {0: 1}
 
         for c in abstract:
             # create a fake LTChar
@@ -291,7 +242,6 @@ class AnnotationsPDFParser:
         interpreter = PDFPageInterpreter(rsrcmgr=rsrcmgr, device=device)
 
         min_idx_in_page: Dict[int, int] = {}
-        chars_in_pdf: List[str] = []
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = []
         cropbox_in_pdf: Tuple[int, int] = None  # type: ignore
 
@@ -314,6 +264,7 @@ class AnnotationsPDFParser:
             cropbox_in_pdf = (page.mediabox[0], page.mediabox[1])
             interpreter.process_page(page)
             layout = device.get_result()
+            # key is min idx and value is page number
             min_idx_in_page[len(char_coord_objs_in_pdf)] = i+1
             self._get_lt_char(
                 layout=layout,
@@ -321,12 +272,9 @@ class AnnotationsPDFParser:
                 compiled_regex=compiled_regex,
             )
 
-        for lt_char in char_coord_objs_in_pdf:
-            chars_in_pdf.append(lt_char.get_text())
-
         return PDFParsedCharacters(
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            chars_in_pdf=chars_in_pdf,
+            chars_in_pdf=[lt_char.get_text() for lt_char in char_coord_objs_in_pdf],
             cropbox_in_pdf=cropbox_in_pdf,
             min_idx_in_page=min_idx_in_page,
         )
@@ -586,7 +534,8 @@ class AnnotationsPDFParser:
                 last_char_idx_in_curr_keyword = list(curr_char_idx_mappings)[-1]
 
                 page_idx = -1
-                for min_page_idx in list(min_idx_in_page):
+                min_idx_list = list(min_idx_in_page)
+                for min_page_idx in min_idx_list:
                     if last_char_idx_in_curr_keyword <= min_page_idx:
                         # reminder: can break here because dict in python 3.8+ are
                         # insertion order
@@ -602,6 +551,7 @@ class AnnotationsPDFParser:
                     token = PDFTokenPositions(
                         page_number=min_idx_in_page[page_idx],
                         keyword=curr_keyword,
+                        normalized_keyword=normalize_str(curr_keyword),
                         char_positions=curr_char_idx_mappings,
                     )
                     yield token
@@ -637,4 +587,5 @@ class AnnotationsPDFParser:
             char_coord_objs_in_pdf=parsed_chars.char_coord_objs_in_pdf,
             cropbox_in_pdf=parsed_chars.cropbox_in_pdf,
             min_idx_in_page=parsed_chars.min_idx_in_page,
+            word_index_dict={list(d)[0]: w for (w, d) in words_with_char_idx if not w.isnumeric()}
         )

@@ -1,10 +1,16 @@
 import re
 
-from sqlalchemy import event
+from sqlalchemy import (
+    and_,
+    event,
+    join,
+    select
+)
 from sqlalchemy.orm import validates
 from sqlalchemy.orm.query import Query
 
-from neo4japp.database import db
+from neo4japp.constants import FILE_INDEX_ID
+from neo4japp.database import db, get_elastic_service
 from neo4japp.models.auth import (
     AccessActionType,
     AccessControlPolicy,
@@ -13,6 +19,7 @@ from neo4japp.models.auth import (
     AppUser,
 )
 from neo4japp.models.common import RDBMSBase, FullTimestampMixin, HashIdMixin
+
 
 projects_collaborator_role = db.Table(
     'projects_collaborator_role',
@@ -161,3 +168,10 @@ def init_default_access(mapper, connection, target):
         principal_id=admin_role.id,
         rule_type=AccessRuleType.ALLOW,
     ))
+
+
+@event.listens_for(Projects, 'after_update')
+def projects_after_update(mapper, connection, target):
+    """listen for the `after_update` event"""
+
+    # TODO

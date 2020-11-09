@@ -25,6 +25,7 @@ from neo4japp.models.files_queries import add_user_permission_columns, FileHiera
     build_file_hierarchy_query, build_file_parents_cte
 from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponse, FileResponseSchema, \
     FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, BulkFileUpdateRequestSchema
+from neo4japp.schemas.formats.drawing_tool import validate_map, validate_map_data
 from neo4japp.utils.network import read_url
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
@@ -46,7 +47,7 @@ class FilesystemView(MethodView):
     }
     content_validators = {
         'applicatiom/pdf': lambda buffer: True,
-        'vnd.***ARANGO_DB_NAME***.document/map': lambda buffer: buffer is not None and json.loads(buffer.getvalue()),
+        'vnd.***ARANGO_DB_NAME***.document/map': validate_map_data,
         'vnd.***ARANGO_DB_NAME***.filesystem/directory': lambda buffer: buffer is None,
     }
 

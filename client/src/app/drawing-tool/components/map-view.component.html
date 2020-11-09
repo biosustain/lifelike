@@ -36,9 +36,9 @@
 
           <div class="btn-group mr-2">
             <button type="button" class="btn btn-secondary" container="body"
-                    ngbTooltip="Make map fit on screen" placement="bottom"
+                    ngbTooltip="Fit Map to Window" placement="bottom"
                     (click)="zoomToFit()">
-              Fit to Map
+              <i class="fas fa-expand-arrows-alt"></i>
             </button>
           </div>
 
@@ -49,6 +49,26 @@
             </button>
           </div>
         </div>
+
+        <div class="input-group ml-2" style="width: 300px;">
+          <input [(ngModel)]='entitySearchTerm' (change)='search()' type="text" class="form-control" placeholder="Search" aria-label="Graph search" aria-describedby="graph-search">
+          <div *ngIf='entitySearchList.length' class="input-group-append">
+            <span class="input-group-text" id="increment-btn">
+              {{entitySearchListIdx+1}} of {{entitySearchList.length}}
+            </span>
+          </div>
+          <div class="input-group-append" id="decrement-btn">
+            <button class="btn btn-secondary" type="button" (click)="previous()"
+                    [disabled]="entitySearchList.length == 0">
+              <i class="fa fa-fw fa-chevron-up"></i>
+            </button>
+            <button class="btn btn-secondary" type="button" (click)="next()"
+                    [disabled]="entitySearchList.length == 0">
+              <i class="fa fa-fw fa-chevron-down"></i>
+            </button>
+          </div>
+        </div>
+
       </div>
 
       <div class="flex-fill position-relative overflow-hidden">

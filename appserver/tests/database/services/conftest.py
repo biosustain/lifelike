@@ -72,7 +72,7 @@ def fix_project(fix_owner, fix_directory, session) -> Project:
         description='a test project',
         author='Jim Melancholy',
         modified_date=str(date.today()),
-        graph=json.dumps({'project': 'project 1'}),
+        graph={},
         user_id=fix_owner.id,
         dir_id=fix_directory.id,
     )

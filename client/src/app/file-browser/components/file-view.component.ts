@@ -1,20 +1,19 @@
-import { uniqueId } from 'lodash';
-import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { combineLatest, Subject, Subscription, BehaviorSubject } from 'rxjs';
+import { cloneDeep, uniqueId } from 'lodash';
+import { Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { BehaviorSubject, combineLatest, Subject, Subscription } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { Hyperlink, DatabaseType, AnnotationType } from 'app/shared/constants';
+import { AnnotationType, DatabaseType, Hyperlink } from 'app/shared/constants';
 
 import { PdfAnnotationsService } from '../../drawing-tool/services';
 
-import { cloneDeep } from 'lodash';
+import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import {
-  AddedAnnotationExclsuion,
+  AddedAnnotationExclusion,
   Annotation,
   Location,
   Meta,
   RemovedAnnotationExclusion,
-  UniversalGraphNode,
-} from '../../drawing-tool/services/interfaces';
+} from '../../pdf-viewer/annotation-type';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
@@ -30,6 +29,7 @@ import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
+import { WorkspaceManager } from '../../shared/workspace-manager';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -75,9 +75,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @Output() filterChangeSubject = new Subject<void>();
 
   searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
+  searchQuery = '';
   goToPosition: Subject<Location> = new Subject<Location>();
+  highlightAnnotations: Subject<string> = new Subject<string>();
   loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]>;
   pendingScroll: Location;
+  pendingAnnotationHighlightId: string;
   openPdfSub: Subscription;
   ready = false;
   pdfFile: PdfFile;
@@ -93,17 +96,15 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   sortedEntityTypeEntries: EntityTypeEntry[] = [];
   entityTypeVisibilityChanged = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  addedAnnotationExclusion: AddedAnnotationExclsuion;
+  addedAnnotationExclusion: AddedAnnotationExclusion;
   addAnnotationExclusionSub: Subscription;
   showExcludedAnnotations = false;
   removeAnnotationExclusionSub: Subscription;
   removedAnnotationExclusion: RemovedAnnotationExclusion;
   projectName: string;
 
-  // search
-  pdfQuery;
-
   @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
+  @ViewChild('search', {static: false}) searchElement: ElementRef;
 
   constructor(
     private readonly filesService: PdfFilesService,
@@ -114,6 +115,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     private route: ActivatedRoute,
     private readonly errorHandler: ErrorHandler,
     private readonly progressDialog: ProgressDialog,
+    private readonly workSpaceManager: WorkspaceManager,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
 
@@ -133,6 +135,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
                                                           result: [pdfFile, pdfFileContent, ann],
                                                           value: [file, loc],
                                                         }) => {
+      // Could be an old link that we're loading
+      if ((pdfFile as any).project_name.toLowerCase() !== this.projectName.toLowerCase()) {
+        this.projectName = (pdfFile as any).project_name;
+      }
+
       this.pdfData = {data: new Uint8Array(pdfFileContent)};
       this.annotations = ann;
       this.updateAnnotationIndex();
@@ -152,7 +159,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       const linkedFileId = this.route.snapshot.params.file_id;
       const fragment = this.route.snapshot.fragment || '';
       // TODO: Do proper query string parsing
-      this.openPdf(new DummyFile(linkedFileId), this.parseLocationFromUrl(fragment));
+      this.openPdf(new DummyFile(linkedFileId),
+        this.parseLocationFromUrl(fragment),
+        this.parseHighlightFromUrl(fragment));
     }
   }
 
@@ -276,7 +285,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           },
           err => {
             progressDialogRef.close();
-            this.snackBar.open(`Error: failed to add annotation`, 'Close', {duration: 10000});
           },
         );
     }, () => {
@@ -306,7 +314,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  annotationExclusionAdded(exclusionData: AddedAnnotationExclsuion) {
+  annotationExclusionAdded(exclusionData: AddedAnnotationExclusion) {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
       this.currentFileId, exclusionData, this.projectName,
     )
@@ -314,10 +322,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       .subscribe(
         response => {
           this.addedAnnotationExclusion = exclusionData;
-          this.snackBar.open('Annotation has been excluded', 'Close', {duration: 5000});
+          this.snackBar.open(`${exclusionData.text}: annotation has been excluded`, 'Close', {duration: 10000});
         },
         err => {
-          this.snackBar.open(`Error: failed to exclude annotation`, 'Close', {duration: 10000});
+          this.snackBar.open(`${exclusionData.text}: failed to exclude annotation`, 'Close', {duration: 10000});
         },
       );
   }
@@ -357,20 +365,20 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     const sources = [{
       domain: 'File Source',
-      url: source
+      url: source,
     }];
 
     if (this.pdfFile.doi) {
       sources.push({
         domain: 'DOI',
-        url: this.pdfFile.doi
+        url: this.pdfFile.doi,
       });
     }
 
     if (this.pdfFile.upload_url) {
       sources.push({
         domain: 'Upload URL',
-        url: this.pdfFile.upload_url
+        url: this.pdfFile.upload_url,
       });
     }
 
@@ -383,7 +391,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       };
     });
 
-    const text = meta.type === 'Links' ? 'Link' : meta.allText;
+    const text = meta.type === 'link' ? 'Link' : meta.allText;
 
     const dataTransfer: DataTransfer = event.dataTransfer;
     dataTransfer.setData('text/plain', text);
@@ -405,7 +413,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           domain: 'Annotation URL',
           url: hyperlink,
         }],
-        detail: meta.type === 'Link' ? meta.allText : '',
+        detail: meta.type === 'link' ? meta.allText : '',
+      },
+      style: {
+        showDetail: meta.type === 'link',
       },
     } as Partial<UniversalGraphNode>));
   }
@@ -432,15 +443,20 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
    * Open pdf by file_id along with location to scroll to
    * @param file - represent the pdf to open
    * @param loc - the location of the annotation we want to scroll to
+   * @param annotationHighlightId - the ID of an annotation to highlight, if any
    */
-  openPdf(file: PdfFile, loc: Location = null) {
+  openPdf(file: PdfFile, loc: Location = null, annotationHighlightId: string = null) {
     if (this.currentFileId === file.file_id) {
       if (loc) {
         this.scrollInPdf(loc);
       }
+      if (annotationHighlightId != null) {
+        this.highlightAnnotation(annotationHighlightId);
+      }
       return;
     }
     this.pendingScroll = loc;
+    this.pendingAnnotationHighlightId = annotationHighlightId;
     this.pdfFileLoaded = false;
     this.ready = false;
 
@@ -502,11 +518,34 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.goToPosition.next(loc);
   }
 
+  highlightAnnotation(annotationId: string) {
+    if (!this.pdfFileLoaded) {
+      this.pendingAnnotationHighlightId = annotationId;
+      return;
+    }
+    if (annotationId != null) {
+      for (const annotation of this.annotations) {
+        if (annotation.meta.id === annotationId) {
+          this.entityTypeVisibilityMap.set(annotation.meta.type, true);
+          this.invalidateEntityTypeVisibility();
+          break;
+        }
+      }
+    }
+    this.highlightAnnotations.next(annotationId);
+  }
+
   loadCompleted(status) {
     this.pdfFileLoaded = status;
-    if (this.pdfFileLoaded && this.pendingScroll) {
-      this.scrollInPdf(this.pendingScroll);
-      this.pendingScroll = null;
+    if (this.pdfFileLoaded) {
+      if (this.pendingScroll) {
+        this.scrollInPdf(this.pendingScroll);
+        this.pendingScroll = null;
+      }
+      if (this.pendingAnnotationHighlightId) {
+        this.highlightAnnotation(this.pendingAnnotationHighlightId);
+        this.pendingAnnotationHighlightId = null;
+      }
     }
   }
 
@@ -514,47 +553,66 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.requestClose.emit(null);
   }
 
-  searchQueryChanged(query) {
+  searchQueryChanged() {
+    if (this.searchQuery === '') {
+      this.pdfViewerLib.nullifyMatchesCount();
+    }
     this.searchChanged.next({
-      keyword: query,
+      keyword: this.searchQuery,
       findPrevious: false,
     });
   }
 
-  findNext(query) {
-    this.searchChanged.next({
-      keyword: query,
-      findPrevious: false,
-    });
+  searchQueryChangedFromViewer(keyword: string) {
+    this.searchQuery = keyword;
   }
 
-  findPrevious(query) {
+  findNext() {
+    this.searchQueryChanged();
+  }
+
+  findPrevious() {
     this.searchChanged.next({
-      keyword: query,
+      keyword: this.searchQuery,
       findPrevious: true,
     });
   }
 
+  clearSearchQuery(focus = true) {
+    this.searchQuery = '';
+    this.searchQueryChanged();
+    if (focus) {
+      this.searchElement.nativeElement.focus();
+    }
+  }
+
   displayEditDialog() {
-    const dialogRef = this.modalService.open(FileEditDialogComponent);
-    dialogRef.componentInstance.file = cloneDeep(this.pdfFile);
-    dialogRef.result.then(newFile => {
-      if (newFile) {
-        this.filesService.updateFileMeta(
-          this.projectName,
-          this.pdfFile.file_id,
-          newFile.filename,
-          newFile.description,
-        )
-          .pipe(this.errorHandler.create())
-          .subscribe(() => {
-            this.pdfFile.filename = newFile.filename;
-            this.pdfFile.description = newFile.description;
-            this.emitModuleProperties();
-            this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
-          });
-      }
-    }, () => {
+    this.filesService.getFileFallbackOrganism(
+      this.projectName, this.pdfFile.file_id,
+    ).subscribe(organismTaxId => {
+      const dialogRef = this.modalService.open(FileEditDialogComponent);
+      dialogRef.componentInstance.organism = organismTaxId;
+      dialogRef.componentInstance.file = cloneDeep(this.pdfFile);
+
+      dialogRef.result.then(newFile => {
+        if (newFile) {
+          this.filesService.updateFileMeta(
+            this.projectName,
+            this.pdfFile.file_id,
+            newFile.filename,
+            newFile.organism,
+            newFile.description,
+          )
+            .pipe(this.errorHandler.create())
+            .subscribe(() => {
+              this.pdfFile.filename = newFile.filename;
+              this.pdfFile.description = newFile.description;
+              this.emitModuleProperties();
+              this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
+            });
+        }
+      }, () => {
+      });
     });
   }
 
@@ -566,22 +624,52 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   parseLocationFromUrl(fragment: string): Location | undefined {
-    const pageMatch = fragment.match(/page=([0-9]+)/);
-    const coordMatch = fragment.match(/coords=([0-9.]+),([0-9.]+),([0-9.]+),([0-9.]+)/);
-    return pageMatch != null && coordMatch != null ? {
-      pageNumber: parseInt(pageMatch[1], 10),
-      rect: [
-        parseFloat(coordMatch[1]),
-        parseFloat(coordMatch[2]),
-        parseFloat(coordMatch[3]),
-        parseFloat(coordMatch[4]),
-      ],
-    } : null;
+    let pageMatch;
+    let coordMatch;
+    let jumpMatch;
+    const params = new URLSearchParams(fragment);
+    pageMatch = params.get('page');
+    const coords = params.get('coords');
+    if (coords != null) {
+      coordMatch = coords.split(/,/g);
+    }
+    jumpMatch = params.get('jump');
+    return {
+      pageNumber: pageMatch != null ? parseInt(pageMatch, 10) : null,
+      rect: coordMatch != null ? coordMatch.map(parseFloat) : null,
+      jumpText: jumpMatch,
+    };
+  }
+
+  parseHighlightFromUrl(fragment: string): string | undefined {
+    if (window.URLSearchParams) {
+      const params = new URLSearchParams(fragment);
+      return params.get('annotation');
+    }
+    return null;
   }
 
   displayShareDialog() {
     const modalRef = this.modalService.open(ShareDialogComponent);
     modalRef.componentInstance.url = `${window.location.origin}/projects/`
       + `${this.projectName}/files/${this.currentFileId}?fromWorkspace`;
+  }
+
+  openFileNavigatorPane() {
+    const url = `/file-navigator/${this.projectName}/${this.pdfFile.file_id}`;
+    this.workSpaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
+  }
+
+  isPendingScroll() {
+    return this.pendingScroll != null && this.pendingScroll.pageNumber != null;
+  }
+
+  isPendingJump() {
+    return this.pendingScroll != null && this.pendingScroll.jumpText != null;
+  }
+
+  isPendingPostLoadAction() {
+    return this.isPendingScroll() || this.isPendingJump()
+      || this.pendingAnnotationHighlightId != null;
   }
 }

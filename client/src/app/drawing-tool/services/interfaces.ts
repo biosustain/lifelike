@@ -90,46 +90,6 @@ export interface Reference {
   id: string;
 }
 
-export interface Location {
-  pageNumber: number;
-  rect: Rect;
-}
-
-export interface Links {
-  ncbi?: string;
-  uniprot?: string;
-  wikipedia?: string;
-  google?: string;
-}
-
-export interface Meta {
-  type: string;
-  color: string;
-  id?: string;
-  idType?: string;
-  idHyperlink?: string;
-  isCustom?: boolean;
-  allText?: string;
-  links?: Links;
-  isExcluded?: boolean;
-  exclusionReason?: string;
-  exclusionComment?: string;
-  primaryLink?: string;
-  includeGlobally?: boolean;
-}
-
-export interface Rect {
-  [index: number]: number;
-}
-
-export interface Annotation {
-  pageNumber: number;
-  keywords: string[];
-  rects: Rect[];
-  meta: Meta;
-  uuid?: string;
-}
-
 /**
  * Interface for launching app wit parameters
  */
@@ -163,24 +123,15 @@ export interface KnowledgeMap {
   hash_id?: string;
   /** ID of the user who made the project */
   user_id?: number;
-}
-
-export interface RemovedAnnotationExclusion {
-  type: string;
-  text: string;
-}
-
-export interface AddedAnnotationExclsuion {
-  type: string;
-  text: string;
-  id: string;
-  idHyperlink: string;
-  reason: string;
-  comment: string;
-  rects: Rect[];
-  pageNumber: number;
-  excludeGlobally: boolean;
+  /** Name of the project this map is found in */
+  project_name?: string;
 }
 
 export const MAP_TYPE_ID = 'LifelikeKnowledgeMap/1';
 export const NODE_TYPE_ID = 'LifelikeKnowledgeNode/1';
+
+export const DETAIL_NODE_LABELS = new Set(['note', 'link']);
+
+export function isCommonNodeDisplayName(label: string, displayName: string) {
+  return displayName.toLowerCase() === label.toLowerCase();
+}

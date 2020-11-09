@@ -25,14 +25,20 @@ import { WorkspaceManager } from './shared/workspace-manager';
 import { UnloadConfirmationGuard } from './shared/guards/UnloadConfirmation.guard';
 import { DashboardComponent } from './dashboard.component';
 import { KgImportModule } from './kg-import/kg-import.module';
+import { AppVersionDialogComponent } from './app-version-dialog.component';
+import { FileNavigatorModule } from './file-navigator/file-navigator.module';
 
 @NgModule({
   declarations: [
     AppComponent,
     WorkspaceComponent,
     WorkspaceOutletComponent,
+    AppVersionDialogComponent,
     DashboardComponent,
     KgStatisticsComponent,
+  ],
+  entryComponents: [
+    AppVersionDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -51,6 +57,7 @@ import { KgImportModule } from './kg-import/kg-import.module';
     ChartsModule,
     DrawingToolModule,
     NgbModule,
+    FileNavigatorModule,
   ],
   providers: [
     httpInterceptorProviders,

@@ -22,7 +22,7 @@ import { ProgressDialogComponent } from './components/dialog/progress-dialog.com
 import { TooltipComponent } from './components/tooltip.component';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
-import { FriendlyDateStrPipe, TruncatePipe } from './pipes';
+import { FriendlyDateStrPipe, TruncatePipe, ScrubHtmlPipe } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
 import { OrganismAutocompleteComponent } from './components/organism-autocomplete.component';
 import { SharedSearchService } from './services/shared-search.service';
@@ -48,8 +48,16 @@ import { SourcesComponent } from './components/sources/sources.component';
 import { ModuleErrorComponent } from './components/module-error.component';
 import { ModuleProgressComponent } from './components/module-progress.component';
 import { ShareDialogComponent } from './components/dialog/share-dialog.component';
+import { AnnotationFilterComponent } from './components/annotation-filter/annotation-filter.component';
+import { WordCloudAnnotationFilterComponent } from './components/word-cloud-annotation-filter/word-cloud-annotation-filter.component';
+import { GenericTableComponent } from './components/table/generic-table.component';
+import { HighlightTextComponent } from './components/highlight-text.component';
+import { AddStatusPipe } from './pipes/add-status.pipe';
+import { TermHighlightComponent } from './components/term-highlight.component';
 
 const components = [
+  AnnotationFilterComponent,
+  WordCloudAnnotationFilterComponent,
   MessageDialogComponent,
   ProgressDialogComponent,
   HighlightSnippetComponent,
@@ -78,6 +86,9 @@ const components = [
   ModuleErrorComponent,
   ModuleProgressComponent,
   ShareDialogComponent,
+  GenericTableComponent,
+  HighlightTextComponent,
+  TermHighlightComponent,
 ];
 
 @NgModule({
@@ -106,6 +117,8 @@ const components = [
     TruncatePipe,
     FriendlyDateStrPipe,
     NodeTextStylePipe,
+    ScrubHtmlPipe,
+    AddStatusPipe,
   ],
   providers: [
     SharedNgrxEffects,
@@ -128,9 +141,11 @@ const components = [
     // Components
     ...components,
     TruncatePipe,
+    ScrubHtmlPipe,
     FriendlyDateStrPipe,
     NodeTextStylePipe,
     NgbModule,
+    AddStatusPipe,
   ],
 })
 export class SharedModule {

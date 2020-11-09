@@ -2,15 +2,17 @@ import hashlib
 import os
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import BinaryIO, Optional, List, Dict
 
 import sqlalchemy
-from sqlalchemy import and_, text
+from sqlalchemy import and_, text, event
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.types import TIMESTAMP
 
-from neo4japp.database import db
+from neo4japp.constants import FILE_INDEX_ID
+from neo4japp.database import db, get_elastic_service
 from neo4japp.models import Projects
 from neo4japp.models.common import RDBMSBase, TimestampMixin, RecyclableMixin, FullTimestampMixin, HashIdMixin
 
@@ -84,6 +86,8 @@ class FileContent(RDBMSBase):
         :return: the ID of the file
         """
 
+        content: Optional[bytes]
+        
         if checksum_sha256 is None:
             content = file.read()
             checksum_sha256 = hashlib.sha256(content).digest()
@@ -170,6 +174,15 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     doi = db.Column(db.String(1024), nullable=True)
     upload_url = db.Column(db.String(2048), nullable=True)
     excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
+    fallback_organism_id = db.Column(
+        db.Integer,
+        # CAREFUL do not allow cascade ondelete
+        # fallback organism can be deleted
+        db.ForeignKey('fallback_organism.id'),
+        index=True,
+        nullable=True,
+    )
+    fallback_organism = db.relationship('FallbackOrganism', foreign_keys=fallback_organism_id)
     public = db.Column(db.Boolean, nullable=False, default=False)
     deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
@@ -254,6 +267,48 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
             raise ValueError('new filename would exceed the length of the column')
 
         return new_filename
+
+
+# Files table ORM event listeners
+@event.listens_for(Files, 'after_insert')
+def files_after_insert(mapper, connection, target):
+    "listen for the 'after_insert' event"
+
+    # Add this file as an elasticsearch document
+    elastic_service = get_elastic_service()
+    elastic_service.index_files([target.id])
+
+
+@event.listens_for(Files, 'after_delete')
+def files_after_delete(mapper, connection, target):
+    "listen for the 'after_delete' event"
+
+    # Delete this file from elasticsearch
+    elastic_service = get_elastic_service()
+    elastic_service.delete_documents_with_index(
+        file_ids=[target.file_id],
+        index_id=FILE_INDEX_ID
+    )
+
+
+@event.listens_for(Files, 'after_update')
+def files_after_update(mapper, connection, target):
+    "listen for the 'after_update' event"
+
+    # Update the elasticsearch document for this file
+    elastic_service = get_elastic_service()
+    elastic_service.delete_documents_with_index(
+        file_ids=[target.file_id],
+        index_id=FILE_INDEX_ID
+    )
+    elastic_service.index_files([target.id])
+
+
+class FallbackOrganism(RDBMSBase):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    organism_name = db.Column(db.String(200), nullable=False)
+    organism_synonym = db.Column(db.String(200), nullable=False)
+    organism_taxonomy_id = db.Column(db.String(50), nullable=False)
 
 
 class FileVersion(RDBMSBase, FullTimestampMixin):

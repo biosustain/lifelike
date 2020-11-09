@@ -4,13 +4,14 @@ import logging
 import os
 import click
 import sentry_sdk
-
+from datetime import datetime
 from flask import request
 
 from sqlalchemy import func, MetaData, inspect, Table
 from sqlalchemy.sql.expression import text
 
-from neo4japp.database import db, get_account_service
+from neo4japp.constants import TIMEZONE
+from neo4japp.database import db, get_account_service, get_elastic_service
 from neo4japp.factory import create_app
 from neo4japp.models import (
     AppUser,
@@ -217,9 +218,360 @@ def seed_organism_gene_match_table():
 
 @app.cli.command('seed-elastic')
 def seed_elasticsearch():
-    from neo4japp.services.indexing import index_pdf
-    print('Seeds elasticsearch with PDF indexes')
-    index_pdf.seed_elasticsearch()
+    """Seeds Elastic with all pipelines and indices. Typically should be used when a new Elastic DB
+    is first created, but will also update/re-index the entire database if run later."""
+    return
+    # TODO
+    elastic_service = get_elastic_service()
+    elastic_service.recreate_indices_and_pipelines()
+
+
+@app.cli.command('recreate-elastic-index')
+@click.argument('index_id', nargs=1)
+@click.argument('index_mapping_file', nargs=1)
+def update_or_create_index(index_id, index_mapping_file):
+    """Given an index id and mapping file, creates a new elastic index. If the index already exists,
+    we recreate it and re-index all documents."""
+    elastic_service = get_elastic_service()
+    elastic_service.update_or_create_index(index_id, index_mapping_file)
+
+
+@app.cli.command('reannotate')
+def reannotate_all():
+    """ CAUTION: Master command to reannotate all files
+    in the database. """
+    from neo4japp.blueprints.annotations import annotate
+    from neo4japp.models import Files, FileContent
+    from neo4japp.exceptions import AnnotationError
+    files = db.session.query(
+        Files.id,
+        Files.annotations,
+        Files.custom_annotations,
+        Files.file_id,
+        Files.filename,
+        FileContent.raw_file,
+    ).join(
+        FileContent,
+        FileContent.id == Files.content_id,
+    ).all()
+    updated_files = []
+    for fi in files:
+        try:
+            annotations = annotate(doc=fi)
+        except AnnotationError:
+            logger.info('Failed to annotate: <id:{fi.id}>')
+        else:
+            updated_files.append(annotations)
+    db.session.bulk_update_mappings(Files, updated_files)
+    db.session.commit()
+
+
+@app.cli.command('files2gcp')
+@click.argument('bucket_name', nargs=1)
+@click.argument('project_name', nargs=1)
+@click.argument('username', nargs=1)
+def files2gcp(bucket_name, project_name, username):
+    """ Fetches all the raw PDF files along
+    with some meta data information on the
+    Files and uploads them into Google Cloud
+    Storage. This data can then be used to
+    seed a different database environment.
+
+    Example usage:
+    > flask files2gcp cag-data cag-data testuser
+
+    NOTE: This is meant for an emergency transfer
+    of files to different envrionments.
+
+    NOTE: This may pick up non-pdf files
+    """
+    import json
+    from google.cloud import storage
+    from google.cloud.exceptions import NotFound
+    from sqlalchemy import and_
+    from neo4japp.models import (
+        AppUser,
+        Files,
+        FileContent,
+        Projects,
+    )
+
+    storage_client = storage.Client()
+
+    try:
+        bucket = storage_client.get_bucket(bucket_name)
+    except NotFound:
+        bucket = storage_client.bucket(bucket_name)
+        bucket = storage_client.create_bucket(bucket, location='us')
+        app.logger.info(f'Created Google Cloud Bucket : {bucket_name}')
+
+    with app.app_context():
+        query = db.session.query(
+            Files,
+            FileContent,
+        ).join(
+            Files,
+            Files.content_id == FileContent.id
+        ).join(
+            Projects,
+            Files.project == Projects.id,
+        ).join(
+            AppUser,
+            Files.user_id == AppUser.id,
+        ).filter(
+            and_(
+                Projects.project_name == project_name,
+                AppUser.username == username,
+            )
+        )
+        for fi, fi_content in query.all():
+            if fi.filename.find('.enrichment') > -1:
+                app.logger.info(f'File "{fi.filename}" looks like an enrichment file. Skipping')
+            else:
+                app.logger.info(f'Processing file {fi.filename}...')
+                filename = f"{fi.filename.replace('.pdf', '')}.pdf"
+                blob = bucket.blob(f'raw_file/{filename}')
+                blob.upload_from_string(fi_content.raw_file, 'application/pdf')
+
+                meta_filename = f"{fi.filename.replace('.pdf', '')}.json"
+                meta_blob = bucket.blob(f'meta_data/{meta_filename}')
+                meta_blob.upload_from_string(
+                    json.dumps(fi.to_dict(include=[
+                        'annotations',
+                        'custom_annotations',
+                        'excluded_annotations',
+                        'filename',
+                        'description',
+                        'upload_url'
+                    ])), 'application/json')
+        app.logger.info(f'Finished loading all files')
+
+
+@app.cli.command('bulk-upload')
+@click.argument('gcp_source', nargs=1)
+@click.argument('project_name', nargs=1)
+@click.argument('username', nargs=1)
+def bulk_upload_files(gcp_source, project_name, username):
+    """ Performs a bulk upload of files and annotation from
+    a given Google Storage Bucket.
+
+    Example usage:
+
+    > flask bulk-upload cag-data test admin
+
+    This will:
+        1. create a project called 'cag-data'
+        2. load PDF files from a Google Cloud Storage
+        3. load the corresponding file's 'metadata' such as
+        custom annotations
+        4. modify all references of 'user_id' in the
+        any annotations to the user specified in the CLI
+
+    NOTE: This is meant for an emergency backup. A more
+    robust system should be designed for this or this
+    should be refactored once we have a user facing
+    bulk interface.
+    """
+    import copy
+    import hashlib
+    import uuid
+    import re
+    import io
+    import json
+    from google.cloud import storage
+    from sqlalchemy import and_
+    from sqlalchemy.orm.exc import NoResultFound
+    from neo4japp.services import ProjectsService
+    from neo4japp.models import (
+        AppRole,
+        AppUser,
+        Files,
+        FileContent,
+        Projects,
+        projects_collaborator_role,
+    )
+    import neo4japp.models.files_queries as files_queries
+    from neo4japp.exceptions import AnnotationError
+    from neo4japp.blueprints.files import extract_doi
+    from neo4japp.blueprints.annotations import annotate
+    from pdfminer import high_level
+    from flask import g
+
+    with app.app_context():
+        user = db.session.query(AppUser).filter_by(username=username).one()
+        g.current_user = user
+
+        projects_service = ProjectsService(session=db.session)
+
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(gcp_source)
+
+        project = db.session.query(
+            Projects.id
+        ).filter(
+            Projects.project_name == project_name
+        ).join(
+            projects_collaborator_role,
+            Projects.id == projects_collaborator_role.c.projects_id,
+        ).join(
+            AppUser,
+            AppUser.id == projects_collaborator_role.c.appuser_id,
+        ).join(
+            AppRole,
+            AppRole.id == projects_collaborator_role.c.app_role_id
+        ).filter(
+            and_(
+                AppUser.id == user.id,
+                AppRole.name == 'project-admin',
+            )
+        ).one_or_none()
+
+        if project is None:
+            new_project = Projects(project_name=project_name, description='', users=[user.id])
+            project = projects_service.create_projects(user, new_project)
+
+        ***ARANGO_USERNAME***_dir = projects_service.get_***ARANGO_USERNAME***_dir(project)
+
+        def format_annotations(metadata):
+            """ Swaps the user_ids in the annotations """
+            exclusions = metadata['excludedAnnotations']
+            custom_annotations = metadata['customAnnotations']
+            for excl in exclusions:
+                excl.update({'user_id': user.id})
+            for c in custom_annotations:
+                c.update({'user_id': user.id})
+            return metadata
+
+        def load_file(raw_content, filename, metadata):
+            meta_json = json.loads(metadata)
+            meta_json = format_annotations(meta_json)
+
+            max_fname_length = Files.filename.property.columns[0].type.length
+            if len(filename) > max_fname_length:
+                name, extension = os.path.splitext(filename)
+                if len(extension) > max_fname_length:
+                    extension = '.dat'
+                filename = name[:max(0, max_fname_length - len(extension))] + extension
+            checksum_sha256 = hashlib.sha256(raw_content).digest()
+            try:
+                file_content = db.session.query(
+                    FileContent.id
+                ).filter(
+                    FileContent.checksum_sha256 == checksum_sha256
+                ).one()
+            except NoResultFound:
+                file_content = FileContent(
+                    raw_file=raw_content,
+                    checksum_sha256=checksum_sha256,
+                )
+                db.session.add(file_content)
+                db.session.flush()
+
+            file_id = str(uuid.uuid4())
+            doi = extract_doi(raw_content, file_id, filename)
+            exists = files_queries.filename_exist(
+                filename=filename,
+                directory_id=***ARANGO_USERNAME***_dir.id,
+                project_id=project.id,
+            )
+
+            if exists:
+                app.logger.info(f'Filename {filename} already exists. Failed to load.')
+                return None
+
+            new_file = Files(
+                file_id=file_id,
+                filename=filename,
+                description=meta_json['description'],
+                content_id=file_content.id,
+                user_id=user.id,
+                project=project.id,
+                dir_id=***ARANGO_USERNAME***_dir.id,
+                upload_url=meta_json['uploadUrl'],
+                excluded_annotations=meta_json['excludedAnnotations'],
+                custom_annotations=meta_json['customAnnotations'],
+            )
+            db.session.add(new_file)
+            db.session.commit()
+            return new_file
+
+        new_file_ids = []
+
+        for fi in bucket.list_blobs(prefix='raw_file'):
+            _, filename = fi.name.split('/')
+            metadata = bucket.get_blob(f"meta_data/{filename.replace('.pdf', '.json')}")
+            print(f'Loading file [{filename}]...')
+            raw_content = fi.download_as_bytes()
+            try:
+                new_file = load_file(raw_content, filename, metadata.download_as_bytes())
+                if new_file is not None:
+                    new_file_ids.append(new_file.file_id)
+            except Exception as e:
+                print('Failed to load file: {filename}', str(e))
+                pass
+
+        docs = files_queries.get_all_files_and_content_by_id(
+            file_ids=new_file_ids,
+            project_id=project.id,
+        ).all()
+
+        annotated_files = []
+        for doc in docs:
+            try:
+                annotated_files.append(annotate(doc))
+            except (AnnotationError, Exception):
+                app.logger.info(f'Filename {filename} failed to annotate.')
+
+        db.session.bulk_update_mappings(Files, annotated_files)
+        db.session.commit()
+        print('Done')
+
+
+@app.cli.command('global-annotation')
+@click.argument('filename', nargs=1)
+def seed_global_annotation_list(filename):
+    """
+    TODO: Make generic
+    * This is used as a temporary stop gap
+    to seed some existing data.
+    Seeds the 'global_list' table with
+    a given exclusion/inclusion list """
+    from neo4japp.models import FileContent, GlobalList
+    FIXTURE_PATH = './fixtures'
+    # Randomly choose a file to associate with.
+    # Make the file_id column nullable if we
+    # don't use it, or refactor this function
+    # to use a "meaningful" file_id
+    random_file_id = 0
+    with open(os.path.join(FIXTURE_PATH, filename)) as fi:
+        fix = json.load(fi)
+        inclusions = fix['inclusions']
+        exclusions = fix['exclusions']
+        current_time = datetime.now(TIMEZONE)
+        for new_incl in inclusions:
+            gl = GlobalList(
+                annotation=new_incl,
+                type='inclusion',
+                file_id=random_file_id,
+                reviewed=False,
+                approved=False,
+                creation_date=new_incl.get('inclusion_date', current_time),
+                modified_date=new_incl.get('inclusion_date', current_time),
+            )
+            db.session.add(gl)
+        for new_excl in exclusions:
+            gl = GlobalList(
+                annotation=new_excl,
+                type='exclusion',
+                file_id=random_file_id,
+                reviewed=False,
+                approved=False,
+                creation_date=new_incl.get('exclusion_date', current_time),
+                modified_date=new_incl.get('exclusion_date', current_time),
+            )
+            db.session.add(gl)
+        db.session.commit()
+    print('Completed seeding global inclusion/exclusion list')
 
 
 @app.cli.command('fix-projects')
