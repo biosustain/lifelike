@@ -4,6 +4,10 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from neo4japp.util import CamelDictMixin
 
+# TODO: ADD MARSHMALLOW SCHEMAS TO DESERIALIZE
+#
+from marshmallow_annotations.ext.attrs import AttrsSchema
+
 
 @attr.s(frozen=True)
 class AnnotationRequest(CamelDictMixin):
@@ -13,7 +17,13 @@ class AnnotationRequest(CamelDictMixin):
 
 
 @attr.s(frozen=False)
-class PDFChar():
+class PDFBase():
+    def to_dict(self):
+        return attr.asdict(self)
+
+
+@attr.s(frozen=False)
+class PDFChar(PDFBase):
     text: str = attr.ib()
     height: float = attr.ib()
     width: float = attr.ib()
@@ -21,26 +31,48 @@ class PDFChar():
     y0: float = attr.ib()
     x1: float = attr.ib()
     y1: float = attr.ib()
-    lower_cropbox: Optional[int] = attr.ib(default=None)
-    upper_cropbox: Optional[int] = attr.ib(default=None)
-    # min_idx_in_page: Optional[Dict[int, int]] = attr.ib(default=None)
-    # TODO: figure out a better way
-    # attr transforms the Dict[int, int] into Dict[str, int] with asdict()
-    min_idx_in_page: Optional[str] = attr.ib(default=None)
+    page_number: int = attr.ib()
+    cropbox: Tuple[int, int] = attr.ib()
     space: bool = attr.ib(default=False)
 
-    def to_dict(self):
-        return attr.asdict(self)
+
+@attr.s(frozen=False)
+class PDFMeta(PDFBase):
+    coordinates: List[List[float]] = attr.ib(default=attr.Factory(list))
+    heights: List[float] = attr.ib(default=attr.Factory(list))
+    widths: List[float] = attr.ib(default=attr.Factory(list))
 
 
 @attr.s(frozen=True)
-class PDFParsedCharacters():
-    chars_in_pdf: List[str] = attr.ib()
-    char_coord_objs_in_pdf: List[PDFChar] = attr.ib()
-    cropbox_in_pdf: Tuple[int, int] = attr.ib()
-    min_idx_in_page: Dict[int, int] = attr.ib()
+class PDFWord(PDFBase):
+    keyword: str = attr.ib()
+    normalized_keyword: str = attr.ib()
+    page_number: int = attr.ib()
+    cropbox: Tuple[int, int] = attr.ib()
+    meta: PDFMeta = attr.ib()
+    # used to determine abbreviations
+    open_parenthesis: bool = attr.ib()
+    close_parenthesis: bool = attr.ib()
+    previous_words: str = attr.ib()
+    # used with NLP because it returns the type
+    token_type: Optional[str] = attr.ib(default='')
 
 
+@attr.s(frozen=True)
+class PDFParsedContent(PDFBase):
+    words: List[PDFWord] = attr.ib()
+    # characters: List[PDFChar] = attr.ib()
+
+
+# @attr.s(frozen=True)
+# class PDFParsedCharacters():
+#     chars_in_pdf: List[str] = attr.ib()
+#     char_coord_objs_in_pdf: List[PDFChar] = attr.ib()
+#     cropbox_in_pdf: Tuple[int, int] = attr.ib()
+#     min_idx_in_page: Dict[int, int] = attr.ib()
+
+
+# TODO: OLD REMOVE ONCE DONE WITH REFACTOR
 @attr.s(frozen=True)
 class PDFTokenPositions():
     page_number: int = attr.ib()
@@ -51,6 +83,7 @@ class PDFTokenPositions():
     token_type: Optional[str] = attr.ib(default='')
 
 
+# TODO: OLD REMOVE ONCE DONE WITH REFACTOR
 @attr.s(frozen=True)
 class PDFTokenPositionsList():
     token_positions: Any = attr.ib()
@@ -58,6 +91,15 @@ class PDFTokenPositionsList():
     cropbox_in_pdf: Tuple[int, int] = attr.ib()
     min_idx_in_page: Dict[int, int] = attr.ib()
     word_index_dict: Dict[int, str] = attr.ib(default=attr.Factory(list))
+
+
+@attr.s(frozen=True)
+class PDFTokensList():
+    tokens: Any = attr.ib()
+    # char_coord_objs_in_pdf: List[PDFChar] = attr.ib()
+    # cropbox_in_pdf: Tuple[int, int] = attr.ib()
+    # min_idx_in_page: Dict[int, int] = attr.ib()
+    # word_index_dict: Dict[int, str] = attr.ib(default=attr.Factory(list))
 
 
 # IMPORTANT NOTE/TODO: JIRA LL-465
