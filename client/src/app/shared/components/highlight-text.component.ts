@@ -102,7 +102,7 @@ export class HighlightTextComponent {
       });
 
       text = meta.allText;
-      hyperlink = meta.idHyperlink || meta.primaryLink || '';
+      hyperlink = meta.idHyperlink || '';
     }
 
     text = typeId === 'link' ? 'Link' : text;

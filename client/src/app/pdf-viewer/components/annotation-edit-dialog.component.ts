@@ -64,13 +64,6 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
       links[domain] = value || this.substituteLink(this.linkTemplates[i].url, text);
     });
 
-    let primaryLink = '';
-    for (const link of this.form.value.links) {
-      if (link.length) {
-        primaryLink = link;
-      }
-    }
-
     return {
       pageNumber: this.pageNumber,
       keywords: this.keywords.map(keyword => keyword.trim()),
@@ -86,7 +79,6 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         links,
         isCustom: true,
         allText: text,
-        primaryLink,
         includeGlobally: this.form.value.includeGlobally,
         isCaseInsensitive: !(this.caseSensitiveTypes.includes(this.form.value.entityType)),
       },

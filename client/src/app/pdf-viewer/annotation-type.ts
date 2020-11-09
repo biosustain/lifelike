@@ -23,7 +23,6 @@ export interface Meta {
   isExcluded?: boolean;
   exclusionReason?: string;
   exclusionComment?: string;
-  primaryLink?: string;
   includeGlobally?: boolean;
   isCaseInsensitive?: boolean;
 }
