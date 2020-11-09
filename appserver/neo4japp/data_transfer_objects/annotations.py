@@ -131,6 +131,7 @@ class EntityResults(CamelDictMixin):
     matched_type_phenotype: Dict[str, LMDBMatch] = attr.ib()
     matched_type_protein: Dict[str, LMDBMatch] = attr.ib()
     matched_type_species: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_species_local: Dict[str, LMDBMatch] = attr.ib()
     # non LMDB entity types
     matched_type_company: Dict[str, LMDBMatch] = attr.ib()
     matched_type_entity: Dict[str, LMDBMatch] = attr.ib()
