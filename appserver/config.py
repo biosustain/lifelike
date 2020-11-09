@@ -8,6 +8,8 @@ class Base():
     # Optional for tracking the master branch for the build
     GITHUB_HASH = os.environ.get('GITHUB_HASH', 'undefined')
     GITHUB_LAST_COMMIT_TIMESTAMP = os.environ.get('GITHUB_COMMIT_TIMESTAMP', 'undefined')
+    APP_BUILD_NUMBER = os.environ.get('APP_BUILD_NUMBER', 'undefined')
+    APP_VERSION = os.environ.get('APP_VERSION', 'undefined')
 
     SECRET_KEY = os.environ.get('SECRET_KEY', 'secrets')
 
@@ -38,6 +40,12 @@ class Development(Base):
     ASSETS_DEBUG = True
     WTF_CSRF_ENABLED = False
     DOMAIN = 'http://localhost'
+
+
+class QA(Base):
+    """ QA configuration """
+    SITE_NAME = 'Lifelike Knowledge Search (QA)'
+    DOMAIN = 'https://qa.lifelike.bio'
 
 
 class Staging(Base):

@@ -1,9 +1,11 @@
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Tuple
 
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import Session
 
+from neo4japp.database import db, get_authorization_service
 from neo4japp.exceptions import (
     NameUnavailableError,
 )
@@ -14,6 +16,7 @@ from neo4japp.models import (
     projects_collaborator_role,
 )
 from neo4japp.services.common import RDBMSBaseDao
+from neo4japp.util import AttrDict
 
 
 class ProjectsService(RDBMSBaseDao):
@@ -21,25 +24,33 @@ class ProjectsService(RDBMSBaseDao):
     def __init__(self, session: Session):
         super().__init__(session)
 
-    def projects_users_have_access_2(self, user: AppUser) -> Sequence[Projects]:
+    def get_accessible_projects(self, user: AppUser, filter=None) -> Sequence[Projects]:
         """ Return list a of projects that user either has collab rights to
             or owns it
         """
-        proj_collab_roles = self.session.execute(
-            projects_collaborator_role.select().where(
-                and_(
-                    projects_collaborator_role.c.appuser_id == user.id,
-                )
-            )
-        ).fetchall()
 
-        projects = []
-        for p_c_r in proj_collab_roles:
-            user_id, role_id, proj_id = p_c_r
-            proj = Projects.query.get(proj_id)
-            projects.append(proj)
+        t_role = aliased(AppRole)
+        t_user = aliased(AppUser)
 
-        return projects
+        project_role_sq = db.session.query(projects_collaborator_role, t_role.name) \
+            .join(t_role, t_role.id == projects_collaborator_role.c.app_role_id) \
+            .join(t_user, t_user.id == projects_collaborator_role.c.appuser_id) \
+            .subquery()
+
+        query = db.session.query(Projects) \
+            .outerjoin(project_role_sq,
+                       and_(project_role_sq.c.projects_id == Projects.id,
+                            project_role_sq.c.appuser_id == user.id,
+                            project_role_sq.c.name.in_(
+                                ['project-read', 'project-write', 'project-admin'])))
+
+        if filter:
+            query = query.filter(filter)
+
+        if not get_authorization_service().has_role(user, 'private-data-access'):
+            query = query.filter(project_role_sq.c.name.isnot(None))
+
+        return query.all()
 
     def create_projects(self, user: AppUser, projects: Projects) -> Projects:
         try:

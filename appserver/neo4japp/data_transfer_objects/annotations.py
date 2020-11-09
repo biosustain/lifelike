@@ -11,6 +11,7 @@ from neo4japp.util import CamelDictMixin
 class AnnotationRequest(CamelDictMixin):
     annotation_method: str = attr.ib()
     file_ids: List[str] = attr.ib(default=attr.Factory(list))
+    organism: dict = attr.ib(default=attr.Factory(dict))
 
 
 @attr.s(frozen=True)
@@ -25,6 +26,7 @@ class PDFParsedCharacters(CamelDictMixin):
 class PDFTokenPositions(CamelDictMixin):
     page_number: int = attr.ib()
     keyword: str = attr.ib()
+    normalized_keyword: str = attr.ib()
     char_positions: Dict[int, str] = attr.ib()
     # used in NLP because it returns the type
     token_type: Optional[str] = attr.ib(default='')
@@ -36,6 +38,7 @@ class PDFTokenPositionsList(CamelDictMixin):
     char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
     cropbox_in_pdf: Tuple[int, int] = attr.ib()
     min_idx_in_page: Dict[int, int] = attr.ib()
+    word_index_dict: Dict[int, str] = attr.ib(default=attr.Factory(list))
 
 
 # IMPORTANT NOTE/TODO: JIRA LL-465
@@ -57,6 +60,9 @@ class Annotation(CamelDictMixin):
         class Links(CamelDictMixin):
             ncbi: str = attr.ib(default='')
             uniprot: str = attr.ib(default='')
+            mesh: str = attr.ib(default='')
+            chebi: str = attr.ib(default='')
+            pubchem: str = attr.ib(default='')
             wikipedia: str = attr.ib(default='')
             google: str = attr.ib(default='')
 
@@ -112,3 +118,44 @@ class GeneAnnotation(Annotation):
 class LMDBMatch(CamelDictMixin):
     entities: List[dict] = attr.ib()
     tokens: List[PDFTokenPositions] = attr.ib()
+
+
+@attr.s(frozen=True)
+class EntityResults(CamelDictMixin):
+    matched_type_anatomy: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_chemical: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_compound: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_disease: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_food: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_gene: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_phenotype: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_protein: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_species: Dict[str, LMDBMatch] = attr.ib()
+    # non LMDB entity types
+    matched_type_company: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_entity: Dict[str, LMDBMatch] = attr.ib()
+
+
+@attr.s(frozen=True)
+class SpecifiedOrganismStrain(CamelDictMixin):
+    synonym: str = attr.ib()
+    organism_id: str = attr.ib()
+    category: str = attr.ib()
+
+
+@attr.s(frozen=True)
+class GlobalAnnotationData():
+    file_id: str = attr.ib()
+    filename: str = attr.ib()
+    user_email: str = attr.ib()
+    id: int = attr.ib()
+    type: str = attr.ib()
+    reviewed: bool = attr.ib()
+    approved: bool = attr.ib()
+    creation_date: str = attr.ib()
+    modified_date: str = attr.ib()
+    text: str = attr.ib()
+    reason: str = attr.ib()
+    entity_type: str = attr.ib()
+    annotation_id: str = attr.ib()
+    comment: str = attr.ib()

@@ -2,10 +2,12 @@ import * as d3 from 'd3';
 import { GraphView } from '../graph-view';
 import {
   GraphEntity,
-  GraphEntityType, UniversalEdgeStyle,
+  GraphEntityType,
+  UniversalEdgeStyle,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
+  UniversalGraphEntity,
 } from 'app/drawing-tool/services/interfaces';
 import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode } from 'app/graph-viewer/styles/styles';
 import { debounceTime, throttleTime } from 'rxjs/operators';
@@ -406,6 +408,89 @@ export class CanvasGraphView extends GraphView {
     this.applyZoomToFit(duration, padding);
   }
 
+  panToEntity(e: GraphEntity, duration: number = 1500, padding = 50) {
+    this.previousZoomToFitTime = window.performance.now();
+
+    this.searchFocus.replace([e]);
+
+    if (e.type === GraphEntityType.Edge) {
+      // Pan to edge
+      this.applyPanToEdge(e.entity as UniversalGraphEdge, duration, padding);
+    } else {
+      // Pan to node
+      this.applyPanToNode(e.entity as UniversalGraphNode, duration, padding);
+    }
+  }
+
+  private applyPanToEdge(
+    edge: UniversalGraphEdge,
+    duration: number = 1500,
+    padding = 50
+  ) {
+    this.previousZoomToFitPadding = padding;
+
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+
+    let select = d3.select(this.canvas);
+
+    // Calling transition() causes a delay even if duration = 0
+    if (duration > 0) {
+      select = select.transition().duration(duration);
+    }
+
+    const from: UniversalGraphNode = this.nodeHashMap.get(edge.from);
+    const to: UniversalGraphNode = this.nodeHashMap.get(edge.to);
+
+    const {minX, minY, maxX, maxY} = this.getEdgeBoundingBox([edge], padding);
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    select.call(
+      this.zoom.transform,
+      d3.zoomIdentity
+        // move to center of canvas
+        .translate(canvasWidth / 2, canvasHeight / 2)
+        .scale(Math.max(1, Math.min(canvasWidth / width, canvasHeight / height)))
+        // move to the midpoint of the edge
+        .translate(
+          -((from.data.x + to.data.x) / 2),
+          -((from.data.y + to.data.y) / 2)
+        ),
+    );
+
+    this.invalidateAll();
+    this.requestRender();
+  }
+
+  private applyPanToNode(node: UniversalGraphNode, duration: number = 1500, padding = 50) {
+    this.previousZoomToFitPadding = padding;
+
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+
+    let select = d3.select(this.canvas);
+
+    // Calling transition() causes a delay even if duration = 0
+    if (duration > 0) {
+      select = select.transition().duration(duration);
+    }
+
+    select.call(
+      this.zoom.transform,
+      d3.zoomIdentity
+        // move to center of canvas
+        .translate(canvasWidth / 2, canvasHeight / 2)
+        .scale(2)
+        .translate(-node.data.x, -node.data.y),
+    );
+
+    this.invalidateAll();
+    this.requestRender();
+  }
+
+
   /**
    * The real zoom-to-fit.
    */
@@ -580,10 +665,13 @@ export class CanvasGraphView extends GraphView {
     const ctx = this.canvas.getContext('2d');
 
     yield* this.drawTouchPosition(ctx);
+    yield* this.drawHighlightBackground(ctx);
     yield* this.drawSelectionBackground(ctx);
+    yield* this.drawSearchHighlightBackground(ctx);
     yield* this.drawLayoutGroups(ctx);
     yield* this.drawEdges(ctx);
     yield* this.drawNodes(ctx);
+    yield* this.drawSearchFocusBackground(ctx);
     yield* this.drawActiveBehaviors(ctx);
   }
 
@@ -597,7 +685,7 @@ export class CanvasGraphView extends GraphView {
       // Either we highlight the 'touched entity' if we have one (because the user just
       // touched one), otherwise we draw something at the mouse coordinates
       if (touchPositionEntity != null) {
-        this.drawEntityHighlight(ctx, touchPositionEntity);
+        this.drawEntityBackground(ctx, touchPositionEntity, 'rgba(0, 0, 0, 0.075)');
       } else {
         ctx.beginPath();
         ctx.arc(this.touchPosition.position.x, this.touchPosition.position.y, 20 * noZoomScale, 0, 2 * Math.PI, false);
@@ -607,12 +695,52 @@ export class CanvasGraphView extends GraphView {
     }
   }
 
+  private* drawHighlightBackground(ctx: CanvasRenderingContext2D) {
+    yield null;
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'overlay';
+    const highlighted = this.highlighting.get();
+    for (const highlightedEntity of highlighted) {
+      this.drawEntityBackground(ctx, highlightedEntity, 'rgba(254, 234, 0, 0.3)');
+    }
+    ctx.restore();
+  }
+
   private* drawSelectionBackground(ctx: CanvasRenderingContext2D) {
     yield null;
 
     const selected = this.selection.get();
     for (const selectedEntity of selected) {
-      this.drawEntityHighlight(ctx, selectedEntity);
+      this.drawEntityBackground(ctx, selectedEntity, 'rgba(0, 0, 0, 0.075)');
+    }
+  }
+
+  private* drawSearchHighlightBackground(ctx: CanvasRenderingContext2D) {
+    yield null;
+
+    if (!this.touchPosition) {
+      const highlighted = this.searchHighlighting.get();
+      for (const highlightedEntity of highlighted) {
+        this.drawEntityBackground(ctx, highlightedEntity, 'rgba(254, 234, 0, 0.3)');
+      }
+    }
+  }
+
+  private* drawSearchFocusBackground(ctx: CanvasRenderingContext2D) {
+    yield null;
+
+    if (!this.touchPosition) {
+      const focus = this.searchFocus.get();
+      for (const focusEntity of focus) {
+        ctx.beginPath();
+        const bbox = this.getEntityBoundingBox([focusEntity], 10);
+        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+        ctx.strokeStyle = 'rgba(255, 0, 0, 255)';
+        ctx.lineWidth = 1;
+        ctx.lineCap = 'butt';
+        ctx.stroke();
+      }
     }
   }
 
@@ -687,9 +815,10 @@ export class CanvasGraphView extends GraphView {
   }
 
   /**
-   * Draw a highlight around the entity.
+   * Draw a selection around the entity.
    */
-  private drawEntityHighlight(ctx: CanvasRenderingContext2D, entity: GraphEntity) {
+  private drawEntityBackground(ctx: CanvasRenderingContext2D, entity: GraphEntity,
+                               fillColor: string) {
     if (entity.type === GraphEntityType.Edge) {
       const d = entity.entity as UniversalGraphEdge;
       const from = this.expectNodeByHash(d.from);
@@ -713,7 +842,7 @@ export class CanvasGraphView extends GraphView {
           x: toX,
           y: toY,
         },
-        stroke: new SolidLine(lineWidth, 'rgba(0, 0, 0, 0.075)', {
+        stroke: new SolidLine(lineWidth, fillColor, {
           lineCap: 'square',
         }),
         forceHighDetailLevel: true,
@@ -722,7 +851,7 @@ export class CanvasGraphView extends GraphView {
       ctx.beginPath();
       const bbox = this.getEntityBoundingBox([entity], 10);
       ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.075)';
+      ctx.fillStyle = fillColor;
       ctx.fill();
     }
   }

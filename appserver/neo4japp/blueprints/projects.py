@@ -1,18 +1,20 @@
 import re
-
 from flask import (
     current_app,
     request,
     jsonify,
     Blueprint,
     g,
+    abort,
 )
-
+from sqlalchemy import and_
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_role, requires_project_permission
 from neo4japp.database import db, get_projects_service
 from neo4japp.exceptions import (
+    DirectoryError,
     DuplicateRecord,
+    InvalidDirectoryNameException,
     RecordNotFoundException,
     NotAuthorizedException,
     NameUnavailableError,
@@ -21,9 +23,11 @@ from neo4japp.models import (
     AccessActionType,
     AppRole,
     AppUser,
+    Files,
     Projects,
     projects_collaborator_role,
 )
+from neo4japp.util import jsonify_with_class, SuccessResponse, CasePreservedDict
 from neo4japp.utils.logger import UserEventLog
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
@@ -32,19 +36,20 @@ bp = Blueprint('projects', __name__, url_prefix='/projects')
 @bp.route('/<name>', methods=['GET'])
 @auth.login_required
 def get_project(name):
-    # TODO: Add permission checks here
     user = g.current_user
-    projects = Projects.query.filter(Projects.project_name == name).one_or_none()
-    if projects is None:
+    proj_service = get_projects_service()
+    projects_list = proj_service.get_accessible_projects(user, Projects.project_name == name)
+    if not len(projects_list):
         raise RecordNotFoundException(f'Project {name} not found')
+    project = projects_list[0]
 
     # Pull up directory id for project
     proj_service = get_projects_service()
-    dir = proj_service.get_root_dir(projects)
+    dir = proj_service.get_root_dir(project)
 
     # Combine both dictionaries
     results = {
-        **projects.to_dict(),
+        **project.to_dict(),
         "directory": dir.to_dict()
     }
     return jsonify({'results': results}), 200
@@ -53,11 +58,10 @@ def get_project(name):
 @bp.route('/', methods=['GET'])
 @auth.login_required
 def get_projects():
-    # TODO: Add permission checks here
     user = g.current_user
 
     proj_service = get_projects_service()
-    projects_list = proj_service.projects_users_have_access_2(user)
+    projects_list = proj_service.get_accessible_projects(user)
     return jsonify({'results': [p.to_dict() for p in projects_list]}), 200
 
 

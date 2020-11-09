@@ -1,30 +1,37 @@
-import io
 import os
+
+import sqlalchemy as sa
+from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-from flask import Blueprint, current_app, g, make_response
-from werkzeug.datastructures import FileStorage
+from flask import (
+    Blueprint,
+    current_app,
+    g,
+    make_response,
+    request,
+    jsonify,
+)
 
-import neo4japp.models.files_queries as files_queries
+from flask_apispec import use_kwargs
+
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import (
     requires_role,
     requires_project_permission
 )
 from neo4japp.constants import TIMEZONE
-from neo4japp.data_transfer_objects import AnnotationRequest
 from neo4japp.database import (
     db,
     get_annotation_neo4j,
-    get_annotations_service,
-    get_annotations_pdf_parser,
-    get_bioc_document_service,
     get_excel_export_service,
-    get_lmdb_dao,
     get_manual_annotations_service,
 )
+from neo4japp.data_transfer_objects import AnnotationRequest, GlobalAnnotationData
+from neo4japp.data_transfer_objects.common import ResultList
+from neo4japp.request_schemas.annotations import GlobalAnnotationsDeleteSchema
 from neo4japp.exceptions import (
     AnnotationError,
     RecordNotFoundException
@@ -32,69 +39,92 @@ from neo4japp.exceptions import (
 from neo4japp.models import (
     AccessActionType,
     AppUser,
+    Files,
+    FileContent,
     GlobalList,
     Projects,
-    Files,
+    FallbackOrganism
 )
+import neo4japp.models.files_queries as files_queries
 from neo4japp.services.annotations.constants import (
     AnnotationMethod,
     EntityType,
     ManualAnnotationType,
 )
-from neo4japp.util import jsonify_with_class, SuccessResponse
+from neo4japp.services.annotations.service_helpers import create_annotations
+from neo4japp.util import (
+    CasePreservedDict,
+    jsonify_with_class,
+    SuccessResponse,
+)
+from neo4japp.utils.request import paginate_from_args
+from neo4japp.utils.logger import UserEventLog
+
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 
 def annotate(
-        doc: Files,
-        annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
+    doc: Files,
+    specified_organism: Optional[FallbackOrganism] = None,
+    annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
 ):
-    lmdb_dao = get_lmdb_dao()
-    pdf_parser = get_annotations_pdf_parser()
-    annotator = get_annotations_service(lmdb_dao=lmdb_dao)
-    bioc_service = get_bioc_document_service()
-
-    fp = FileStorage(io.BytesIO(doc.raw_file), doc.filename)
-
-    try:
-        parsed_pdf_chars = pdf_parser.parse_pdf(pdf=fp)
-        fp.close()
-    except AnnotationError:
-        raise AnnotationError(
-            'Your file could not be imported. Please check if it is a valid PDF.'
-            'If it is a valid PDF, please try uploading again.')
-
-    tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
-    pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed_pdf_chars)
-
-    if annotation_method == AnnotationMethod.RULES.value:
-        annotations = annotator.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=doc.custom_annotations,
-        )
-    elif annotation_method == AnnotationMethod.NLP.value:
-        # NLP
-        annotations = annotator.create_nlp_annotations(
-            page_index=parsed_pdf_chars.min_idx_in_page,
-            text=pdf_text,
-            tokens=tokens,
-            custom_annotations=doc.custom_annotations,
-        )
-    else:
-        raise AnnotationError(f'Your file {doc.filename} could not be annotated.')
-    bioc = bioc_service.read(text=pdf_text, file_uri=doc.filename)
-    annotations_json = bioc_service.generate_bioc_json(
-        annotations=annotations, bioc=bioc)
+    annotations_json = create_annotations(
+        annotation_method=annotation_method,
+        specified_organism_synonym=specified_organism.organism_synonym if specified_organism else '',  # noqa
+        specified_organism_tax_id=specified_organism.organism_taxonomy_id if specified_organism else '',  # noqa
+        document=doc,
+        filename=doc.filename
+    )
 
     current_app.logger.debug(
         f'File successfully annotated: {doc.file_id}, {doc.filename}')
 
-    return {
+    update = {
         'id': doc.id,
         'annotations': annotations_json,
         'annotations_date': datetime.now(TIMEZONE),
     }
+
+    if specified_organism:
+        update['fallback_organism'] = specified_organism
+        update['fallback_organism_id'] = specified_organism.id
+    return update
+
+
+@bp.route('/<string:project_name>', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_all_annotations_from_project(project_name):
+    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+    if project is None:
+        raise RecordNotFoundException(f'Project {project_name} not found')
+    user = g.current_user
+    yield user, project
+    annotation_service = get_manual_annotations_service()
+    combined_annotations = annotation_service.get_combined_annotations_in_project(project.id)
+    distinct_annotations = {}
+    for annotation in combined_annotations:
+        annotation_data = (
+            annotation['meta']['id'],
+            annotation['meta']['type'],
+            annotation['meta']['allText'],
+        )
+        if distinct_annotations.get(annotation_data, None) is not None:
+            distinct_annotations[annotation_data] += 1
+        else:
+            distinct_annotations[annotation_data] = 1
+    sorted_distintct_annotations = sorted(
+        distinct_annotations,
+        key=lambda annotation: distinct_annotations[annotation],
+        reverse=True,
+    )
+    result = 'entity_id\ttype\ttext\tcount\n'
+    for annotation_data in sorted_distintct_annotations:
+        result += f"{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t{distinct_annotations[annotation_data]}\n"  # noqa
+    response = make_response(result)
+    response.headers['Content-Type'] = 'text/tsv'
+    yield response
 
 
 @bp.route('/<string:project_name>/<string:file_id>', methods=['POST'])
@@ -115,11 +145,22 @@ def annotate_file(req: AnnotationRequest, project_name: str, file_id: str):
     if not doc:
         raise RecordNotFoundException(f'File with file id {file_id} not found.')
 
+    fallback = None
+    if req.organism:
+        fallback = FallbackOrganism(
+            organism_name=req.organism['organism_name'],
+            organism_synonym=req.organism['synonym'],
+            organism_taxonomy_id=req.organism['tax_id']
+        )
+        db.session.add(fallback)
+        db.session.flush()
+
     annotated: List[dict] = []
     annotated.append(
         annotate(
             doc=doc,
             annotation_method=req.annotation_method,
+            specified_organism=fallback
         )
     )
 
@@ -165,7 +206,9 @@ def reannotate(req: AnnotationRequest, project_name: str):
 
     for f in files:
         try:
-            annotations = annotate(doc=f)
+            annotations = annotate(
+                doc=f,
+                specified_organism=FallbackOrganism.query.get(f.fallback_organism_id))
         except AnnotationError as e:
             current_app.logger.error(
                 'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
@@ -196,11 +239,6 @@ def export_global_inclusions():
     def get_inclusion_for_review(inclusion):
         user = AppUser.query.filter_by(id=inclusion.annotation['user_id']).one_or_none()
         username = f'{user.first_name} {user.last_name}' if user is not None else 'not found'
-        hyperlink = 'not found'
-
-        if inclusion.file_id is not None:
-            domain = os.environ.get('DOMAIN')
-            hyperlink = f'{domain}/api/files/download/{inclusion.file_id}'
 
         missing_data = any([
             inclusion.annotation['meta'].get('id', None) is None,
@@ -219,7 +257,6 @@ def export_global_inclusions():
             'primary_link': inclusion.annotation['meta'].get('primaryLink', ''),
             'inclusion_date': inclusion.annotation.get('inclusion_date', ''),
             'user': username,
-            'hyperlink': hyperlink
         }
 
     data = [get_inclusion_for_review(inclusion) for inclusion in inclusions]
@@ -246,11 +283,6 @@ def export_global_exclusions():
     def get_exclusion_for_review(exclusion):
         user = AppUser.query.filter_by(id=exclusion.annotation['user_id']).one_or_none()
         username = f'{user.first_name} {user.last_name}' if user is not None else 'not found'
-        hyperlink = 'not found'
-
-        if exclusion.file_id is not None:
-            domain = os.environ.get('DOMAIN')
-            hyperlink = f'{domain}/api/files/download/{exclusion.file_id}'
 
         missing_data = any([
             exclusion.annotation.get('text', None) is None,
@@ -271,7 +303,6 @@ def export_global_exclusions():
             'comment': exclusion.annotation['comment'],
             'exclusion_date': exclusion.annotation['exclusion_date'],
             'user': username,
-            'hyperlink': hyperlink
         }
 
     data = [get_exclusion_for_review(exclusion) for exclusion in exclusions]
@@ -284,7 +315,122 @@ def export_global_exclusions():
     yield response
 
 
-@bp.route('/<string:project_name>/<string:file_id>')
+@bp.route('/global-list', methods=['GET'])
+@auth.login_required
+@requires_role('admin')
+def get_annotations():
+
+    yield g.current_user
+
+    # Exclusions
+    query_1 = db.session.query(
+        FileContent.id,
+        sa.sql.null().label('filename'),  # TODO: Subquery to get all linked files or download link?
+        AppUser.email,
+        GlobalList.id,
+        GlobalList.type,
+        GlobalList.reviewed,
+        GlobalList.approved,
+        GlobalList.creation_date,
+        GlobalList.modified_date,
+        GlobalList.annotation['text'].astext.label('text'),
+        GlobalList.annotation['reason'].astext.label('reason'),
+        GlobalList.annotation['type'].astext.label('entityType'),
+        GlobalList.annotation['id'].astext.label('annotationId'),
+        GlobalList.annotation['comment'].astext.label('comment')
+    ).outerjoin(
+        AppUser,
+        AppUser.id == GlobalList.annotation['user_id'].as_integer()
+    ).outerjoin(
+        FileContent,
+        FileContent.id == GlobalList.file_id
+    ).filter(
+        GlobalList.type == ManualAnnotationType.EXCLUSION.value
+    )
+    # Inclusions
+    query_2 = db.session.query(
+        FileContent.id,
+        sa.sql.null().label('filename'),  # TODO: Subquery to get all linked files or download link?
+        AppUser.email,
+        GlobalList.id,
+        GlobalList.type,
+        GlobalList.reviewed,
+        GlobalList.approved,
+        GlobalList.creation_date,
+        GlobalList.modified_date,
+        GlobalList.annotation['meta']['allText'].astext.label('text'),
+        sa.sql.null().label('reason'),
+        GlobalList.annotation['meta']['type'].astext.label('entityType'),
+        GlobalList.annotation['meta']['id'].astext.label('annotationId'),
+        sa.sql.null().label('comment')
+    ).outerjoin(
+        AppUser,
+        AppUser.id == GlobalList.annotation['user_id'].as_integer()
+    ).outerjoin(
+        FileContent,
+        FileContent.id == GlobalList.file_id
+    ).filter(GlobalList.type == ManualAnnotationType.INCLUSION.value)
+
+    union_query = query_1.union(query_2)
+
+    # TODO: Refactor to work with paginate_from_args
+    limit = request.args.get('limit', 200)
+    limit = min(200, int(limit))
+    page = request.args.get('page', 1)
+    page = max(1, int(page))
+
+    # The order by clause is using a synthetic column
+    # NOTE: We want to keep this ordering case insensitive
+    query = union_query.order_by((sa.asc('text'))).paginate(page, limit, False)
+
+    response = ResultList(
+        total=query.total,
+        results=[GlobalAnnotationData(
+            file_id=r[0],
+            filename=r[1],
+            user_email=r[2],
+            id=r[3],
+            type=r[4],
+            reviewed=r[5],
+            approved=r[6],
+            creation_date=r[7],
+            modified_date=r[8],
+            text=r[9],
+            reason=r[10],
+            entity_type=r[11],
+            annotation_id=r[12],
+            comment=r[13],
+        ) for r in query.items],
+        query=None)
+
+    yield jsonify(response.to_dict())
+
+
+@bp.route('/global-list', methods=['POST', 'DELETE'])
+@auth.login_required
+@use_kwargs(GlobalAnnotationsDeleteSchema)
+@requires_role('admin')
+def delete_global_annotations(pids):
+    yield g.current_user
+
+    query = GlobalList.__table__.delete().where(
+        GlobalList.id.in_(pids)
+    )
+    try:
+        db.session.execute(query)
+    except SQLAlchemyError:
+        db.session.rollback()
+    else:
+        db.session.commit()
+        current_app.logger.info(
+            f'Deleted {len(pids)} global annotations',
+            UserEventLog(
+                username=g.current_user.username, event_type='global annotation delete').to_dict()
+        )
+    yield jsonify(dict(result='success'))
+
+
+@bp.route('/<string:project_name>/<string:file_id>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
 def get_all_annotations_from_file(project_name, file_id):
@@ -296,10 +442,6 @@ def get_all_annotations_from_file(project_name, file_id):
 
     # yield to requires_project_permission
     yield user, project
-
-    file = Files.query.filter_by(file_id=file_id, project=project.id).one_or_none()
-    if not file:
-        raise RecordNotFoundException('File does not exist')
 
     manual_annotations_service = get_manual_annotations_service()
     combined_annotations = manual_annotations_service.get_combined_annotations(project.id, file_id)

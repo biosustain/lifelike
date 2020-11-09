@@ -32,13 +32,6 @@ services:
     appserver:
         container_name: appserver
         build: ./appserver
-        command: [
-            '/usr/bin/env',
-            'bash',
-            'bin/wait-for-postgres',
-            'bin/wait-for-neo4j',
-            'bin/start-dev'
-        ]
         ports:
             - "5000:5000"
         environment:
@@ -57,6 +50,7 @@ services:
             - POSTGRES_DB=postgres
             # ElasticSearch
             - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+            - ELASTIC_FILE_INDEX_ID=file_dev
             # Neo4j
             - NEO4J_HOST=n4j-database
             - NEO4J_AUTH=neo4j/password
@@ -65,6 +59,8 @@ services:
             - REDIS_PORT=6379
             # Other
             - DOMAIN=http://localhost
+            # Fetch this using "gsutil cp gs://kg-secrets/ansible_service_account.json ./appserver"
+            - GOOGLE_APPLICATION_CREDENTIALS=ansible_service_account.json
         # Allow debugging w/ IPython or pdb
         stdin_open: true
         tty: true
@@ -102,10 +98,11 @@ services:
             - backend
 
     webserver:
-        container_name: webservers
+        container_name: webserver
         build:
             context: ./client
             dockerfile: Dockerfile
+            target: webserver
         ports:
             - "80:80"
         networks:

@@ -6,9 +6,9 @@ Revises: 36d25e171658
 Create Date: 2020-07-24 21:19:46.808252
 
 """
-import sqlalchemy as sa
 from alembic import context
 from alembic import op
+import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils.types import TSVectorType
 

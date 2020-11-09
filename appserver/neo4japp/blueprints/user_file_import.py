@@ -1,18 +1,26 @@
-from flask import Blueprint
+import attr
 
+from flask import Blueprint
+from werkzeug.datastructures import FileStorage
+from neo4japp.blueprints.auth import auth
+
+from neo4japp.database import db, get_kg_service, get_user_file_import_service
 from neo4japp.data_transfer_objects.user_file_import import (
     ImportGenesRequest,
     Neo4jColumnMapping,
     NodePropertiesRequest,
     UploadFileRequest,
 )
-from neo4japp.database import get_kg_service, get_user_file_import_service
-from neo4japp.util import SuccessResponse, jsonify_with_class
+from neo4japp.models import (
+    Worksheet
+)
+from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
 bp = Blueprint('user-file-import-api', __name__, url_prefix='/user-file-import')
 
 
 @bp.route('/get-db-labels', methods=['GET'])
+@auth.login_required
 @jsonify_with_class()
 def get_db_labels():
     kg = get_kg_service()
@@ -21,6 +29,7 @@ def get_db_labels():
 
 
 @bp.route('/get-db-relationship-types', methods=['GET'])
+@auth.login_required
 @jsonify_with_class()
 def get_db_relationship_types():
     kg = get_kg_service()
@@ -29,6 +38,7 @@ def get_db_relationship_types():
 
 
 @bp.route('/get-node-properties', methods=['GET'])
+@auth.login_required
 @jsonify_with_class(NodePropertiesRequest)
 def get_node_properties(req: NodePropertiesRequest):
     kg = get_kg_service()
@@ -37,6 +47,7 @@ def get_node_properties(req: NodePropertiesRequest):
 
 
 @bp.route('/upload-file', methods=['POST'])
+@auth.login_required
 @jsonify_with_class(UploadFileRequest, has_file=True)
 def upload_neo4j_file(req: UploadFileRequest):
     importer = get_user_file_import_service()
@@ -49,6 +60,7 @@ def upload_neo4j_file(req: UploadFileRequest):
 
 
 @bp.route('/upload-node-mapping', methods=['POST'])
+@auth.login_required
 @jsonify_with_class(Neo4jColumnMapping)
 def upload_node_mapping(req: Neo4jColumnMapping):
     importer = get_user_file_import_service()
@@ -60,6 +72,7 @@ def upload_node_mapping(req: Neo4jColumnMapping):
     return SuccessResponse(result='', status_code=200)
 
 
+""" TODO refactor import
 @bp.route('/import-genes', methods=['POST'])
 @jsonify_with_class(ImportGenesRequest, has_file=True)
 def import_genes(req: ImportGenesRequest):
@@ -73,3 +86,4 @@ def import_genes(req: ImportGenesRequest):
     )
 
     return SuccessResponse(result=result, status_code=200)
+"""
