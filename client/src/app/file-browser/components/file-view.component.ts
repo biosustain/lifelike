@@ -236,35 +236,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   annotationCreated(annotation: Annotation) {
-    // try getting id from the ncbi or uniprot link
-    let id = '';
-    let idType = '';
-
-    const uniprotRegExp = new RegExp('uniprot\.org\.uniprot\/([^?#]*)');
-    const uniprotResult = uniprotRegExp.exec(annotation.meta.links.uniprot);
-    if (uniprotResult && uniprotResult[1]) {
-      id = uniprotResult[1];
-      idType = 'UNIPROT';
-    }
-
-    const ncbiRegExp = new RegExp('ncbi\.nlm\.nih\.gov\/gene\/([^?#]*)');
-    const ncbiResult = ncbiRegExp.exec(annotation.meta.links.ncbi);
-    if (ncbiResult && ncbiResult[1]) {
-      id = ncbiResult[1];
-      idType = 'NCBI';
-    }
-
-    const annotationToAdd: Annotation = {
-      ...annotation,
-      meta: {
-        ...annotation.meta,
-        id: annotation.meta.id || id,
-        idType,
-      },
-    };
-
-    annotationToAdd.meta.idHyperlink = this.generateHyperlink(annotationToAdd);
-
     const dialogRef = this.modalService.open(ConfirmDialogComponent);
     dialogRef.componentInstance.message = 'Do you want to annotate the rest of the document with this term as well?';
     dialogRef.result.then((annotateAll: boolean) => {
@@ -275,7 +246,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         })),
       });
 
-      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd, annotateAll, this.projectName)
+      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotation, annotateAll, this.projectName)
         .pipe(this.errorHandler.create())
         .subscribe(
           (annotations: Annotation[]) => {
@@ -482,31 +453,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     if (this.removeAnnotationExclusionSub) {
       this.removeAnnotationExclusionSub.unsubscribe();
     }
-  }
-
-  generateHyperlink(ann: Annotation): string {
-    switch (ann.meta.idType) {
-      case DatabaseType.Chebi:
-        return this.buildUrl(Hyperlink.Chebi, ann.meta.id);
-      case DatabaseType.Mesh:
-        // prefix 'MESH:' should be removed from the id in order for search to work
-        return this.buildUrl(Hyperlink.Mesh, ann.meta.id.substring(5));
-      case DatabaseType.Uniprot:
-        return this.buildUrl(Hyperlink.Uniprot, ann.meta.id);
-      case DatabaseType.Ncbi:
-        if (ann.meta.type === AnnotationType.Gene) {
-          return this.buildUrl(Hyperlink.NcbiGenes, ann.meta.id);
-        } else if (ann.meta.type === AnnotationType.Species) {
-          return this.buildUrl(Hyperlink.NcbiSpecies, ann.meta.id);
-        }
-        return '';
-      default:
-        return '';
-    }
-  }
-
-  private buildUrl(provider: Hyperlink, query: string): string {
-    return provider + query;
   }
 
   scrollInPdf(loc: Location) {
