@@ -20,6 +20,11 @@
       <input type="text" class="form-control" id="comment" formControlName="comment">
     </app-form-row>
 
+    <div class="custom-control custom-checkbox mt-4" *ngIf="isGeneOrProtein">
+      <input type="checkbox" class="custom-control-input" id="case-insensitivity" formControlName="isCaseInsensitive">
+      <label class="custom-control-label" for="case-insensitivity">Exclude using case insensitivity</label>
+    </div>
+
     <div class="custom-control custom-checkbox mt-4">
       <input type="checkbox" class="custom-control-input" id="exclude-globally" formControlName="excludeGlobally">
       <label class="custom-control-label" for="exclude-globally">Exclude this annotation from a global list</label>

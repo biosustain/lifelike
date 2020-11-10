@@ -5,37 +5,51 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { FileNameAndSheets, Neo4jColumnMapping } from '../../interfaces/user-file-import.interface';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
+import { AbstractService } from 'app/shared/services/abstract-service';
 
 @Injectable()
-export class UserFileImportService {
+export class UserFileImportService extends AbstractService {
     readonly neo4jAPI = '/api/user-file-import';
 
-    constructor(private http: HttpClient) {}
+    constructor(auth: AuthenticationService, http: HttpClient) {
+        super(auth, http);
+    }
 
     getDbLabels(): Observable<string[]> {
         return this.http.get<{result: string[]}>(
-            `${this.neo4jAPI}/get-db-labels`).pipe(map(resp => resp.result));
+            `${this.neo4jAPI}/get-db-labels`,
+            {...this.getHttpOptions(true)}
+            ).pipe(map(resp => resp.result));
     }
 
     getDbRelationshipTypes(): Observable<string[]> {
         return this.http.get<{result: string[]}>(
-            `${this.neo4jAPI}/get-db-relationship-types`).pipe(map(resp => resp.result));
+            `${this.neo4jAPI}/get-db-relationship-types`,
+            {...this.getHttpOptions(true)}
+            ).pipe(map(resp => resp.result));
     }
 
     getNodeProperties(nodeLabel): Observable<{ [key: string]: string[] }> {
         return this.http.get<{result: { [key: string]: string[] }}>(
             `${this.neo4jAPI}/get-node-properties`,
-            { params: new HttpParams().set('nodeLabel', nodeLabel) },
+            {...this.getHttpOptions(true), params: new HttpParams().set('nodeLabel', nodeLabel)},
         ).pipe(map(resp => resp.result));
     }
 
     uploadExperimentalDataFile(file: FormData): Observable<FileNameAndSheets> {
-        return this.http.post<{result: FileNameAndSheets}>(`${this.neo4jAPI}/upload-file`,
-            file).pipe(map(resp => resp.result));
+        return this.http.post<{result: FileNameAndSheets}>(
+            `${this.neo4jAPI}/upload-file`,
+            file,
+            {...this.getHttpOptions(true)}
+            ).pipe(map(resp => resp.result));
     }
 
     uploadNodeMapping(mappings: Neo4jColumnMapping): Observable<any> {
-        return this.http.post<{result: any}>(`${this.neo4jAPI}/upload-node-mapping`,
-            mappings).pipe(map(resp => resp.result));
+        return this.http.post<{result: any}>(
+            `${this.neo4jAPI}/upload-node-mapping`,
+            mappings,
+            {...this.getHttpOptions(true)}
+            ).pipe(map(resp => resp.result));
     }
 }

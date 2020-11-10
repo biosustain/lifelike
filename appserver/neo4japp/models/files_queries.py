@@ -16,6 +16,7 @@ def get_all_files_and_content_by_id(file_ids: Set[str], project_id: int):
         Files.id,
         Files.annotations,
         Files.custom_annotations,
+        Files.excluded_annotations,
         Files.file_id,
         Files.filename,
         FileContent.raw_file,

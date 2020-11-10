@@ -6,6 +6,12 @@ export interface AnnotationFilterEntity {
   frequency: number;
 }
 
+export interface AnnotationVisibility {
+  identifier: string;
+  visible: boolean;
+  entity: AnnotationFilterEntity|WordCloudAnnotationFilterEntity;
+}
+
 export interface WordCloudAnnotationFilterEntity extends AnnotationFilterEntity {
   shown: boolean;
   synonyms?: string[];

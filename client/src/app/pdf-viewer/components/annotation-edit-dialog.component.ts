@@ -9,6 +9,7 @@ import { Hyperlink } from '../../drawing-tool/services/interfaces';
 import { SEARCH_LINKS } from '../../shared/links';
 import { cloneDeep } from 'lodash';
 import { url } from '../../shared/validators';
+import { AnnotationType } from 'app/shared/constants';
 
 @Component({
   selector: 'app-annotation-panel',
@@ -39,6 +40,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
     includeGlobally: new FormControl(false),
   });
   readonly links = this.form.get('links') as FormArray;
+  caseSensitiveTypes = [AnnotationType.Gene, AnnotationType.Protein];
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
@@ -70,7 +72,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         return [coord[0], coord[3], coord[2], coord[1]];
       }),
       meta: {
-        id: this.form.value.id,
+        id: this.form.value.includeGlobally ? this.form.value.id : (this.form.value.id || text),
         type: this.form.value.entityType,
         color: ENTITY_TYPE_MAP[this.form.value.entityType].color,
         links,
@@ -78,6 +80,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         allText: text,
         primaryLink,
         includeGlobally: this.form.value.includeGlobally,
+        isCaseInsensitive: !(this.caseSensitiveTypes.includes(this.form.value.entityType)),
       },
     };
   }
