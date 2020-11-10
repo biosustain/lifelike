@@ -340,6 +340,70 @@ class KgService(HybridDBDao):
             result_list.append(item)
         return result_list
 
+    def get_nodes_and_edges_from_paths(self, paths):
+        nodes = []
+        node_ids = set()
+        edges = []
+        edge_ids = set()
+        for path in paths:
+            for node in path['nodes']:
+                if node.identity not in node_ids:
+                    node_as_dict = dict(node)
+
+                    node_label = 'Node Display Name Unknown'
+                    if node_as_dict.get('displayName', None) is not None:
+                        node_label = node_as_dict['displayName']
+                    elif node_as_dict.get('name', None) is not None:
+                        node_label = node_as_dict['name']
+
+                    node_data = {'id': node.identity, 'label': node_label}
+
+                    nodes.append(node_data)
+                    node_ids.add(node.identity)
+
+            for edge in path['edges']:
+                if edge.identity not in edge_ids:
+                    edge_data = {
+                        'id': edge.identity,
+                        'label': type(edge).__name__,
+                        'from': edge.start_node.identity,
+                        'to': edge.end_node.identity,
+                    }
+
+                    edges.append(edge_data)
+                    edge_ids.add(edge.identity)
+        return {'nodes': nodes, 'edges': edges}
+
+    def get_three_hydroxisobuteric_acid_to_pykf_chebi(self):
+        query = self.get_three_hydroxisobuteric_acid_to_pykf_chebi_query()
+        result = self.graph.run(query).data()
+        return self.get_nodes_and_edges_from_paths(result)
+
+    def get_three_hydroxisobuteric_acid_to_pykf_biocyc(self):
+        query = self.get_three_hydroxisobuteric_acid_to_pykf_biocyc_query()
+        result = self.graph.run(query).data()
+        return self.get_nodes_and_edges_from_paths(result)
+
+    def get_icd_to_rhse(self):
+        query = self.get_icd_to_rhse_query()
+        result = self.graph.run(query).data()
+        return self.get_nodes_and_edges_from_paths(result)
+
+    def get_sirt5_to_nfe2l2_literature(self):
+        query = self.get_sirt5_to_nfe2l2_literature_query()
+        result = self.graph.run(query).data()
+        return self.get_nodes_and_edges_from_paths(result)
+
+    def get_ctnnb1_to_diarrhea_literature(self):
+        query = self.ctnnb1_to_diarrhea_literature_query()
+        result = self.graph.run(query).data()
+        return self.get_nodes_and_edges_from_paths(result)
+
+    def get_two_pathways_biocyc(self):
+        query = self.get_two_pathways_biocyc_query()
+        result = self.graph.run(query).data()
+        return self.get_nodes_and_edges_from_paths(result)
+
     def get_uniprot_genes_query(self):
         return """
         MATCH (g:Gene:db_NCBI)
@@ -394,4 +458,56 @@ class KgService(HybridDBDao):
         WHERE ID(g) IN $ncbi_gene_ids
         OPTIONAL MATCH (g)-[:IS]-(x:db_RegulonDB)
         RETURN x
+        """
+
+    def get_three_hydroxisobuteric_acid_to_pykf_chebi_query(self):
+        return """
+            MATCH (chem:db_CHEBI:Chemical) WHERE chem.id IN ['CHEBI:18064']
+            WITH chem
+            MATCH p=allShortestPaths((gene:db_EcoCyc:Gene {name:'pykF'})-[*..9]-(chem))
+            WHERE none(r IN relationships(p) WHERE type(r) IN ['FUNCTION','COMPONENT','PROCESS','HAS_TAXONOMY','HAS_SYNONYM','HAS_ROLE','GO_LINK'])
+            RETURN nodes(p) as nodes, relationships(p) as edges
+        """
+
+    def get_three_hydroxisobuteric_acid_to_pykf_biocyc_query(self):
+        return """
+            MATCH (c:Compound {biocyc_id: 'CPD-12176'}), (g:Gene:db_BioCyc {name:'pykF'})
+            MATCH p=allShortestPaths((c)-[*]-(g))
+            WHERE none(r IN relationships(p)
+            WHERE type(r) IN ['GO_LINK','HAS_TAXONOMY','HAS_SYNONYM','REGULATES','HAS_ROLE', 'TYPE_OF'])
+            RETURN nodes(p) as nodes, relationships(p) as edges
+        """
+
+    def get_icd_to_rhse_query(self):
+        return """
+            MATCH p=allShortestPaths((gene:db_EcoCyc:Gene {name:'icd'})-[*..13]-(gene2:db_EcoCyc:Gene {name:'rhsE'}))
+            WHERE none(r IN relationships(p) WHERE type(r) IN ['HAS_TAXONOMY'])
+            RETURN nodes(p) as nodes, relationships(p) as edges
+        """
+
+    def get_sirt5_to_nfe2l2_literature_query(self):
+        return """
+            MATCH (g:db_Literature:Gene {name:'SIRT5'})-[:HAS_TAXONOMY]->(t:Taxonomy {id:'9606'}),
+            (t)<-[:HAS_TAXONOMY]-(g2:db_Literature:Gene {name:'NFE2L2'})
+            MATCH p=allShortestPaths((g)-[*]-(g2))
+            WHERE all(rel IN relationships(p) WHERE type(rel) = 'ASSOCIATED')
+            RETURN nodes(p) as nodes, relationships(p) as edges
+        """
+
+    def ctnnb1_to_diarrhea_literature_query(self):
+        return """
+            MATCH (g:db_Literature:Gene {name:'CTNNB1'})-[:HAS_TAXONOMY]->(t:Taxonomy {id:'9606'})
+            MATCH (d:Disease {name:'Diarrhea'})
+            MATCH p=allShortestPaths((g)-[*]-(d))
+            RETURN nodes(p) as nodes, relationships(p) as edges
+        """
+
+    def get_two_pathways_biocyc_query(self):
+        return """
+            MATCH (p1:Pathway {biocyc_id:'PWY-6151'}), (p2:Pathway {biocyc_id: 'PWY-6123'})
+            WITH p1, p2
+            MATCH p=allShortestPaths((p1)-[*]-(p2))
+            WHERE NONE (r IN relationships(p) WHERE type(r) IN ['TYPE_OF'])
+                AND NONE (n IN nodes(p) WHERE n.biocyc_id IN ['WATER','PROTON','Pi','ATP', 'ADP'])
+            RETURN nodes(p) as nodes, relationships(p) as edges
         """
