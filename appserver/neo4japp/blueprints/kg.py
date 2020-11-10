@@ -114,23 +114,6 @@ def get_ncbi_enrichment_domains():
         nodes.append(node)
     return jsonify({'result': nodes}), 200
 
-    # TODO LL-1998: Still need to add these properties:
-    #  font: {
-    #    color,
-    #  },
-    #  color: {
-    #    background: '#FFFFFF',
-    #    border,
-    #    hover: {
-    #      background: '#FFFFFF',
-    #      border
-    #    },
-    #    highlight: {
-    #      background: '#FFFFFF',
-    #      border
-    #    },
-    #  },
-    # },
 
 # 3-hydroxyisobutyric Acid to pykF Using ChEBI
 @bp.route('/shortest-path-queries/three-hydroxisobuteric-acid-to-pykf-chebi', methods=['GET'])
