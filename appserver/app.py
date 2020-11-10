@@ -582,8 +582,8 @@ def seed_global_annotation_from_gcp(bucket_name, mapping_file, username):
             )
             db.session.add(new_fc)
             db.session.flush()
+            file_id = new_fc.id
 
-        file_id = new_fc.id
         app.logger.info(f'Adding new file: id ({file_id})')
         annotation_json = copy.deepcopy(annotation['annotation'])
         # Not possible to transfer users across different
