@@ -20,7 +20,6 @@ from neo4japp.models.auth import (
 )
 from neo4japp.models.common import RDBMSBase, FullTimestampMixin, HashIdMixin
 
-
 projects_collaborator_role = db.Table(
     'projects_collaborator_role',
     db.Column(

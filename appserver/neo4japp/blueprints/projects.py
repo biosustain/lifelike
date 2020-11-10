@@ -1,20 +1,23 @@
 import re
+from typing import List
+
 from flask import (
     current_app,
     request,
     jsonify,
     Blueprint,
     g,
-    abort,
 )
-from sqlalchemy import and_
+from flask.views import MethodView
+from sqlalchemy import or_
+from sqlalchemy.orm import raiseload, joinedload
+from webargs.flaskparser import use_args
+
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_project_role, requires_project_permission
 from neo4japp.database import db, get_projects_service
 from neo4japp.exceptions import (
-    DirectoryError,
     DuplicateRecord,
-    InvalidDirectoryNameException,
     RecordNotFoundException,
     NotAuthorizedException,
     NameUnavailableError,
@@ -23,14 +26,72 @@ from neo4japp.models import (
     AccessActionType,
     AppRole,
     AppUser,
-    Files,
     Projects,
-    projects_collaborator_role,
+    projects_collaborator_role, Files,
 )
-from neo4japp.util import jsonify_with_class, SuccessResponse, CasePreservedDict
+from neo4japp.schemas.common import PaginatedRequest
+from neo4japp.schemas.filesystem import ProjectListSchema, ProjectListRequestSchema, ProjectSchema
 from neo4japp.utils.logger import UserEventLog
 
+
+class ProjectBaseView(MethodView):
+    def get_project(self, identifier: str) -> Projects:
+        query = db.session.query(Projects) \
+            .options(joinedload(Projects.***ARANGO_USERNAME***),
+                     raiseload('*')) \
+            .filter(Projects.deletion_date.is_(None),
+                    or_(Projects.hash_id == identifier,
+                        Projects.name == identifier))
+
+        results: List[Projects] = query.all()
+
+        if not len(results):
+            raise RecordNotFoundException("The requested project could not be found.")
+
+        for row in results:
+            if row.hash_id == identifier:
+                return row
+
+        return results[0]
+
+
+class ProjectListView(ProjectBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(ProjectListRequestSchema)
+    @use_args(PaginatedRequest)
+    def get(self, params, pagination):
+        query = db.session.query(Projects) \
+            .options(joinedload(Projects.***ARANGO_USERNAME***),
+                     raiseload('*'))
+
+        query = params['sort'](query)
+        results = query.paginate(pagination['page'], pagination['limit'], False)
+
+        return jsonify(ProjectListSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }).dump({
+            'total': results.total,
+            'results': results.items,
+        }))
+
+
+class ProjectView(ProjectBaseView):
+    decorators = [auth.login_required]
+
+    def get(self, hash_id: str):
+        project = self.get_project(hash_id)
+
+        return jsonify({
+            'project': ProjectSchema(context={
+                'user_privilege_filter': g.current_user.id,
+            }).dump(project)
+        })
+
+
 bp = Blueprint('projects', __name__, url_prefix='/projects')
+bp.add_url_rule('/', view_func=ProjectListView.as_view('project'))
+bp.add_url_rule('/<string:hash_id>', view_func=ProjectView.as_view('project_detail'))
 
 
 @bp.route('/<name>', methods=['GET'])
@@ -53,16 +114,6 @@ def get_project(name):
         "directory": dir.to_dict()
     }
     return jsonify({'results': results}), 200
-
-
-@bp.route('/', methods=['GET'])
-@auth.login_required
-def get_projects():
-    user = g.current_user
-
-    proj_service = get_projects_service()
-    projects_list = proj_service.get_accessible_projects(user)
-    return jsonify({'results': [p.to_dict() for p in projects_list]}), 200
 
 
 @bp.route('/', methods=['POST'])

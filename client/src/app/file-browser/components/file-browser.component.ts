@@ -18,11 +18,9 @@ import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 export class FileBrowserComponent implements OnInit, OnDestroy {
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
+  subscriptions = new Subscription();
   annotationSubscription: Subscription;
   object$: Observable<FilesystemObject> = from([]);
-  paramsSubscription: Subscription;
-
-  projectName: string;
 
   constructor(readonly router: Router,
               readonly snackBar: MatSnackBar,
@@ -35,39 +33,24 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.paramsSubscription = this.route.params.subscribe(params => {
-      this.projectName = params.project_name;
-
-      this.modulePropertiesChange.emit({
-        title: this.projectName,
-        fontAwesomeIcon: 'layer-group',
-      });
-
-      this.load({
-        projectName: params.project_name,
-        directoryId: params.dir_id,
-      });
-    });
+    this.subscriptions.add(this.route.params.subscribe(params => {
+      this.load(params.dir_id);
+    }));
   }
 
   ngOnDestroy(): void {
-    if (this.annotationSubscription) {
-      this.annotationSubscription.unsubscribe();
-      this.annotationSubscription = null;
-    }
-    this.paramsSubscription.unsubscribe();
+    this.subscriptions.unsubscribe();
   }
 
-  load(locator: PathLocator): Observable<any> {
-    const object$ = this.filesystemService.get({
-      projectName: locator.projectName,
-      directoryId: locator.directoryId,
-    }).pipe(map(object => {
+  load(hashId: string): Observable<any> {
+    const object$ = this.filesystemService.get(hashId).pipe(map(object => {
       if (this.annotationSubscription) {
+        this.subscriptions.remove(this.annotationSubscription);
         this.annotationSubscription.unsubscribe();
         this.annotationSubscription = null;
       }
       this.annotationSubscription = this.filesystemService.annotate(object);
+      this.subscriptions.add(this.annotationSubscription);
       return object;
     }));
     this.object$ = object$;

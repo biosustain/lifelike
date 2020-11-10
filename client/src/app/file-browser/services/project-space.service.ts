@@ -5,24 +5,26 @@ import {
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
+import { ResultList } from '../../interfaces/shared.interface';
 
 export interface Project {
+  hashId: string;
   creationDate: string;
   description: string;
-  id: number;
+  id?: number;
   projectName: string;
   // Collection of user ids access to
   // the project
-  users: number[];
+  users?: number[];
   // Root directory associated with proejct
   directory?: Directory;
 }
 
 export interface Directory {
-  directoryParentId: number;
-  id: number;
+  directoryParentId: any;
+  id: any;
   name?: string;
-  projectsId: number;
+  projectsId: any;
   type?: string;
   routeLink?: string;
   dirPath?: {
@@ -78,16 +80,32 @@ export class ProjectSpaceService {
   /**
    * GET Request for projects resources
    * or specific project if projectName specified
-   * @param projectName - name of project to load resource by
+   * @param nameOrId - name or hash ID of project to load resource by
    */
-  getProject(projectName= ''): Observable<any> {
-    projectName = encodeURIComponent(projectName.trim());
-    return this.http.get<any>(
-      `${this.projectsAPI}/${projectName}`,
-      this.createHttpOptions(true),
-    ).pipe(
-      map(resp => resp.results)
-    );
+  getProject(nameOrId= ''): Observable<Project[]> {
+    nameOrId = encodeURIComponent(nameOrId.trim());
+    // Map new API endpont to legacy
+    if (nameOrId !== '') {
+      return this.http.get<any>(
+        `${this.projectsAPI}/${nameOrId}`,
+        this.createHttpOptions(true),
+      ).pipe(
+        map(data => ([{
+          ...data.project,
+          projectName: data.project.name,
+        }]))
+      );
+    } else {
+      return this.http.get<any>(
+        `${this.projectsAPI}/${nameOrId}`,
+        this.createHttpOptions(true),
+      ).pipe(
+        map(data => data.results.map(itemData => ({
+          ...itemData,
+          projectName: itemData.name,
+        })))
+      );
+    }
   }
 
   /**

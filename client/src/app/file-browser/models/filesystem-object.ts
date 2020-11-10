@@ -1,33 +1,288 @@
-import { Directory } from '../services/project-space.service';
+import { Directory, Project } from '../services/project-space.service';
 import { CollectionModal } from '../../shared/utils/collection-modal';
-import { nullCoalesce } from '../../shared/utils/types';
+import { nullCoalesce, RecursivePartial } from '../../shared/utils/types';
 import moment from 'moment';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { KnowledgeMap, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import { AppUser, User } from '../../interfaces';
 
-export class FilesystemObject implements DirectoryObject {
-  locator: PathLocator;
-  directory: Directory;
-  path: Directory[];
+export const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
+export const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
+export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
+export const PDF_MIMETYPE = 'application/pdf';
 
-  type = null;
-  id = null;
-  name = null;
-  description = null;
-  annotationDate = null;
-  creationDate = null;
-  modificationDate = null;
-  doi = null;
-  highlight = null;
-  creator = null;
-  project = null;
-  data = null;
-  annotationsTooltipContent: string = null;
+export class ProjectImpl implements Project {
+  /**
+   * Legacy ID field that needs to go away.
+   */
+  id?: number;
+  hashId: string;
+  name: string;
+  description: string;
+  creationDate: string;
+  modifiedDate: string;
+  ***ARANGO_USERNAME***?: FilesystemObject;
+
+  get projectName() {
+    return this.name;
+  }
+
+  get directory(): Directory {
+    return this.***ARANGO_USERNAME*** ? this.***ARANGO_USERNAME***.directory : null;
+  }
+
+  update(data: RecursivePartial<ProjectData>): ProjectImpl {
+    if (data == null) {
+      return this;
+    }
+    for (const key of ['hashId', 'name', 'description', 'creationDate', 'modifiedDate']) {
+      if (data.hasOwnProperty(key)) {
+        this[key] = data[key];
+      }
+    }
+    if (data.hasOwnProperty('***ARANGO_USERNAME***')) {
+      this.***ARANGO_USERNAME*** = data.***ARANGO_USERNAME*** != null ? new FilesystemObject().update(data.***ARANGO_USERNAME***) : null;
+    }
+    return this;
+  }
+}
+
+/**
+ * This object represents both directories and every type of file in Lifelike. Due
+ * to a lot of legacy code, we implement several legacy interfaces to reduce the
+ * amount of code for the refactor.
+ */
+export class FilesystemObject implements DirectoryObject, Directory, PdfFile, KnowledgeMap {
+  hashId: string;
+  filename: string;
+  user: AppUser;
+  description: string;
+  mimeType: string;
+  doi: string;
+  public: boolean;
+  uploadUrl: string;
+  annotationsDate: string;
+  creationDate: string;
+  modifiedDate: string;
+  recyclingDate: string;
+  project: ProjectImpl;
+  parent: FilesystemObject;
   readonly children = new CollectionModal<FilesystemObject>([], {
     multipleSelection: true,
     sort: this.defaultSort,
   });
+  privileges: unknown;
+  recycled: boolean;
+  effectivelyRecycled: boolean;
+
+  highlight?: string[];
+  highlightAnnotated?: boolean[];
+  // tslint:disable-next-line:variable-name
+  annotations_date_tooltip?: string;
+  annotationsTooltipContent: string;
+
+  get isDirectory() {
+    return this.mimeType === DIRECTORY_MIMETYPE;
+  }
+
+  get isFile() {
+    return !this.isDirectory;
+  }
+
+  get isOpenable() {
+    return true;
+  }
+
+  get isEditable() {
+    return true;
+  }
+
+  get isAnnotatable() {
+    return this.mimeType === 'application/pdf';
+  }
+
+  get isMovable() {
+    return true;
+  }
+
+  get isDeletable() {
+    return true;
+  }
+
+  /**
+   * @deprecated
+   */
+  get locator(): PathLocator {
+    if (this.type === 'dir') {
+      return {
+        projectName: this.project.name,
+        directoryId: this.hashId,
+      };
+    } else if (this.parent != null) {
+      return this.parent.locator;
+    } else {
+      throw new Error('no locator available');
+    }
+  }
+
+  /**
+   * @deprecated
+   */
+  get directory(): Directory {
+    // noinspection JSDeprecatedSymbols
+    if (this.type === 'dir') {
+      return this;
+    } else {
+      throw new Error('no directory available');
+    }
+  }
+
+  /**
+   * @deprecated
+   */
+  get file_id(): string {
+    return this.hashId;
+  }
+
+  /**
+   * @deprecated
+   */
+  get directoryParentId(): string {
+    if (this.parent != null) {
+      return this.parent.hashId;
+    } else {
+      return null;
+    }
+  }
+
+  get fontAwesomeIcon() {
+    switch (this.mimeType) {
+      case DIRECTORY_MIMETYPE:
+        return 'fa fa-folder';
+      case MAP_MIMETYPE:
+        return 'fa fa-project-diagram';
+      case ENRICHMENT_TABLE_MIMETYPE:
+        return 'fa fa-table';
+      case 'application/pdf':
+        return 'fa fa-file';
+      default:
+        return 'fa fa-file';
+    }
+  }
+
+  /**
+   * @deprecated
+   */
+  get projectsId(): string {
+    return this.project != null ? this.project.hashId : null;
+  }
+
+  /**
+   * @deprecated
+   */
+  get type(): 'dir' | 'file' | 'map' {
+    switch (this.mimeType) {
+      case DIRECTORY_MIMETYPE:
+        return 'dir';
+      case MAP_MIMETYPE:
+        return 'map';
+      default:
+        return 'file';
+    }
+  }
+
+  /**
+   * @deprecated
+   */
+  get name(): string {
+    return this.filename;
+  }
+
+  get effectiveName(): string {
+    if (this.parent == null && this.project != null) {
+      return this.project.name;
+    } else {
+      return this.filename;
+    }
+  }
+
+  /**
+   * @deprecated
+   */
+  get label(): string {
+    return this.filename;
+  }
+
+  /**
+   * @deprecated
+   */
+  get graph(): UniversalGraph {
+    return null;
+  }
+
+  /**
+   * @deprecated
+   */
+  get upload_url(): string {
+    return this.uploadUrl;
+  }
+
+  /**
+   * @deprecated
+   */
+  get annotations_date(): string {
+    return this.annotationsDate;
+  }
+
+  /**
+   * @deprecated
+   */
+  get annotationDate(): string {
+    return this.annotationsDate;
+  }
+
+  /**
+   * @deprecated
+   */
+  get creation_date(): string {
+    return this.creationDate;
+  }
+
+  /**
+   * @deprecated
+   */
+  get modified_date(): string {
+    return this.modifiedDate;
+  }
+
+  /**
+   * @deprecated
+   */
+  get modificationDate(): string {
+    return this.modifiedDate;
+  }
+
+  /**
+   * @deprecated
+   */
+  get creator(): User {
+    return this.user;
+  }
+
+  /**
+   * @deprecated
+   */
+  get id(): string {
+    return this.hashId;
+  }
+
+  /**
+   * @deprecated
+   */
+  get data(): Directory | KnowledgeMap | PdfFile {
+    return this;
+  }
 
   filterChildren(filter: string) {
     const normalizedFilter = this.normalizeFilter(filter);
@@ -120,6 +375,39 @@ export class FilesystemObject implements DirectoryObject {
         return a.name.localeCompare(b.name);
       }
     }
+  }
+
+  update(data: RecursivePartial<FilesystemObjectData>): FilesystemObject {
+    if (data == null) {
+      return this;
+    }
+    for (const key of [
+      'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
+      'annotationsDate', 'uploadUrl',
+      'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
+      'effectivelyRecycled']) {
+      if (key in data) {
+        this[key] = data[key];
+      }
+    }
+    if ('project' in data) {
+      this.project = data.project != null ? new ProjectImpl().update(data.project) : null;
+    }
+    if ('parent' in data) {
+      this.parent = data.parent != null ? new FilesystemObject().update(data.parent) : null;
+    }
+    if ('children' in data) {
+      if (data.children != null) {
+        this.children.replace(data.children.map(
+          itemData => new FilesystemObject().update({
+            project: data.project, // The project probably isn't duplicated in the children data
+            ...itemData,
+          })));
+      } else {
+        this.children.replace([]);
+      }
+    }
+    return this;
   }
 }
 

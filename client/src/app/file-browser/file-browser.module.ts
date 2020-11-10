@@ -26,6 +26,7 @@ import { FileSelectionDialogComponent } from './components/dialog/file-selection
 import { FilesystemService } from './services/filesystem.service';
 import { FileListComponent } from './components/file-list.component';
 import { FilesystemObjectActions } from './services/filesystem-object-actions';
+import { ProjectService } from './services/project.service';
 
 @NgModule({
   declarations: [
@@ -77,6 +78,7 @@ import { FilesystemObjectActions } from './services/filesystem-object-actions';
     FileListComponent,
   ],
   providers: [
+    ProjectService,
     FilesystemService,
     FilesystemObjectActions,
   ],

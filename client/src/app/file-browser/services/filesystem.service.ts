@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FilesystemObject, PathLocator } from '../models/filesystem-object';
+import { FilesystemObject, PathLocator, ProjectImpl } from '../models/filesystem-object';
 import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -10,60 +10,36 @@ import { ProjectPageService } from './project-page.service';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { map } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { ApiService } from '../../shared/services/api.service';
+import { ResultList } from '../../interfaces/shared.interface';
+import { ProjectList } from '../models/project-list';
 
 @Injectable()
 export class FilesystemService {
   protected lmdbsDates = new BehaviorSubject<object>({});
 
-  constructor(private readonly filesService: PdfFilesService,
-              private readonly router: Router,
-              private readonly snackBar: MatSnackBar,
-              private readonly modalService: NgbModal,
-              private readonly progressDialog: ProgressDialog,
-              private readonly errorHandler: ErrorHandler,
-              private readonly route: ActivatedRoute,
-              private readonly projectPageService: ProjectPageService) {
+  constructor(protected readonly filesService: PdfFilesService,
+              protected readonly router: Router,
+              protected readonly snackBar: MatSnackBar,
+              protected readonly modalService: NgbModal,
+              protected readonly progressDialog: ProgressDialog,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly route: ActivatedRoute,
+              protected readonly projectPageService: ProjectPageService,
+              protected readonly http: HttpClient,
+              protected readonly apiService: ApiService) {
     this.filesService.getLMDBsDates().subscribe(lmdbsDates => {
       this.lmdbsDates.next(lmdbsDates);
     });
   }
 
-  get(locator: PathLocator): Observable<FilesystemObject> {
-    return this.projectPageService.getDirectory(
-        locator.projectName,
-        locator.directoryId,
-    ).pipe(map(result => {
-      const object = new FilesystemObject();
-      object.type = 'dir';
-      object.locator = {
-        projectName: locator.projectName,
-        directoryId: result.dir.id + '',
-      };
-      object.directory = result.dir;
-      object.path = result.path;
-      object.id = result.dir.id;
-      object.name = result.dir.directoryParentId ? result.dir.name : locator.projectName;
-
-      const children = result.objects.map(o => {
-        const child = new FilesystemObject();
-        Object.assign(child, o);
-        if (o.type === 'dir') {
-          child.locator = {
-            projectName: locator.projectName,
-            directoryId: o.id,
-          };
-        } else {
-          child.locator = object.locator;
-        }
-        child.directory = object.directory;
-        child.path = [...result.path, result.dir];
-        return child;
-      });
-
-      object.children.replace(children);
-
-      return object;
-    }));
+  get(hashId: string): Observable<FilesystemObject> {
+    return this.http.get<{object: FilesystemObjectData}>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}`, this.apiService.getHttpOptions(true)
+    ).pipe(
+      map(data => new FilesystemObject().update(data.object))
+    );
   }
 
   annotate(object: FilesystemObject): Subscription {

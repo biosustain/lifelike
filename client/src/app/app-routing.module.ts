@@ -183,6 +183,11 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/folders/:dir_id',
+    redirectTo: 'folders/:dir_id',
+    pathMatch: 'full',
+  },
+  {
+    path: 'folders/:dir_id',
     component: FileBrowserComponent,
     canActivate: [AuthGuard],
     data: {
