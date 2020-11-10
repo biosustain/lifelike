@@ -6,6 +6,7 @@
     position: absolute;
     width: 400px;
     right: 0;
+    z-index: 1;
     transition: right .25s;
 }
 
@@ -13,6 +14,7 @@
     position: absolute;
     width: 400px;
     right: -400px;
+    z-index: 1;
     transition: right .25s;
 }
 

@@ -1,4 +1,9 @@
 <div class="h-100 w-100">
-  <app-route-builder></app-route-builder>
-  <app-route-display></app-route-display>
+  <app-route-builder
+    (loadNewQuery)="loadNewQuery($event)"
+  ></app-route-builder>
+  <app-route-display
+    [nodes]="nodes"
+    [edges]="edges"
+  ></app-route-display>
 </div>

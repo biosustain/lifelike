@@ -1,13 +1,19 @@
 <div class="h-100 shadow bg-white" [ngClass]="routeBuilderContainerClass">
-  <button class="toggle-route-builder-button border-0 bg-secondary rounded-left px-3 d-flex justify-content-center align-items-center"
+  <button class="toggle-route-builder-button border border-primary rounded-left border-right-0 bg-secondary px-3 d-flex align-items-center"
           (click)="toggleRouteBuilderOpen()">
     <i [ngClass]="routeBuilderOpen ? 'fa fa-chevron-right' : 'fa fa-chevron-left'"></i>
   </button>
-  <div class="bg-primary p-4 w-100 d-flex justify-content-center">
-    <div class="w-100 d-flex graph-type-btn-container">
+  <div class="bg-primary p-4 w-100 d-flex flex-column">
+    <div class="w-100 mb-2 d-flex graph-type-btn-container">
       <button class="btn btn-primary border-0 rounded-circle d-flex justify-content-center align-items-center">
         <i class="fa fa-project-diagram text-white"></i>
       </button>
+    </div>
+    <div>
+      <label class="text-white">Shortest Path Query:</label>
+      <select class="custom-select" (change)="requestQueryLoadFromParent($event)">
+        <option *ngFor="let query of queries; let i = index" [value]="i">{{ query }}</option>
+      </select>
     </div>
   </div>
 </div>
