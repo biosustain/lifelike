@@ -21,7 +21,7 @@ def get_all_files_and_content_by_id(file_ids: Set[str], project_id: int):
         Files.filename,
         FileContent.id.label('file_content_id'),
         FileContent.raw_file,
-        FileContent.parsed_content,
+        # FileContent.parsed_content,
         sub_query.c.fallback_organism_id
     ).join(
         FileContent,
