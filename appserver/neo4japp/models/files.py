@@ -87,7 +87,7 @@ class FileContent(RDBMSBase):
         """
 
         content: Optional[bytes]
-        
+
         if checksum_sha256 is None:
             content = file.read()
             checksum_sha256 = hashlib.sha256(content).digest()
@@ -294,6 +294,7 @@ def files_after_delete(mapper, connection, target):
 @event.listens_for(Files, 'after_update')
 def files_after_update(mapper, connection, target):
     "listen for the 'after_update' event"
+    return # TODO
 
     # Update the elasticsearch document for this file
     elastic_service = get_elastic_service()

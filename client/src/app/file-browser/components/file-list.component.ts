@@ -21,7 +21,7 @@ export class FileListComponent {
   @Input() parent: FilesystemObject;
   @Input() objectControls = true;
   @Input() emptyDirectoryMessage = 'There are no items in this folder.';
-  @Output() locatorChange = new EventEmitter<PathLocator>();
+  @Output() hashIdChange = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
 
   constructor(readonly router: Router,
@@ -43,17 +43,7 @@ export class FileListComponent {
       this.snackBar.open(`File changes saved.`, 'Close', {
         duration: 5000,
       });
-      this.locatorChange.next(this.parent.locator);
-    }, () => {
-    });
-  }
-
-  openEnrichmentTableEditDialog(target: FilesystemObject) {
-    return this.actions.openEnrichmentTableEditDialog(target).then(() => {
-      this.snackBar.open(`Changes saved.`, 'Close', {
-        duration: 5000,
-      });
-      this.locatorChange.next(this.parent.locator);
+      this.hashIdChange.next(this.parent.hashId);
     }, () => {
     });
   }
@@ -63,7 +53,7 @@ export class FileListComponent {
       this.snackBar.open(`File moved.`, 'Close', {
         duration: 5000,
       });
-      this.locatorChange.next(this.parent.locator);
+      this.hashIdChange.next(this.parent.hashId);
     }, () => {
     });
   }
@@ -73,7 +63,7 @@ export class FileListComponent {
       this.snackBar.open(`Deletion successful.`, 'Close', {
         duration: 5000,
       });
-      this.locatorChange.next(this.parent.locator);
+      this.hashIdChange.next(this.parent.hashId);
     }, () => {
     });
   }
@@ -83,7 +73,7 @@ export class FileListComponent {
       this.snackBar.open(`Selected files re-annotated.`, 'Close', {
         duration: 5000,
       });
-      this.locatorChange.next(this.parent.locator);
+      this.hashIdChange.next(this.parent.hashId);
     }, () => {
     });
   }

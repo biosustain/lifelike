@@ -13,6 +13,9 @@ import { CollectionModal } from '../../../shared/utils/collection-modal';
 import { MapService } from '../../../drawing-tool/services';
 import { StandardRequestOptions } from '../../../interfaces/shared.interface';
 import { FormControl, FormGroup } from '@angular/forms';
+import { ProjectService } from '../../services/project.service';
+import { map } from 'rxjs/operators';
+import { ProjectImpl } from '../../models/filesystem-object';
 
 @Component({
   selector: 'app-browser-project-list',
@@ -24,8 +27,10 @@ export class BrowserProjectListComponent implements OnInit, OnDestroy {
     page: 1,
     sort: '+name',
   };
-  public readonly loadTask: BackgroundTask<void, Project[]> = new BackgroundTask(
-    () => this.projectSpaceService.getProject(),
+  public readonly loadTask: BackgroundTask<void, ProjectImpl[]> = new BackgroundTask(
+    () => this.projectService.getProjects().pipe(map(projectList => {
+      return [...projectList.results.items];
+    })),
   );
 
   public locator: StandardRequestOptions = {
@@ -38,13 +43,14 @@ export class BrowserProjectListComponent implements OnInit, OnDestroy {
   });
 
   public collectionSize = 0;
-  public readonly results = new CollectionModal<Project>([], {
+  public readonly results = new CollectionModal<ProjectImpl>([], {
     multipleSelection: true,
   });
 
   private loadTaskSubscription: Subscription;
 
   constructor(private readonly projectSpaceService: ProjectSpaceService,
+              private readonly projectService: ProjectService,
               private readonly mapService: MapService,
               private readonly workspaceManager: WorkspaceManager,
               private readonly progressDialog: ProgressDialog,

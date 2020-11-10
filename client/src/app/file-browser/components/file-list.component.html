@@ -48,28 +48,18 @@
                    placement="right"
                    [ngbPopover]="object.description"
                    [disablePopover]="object.description == null || object.description.length === 0">
-                <div [ngSwitch]="object.type" class="d-inline-block mr-1">
-                  <i *ngSwitchCase="'dir'" class="fa fa-fw fa-folder text-icon"></i>
-                  <div *ngSwitchCase="'file'">
-                    <i *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'"
-                       class="fa fa-fw fa-file text-icon"></i>
-                    <i *ngIf="object.name.slice(object.name.length - 11) === '.enrichment'"
-                       class="fa-fw fa fa-table text-icon"></i>
-                  </div>
-                  <i *ngSwitchCase="'map'" class="fa fa-fw fa-project-diagram text-icon"></i>
+                <div class="d-inline-block mr-1">
+                  <i [class]="'fa-fw text-icon ' + object.fontAwesomeIcon"></i>
                 </div>
 
                 <div class="d-inline-block text-truncate">
-                  <a [appLink]="object.getCommands()" [handleClick]="appLinks" (click)="objectOpen.next(object); $event.preventDefault()">
-                    <ng-container *ngIf="object.type !== 'dir'; else dirLabel">
-                      <div
-                          *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'">{{ object.name }} </div>
-                      <div
-                          *ngIf="object.name.slice(object.name.length - 11) === '.enrichment'">{{ object.name.slice(0, -11) }} </div>
-
+                  <a [appLink]="object.getCommands()" [handleClick]="appLinks"
+                     (click)="objectOpen.next(object); $event.preventDefault()">
+                    <ng-container *ngIf="!object.isDirectory; else dirLabel">
+                      {{ object.filename }}
                     </ng-container>
                     <ng-template #dirLabel>
-                      <strong>{{ object.name }}</strong>
+                      <strong>{{ object.filename }}</strong>
                     </ng-template>
                   </a>
                 </div>
@@ -80,31 +70,29 @@
 
         <td class="align-middle text-nowrap text-truncate d-none d-cbp-sm-table-cell"
             (click)="parent.children.toggle(object)">
-          <ng-container
-              *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) !== '.enrichment'">
-            <div popoverTitle="Annotation Status" [ngbPopover]="object.annotationsTooltipContent"
-                 container="body" class="text-truncate"
-                 placement="right" triggers="mouseenter:mouseleave"
-                 [disablePopover]="!object.annotationsTooltipContent">
-              <ng-container
-                  *ngIf="object.annotationsTooltipContent && object.annotationsTooltipContent.length">
-                <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
-              </ng-container>
-              {{ (object.data.annotations_date | date: 'short') || 'No annotations'}}
-            </div>
-          </ng-container>
+          <div popoverTitle="Annotation Status" [ngbPopover]="object.annotationsTooltipContent"
+               container="body" class="text-truncate"
+               placement="right" triggers="mouseenter:mouseleave"
+               [disablePopover]="!object.annotationsTooltipContent"
+               *ngIf="object.isAnnotatable">
+            <ng-container
+              *ngIf="object.annotationsTooltipContent && object.annotationsTooltipContent.length">
+              <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
+            </ng-container>
+            {{ (object.annotationsDate | date: 'short') || 'No annotations'}}
+          </div>
         </td>
 
         <td class="align-middle text-nowrap text-truncate d-none d-cbp-md-table-cell"
             (click)="parent.children.toggle(object)">
-          <div class="text-truncate" *ngIf="object.creator">
+          <div class="text-truncate" *ngIf="object.user">
             {{ getDateShown(object) | date: 'shortDate' }}
           </div>
         </td>
 
         <td class="align-middle text-nowrap text-truncate" (click)="parent.children.toggle(object)">
-          <div *ngIf="object.creator" class="text-truncate">
-            {{ object.creator.username }}
+          <div *ngIf="object.user" class="text-truncate">
+            {{ object.user.username }}
           </div>
         </td>
 
@@ -115,28 +103,20 @@
                 <i class="fas fa-cog fa-fw"></i>
               </button>
               <div ngbDropdownMenu>
-                <button ngbDropdownItem (click)="this.objectOpen.next(object)">
+                <button ngbDropdownItem (click)="this.objectOpen.next(object)" [disabled]="!object.isOpenable">
                   Open
                 </button>
-                <button ngbDropdownItem (click)="openEditDialog(object)"
-                        *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'">
+                <button ngbDropdownItem (click)="openEditDialog(object)" [disabled]="!object.isEditable">
                   Edit...
                 </button>
-                <button ngbDropdownItem
-                        *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) === '.enrichment'"
-                        (click)="openEnrichmentTableEditDialog(object)">
-                  Edit Enrichment Params
-                </button>
-                <button ngbDropdownItem
-                        *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) !== '.enrichment'"
-                        (click)="reannotate([object])">
+                <button ngbDropdownItem (click)="reannotate([object])" [disabled]="!object.isAnnotatable">
                   Re-annotate
                 </button>
                 <div class="dropdown-divider"></div>
-                <button ngbDropdownItem (click)="openMoveDialog(object)">
+                <button ngbDropdownItem (click)="openMoveDialog(object)" [disabled]="!object.isMovable">
                   Move...
                 </button>
-                <button ngbDropdownItem (click)="openDeleteDialog([object])">
+                <button ngbDropdownItem (click)="openDeleteDialog([object])" [disabled]="!object.isDeletable">
                   Delete...
                 </button>
               </div>
