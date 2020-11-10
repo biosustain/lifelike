@@ -113,3 +113,147 @@ def get_ncbi_enrichment_domains():
                 }
         nodes.append(node)
     return jsonify({'result': nodes}), 200
+
+    # TODO LL-1998: Still need to add these properties:
+    #  font: {
+    #    color,
+    #  },
+    #  color: {
+    #    background: '#FFFFFF',
+    #    border,
+    #    hover: {
+    #      background: '#FFFFFF',
+    #      border
+    #    },
+    #    highlight: {
+    #      background: '#FFFFFF',
+    #      border
+    #    },
+    #  },
+    # },
+
+# 3-hydroxyisobutyric Acid to pykF Using ChEBI
+@bp.route('/shortest-path-queries/three-hydroxisobuteric-acid-to-pykf-chebi', methods=['GET'])
+def three_hydroxisobuteric_acid_to_pykf_chebi():
+    kg = get_kg_service()
+    return jsonify({
+        'result': {
+            'nodes': [
+                { 'id': 1, 'label': 'Node 1' },
+                { 'id': 2, 'label': 'Node 2' },
+                { 'id': 3, 'label': 'Node 3' },
+                { 'id': 4, 'label': 'Node 4' },
+                { 'id': 5, 'label': 'Node 5' }
+            ],
+            'edges': [
+                { 'from': 1, 'to': 3 },
+                { 'from': 1, 'to': 2 },
+                { 'from': 2, 'to': 4 },
+                { 'from': 2, 'to': 5 },
+                { 'from': 3, 'to': 3 }
+            ]
+        }
+    }), 200
+
+
+# 3-hydroxyisobutyric Acid to pykF using BioCyc
+@bp.route('/shortest-path-queries/three-hydroxisobuteric-acid-to-pykf-biocyc', methods=['GET'])
+def three_hydroxisobuteric_acid_to_pykf_biocyc():
+    kg = get_kg_service()
+    return jsonify({
+        'result': {
+            'nodes': [
+                { 'id': 1, 'label': 'Node 1' },
+                { 'id': 3, 'label': 'Node 3' },
+            ],
+            'edges': [
+                { 'from': 1, 'to': 3 },
+                { 'from': 1, 'to': 2 },
+                { 'from': 3, 'to': 3 }
+            ]
+        }
+    }), 200
+
+
+# icd to rhsE
+@bp.route('/shortest-path-queries/icd-to-rhse', methods=['GET'])
+def icd_to_rhse():
+    kg = get_kg_service()
+    return jsonify({
+        'result': {
+            'nodes': [
+                { 'id': 1, 'label': 'Node 1' },
+                { 'id': 2, 'label': 'Node 2' },
+                { 'id': 4, 'label': 'Node 4' },
+                { 'id': 5, 'label': 'Node 5' }
+            ],
+            'edges': [
+                { 'from': 1, 'to': 2 },
+                { 'from': 2, 'to': 4 },
+                { 'from': 2, 'to': 5 },
+            ]
+        }
+    }), 200
+
+
+# SIRT5 to NFE2L2 Using Literature Data
+@bp.route('/shortest-path-queries/sirt5-to-nfe2l2-literature', methods=['GET'])
+def sirt5_to_nfe2l2_literature():
+    kg = get_kg_service()
+    return jsonify({
+        'result': {
+            'nodes': [
+                { 'id': 1, 'label': 'Node 1' },
+                { 'id': 2, 'label': 'Node 2' },
+                { 'id': 3, 'label': 'Node 3' },
+                { 'id': 5, 'label': 'Node 5' }
+            ],
+            'edges': [
+                { 'from': 1, 'to': 3 },
+                { 'from': 1, 'to': 2 },
+                { 'from': 2, 'to': 5 },
+                { 'from': 3, 'to': 3 }
+            ]
+        }
+    }), 200
+
+
+# CTNNB1 to Diarrhea Using Literature Data
+@bp.route('/shortest-path-queries/ctnnb1-to-diarrhea-literature', methods=['GET'])
+def ctnnb1_to_diarrhea_literature():
+    kg = get_kg_service()
+    return jsonify({
+        'result': {
+            'nodes': [
+                { 'id': 1, 'label': 'Node 1' },
+                { 'id': 2, 'label': 'Node 2' },
+                { 'id': 3, 'label': 'Node 3' },
+                { 'id': 4, 'label': 'Node 4' },
+            ],
+            'edges': [
+                { 'from': 1, 'to': 3 },
+                { 'from': 1, 'to': 2 },
+                { 'from': 2, 'to': 4 },
+                { 'from': 3, 'to': 3 }
+            ]
+        }
+    }), 200
+
+
+# Two pathways using BioCyc
+@bp.route('/shortest-path-queries/two-pathways-biocyc', methods=['GET'])
+def two_pathways_biocyc():
+    kg = get_kg_service()
+    return jsonify({
+        'result': {
+            'nodes': [
+                { 'id': 1, 'label': 'Node 1' },
+                { 'id': 2, 'label': 'Node 2' },
+                { 'id': 4, 'label': 'Node 4' },
+            ],
+            'edges': [
+                { 'from': 1, 'to': 2 },
+                { 'from': 2, 'to': 4 },
+            ]
+        }
+    }), 200
