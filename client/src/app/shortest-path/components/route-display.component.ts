@@ -2,8 +2,10 @@ import { AfterViewInit, Component, Input } from '@angular/core';
 
 import { Network, DataSet } from 'vis-network';
 
-import { uuidv4 } from 'app/shared/utils';
+import { isNullOrUndefined } from 'util';
+
 import { Neo4jGraphConfig } from 'app/interfaces';
+import { uuidv4 } from 'app/shared/utils';
 
 @Component({
   selector: 'app-route-display',
@@ -12,8 +14,20 @@ import { Neo4jGraphConfig } from 'app/interfaces';
 })
 export class RouteDisplayComponent implements AfterViewInit {
 
-  @Input() edges: any;
-  @Input() nodes: any;
+  @Input() set edges(edges: any) {
+    this.networkData.edges = edges;
+    if (!isNullOrUndefined(this.networkGraph)) {
+      this.setNetworkData();
+    }
+  }
+  @Input() set nodes(nodes: any) {
+    this.networkData.nodes = nodes;
+    if (!isNullOrUndefined(this.networkGraph)) {
+      this.setNetworkData();
+    }
+  }
+
+  networkData: any;
 
   config: Neo4jGraphConfig;
   networkGraph: Network;
@@ -53,29 +67,27 @@ export class RouteDisplayComponent implements AfterViewInit {
         // TODO: Investigate the 'scaling' property for dynamic resizing of 'box' shape nodes
       },
     };
+
+    this.networkData = {
+      nodes: new DataSet(this.nodes),
+      edges: new DataSet(this.edges),
+    };
   }
 
   ngAfterViewInit() {
     this.initNetwork();
-    this.setNetworkData();
   }
 
   initNetwork() {
     const container = document.getElementById(this.networkContainerId);
     this.networkGraph = new Network(
       container,
-      {
-        nodes: new DataSet(this.nodes),
-        edges: new DataSet(this.edges),
-      },
-      this.config);
+      this.networkData,
+      this.config
+    );
   }
 
   setNetworkData() {
-    const data = {
-      nodes: new DataSet(this.nodes),
-      edges: new DataSet(this.edges),
-    };
-    this.networkGraph.setData(data);
+    this.networkGraph.setData(this.networkData);
   }
 }
