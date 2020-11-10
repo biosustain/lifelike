@@ -19,9 +19,6 @@ from neo4japp.data_transfer_objects import (
     PDFMeta,
     PDFWord,
     PDFParsedContent,
-    # PDFParsedCharacters,
-    # PDFTokenPositions,
-    # PDFTokenPositionsList,
     PDFTokensList
 )
 from neo4japp.exceptions import AnnotationError
@@ -33,6 +30,7 @@ from .constants import (
     MISC_SYMBOLS_AND_CHARS,
     PDF_CHARACTER_SPACING_THRESHOLD,
     PDF_NEW_LINE_THRESHOLD,
+    SPACE_COORDINATE_FLOAT
 )
 from .util import clean_char, normalize_str
 
@@ -199,7 +197,7 @@ class AnnotationsPDFParser:
     def parse_pdf_high_level(self, pdf) -> str:
         return high_level.extract_text(pdf)
 
-    def parse_text(self, abstract: str) -> List[PDFChar]:
+    def parse_text(self, abstract: str) -> PDFParsedContent:
         """Parse a string and produces similar results to
         self.parse_pdf(). The only difference would be the PDFChar
         objects will not have actual PDF coordinates.
@@ -216,7 +214,8 @@ class AnnotationsPDFParser:
                     cropbox=(1, 1),
                 )
             )
-        return pdf_chars
+        words = self._combine_chars_into_words(pdf_chars)
+        return PDFParsedContent(words=words)
 
     def parse_pdf(self, pdf) -> PDFParsedContent:
         """Parse a PDF and create two dictionaries; one
@@ -270,7 +269,8 @@ class AnnotationsPDFParser:
         self,
         word: str,
         pdf_meta: PDFMeta,
-    ) -> Tuple[str, PDFMeta]:
+        location_offsets: List[int]
+    ) -> Tuple[str, List[int], PDFMeta]:
         """Only remove balanced opening and closing punctuation.
         """
         opening_punc = {'(', '[', '{'}
@@ -283,6 +283,7 @@ class AnnotationsPDFParser:
         heights = pdf_meta.heights
         widths = pdf_meta.widths
         word_copy = word
+        location_offsets_copy = location_offsets
 
         try:
             # ending punctuation
@@ -291,6 +292,7 @@ class AnnotationsPDFParser:
                 coordinates = coordinates[:-1]
                 heights = heights[:-1]
                 widths = widths[:-1]
+                location_offsets_copy = location_offsets_copy[:-1]
 
             if word_copy:
                 # now check for other punctuations
@@ -304,6 +306,7 @@ class AnnotationsPDFParser:
                         coordinates = coordinates[1:-1]
                         heights = heights[1:-1]
                         widths = widths[1:-1]
+                        location_offsets_copy = location_offsets_copy[1:-1]
                     else:
                         # did not match
                         break
@@ -329,6 +332,7 @@ class AnnotationsPDFParser:
                             coordinates = coordinates[1:]
                             heights = heights[1:]
                             widths = widths[1:]
+                            location_offsets_copy = location_offsets_copy[1:]
 
                 if word_copy:
                     if word_copy[-1] in closing_punc:
@@ -351,6 +355,7 @@ class AnnotationsPDFParser:
                             coordinates = coordinates[:-1]
                             heights = heights[:-1]
                             widths = widths[:-1]
+                            location_offsets_copy = location_offsets_copy[:-1]
 
                 if word_copy:
                     # strip the first leading and trailing only
@@ -361,18 +366,21 @@ class AnnotationsPDFParser:
                         coordinates = coordinates[:-1]
                         heights = heights[:-1]
                         widths = widths[:-1]
+                        location_offsets_copy = location_offsets_copy[:-1]
                     if word_copy and word_copy[0] in leading_punc:
                         word_copy = word_copy[1:]
                         coordinates = coordinates[1:]
                         heights = heights[1:]
                         widths = widths[1:]
+                        location_offsets_copy = location_offsets_copy[1:]
 
         except IndexError:
             raise AnnotationError(
                 'Index key error occurred when stripping leading and trailing punctuation.'
                 f' For word "{word}"')
-        return word_copy, PDFMeta(
-            coordinates=coordinates, heights=heights, widths=widths)
+
+        return word_copy, location_offsets_copy, PDFMeta(
+            coordinates=coordinates, heights=heights, widths=widths),
 
     def _combine_chars_into_words(
         self,
@@ -391,6 +399,7 @@ class AnnotationsPDFParser:
         pdf_meta = PDFMeta()
         page_number = None
         cropbox = None
+        location_offsets: List[int] = []
 
         for i, char in enumerate(parsed_chars):
             if not page_number:
@@ -419,47 +428,38 @@ class AnnotationsPDFParser:
                         close_parenthesis = False
 
                         if word[0] in ascii_letters and word[-1] in ascii_letters:
-                            if len(word) <= 2:
-                                # skip words like E., I. etc
-                                word = ''
-                                page_number = None
-                                cropbox = None
-                                pdf_meta = PDFMeta()
-                                continue
-                            else:
-                                pdf_words.append(
-                                    PDFWord(
-                                        keyword=word,
-                                        normalized_keyword='',
-                                        page_number=page_number,
-                                        cropbox=cropbox,
-                                        meta=pdf_meta,
-                                        open_parenthesis=open_parenthesis,
-                                        close_parenthesis=close_parenthesis,
-                                        previous_words=''
-                                    )
+                            pdf_meta.lo_location_offset = location_offsets[0]
+                            pdf_meta.hi_location_offset = location_offsets[-1]
+                            pdf_words.append(
+                                PDFWord(
+                                    keyword=word,
+                                    normalized_keyword='',
+                                    page_number=page_number,
+                                    cropbox=cropbox,
+                                    meta=pdf_meta,
+                                    previous_words=' '.join(
+                                        [pdfw.keyword for pdfw in pdf_words[-MAX_ABBREVIATION_WORD_LENGTH:]])  # noqa
+                                        if open_parenthesis and close_parenthesis else ''  # noqa
                                 )
-                                word = ''
-                                page_number = None
-                                cropbox = None
-                                pdf_meta = PDFMeta()
+                            )
+                            word = ''
+                            page_number = None
+                            cropbox = None
+                            location_offsets[:] = []
+                            pdf_meta = PDFMeta()
                         else:
                             if word[0] == '(' and word[-1] == ')':
                                 open_parenthesis = True
                                 close_parenthesis = True
 
-                            if len(word) <= 2:
-                                # skip words like E., I. etc
-                                word = ''
-                                page_number = None
-                                cropbox = None
-                                pdf_meta = PDFMeta()
-                                continue
-                            else:
-                                word, pdf_meta = self._remove_leading_trailing_punctuation(
-                                    word=word, pdf_meta=pdf_meta,
-                                )
-                            if word and pdf_meta.coordinates:
+                            word, location_offsets, pdf_meta = self._remove_leading_trailing_punctuation(  # noqa
+                                word=word, pdf_meta=pdf_meta,
+                                location_offsets=location_offsets
+                            )
+
+                            if word and location_offsets and pdf_meta.coordinates:
+                                pdf_meta.lo_location_offset = location_offsets[0]
+                                pdf_meta.hi_location_offset = location_offsets[-1]
                                 pdf_words.append(
                                     PDFWord(
                                         keyword=word,
@@ -467,17 +467,16 @@ class AnnotationsPDFParser:
                                         page_number=page_number,
                                         cropbox=cropbox,
                                         meta=pdf_meta,
-                                        open_parenthesis=open_parenthesis,
-                                        close_parenthesis=close_parenthesis,
                                         previous_words=' '.join(
                                             [pdfw.keyword for pdfw in pdf_words[-MAX_ABBREVIATION_WORD_LENGTH:]])  # noqa
                                             if open_parenthesis and close_parenthesis else ''  # noqa
                                     )
                                 )
-                                word = ''
-                                page_number = None
-                                cropbox = None
-                                pdf_meta = PDFMeta()
+                            word = ''
+                            page_number = None
+                            cropbox = None
+                            location_offsets[:] = []
+                            pdf_meta = PDFMeta()
                 else:
                     open_parenthesis = False
                     close_parenthesis = False
@@ -491,24 +490,20 @@ class AnnotationsPDFParser:
                             )
                             pdf_meta.heights.append(char.height)
                             pdf_meta.widths.append(char.width)
+                            location_offsets.append(i)
 
-                        if len(word) <= 2:
-                            # skip words like E., I. etc
-                            word = ''
-                            page_number = None
-                            cropbox = None
-                            pdf_meta = PDFMeta()
-                            continue
-                        else:
-                            if word[0] == '(' and word[-1] == ')':
-                                open_parenthesis = True
-                                close_parenthesis = True
+                        if word[0] == '(' and word[-1] == ')':
+                            open_parenthesis = True
+                            close_parenthesis = True
 
-                            word, pdf_meta = self._remove_leading_trailing_punctuation(
-                                word=word, pdf_meta=pdf_meta,
-                            )
+                        word, location_offsets, pdf_meta = self._remove_leading_trailing_punctuation(  # noqa
+                            word=word, pdf_meta=pdf_meta,
+                            location_offsets=location_offsets
+                        )
 
-                        if word and pdf_meta.coordinates:
+                        if word and location_offsets and pdf_meta.coordinates:
+                            pdf_meta.lo_location_offset = location_offsets[0]
+                            pdf_meta.hi_location_offset = location_offsets[-1]
                             pdf_words.append(
                                 PDFWord(
                                     keyword=word,
@@ -516,17 +511,16 @@ class AnnotationsPDFParser:
                                     page_number=page_number,
                                     cropbox=cropbox,
                                     meta=pdf_meta,
-                                    open_parenthesis=open_parenthesis,
-                                    close_parenthesis=close_parenthesis,
                                     previous_words=' '.join(
                                         [pdfw.keyword for pdfw in pdf_words[-MAX_ABBREVIATION_WORD_LENGTH:]])  # noqa
                                         if open_parenthesis and close_parenthesis else ''  # noqa
                                 )
                             )
-                            word = ''
-                            page_number = None
-                            cropbox = None
-                            pdf_meta = PDFMeta()
+                        word = ''
+                        page_number = None
+                        cropbox = None
+                        location_offsets[:] = []
+                        pdf_meta = PDFMeta()
                     else:
                         if ord(parsed_chars[i+1].text) in MISC_SYMBOLS_AND_CHARS:  # noqa
                             next_char = clean_char(parsed_chars[i+1].text)
@@ -547,6 +541,7 @@ class AnnotationsPDFParser:
                             )
                             pdf_meta.heights.append(char.height)
                             pdf_meta.widths.append(char.width)
+                            location_offsets.append(i)
             except TypeError:
                 # checking ord() failed
                 continue
@@ -568,10 +563,28 @@ class AnnotationsPDFParser:
         for i, _ in enumerate(words):
             while curr_max_words <= self.max_word_length and end_idx <= max_length:  # noqa
                 words_subset = words[i:end_idx]
-                curr_keyword = ' '.join([word.keyword for word in words_subset])
-                coordinates = [word.meta.coordinates for word in words_subset]
-                heights = [word.meta.heights for word in words_subset]
-                widths = [word.meta.widths for word in words_subset]
+                curr_keyword = ''
+                coordinates = []
+                heights = []
+                widths = []
+
+                for word in words_subset:
+                    curr_keyword += word.keyword
+                    coordinates += word.meta.coordinates
+                    heights += word.meta.heights
+                    widths += word.meta.widths
+
+                    # space
+                    curr_keyword += ' '
+                    coordinates += [SPACE_COORDINATE_FLOAT]
+                    heights += [SPACE_COORDINATE_FLOAT]
+                    widths += [SPACE_COORDINATE_FLOAT]
+
+                # remove trailing space
+                curr_keyword = curr_keyword[:-1]
+                coordinates = coordinates[:-1]
+                heights = heights[:-1]
+                widths = widths[:-1]
 
                 if (curr_keyword.lower() not in COMMON_WORDS and
                     not compiled_regex.match(curr_keyword) and
@@ -587,12 +600,12 @@ class AnnotationsPDFParser:
                         page_number=words_subset[0].page_number,
                         cropbox=words_subset[0].cropbox,
                         meta=PDFMeta(
+                            lo_location_offset=words_subset[0].meta.lo_location_offset,
+                            hi_location_offset=words_subset[-1].meta.hi_location_offset,
                             coordinates=coordinates,
                             heights=heights,
                             widths=widths
                         ),
-                        open_parenthesis=words_subset[0].open_parenthesis,
-                        close_parenthesis=words_subset[0].close_parenthesis,
                         previous_words=words_subset[0].previous_words
                     )
                     yield token
