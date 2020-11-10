@@ -5,35 +5,56 @@ import marshmallow.validate
 import marshmallow_dataclass
 from marshmallow import fields, Schema, validates_schema, ValidationError
 
-from neo4japp.models import Files
+from neo4japp.models import Files, Projects
 from neo4japp.models.files import FilePrivileges
+from neo4japp.schemas.base import CamelCaseSchema
+from neo4japp.schemas.fields import SortField
 
 
-class UserSchema(Schema):
+class UserSchema(CamelCaseSchema):
     hash_id = fields.String()
     username = fields.String()
     first_name = fields.String()
     last_name = fields.String()
 
 
-class ProjectSchema(Schema):
+class ProjectSchema(CamelCaseSchema):
     hash_id = fields.String()
     name = fields.String()
     description = fields.String()
-    root = fields.Nested(lambda: FileSchema())
+    creation_date = fields.DateTime()
+    modified_date = fields.DateTime()
+    root = fields.Nested(lambda: FileHashIdSchema())
+
+
+class ProjectListRequestSchema(CamelCaseSchema):
+    sort = SortField(columns={
+        'name': Projects.name
+    })
+
+
+class ProjectListSchema(CamelCaseSchema):
+    total = fields.Integer()
+    results = fields.List(fields.Nested(ProjectSchema))
 
 
 FilePrivilegesSchema = marshmallow_dataclass.class_schema(FilePrivileges)
 
 
-class FileSchema(Schema):
+class FileHashIdSchema(CamelCaseSchema):
+    hash_id = fields.String()
+
+
+class FileSchema(CamelCaseSchema):
     hash_id = fields.String()
     filename = fields.String()
     user = fields.Nested(UserSchema)
     description = fields.String()
     mime_type = fields.String()
     doi = fields.String()
+    upload_url = fields.String()
     public = fields.Boolean()
+    annotations_date = fields.DateTime()
     creation_date = fields.DateTime()
     modified_date = fields.DateTime()
     recycling_date = fields.DateTime()
@@ -90,6 +111,11 @@ class FileSchema(Schema):
             return None
 
 
+class FileListSchema(CamelCaseSchema):
+    total = fields.Integer()
+    results = fields.List(fields.Nested(FileSchema))
+
+
 @dataclass
 class FileUpdateRequest:
     filename: str = None
@@ -101,18 +127,26 @@ class FileUpdateRequest:
     public: bool = None
 
 
-class BulkFileRequestSchema(Schema):
+class BulkFileRequestSchema(CamelCaseSchema):
     hash_ids = fields.List(fields.String(validate=marshmallow.validate.Length(min=1, max=200)),
                            required=True,
                            validate=marshmallow.validate.Length(min=1, max=100))
 
 
-class BulkFileUpdateRequestSchema(Schema):
+class BulkFileUpdateRequestSchema(CamelCaseSchema):
     filename = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=200))
     parent_hash_id = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=36))
     description = fields.String(validate=marshmallow.validate.Length(min=1, max=2048))
     upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     public = fields.Boolean(default=False)
+
+
+class FileListRequestSchema(CamelCaseSchema):
+    type = fields.String(required=True,
+                         validate=marshmallow.validate.OneOf(['public']))
+    sort = SortField(columns={
+        'filename': Files.filename
+    })
 
 
 class FileUpdateRequestSchema(BulkFileUpdateRequestSchema):
@@ -149,12 +183,10 @@ class FileResponse:
     })
 
 
-class FileResponseSchema(Schema):
-    object = fields.Nested(FileSchema, exclude=('project',))
-    project = fields.Function(lambda obj: ProjectSchema(exclude=('root',)) \
-                              .dump(obj.object.calculated_project))
+class FileResponseSchema(CamelCaseSchema):
+    object = fields.Nested(FileSchema, exclude=('project.root',))
 
 
-class MultipleFileResponseSchema(Schema):
+class MultipleFileResponseSchema(CamelCaseSchema):
     objects = fields.Dict(keys=fields.String(),
                           values=fields.Nested(FileSchema, exclude=('project.root',)))

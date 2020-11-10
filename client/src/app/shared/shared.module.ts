@@ -54,6 +54,7 @@ import { GenericTableComponent } from './components/table/generic-table.componen
 import { HighlightTextComponent } from './components/highlight-text.component';
 import { AddStatusPipe } from './pipes/add-status.pipe';
 import { TermHighlightComponent } from './components/term-highlight.component';
+import { ApiService } from './services/api.service';
 
 const components = [
   AnnotationFilterComponent,
@@ -121,6 +122,7 @@ const components = [
     AddStatusPipe,
   ],
   providers: [
+    ApiService,
     SharedNgrxEffects,
     SharedSearchService,
   ],

@@ -5,11 +5,13 @@ import re
 import urllib.request
 from collections import defaultdict
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Tuple, Any
 from urllib.error import URLError
 
+import sqlalchemy
 from flask import Blueprint, jsonify, g, make_response, request
 from flask.views import MethodView
+from flask_sqlalchemy import BaseQuery
 from marshmallow import ValidationError
 from pdfminer import high_level
 from sqlalchemy import and_, or_
@@ -22,16 +24,18 @@ from neo4japp.database import db
 from neo4japp.exceptions import RecordNotFoundException, AccessRequestRequiredError
 from neo4japp.models import Projects, Files, FileContent, AppUser, FileVersion
 from neo4japp.models.files_queries import add_user_permission_columns, FileHierarchy, \
-    build_file_hierarchy_query, build_file_parents_cte
+    build_file_hierarchy_query_parts, build_file_parents_cte
+from neo4japp.schemas.common import PaginatedRequest
 from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponse, FileResponseSchema, \
-    FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, BulkFileUpdateRequestSchema
+    FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, BulkFileUpdateRequestSchema, \
+    FileListSchema, FileListRequestSchema
 from neo4japp.schemas.formats.drawing_tool import validate_map, validate_map_data
 from neo4japp.utils.network import read_url
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
 
-class FilesystemView(MethodView):
+class FilesystemBaseView(MethodView):
     file_max_size = 1024 * 1024 * 30
     url_fetch_timeout = 10
     url_fetch_user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
@@ -57,23 +61,30 @@ class FilesystemView(MethodView):
             raise RecordNotFoundException("The requested file object could not be found.")
         return files[0]
 
-    def get_files(self, filter, lazy_load_content=False) -> List[Files]:
-        current_user = g.current_user
-
+    def get_files_query_parts(self, filter, user: AppUser, lazy_load_content=False) -> Dict[str, BaseQuery]:
         t_file = db.aliased(Files, name='_file')  # alias required for the FileHierarchy class
         t_project = db.aliased(Projects, name='_project')
 
-        query = build_file_hierarchy_query(filter, t_project, t_file) \
+        query_parts = {
+            **build_file_hierarchy_query_parts(filter, t_project, t_file),
+            't_file': t_file,
+            't_project': t_project,
+        }
+
+        query_parts['query'] = query_parts['query'] \
             .options(raiseload('*'),
                      joinedload(t_file.user))
 
         # Fetch permissions for the given user
-        query = add_user_permission_columns(query, t_project, t_file, current_user.id)
+        query_parts['query'] = add_user_permission_columns(query_parts['query'],
+                                                           t_project, t_file, user.id)
 
         if lazy_load_content:
-            query = query.options(lazyload(t_file.content))
+            query_parts['query'] = query_parts['query'].options(lazyload(t_file.content))
 
-        results = query.all()
+        return query_parts
+
+    def calculate_files_from_query(self, results, t_file, t_project, user: AppUser) -> List[Files]:
         grouped_results = defaultdict(lambda: [])
         files = []
 
@@ -83,10 +94,19 @@ class FilesystemView(MethodView):
         for rows in grouped_results.values():
             hierarchy = FileHierarchy(rows, t_file, t_project)
             hierarchy.calculate_properties()
-            hierarchy.calculate_privileges([current_user.id])
+            hierarchy.calculate_privileges([user.id])
             files.append(hierarchy.file)
 
         return files
+
+    def get_files(self, filter, lazy_load_content=False) -> List[Files]:
+        user = g.current_user
+        query_parts = self.get_files_query_parts(filter, user,
+                                                 lazy_load_content=lazy_load_content)
+        return self.calculate_files_from_query(query_parts['query'].all(),
+                                               query_parts['t_file'],
+                                               query_parts['t_project'],
+                                               user)
 
     def update_files(self, hash_ids: List[str], params: Dict, user: AppUser):
         changed_fields = set()
@@ -333,8 +353,36 @@ class FilesystemView(MethodView):
         return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
 
-class FileListView(FilesystemView):
+class FileListView(FilesystemBaseView):
     decorators = [auth.login_required]
+
+    @use_args(FileListRequestSchema)
+    @use_args(PaginatedRequest)
+    def get(self, params: dict, pagination: dict):
+        assert params['type'] == 'public'
+
+        user = g.current_user
+        query_parts = self.get_files_query_parts(Files.public.is_(True), user)
+        query = query_parts['query']
+        t_file = query_parts['t_file']
+        t_project = query_parts['t_project']
+
+        query = params['sort'](query)
+        page = pagination['page']
+        limit = pagination['limit']
+        files = self.calculate_files_from_query(query.all(), t_file, t_project, user)
+        total = len(files)
+        # TODO: Make pagination fast
+        page_files = files[(page - 1) * limit:page * limit]
+
+        return jsonify(FileListSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }, exclude=(
+            'results.children',
+        )).dump({
+            'total': total,
+            'results': page_files,
+        }))
 
     @use_args(FileCreateRequestSchema, locations=['json', 'form', 'files'])
     def put(self, params: dict):
@@ -511,13 +559,15 @@ class FileListView(FilesystemView):
         children = self.get_files(Files.parent_id == file.id)
         return_file.calculated_children = children
 
-        return jsonify(FileResponseSchema(context={
-            'user_privilege_filter': g.current_user.id,
-        }, exclude=(
-            'object.children.children',  # We aren't loading sub-children
-        )).dump(FileResponse(
-            object=return_file,
-        )))
+        return jsonify({
+            'object': FileResponseSchema(context={
+                'user_privilege_filter': g.current_user.id,
+            }, exclude=(
+                'object.children.children',  # We aren't loading sub-children
+            )).dump(FileResponse(
+                object=return_file,
+            )),
+        })
 
     @use_args(lambda request: BulkFileRequestSchema())
     @use_args(lambda request: BulkFileUpdateRequestSchema(partial=True))
@@ -564,7 +614,7 @@ class FileListView(FilesystemView):
         return self.get_bulk_file_response(hash_ids, current_user)
 
 
-class FileDetailView(FilesystemView):
+class FileDetailView(FilesystemBaseView):
     decorators = [auth.login_required]
 
     def get(self, hash_id):
@@ -603,7 +653,7 @@ class FileDetailView(FilesystemView):
         return self.get(hash_id)
 
 
-class FileContentView(FilesystemView):
+class FileContentView(FilesystemBaseView):
     decorators = [auth.login_required]
 
     def get(self, hash_id):

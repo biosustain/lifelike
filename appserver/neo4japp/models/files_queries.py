@@ -3,12 +3,13 @@ For now, it's just a file with query functions to help DRY.
 """
 from typing import List, Set, Dict, Optional
 
+from flask_sqlalchemy import BaseQuery
 from sqlalchemy import and_, inspect
-from sqlalchemy.orm import contains_eager, aliased
+from sqlalchemy.orm import contains_eager, aliased, Query
 
 from neo4japp.database import db
 from . import projects_collaborator_role, AppUser, AppRole, Projects
-from .files import Files, FileContent, file_collaborator_role
+from .files import Files, FileContent, file_collaborator_role, FallbackOrganism
 from ..schemas.filesystem import FilePrivileges
 
 
@@ -50,7 +51,8 @@ def get_all_files_by_id(file_ids: Set[str], project_id: int):
     return files
 
 
-def build_file_parents_cte(filter, max_depth=Files.MAX_DEPTH, files_table=Files, projects_table=Projects):
+def build_file_parents_cte(filter, max_depth=Files.MAX_DEPTH,
+                           files_table=Files, projects_table=Projects) -> BaseQuery:
     """
     Build a query for fetching *just* the parent IDs of a file, and the file itself.
     The query returned is to be combined with another query to actually
@@ -106,7 +108,7 @@ def build_file_parents_cte(filter, max_depth=Files.MAX_DEPTH, files_table=Files,
     return q_hierarchy
 
 
-def join_projects_to_parents_cte(q_hierarchy):
+def join_projects_to_parents_cte(q_hierarchy: Query):
     """
     Using the query from :func:`get_get_file_parent_hierarchy_query`, this methods joins
     the project ID for the initial file row(s), provided the top-most parent (root) of
@@ -124,9 +126,9 @@ def join_projects_to_parents_cte(q_hierarchy):
         .subquery()
 
 
-def build_file_hierarchy_query(condition, projects_table, files_table,
-                               include_deleted_projects=False,
-                               include_deleted_files=False):
+def build_file_hierarchy_query_parts(condition, projects_table, files_table,
+                                     include_deleted_projects=False,
+                                     include_deleted_files=False) -> Dict[str, BaseQuery]:
     """
     Build a query for fetching a file, its parents, and the related project(s), while
     (optionally) excluding deleted projects and deleted projects.
@@ -171,7 +173,10 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
     if not include_deleted_projects:
         query = query.filter(projects_table.deletion_date.is_(None))
 
-    return query
+    return {
+        'query': query,
+        'q_hierarchy': q_hierarchy,
+    }
 
 
 # noinspection DuplicatedCode

@@ -26,7 +26,13 @@ import { MessageType } from '../../interfaces/message-dialog.interface';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { ObjectDeletionResultDialogComponent } from '../components/object-deletion-result-dialog.component';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
-import { FilesystemObject } from '../models/filesystem-object';
+import {
+  DIRECTORY_MIMETYPE,
+  ENRICHMENT_TABLE_MIMETYPE,
+  FilesystemObject,
+  MAP_MIMETYPE,
+  PDF_MIMETYPE,
+} from '../models/filesystem-object';
 import { cloneDeep } from 'lodash';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { DefaultMap } from '../../shared/utils/collections';
@@ -159,31 +165,8 @@ export class FilesystemObjectActions {
     return modalRef.result;
   }
 
-  openEnrichmentTableEditDialog(target: FilesystemObject): Promise<any> {
-    const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
-    dialogRef.componentInstance.fileId = target.id;
-    dialogRef.componentInstance.projectName = target.locator.projectName;
-    return dialogRef.result.then((result) => {
-      const progressDialogRef = this.createProgressDialog('Saving changes...');
-
-      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
-      return this.filesService.editGeneList(
-          target.locator.projectName,
-          target.id,
-          enrichmentData,
-          result.name,
-          result.description,
-      )
-          .pipe(
-              this.errorHandler.create(),
-              finalize(() => progressDialogRef.close()),
-          )
-          .toPromise();
-    });
-  }
-
   openMoveDialog(target: FilesystemObject): Promise<any> {
-    if (target.type === 'map' || target.type === 'file') {
+    if (target.isMovable) {
       const dialogRef = this.modalService.open(FileSelectionDialogComponent);
       dialogRef.componentInstance.title = `Move '${target.name}'`;
       dialogRef.componentInstance.emptyDirectoryMessage = 'There are no sub-folders in this folder.';
@@ -233,7 +216,7 @@ export class FilesystemObjectActions {
   }
 
   openEditDialog(target: FilesystemObject): Promise<any> {
-    if (target.type === 'dir') {
+    if (target.mimeType === DIRECTORY_MIMETYPE) {
       const dialogRef = this.ngbModal.open(DirectoryEditDialogComponent);
       dialogRef.componentInstance.editing = true;
       dialogRef.componentInstance.directory = cloneDeep(target.data);
@@ -251,7 +234,7 @@ export class FilesystemObjectActions {
             )
             .toPromise();
       });
-    } else if (target.type === 'file') {
+    } else if (target.mimeType === PDF_MIMETYPE) {
       // We are using an outer promise because some of the code uses promises and some
       // use RxJs, but this is a bloody disaster
       return new Promise((accept, reject) => {
@@ -299,18 +282,39 @@ export class FilesystemObjectActions {
             }),
         ).subscribe();
       });
-    } else if (target.type === 'map') {
+    } else if (target.mimeType === MAP_MIMETYPE) {
       const dialogRef = this.modalService.open(MapEditDialogComponent);
       dialogRef.componentInstance.map = cloneDeep(target.data);
       return dialogRef.result.then(newMap => {
         const progressDialogRef = this.createProgressDialog('Saving changes...');
 
         return this.mapService.updateMap(target.locator.projectName, newMap)
-            .pipe(
-                this.errorHandler.create(),
-                finalize(() => progressDialogRef.close()),
-            )
-            .toPromise();
+          .pipe(
+            this.errorHandler.create(),
+            finalize(() => progressDialogRef.close()),
+          )
+          .toPromise();
+      });
+    } else if (target.mimeType === ENRICHMENT_TABLE_MIMETYPE) {
+      const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
+      dialogRef.componentInstance.fileId = target.id;
+      dialogRef.componentInstance.projectName = target.locator.projectName;
+      return dialogRef.result.then((result) => {
+        const progressDialogRef = this.createProgressDialog('Saving changes...');
+
+        const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
+        return this.filesService.editGeneList(
+          target.locator.projectName,
+          target.id,
+          enrichmentData,
+          result.name,
+          result.description,
+        )
+          .pipe(
+            this.errorHandler.create(),
+            finalize(() => progressDialogRef.close()),
+          )
+          .toPromise();
       });
     } else {
       throw new Error(`unsupported type: ${target.type}`);
