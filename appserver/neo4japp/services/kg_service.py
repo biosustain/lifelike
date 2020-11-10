@@ -10,6 +10,7 @@ from neo4japp.models import (
     GraphRelationship
 )
 from neo4japp.constants import (
+    ANNOTATION_STYLES_DICT,
     DISPLAY_NAME_MAP,
     TYPE_CHEMICAL,
     TYPE_GENE,
@@ -350,13 +351,37 @@ class KgService(HybridDBDao):
                 if node.identity not in node_ids:
                     node_as_dict = dict(node)
 
-                    node_label = 'Node Display Name Unknown'
+                    node_display_name = 'Node Display Name Unknown'
                     if node_as_dict.get('displayName', None) is not None:
-                        node_label = node_as_dict['displayName']
+                        node_display_name = node_as_dict['displayName']
                     elif node_as_dict.get('name', None) is not None:
-                        node_label = node_as_dict['name']
+                        node_display_name = node_as_dict['name']
 
-                    node_data = {'id': node.identity, 'label': node_label}
+                    try:
+                        node_label = get_first_known_label_from_node(node)
+                        node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
+                    except ValueError:
+                        node_color = '#000000'
+
+                    node_data = {
+                        'id': node.identity,
+                        'label': node_display_name,
+                        'font': {
+                            'color': node_color,
+                        },
+                        'color': {
+                            'background': '#FFFFFF',
+                            'border': node_color,
+                            'hover': {
+                                'background': '#FFFFFF',
+                                'border': node_color,
+                            },
+                            'highlight': {
+                                'background': '#FFFFFF',
+                                'border': node_color,
+                            },
+                        }
+                    }
 
                     nodes.append(node_data)
                     node_ids.add(node.identity)
@@ -368,6 +393,10 @@ class KgService(HybridDBDao):
                         'label': type(edge).__name__,
                         'from': edge.start_node.identity,
                         'to': edge.end_node.identity,
+                        'color': {
+                            'color': '#3797DB',
+                        },
+                        'arrows': 'to',
                     }
 
                     edges.append(edge_data)
