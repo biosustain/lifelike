@@ -108,6 +108,7 @@ class RDBMSBase(db.Model):  # type: ignore
 
             exclude (list): Properties that should be excluded.
                 Always excludes attributes in TimestampMixin.
+                # TODO: Handle TimestampMixin serialization
 
             include (list): Properties that should be included.  Using
                 this allows python properties to be called.
