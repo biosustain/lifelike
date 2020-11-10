@@ -146,36 +146,37 @@
 
 <fieldset class="fieldset-properties mt-2">
   <legend>Annotations</legend>
-  <div *ngFor="let data of annotationData"
-       [ngbTooltip]="!data.shown ? NOT_SHOWN_TOOLTIP : null">
-    <div class="d-flex align-items-center text-overflow">
-      <div class="custom-control custom-checkbox">
-        <input [id]="id + 'filter-' + getAnnotationIdentifier(data)"
-               class="custom-control-input"
-               type="checkbox"
-               value="1"
-               [checked]="isWordVisible(getAnnotationIdentifier(data))"
-               (change)="changeWordVisibility(getAnnotationIdentifier(data), $event)">
-        <label class="custom-control-label text-nowrap"
-               [for]="id + 'filter-' + getAnnotationIdentifier(data)"
-               placement="right bottom top"
-               container="body">
-          <ng-container *ngIf="!clickableWords">
-            <div class="text-overflow">
-              <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}}
-              <span>({{data.frequency}})</span>
-              <i *ngIf="!data.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
-            </div>
-          </ng-container>
-        </label>
-      </div>
-      <ng-container *ngIf="clickableWords">
-        <a class="text-overflow" href="#" (click)="wordOpen.emit(data); $event.preventDefault()">
-          <span class="entity-type-legend" [ngStyle]="{background: data.color}"></span> {{data.text}}
-          <span>({{data.frequency}})</span>
-          <i *ngIf="!data.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
-        </a>
-      </ng-container>
-    </div>
+  <div class="mb-2">
+    <strong>NOTE: Any terms that could not be drawn in the cloud with the available window dimensions will be denoted by a</strong>
+    <i class="fa fa-exclamation-triangle text-danger ml-2"></i>
   </div>
+  <cdk-virtual-scroll-viewport itemSize="22" class="virtual-scroll-viewport w-100">
+    <div *cdkVirtualFor="let data of annotationVisibility; templateCacheSize: 0" class="virtual-scroll-item">
+      <div class="d-flex align-items-center text-overflow">
+        <div class="custom-control custom-checkbox">
+          <input [id]="id + 'filter-' + data.identifier"
+                class="custom-control-input"
+                type="checkbox"
+                [checked]="data.visible"
+                (change)="changeWordVisibility(data.identifier, $event)">
+          <label class="custom-control-label text-nowrap" [for]="id + 'filter-' + data.identifier">
+            <ng-container *ngIf="!clickableWords; else showClickableWords">
+              <div class="text-overflow">
+                <span class="entity-type-legend" [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}}
+                <span>({{data.entity.frequency}})</span>
+                <i *ngIf="!data.entity.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
+              </div>
+            </ng-container>
+            <ng-template #showClickableWords>
+              <a class="text-overflow" href="#" (click)="wordOpen.emit(data.entity); $event.preventDefault()">
+                <span class="entity-type-legend" [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}}
+                <span>({{data.entity.frequency}})</span>
+                <i *ngIf="!data.entity.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
+              </a>
+            </ng-template>
+          </label>
+        </div>
+      </div>
+    </div>
+  </cdk-virtual-scroll-viewport>
 </fieldset>

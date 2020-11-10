@@ -3,6 +3,8 @@ from typing import Dict, List
 
 from flask import current_app
 
+from neo4japp.constants import BIOCYC_ORG_ID_DICT
+
 from neo4japp.services.common import HybridDBDao
 from neo4japp.models import (
     DomainURLsMap,
@@ -200,7 +202,10 @@ class KgService(HybridDBDao):
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 meta_id = meta_result['x']['id']
-                item['link'] = domain.base_URL.format(meta_id)
+                if (meta_id is not None):
+                    item['link'] = domain.base_URL.format(meta_id)
+            else:
+                item['link'] = 'https://www.uniprot.org/'
             result_list.append(item)
         return result_list
 
@@ -219,8 +224,7 @@ class KgService(HybridDBDao):
         for meta_result in result:
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
-                refseq = meta_result['x']['refseq']
-                item['link'] = f'https://string-db.org/cgi/network?identifiers={refseq}'
+                item['link'] = f'https://string-db.org/cgi/network?identifiers='
             result_list.append(item)
         return result_list
 
@@ -302,6 +306,7 @@ class KgService(HybridDBDao):
     def get_biocyc_genes(
         self,
         ncbi_gene_ids: List[int],
+        taxID: str
     ):
         query = self.get_biocyc_genes_query()
         result = self.graph.run(
@@ -315,7 +320,35 @@ class KgService(HybridDBDao):
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 biocyc_id = meta_result['x']['biocyc_id']
-                item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
+                if (biocyc_id is not None):
+                    if taxID in BIOCYC_ORG_ID_DICT.keys():
+                        orgID = BIOCYC_ORG_ID_DICT[taxID]
+                        item['link'] = f'https://biocyc.org/gene?orgid={orgID}&id={biocyc_id}'
+                    else:
+                        item['link'] = f'https://biocyc.org/gene?id={biocyc_id}'
+            else:
+                item['link'] = 'https://biocyc.org/'
+            result_list.append(item)
+        return result_list
+
+    def get_go_genes(
+        self,
+        ncbi_gene_ids: List[int],
+    ):
+        query = self.get_go_genes_query()
+        result = self.graph.run(
+            query,
+            {
+                'ncbi_gene_ids': ncbi_gene_ids,
+            }
+        ).data()
+        result_list = []
+        domain = 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
+        for meta_result in result:
+            xArray = meta_result['xArray']
+            item = {'result': xArray}
+            if (xArray is not None):
+                item['link'] = domain
             result_list.append(item)
         return result_list
 
@@ -335,8 +368,11 @@ class KgService(HybridDBDao):
             item = {'result': meta_result['x']}
             if (meta_result['x'] is not None):
                 regulondb_id = meta_result['x']['regulondb_id']
-                item['link'] = f'http://regulondb.ccg.unam.mx/gene?term={regulondb_id}' \
-                    '&organism=ECK12&format=jsp&type=gene'
+                if (regulondb_id is not None):
+                    item['link'] = f'http://regulondb.ccg.unam.mx/gene?term={regulondb_id}' \
+                        '&organism=ECK12&format=jsp&type=gene'
+            else:
+                item['link'] = 'http://regulondb.ccg.unam.mx/'
             result_list.append(item)
         return result_list
 
@@ -377,6 +413,14 @@ class KgService(HybridDBDao):
         MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
         OPTIONAL MATCH (g)-[:GO_LINK]-(x:CellularComponent:db_GO)
+        RETURN g, collect(x) as xArray
+        """
+
+    def get_go_genes_query(self):
+        return """
+        MATCH (g:Gene:db_NCBI)
+        WHERE ID(g) IN $ncbi_gene_ids
+        OPTIONAL MATCH (g)-[:GO_LINK]-(x:db_GO)
         RETURN g, collect(x) as xArray
         """
 
