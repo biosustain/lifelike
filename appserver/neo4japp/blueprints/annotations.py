@@ -69,7 +69,7 @@ def annotate(
     specified_organism: Optional[FallbackOrganism] = None,
     annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
 ):
-    _, annotations_json = create_annotations(
+    annotations_json = create_annotations(
         annotation_method=annotation_method,
         specified_organism_synonym=specified_organism.organism_synonym if specified_organism else '',  # noqa
         specified_organism_tax_id=specified_organism.organism_taxonomy_id if specified_organism else '',  # noqa
