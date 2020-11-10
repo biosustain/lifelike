@@ -31,6 +31,7 @@ export class RouteBuilderComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.loadNewQuery.emit(0);
   }
 
   toggleRouteBuilderOpen() {
@@ -39,6 +40,6 @@ export class RouteBuilderComponent implements OnInit {
   }
 
   requestQueryLoadFromParent(event: any) {
-    this.loadNewQuery.emit(event.target.value);
+    this.loadNewQuery.emit(Number.parseInt(event.target.value, 10));
   }
 }
