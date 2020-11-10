@@ -144,9 +144,13 @@ def main():
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect('', username='', password='')
     sftp = client.open_sftp()
+    date = datetime.now()
     sftp.put(
         os.path.join(directory, 'processed_records.txt'),
-        f'/home/jining/processed_nlp_dict_training_data/processed_records-{datetime.now()}.txt')  # noqa
+        f'/home/jining/processed_nlp_dict_training_data/processed_records-{date}.txt')  # noqa
+    sftp.put(
+        os.path.join(directory, 'errors.txt'),
+        f'/home/jining/processed_nlp_dict_training_data/errors-{date}.txt')  # noqa
 
     client.close()
     sftp.close()
