@@ -114,6 +114,7 @@ def create_annotations(
     annotations = annotations_service.create_rules_based_annotations(
         tokens=pdf_parser.extract_tokens(parsed_chars=parsed),
         custom_annotations=[],
+        excluded_annotations=[],
         specified_organism=SpecifiedOrganismStrain('', '', '')
     )
 
@@ -203,6 +204,7 @@ def create_annotations_from_text(doc, title):
                 annotations = annotator.create_rules_based_annotations(
                     tokens=tokens,
                     custom_annotations=[],
+                    excluded_annotations=[],
                     entity_results=entity_service.get_entity_match_results(),
                     entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
                     specified_organism=SpecifiedOrganismStrain('', '', '')
