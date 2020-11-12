@@ -38,7 +38,7 @@ class EnrichmentTableService(KgService):
         domain = self.session.query(DomainURLsMap).filter(
                                         DomainURLsMap.domain == 'NCBI_Gene').one()
         for meta_result in result:
-            item = {'x': meta_result['x'], 'neo4jID': meta_result['neo4jID']}
+            item = {'x': meta_result['x'], 'neo4jID': meta_result['neo4jID'], 's': meta_result['s']}
             if (meta_result['x'] is not None):
                 item['link'] = domain.base_URL.format(meta_result['x']['id'])
             result_list.append(item)
@@ -48,9 +48,10 @@ class EnrichmentTableService(KgService):
         return """
         WITH $geneNames as genes
         UNWIND range(0, size(genes) - 1) as index
-        MATCH (g:Gene:db_NCBI{name:genes[index]})-[:HAS_TAXONOMY]->(t:Taxonomy)
+        MATCH (s:Synonym{name:genes[index]})<-[:HAS_SYNONYM]-(g:Gene:db_NCBI)-[:HAS_TAXONOMY]->
+        (t:Taxonomy)
         WHERE t.id=$organism
-        WITH index, g as x, ID(g) as neo4jID
+        WITH index, s, g as x, ID(g) as neo4jID
         ORDER BY index ASC
-        RETURN x, neo4jID, index
+        RETURN s, x, neo4jID, index
         """
