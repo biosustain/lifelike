@@ -160,7 +160,6 @@ class AnnotationsPDFParser:
                         # pdfminer sometimes parses ligatures as actually two chars
                         # in one LTChar object
                         ligatures_list = expand_ligatures(pdf_char_obj)
-                        ligatures_list.extend(ligatures_list)
 
                     # first check for ligatures, e.g `fi`, `ffi`, etc
                     # the ligatures are one char, so need to expand them
@@ -170,7 +169,6 @@ class AnnotationsPDFParser:
                         decoded_str = LIGATURES[char_unicode]
                         pdf_char_obj.text = decoded_str
                         ligatures_list = expand_ligatures(pdf_char_obj)
-                        ligatures_list.extend(ligatures_list)
 
                     if char_coord_objs_in_pdf:
                         prev_char = char_coord_objs_in_pdf[-1]
@@ -217,7 +215,7 @@ class AnnotationsPDFParser:
         words = self._combine_chars_into_words(pdf_chars)
         return PDFParsedContent(words=words)
 
-    def parse_pdf(self, pdf) -> PDFParsedContent:
+    def _parse_pdf_file(self, pdf) -> List[PDFChar]:
         """Parse a PDF and create two dictionaries; one
         containing individual LTChar objects with coordinate
         positions, and the other the string character representation.
@@ -256,7 +254,11 @@ class AnnotationsPDFParser:
                 page_number=i+1
             )
 
-        words = self._combine_chars_into_words(char_coord_objs_in_pdf)
+        return char_coord_objs_in_pdf
+
+    def parse_pdf(self, pdf) -> PDFParsedContent:
+        chars = self._parse_pdf_file(pdf)
+        words = self._combine_chars_into_words(chars)
         return PDFParsedContent(words=words)
 
     def _is_whitespace(self, char: str) -> bool:
@@ -393,7 +395,9 @@ class AnnotationsPDFParser:
         """
         pdf_words: List[PDFWord] = []
         max_length = len(parsed_chars)
-        ending_punc = {'.', ',', '?', '!'}
+        # does not include period
+        # because they're used in initials
+        ending_punc = {',', '?', '!'}
 
         word = ''
         pdf_meta = PDFMeta()
@@ -448,14 +452,24 @@ class AnnotationsPDFParser:
                             location_offsets[:] = []
                             pdf_meta = PDFMeta()
                         else:
-                            if word[0] == '(' and word[-1] == ')':
-                                open_parenthesis = True
-                                close_parenthesis = True
+                            if len(word) == 2:
+                                # skip words like E., I. etc
+                                # basically initials like because
+                                # some possible tokens start with those
+                                if word[0] not in ascii_letters:
+                                    word, location_offsets, pdf_meta = self._remove_leading_trailing_punctuation(  # noqa
+                                        word=word, pdf_meta=pdf_meta,
+                                        location_offsets=location_offsets
+                                    )
+                            else:
+                                if word[0] == '(' and word[-1] == ')':
+                                    open_parenthesis = True
+                                    close_parenthesis = True
 
-                            word, location_offsets, pdf_meta = self._remove_leading_trailing_punctuation(  # noqa
-                                word=word, pdf_meta=pdf_meta,
-                                location_offsets=location_offsets
-                            )
+                                word, location_offsets, pdf_meta = self._remove_leading_trailing_punctuation(  # noqa
+                                    word=word, pdf_meta=pdf_meta,
+                                    location_offsets=location_offsets
+                                )
 
                             if word and location_offsets and pdf_meta.coordinates:
                                 pdf_meta.lo_location_offset = location_offsets[0]
@@ -492,14 +506,24 @@ class AnnotationsPDFParser:
                             pdf_meta.widths.append(char.width)
                             location_offsets.append(i)
 
-                        if word[0] == '(' and word[-1] == ')':
-                            open_parenthesis = True
-                            close_parenthesis = True
+                        if len(word) == 2:
+                            # skip words like E., I. etc
+                            # basically initials like because
+                            # some possible tokens start with those
+                            if word[0] not in ascii_letters:
+                                word, location_offsets, pdf_meta = self._remove_leading_trailing_punctuation(  # noqa
+                                    word=word, pdf_meta=pdf_meta,
+                                    location_offsets=location_offsets
+                                )
+                        else:
+                            if word[0] == '(' and word[-1] == ')':
+                                open_parenthesis = True
+                                close_parenthesis = True
 
-                        word, location_offsets, pdf_meta = self._remove_leading_trailing_punctuation(  # noqa
-                            word=word, pdf_meta=pdf_meta,
-                            location_offsets=location_offsets
-                        )
+                            word, location_offsets, pdf_meta = self._remove_leading_trailing_punctuation(  # noqa
+                                word=word, pdf_meta=pdf_meta,
+                                location_offsets=location_offsets
+                            )
 
                         if word and location_offsets and pdf_meta.coordinates:
                             pdf_meta.lo_location_offset = location_offsets[0]

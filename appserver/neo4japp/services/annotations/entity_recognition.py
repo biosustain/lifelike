@@ -564,11 +564,13 @@ class EntityRecognitionService:
                             if len(abbrev) == len(token.keyword):
                                 break
                             else:
-                                abbrev = split[0] + abbrev
+                                if split:
+                                    abbrev = split[0] + abbrev
                         if len(abbrev) == len(token.keyword):
                             break
                     else:
-                        abbrev = word[0] + abbrev
+                        if word:
+                            abbrev = word[0] + abbrev
 
                     if len(abbrev) == len(token.keyword):
                         break
