@@ -1155,7 +1155,8 @@ class AnnotationsService:
                                     if len(abbrev) == len(text_in_document):
                                         break
                                     else:
-                                        abbrev = split[0] + abbrev
+                                        if split:
+                                            abbrev = split[0] + abbrev
                                 if len(abbrev) == len(text_in_document):
                                     break
                             else:
