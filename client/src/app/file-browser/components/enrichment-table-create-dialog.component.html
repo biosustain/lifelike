@@ -12,9 +12,9 @@
         <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
                 rows="5" maxlength="2048"></textarea>
       </app-form-row>
-      <app-form-row for="entitiesList" label="List of Entities" [control]="form.get('entitiesList')">
+      <app-form-row for="entitiesList" label="List of Gene Names" [control]="form.get('entitiesList')">
         <textarea formControlName="entitiesList" id="entitiesList" [appFormInput]="form.get('entitiesList')"
-                rows="5" maxlength="2048" placeholder="* New line for each entity"></textarea>
+                rows="5" maxlength="2048" placeholder="* New line for each gene name"></textarea>
       </app-form-row>
       <app-form-row for="organism" label="Organism" [control]="form.get('organism')">
         <app-organism-autocomplete 
@@ -22,6 +22,14 @@
           formId="organism"
           (organismPicked)="setOrganism($event)"
         ></app-organism-autocomplete>
+    </app-form-row>
+    <app-form-row for="domainsList" label="Domains to Show" [control]="form.get('domainsList')">
+      <div *ngFor="let choice of checks; let i=index">
+        <label>
+          <input type="checkbox" [value]="choice" (change)="onCheckChange($event)">
+          {{choice}}
+        </label>
+      </div>
     </app-form-row>
     </app-modal-body>
 
