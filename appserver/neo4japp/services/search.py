@@ -231,7 +231,7 @@ class SearchService(GraphBaseDao):
 
         domains = 'n:null' if len(result_domains) == 0 else ' OR '.join(result_domains)
         entities = 'n:null' if len(result_entities) == 0 else ' OR '.join(result_entities)
-        return f'({domains}) AND {entities}'
+        return f'({domains}) AND ({entities})'
 
     def visualizer_search_temp(
         self,
