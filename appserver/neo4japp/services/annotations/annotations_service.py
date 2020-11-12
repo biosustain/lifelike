@@ -157,10 +157,10 @@ class AnnotationsService:
 
                 lower_x, lower_y, upper_x, upper_y = coordinates
 
-                if (start_lower_x is 0 and
-                        start_lower_y is 0 and
-                        end_upper_x is 0 and
-                        end_upper_y is 0):
+                if (start_lower_x == 0.0 and
+                        start_lower_y == 0.0 and
+                        end_upper_x == 0.0 and
+                        end_upper_y == 0.0):
                     start_lower_x = lower_x
                     start_lower_y = lower_y
                     end_upper_x = upper_x
