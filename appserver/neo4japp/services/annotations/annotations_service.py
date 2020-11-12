@@ -923,7 +923,7 @@ class AnnotationsService:
         # we only want the annotations with correct coordinates
         # because it is possible for a word to only have one
         # of its occurrences annotated as a custom annotation
-        filtered_species_annotations_of_exclusions: List[Annotation] = []
+        exclusions_to_remove: Set[str] = set()
 
         for custom in exclusion_type_species_local:
             for anno in species_annotations:
@@ -932,10 +932,13 @@ class AnnotationsService:
                     # is in the corresponding rectangle from custom annotations
                     valid = all(list(map(has_center_point, custom['rects'], anno.rects)))
 
-                    # if center point is not in custom annotation rectangle
-                    # then add it to list
-                    if not valid:
-                        filtered_species_annotations_of_exclusions.append(anno)
+                    # if center point is in custom annotation rectangle
+                    # then remove it from list
+                    if valid:
+                        exclusions_to_remove.add(anno.uuid)
+
+        filtered_species_annotations_of_exclusions = [
+            anno for anno in species_annotations if anno.uuid not in exclusions_to_remove]
 
         filtered_species_annotations: List[Annotation] = []
 
