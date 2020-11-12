@@ -9,7 +9,7 @@ import { RankedItem, ResultList } from 'app/interfaces/shared.interface';
 import { AbstractService } from 'app/shared/services/abstract-service';
 import { serializePaginatedParams } from 'app/shared/utils/params';
 
-import { ContentSearchOptions } from '../content-search';
+import { AnnotationRequestOptions, AnnotationResponse, ContentSearchOptions } from '../content-search';
 
 @Injectable()
 export class ContentSearchService extends AbstractService {
@@ -17,6 +17,15 @@ export class ContentSearchService extends AbstractService {
 
   constructor(auth: AuthenticationService, http: HttpClient) {
     super(auth, http);
+  }
+
+  annotate(params: AnnotationRequestOptions): Observable<AnnotationResponse> {
+    return this.http.post<AnnotationResponse>(
+      `${this.SEARCH_BASE_URL}/annotate`,
+      params, {
+        ...this.getHttpOptions(true),
+      },
+    );
   }
 
   search(params: ContentSearchOptions): Observable<ResultList<RankedItem<DirectoryObject>>> {
@@ -27,9 +36,6 @@ export class ContentSearchService extends AbstractService {
           ...serializePaginatedParams(params, false),
           q: params.q,
           types: params.types.map(value => value.id).join(';'),
-          sort: params.sort,
-          page: params.page + '',
-          limit: params.limit + '',
         } as Record<keyof ContentSearchOptions, string>,
       },
     );

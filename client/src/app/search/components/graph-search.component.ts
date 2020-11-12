@@ -122,21 +122,13 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
     const conditions: string[] = [];
 
     if (domains && domains.length) {
-      conditions.push(domains.map(value => value.label).join(' OR '));
-    } else {
-      conditions.push('n:null');
+      domains.map(value => conditions.push(value.name));
     }
 
     if (entityTypes && entityTypes.length) {
-      conditions.push(entityTypes.map(value => value.label).join(' OR '));
-    } else {
-      conditions.push('n:null');
+      entityTypes.map(value => conditions.push(value.name));
     }
 
-    if (conditions.length) {
-      return conditions.map(value => `(${value})`).join(' AND ');
-    } else {
-      return 'labels(n)';
-    }
+    return conditions.join(', ');
   }
 }

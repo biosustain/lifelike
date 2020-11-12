@@ -7,11 +7,13 @@ import { KnowledgeMap } from 'app/drawing-tool/services/interfaces';
 import { FileNavigatorService } from 'app/file-navigator/services/file-navigator.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { CollectionModal } from 'app/shared/utils/collection-modal';
+import { FilesystemObjectActions } from '../../../file-browser/services/filesystem-object-actions';
+import { WorkspaceManager } from '../../../shared/workspace-manager';
 
 @Component({
   selector: 'app-associated-maps',
   templateUrl: './associated-maps.component.html',
-  styleUrls: ['./associated-maps.component.scss']
+  styleUrls: ['./associated-maps.component.scss'],
 })
 export class AssociatedMapsComponent implements OnInit, OnDestroy {
   private loadTaskSubscription: Subscription;
@@ -30,8 +32,10 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
   fileId: string;
 
   constructor(
-    readonly route: ActivatedRoute,
-    private readonly fileNavigatorService: FileNavigatorService
+    protected readonly route: ActivatedRoute,
+    protected readonly fileNavigatorService: FileNavigatorService,
+    protected readonly filesystemObjectActions: FilesystemObjectActions,
+    protected readonly workspaceManager: WorkspaceManager,
   ) {
     this.projectName = this.route.snapshot.params.project_name;
     this.fileId = this.route.snapshot.params.file_id;
@@ -54,5 +58,22 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
 
   refresh() {
     this.loadTask.update();
+  }
+
+  createMap() {
+    this.filesystemObjectActions.openMapCreateDialog(null, {
+      filename: `Untitled Map`,
+    }).then(result => {
+      this.workspaceManager.navigate([
+        '/projects',
+        result.project.project_name,
+        'maps',
+        result.project.hash_id,
+        'edit',
+      ], {
+        newTab: true,
+      });
+    }, () => {
+    });
   }
 }

@@ -6,7 +6,7 @@ import {
 } from 'rxjs';
 
 import { ANNOTATIONS } from './mock_data';
-import { Annotation, AddedAnnotationExclsuion } from './interfaces';
+import { Annotation, AddedAnnotationExclusion } from '../../pdf-viewer/annotation-type';
 
 @Injectable({
   providedIn: 'root'
@@ -95,7 +95,7 @@ export class PdfAnnotationsService {
    * @param fileId id of the file that contains the annotation
    * @param exclusionData data needed to exclude the annotation
    */
-  addAnnotationExclusion(fileId: string, exclusionData: AddedAnnotationExclsuion, projectName: string): Observable<any> {
+  addAnnotationExclusion(fileId: string, exclusionData: AddedAnnotationExclusion, projectName: string): Observable<any> {
     return this.http.patch(
       `/api/projects/${projectName}/files/${fileId}/annotations/add_annotation_exclusion`,
       exclusionData,
