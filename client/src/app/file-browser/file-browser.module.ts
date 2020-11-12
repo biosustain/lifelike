@@ -20,9 +20,12 @@ import { FileInfoComponent } from './components/file-info.component';
 import { DrawingToolModule } from '../drawing-tool/drawing-tool.module';
 import { FileTypeLabelComponent } from './components/file-type-label.component';
 import { EnrichmentTableViewerComponent } from './components/enrichment-table-viewer.component';
-import { GenericTableComponent } from './components/generic-table.component';
 import { EnrichmentTableCreateDialogComponent } from './components/enrichment-table-create-dialog.component';
 import { EnrichmentTableEditDialogComponent } from './components/enrichment-table-edit-dialog.component';
+import { FileSelectionDialogComponent } from './components/dialog/file-selection-dialog.component';
+import { FilesystemService } from './services/filesystem.service';
+import { FileListComponent } from './components/file-list.component';
+import { FilesystemObjectActions } from './services/filesystem-object-actions';
 
 @NgModule({
   declarations: [
@@ -44,9 +47,10 @@ import { EnrichmentTableEditDialogComponent } from './components/enrichment-tabl
     FileInfoComponent,
     FileTypeLabelComponent,
     EnrichmentTableViewerComponent,
-    GenericTableComponent,
     EnrichmentTableCreateDialogComponent,
-    EnrichmentTableEditDialogComponent
+    EnrichmentTableEditDialogComponent,
+    FileSelectionDialogComponent,
+    FileListComponent,
   ],
   imports: [
     SharedModule,
@@ -63,11 +67,18 @@ import { EnrichmentTableEditDialogComponent } from './components/enrichment-tabl
     DirectoryEditDialogComponent,
     ObjectDeletionResultDialogComponent,
     EnrichmentTableCreateDialogComponent,
-    EnrichmentTableEditDialogComponent
+    EnrichmentTableEditDialogComponent,
+    FileSelectionDialogComponent,
   ],
   exports: [
     FileInfoComponent,
     FileTypeLabelComponent,
+    FileSelectionDialogComponent,
+    FileListComponent,
+  ],
+  providers: [
+    FilesystemService,
+    FilesystemObjectActions,
   ],
 })
 export class FileBrowserModule {

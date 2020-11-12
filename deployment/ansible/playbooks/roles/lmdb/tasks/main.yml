@@ -1,16 +1,16 @@
 - include_vars: gcp_bucket_credentials.yml
 
-- name: Install Python virtualenv
+- name: Install Python System dependencies
   become: yes
   pip:
     name:
+      - boto
       - virtualenv
     umask: "0022"
 
 - name: Install Python dependencies
   pip:
     name:
-      - boto
       - sqlalchemy
       - google-cloud-storage
       - psycopg2-binary

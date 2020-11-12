@@ -22,8 +22,8 @@ import { MapEditorComponent } from './drawing-tool/components/map-editor/map-edi
 import { MapViewComponent } from './drawing-tool/components/map-view.component';
 import { CommunityBrowserComponent } from './file-browser/components/community-browser.component';
 import { BrowserComponent } from './file-browser/components/browser/browser.component';
-import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
-import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
+// import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
+// import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
 import { EnrichmentTableViewerComponent } from './file-browser/components/enrichment-table-viewer.component';
 import { FileNavigatorComponent } from './file-navigator/file-navigator.component';
@@ -35,6 +35,7 @@ const routes: Routes = [
   {
     path: '',
     component: DashboardComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'Dashboard',
       fontAwesomeIcon: 'home',
@@ -43,6 +44,7 @@ const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'Dashboard',
       fontAwesomeIcon: 'home',
@@ -85,6 +87,7 @@ const routes: Routes = [
   {
     path: 'search/graph',
     component: GraphSearchComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'Visualizer',
       fontAwesomeIcon: 'search',
@@ -92,6 +95,7 @@ const routes: Routes = [
   },
   {
     path: 'search/content',
+    canActivate: [AuthGuard],
     component: ContentSearchComponent,
     data: {
       title: 'Search',
@@ -104,6 +108,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/enrichment-table/:file_id',
+    canActivate: [AuthGuard],
     component: EnrichmentTableViewerComponent,
     data: {
       title: 'Enrichment Table',
@@ -118,10 +123,12 @@ const routes: Routes = [
         path: '',
         redirectTo: '/search',
         pathMatch: 'full',
+        canActivate: [AuthGuard],
       },
       {
         path: 'graph',
         component: VisualizationComponent,
+        canActivate: [AuthGuard],
         data: {
           title: 'Visualizer',
           fontAwesomeIcon: 'search',
@@ -199,6 +206,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/maps/:hash_id',
+    canActivate: [AuthGuard],
     component: MapViewComponent,
     data: {
       title: 'Map',
@@ -215,6 +223,7 @@ const routes: Routes = [
       fontAwesomeIcon: 'project-diagram',
     },
   },
+  /* TODO Refactor import
   {
     path: 'kg-import',
     canActivate: [AuthGuard],
@@ -223,9 +232,11 @@ const routes: Routes = [
       {path: 'genes', component: GeneImportWizardComponent},
     ],
   },
+  */
   {
     path: 'kg-statistics',
     component: KgStatisticsComponent,
+    canActivate: [AuthGuard],
     data: {
       fontAwesomeIcon: 'tachometer-alt',
     },
@@ -233,6 +244,7 @@ const routes: Routes = [
   {
     path: 'file-navigator/:project_name/:file_id',
     component: FileNavigatorComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'File Navigator',
       fontAwesomeIcon: 'fas fa-compass',
@@ -241,6 +253,7 @@ const routes: Routes = [
   {
     path: 'entity-cloud/:project_name',
     component: WordCloudProjectComponent,
+    canActivate: [AuthGuard],
     data: {
       title: 'Project Entity Cloud',
       fontAwesomeIcon: 'fas fa-compass',

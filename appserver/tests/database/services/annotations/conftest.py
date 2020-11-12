@@ -851,7 +851,7 @@ def mock_empty_gene_to_organism(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_general_human_genes(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'BOLA3': {'9606': '388962'}}
+        return {'BOLA3': {'BOLA3': {'9606': '388962'}}}
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
@@ -864,7 +864,7 @@ def mock_general_human_genes(monkeypatch):
 def mock_get_gene_to_organism_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
         # match to 'Moniliophthora roreri' in create_species_lmdb()
-        return {'hyp27': {'221103': '2846957'}}
+        return {'hyp27': {'hyp27': {'221103': '2846957'}}}
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
@@ -876,7 +876,7 @@ def mock_get_gene_to_organism_match_result(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'serpina1': {'9606': '5265'}, 'SERPINA1': {'9606': '5265'}}
+        return {'SERPINA1': {'serpina1': {'9606': '5265'}, 'SERPINA1': {'9606': '5265'}}}
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
@@ -888,7 +888,7 @@ def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result_for_fish_gene(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'IL7': {'7897': '102353780'}, 'il-7': {'31033': '99999'}}
+        return {'il-7': {'IL7': {'7897': '102353780'}, 'il-7': {'31033': '99999'}}}
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
@@ -900,7 +900,7 @@ def mock_get_gene_to_organism_match_result_for_fish_gene(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'ACE2': {'9606': '59272'}}
+        return {'ACE2': {'ACE2': {'9606': '59272'}}}
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
@@ -912,7 +912,7 @@ def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
 @pytest.fixture(scope='function')
 def mock_get_gene_to_organism_match_result_for_human_rat_gene(monkeypatch):
     def get_match_result(*args, **kwargs):
-        return {'EDEM3': {'9606': '80267'}, 'Edem3': {'10116': '289085'}}
+        return {'EDEM3': {'EDEM3': {'9606': '80267'}, 'Edem3': {'10116': '289085'}}}
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
@@ -925,11 +925,11 @@ def mock_get_gene_to_organism_match_result_for_human_rat_gene(monkeypatch):
 def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {
-            'purA': {'562': '948695'},
-            'purB': {'562': '945695'},
-            'purC': {'562': '946957'},
-            'purD': {'562': '948504'},
-            'purF': {'562': '946794'},
+            'purA': {'purA': {'562': '948695'}},
+            'purB': {'purB': {'562': '945695'}},
+            'purC': {'purC': {'562': '946957'}},
+            'purD': {'purD': {'562': '948504'}},
+            'purF': {'purF': {'562': '946794'}},
         }
 
     monkeypatch.setattr(
@@ -955,86 +955,65 @@ def mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf(monkeypat
 
 
 @pytest.fixture(scope='function')
-def mock_global_compound_exclusion(monkeypatch):
-    def get_exclusions(*args, **kwargs):
-        return {'guanosine', 'hydrogen'}
-
+def mock_compound_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        '_get_compound_annotations_to_exclude',
-        get_exclusions,
+        'exclusion_type_compound',
+        {'guanosine', 'hydrogen'}
     )
 
 
 @pytest.fixture(scope='function')
 def mock_global_chemical_exclusion(monkeypatch):
-    def get_exclusions(*args, **kwargs):
-        return {'hypofluorite', 'hydrogen', 'adenosine'}
-
     monkeypatch.setattr(
         EntityRecognitionService,
-        '_get_chemical_annotations_to_exclude',
-        get_exclusions,
+        'exclusion_type_chemical',
+        {'hypofluorite', 'hydrogen', 'adenosine'}
     )
 
 
 @pytest.fixture(scope='function')
-def mock_global_disease_exclusion(monkeypatch):
-    def get_exclusions(*args, **kwargs):
-        return {'cold sore'}
-
+def mock_disease_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        '_get_disease_annotations_to_exclude',
-        get_exclusions,
+        'exclusion_type_disease',
+        {'cold sore'}
     )
 
 
 @pytest.fixture(scope='function')
-def mock_global_gene_exclusion(monkeypatch):
-    def get_exclusions(*args, **kwargs):
-        return {'BOLA3', 'rpoS'}
-
+def mock_gene_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        '_get_gene_annotations_to_exclude',
-        get_exclusions,
+        'exclusion_type_gene',
+        {'BOLA3', 'rpoS'}
     )
 
 
 @pytest.fixture(scope='function')
-def mock_global_phenotype_exclusion(monkeypatch):
-    def get_exclusions(*args, **kwargs):
-        return {'whey proteins'}
-
+def mock_phenotype_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        '_get_phenotype_annotations_to_exclude',
-        get_exclusions,
+        'exclusion_type_phenotype',
+        {'whey proteins'}
     )
 
 
 @pytest.fixture(scope='function')
-def mock_global_protein_exclusion(monkeypatch):
-    def get_exclusions(*args, **kwargs):
-        return {'Wasabi receptor toxin'}
-
+def mock_protein_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        '_get_protein_annotations_to_exclude',
-        get_exclusions,
+        'exclusion_type_protein',
+        {'Wasabi receptor toxin'}
     )
 
 
 @pytest.fixture(scope='function')
-def mock_global_species_exclusion(monkeypatch):
-    def get_exclusions(*args, **kwargs):
-        return {'human', 'dog'}
-
+def mock_species_exclusion(monkeypatch):
     monkeypatch.setattr(
         EntityRecognitionService,
-        '_get_species_annotations_to_exclude',
-        get_exclusions,
+        'exclusion_type_species',
+        {'human', 'dog', 'fruit fly'}
     )
 
 
@@ -1052,7 +1031,10 @@ def mock_get_gene_ace2_for_global_gene_inclusion(monkeypatch):
 
 @pytest.fixture(scope='function')
 def mock_get_gene_specified_strain(monkeypatch):
-    result = [{'BOLA3': {'9606': '388962'}}, {'BOLA3': {'37293': '101099627'}}]
+    result = [
+        {'BOLA3': {'BOLA3': {'9606': '388962'}}},
+        {'BOLA3': {'BOLA3': {'37293': '101099627'}}}
+    ]
 
     def get_match_result(*args, **kwargs):
         # simulate service being called twice
@@ -1259,12 +1241,11 @@ def get_annotation_n4j(graph, session):
 
 
 @pytest.fixture(scope='function')
-def entity_inclusion_setup(get_annotation_n4j, get_lmdb):
+def entity_service(get_annotation_n4j, get_lmdb):
     entity_service = EntityRecognitionService(
         annotation_neo4j=get_annotation_n4j,
         lmdb_session=get_lmdb
     )
-    entity_service.set_entity_inclusions(custom_annotations=[])
     return entity_service
 
 
@@ -1293,7 +1274,7 @@ def get_lmdb():
     proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
     species_lmdb_path = path.join(directory, 'lmdb/species')
 
-    return LMDBDao(
+    lmdb = LMDBDao(
         genes_lmdb_path=genes_lmdb_path,
         anatomy_lmdb_path=anatomy_lmdb_path,
         chemicals_lmdb_path=chemicals_lmdb_path,
@@ -1304,12 +1285,13 @@ def get_lmdb():
         phenotypes_lmdb_path=phenotypes_lmdb_path,
         foods_lmdb_path=foods_lmdb_path
     )
+    lmdb.open_envs()
+    return lmdb
 
 
 @pytest.fixture(scope='function')
 def get_annotations_service(
     get_annotation_n4j,
-    entity_inclusion_setup,
     request
 ):
     def teardown():

@@ -40,8 +40,11 @@
 
     <ng-container *ngIf="status.resultsShown">
       <div class="module-section">
-        <div class="module-section-header">
-          <h2 class="module-section-header-title">Associated Maps</h2>
+        <div class="module-section-header d-flex align-items-center">
+          <h2 class="module-section-header-title mr-2">Associated Maps</h2>
+          <button type="button" class="btn btn-secondary ml-auto" (click)="createMap()">
+            <i class="fa fa-fw fa-plus-circle" aria-hidden="true"></i> New Map
+          </button>
         </div>
 
         <div class="module-section-body">
