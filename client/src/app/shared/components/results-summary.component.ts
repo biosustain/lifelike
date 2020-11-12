@@ -8,6 +8,8 @@ export class ResultsSummaryComponent {
   @Input() page: number; // pages should be 1-indexed
   @Input() pageSize: number;
   @Input() collectionSize: number;
+  @Input() resultCountLimited?: boolean;
+  @Input() resultLimit?: number;
 
   get startResultCount(): number {
     return (this.pageSize * (this.page - 1)) + 1;
