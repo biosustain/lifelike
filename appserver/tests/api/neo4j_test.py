@@ -17,10 +17,17 @@ def test_expand(client, gas_gangrene):
     assert response.status_code == 200
 
 
+def generate_headers(jwt_token):
+    return {'Authorization': f'Bearer {jwt_token}'}
+
+
 def test_get_reference_table_data(
     client,
+    test_user,
     gas_gangrene_treatment_cluster_node_edge_pairs,
 ):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
     response = client.post(
         '/visualizer/get-reference-table-data',
         data=json.dumps({
@@ -52,7 +59,9 @@ def test_get_reference_table_data(
                     },
                 },
             ],
-        }), content_type='application/json'
+        }),
+        headers=headers,
+        content_type='application/json'
     )
 
     assert response.status_code == 200
@@ -60,7 +69,10 @@ def test_get_reference_table_data(
 
 def test_get_snippets_for_edge(
     client,
+    test_user,
 ):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
     response = client.post(
         '/visualizer/get-snippets-for-edge',
         data=json.dumps({
@@ -73,7 +85,9 @@ def test_get_snippets_for_edge(
                 'toLabel': 'Disease',
                 'label': 'ASSOCIATED',
             }
-        }), content_type='application/json'
+        }),
+        headers=headers,
+        content_type='application/json'
     )
 
     assert response.status_code == 200
@@ -81,7 +95,10 @@ def test_get_snippets_for_edge(
 
 def test_get_snippets_for_cluster(
     client,
+    test_user,
 ):
+    login_resp = client.login_as_user(test_user.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
     response = client.post(
         '/visualizer/get-snippets-for-cluster',
         data=json.dumps({
@@ -98,7 +115,9 @@ def test_get_snippets_for_cluster(
                     'label': 'ASSOCIATED',
                 }
             ]
-        }), content_type='application/json'
+        }),
+        headers=headers,
+        content_type='application/json'
     )
 
     assert response.status_code == 200

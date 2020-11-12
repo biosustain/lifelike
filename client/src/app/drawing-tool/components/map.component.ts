@@ -16,6 +16,7 @@ import { map } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { emptyIfNull } from '../../shared/utils/types';
 
 @Component({
   selector: 'app-map',
@@ -44,6 +45,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   unsavedChangesSubscription: Subscription;
 
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
+
+  entitySearchTerm = '';
+  entitySearchList: GraphEntity[] = [];
+  entitySearchListIdx = -1;
 
   constructor(
       readonly mapService: MapService,
@@ -99,6 +104,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
     this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
       this.unsavedChanges$.next(true);
+      this.search();
     });
 
     this.unsavedChangesSubscription = this.unsavedChanges$.subscribe(value => {
@@ -142,37 +148,13 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return;
     }
 
-    if (this.highlightTerms != null && this.highlightTerms.length) {
-      const pattern = new RegExp(
-          '\\b' + this.highlightTerms.map(term => escapeRegExp(term)).join('|') + '\\b', 'i');
-      const highlights: GraphEntity[] = [];
-
-      for (const node of this.map.graph.nodes) {
-        const text = (node.display_name + ' ' + node.data.detail).toLowerCase();
-        if (pattern.test(text)) {
-          highlights.push({
-            type: GraphEntityType.Node,
-            entity: node,
-          });
-        }
-      }
-
-      for (const edge of this.map.graph.edges) {
-        const text = (edge.label + ' ' + edge.data.detail).toLowerCase();
-        if (pattern.test(text)) {
-          highlights.push({
-            type: GraphEntityType.Edge,
-            entity: edge,
-          });
-        }
-      }
-
-      this.graphCanvas.highlighting.replace(highlights);
-    }
-
     this.graphCanvas.setGraph(this.map.graph);
     this.graphCanvas.zoomToFit(0);
     this.emitModuleProperties();
+
+    if (this.highlightTerms != null && this.highlightTerms.length) {
+      this.graphCanvas.highlighting.replace(this.graphCanvas.findMatching(this.highlightTerms));
+    }
   }
 
   registerGraphBehaviors() {
@@ -207,6 +189,51 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   redo() {
     this.graphCanvas.redo();
+  }
+
+  // ========================================
+  // Search stuff
+  // ========================================
+
+  search() {
+    if (this.entitySearchTerm.length) {
+      this.entitySearchList = this.graphCanvas.findMatching(this.entitySearchTerm.split(/ +/g));
+      this.entitySearchListIdx = -1;
+
+      this.graphCanvas.searchHighlighting.replace(this.entitySearchList);
+      this.graphCanvas.searchFocus.replace([]);
+      this.graphCanvas.requestRender();
+
+    } else {
+      this.entitySearchList = [];
+      this.entitySearchListIdx = -1;
+
+      this.graphCanvas.searchHighlighting.replace([]);
+      this.graphCanvas.searchFocus.replace([]);
+      this.graphCanvas.requestRender();
+    }
+  }
+
+  next() {
+    // we need rule ...
+    this.entitySearchListIdx++;
+    if (this.entitySearchListIdx >= this.entitySearchList.length) {
+      this.entitySearchListIdx = 0;
+    }
+    this.graphCanvas.panToEntity(
+      this.entitySearchList[this.entitySearchListIdx] as GraphEntity
+    );
+  }
+
+  previous() {
+    // we need rule ..
+    this.entitySearchListIdx--;
+    if (this.entitySearchListIdx <= -1) {
+      this.entitySearchListIdx = this.entitySearchList.length - 1;
+    }
+    this.graphCanvas.panToEntity(
+      this.entitySearchList[this.entitySearchListIdx] as GraphEntity
+    );
   }
 }
 

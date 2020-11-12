@@ -9,6 +9,7 @@ import { Hyperlink } from '../../drawing-tool/services/interfaces';
 import { SEARCH_LINKS } from '../../shared/links';
 import { cloneDeep } from 'lodash';
 import { url } from '../../shared/validators';
+import { AnnotationType } from 'app/shared/constants';
 
 @Component({
   selector: 'app-annotation-panel',
@@ -19,16 +20,12 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   @Input() keywords: string[];
   @Input() coords: number[];
   @Input() set allText(allText: string) {
-    this.allTextOptions = this.getTextOptions(allText);
     this.form.patchValue({
-      text: this.allTextOptions[0]
+      text: allText
     });
-    if (this.allTextOptions.length === 1) {
-      this.form.controls.text.disable();
-    }
   }
   linkTemplates: Hyperlink[] = cloneDeep(SEARCH_LINKS);
-  allTextOptions: string[];
+  isTextEnabled = false;
 
   readonly entityTypeChoices = ENTITY_TYPES;
   readonly errors = {
@@ -36,13 +33,14 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   };
 
   readonly form: FormGroup = new FormGroup({
-    text: new FormControl('', Validators.required),
+    text: new FormControl({value: '', disabled: true}, Validators.required),
     entityType: new FormControl(this.entityTypeChoices[0].name, Validators.required),
     id: new FormControl(''),
     links: new FormArray([]),
     includeGlobally: new FormControl(false),
   });
   readonly links = this.form.get('links') as FormArray;
+  caseSensitiveTypes = [AnnotationType.Gene, AnnotationType.Protein];
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
@@ -74,7 +72,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         return [coord[0], coord[3], coord[2], coord[1]];
       }),
       meta: {
-        id: this.form.value.id,
+        id: this.form.value.includeGlobally ? this.form.value.id : (this.form.value.id || text),
         type: this.form.value.entityType,
         color: ENTITY_TYPE_MAP[this.form.value.entityType].color,
         links,
@@ -82,6 +80,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         allText: text,
         primaryLink,
         includeGlobally: this.form.value.includeGlobally,
+        isCaseInsensitive: !(this.caseSensitiveTypes.includes(this.form.value.entityType)),
       },
     };
   }
@@ -101,24 +100,8 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
     }
   }
 
-  getTextOptions(text: string) {
-    // text = '(gene)' => textOptions = ['(gene)', 'gene)', '(gene', 'gene']
-    text = text.trim();
-    const textOptions = [text];
-    const punctuation = '[.,\/#!$%\^&\*;:{}=\-_`~()]';
-    let start = 0;
-    while (punctuation.includes(text[start]) && start < text.length) {
-      start++;
-      textOptions.push(text.substring(start));
-    }
-
-    textOptions.forEach(textOption => {
-      let end = textOption.length - 1;
-      while (punctuation.includes(textOption[end]) && end > 0) {
-        textOptions.push(textOption.substring(0, end));
-        end--;
-      }
-    });
-    return textOptions;
+  enableTextField() {
+    this.isTextEnabled = true;
+    this.form.controls.text.enable();
   }
 }

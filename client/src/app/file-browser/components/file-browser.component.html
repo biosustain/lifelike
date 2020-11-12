@@ -1,15 +1,17 @@
-<ng-container *ngIf="(loadTask.status$ | async) as status">
-  <app-module-error *ngIf="status.failedErrorShown; else noError" [error]="status.error" class="d-block p-4">
-    <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
-  </app-module-error>
+<ng-container *ngIf="(object$ | addStatus | async) as result">
+  <ng-template [ngIf]="result.error">
+    <app-module-error [error]="result.error" class="d-block p-4">
+      <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
+    </app-module-error>
+  </ng-template>
 
-  <ng-template #noError>
+  <ng-template [ngIf]="result.loading">
     <div class="module" appContainerBreakpoints>
       <!-- Header -->
       <div class="module-header">
         <!-- Breadcrumbs -->
         <div class="module-breadcrumb-bar mb-1">
-          <ol class="breadcrumb" *ngIf="status.placeholdersShown">
+          <ol class="breadcrumb">
             <li class="breadcrumb-item">
               <a appLink="/projects">File Browser</a>
             </li>
@@ -23,36 +25,12 @@
               <span class="placeholder-box">Loading load</span>
             </li>
           </ol>
-
-          <ol class="breadcrumb" *ngIf="status.resultsShown">
-            <li class="breadcrumb-item">
-              <a appLink="/projects">File Browser</a>
-            </li>
-
-            <li *ngFor="let element of path; index as i" class="breadcrumb-item"
-                [class.active]="i === path.length - 1">
-              <ng-container *ngIf="i !== path.length - 1">
-                <a
-                    [appLink]="i === 0 ? ['/projects', locator.projectName] : ['/projects', locator.projectName, 'folders', element.id]">
-                  {{ i === 0 ? locator.projectName : element.name }}
-                </a>
-              </ng-container>
-            </li>
-          </ol>
         </div>
 
         <!-- Title bar -->
         <div class="module-title-bar">
-          <button type="button" class="module-title-bar-back mr-2" (click)="goUp()" *ngIf="status.resultsShown">
-            <i class="fa fa-fw fa-arrow-left"></i>
-          </button>
           <h1 class="module-title">
-            <ng-container *ngIf="status.resultsShown; else placeholderTitle">
-              {{ path == null || path.length === 1 ? locator.projectName : directory?.name }}
-            </ng-container>
-            <ng-template #placeholderTitle>
-              <span class="placeholder-box">Loading</span>
-            </ng-template>
+            <span class="placeholder-box">Loading</span>
           </h1>
         </div>
 
@@ -61,54 +39,29 @@
           <div class="d-flex align-items-center flex-spaced-wrap">
             <div class="flex-grow-1 text-nowrap overflow-x-hidden">
               <div ngbDropdown class="d-inline-block" container="body">
-                <button class="btn btn-primary" ngbDropdownToggle>
+                <button class="btn btn-primary" ngbDropdownToggle [disabled]="true">
                   <i class="fa fa-fw fa-plus-circle"></i>
                   New
                 </button>
                 <div ngbDropdownMenu>
-                  <button ngbDropdownItem (click)="displayMapCreateDialog()">New Map...</button>
-                  <button ngbDropdownItem (click)="displayDirectoryCreateDialog()">New Folder...</button>
-                  <button ngbDropdownItem (click)="displayEnrichmentTableCreateDialog()">New Enrichment Table...</button>
-                  <div class="dropdown-divider"></div>
-                  <button ngbDropdownItem (click)="displayUploadDialog()">Upload File...</button>
                 </div>
               </div>
 
-              <button class="btn btn-primary ml-2"
-                      (click)="displayUploadDialog()">
+              <button class="btn btn-primary ml-2" disabled>
                 <i class="fa fa-fw fa-upload"></i> Upload
               </button>
 
-              <button class="btn btn-secondary ml-2"
-                      [disabled]="results.selection.length === 0"
-                      (click)="reannotate(results.selection)" ngbTooltip="Re-annotate document"
-                      container="body">
+              <button class="btn btn-secondary ml-2" disabled>
                 <i class="fa fa-fw fa-redo"></i>
               </button>
 
-              <button class="btn btn-secondary ml-2"
-                      [disabled]="results.selection.length === 0"
-                      (click)="displayDeleteDialog(results.selection)">
+              <button class="btn btn-secondary ml-2" disabled>
                 <i class="fa fa-fw fa-trash"></i>
               </button>
 
-              <button class="btn btn-secondary ml-4" ngbTooltip="Project Entity Cloud"
-                      (click)="openEntityCloudPane()">
-                <i class="fas fa-fw fa-compass"></i>
+              <button class="btn btn-secondary ml-4" disabled>
+                <i class="fa fa-fw fa-cloud"></i>
               </button>
-            </div>
-
-            <div class="ml-auto d-flex flex-grow-1">
-              <div class="input-group" [class.bg-highlight]="results.filter != null">
-                <div class="input-group-prepend">
-                  <div class="input-group-text bg-transparent border-right-0">
-                    <i class="fa fa-search"></i>
-                  </div>
-                </div>
-                <input class="form-control py-2 pl-0 border-left-0 border bg-transparent"
-                       (keyup)="applyFilter($event.target.value)"
-                       placeholder="Find" maxlength="40">
-              </div>
             </div>
           </div>
         </div>
@@ -118,7 +71,7 @@
       <div class="flex-fill overflow-auto">
         <div class="module-body-split module-body-browser-split">
           <div class="module-body-split-main">
-            <table class="table module-body-table" [class.table-selectable]="status.resultsShown"
+            <table class="table module-body-table" [class.table-selectable]="result.value"
                    style="table-layout: fixed">
               <colgroup>
                 <col>
@@ -131,10 +84,8 @@
               <tr>
                 <th class="text-truncate">
                   <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="select-all"
-                           [checked]="results.isAllSelected()"
-                           (change)="results.toggleAll()">
-                    <label class="custom-control-label" for="select-all">Name</label>
+                    <input type="checkbox" class="custom-control-input" id="select-all-placeholder">
+                    <label class="custom-control-label" for="select-all-placeholder">Name</label>
                   </div>
                 </th>
                 <th class="text-truncate d-none d-cbp-sm-table-cell">Annotated</th>
@@ -145,7 +96,7 @@
               </thead>
 
               <!-- Placeholders -->
-              <tbody *ngIf="status.placeholdersShown">
+              <tbody>
               <tr>
                 <td class="align-middle text-nowrap text-truncate">
                   <span class="placeholder-box">Loading loading</span>
@@ -193,124 +144,110 @@
                 </td>
               </tr>
               </tbody>
-
-              <!-- Results -->
-              <tbody *ngIf="status.resultsShown">
-              <tr *ngFor="let object of results.view; index as objectIndex" tabindex="0"
-                  [class.active]="this.results.isSelected(object)" draggable="true"
-                  (dragstart)="dragStarted($event, object)">
-                <td class="align-middle text-nowrap text-truncate"
-                    (click)="results.toggle(object)">
-                  <div class="custom-control custom-checkbox text-truncate">
-                    <input type="checkbox" class="custom-control-input" id="object-{{ objectIndex }}"
-                           (change)="results.toggle(object)"
-                           [checked]="results.isSelected(object)">
-                    <label class="custom-control-label d-block" for="object-{{ objectIndex }}">
-                      <div class="d-flex align-items-center text-truncate"
-                           popoverTitle="Description" container="body" triggers="mouseenter:mouseleave"
-                           placement="right"
-                           [ngbPopover]="object.description"
-                           [disablePopover]="object.description == null || object.description.length === 0">
-                        <div [ngSwitch]="object.type" class="d-inline-block mr-1">
-                          <i *ngSwitchCase="'dir'" class="fa fa-fw fa-folder text-icon"></i>
-                          <div *ngSwitchCase="'file'">
-                            <i *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'" class="fa fa-fw fa-file text-icon"></i>
-                            <i *ngIf="object.name.slice(object.name.length - 11) === '.enrichment'" class="fa-fw fa fa-table text-icon"></i>
-                          </div>
-                          <i *ngSwitchCase="'map'" class="fa fa-fw fa-project-diagram text-icon"></i>
-                        </div>
-
-                        <div class="d-inline-block text-truncate">
-                          <a [appLink]="getObjectCommands(object)" [queryParams]="getObjectQueryParams()"
-                             [newTab]="object.type !== 'dir'">
-                            <ng-container *ngIf="object.type !== 'dir'; else dirLabel">
-                              <div *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'">{{ object.name }} </div>
-                              <div *ngIf="object.name.slice(object.name.length - 11) === '.enrichment'">{{ object.name.slice(0, -11) }} </div>
-
-                            </ng-container>
-                            <ng-template #dirLabel>
-                              <strong>{{ object.name }}</strong>
-                            </ng-template>
-                          </a>
-                        </div>
-                      </div>
-                    </label>
-                  </div>
-                </td>
-
-                <td class="align-middle text-nowrap text-truncate d-none d-cbp-sm-table-cell"
-                    (click)="results.toggle(object)">
-                  <ng-container *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) !== '.enrichment'">
-                    <div popoverTitle="Annotation Status" [ngbPopover]="object.annotationsTooltipContent"
-                         container="body" class="text-truncate"
-                         placement="right" triggers="mouseenter:mouseleave"
-                         [disablePopover]="!object.annotationsTooltipContent">
-                      <ng-container *ngIf="object.annotationsTooltipContent && object.annotationsTooltipContent.length">
-                        <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
-                      </ng-container>
-                      {{ (object.data.annotations_date | date: 'short') || 'No annotations'}}
-                    </div>
-                  </ng-container>
-                </td>
-
-                <td class="align-middle text-nowrap text-truncate d-none d-cbp-md-table-cell"
-                    (click)="results.toggle(object)">
-                  <div class="text-truncate" *ngIf="object.creator">
-                    {{ getDateShown(object) | date: 'shortDate' }}
-                  </div>
-                </td>
-
-                <td class="align-middle text-nowrap text-truncate" (click)="results.toggle(object)">
-                  <div *ngIf="object.creator" class="text-truncate">
-                    {{ object.creator.username }}
-                  </div>
-                </td>
-
-                <td>
-                  <div class="d-flex align-items-end">
-                    <div ngbDropdown class="d-inline-block ml-auto" placement="bottom-right">
-                      <button class="btn btn-sm" ngbDropdownToggle>
-                        <i class="fas fa-cog fa-fw"></i>
-                      </button>
-                      <div ngbDropdownMenu>
-                        <button ngbDropdownItem [appLink]="getObjectCommands(object)"
-                                [queryParams]="getObjectQueryParams()">
-                          Open
-                        </button>
-                        <button ngbDropdownItem (click)="displayEditDialog(object)" *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'">
-                          Edit...
-                        </button>
-                        <button ngbDropdownItem *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) === '.enrichment'"
-                                (click)="displayEnrichmentTableEditDialog([object])">
-                          Edit Enrichment Params
-                        </button>
-                        <button ngbDropdownItem *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) !== '.enrichment'"
-                                (click)="reannotate([object])">
-                          Re-annotate
-                        </button>
-                        <div class="dropdown-divider"></div>
-                        <button ngbDropdownItem (click)="displayDeleteDialog([object])">
-                          Delete...
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
 
-            <div class="module-body">
-              <div *ngIf="status.emptyResultsShown && results.viewLength === 0" class="text-center">
-                {{ results.filter != null ? 'There are no results matching your filter.' : 'There are no items in this folder.' }}
+  <ng-template [ngIf]="result.value">
+    <div class="module" appContainerBreakpoints>
+      <!-- Header -->
+      <div class="module-header">
+        <!-- Breadcrumbs -->
+        <div class="module-breadcrumb-bar mb-1">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a appLink="/projects">File Browser</a>
+            </li>
+
+            <li *ngFor="let element of result.value.path; index as i" class="breadcrumb-item"
+                [class.active]="i === result.value.path.length - 1">
+              <ng-container *ngIf="i !== result.value.path.length - 1">
+                <a
+                    [appLink]="i === 0 ? ['/projects', result.value.locator.projectName] : ['/projects', result.value.locator.projectName, 'folders', element.id]">
+                  {{ i === 0 ? result.value.locator.projectName : element.name }}
+                </a>
+              </ng-container>
+            </li>
+          </ol>
+        </div>
+
+        <!-- Title bar -->
+        <div class="module-title-bar">
+          <button type="button" class="module-title-bar-back mr-2" (click)="goUp(result.value)">
+            <i class="fa fa-fw fa-arrow-left"></i>
+          </button>
+          <h1 class="module-title">
+            {{ result.value.path == null || result.value.path.length === 1 ? result.value.locator.projectName : result.value.directory?.name }}
+          </h1>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="module-toolbar mt-2">
+          <div class="d-flex align-items-center flex-spaced-wrap">
+            <div class="flex-grow-1 text-nowrap overflow-x-hidden">
+              <div ngbDropdown class="d-inline-block" container="body">
+                <button class="btn btn-primary" ngbDropdownToggle>
+                  <i class="fa fa-fw fa-plus-circle"></i>
+                  New
+                </button>
+                <div ngbDropdownMenu>
+                  <button ngbDropdownItem (click)="openMapCreateDialog(result.value)">New Map...</button>
+                  <button ngbDropdownItem (click)="openDirectoryCreateDialog(result.value)">New Folder...</button>
+                  <button ngbDropdownItem (click)="openEnrichmentTableCreateDialog(result.value)">New Enrichment Table...
+                  </button>
+                  <div class="dropdown-divider"></div>
+                  <button ngbDropdownItem (click)="openUploadDialog(result.value)">Upload File...</button>
+                </div>
+              </div>
+
+              <button class="btn btn-primary ml-2"
+                      (click)="openUploadDialog(result.value)">
+                <i class="fa fa-fw fa-upload"></i> Upload
+              </button>
+
+              <button class="btn btn-secondary ml-2"
+                      [disabled]="result.value.children.selection.length === 0"
+                      (click)="reannotate(result.value.children.selection)" ngbTooltip="Re-annotate document"
+                      container="body">
+                <i class="fa fa-fw fa-redo"></i>
+              </button>
+
+              <button class="btn btn-secondary ml-2"
+                      [disabled]="result.value.children.selection.length === 0"
+                      (click)="openDeleteDialog(result.value.children.selection)">
+                <i class="fa fa-fw fa-trash"></i>
+              </button>
+
+              <button class="btn btn-secondary ml-4" ngbTooltip="Project Entity Cloud"
+                      (click)="openEntityCloudPane()">
+                <i class="fa fa-fw fa-cloud"></i>
+              </button>
+            </div>
+
+            <div class="ml-auto d-flex flex-grow-1">
+              <div class="input-group" [class.bg-highlight]="result.value.children.filter != null">
+                <div class="input-group-prepend">
+                  <div class="input-group-text bg-transparent border-right-0">
+                    <i class="fa fa-search"></i>
+                  </div>
+                </div>
+                <input class="form-control py-2 pl-0 border-left-0 border bg-transparent"
+                       (keyup)="applyFilter(result.value, $event.target.value)"
+                       placeholder="Find" maxlength="40">
               </div>
             </div>
           </div>
-
-          <div class="d-none d-cbp-lg-block module-body-split-sidebar">
-            <app-file-info [object]="results.lastSelection" *ngIf="results.selection.length"></app-file-info>
-          </div>
         </div>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-fill overflow-auto">
+        <app-file-list [parent]="result.value" [appLinks]="true"
+                       (locatorChange)="load($event)"
+                       (objectOpen)="openObject($event)"></app-file-list>
       </div>
 
     </div>
