@@ -52,8 +52,8 @@ services:
             - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
             - ELASTIC_FILE_INDEX_ID=file_dev
             # Neo4j
-            - NEO4J_HOST=34.67.212.125
-            - NEO4J_AUTH=neo4j/Lifelike0.9staging
+            - NEO4J_HOST=n4j-database
+            - NEO4J_AUTH=neo4j/password
             # Redis
             - REDIS_HOST=redis
             - REDIS_PORT=6379
