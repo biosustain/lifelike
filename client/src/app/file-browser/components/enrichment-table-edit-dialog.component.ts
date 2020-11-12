@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators, FormArray } from '@angular/forms';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { Directory } from '../services/project-space.service';
@@ -21,9 +21,19 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
     description: new FormControl(''),
     organism: new FormControl('', Validators.required),
     entitiesList: new FormControl('', Validators.required),
+    domainsList: new FormArray([]),
   });
   filename: string;
   organismTaxId: string;
+  domains: string[] = [];
+
+  checks: Array<string> = [
+    'Regulon',
+    'UniProt',
+    'String',
+    'GO',
+    'Biocyc'
+  ]
 
   constructor(
     modal: NgbActiveModal,
@@ -41,19 +51,51 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
       const resultArray = result.data.split('/');
       const importGenes: string = resultArray[0].split(',').filter(gene => gene !== '').join('\n');
       this.organismTaxId = resultArray[1];
+      this.domains = resultArray[3].split(',');
       this.search.getOrganismFromTaxId(this.organismTaxId).subscribe((searchResult) => {
         this.form.get('name').setValue(this.filename || '');
         this.form.get('description').setValue(description || '');
         this.form.get('entitiesList').setValue(importGenes || '');
         this.setOrganism(searchResult);
+        this.setDomains();
       });
     });
+  }
+
+  setDomains() {
+    const formArray: FormArray = this.form.get('domainsList') as FormArray;
+    this.domains.forEach((domain) => formArray.push(new FormControl(domain)));
   }
 
   getValue() {
     return {
       ...this.form.value,
     };
+  }
+
+  onCheckChange(event) {
+    const formArray: FormArray = this.form.get('domainsList') as FormArray;
+
+    /* Selected */
+    if(event.target.checked){
+      // Add a new control in the arrayForm
+      formArray.push(new FormControl(event.target.value));
+    }
+    /* unselected */
+    else{
+      // find the unselected element
+      let i: number = 0;
+
+      formArray.controls.forEach((ctrl: FormControl) => {
+        if(ctrl.value == event.target.value) {
+          // Remove the unselected element from the arrayForm
+          formArray.removeAt(i);
+          return;
+        }
+
+        i++;
+      });
+    }
   }
 
   setOrganism(organism: OrganismAutocomplete | null) {
