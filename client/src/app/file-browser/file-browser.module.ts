@@ -3,7 +3,6 @@ import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserComponent } from './components/file-browser.component';
 import { FileEditDialogComponent } from './components/file-edit-dialog.component';
 import { ObjectDeleteDialogComponent } from './components/object-delete-dialog.component';
-import { ObjectUploadDialogComponent } from './components/object-upload-dialog.component';
 import { FileViewComponent } from './components/file-view.component';
 import { PdfViewerLibModule } from '../pdf-viewer/pdf-viewer-lib.module';
 import { BrowserProjectListComponent } from './components/browser/browser-project-list.component';
@@ -22,17 +21,17 @@ import { FileTypeLabelComponent } from './components/file-type-label.component';
 import { EnrichmentTableViewerComponent } from './components/enrichment-table-viewer.component';
 import { EnrichmentTableCreateDialogComponent } from './components/enrichment-table-create-dialog.component';
 import { EnrichmentTableEditDialogComponent } from './components/enrichment-table-edit-dialog.component';
-import { FileSelectionDialogComponent } from './components/dialog/file-selection-dialog.component';
+import { ObjectSelectionDialogComponent } from './components/dialog/object-selection-dialog.component';
 import { FilesystemService } from './services/filesystem.service';
 import { FileListComponent } from './components/file-list.component';
 import { FilesystemObjectActions } from './services/filesystem-object-actions';
 import { ProjectService } from './services/project.service';
+import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialog.component';
 
 @NgModule({
   declarations: [
     FileEditDialogComponent,
     ObjectDeleteDialogComponent,
-    ObjectUploadDialogComponent,
     ObjectDeletionResultDialogComponent,
     FileBrowserComponent,
     FileViewComponent,
@@ -50,8 +49,9 @@ import { ProjectService } from './services/project.service';
     EnrichmentTableViewerComponent,
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,
-    FileSelectionDialogComponent,
+    ObjectSelectionDialogComponent,
     FileListComponent,
+    ObjectEditDialogComponent,
   ],
   imports: [
     SharedModule,
@@ -61,7 +61,6 @@ import { ProjectService } from './services/project.service';
   entryComponents: [
     FileEditDialogComponent,
     ObjectDeleteDialogComponent,
-    ObjectUploadDialogComponent,
     FileViewComponent,
     ProjectCreateDialogComponent,
     ProjectEditDialogComponent,
@@ -69,13 +68,15 @@ import { ProjectService } from './services/project.service';
     ObjectDeletionResultDialogComponent,
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,
-    FileSelectionDialogComponent,
+    ObjectSelectionDialogComponent,
+    ObjectEditDialogComponent,
   ],
   exports: [
     FileInfoComponent,
     FileTypeLabelComponent,
-    FileSelectionDialogComponent,
+    ObjectSelectionDialogComponent,
     FileListComponent,
+    ObjectEditDialogComponent,
   ],
   providers: [
     ProjectService,

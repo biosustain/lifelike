@@ -61,9 +61,7 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
   }
 
   createMap() {
-    this.filesystemObjectActions.openMapCreateDialog(null, {
-      filename: `Untitled Map`,
-    }).then(result => {
+    this.filesystemObjectActions.openMapCreateDialog(null).then(result => {
       this.workspaceManager.navigate([
         '/projects',
         result.project.project_name,

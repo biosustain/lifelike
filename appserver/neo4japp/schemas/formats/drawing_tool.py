@@ -13,3 +13,4 @@ with resources.open_text(formats, 'map_v1.json') as f:
 def validate_map_data(buffer):
     graph = json.loads(buffer.getvalue())
     validate_map(graph)
+    return True

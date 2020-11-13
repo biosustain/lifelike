@@ -4,7 +4,7 @@
   </app-modal-header>
 
   <app-modal-body>
-    <ng-container *ngIf="objectSelect.locator != null; else projectList">
+    <ng-container *ngIf="objectSelect.hashId != null; else projectList">
       <ng-container *ngIf="(objectSelect.object$ | addStatus | async) as result">
         <ng-template [ngIf]="result.error">
           <app-module-error [error]="result.error" class="d-block p-4">
@@ -31,13 +31,13 @@
             <div class="ml-2 text-truncate module-title d-flex align-items-center">
               <i class="fa fa-fw fa-folder text-icon" aria-hidden="true"></i>
               <div class="text-truncate ml-2">
-                {{ result.value.name }}
+                {{ result.value.effectiveName }}
               </div>
             </div>
           </div>
 
           <div class="flex-fill overflow-auto border-top">
-            <app-file-list [parent]="result.value" (locatorChange)="objectSelect.load($event)"
+            <app-file-list [parent]="result.value" (hashIdChange)="objectSelect.load($event)"
                            (objectOpen)="objectSelect.open($event)"
                            [objectControls]="false"
                            [emptyDirectoryMessage]="emptyDirectoryMessage"></app-file-list>

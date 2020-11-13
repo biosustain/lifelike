@@ -50,7 +50,7 @@ class FilesystemBaseView(MethodView):
         '.llmap': 'vnd.lifelike.document/map',
     }
     content_validators = {
-        'applicatiom/pdf': lambda buffer: True,
+        'application/pdf': lambda buffer: True,
         'vnd.lifelike.document/map': validate_map_data,
         'vnd.lifelike.filesystem/directory': lambda buffer: buffer is None,
     }
@@ -302,15 +302,14 @@ class FilesystemBaseView(MethodView):
             objects=returned_files,
         )))
 
-    def detect_mime_type(self, params: dict):
-        name, ext = os.path.splitext(params['filename'])
-        mime_type = params.get('mime_type')
-        if mime_type in self.accepted_mime_types:
-            return mime_type
-        elif ext in self.extension_mime_types:
-            return self.extension_mime_types[ext]
-        else:
-            raise ValueError('Provided file is not a known type of file.')
+    def detect_mime_type(self, buffer):
+        try:
+            json.load(buffer)
+            return 'vnd.lifelike.document/map'
+        except ValueError:
+            return 'application/pdf'
+        finally:
+            buffer.seek(0)
 
     def validate_content(self, mime_type, buffer):
         validator = self.content_validators[mime_type]
@@ -318,9 +317,10 @@ class FilesystemBaseView(MethodView):
             raise ValueError()
 
     def extract_doi(self, mime_type, buffer):
-        data = buffer.getvalue()
-
         if mime_type == 'application/pdf':
+            data = buffer.read()
+            buffer.seek(0)
+
             # Attempt 1: search through the first N bytes (most probably containing only metadata)
             chunk = data[:2 ** 17]
             doi = self._search_doi_in_pdf(chunk)
@@ -355,6 +355,29 @@ class FilesystemBaseView(MethodView):
 
 class FileListView(FilesystemBaseView):
     decorators = [auth.login_required]
+
+    def get_content_from_params(self, params: dict):
+        # Fetch from URL
+        if params.get('content_url') is not None:
+            url: str = params.get('content_url')
+
+            try:
+                buffer = read_url(urllib.request.Request(url, headers={
+                    'User-Agent': self.url_fetch_user_agent,
+                }), max_length=self.file_max_size, timeout=self.url_fetch_timeout)
+            except (ValueError, URLError):
+                raise ValidationError('Your file could not be downloaded, either because it is '
+                                      'inaccessible or another problem occurred. Please double '
+                                      'check the spelling of the URL.', "content_url")
+
+            return 'content_url', buffer, url
+
+        # Fetch from upload
+        elif params.get('content_value') is not None:
+            buffer = params.get('content_value')
+            return 'content_value', buffer, None
+        else:
+            return None, None, None
 
     @use_args(FileListRequestSchema)
     @use_args(PaginatedRequest)
@@ -467,52 +490,37 @@ class FileListView(FilesystemBaseView):
 
         # Create operation
         else:
-            buffer = None
-            content_field = None
+            content_field, buffer, url = self.get_content_from_params(params)
 
-            # Fetch from URL
-            if params.get('content_url') is not None:
-                content_field = 'content_url'
-                url: str = params.get('content_url')
-
-                try:
-                    buffer = read_url(urllib.request.Request(url, headers={
-                        'User-Agent': self.url_fetch_user_agent,
-                    }), max_length=self.file_max_size, timeout=self.url_fetch_timeout)
-                except (ValueError, URLError):
-                    raise ValidationError('Your file could not be downloaded, either because it is '
-                                          'inaccessible or another problem occurred. Please double '
-                                          'check the spelling of the URL.', "content_url")
-
-                file.upload_url = url
-
-            # Fetch from upload
-            elif params.get('content_value') is not None:
-                content_field = 'content_value'
-                buffer = params.get('content_value')
-
+            if content_field:
                 buffer.seek(0, io.SEEK_END)
                 size = buffer.tell()
                 buffer.seek(0)
 
-                if size > self.file_max_size:
-                    raise ValidationError('Your file could not be processed because it is too large.',
-                                          "content_value")
+                if size == 0:
+                    raise ValidationError('The file is blank.', content_field)
 
-            try:
-                file.mime_type = self.detect_mime_type(params)
-            except ValueError as e:
-                raise ValidationError("The type of file could not be detected.", content_field)
+                if size > self.file_max_size:
+                    raise ValidationError('Your file could not be processed because it is too large.', content_field)
+
+                if params.get('mime_type'):
+                    file.mime_type = params['mime_type']
+                else:
+                    try:
+                        file.mime_type = self.detect_mime_type(buffer)
+                    except ValueError as e:
+                        raise ValidationError("The type of file could not be detected.", content_field)
+
+                file.doi = self.extract_doi(file.mime_type, buffer)
+                file.content_id = FileContent.get_or_create(buffer)
+                file.url = url
+            else:
+                file.mime_type = params['mime_type']
 
             try:
                 self.validate_content(file.mime_type, buffer)
             except ValueError as e:
-                raise ValidationError("The provided file may be corrupt.", content_field)
-
-            # Directories don't have content
-            if buffer is not None:
-                file.doi = self.extract_doi(file.mime_type, buffer)
-                file.content_id = FileContent.get_or_create(buffer)
+                raise ValidationError(f"The provided file may be corrupt: {str(e)}", content_field)
 
         # ========================================
         # Commit and filename conflict resolution
@@ -540,7 +548,8 @@ class FileListView(FilesystemBaseView):
                 db.session.add(file)
                 db.session.commit()
                 break
-            except IntegrityError:
+            except IntegrityError as e:
+                # Warning: this could catch some other integrity error
                 db.session.rollback()
 
         db.session.commit()
@@ -559,15 +568,13 @@ class FileListView(FilesystemBaseView):
         children = self.get_files(Files.parent_id == file.id)
         return_file.calculated_children = children
 
-        return jsonify({
-            'object': FileResponseSchema(context={
-                'user_privilege_filter': g.current_user.id,
-            }, exclude=(
-                'object.children.children',  # We aren't loading sub-children
-            )).dump(FileResponse(
-                object=return_file,
-            )),
-        })
+        return jsonify(FileResponseSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }, exclude=(
+            'object.children.children',  # We aren't loading sub-children
+        )).dump(FileResponse(
+            object=return_file,
+        )))
 
     @use_args(lambda request: BulkFileRequestSchema())
     @use_args(lambda request: BulkFileUpdateRequestSchema(partial=True))
@@ -633,9 +640,9 @@ class FileDetailView(FilesystemBaseView):
                 f"You do not have access to the specified file or "
                 f"directory ({hash_id}) to read it.", hash_id)
 
-        # We allow returning recycled objects
-
-        children = self.get_files(Files.parent_id == file.id)
+        # TODO: Allow returning recycled items
+        children = self.get_files(and_(Files.parent_id == file.id,
+                                       Files.recycling_date.is_(None)))
         file.calculated_children = children
 
         return jsonify(FileResponseSchema(context={
