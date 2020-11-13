@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FilesystemObject, PathLocator, ProjectImpl } from '../models/filesystem-object';
+import { FilesystemObject } from '../models/filesystem-object';
 import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -10,10 +10,11 @@ import { ProjectPageService } from './project-page.service';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { map } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
 import { ApiService } from '../../shared/services/api.service';
-import { ResultList } from '../../interfaces/shared.interface';
-import { ProjectList } from '../models/project-list';
+import { RecursivePartial } from '../../shared/utils/types';
+import { BulkFileUpdateRequest, FileCreateRequest, FileDataResponse, MultipleFileDataResponse } from '../schema';
+import { objectToFormData } from '../../shared/utils/forms';
 
 @Injectable()
 export class FilesystemService {
@@ -34,11 +35,92 @@ export class FilesystemService {
     });
   }
 
-  get(hashId: string): Observable<FilesystemObject> {
-    return this.http.get<{object: FilesystemObjectData}>(
-      `/api/filesystem/objects/${encodeURIComponent(hashId)}`, this.apiService.getHttpOptions(true)
+  put(request: RecursivePartial<FileCreateRequest>): Observable<HttpEvent<object> & {
+    bodyValue?: FilesystemObject,
+  }> {
+    return this.http.put(
+      `/api/filesystem/objects`,
+      objectToFormData(request), {
+        ...this.apiService.getHttpOptions(true),
+        observe: 'events',
+        reportProgress: true,
+        responseType: 'json',
+      },
     ).pipe(
-      map(data => new FilesystemObject().update(data.object))
+      map(event => {
+        if (event.type === HttpEventType.Response) {
+          (event as any).bodyValue = new FilesystemObject().update(event.body);
+        }
+        return event;
+      }),
+    );
+  }
+
+  get(hashId: string): Observable<FilesystemObject> {
+    return this.http.get<FileDataResponse>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}`,
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(data => new FilesystemObject().update(data.object)),
+    );
+  }
+
+  getContent(hashId: string): Observable<ArrayBuffer> {
+    return this.http.get(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/content`, {
+        ...this.apiService.getHttpOptions(true),
+        responseType: 'arraybuffer',
+      },
+    );
+  }
+
+  save(hashIds: string[], changes: RecursivePartial<BulkFileUpdateRequest>,
+       updateWithLatest?: { [hashId: string]: FilesystemObject }):
+    Observable<{ [hashId: string]: FilesystemObject }> {
+    return this.http.patch<MultipleFileDataResponse>(
+      `/api/filesystem/objects`, {
+        ...changes,
+        hashIds,
+      }, this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(data => {
+        const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
+        for (const [itemHashId, itemData] of Object.entries(data.objects)) {
+          if (!(itemHashId in ret)) {
+            ret[itemHashId] = new FilesystemObject();
+          }
+          ret[itemHashId].update(itemData);
+        }
+        return ret;
+      }),
+    );
+  }
+
+  delete(hashIds: string[],
+         updateWithLatest?: { [hashId: string]: FilesystemObject }):
+    Observable<{ [hashId: string]: FilesystemObject }> {
+    return this.http.request<MultipleFileDataResponse>(
+      'DELETE',
+      `/api/filesystem/objects`, {
+        ...this.apiService.getHttpOptions(true, {
+          contentType: 'application/json',
+        }),
+        body: {
+          hashIds,
+        },
+        responseType: 'json',
+      },
+    ).pipe(
+      map(data => {
+        const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
+        for (const [itemHashId, itemData] of Object.entries(data.objects)) {
+          if (!(itemHashId in ret)) {
+            ret[itemHashId] = new FilesystemObject();
+          }
+          ret[itemHashId].update(itemData);
+        }
+        return ret;
+      }),
     );
   }
 
@@ -55,14 +137,14 @@ export class FilesystemService {
 
   private generateTooltipContent(file: PdfFile): string {
     const outdated = Array
-        .from(Object.entries(this.lmdbsDates))
-        .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
+      .from(Object.entries(this.lmdbsDates))
+      .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
     if (outdated.length === 0) {
       return '';
     }
     return outdated.reduce(
-        (tooltip: string, [name, date]: [string, string]) => `${tooltip}\n- ${name}, ${new Date(date).toDateString()}`,
-        'Outdated:',
+      (tooltip: string, [name, date]: [string, string]) => `${tooltip}\n- ${name}, ${new Date(date).toDateString()}`,
+      'Outdated:',
     );
   }
 }

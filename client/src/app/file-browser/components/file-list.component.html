@@ -98,7 +98,7 @@
 
         <td>
           <div class="d-flex align-items-end" *ngIf="objectControls">
-            <div ngbDropdown class="d-inline-block ml-auto" placement="bottom-right">
+            <div ngbDropdown class="d-inline-block ml-auto" container="body">
               <button class="btn btn-sm" ngbDropdownToggle>
                 <i class="fas fa-cog fa-fw"></i>
               </button>
@@ -106,15 +106,21 @@
                 <button ngbDropdownItem (click)="this.objectOpen.next(object)" [disabled]="!object.isOpenable">
                   Open
                 </button>
-                <button ngbDropdownItem (click)="openEditDialog(object)" [disabled]="!object.isEditable">
-                  Edit...
+                <button ngbDropdownItem (click)="openEditDialog(object)">
+                  Edit details...
                 </button>
                 <button ngbDropdownItem (click)="reannotate([object])" [disabled]="!object.isAnnotatable">
                   Re-annotate
                 </button>
+                <button ngbDropdownItem (click)="download(object)" *ngIf="object.isDownloadable">
+                  Download
+                </button>
                 <div class="dropdown-divider"></div>
-                <button ngbDropdownItem (click)="openMoveDialog(object)" [disabled]="!object.isMovable">
-                  Move...
+                <button ngbDropdownItem (click)="openCloneDialog(object)" *ngIf="object.isCloneable">
+                  Copy to...
+                </button>
+                <button ngbDropdownItem (click)="openMoveDialog([object])" [disabled]="!object.isMovable">
+                  Move to...
                 </button>
                 <button ngbDropdownItem (click)="openDeleteDialog([object])" [disabled]="!object.isDeletable">
                   Delete...

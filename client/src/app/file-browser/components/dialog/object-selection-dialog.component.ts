@@ -1,17 +1,17 @@
 import { Component, Input, OnDestroy } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../../shared/services/message-dialog.service';
-import { FilesystemObject, PathLocator } from '../../models/filesystem-object';
+import { FilesystemObject, PathLocator, ProjectImpl } from '../../models/filesystem-object';
 import { Project } from '../../services/project-space.service';
 import { ObjectSelectService } from '../../services/object-select.service';
 import { MessageType } from '../../../interfaces/message-dialog.interface';
 
 @Component({
-  selector: 'app-directory-selection-dialog',
-  templateUrl: './file-selection-dialog.component.html',
+  selector: 'app-object-selection-dialog',
+  templateUrl: './object-selection-dialog.component.html',
   providers: [ObjectSelectService],
 })
-export class FileSelectionDialogComponent implements OnDestroy {
+export class ObjectSelectionDialogComponent implements OnDestroy {
   @Input() title = 'Select File';
   @Input() emptyDirectoryMessage = 'There are no items in this folder.';
 
@@ -24,8 +24,8 @@ export class FileSelectionDialogComponent implements OnDestroy {
   }
 
   @Input()
-  set locator(locator: PathLocator) {
-    this.objectSelect.load(locator);
+  set hashId(hashId: string) {
+    this.objectSelect.load(hashId);
   }
 
   @Input()
@@ -38,11 +38,8 @@ export class FileSelectionDialogComponent implements OnDestroy {
     this.objectSelect.multipleSelection = multipleSelection;
   }
 
-  openProject(project: Project) {
-    this.locator = {
-      projectName: project.projectName,
-      directoryId: null,
-    };
+  openProject(project: ProjectImpl) {
+    this.hashId = project.root.hashId;
   }
 
   cancel() {

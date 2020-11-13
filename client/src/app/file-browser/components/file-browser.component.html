@@ -208,20 +208,19 @@
                 <i class="fa fa-fw fa-upload"></i> Upload
               </button>
 
-              <button class="btn btn-secondary ml-2"
-                      [disabled]="result.value.children.selection.length === 0"
-                      (click)="reannotate(result.value.children.selection)" ngbTooltip="Re-annotate document"
-                      container="body">
-                <i class="fa fa-fw fa-redo"></i>
-              </button>
+              <div ngbDropdown class="d-inline-block ml-2" container="body" *ngIf="result.value.children.selection.length">
+                <button class="btn btn-secondary" ngbDropdownToggle>
+                  Actions
+                </button>
+                <div ngbDropdownMenu>
+                  <button ngbDropdownItem (click)="reannotate(result.value.children.selection)">Re-annotate</button>
+                  <div class="dropdown-divider"></div>
+                  <button ngbDropdownItem (click)="openMoveDialog(result.value.children.selection)">Move...</button>
+                  <button ngbDropdownItem (click)="openDeleteDialog(result.value.children.selection)">Delete...</button>
+                </div>
+              </div>
 
-              <button class="btn btn-secondary ml-2"
-                      [disabled]="result.value.children.selection.length === 0"
-                      (click)="openDeleteDialog(result.value.children.selection)">
-                <i class="fa fa-fw fa-trash"></i>
-              </button>
-
-              <button class="btn btn-secondary ml-4" ngbTooltip="Project Entity Cloud"
+              <button class="btn btn-secondary ml-3" ngbTooltip="Project Entity Cloud"
                       (click)="openEntityCloudPane()">
                 <i class="fa fa-fw fa-cloud"></i>
               </button>
@@ -246,7 +245,7 @@
       <!-- Body -->
       <div class="flex-fill overflow-auto">
         <app-file-list [parent]="result.value" [appLinks]="true"
-                       (locatorChange)="load($event)"
+                       (hashIdChange)="load($event)"
                        (objectOpen)="openObject($event)"></app-file-list>
       </div>
 
