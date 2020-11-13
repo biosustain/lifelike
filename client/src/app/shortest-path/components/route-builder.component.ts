@@ -1,5 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 
+import { DisplayType } from './route-display.component';
+
 @Component({
   selector: 'app-route-builder',
   templateUrl: './route-builder.component.html',
@@ -7,6 +9,7 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 })
 export class RouteBuilderComponent implements OnInit {
   @Output() loadNewQuery: EventEmitter<number>;
+  @Output() changeDisplayType: EventEmitter<string>;
 
   routeBuilderContainerClass: string;
 
@@ -28,10 +31,12 @@ export class RouteBuilderComponent implements OnInit {
     this.routeBuilderOpen = true;
 
     this.loadNewQuery = new EventEmitter<number>();
+    this.changeDisplayType = new EventEmitter<DisplayType>();
   }
 
   ngOnInit() {
     this.loadNewQuery.emit(0);
+    this.changeDisplayType.emit('NETWORK');
   }
 
   toggleRouteBuilderOpen() {
@@ -41,5 +46,9 @@ export class RouteBuilderComponent implements OnInit {
 
   requestQueryLoadFromParent(event: any) {
     this.loadNewQuery.emit(Number.parseInt(event.target.value, 10));
+  }
+
+  requestChangeDisplayTypeFromParent(type: string) {
+    this.changeDisplayType.emit(type);
   }
 }
