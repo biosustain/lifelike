@@ -126,9 +126,9 @@ def join_projects_to_parents_cte(q_hierarchy: Query):
         .subquery()
 
 
-def build_file_hierarchy_query_parts(condition, projects_table, files_table,
-                                     include_deleted_projects=False,
-                                     include_deleted_files=False) -> Dict[str, BaseQuery]:
+def build_file_hierarchy_query(condition, projects_table, files_table,
+                               include_deleted_projects=False,
+                               include_deleted_files=False):
     """
     Build a query for fetching a file, its parents, and the related project(s), while
     (optionally) excluding deleted projects and deleted projects.
@@ -173,10 +173,7 @@ def build_file_hierarchy_query_parts(condition, projects_table, files_table,
     if not include_deleted_projects:
         query = query.filter(projects_table.deletion_date.is_(None))
 
-    return {
-        'query': query,
-        'q_hierarchy': q_hierarchy,
-    }
+    return query
 
 
 # noinspection DuplicatedCode

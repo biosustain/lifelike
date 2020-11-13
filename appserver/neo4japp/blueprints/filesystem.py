@@ -1,20 +1,17 @@
 import io
 import json
-import os
 import re
 import urllib.request
 from collections import defaultdict
 from datetime import datetime
-from typing import Optional, List, Dict, Tuple, Any
+from typing import Optional, List, Dict
 from urllib.error import URLError
 
-import sqlalchemy
 from flask import Blueprint, jsonify, g, make_response, request
 from flask.views import MethodView
-from flask_sqlalchemy import BaseQuery
 from marshmallow import ValidationError
 from pdfminer import high_level
-from sqlalchemy import and_, or_
+from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload, lazyload
 from webargs.flaskparser import use_args
@@ -24,18 +21,23 @@ from neo4japp.database import db
 from neo4japp.exceptions import RecordNotFoundException, AccessRequestRequiredError
 from neo4japp.models import Projects, Files, FileContent, AppUser, FileVersion
 from neo4japp.models.files_queries import add_user_permission_columns, FileHierarchy, \
-    build_file_hierarchy_query_parts, build_file_parents_cte
+    build_file_hierarchy_query
 from neo4japp.schemas.common import PaginatedRequest
 from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponse, FileResponseSchema, \
     FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, BulkFileUpdateRequestSchema, \
     FileListSchema, FileListRequestSchema
-from neo4japp.schemas.formats.drawing_tool import validate_map, validate_map_data
+from neo4japp.schemas.formats.drawing_tool import validate_map_data
 from neo4japp.utils.network import read_url
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
 
 class FilesystemBaseView(MethodView):
+    """
+    Base view for filesystem endpoints with reusable methods for getting files
+    from hash IDs, checking permissions, and validating input.
+    """
+
     file_max_size = 1024 * 1024 * 30
     url_fetch_timeout = 10
     url_fetch_user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
@@ -55,38 +57,67 @@ class FilesystemBaseView(MethodView):
         'vnd.lifelike.filesystem/directory': lambda buffer: buffer is None,
     }
 
-    def get_file(self, filter, lazy_load_content=False) -> Files:
-        files = self.get_files(filter, lazy_load_content)
+    def get_nondeleted_recycled_file(self, filter, lazy_load_content=False) -> Files:
+        """
+        Returns a file that is guaranteed to be non-deleted, but may or may not be
+        recycled, that matches the provided filter. If you do not want recycled files,
+        exclude them with a filter condition.
+
+        :param filter: the SQL Alchemy filter
+        :param lazy_load_content: whether to load the file's content into memory
+        :return: a non-null file
+        """
+        files = self.get_nondeleted_recycled_files(filter, lazy_load_content)
         if not len(files):
             raise RecordNotFoundException("The requested file object could not be found.")
         return files[0]
 
-    def get_files_query_parts(self, filter, user: AppUser, lazy_load_content=False) -> Dict[str, BaseQuery]:
+    def get_nondeleted_recycled_files(self, filter, lazy_load_content=False,
+                                      require_hash_ids: List[str] = None) -> List[Files]:
+        """
+        Returns files that are guaranteed to be non-deleted, but may or may not be
+        recycled, that matches the provided filter. If you do not want recycled files,
+        exclude them with a filter condition.
+
+        :param filter: the SQL Alchemy filter
+        :param lazy_load_content: whether to load the file's content into memory
+        :param require_hash_ids: a list of file hash IDs that must be in the result
+        :return: the result, which may be an empty list
+        """
+        current_user = g.current_user
+
         t_file = db.aliased(Files, name='_file')  # alias required for the FileHierarchy class
         t_project = db.aliased(Projects, name='_project')
 
-        query_parts = {
-            **build_file_hierarchy_query_parts(filter, t_project, t_file),
-            't_file': t_file,
-            't_project': t_project,
-        }
-
-        query_parts['query'] = query_parts['query'] \
+        query = build_file_hierarchy_query(and_(
+            filter,
+            Files.deletion_date.is_(None)
+        ), t_project, t_file) \
             .options(raiseload('*'),
                      joinedload(t_file.user))
 
         # Fetch permissions for the given user
-        query_parts['query'] = add_user_permission_columns(query_parts['query'],
-                                                           t_project, t_file, user.id)
+        query = add_user_permission_columns(query, t_project, t_file, current_user.id)
 
         if lazy_load_content:
-            query_parts['query'] = query_parts['query'].options(lazyload(t_file.content))
+            query = query.options(lazyload(t_file.content))
 
-        return query_parts
-
-    def calculate_files_from_query(self, results, t_file, t_project, user: AppUser) -> List[Files]:
+        results = query.all()
         grouped_results = defaultdict(lambda: [])
         files = []
+
+        if require_hash_ids:
+            missing_hash_ids = set()
+
+            # Check we got all the files
+            if len(files) != len(require_hash_ids):
+                found_hash_ids = [file.hash_id for file in files]
+                missing_hash_ids.update([hash_id for hash_id in require_hash_ids
+                                         if hash_id not in found_hash_ids])
+
+            if len(missing_hash_ids):
+                raise RecordNotFoundException(f"The request specified one or more file or directory "
+                                              f"({', '.join(missing_hash_ids)}) that could not be found.")
 
         for row in results:
             grouped_results[row._asdict()['initial_id']].append(row)
@@ -94,21 +125,43 @@ class FilesystemBaseView(MethodView):
         for rows in grouped_results.values():
             hierarchy = FileHierarchy(rows, t_file, t_project)
             hierarchy.calculate_properties()
-            hierarchy.calculate_privileges([user.id])
+            hierarchy.calculate_privileges([current_user.id])
             files.append(hierarchy.file)
 
         return files
 
-    def get_files(self, filter, lazy_load_content=False) -> List[Files]:
-        user = g.current_user
-        query_parts = self.get_files_query_parts(filter, user,
-                                                 lazy_load_content=lazy_load_content)
-        return self.calculate_files_from_query(query_parts['query'].all(),
-                                               query_parts['t_file'],
-                                               query_parts['t_project'],
-                                               user)
+    def check_file_permissions(self, files: List[Files], user: AppUser,
+                               require_permissions: List[str], *, permit_recycled: bool):
+        """
+        Helper method to check permissions on the provided files and other properties
+        that you may want to check for. On error, an exception is thrown.
+
+        :param files: the files to check
+        :param user: the user to check permissions for
+        :param require_permissions: a list of permissions to require (like 'writable')
+        :param permit_recycled: whether to allow recycled files
+        """
+        # Check each file
+        for file in files:
+            for permission in require_permissions:
+                if not getattr(file.calculated_privileges[user.id], permission):
+                    # Do not reveal the filename with the error!
+                    raise AccessRequestRequiredError(
+                        f"You do not have access to the specified file object "
+                        f"(with ID of {file.hash_id}) to change it.", file.hash_id)
+
+            if not permit_recycled and (file.recycled or file.parent_recycled):
+                raise ValidationError(f"The file or directory '{file.filename}' has been trashed and "
+                                      "must be restored first.")
 
     def update_files(self, hash_ids: List[str], params: Dict, user: AppUser):
+        """
+        Updates the specified files using the parameters from a validated request.
+
+        :param hash_ids: the object hash IDs
+        :param params: the parameters
+        :param user: the user that is making the change
+        """
         changed_fields = set()
 
         # Collect everything that we need to query
@@ -127,8 +180,10 @@ class FilesystemBaseView(MethodView):
         # Fetch and check
         # ========================================
 
-        # This method checks permissions
-        files = self.check_files_for_edit(query_hash_ids, user)
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
+                                                   user, require_hash_ids=query_hash_ids)
+        self.check_file_permissions(files, user, ['writable'], permit_recycled=False)
+
         target_files = [file for file in files if file.hash_id in target_hash_ids]
         parent_file = None
 
@@ -228,69 +283,47 @@ class FilesystemBaseView(MethodView):
                 raise ValidationError("The requested changes would result in a duplicate filename "
                                       "within the same folder.")
 
-    def check_files_for_edit(self, hash_ids: List[str], user: AppUser, *,
-                             permit_recycled: bool = False) -> List[Files]:
+    def get_file_response(self, hash_id: str, user: AppUser):
+        """
+        Fetch a file and return a response that can be sent to the client. Permissions
+        are checked and this method will throw a relevant response exception.
 
-        # ========================================
-        # Lock
-        # ========================================
+        :param hash_id: the hash ID of the file
+        :param user: the user to check permissions for
+        :return: the response
+        """
+        return_file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id)
+        self.check_file_permissions([return_file], user, ['readable'], permit_recycled=True)
 
-        q_hierarchy = build_file_parents_cte(and_(
-            or_(*[Files.hash_id == key for key in hash_ids]),
-            Files.deletion_date.is_(None),
-        ))
+        children = self.get_nondeleted_recycled_files(Files.parent_id == return_file.id)
+        # Note: We don't check permissions here, but there are no negate permissions
 
-        db.session.query(Files.id) \
-            .join(q_hierarchy, q_hierarchy.c.id == Files.id) \
-            .with_for_update() \
-            .all()
+        return_file.calculated_children = children
 
-        # ========================================
-        # Query
-        # ========================================
-
-        files = self.get_files(or_(*[Files.hash_id == key for key in hash_ids]))
-
-        # ========================================
-        # Validate
-        # ========================================
-
-        missing_hash_ids = set()
-
-        # Check we got all the files
-        if len(files) != len(hash_ids):
-            found_hash_ids = [file.hash_id for file in files]
-            missing_hash_ids.update([hash_id for hash_id in hash_ids if hash_id not in found_hash_ids])
-
-        # Check each file
-        for file in files:
-            if file.deleted or file.parent_deleted:
-                missing_hash_ids.add(file.hash_id)
-
-            if not file.calculated_privileges[user.id].writable:
-                # Do not reveal the filename with the error!
-                raise AccessRequestRequiredError(
-                    f"You do not have access to the specified file object "
-                    f"(with ID of {file.hash_id}) to change it.", file.hash_id)
-
-            if not permit_recycled and (file.recycled or file.parent_recycled):
-                raise ValidationError(f"The file or directory '{file.filename}' has been trashed and "
-                                      "must be restored first.")
-
-        if len(missing_hash_ids):
-            raise RecordNotFoundException(f"The request specified one or more file or directory "
-                                          f"({', '.join(missing_hash_ids)}) that could not be found.")
-
-        return files
+        return jsonify(FileResponseSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }, exclude=(
+            'object.children.children',  # We aren't loading sub-children
+        )).dump(FileResponse(
+            object=return_file,
+        )))
 
     def get_bulk_file_response(self, hash_ids: List[str], user: AppUser):
-        files = self.get_files(Files.hash_id.in_(hash_ids))
+        """
+        Fetch several files and return a response that can be sent to the client. Could
+        possibly return a response with an empty list if there were no matches. Permissions
+        are checked and this method will throw a relevant response exception.
+
+        :param hash_ids: the hash IDs of the files
+        :param user: the user to check permissions for
+        :return: the response
+        """
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids))
+        self.check_file_permissions(files, user, ['readable'], permit_recycled=True)
+
         returned_files = {}
 
         for file in files:
-            if file.parent_deleted or file.deleted:
-                pass
-
             if file.calculated_privileges[user.id].readable:
                 returned_files[file.hash_id] = file
 
@@ -356,55 +389,19 @@ class FilesystemBaseView(MethodView):
 class FileListView(FilesystemBaseView):
     decorators = [auth.login_required]
 
-    def get_content_from_params(self, params: dict):
-        # Fetch from URL
-        if params.get('content_url') is not None:
-            url: str = params.get('content_url')
-
-            try:
-                buffer = read_url(urllib.request.Request(url, headers={
-                    'User-Agent': self.url_fetch_user_agent,
-                }), max_length=self.file_max_size, timeout=self.url_fetch_timeout)
-            except (ValueError, URLError):
-                raise ValidationError('Your file could not be downloaded, either because it is '
-                                      'inaccessible or another problem occurred. Please double '
-                                      'check the spelling of the URL.', "content_url")
-
-            return 'content_url', buffer, url
-
-        # Fetch from upload
-        elif params.get('content_value') is not None:
-            buffer = params.get('content_value')
-            return 'content_value', buffer, None
-        else:
-            return None, None, None
-
     @use_args(FileListRequestSchema)
     @use_args(PaginatedRequest)
     def get(self, params: dict, pagination: dict):
         assert params['type'] == 'public'
 
-        user = g.current_user
-        query_parts = self.get_files_query_parts(Files.public.is_(True), user)
-        query = query_parts['query']
-        t_file = query_parts['t_file']
-        t_project = query_parts['t_project']
-
-        query = params['sort'](query)
-        page = pagination['page']
-        limit = pagination['limit']
-        files = self.calculate_files_from_query(query.all(), t_file, t_project, user)
-        total = len(files)
-        # TODO: Make pagination fast
-        page_files = files[(page - 1) * limit:page * limit]
-
+        # TODO
         return jsonify(FileListSchema(context={
             'user_privilege_filter': g.current_user.id,
         }, exclude=(
             'results.children',
         )).dump({
-            'total': total,
-            'results': page_files,
+            'total': 0,
+            'results': [],
         }))
 
     @use_args(FileCreateRequestSchema, locations=['json', 'form', 'files'])
@@ -426,20 +423,12 @@ class FileListView(FilesystemBaseView):
         # ========================================
 
         try:
-            parent = self.get_file(Files.hash_id == params['parent_hash_id'])
-            if parent.deleted or parent.parent_deleted:
-                raise RecordNotFoundException("Soft deleted")
+            parent = self.get_nondeleted_recycled_file(Files.hash_id == params['parent_hash_id'])
+            self.check_file_permissions([parent], current_user, ['writable'], permit_recycled=False)
         except RecordNotFoundException:
+            # Rewrite the error to make more sense
             raise ValidationError("The requested parent object could not be found.",
                                   "parent_hash_id")
-
-        if parent.recycled or parent.parent_recycled:
-            raise ValidationError("The specified parent is in the trash and must be restored first.",
-                                  "parent_hash_id")
-
-        if not parent.calculated_privileges[current_user.id].writable:
-            raise ValidationError("You do not have access to the parent object "
-                                  "to add a new object to it.", "parent_hash_id")
 
         if parent.mime_type != Files.DIRECTORY_MIME_TYPE:
             raise ValidationError(f"The specified parent ({params['parent_hash_id']}) is "
@@ -461,16 +450,13 @@ class FileListView(FilesystemBaseView):
             source_hash_id: str = params.get("content_hash_id")
 
             try:
-                existing_file = self.get_file(Files.hash_id == source_hash_id)
+                existing_file = self.get_nondeleted_recycled_file(Files.hash_id == source_hash_id)
+                self.check_file_permissions([existing_file], current_user, ['readable'],
+                                            permit_recycled=True)
             except RecordNotFoundException:
                 raise ValidationError(f"The requested file or directory to clone from "
                                       f"({source_hash_id}) could not be found.",
                                       "content_hash_id")
-
-            if not existing_file.calculated_privileges[current_user.id].readable:
-                # Make sure to not reveal the filename
-                raise ValidationError(f"You do not have access to the file or folder ({source_hash_id})"
-                                      f" that you are cloning.", "content_hash_id")
 
             if existing_file.mime_type == Files.DIRECTORY_MIME_TYPE:
                 raise ValidationError(f"The specified clone source ({source_hash_id}) "
@@ -490,7 +476,7 @@ class FileListView(FilesystemBaseView):
 
         # Create operation
         else:
-            content_field, buffer, url = self.get_content_from_params(params)
+            content_field, buffer, url = self._get_content_from_params(params)
 
             if content_field:
                 buffer.seek(0, io.SEEK_END)
@@ -558,23 +544,7 @@ class FileListView(FilesystemBaseView):
         # Return new file
         # ========================================
 
-        # Re-fetch data just in case
-        return_file = self.get_file(Files.hash_id == file.hash_id)
-
-        if not return_file.calculated_privileges[current_user.id].readable:
-            raise AccessRequestRequiredError(
-                "You do not have access to this object to read it.", file.hash_id)
-
-        children = self.get_files(Files.parent_id == file.id)
-        return_file.calculated_children = children
-
-        return jsonify(FileResponseSchema(context={
-            'user_privilege_filter': g.current_user.id,
-        }, exclude=(
-            'object.children.children',  # We aren't loading sub-children
-        )).dump(FileResponse(
-            object=return_file,
-        )))
+        return self.get_file_response(file.hash_id, current_user)
 
     @use_args(lambda request: BulkFileRequestSchema())
     @use_args(lambda request: BulkFileUpdateRequestSchema(partial=True))
@@ -594,8 +564,8 @@ class FileListView(FilesystemBaseView):
 
         hash_ids = targets['hash_ids']
 
-        # This method checks permissions
-        files = self.check_files_for_edit(hash_ids, current_user, permit_recycled=True)
+        files = self.get_nondeleted_recycled_files(hash_ids, current_user)
+        self.check_file_permissions(files, current_user, ['writable'], permit_recycled=True)
 
         # ========================================
         # Apply
@@ -620,41 +590,41 @@ class FileListView(FilesystemBaseView):
 
         return self.get_bulk_file_response(hash_ids, current_user)
 
+    def _get_content_from_params(self, params: dict):
+        # Fetch from URL
+        if params.get('content_url') is not None:
+            url: str = params.get('content_url')
+
+            try:
+                buffer = read_url(urllib.request.Request(url, headers={
+                    'User-Agent': self.url_fetch_user_agent,
+                }), max_length=self.file_max_size, timeout=self.url_fetch_timeout)
+            except (ValueError, URLError):
+                raise ValidationError('Your file could not be downloaded, either because it is '
+                                      'inaccessible or another problem occurred. Please double '
+                                      'check the spelling of the URL.', "content_url")
+
+            return 'content_url', buffer, url
+
+        # Fetch from upload
+        elif params.get('content_value') is not None:
+            buffer = params.get('content_value')
+            return 'content_value', buffer, None
+        else:
+            return None, None, None
+
 
 class FileDetailView(FilesystemBaseView):
     decorators = [auth.login_required]
 
     def get(self, hash_id):
-        """File fetch endpoint (without content)."""
-
+        """Fetch a single file."""
         current_user = g.current_user
-        file = self.get_file(Files.hash_id == hash_id)
-
-        if file.parent_deleted or file.deleted:
-            raise RecordNotFoundException(f"The requested file or directory ({hash_id}) "
-                                          f"could not be found.")
-
-        if not file.calculated_privileges[current_user.id].readable:
-            # Make sure to not reveal the filename
-            raise AccessRequestRequiredError(
-                f"You do not have access to the specified file or "
-                f"directory ({hash_id}) to read it.", hash_id)
-
-        # TODO: Allow returning recycled items
-        children = self.get_files(and_(Files.parent_id == file.id,
-                                       Files.recycling_date.is_(None)))
-        file.calculated_children = children
-
-        return jsonify(FileResponseSchema(context={
-            'user_privilege_filter': g.current_user.id,
-        }, exclude=(
-            'object.children.children',  # We aren't loading sub-children
-        )).dump(FileResponse(
-            object=file,
-        )))
+        return self.get_file_response(hash_id, current_user)
 
     @use_args(lambda request: FileUpdateRequestSchema(partial=True), locations=['json', 'form', 'files'])
     def patch(self, params, hash_id):
+        """Update a single file."""
         current_user = g.current_user
         self.update_files([hash_id], params, current_user)
         return self.get(hash_id)
@@ -664,14 +634,11 @@ class FileContentView(FilesystemBaseView):
     decorators = [auth.login_required]
 
     def get(self, hash_id):
-        """File content fetch endpoint."""
+        """Fetch a single file's content."""
+        current_user = g.current_user
 
-        file = self.get_file(Files.hash_id == hash_id, lazy_load_content=True)
-
-        if file.parent_deleted or file.deleted:
-            raise RecordNotFoundException("The requested file object could not be found.")
-
-        # We allow returning recycled objects
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
 
         # Lazy loaded
         content = file.content
@@ -694,6 +661,40 @@ class FileContentView(FilesystemBaseView):
             raise RecordNotFoundException('Requested object has no content')
 
 
+class FileAnnotationsView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    def get(self, hash_id):
+        """Fetch annotations for a file.."""
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+
+        if file.annotations:
+            annotations = file.annotations['documents'][0]['passages'][0]['annotations']
+
+            def terms_match(term_in_exclusion, term_in_annotation, is_case_insensitive):
+                if is_case_insensitive:
+                    return term_in_exclusion.lower() == term_in_annotation.lower()
+                return term_in_exclusion == term_in_annotation
+
+            # Add additional information for annotations that were excluded
+            for annotation in annotations:
+                for exclusion in file.excluded_annotations:
+                    if (exclusion.get('type') == annotation['meta']['type'] and
+                            terms_match(
+                                exclusion.get('text', 'True'),
+                                annotation.get('textInDocument', 'False'),
+                                exclusion['isCaseInsensitive'])):
+                        annotation['meta']['isExcluded'] = True
+                        annotation['meta']['exclusionReason'] = exclusion['reason']
+                        annotation['meta']['exclusionComment'] = exclusion['comment']
+        else:
+            annotations = []
+
+
 bp.add_url_rule('objects', view_func=FileListView.as_view('file'))
 bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file_detail'))
 bp.add_url_rule('objects/<string:hash_id>/content', view_func=FileContentView.as_view('file_content'))
+bp.add_url_rule('objects/<string:hash_id>/annotations', view_func=FileAnnotationsView.as_view('file_annotations'))
