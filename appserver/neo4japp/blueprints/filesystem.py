@@ -106,6 +106,15 @@ class FilesystemBaseView(MethodView):
         grouped_results = defaultdict(lambda: [])
         files = []
 
+        for row in results:
+            grouped_results[row._asdict()['initial_id']].append(row)
+
+        for rows in grouped_results.values():
+            hierarchy = FileHierarchy(rows, t_file, t_project)
+            hierarchy.calculate_properties()
+            hierarchy.calculate_privileges([current_user.id])
+            files.append(hierarchy.file)
+
         if require_hash_ids:
             missing_hash_ids = set()
 
@@ -118,15 +127,6 @@ class FilesystemBaseView(MethodView):
             if len(missing_hash_ids):
                 raise RecordNotFoundException(f"The request specified one or more file or directory "
                                               f"({', '.join(missing_hash_ids)}) that could not be found.")
-
-        for row in results:
-            grouped_results[row._asdict()['initial_id']].append(row)
-
-        for rows in grouped_results.values():
-            hierarchy = FileHierarchy(rows, t_file, t_project)
-            hierarchy.calculate_properties()
-            hierarchy.calculate_privileges([current_user.id])
-            files.append(hierarchy.file)
 
         return files
 
@@ -181,7 +181,7 @@ class FilesystemBaseView(MethodView):
         # ========================================
 
         files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
-                                                   user, require_hash_ids=query_hash_ids)
+                                                   require_hash_ids=query_hash_ids)
         self.check_file_permissions(files, user, ['writable'], permit_recycled=False)
 
         target_files = [file for file in files if file.hash_id in target_hash_ids]
@@ -262,6 +262,7 @@ class FilesystemBaseView(MethodView):
                                               "content_value")
 
                     new_content_id = FileContent.get_or_create(buffer)
+                    buffer.seek(0)
 
                     # Only make a file version if the content actually changed
                     if file.content_id != new_content_id:
@@ -273,6 +274,7 @@ class FilesystemBaseView(MethodView):
                         db.session.add(version)
 
                         file.content_id = new_content_id
+                        changed_fields.add('content_value')
 
             file.modifier = user
 
@@ -295,7 +297,10 @@ class FilesystemBaseView(MethodView):
         return_file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id)
         self.check_file_permissions([return_file], user, ['readable'], permit_recycled=True)
 
-        children = self.get_nondeleted_recycled_files(Files.parent_id == return_file.id)
+        children = self.get_nondeleted_recycled_files(and_(
+            Files.parent_id == return_file.id,
+            Files.recycling_date.is_(None),
+        ))
         # Note: We don't check permissions here, but there are no negate permissions
 
         return_file.calculated_children = children
@@ -404,7 +409,7 @@ class FileListView(FilesystemBaseView):
             'results': [],
         }))
 
-    @use_args(FileCreateRequestSchema, locations=['json', 'form', 'files'])
+    @use_args(FileCreateRequestSchema, locations=['json', 'form', 'files', 'mixed_form_json'])
     def put(self, params: dict):
         """Endpoint to create a new file or to clone a file into a new one."""
 
@@ -546,8 +551,10 @@ class FileListView(FilesystemBaseView):
 
         return self.get_file_response(file.hash_id, current_user)
 
-    @use_args(lambda request: BulkFileRequestSchema())
-    @use_args(lambda request: BulkFileUpdateRequestSchema(partial=True))
+    @use_args(lambda request: BulkFileRequestSchema(),
+              locations=['json', 'form', 'files', 'mixed_form_json'])
+    @use_args(lambda request: BulkFileUpdateRequestSchema(partial=True),
+              locations=['json', 'form', 'files', 'mixed_form_json'])
     def patch(self, targets, params):
         """File update endpoint."""
 
@@ -622,7 +629,8 @@ class FileDetailView(FilesystemBaseView):
         current_user = g.current_user
         return self.get_file_response(hash_id, current_user)
 
-    @use_args(lambda request: FileUpdateRequestSchema(partial=True), locations=['json', 'form', 'files'])
+    @use_args(lambda request: FileUpdateRequestSchema(partial=True),
+              locations=['json', 'form', 'files', 'mixed_form_json'])
     def patch(self, params, hash_id):
         """Update a single file."""
         current_user = g.current_user

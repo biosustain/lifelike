@@ -41,10 +41,11 @@ export interface BulkFileUpdateRequest {
   public: boolean;
   annotationMethod: string;
   organism: string;
+  contentValue?: Blob;
 }
 
+// tslint:disable-next-line
 export interface FileUpdateRequest extends BulkFileUpdateRequest {
-  contentValue?: Blob;
 }
 
 export interface FileCreateRequest extends FileUpdateRequest {

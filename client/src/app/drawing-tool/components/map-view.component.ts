@@ -18,6 +18,8 @@ import { MapComponent } from './map.component';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { GraphEntity, GraphEntityType } from '../services/interfaces';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { MAP_MIMETYPE } from '../../file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-map-view',
@@ -35,9 +37,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
   returnUrl: string;
 
-  hasEditPermission = false;
-
-  constructor(mapService: MapService,
+  constructor(filesystemService: FilesystemService,
               snackBar: MatSnackBar,
               modalService: NgbModal,
               messageDialog: MessageDialog,
@@ -45,17 +45,14 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               errorHandler: ErrorHandler,
               workspaceManager: WorkspaceManager,
               public readonly progressDialog: ProgressDialog) {
-    super(mapService, snackBar, modalService, messageDialog, ngZone, route, errorHandler, workspaceManager);
+    super(filesystemService, snackBar, modalService, messageDialog, ngZone, route, errorHandler, workspaceManager);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
     });
 
     this.paramsSubscription = this.route.params.subscribe(params => {
-      this.locator = {
-        projectName: params.project_name,
-        hashId: params.hash_id,
-      };
+      this.locator = params.hash_id;
     });
   }
 
@@ -81,11 +78,14 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
    * Save the current representation of knowledge model
    */
   save() {
-    this.map.graph = this.graphCanvas.getGraph();
-    this.map.modified_date = new Date().toISOString();
+    const contentValue = new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
+      type: MAP_MIMETYPE,
+    });
 
     // Push to backend to save
-    this.mapService.updateMap(this.locator.projectName, this.map)
+    this.filesystemService.save([this.locator], {
+      contentValue
+    })
         .pipe(this.errorHandler.create())
         .subscribe(() => {
           this.unsavedChanges$.next(false);
@@ -185,33 +185,37 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
    * Saves and downloads the PDF version of the current map
    */
   downloadPDF() {
-    this.requestDownload(
+    /*this.requestDownload(
         () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'pdf'),
         'application/pdf',
         '.pdf',
-    );
+    );*/
   }
 
   /**
    * Saves and downloads the SVG version of the current map
    */
   downloadSVG() {
+    /*
     this.requestDownload(
         () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'svg'),
         'application/svg',
         '.svg',
     );
+     */
   }
 
   /**
    * Saves and downloads the PNG version of the current map
    */
   downloadPNG() {
+    /*
     this.requestDownload(
         () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'png'),
         'application/png',
         '.png',
     );
+     */
   }
 
   // ========================================
@@ -231,6 +235,6 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
   displayShareDialog() {
     const modalRef = this.modalService.open(ShareDialogComponent);
     modalRef.componentInstance.url = `${window.location.origin}/projects/`
-      + `${this.locator.projectName}/maps/${this.locator.hashId}?fromWorkspace`;
+      + `${this.map.project.name}/maps/${this.locator}?fromWorkspace`;
   }
 }
