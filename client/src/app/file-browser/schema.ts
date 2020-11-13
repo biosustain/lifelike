@@ -1,4 +1,6 @@
-interface ProjectData {
+import { FilesystemObject } from './models/filesystem-object';
+
+export interface ProjectData {
   hashId: string;
   name: string;
   description: string;
@@ -7,7 +9,7 @@ interface ProjectData {
   ***ARANGO_USERNAME***: FilesystemObjectData;
 }
 
-interface FilesystemObjectData {
+export interface FilesystemObjectData {
   hashId: string;
   filename: string;
   user: unknown;
@@ -25,4 +27,32 @@ interface FilesystemObjectData {
   privileges: unknown;
   recycled: boolean;
   effectivelyRecycled: boolean;
+}
+
+export interface MultipleFileDataResponse {
+  objects: { [hashId: string]: FilesystemObjectData };
+}
+
+export interface BulkFileUpdateRequest {
+  filename: string;
+  parentHashId: string;
+  description: string;
+  uploadUrl: string;
+  public: boolean;
+  annotationMethod: string;
+  organism: string;
+}
+
+export interface FileUpdateRequest extends BulkFileUpdateRequest {
+  contentValue?: Blob;
+}
+
+export interface FileCreateRequest extends FileUpdateRequest {
+  mimeType: string;
+  contentHashId?: string;
+  contentUrl?: string;
+}
+
+export interface FileDataResponse {
+  object: FilesystemObjectData;
 }

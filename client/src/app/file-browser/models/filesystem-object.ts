@@ -6,6 +6,7 @@ import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { AppUser, User } from '../../interfaces';
+import { FileCreateRequest, FilesystemObjectData, ProjectData } from '../schema';
 
 export const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
 export const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
@@ -61,6 +62,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   mimeType: string;
   doi: string;
   public: boolean;
+  contentValue: Blob;
   uploadUrl: string;
   annotationsDate: string;
   creationDate: string;
@@ -94,10 +96,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return true;
   }
 
-  get isEditable() {
-    return true;
-  }
-
   get isAnnotatable() {
     return this.mimeType === 'application/pdf';
   }
@@ -106,8 +104,16 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return true;
   }
 
+  get isCloneable() {
+    return this.isFile;
+  }
+
   get isDeletable() {
     return true;
+  }
+
+  get isDownloadable() {
+    return this.isFile;
   }
 
   /**
@@ -200,8 +206,16 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get effectiveName(): string {
-    if (this.parent == null && this.project != null) {
+    if (this.isDirectory && this.parent == null && this.project != null) {
       return this.project.name;
+    } else {
+      return this.filename;
+    }
+  }
+
+  get downloadFilename(): string {
+    if (this.mimeType === MAP_MIMETYPE) {
+      return `${this.filename}.llmap.json`;
     } else {
       return this.filename;
     }
@@ -399,17 +413,47 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     if ('children' in data) {
       if (data.children != null) {
         this.children.replace(data.children.map(
-          itemData => new FilesystemObject().update({
-            project: data.project, // The project probably isn't duplicated in the children data
-            ...itemData,
-          })));
+          itemData => {
+            const child = new FilesystemObject().update(itemData);
+            child.parent = this;
+            child.project = this.project;
+            return child;
+          }));
       } else {
         this.children.replace([]);
       }
     }
     return this;
   }
+
+  getContentData(): Pick<FileCreateRequest, 'contentValue' | 'contentHashId' | 'contentUrl'> {
+    if (this.contentValue) {
+      return {
+        contentValue: this.contentValue,
+      };
+    } else if (this.uploadUrl) {
+      return {
+        contentUrl: this.uploadUrl,
+      };
+    } else {
+      return {};
+    }
+  }
+
+  getCreateRequest(): PartialCreateRequest {
+    return {
+      filename: this.filename,
+      parentHashId: this.parent != null ? this.parent.hashId : null,
+      description: this.description,
+      uploadUrl: this.uploadUrl,
+      public: this.public,
+      mimeType: this.mimeType,
+    };
+  }
 }
+
+export type PartialCreateRequest = Omit<FileCreateRequest, 'contentValue' | 'contentHashId'
+  | 'contentUrl' | 'organism' | 'annotationMethod'>;
 
 export interface PathLocator {
   projectName?: string;

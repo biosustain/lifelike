@@ -136,7 +136,7 @@ class BulkFileRequestSchema(CamelCaseSchema):
 class BulkFileUpdateRequestSchema(CamelCaseSchema):
     filename = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=200))
     parent_hash_id = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=36))
-    description = fields.String(validate=marshmallow.validate.Length(min=1, max=2048))
+    description = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     public = fields.Boolean(default=False)
 

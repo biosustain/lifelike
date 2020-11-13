@@ -6,10 +6,13 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { ModuleProperties } from '../../shared/modules';
-import { FilesystemObject, PathLocator } from '../models/filesystem-object';
+import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
 import { map } from 'rxjs/operators';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
+import { getObjectLabel } from '../utils/objects';
+import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageType } from '../../interfaces/message-dialog.interface';
 
 @Component({
   selector: 'app-file-browser',
@@ -18,13 +21,15 @@ import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 export class FileBrowserComponent implements OnInit, OnDestroy {
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  subscriptions = new Subscription();
-  annotationSubscription: Subscription;
+  protected hashId: string;
+  protected subscriptions = new Subscription();
+  protected annotationSubscription: Subscription;
   object$: Observable<FilesystemObject> = from([]);
 
   constructor(readonly router: Router,
               readonly snackBar: MatSnackBar,
               readonly modalService: NgbModal,
+              readonly messageDialog: MessageDialog,
               readonly errorHandler: ErrorHandler,
               readonly route: ActivatedRoute,
               readonly workspaceManager: WorkspaceManager,
@@ -43,6 +48,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   load(hashId: string): Observable<any> {
+    this.hashId = hashId;
     const object$ = this.filesystemService.get(hashId).pipe(map(object => {
       if (this.annotationSubscription) {
         this.subscriptions.remove(this.annotationSubscription);
@@ -65,12 +71,12 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     if (object.path != null) {
       if (object.path.length > 2) {
         this.workspaceManager.navigate(
-            ['/projects', object.locator.projectName, 'folders',
-              object.path[object.path.length - 2].id],
+          ['/projects', object.locator.projectName, 'folders',
+            object.path[object.path.length - 2].id],
         );
       } else if (object.path.length === 2) {
         this.workspaceManager.navigate(
-            ['/projects', object.locator.projectName],
+          ['/projects', object.locator.projectName],
         );
       } else {
         this.workspaceManager.navigate(['/projects']);
@@ -84,7 +90,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     } else {
       return {
         return: `/projects/${encodeURIComponent(object.locator.projectName)}`
-            + (object.locator.directoryId ? `/folders/${object.locator.directoryId}` : ''),
+          + (object.locator.directoryId ? `/folders/${object.locator.directoryId}` : ''),
       };
     }
   }
@@ -93,12 +99,25 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   // Template
   // ========================================
 
+  selectionExists(targets: FilesystemObject[]) {
+    if (!targets.length) {
+      this.messageDialog.display({
+        title: 'Nothing Selected',
+        message: 'Select at least one item.',
+        type: MessageType.Error,
+      });
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   openDirectoryCreateDialog(parent: FilesystemObject) {
     return this.actions.openDirectoryCreateDialog(parent).then(() => {
       this.snackBar.open(`Directory created.`, 'Close', {
         duration: 5000,
       });
-      this.load(parent.locator);
+      this.load(this.hashId);
     }, () => {
     });
   }
@@ -108,7 +127,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       this.snackBar.open(`Map created.`, 'Close', {
         duration: 5000,
       });
-      this.load(parent.locator);
+      this.load(this.hashId);
     }, () => {
     });
   }
@@ -118,7 +137,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       this.snackBar.open(`Enrichment table created.`, 'Close', {
         duration: 5000,
       });
-      this.load(parent.locator);
+      this.load(this.hashId);
     }, () => {
     });
   }
@@ -128,17 +147,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       this.snackBar.open(`File saved to folder.`, 'Close', {
         duration: 5000,
       });
-      this.load(parent.locator);
-    }, () => {
-    });
-  }
-
-  openDeleteDialog(targets: FilesystemObject[]) {
-    return this.actions.openDeleteDialog(targets).then(() => {
-      this.snackBar.open(`Deletion successful.`, 'Close', {
-        duration: 5000,
-      });
-      this.load(targets[0].locator);
+      this.load(this.hashId);
     }, () => {
     });
   }
@@ -148,7 +157,37 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
       this.snackBar.open(`Selected files re-annotated.`, 'Close', {
         duration: 5000,
       });
-      this.load(targets[0].locator);
+      this.load(this.hashId);
+    }, () => {
+    });
+  }
+
+  openMoveDialog(targets: FilesystemObject[]) {
+    if (!this.selectionExists(targets)) {
+      return;
+    }
+
+    return this.actions.openMoveDialog(targets).then(({destination}) => {
+      this.snackBar.open(
+        `Moved ${getObjectLabel(targets)} to ${getObjectLabel(destination)}.`,
+        'Close', {
+          duration: 5000,
+        });
+      this.load(this.hashId);
+    }, () => {
+    });
+  }
+
+  openDeleteDialog(targets: FilesystemObject[]) {
+    if (!this.selectionExists(targets)) {
+      return;
+    }
+
+    return this.actions.openDeleteDialog(targets).then(() => {
+      this.snackBar.open(`Deletion successful.`, 'Close', {
+        duration: 5000,
+      });
+      this.load(this.hashId);
     }, () => {
     });
   }

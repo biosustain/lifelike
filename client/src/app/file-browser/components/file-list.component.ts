@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FilesystemObject, PathLocator } from '../models/filesystem-object';
+import { FilesystemObject } from '../models/filesystem-object';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -9,6 +9,7 @@ import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { nullCoalesce } from '../../shared/utils/types';
 import { uniqueId } from 'lodash';
+import { getObjectLabel } from '../utils/objects';
 
 @Component({
   selector: 'app-file-list',
@@ -40,7 +41,16 @@ export class FileListComponent {
 
   openEditDialog(target: FilesystemObject) {
     return this.actions.openEditDialog(target).then(() => {
-      this.snackBar.open(`File changes saved.`, 'Close', {
+      this.snackBar.open(`Saved changes to ${getObjectLabel(target)}.`, 'Close', {
+        duration: 5000,
+      });
+    }, () => {
+    });
+  }
+
+  openCloneDialog(target: FilesystemObject) {
+    return this.actions.openCloneDialog(target).then(clone => {
+      this.snackBar.open(`Copied ${getObjectLabel(target)} to ${getObjectLabel(clone)}.`, 'Close', {
         duration: 5000,
       });
       this.hashIdChange.next(this.parent.hashId);
@@ -48,11 +58,13 @@ export class FileListComponent {
     });
   }
 
-  openMoveDialog(target: FilesystemObject) {
-    return this.actions.openMoveDialog(target).then(() => {
-      this.snackBar.open(`File moved.`, 'Close', {
-        duration: 5000,
-      });
+  openMoveDialog(targets: FilesystemObject[]) {
+    return this.actions.openMoveDialog(targets).then(({destination}) => {
+      this.snackBar.open(
+        `Moved ${getObjectLabel(targets)} to ${getObjectLabel(destination)}.`,
+        'Close', {
+          duration: 5000,
+        });
       this.hashIdChange.next(this.parent.hashId);
     }, () => {
     });
@@ -60,7 +72,7 @@ export class FileListComponent {
 
   openDeleteDialog(targets: FilesystemObject[]) {
     return this.actions.openDeleteDialog(targets).then(() => {
-      this.snackBar.open(`Deletion successful.`, 'Close', {
+      this.snackBar.open(`Deleted ${getObjectLabel(targets)}.`, 'Close', {
         duration: 5000,
       });
       this.hashIdChange.next(this.parent.hashId);
@@ -70,10 +82,19 @@ export class FileListComponent {
 
   reannotate(targets: FilesystemObject[]) {
     this.actions.reannotate(targets).then(() => {
-      this.snackBar.open(`Selected files re-annotated.`, 'Close', {
+      this.snackBar.open(`${getObjectLabel(targets)} re-annotated.`, 'Close', {
         duration: 5000,
       });
       this.hashIdChange.next(this.parent.hashId);
+    }, () => {
+    });
+  }
+
+  download(target: FilesystemObject) {
+    this.actions.openDownloadDialog(target).then(() => {
+      this.snackBar.open(`File download of ${getObjectLabel(target)} opened.`, 'Close', {
+        duration: 5000,
+      });
     }, () => {
     });
   }
