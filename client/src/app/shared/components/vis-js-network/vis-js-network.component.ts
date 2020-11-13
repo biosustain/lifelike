@@ -25,8 +25,11 @@ export class VisJsNetworkComponent implements AfterViewInit {
   networkGraph: Network;
   networkContainerId: string;
 
+  stabilized: boolean;
+
   constructor() {
     this.networkContainerId = uuidv4();
+    this.stabilized = false;
   }
 
   ngAfterViewInit() {
@@ -36,10 +39,26 @@ export class VisJsNetworkComponent implements AfterViewInit {
       this.networkData,
       this.config
     );
+    this.setupEventBinds();
+    this.networkGraph.stabilize(100);
   }
 
   setNetworkData() {
     this.networkGraph.setData(this.networkData);
   }
 
+    /**
+     * Contains all of the event handling features for the
+     * network graph.
+     */
+    setupEventBinds() {
+      this.networkGraph.on('startStabilizing', (params) => {
+        this.stabilized = false;
+      });
+
+      this.networkGraph.on('stabilizationIterationsDone', (params) => {
+        this.stabilized  = true;
+        this.networkGraph.fit();
+      });
+  }
 }
