@@ -90,6 +90,7 @@ class FileContent(RDBMSBase):
 
         if checksum_sha256 is None:
             content = file.read()
+            file.seek(0)
             checksum_sha256 = hashlib.sha256(content).digest()
         else:
             content = None

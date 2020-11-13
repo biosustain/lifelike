@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import traceback
@@ -15,13 +16,14 @@ from flask import (
 from flask.logging import wsgi_errors_stream
 from flask_caching import Cache
 from flask_cors import CORS
-from marshmallow import ValidationError
+from marshmallow import ValidationError, missing
 from marshmallow.exceptions import SCHEMA
 from pythonjsonlogger import jsonlogger
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+from webargs.flaskparser import parser
 from werkzeug.exceptions import UnprocessableEntity
 from werkzeug.utils import (
     find_modules,
@@ -62,6 +64,37 @@ BLUEPRINT_OBJNAME = 'bp'
 
 cors = CORS()
 cache = Cache()
+
+
+@parser.location_handler("mixed_form_json")
+def load_mixed_form_json(request, name, field):
+    """
+    Handle JSON that needs to be mixed with file uploads. The proper way of achieving
+    this would probably be to use multipart/mixed, but support for that is too weak.
+    """
+
+    # Memoize the JSON parsing - we don't have to do this in newer versions
+    # of webargs but we are stuck on this old version because of flask-apispec
+    cache_field = '_mixed_form_json_cache'
+
+    if hasattr(request, cache_field):
+        getter = getattr(request, cache_field)
+    else:
+        try:
+            data = json.loads(request.form['json$'])
+
+            def getter():
+                return data
+        except (KeyError, ValueError) as e:
+            def getter():
+                raise e
+
+        setattr(request, cache_field, getter)
+
+    try:
+        return getter()[name]
+    except KeyError:
+        return missing
 
 
 def filter_to_sentry(event, hint):
@@ -223,7 +256,7 @@ def handle_generic_error(code: int, ex: Exception):
     return jsonify(reterr), code
 
 
-def handle_validation_error(code, error: ValidationError, messages = None):
+def handle_validation_error(code, error: ValidationError, messages=None):
     current_app.logger.error('Request caused UnprocessableEntity error', exc_info=error)
 
     fields: dict = messages or error.normalized_messages()

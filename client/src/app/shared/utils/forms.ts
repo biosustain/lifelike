@@ -26,3 +26,17 @@ export function objectToFormData(object: object): FormData {
   }
   return formData;
 }
+
+export function objectToMixedFormData(object: object): FormData {
+  const data = {};
+  const formData: FormData = new FormData();
+  for (const [key, value] of Object.entries(object)) {
+    if (value instanceof Blob) {
+      formData.append(key, value);
+    } else {
+      data[key] = value;
+    }
+  }
+  formData.append('json$', JSON.stringify(data));
+  return formData;
+}
