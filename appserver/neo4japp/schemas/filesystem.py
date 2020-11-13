@@ -139,6 +139,7 @@ class BulkFileUpdateRequestSchema(CamelCaseSchema):
     description = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     public = fields.Boolean(default=False)
+    content_value = fields.Field(required=False)
 
 
 class FileListRequestSchema(CamelCaseSchema):
@@ -150,7 +151,7 @@ class FileListRequestSchema(CamelCaseSchema):
 
 
 class FileUpdateRequestSchema(BulkFileUpdateRequestSchema):
-    content_value = fields.Field(required=False)
+    pass
 
 
 class FileCreateRequestSchema(FileUpdateRequestSchema):

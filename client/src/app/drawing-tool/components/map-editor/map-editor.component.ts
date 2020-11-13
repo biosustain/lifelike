@@ -22,6 +22,7 @@ import { MapEditDialogComponent } from '../map-edit-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
 import { MapVersionDialogComponent } from '../map-version-dialog.component';
+import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -59,7 +60,9 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     this.autoSaveSubscription.unsubscribe();
   }
 
-  getExtraSource(): Observable<KnowledgeMap> {
+  // TODO
+  /*
+  getExtraSource(): Observable<FilesystemObject> {
     return from([this.locator]).pipe(switchMap(locator => {
       return this.mapService.getBackup(locator.projectName, locator.hashId).pipe(catchError(error => {
         if (error instanceof HttpErrorResponse) {
@@ -85,6 +88,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
       });
     }
   }
+   */
 
   registerGraphBehaviors() {
     super.registerGraphBehaviors();
@@ -99,16 +103,18 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
 
   save() {
     super.save();
-    this.mapService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
+    // this.mapService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
   }
 
   saveBackup() {
     if (this.map) {
-      this.map.graph = this.graphCanvas.getGraph();
-      this.map.modified_date = new Date().toISOString();
+      // this.map.graph = this.graphCanvas.getGraph();
+      // this.map.modified_date = new Date().toISOString();
+      /*
       const observable = this.mapService.createOrUpdateBackup(this.locator.projectName, cloneDeep(this.map));
       observable.subscribe();
       return observable;
+      */
     }
   }
 
@@ -136,8 +142,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
   mapVersionDialog() {
     const dialogRef = this.modalService.open(MapVersionDialogComponent);
     dialogRef.componentInstance.map = cloneDeep(this.map);
-    dialogRef.componentInstance.projectName = this.locator.projectName;
-    dialogRef.result.then((newMap: Observable<{version: KnowledgeMap}>) => {
+    dialogRef.result.then((newMap: Observable<{ version: KnowledgeMap }>) => {
       newMap.subscribe(result => {
         this.graphCanvas.setGraph(result.version.graph);
         this.snackBar.open('Map reverted to Version from ' + result.version.modified_date, null, {

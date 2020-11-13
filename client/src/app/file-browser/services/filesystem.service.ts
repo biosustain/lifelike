@@ -9,12 +9,12 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ProjectPageService } from './project-page.service';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { map } from 'rxjs/operators';
+import { map, mergeMap } from 'rxjs/operators';
 import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
 import { ApiService } from '../../shared/services/api.service';
 import { RecursivePartial } from '../../shared/utils/types';
 import { BulkFileUpdateRequest, FileCreateRequest, FileDataResponse, MultipleFileDataResponse } from '../schema';
-import { objectToFormData } from '../../shared/utils/forms';
+import { objectToFormData, objectToMixedFormData } from '../../shared/utils/forms';
 
 @Injectable()
 export class FilesystemService {
@@ -40,7 +40,7 @@ export class FilesystemService {
   }> {
     return this.http.put(
       `/api/filesystem/objects`,
-      objectToFormData(request), {
+      objectToMixedFormData(request), {
         ...this.apiService.getHttpOptions(true),
         observe: 'events',
         reportProgress: true,
@@ -56,13 +56,27 @@ export class FilesystemService {
     );
   }
 
-  get(hashId: string): Observable<FilesystemObject> {
-    return this.http.get<FileDataResponse>(
+  get(hashId: string, options: Partial<FetchOptions> = {}): Observable<FilesystemObject> {
+    let result: Observable<FilesystemObject> = this.http.get<FileDataResponse>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}`,
       this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => new FilesystemObject().update(data.object)),
     );
+
+    // Load content via a separate endpoint if requested
+    if (options.loadContent) {
+      result = result.pipe(
+        mergeMap(object => this.getContent(object.hashId).pipe(map(contentValue => {
+          object.contentValue = new Blob([contentValue], {
+            type: object.mimeType,
+          });
+          return object;
+        }))),
+      );
+    }
+
+    return result;
   }
 
   getContent(hashId: string): Observable<ArrayBuffer> {
@@ -74,14 +88,14 @@ export class FilesystemService {
     );
   }
 
-  save(hashIds: string[], changes: RecursivePartial<BulkFileUpdateRequest>,
+  save(hashIds: string[], changes: Partial<BulkFileUpdateRequest>,
        updateWithLatest?: { [hashId: string]: FilesystemObject }):
     Observable<{ [hashId: string]: FilesystemObject }> {
     return this.http.patch<MultipleFileDataResponse>(
-      `/api/filesystem/objects`, {
+      `/api/filesystem/objects`, objectToMixedFormData({
         ...changes,
         hashIds,
-      }, this.apiService.getHttpOptions(true),
+      }), this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => {
         const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
@@ -147,4 +161,8 @@ export class FilesystemService {
       'Outdated:',
     );
   }
+}
+
+export interface FetchOptions {
+  loadContent: boolean;
 }

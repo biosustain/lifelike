@@ -17,6 +17,8 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { emptyIfNull } from '../../shared/utils/types';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-map',
@@ -32,11 +34,11 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   @ViewChild('canvas', {static: true}) canvasChild;
 
-  loadTask: BackgroundTask<MapLocator, [KnowledgeMap, ExtraResult]>;
+  loadTask: BackgroundTask<string, [FilesystemObject, ExtraResult]>;
   loadSubscription: Subscription;
 
-  _locator: MapLocator | undefined;
-  _map: KnowledgeMap | undefined;
+  _locator: string | undefined;
+  _map: FilesystemObject | undefined;
   pendingInitialize = false;
 
   graphCanvas: CanvasGraphView;
@@ -51,7 +53,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   entitySearchListIdx = -1;
 
   constructor(
-      readonly mapService: MapService,
+      readonly filesystemService: FilesystemService,
       readonly snackBar: MatSnackBar,
       readonly modalService: NgbModal,
       readonly messageDialog: MessageDialog,
@@ -60,13 +62,11 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       readonly errorHandler: ErrorHandler,
       readonly workspaceManager: WorkspaceManager,
   ) {
-    this.loadTask = new BackgroundTask((locator) => {
+    this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
-        this.mapService.getMap(locator.projectName, locator.hashId).pipe(
-            // tslint:disable-next-line: no-string-literal
-            map(resp => resp['project'] as KnowledgeMap),
-            // TODO: This line is from the existing code and should be properly typed
-        ),
+        this.filesystemService.get(hashId, {
+          loadContent: true,
+        }),
         this.getExtraSource(),
       ]);
     });
@@ -117,7 +117,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   @Input()
-  set locator(value: MapLocator | undefined) {
+  set locator(value: string | undefined) {
     this._locator = value;
     if (value != null) {
       this.loadTask.update(value);
@@ -129,7 +129,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   @Input()
-  set map(value: KnowledgeMap | undefined) {
+  set map(value: FilesystemObject | undefined) {
     this._map = value;
     this.initializeMap();
   }
@@ -148,8 +148,14 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return;
     }
 
-    this.graphCanvas.setGraph(this.map.graph);
-    this.graphCanvas.zoomToFit(0);
+    const reader = new FileReader();
+    reader.onload = e => {
+      // TODO: Handle corrupt map data
+      const graph = JSON.parse(e.target.result as string);
+      this.graphCanvas.setGraph(graph);
+      this.graphCanvas.zoomToFit(0);
+    };
+    reader.readAsText(this.map.contentValue);
     this.emitModuleProperties();
 
     if (this.highlightTerms != null && this.highlightTerms.length) {
@@ -235,9 +241,4 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.entitySearchList[this.entitySearchListIdx] as GraphEntity
     );
   }
-}
-
-export interface MapLocator {
-  projectName: string;
-  hashId: string;
 }

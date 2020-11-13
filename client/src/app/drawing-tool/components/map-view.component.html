@@ -27,9 +27,9 @@
         </div>
 
         <div class="module-toolbar d-flex align-items-center mt-2">
-          <div class="btn-group mr-2" *ngIf="hasEditPermission">
+          <div class="btn-group mr-2" *ngIf="map.privileges.writable">
             <button type="button" class="btn btn-secondary"
-                    [appLink]="['/projects', this.locator.projectName, 'maps', this.locator.hashId, 'edit']">
+                    [appLink]="['/projects', map.project.name, 'maps', map.hashId, 'edit']">
               <i class="fa fa-fw fa-pencil-alt"></i> Edit
             </button>
           </div>
