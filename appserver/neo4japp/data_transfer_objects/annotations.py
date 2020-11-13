@@ -4,10 +4,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from neo4japp.util import CamelDictMixin
 
-# TODO: ADD MARSHMALLOW SCHEMAS TO DESERIALIZE
-#
-# from marshmallow_annotations.ext.attrs import AttrsSchema
-
 
 @attr.s(frozen=True)
 class AnnotationRequest(CamelDictMixin):
@@ -45,11 +41,6 @@ class PDFMeta(PDFBase):
     widths: List[float] = attr.ib(default=attr.Factory(list))
 
 
-# class PDFMetaSchema(AttrsSchema):
-#     class Meta:
-#         target = PDFMeta
-
-
 @attr.s(frozen=True)
 class PDFWord(PDFBase):
     keyword: str = attr.ib()
@@ -62,43 +53,24 @@ class PDFWord(PDFBase):
     # this attribute will not be empty string
     previous_words: str = attr.ib()
     # used with NLP because it returns the type
-    token_type: Optional[str] = attr.ib(default='')
+    token_type: Optional[str] = attr.ib(default=None)
 
-
-# class PDFWordSchema(AttrsSchema):
-#     class Meta:
-#         target = PDFWord
+    @classmethod
+    def from_dict(self, d):
+        return self(
+            keyword=d['keyword'],
+            normalized_keyword=d['normalized_keyword'],
+            page_number=d['page_number'],
+            cropbox=(d['cropbox'][0], d['cropbox'][1]),
+            meta=PDFMeta(**d['meta']),
+            previous_words=d['previous_words'],
+            token_type=d['token_type']
+        )
 
 
 @attr.s(frozen=True)
 class PDFParsedContent(PDFBase):
     words: List[PDFWord] = attr.ib()
-
-
-# class PDFParsedContentSchema(AttrsSchema):
-#     class Meta:
-#         target = PDFParsedContent
-
-
-# TODO: OLD REMOVE ONCE DONE WITH REFACTOR
-@attr.s(frozen=True)
-class PDFTokenPositions():
-    page_number: int = attr.ib()
-    keyword: str = attr.ib()
-    normalized_keyword: str = attr.ib()
-    char_positions: Dict[int, str] = attr.ib()
-    # used in NLP because it returns the type
-    token_type: Optional[str] = attr.ib(default='')
-
-
-# TODO: OLD REMOVE ONCE DONE WITH REFACTOR
-@attr.s(frozen=True)
-class PDFTokenPositionsList():
-    token_positions: Any = attr.ib()
-    char_coord_objs_in_pdf: List[PDFChar] = attr.ib()
-    cropbox_in_pdf: Tuple[int, int] = attr.ib()
-    min_idx_in_page: Dict[int, int] = attr.ib()
-    word_index_dict: Dict[int, str] = attr.ib(default=attr.Factory(list))
 
 
 @attr.s(frozen=True)
@@ -182,7 +154,6 @@ class GeneAnnotation(Annotation):
 @attr.s(frozen=False)
 class LMDBMatch():
     entities: List[dict] = attr.ib()
-    # tokens: List[PDFTokenPositions] = attr.ib()
     tokens: List[PDFWord] = attr.ib()
 
 
