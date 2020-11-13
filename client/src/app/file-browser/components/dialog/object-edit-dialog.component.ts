@@ -48,14 +48,14 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent {
       const contentUrlControl = group.get('contentUrl');
 
       if (group.get('contentSource').value === 'contentValue') {
-        contentValueControl.setErrors(null);
+        contentUrlControl.setErrors(null);
         if (!contentValueControl.value) {
           contentValueControl.setErrors({
             required: {},
           });
         }
       } else if (group.get('contentSource').value === 'contentUrl') {
-        contentUrlControl.setErrors(null);
+        contentValueControl.setErrors(null);
         if (!contentUrlControl.value) {
           contentUrlControl.setErrors({
             required: {},
