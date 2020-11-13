@@ -14,6 +14,7 @@ import {
   NCBINode,
   EnrichmentWrapper,
   GoNode,
+  Synonym,
 } from '../services/enrichment-table.service';
 import { ActivatedRoute } from '@angular/router';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
@@ -33,6 +34,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     // Primary headers
     [
       { name: 'Imported Gene Name', span: '1' },
+      { name: 'Matched Gene Name', span: '1'},
       { name: 'NCBI Gene Full Name', span: '1' },
       { name: 'Regulon Data', span: '3' },
       { name: 'Uniprot Function', span: '1' },
@@ -42,6 +44,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     ],
     // Secondary headers
     [
+      { name: '', span: '1' },
       { name: '', span: '1' },
       { name: '', span: '1' },
       { name: 'Regulator Family', span: '1' },
@@ -73,6 +76,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   loadTaskSubscription: Subscription;
   sheetname: string;
   neo4jId: number;
+  synonyms: Synonym[];
   ncbiNodes: NCBINode[];
   ncbiLinks: string[];
   importGenes: string[];
@@ -110,7 +114,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       this.organism = resultArray[2];
       if (this.organism.slice(0, 16) !== 'Escherichia coli') {
         this.ecoli = false;
-        this.tableHeader[0].splice(2, 1);
+        this.tableHeader[0].splice(3, 1);
         this.tableHeader.splice(1, 1);
       } else {
         this.ecoli = true;
@@ -147,6 +151,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.worksheetViewerService
       .matchNCBINodes(this.currentGenes, this.taxID)
       .subscribe((result) => {
+        this.synonyms = result.map((wrapper) => wrapper.s);
         this.ncbiNodes = result.map((wrapper) => wrapper.x);
         this.ncbiIds = result.map((wrapper) => wrapper.neo4jID);
         this.ncbiLinks = result.map((wrapper) => wrapper.link);
@@ -186,8 +191,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
             },
           });
           this.tableEntries[i].unshift({ text: this.ncbiNodes[i].name });
+          this.tableEntries[i].unshift({ text: this.synonyms[i].name });
         }
-        this.geneNames = this.ncbiNodes.map((node) => node.name);
+        this.geneNames = this.synonyms.map((node) => node.name);
         this.processUnmatchedNodes();
       });
   }
