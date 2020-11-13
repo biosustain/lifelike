@@ -171,34 +171,35 @@ def create_annotations(
     try:
         if type(document) is str:
             parsed = parser.parse_text(abstract=document)
-        elif not document.parsed_content:
-            fp = FileStorage(BytesIO(document.raw_file), filename)
-            parsed = parser.parse_pdf(pdf=fp)
-            fp.close()
+        else:
             custom_annotations = document.custom_annotations
             excluded_annotations = document.excluded_annotations
+            if not document.parsed_content:
+                fp = FileStorage(BytesIO(document.raw_file), filename)
+                parsed = parser.parse_pdf(pdf=fp)
+                fp.close()
 
-            # cache it
-            # bulk_update_mappings does not throw error
-            # perhaps later use separate process
-            # and use the slower normal method
-            current_app.logger.info(
-                f'Saving pdfminer results to database. JSONB size can ' +
-                'potentially exceed size limit. If a crash happens on insert, ' +
-                'change the column type.',
-                extra=EventLog(event_type='annotations').to_dict()
-            )
-            db.session.bulk_update_mappings(
-                FileContent,
-                [
-                    {
-                        'id': document.file_content_id,
-                        'parsed_content': json.dumps(
-                            [word.to_dict() for word in parsed.words])
-                    }
-                ]
-            )
-            db.session.commit()
+                # cache it
+                # bulk_update_mappings does not throw error
+                # perhaps later use separate process
+                # and use the slower normal method
+                current_app.logger.info(
+                    f'Saving pdfminer results to database. JSONB size can ' +
+                    'potentially exceed size limit. If a crash happens on insert, ' +
+                    'change the column type.',
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+                db.session.bulk_update_mappings(
+                    FileContent,
+                    [
+                        {
+                            'id': document.file_content_id,
+                            'parsed_content': json.dumps(
+                                [word.to_dict() for word in parsed.words])
+                        }
+                    ]
+                )
+                db.session.commit()
     except AnnotationError:
         raise AnnotationError(
             'Your file could not be parsed. Please check if it is a valid PDF.'
