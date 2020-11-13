@@ -1258,7 +1258,7 @@ class EntityRecognitionService:
 
     def _entity_lookup_dispatch(
         self,
-        token: PDFWord,  # PDFTokenPositions,
+        token: PDFWord,
         check_entities: Dict[str, bool],
     ) -> None:
         if check_entities.get(EntityType.ANATOMY.value, False):
