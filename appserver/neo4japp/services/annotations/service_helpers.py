@@ -164,6 +164,7 @@ def create_annotations(
     parser = get_annotations_pdf_parser()
 
     custom_annotations = []
+    excluded_annotations = []
     parsed = None
 
     start = time.time()
@@ -176,6 +177,7 @@ def create_annotations(
             parsed = parser.parse_pdf(pdf=fp)
             fp.close()
             custom_annotations = document.custom_annotations
+            excluded_annotations = document.excluded_annotations
 
             # # cache it
             # current_app.logger.info(
@@ -262,6 +264,7 @@ def create_annotations(
         annotations = annotator.create_rules_based_annotations(
             tokens=tokens_list,
             custom_annotations=custom_annotations,
+            excluded_annotations=excluded_annotations,
             entity_results=entity_recog.get_entity_match_results(),
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -287,6 +290,7 @@ def create_annotations(
         species_annotations = annotator.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_recog.get_entity_match_results(),
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(
                 anatomy=False, chemical=False, compound=False, disease=False,
@@ -304,6 +308,7 @@ def create_annotations(
             nlp_resp=nlp_resp,
             species_annotations=species_annotations,
             custom_annotations=custom_annotations,
+            excluded_annotations=excluded_annotations,
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(species=False),
         )
     else:

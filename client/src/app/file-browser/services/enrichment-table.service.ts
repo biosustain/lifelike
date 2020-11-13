@@ -19,6 +19,10 @@ export interface Worksheet {
   contentID: number;
 }
 
+export interface Synonym {
+  name: string;
+}
+
 export interface NCBINode {
   full_name: string;
   id: string;
@@ -30,6 +34,7 @@ interface NCBIWrapper {
   neo4jID: number;
   x: NCBINode;
   link: string;
+  s: Synonym;
 }
 
 interface BiocycWrapper {

@@ -69,6 +69,8 @@ def profile_annotations(
 
         annotations = annotator.create_rules_based_annotations(
             tokens=tokens,
+            custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain('', '', '')
