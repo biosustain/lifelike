@@ -244,6 +244,7 @@ def test_gene_organism_escherichia_coli_pdf(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -292,6 +293,7 @@ def test_protein_organism_escherichia_coli_pdf(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -359,6 +361,7 @@ def test_local_inclusion_organism_gene_crossmatch(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[custom_annotation],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -367,6 +370,61 @@ def test_local_inclusion_organism_gene_crossmatch(
 
     assert len(annotations) == 1
     assert annotations[0].meta.id == '388962'  # human gene
+
+
+def test_local_exclusion_gene_organism_matching(
+    default_lmdb_setup,
+    get_annotations_service,
+    entity_service
+):
+    annotation_service = get_annotations_service
+    pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_service
+
+    pdf = path.join(directory, f'pdf_samples/gene_organism_test.pdf')
+
+    excluded_annotation = {
+        'id': '37293',
+        'text': 'aotus nancymaae',
+        'type': 'Species',
+        'rects': [
+            [
+                381.21680400799994,
+                706.52786608,
+                473.9653966747998,
+                718.27682008
+            ]
+        ],
+        'reason': 'Other',
+        'comment': '',
+        'user_id': 1,
+        'pageNumber': 1,
+        'idHyperlink': 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=37293',
+        'exclusion_date': '2020-11-10 17:39:27.050845+00:00',
+        'excludeGlobally': False,
+        'isCaseInsensitive': True
+    }
+
+    with open(pdf, 'rb') as f:
+        pdf_text = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
+
+        lookup_entities(
+            entity_service=entity_service,
+            tokens=tokens,
+            custom_annotations=[]
+        )
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            excluded_annotations=[excluded_annotation],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
+        )
+
+    assert len(annotations) == 0
 
 
 def test_human_gene_pdf(
@@ -392,6 +450,7 @@ def test_human_gene_pdf(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -431,6 +490,7 @@ def test_foods_pdf(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -467,6 +527,7 @@ def test_anatomy_pdf(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -511,6 +572,7 @@ def test_genes_vs_proteins(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -638,6 +700,7 @@ def test_gene_annotation_crossmatch_human_fish(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -671,6 +734,7 @@ def test_gene_annotation_crossmatch_human_rat(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -706,6 +770,7 @@ def test_global_excluded_chemical_annotations(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -738,6 +803,7 @@ def test_global_excluded_compound_annotations(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -770,6 +836,7 @@ def test_global_excluded_disease_annotations(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -803,6 +870,7 @@ def test_global_excluded_gene_annotations(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -835,6 +903,7 @@ def test_global_excluded_phenotype_annotations(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -867,6 +936,7 @@ def test_global_excluded_protein_annotations(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -899,6 +969,7 @@ def test_global_excluded_species_annotations(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -931,6 +1002,7 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -966,6 +1038,7 @@ def test_global_chemical_inclusion_annotation(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -999,6 +1072,7 @@ def test_global_compound_inclusion_annotation(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -1035,6 +1109,7 @@ def test_global_gene_inclusion_annotation(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -1070,6 +1145,7 @@ def test_global_disease_inclusion_annotation(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -1103,6 +1179,7 @@ def test_global_phenotype_inclusion_annotation(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -1136,6 +1213,7 @@ def test_global_protein_inclusion_annotation(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -1169,6 +1247,7 @@ def test_global_species_inclusion_annotation(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -1205,6 +1284,7 @@ def test_primary_organism_strain(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -1222,6 +1302,7 @@ def test_primary_organism_strain(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -1253,6 +1334,7 @@ def test_no_annotation_for_abbreviation(
         annotations = annotation_service.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_service.get_entity_match_results(),
             entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
