@@ -52,7 +52,7 @@ export class RouteDisplayComponent {
         selectConnectedEdges: false,
       },
       physics: {
-        enabled: true,
+        enabled: false,
         barnesHut: {
           avoidOverlap: 0.2,
           centralGravity: 0.1,
@@ -94,21 +94,16 @@ export class RouteDisplayComponent {
       nodeIdentityMap.set(node.id, i);
       label.push(node.label);
       color.push(node.color.border);
-      value.push(0);
     });
 
     const sankeyEdgeSet = new Set<number[]>();
     edges.forEach(edge => {
       const sankeyEdge = [nodeIdentityMap.get(edge.from), nodeIdentityMap.get(edge.to)];
-      if (sankeyEdgeSet.has(sankeyEdge)) {
-        value[sankeyEdge[0]] += 1;
-        value[sankeyEdge[1]] += 1;
-      } else {
+      if (!sankeyEdgeSet.has(sankeyEdge)) {
         sankeyEdgeSet.add(sankeyEdge);
         source.push(sankeyEdge[0]);
         target.push(sankeyEdge[1]);
-        value[sankeyEdge[0]] += 1;
-        value[sankeyEdge[1]] += 1;
+        value.push(1);
       }
     });
 
@@ -160,7 +155,6 @@ export class RouteDisplayComponent {
     };
 
     this.sankeyConfig = {
-      title: 'Sankey Diagram of Query Results',
       font: {
         size: 10
       }
