@@ -160,6 +160,7 @@ def create_annotations(
     parser = get_annotations_pdf_parser()
 
     custom_annotations = []
+    excluded_annotations = []
 
     start = time.time()
     try:
@@ -170,6 +171,7 @@ def create_annotations(
             parsed = parser.parse_pdf(pdf=fp)
             fp.close()
             custom_annotations = document.custom_annotations
+            excluded_annotations = document.excluded_annotations
     except AnnotationError:
         raise AnnotationError(
             'Your file could not be parsed. Please check if it is a valid PDF.'
@@ -214,6 +216,7 @@ def create_annotations(
         annotations = annotator.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=custom_annotations,
+            excluded_annotations=excluded_annotations,
             entity_results=entity_recog.get_entity_match_results(),
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -239,6 +242,7 @@ def create_annotations(
         species_annotations = annotator.create_rules_based_annotations(
             tokens=tokens,
             custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_recog.get_entity_match_results(),
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(
                 anatomy=False, chemical=False, compound=False, disease=False,
@@ -258,6 +262,7 @@ def create_annotations(
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             custom_annotations=custom_annotations,
+            excluded_annotations=excluded_annotations,
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(species=False),
             word_index_dict=tokens.word_index_dict
         )
