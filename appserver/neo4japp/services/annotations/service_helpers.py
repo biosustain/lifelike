@@ -5,7 +5,7 @@ import time
 
 from io import BytesIO
 from flask import current_app
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.datastructures import FileStorage
 
@@ -18,9 +18,9 @@ from neo4japp.database import (
 )
 from neo4japp.data_transfer_objects import (
     PDFChar,
+    PDFWord,
+    PDFParsedContent,
     PDFTokensList,
-    PDFTokenPositions,
-    # PDFTokenPositionsList,
     SpecifiedOrganismStrain
 )
 from neo4japp.exceptions import AnnotationError
@@ -40,7 +40,7 @@ def process_nlp(
     page_text: str,
     pages_to_index: Dict[int, int],
     min_idx_in_page: Dict[int, int]
-) -> Tuple[List[PDFTokenPositions], List[dict]]:
+):
     nlp_tokens = []  # type: ignore
     combined_nlp_resp = []  # type: ignore
 
@@ -106,7 +106,7 @@ def get_nlp_entities(
     page_index: Dict[int, int],
     text: str,
     tokens: PDFTokensList,
-) -> Tuple[List[PDFTokenPositions], List[dict]]:
+):
     """Makes a call to the NLP service.
     There is a memory issue with the NLP service, so for now
     the REST call is broken into one per PDF page.
@@ -114,7 +114,7 @@ def get_nlp_entities(
     Returns the NLP tokens and combined NLP response.
     """
     nlp_resp: List[dict] = []
-    nlp_tokens: List[PDFTokenPositions] = []
+    nlp_tokens: List[Any] = []
     pages_to_index = {v: k for k, v in page_index.items()}
     pages = list(pages_to_index)
     text_in_page: List[Tuple[int, str]] = []
@@ -171,32 +171,34 @@ def create_annotations(
     try:
         if type(document) is str:
             parsed = parser.parse_text(abstract=document)
-        # elif not document.parsed_content:
-        else:
+        elif not document.parsed_content:
             fp = FileStorage(BytesIO(document.raw_file), filename)
             parsed = parser.parse_pdf(pdf=fp)
             fp.close()
             custom_annotations = document.custom_annotations
             excluded_annotations = document.excluded_annotations
 
-            # # cache it
-            # current_app.logger.info(
-            #     f'Saving pdfminer results to database. JSONB size can ' +
-            #     'potentially exceed size limit. If a crash happens on insert, ' +
-            #     'change the column type.',
-            #     extra=EventLog(event_type='annotations').to_dict()
-            # )
-            # db.session.bulk_update_mappings(
-            #     FileContent,
-            #     [
-            #         {
-            #             'id': document.file_content_id,
-            #             'parsed_content': json.dumps(
-            #                 [word.to_dict() for word in parsed.words])
-            #         }
-            #     ]
-            # )
-            # db.session.commit()
+            # cache it
+            # bulk_update_mappings does not throw error
+            # perhaps later use separate process
+            # and use the slower normal method
+            current_app.logger.info(
+                f'Saving pdfminer results to database. JSONB size can ' +
+                'potentially exceed size limit. If a crash happens on insert, ' +
+                'change the column type.',
+                extra=EventLog(event_type='annotations').to_dict()
+            )
+            db.session.bulk_update_mappings(
+                FileContent,
+                [
+                    {
+                        'id': document.file_content_id,
+                        'parsed_content': json.dumps(
+                            [word.to_dict() for word in parsed.words])
+                    }
+                ]
+            )
+            db.session.commit()
     except AnnotationError:
         raise AnnotationError(
             'Your file could not be parsed. Please check if it is a valid PDF.'
@@ -208,28 +210,10 @@ def create_annotations(
     )
 
     start = time.time()
-    # if not parsed:
-    #     pdf_text = ''.join([c['text'] for c in document.parsed_content])
-    #     tokens = parser.extract_tokens(
-    #         [
-    #             PDFChar(
-    #                 x0=parsed['x0'],
-    #                 y0=parsed['y0'],
-    #                 x1=parsed['x1'],
-    #                 y1=parsed['y1'],
-    #                 text=parsed['text'],
-    #                 height=parsed['height'],
-    #                 width=parsed['width'],
-    #                 space=parsed['space'],
-    #                 lower_cropbox=parsed['lower_cropbox'],
-    #                 upper_cropbox=parsed['upper_cropbox'],
-    #                 min_idx_in_page=parsed['min_idx_in_page']
-    #             ) for parsed in json.loads(document.parsed_content)]
-
-    #     )
-    # else:
-    #     pdf_text = ''.join([c.text for c in parsed])
-    #     tokens = parser.extract_tokens(parsed)
+    if not parsed:
+        parsed = PDFParsedContent(
+            words=[PDFWord.from_dict(d) for d in json.loads(document.parsed_content)]
+        )
 
     pdf_text = ' '.join([c.keyword for c in parsed.words])
     tokens_list = parser.extract_tokens(parsed)

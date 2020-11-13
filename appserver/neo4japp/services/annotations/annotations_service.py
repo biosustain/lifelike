@@ -38,7 +38,6 @@ from neo4japp.data_transfer_objects import (
     PDFChar,
     PDFWord,
     PDFTokensList,
-    PDFTokenPositions,
     SpecifiedOrganismStrain
 )
 from neo4japp.exceptions import AnnotationError
@@ -1091,10 +1090,6 @@ class AnnotationsService:
         """Create annotations.
 
         Args:
-            tokens: list of PDFTokenPositions
-            char_coord_objs_in_pdf: list of char objects from pdfminer
-            cropbox_in_pdf: the mediabox/cropbox offset from pdfminer
-                - boolean determines whether to check lmdb for that entity
             types_to_annotate: list of entity types to create annotations of
                 - NOTE: IMPORTANT: should always match with `EntityRecognition.identify_entities()`
                 - NOTE: IMPORTANT: Species should always be before Genes
