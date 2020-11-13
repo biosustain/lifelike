@@ -849,7 +849,8 @@ class AnnotationsService:
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
         word_index_dict: Dict[int, str],
-        custom_annotations: List[dict]
+        custom_annotations: List[dict],
+        excluded_annotations: List[dict]
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
             tokens=self.matched_type_species,
@@ -865,9 +866,15 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
         )
 
-        custom_annotations_species = [
+        inclusion_type_species_local = [
             custom for custom in custom_annotations if custom.get(
-                'meta', {}).get('type') == EntityType.SPECIES.value]
+                'meta', {}).get('type') == EntityType.SPECIES.value and not custom.get(
+                    'meta', {}).get('includeGlobally')]
+
+        exclusion_type_species_local = [
+            exclude for exclude in excluded_annotations if exclude.get(
+                'type') == EntityType.SPECIES.value and not exclude.get(
+                    'excludeGlobally')]
 
         def has_center_point(
             custom_rect_coords: List[float],
@@ -893,7 +900,7 @@ class AnnotationsService:
         # of its occurrences annotated as a custom annotation
         filtered_species_annotations_local: List[Annotation] = []
 
-        for custom in custom_annotations_species:
+        for custom in inclusion_type_species_local:
             for custom_anno in species_annotations_local:
                 if custom.get('rects') and len(custom['rects']) == len(custom_anno.rects):
                     # check if center point for each rect in custom_anno.rects
@@ -907,15 +914,46 @@ class AnnotationsService:
 
         # clean species annotations first
         # because genes depend on them
-        species_annotations = self._clean_annotations(
-            annotations=species_annotations,
+        species_annotations = self._get_fixed_false_positive_unified_annotations(
+            annotations_list=species_annotations,
             char_coord_objs_in_pdf=char_coord_objs_in_pdf,
             word_index_dict=word_index_dict
         )
 
+        # we only want the annotations with correct coordinates
+        # because it is possible for a word to only have one
+        # of its occurrences annotated as a custom annotation
+        exclusions_to_remove: Set[str] = set()
+
+        for custom in exclusion_type_species_local:
+            for anno in species_annotations:
+                if custom.get('rects') and len(custom['rects']) == len(anno.rects):
+                    # check if center point for each rect in anno.rects
+                    # is in the corresponding rectangle from custom annotations
+                    valid = all(list(map(has_center_point, custom['rects'], anno.rects)))
+
+                    # if center point is in custom annotation rectangle
+                    # then remove it from list
+                    if valid:
+                        exclusions_to_remove.add(anno.uuid)
+
+        filtered_species_annotations_of_exclusions = [
+            anno for anno in species_annotations if anno.uuid not in exclusions_to_remove]
+
+        filtered_species_annotations: List[Annotation] = []
+
+        if inclusion_type_species_local:
+            filtered_species_annotations += filtered_species_annotations_local
+
+        if exclusion_type_species_local:
+            filtered_species_annotations += filtered_species_annotations_of_exclusions
+        else:
+            filtered_species_annotations += species_annotations
+
         self.organism_frequency, self.organism_locations, self.organism_categories = \
             self._get_entity_frequency_location_and_category(
-                annotations=species_annotations + filtered_species_annotations_local)
+                annotations=filtered_species_annotations)
+
         return species_annotations
 
     def _annotate_type_company(
@@ -955,7 +993,8 @@ class AnnotationsService:
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
         word_index_dict: Dict[int, str],
-        custom_annotations: List[dict]
+        custom_annotations: List[dict],
+        excluded_annotations: List[dict]
     ) -> List[Annotation]:
         funcs = {
             EntityType.ANATOMY.value: self._annotate_anatomy,
@@ -978,7 +1017,8 @@ class AnnotationsService:
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 cropbox_in_pdf=cropbox_in_pdf,
                 word_index_dict=word_index_dict,
-                custom_annotations=custom_annotations
+                custom_annotations=custom_annotations,
+                excluded_annotations=excluded_annotations
             )  # type: ignore
         else:
             return annotate_entities(
@@ -1178,7 +1218,8 @@ class AnnotationsService:
         cropbox_in_pdf: Tuple[int, int],
         types_to_annotate: List[Tuple[str, str]],
         word_index_dict: Dict[int, str],
-        custom_annotations: List[dict]
+        custom_annotations: List[dict],
+        excluded_annotations: List[dict]
     ) -> List[Annotation]:
         """Create annotations.
 
@@ -1206,7 +1247,8 @@ class AnnotationsService:
                 char_coord_objs_in_pdf=char_coord_objs_in_pdf,
                 cropbox_in_pdf=cropbox_in_pdf,
                 word_index_dict=word_index_dict,
-                custom_annotations=custom_annotations
+                custom_annotations=custom_annotations,
+                excluded_annotations=excluded_annotations
             )
             unified_annotations.extend(annotations)
 
@@ -1215,6 +1257,7 @@ class AnnotationsService:
     def create_rules_based_annotations(
         self,
         custom_annotations: List[dict],
+        excluded_annotations: List[dict],
         tokens: PDFTokenPositionsList,
         entity_results: EntityResults,
         entity_type_and_id_pairs: List[Tuple[str, str]],
@@ -1241,7 +1284,8 @@ class AnnotationsService:
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             types_to_annotate=entity_type_and_id_pairs,
             word_index_dict=tokens.word_index_dict,
-            custom_annotations=custom_annotations
+            custom_annotations=custom_annotations,
+            excluded_annotations=excluded_annotations
         )
         return self._clean_annotations(
             annotations=annotations,
@@ -1256,6 +1300,7 @@ class AnnotationsService:
         char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
         cropbox_in_pdf: Tuple[int, int],
         custom_annotations: List[dict],
+        excluded_annotations: List[dict],
         entity_type_and_id_pairs: List[Tuple[str, str]],
         word_index_dict: Dict[int, str]
     ) -> List[Annotation]:
@@ -1265,7 +1310,8 @@ class AnnotationsService:
             cropbox_in_pdf=cropbox_in_pdf,
             types_to_annotate=entity_type_and_id_pairs,
             word_index_dict=word_index_dict,
-            custom_annotations=custom_annotations
+            custom_annotations=custom_annotations,
+            excluded_annotations=excluded_annotations
         )
 
         unified_annotations = species_annotations + nlp_annotations
