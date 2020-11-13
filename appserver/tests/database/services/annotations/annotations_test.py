@@ -372,7 +372,7 @@ def test_local_inclusion_organism_gene_crossmatch(
     assert annotations[0].meta.id == '388962'  # human gene
 
 
-def test_local_exclusion_gene_organism_matching(
+def test_local_exclusion_organism_gene_crossmatch(
     default_lmdb_setup,
     get_annotations_service,
     entity_service
@@ -381,7 +381,9 @@ def test_local_exclusion_gene_organism_matching(
     pdf_parser = get_annotations_pdf_parser()
     entity_service = entity_service
 
-    pdf = path.join(directory, f'pdf_samples/gene_organism_test.pdf')
+    pdf = path.join(
+        directory,
+        'pdf_samples/annotations_test/test_local_exclusion_organism_gene_crossmatch.pdf')
 
     excluded_annotation = {
         'id': '37293',
@@ -406,12 +408,12 @@ def test_local_exclusion_gene_organism_matching(
     }
 
     with open(pdf, 'rb') as f:
-        pdf_text = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed_chars=pdf_text)
+        parsed = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed=parsed)
 
         lookup_entities(
             entity_service=entity_service,
-            tokens=tokens,
+            tokens_list=tokens,
             custom_annotations=[]
         )
         annotations = annotation_service.create_rules_based_annotations(
