@@ -538,7 +538,15 @@ class KgService(HybridDBDao):
             MATCH (chem:db_CHEBI:Chemical) WHERE chem.id IN ['CHEBI:18064']
             WITH chem
             MATCH p=allShortestPaths((gene:db_EcoCyc:Gene {name:'pykF'})-[*..9]-(chem))
-            WHERE none(r IN relationships(p) WHERE type(r) IN ['FUNCTION','COMPONENT','PROCESS','HAS_TAXONOMY','HAS_SYNONYM','HAS_ROLE','GO_LINK'])
+            WHERE none(r IN relationships(p) WHERE type(r) IN [
+                'FUNCTION',
+                'COMPONENT',
+                'PROCESS',
+                'HAS_TAXONOMY',
+                'HAS_SYNONYM',
+                'HAS_ROLE',
+                'GO_LINK'
+            ])
             RETURN nodes(p) as nodes, relationships(p) as edges
         """
 
@@ -547,13 +555,22 @@ class KgService(HybridDBDao):
             MATCH (c:Compound {biocyc_id: 'CPD-12176'}), (g:Gene:db_BioCyc {name:'pykF'})
             MATCH p=allShortestPaths((c)-[*]-(g))
             WHERE none(r IN relationships(p)
-            WHERE type(r) IN ['GO_LINK','HAS_TAXONOMY','HAS_SYNONYM','REGULATES','HAS_ROLE', 'TYPE_OF'])
+            WHERE type(r) IN [
+                'GO_LINK',
+                'HAS_TAXONOMY',
+                'HAS_SYNONYM',
+                'REGULATES',
+                'HAS_ROLE',
+                'TYPE_OF'
+            ])
             RETURN nodes(p) as nodes, relationships(p) as edges
         """
 
     def get_icd_to_rhse_query(self):
         return """
-            MATCH p=allShortestPaths((gene:db_EcoCyc:Gene {name:'icd'})-[*..13]-(gene2:db_EcoCyc:Gene {name:'rhsE'}))
+            MATCH p=allShortestPaths(
+                (gene:db_EcoCyc:Gene {name:'icd'})-[*..13]-(gene2:db_EcoCyc:Gene {name:'rhsE'})
+            )
             WHERE none(r IN relationships(p) WHERE type(r) IN ['HAS_TAXONOMY'])
             RETURN nodes(p) as nodes, relationships(p) as edges
         """
