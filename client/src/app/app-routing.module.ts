@@ -103,8 +103,9 @@ const routes: Routes = [
     },
   },
   {
-      path: 'search/shortest-path',
-      component: ShortestPathComponent,
+    path: 'pathway-browser-prototype',
+    canActivate: [AuthGuard],
+    component: ShortestPathComponent,
   },
   {
     path: 'projects/:project_name/enrichment-table/:file_id',
