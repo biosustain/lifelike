@@ -439,33 +439,29 @@ class KgService(HybridDBDao):
                     edge_ids.add(edge.identity)
         return {'nodes': nodes, 'edges': edges}
 
-    def get_three_hydroxisobuteric_acid_to_pykf_chebi(self):
-        query = self.get_three_hydroxisobuteric_acid_to_pykf_chebi_query()
-        result = self.graph.run(query).data()
-        return self.get_nodes_and_edges_from_paths(result)
+    def get_shortest_path_query_list(self):
+        return {
+            0: '3-hydroxyisobutyric Acid to pykF Using ChEBI',
+            1: '3-hydroxyisobutyric Acid to pykF using BioCyc',
+            2: 'icd to rhsE',
+            3: 'SIRT5 to NFE2L2 Using Literature Data',
+            4: 'CTNNB1 to Diarrhea Using Literature Data',
+            5: 'Two pathways using BioCyc',
+        }
 
-    def get_three_hydroxisobuteric_acid_to_pykf_biocyc(self):
-        query = self.get_three_hydroxisobuteric_acid_to_pykf_biocyc_query()
-        result = self.graph.run(query).data()
-        return self.get_nodes_and_edges_from_paths(result)
+    def get_query_id_to_func_map(self):
+        return {
+            0: self.get_three_hydroxisobuteric_acid_to_pykf_chebi_query,
+            1: self.get_three_hydroxisobuteric_acid_to_pykf_biocyc_query,
+            2: self.get_icd_to_rhse_query,
+            3: self.get_sirt5_to_nfe2l2_literature_query,
+            4: self.ctnnb1_to_diarrhea_literature_query,
+            5: self.get_two_pathways_biocyc_query,
+        }
 
-    def get_icd_to_rhse(self):
-        query = self.get_icd_to_rhse_query()
-        result = self.graph.run(query).data()
-        return self.get_nodes_and_edges_from_paths(result)
-
-    def get_sirt5_to_nfe2l2_literature(self):
-        query = self.get_sirt5_to_nfe2l2_literature_query()
-        result = self.graph.run(query).data()
-        return self.get_nodes_and_edges_from_paths(result)
-
-    def get_ctnnb1_to_diarrhea_literature(self):
-        query = self.ctnnb1_to_diarrhea_literature_query()
-        result = self.graph.run(query).data()
-        return self.get_nodes_and_edges_from_paths(result)
-
-    def get_two_pathways_biocyc(self):
-        query = self.get_two_pathways_biocyc_query()
+    def get_shortest_path_query(self, query_id):
+        query_func = self.get_query_id_to_func_map()[query_id]
+        query = query_func()
         result = self.graph.run(query).data()
         return self.get_nodes_and_edges_from_paths(result)
 

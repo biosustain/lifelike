@@ -1,5 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 
+import { ShortestPathService } from '../services/shortest-path.service';
+
 import { DisplayType } from './route-display.component';
 
 @Component({
@@ -15,17 +17,12 @@ export class RouteBuilderComponent implements OnInit {
 
   routeBuilderOpen: boolean;
 
-  queries: string[];
+  queries: Map<number, string>;
 
-  constructor() {
-    this.queries = [
-      '3-hydroxyisobutyric Acid to pykF Using ChEBI',
-      '3-hydroxyisobutyric Acid to pykF using BioCyc',
-      'icd to rhsE',
-      'SIRT5 to NFE2L2 Using Literature Data',
-      'CTNNB1 to Diarrhea Using Literature Data',
-      'Two pathways using BioCyc',
-    ];
+  constructor(
+    public shortestPathService: ShortestPathService,
+  ) {
+    this.queries = new Map<number, string>();
 
     this.routeBuilderContainerClass = 'route-builder-container-open';
     this.routeBuilderOpen = true;
@@ -37,6 +34,10 @@ export class RouteBuilderComponent implements OnInit {
   ngOnInit() {
     this.loadNewQuery.emit(0);
     this.changeDisplayType.emit('NETWORK');
+
+    this.shortestPathService.getShortestPathQueryList().subscribe(queryMap => {
+      this.queries = queryMap;
+    });
   }
 
   toggleRouteBuilderOpen() {
