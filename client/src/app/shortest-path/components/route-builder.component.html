@@ -25,7 +25,7 @@
     <div>
       <label class="text-white">Shortest Path Query:</label>
       <select class="custom-select" (change)="requestQueryLoadFromParent($event)">
-        <option *ngFor="let query of queries; let i = index" [value]="i">{{ query }}</option>
+        <option *ngFor="let query of queries | keyvalue" [value]="query.key">{{ query.value }}</option>
       </select>
     </div>
   </div>
