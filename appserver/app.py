@@ -285,8 +285,9 @@ def files2gcp(bucket_name, project_name, username):
     """
     import json
     from google.cloud import storage
-    from google.cloud.exceptions import NotFound
+    from google.cloud.exceptions import BadRequest, NotFound
     from sqlalchemy import and_
+    from neo4japp.encoders import CustomJSONEncoder
     from neo4japp.models import (
         AppUser,
         Files,
@@ -298,7 +299,7 @@ def files2gcp(bucket_name, project_name, username):
 
     try:
         bucket = storage_client.get_bucket(bucket_name)
-    except NotFound:
+    except (NotFound, BadRequest):
         bucket = storage_client.bucket(bucket_name)
         bucket = storage_client.create_bucket(bucket, location='us')
         app.logger.info(f'Created Google Cloud Bucket : {bucket_name}')
@@ -330,18 +331,10 @@ def files2gcp(bucket_name, project_name, username):
                 filename = f"{fi.filename.replace('.pdf', '')}.pdf"
                 blob = bucket.blob(f'raw_file/{filename}')
                 blob.upload_from_string(fi_content.raw_file, 'application/pdf')
-
                 meta_filename = f"{fi.filename.replace('.pdf', '')}.json"
                 meta_blob = bucket.blob(f'meta_data/{meta_filename}')
-                meta_blob.upload_from_string(
-                    json.dumps(fi.to_dict(include=[
-                        'annotations',
-                        'custom_annotations',
-                        'excluded_annotations',
-                        'filename',
-                        'description',
-                        'upload_url'
-                    ])), 'application/json')
+                fi_json = json.dumps(fi.to_dict(), cls=CustomJSONEncoder)
+                meta_blob.upload_from_string(fi_json, 'application/json')
         app.logger.info(f'Finished loading all files')
 
 
@@ -349,13 +342,19 @@ def files2gcp(bucket_name, project_name, username):
 @click.argument('gcp_source', nargs=1)
 @click.argument('project_name', nargs=1)
 @click.argument('username', nargs=1)
-def bulk_upload_files(gcp_source, project_name, username):
+@click.option('--reannotate', default=False, help='if false, does not reannotate PDF files')
+def bulk_upload_files(gcp_source, project_name, username, reannotate):
     """ Performs a bulk upload of files and annotation from
     a given Google Storage Bucket.
 
     Example usage:
 
     > flask bulk-upload cag-data test admin
+
+    Example usage 2:
+    This will add the files into the annotation pipeline
+
+    > flask bulk-upload cag-data test admin --reannotate=True
 
     This will:
         1. create a project called 'cag-data'
@@ -479,7 +478,7 @@ def bulk_upload_files(gcp_source, project_name, username):
 
             new_file = Files(
                 file_id=file_id,
-                filename=filename,
+                filename=meta_json['filename'],
                 description=meta_json['description'],
                 content_id=file_content.id,
                 user_id=user.id,
@@ -488,6 +487,10 @@ def bulk_upload_files(gcp_source, project_name, username):
                 upload_url=meta_json['uploadUrl'],
                 excluded_annotations=meta_json['excludedAnnotations'],
                 custom_annotations=meta_json['customAnnotations'],
+                creation_date=meta_json['creationDate'],
+                modified_date=meta_json['modifiedDate'],
+                annotations=meta_json['annotations'],
+                annotations_date=meta_json['annotationsDate'],
             )
             db.session.add(new_file)
             db.session.commit()
@@ -506,6 +509,7 @@ def bulk_upload_files(gcp_source, project_name, username):
                     new_file_ids.append(new_file.file_id)
             except Exception as e:
                 print('Failed to load file: {filename}', str(e))
+                db.session.rollback()
                 pass
 
         docs = files_queries.get_all_files_and_content_by_id(
@@ -513,63 +517,180 @@ def bulk_upload_files(gcp_source, project_name, username):
             project_id=project.id,
         ).all()
 
-        annotated_files = []
-        for doc in docs:
-            try:
-                annotated_files.append(annotate(doc))
-            except (AnnotationError, Exception):
-                app.logger.info(f'Filename {filename} failed to annotate.')
+        if reannotate:
+            annotated_files = []
+            for doc in docs:
+                try:
+                    annotated_files.append(annotate(doc))
+                except (AnnotationError, Exception):
+                    app.logger.info(f'Filename {filename} failed to annotate.')
 
-        db.session.bulk_update_mappings(Files, annotated_files)
+            db.session.bulk_update_mappings(Files, annotated_files)
         db.session.commit()
         print('Done')
 
 
-@app.cli.command('global-annotation')
-@click.argument('filename', nargs=1)
-def seed_global_annotation_list(filename):
+@app.cli.command('gcp2global')
+@click.argument('bucket_name', nargs=1)
+@click.argument('mapping_file', nargs=1)
+@click.argument('username', nargs=1)
+def seed_global_annotation_from_gcp(bucket_name, mapping_file, username):
+    """ Used with global2gcp to seed the data from the output
+    into the current database environment.
+    Example usage:
+
+    > flask gcp2global staging-annotations global-annotations.json test
     """
-    TODO: Make generic
-    * This is used as a temporary stop gap
-    to seed some existing data.
-    Seeds the 'global_list' table with
-    a given exclusion/inclusion list """
-    from neo4japp.models import FileContent, GlobalList
-    FIXTURE_PATH = './fixtures'
-    # Randomly choose a file to associate with.
-    # Make the file_id column nullable if we
-    # don't use it, or refactor this function
-    # to use a "meaningful" file_id
-    random_file_id = 0
-    with open(os.path.join(FIXTURE_PATH, filename)) as fi:
-        fix = json.load(fi)
-        inclusions = fix['inclusions']
-        exclusions = fix['exclusions']
-        current_time = datetime.now(TIMEZONE)
-        for new_incl in inclusions:
-            gl = GlobalList(
-                annotation=new_incl,
-                type='inclusion',
-                file_id=random_file_id,
-                reviewed=False,
-                approved=False,
-                creation_date=new_incl.get('inclusion_date', current_time),
-                modified_date=new_incl.get('inclusion_date', current_time),
+    import copy
+    import hashlib
+    from google.cloud import storage
+    from neo4japp.models import (
+        AppUser,
+        GlobalList,
+        FileContent,
+    )
+
+    FILE_PREFIX = 'global-file_'
+
+    user = db.session.query(AppUser).filter(
+        AppUser.username == username).one()
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket_name)
+
+    global_blob = bucket.get_blob(mapping_file)
+    global_json = json.loads(global_blob.download_as_string())
+
+    for annotation in global_json['annotations']:
+        file_id = annotation['fileId']
+        filename = f'{FILE_PREFIX}{file_id}.pdf'
+        file_blob = bucket.get_blob(f'raw_file/{filename}').download_as_bytes()
+        checksum_sha256 = hashlib.sha256(file_blob).digest()
+        file_content = db.session.query(
+            FileContent.id
+        ).filter(
+            FileContent.checksum_sha256 == checksum_sha256
+        ).one_or_none()
+        # Previous file found, use that file id
+        if file_content:
+            file_id = file_content[0]
+            app.logger.info(f'Previous file found: id ({file_id})')
+        # No previous file, upload it and use that id
+        else:
+            new_fc = FileContent(
+                raw_file=file_blob,
+                checksum_sha256=checksum_sha256,
             )
-            db.session.add(gl)
-        for new_excl in exclusions:
-            gl = GlobalList(
-                annotation=new_excl,
-                type='exclusion',
-                file_id=random_file_id,
-                reviewed=False,
-                approved=False,
-                creation_date=new_incl.get('exclusion_date', current_time),
-                modified_date=new_incl.get('exclusion_date', current_time),
+            db.session.add(new_fc)
+            db.session.flush()
+            file_id = new_fc.id
+
+        app.logger.info(f'Adding new file: id ({file_id})')
+        annotation_json = copy.deepcopy(annotation['annotation'])
+        # Not possible to transfer users across different
+        # environments unless they had the same login, so
+        # we chose an arbitrary user to assign the annotations to
+        annotation_json['user_id'] = user.id
+        global_list = GlobalList(
+            annotation=annotation_json,
+            type=annotation['type'],
+            file_id=file_id,
+            reviewed=annotation['reviewed'],
+            approved=annotation['approved'],
+            creation_date=annotation['creationDate'],
+            modified_date=annotation['modifiedDate'],
+        )
+        try:
+            db.session.add(global_list)
+            db.session.commit()
+        except Exception as ex:
+            app.logger.info(f'Failed to load annotation id: {annotation.id}')
+            db.session.rollback()
+        app.logger.info(f'Done loading global annotation list...')
+
+
+@app.cli.command('global2gcp')
+@click.argument('bucket_name', nargs=1)
+@click.argument('users_filter', nargs=-1)
+def global2gcp(bucket_name, users_filter):
+    """ Fetches all of the raw PDF files along
+    with its associated global annotations.
+    This data is stored on Google Cloud Storage.
+    The functionality is used to enable transferring
+    global annotations to different database environments.
+
+    Example usage:
+    > flask global2gcp staging-annotations
+
+    Example usage 2:
+    This will filter only for global annotations by
+    the listed usernames
+    > flask global2gcp staging-annotations evetra shawib
+
+    NOTE: This is meant for an emergency transfer of
+    global annotations to different environments.
+
+    NOTE: The annotations will lose its original user
+    reference as user ids are different across different
+    databases.
+    """
+    import json
+    import copy
+    from sqlalchemy import or_
+    from google.cloud import storage
+    from google.cloud.exceptions import NotFound
+    from neo4japp.models import AppUser, FileContent, GlobalList
+
+    storage_client = storage.Client()
+
+    try:
+        bucket = storage_client.get_bucket(bucket_name)
+    except NotFound:
+        bucket = storage_client.bucket(bucket_name)
+        bucket = storage_client.create_bucket(bucket, location='us')
+        app.logger.info(f'Created Google Cloud Bucket : {bucket_name}')
+    with app.app_context():
+        if users_filter:
+            filters = [AppUser.username == u for u in users_filter]
+            query = db.session.query(
+                GlobalList,
+                FileContent
+            ).join(
+                FileContent
+            ).join(
+                AppUser,
+                AppUser.id == GlobalList.annotation['user_id'].as_integer()
+            ).filter(or_(*filters))
+        else:
+            query = db.session.query(
+                GlobalList,
+                FileContent,
+            ).join(
+                FileContent
             )
-            db.session.add(gl)
-        db.session.commit()
-    print('Completed seeding global inclusion/exclusion list')
+        data = []
+        app.logger.info('Processing files...')
+        # Multiple annotations can refer to a single file; only want one copy
+        # of the raw file
+        duplicate_files = set()
+        for gl, fc in query.all():
+            # exclude annotations so there's no snake to camel conversion
+            gl_dict = gl.to_dict()
+            # TODO: Need to refactor RDBMS to_dict() to serialize dates correctly
+            gl_dict['creationDate'] = str(gl_dict['creationDate'])
+            gl_dict['modifiedDate'] = str(gl_dict['modifiedDate'])
+            data.append(gl_dict)
+            if gl.file_id not in duplicate_files:
+                duplicate_files.add(gl.file_id)
+                gcp_filename = f'global-file_{gl.file_id}.pdf'
+                # Create a unique identifier to trace back the
+                # global annotation to the raw file
+                blob = bucket.blob(f'raw_file/{gcp_filename}')
+                blob.upload_from_string(fc.raw_file, 'application/pdf')
+        annotation_blob = bucket.blob('global-annotations.json')
+        annotation_blob.upload_from_string(json.dumps(
+            dict(annotations=data)
+        ), 'application/json')
+    app.logger.info(f'Finish loading files to bucket: {bucket_name}')
 
 
 @app.cli.command('fix-projects')

@@ -65,7 +65,9 @@
             <app-results-summary
               [page]="params.page"
               [pageSize]="params.limit"
-              [collectionSize]="collectionSize"></app-results-summary>
+              [collectionSize]="collectionSize"
+              [resultCountLimited]="true"
+              [resultLimit]="1000"></app-results-summary>
           </div>
 
           <div class="search-results">
@@ -83,7 +85,7 @@
             <ngb-pagination
               [page]="params.page"
               [pageSize]="params.limit"
-              [collectionSize]="collectionSize"
+              [collectionSize]="collectionSize > 1000 ? 1000 : collectionSize"
               (pageChange)="goToPage($event)"></ngb-pagination>
           </div>
         </ng-container>
