@@ -242,7 +242,7 @@ def export_global_inclusions():
 
         missing_data = any([
             inclusion.annotation['meta'].get('id', None) is None,
-            inclusion.annotation['meta'].get('primaryLink', None) is None
+            inclusion.annotation['meta'].get('idHyperlink', None) is None
         ])
 
         if missing_data:
@@ -254,7 +254,7 @@ def export_global_inclusions():
             'id': inclusion.annotation['meta'].get('id', ''),
             'term': inclusion.annotation['meta']['allText'],
             'type': inclusion.annotation['meta']['type'],
-            'primary_link': inclusion.annotation['meta'].get('primaryLink', ''),
+            'hyperlink': inclusion.annotation['meta'].get('idHyperlink', ''),
             'inclusion_date': inclusion.annotation.get('inclusion_date', ''),
             'user': username,
         }
