@@ -545,7 +545,7 @@ export class WorkspaceManager {
 
   openTabByUrl(pane: Pane | string,
                url: string | UrlTree,
-               extras?: NavigationExtras,
+               extras?: NavigationExtras & WorkspaceNavigationExtras,
                tabDefaults?: TabDefaults): Promise<boolean> {
     if (typeof pane === 'string') {
       pane = this.panes.getOrCreate(pane);
@@ -563,7 +563,9 @@ export class WorkspaceManager {
   navigateByUrl(url: string | UrlTree, extras?: NavigationExtras & WorkspaceNavigationExtras): Promise<boolean> {
     extras = extras || {};
 
-    if (this.router.url === this.workspaceUrl) {
+    const withinWorkspace = this.router.url === this.workspaceUrl;
+
+    if (withinWorkspace) {
       let targetPane = this.focusedPane || this.panes.getFirstOrCreate();
 
       if (extras.newTab) {
@@ -584,6 +586,13 @@ export class WorkspaceManager {
             }
           } else {
             targetPane = sideBySidePane;
+          }
+        }
+
+        if (extras.preferPane) {
+          const preferredPane = this.panes.get(extras.preferPane);
+          if (preferredPane) {
+            targetPane = preferredPane;
           }
         }
 
@@ -622,7 +631,21 @@ export class WorkspaceManager {
       this.interceptNextRoute = true;
     }
 
-    return this.router.navigateByUrl(url, extras);
+    if (!withinWorkspace && extras.forceWorkbench) {
+      return this.router.navigateByUrl(this.workspaceUrl).then(() => {
+        return new Promise((accept, reject) => {
+          // We need a delay because things break if we do it too quickly
+          setTimeout(() => {
+            this.navigateByUrl(url, {
+              ...extras,
+              preferPane: extras.preferPane || extras.preferStartupPane,
+            }).then(accept, reject);
+          }, 10);
+        });
+      });
+    } else {
+      return this.router.navigateByUrl(url, extras);
+    }
   }
 
   navigate(commands: any[], extras: NavigationExtras & WorkspaceNavigationExtras = {skipLocationChange: false}): Promise<boolean> {
@@ -719,10 +742,13 @@ export class WorkspaceManager {
 }
 
 export interface WorkspaceNavigationExtras {
+  preferPane?: string;
+  preferStartupPane?: string;
   newTab?: boolean;
   sideBySide?: boolean;
   matchExistingTab?: string | RegExp;
   shouldReplaceTab?: (component: any) => boolean;
+  forceWorkbench?: boolean;
 }
 
 function getQueryString(params: { [key: string]: string }) {
