@@ -1,13 +1,14 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 
 import { cloneDeep } from 'lodash';
-import { UniversalGraphEdge, UniversalGraphNode } from '../../services/interfaces';
+import { UniversalGraphEdge } from '../../services/interfaces';
 import { LINE_HEAD_TYPES } from '../../services/line-head-types';
 import { LINE_TYPES } from '../../services/line-types';
 import { RecursivePartial } from '../../../shared/utils/types';
-import { openLink } from '../../../shared/utils/browser';
+import { openPotentialInternalLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
 import { isNullOrUndefined } from 'util';
+import { WorkspaceManager } from '../../../shared/workspace-manager';
 
 @Component({
   selector: 'app-edge-form',
@@ -44,6 +45,9 @@ export class EdgeFormComponent implements AfterViewInit {
   @Output() sourceOpen = new EventEmitter<string>();
 
   activeTab: string;
+
+  constructor(protected readonly workspaceManager: WorkspaceManager) {
+  }
 
   ngAfterViewInit() {
     setTimeout(() => this.focus(), 10);
@@ -115,7 +119,7 @@ export class EdgeFormComponent implements AfterViewInit {
    * Allow user to navigate to a link in a new tab
    */
   goToLink(hyperlink) {
-    openLink(hyperlink);
+    openPotentialInternalLink(this.workspaceManager, hyperlink);
   }
 
   /**

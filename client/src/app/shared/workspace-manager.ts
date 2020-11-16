@@ -470,6 +470,10 @@ export class WorkspaceManager {
     this.emitEvents();
   }
 
+  isWithinWorkspace() {
+    return this.router.url === this.workspaceUrl;
+  }
+
   private hookRouter() {
     // Intercept changing routes and redirect to our workspace
     this.router.events
@@ -563,7 +567,7 @@ export class WorkspaceManager {
   navigateByUrl(url: string | UrlTree, extras?: NavigationExtras & WorkspaceNavigationExtras): Promise<boolean> {
     extras = extras || {};
 
-    const withinWorkspace = this.router.url === this.workspaceUrl;
+    const withinWorkspace = this.isWithinWorkspace;
 
     if (withinWorkspace) {
       let targetPane = this.focusedPane || this.panes.getFirstOrCreate();
