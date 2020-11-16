@@ -348,7 +348,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     if (this.pdfFile.upload_url) {
       sources.push({
-        domain: 'Upload URL',
+        domain: 'External URL',
         url: this.pdfFile.upload_url,
       });
     }
