@@ -1,7 +1,7 @@
 """New parsed_content column to save pdfminer parsing.
 
 Revision ID: 600460da634d
-Revises: 2105594e7b33
+Revises: 5b17cf4f72b0
 Create Date: 2020-11-13 20:09:07.761508
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '600460da634d'
-down_revision = '2105594e7b33'
+down_revision = '5b17cf4f72b0'
 branch_labels = None
 depends_on = None
 
