@@ -214,6 +214,11 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     }
   }
 
+  clearSearchQuery() {
+    this.entitySearchTerm = '';
+    this.search();
+  }
+
   next() {
     // we need rule ...
     this.entitySearchListIdx++;
