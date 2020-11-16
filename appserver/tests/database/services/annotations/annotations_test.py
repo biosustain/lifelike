@@ -677,7 +677,7 @@ def test_local_exclusion_gene_organism_matching(
                 473.9653966747998,
                 718.27682008
             ]
-        ],s
+        ],
         'reason': 'Other',
         'comment': '',
         'user_id': 1,
