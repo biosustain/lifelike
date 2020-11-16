@@ -338,7 +338,6 @@ def test_local_inclusion_organism_gene_crossmatch(
             'allText': 'hooman',
             'isCustom': True,
             'idHyperlink': '',
-            'primaryLink': '',
             'includeGlobally': False,
         },
         'uuid': 'a66ec5d5-f65b-467d-b16e-b833161e07d1',
