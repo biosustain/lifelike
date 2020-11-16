@@ -622,7 +622,6 @@ def test_local_inclusion_gene_organism_matching(
             'allText': 'hooman',
             'isCustom': True,
             'idHyperlink': '',
-            'primaryLink': '',
             'includeGlobally': False,
         },
         'uuid': 'a66ec5d5-f65b-467d-b16e-b833161e07d1',
