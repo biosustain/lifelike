@@ -1,4 +1,5 @@
 FROM python:3.8.3-slim
+LABEL app=kg-prototypes
 
 RUN pip install pipenv
 
