@@ -73,6 +73,7 @@ ENV ANGULAR_DIR $CLIENT_HOME/client
 ENV PATH $ANGULAR_DIR/node_modules/.bin:$PATH
 WORKDIR $ANGULAR_DIR
 COPY --from=build /home/node/client .
+# If fails check if docker can access enough RAM (4GB?)
 RUN yarn build --configuration="production" --output-path=dist
 
 # ========================================
