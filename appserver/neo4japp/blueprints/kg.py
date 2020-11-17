@@ -122,6 +122,7 @@ def get_ncbi_enrichment_domains():
 
 
 @bp.route('/shortest-path-query/<int:query_id>', methods=['GET'])
+@auth.login_required
 def get_shortest_path_query_result(query_id):
     kg = get_kg_service()
     result = kg.get_shortest_path_query(query_id)
@@ -129,6 +130,7 @@ def get_shortest_path_query_result(query_id):
 
 
 @bp.route('/shortest-path-query-list', methods=['GET'])
+@auth.login_required
 def get_shortest_path_query_list():
     kg = get_kg_service()
     result = kg.get_shortest_path_query_list()
