@@ -53,17 +53,16 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   getValue(): Annotation {
     const text = this.form.getRawValue().text;
     const links = {};
+    // idHyperlink should be taken from the search links (entered by user) considering
+    // the priority (elements in SEARCH_LINKS array have the prioritized order)
+    let idHyperlink;
     this.form.value.links.forEach((value, i) => {
+      if (!idHyperlink && value) {
+        idHyperlink = value;
+      }
       const domain = this.linkTemplates[i].domain.toLowerCase();
       links[domain] = value || this.substituteLink(this.linkTemplates[i].url, text);
     });
-
-    let primaryLink = '';
-    for (const link of this.form.value.links) {
-      if (link.length) {
-        primaryLink = link;
-      }
-    }
 
     return {
       pageNumber: this.pageNumber,
@@ -73,12 +72,13 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
       }),
       meta: {
         id: this.form.value.includeGlobally ? this.form.value.id : (this.form.value.id || text),
+        idHyperlink: idHyperlink || '',
+        idType: '',
         type: this.form.value.entityType,
         color: ENTITY_TYPE_MAP[this.form.value.entityType].color,
         links,
         isCustom: true,
         allText: text,
-        primaryLink,
         includeGlobally: this.form.value.includeGlobally,
         isCaseInsensitive: !(this.caseSensitiveTypes.includes(this.form.value.entityType)),
       },

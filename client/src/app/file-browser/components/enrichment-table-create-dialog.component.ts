@@ -18,7 +18,7 @@ export class EnrichmentTableCreateDialogComponent extends CommonFormDialogCompon
     'String',
     'GO',
     'Biocyc'
-  ]
+  ];
 
   form: FormGroup = new FormGroup({
     name: new FormControl('', Validators.required),
@@ -46,17 +46,15 @@ export class EnrichmentTableCreateDialogComponent extends CommonFormDialogCompon
     const formArray: FormArray = this.form.get('domainsList') as FormArray;
 
     /* Selected */
-    if(event.target.checked){
+    if (event.target.checked) {
       // Add a new control in the arrayForm
       formArray.push(new FormControl(event.target.value));
-    }
-    /* unselected */
-    else{
+    } else {
       // find the unselected element
-      let i: number = 0;
+      let i = 0;
 
-      formArray.controls.forEach((ctrl: FormControl) => {
-        if(ctrl.value == event.target.value) {
+      formArray.controls.forEach((ctrl) => {
+        if (ctrl.value === event.target.value) {
           // Remove the unselected element from the arrayForm
           formArray.removeAt(i);
           return;

@@ -188,7 +188,7 @@ def create_annotations(
 
     if annotation_method == AnnotationMethod.RULES.value:
         entity_recog.set_entity_inclusions(custom_annotations=custom_annotations)
-        entity_recog.set_entity_exclusions(excluded_annotations=excluded_annotations)
+        entity_recog.set_entity_exclusions()
         entity_recog.identify_entities(
             tokens=tokens.token_positions,
             check_entities_in_lmdb=entity_recog.get_entities_to_identify()
@@ -215,6 +215,8 @@ def create_annotations(
 
         annotations = annotator.create_rules_based_annotations(
             tokens=tokens,
+            custom_annotations=custom_annotations,
+            excluded_annotations=excluded_annotations,
             entity_results=entity_recog.get_entity_match_results(),
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
@@ -239,7 +241,8 @@ def create_annotations(
 
         species_annotations = annotator.create_rules_based_annotations(
             tokens=tokens,
-            # custom_annotations=custom_annotations,
+            custom_annotations=[],
+            excluded_annotations=[],
             entity_results=entity_recog.get_entity_match_results(),
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(
                 anatomy=False, chemical=False, compound=False, disease=False,
@@ -259,6 +262,7 @@ def create_annotations(
             char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
             cropbox_in_pdf=tokens.cropbox_in_pdf,
             custom_annotations=custom_annotations,
+            excluded_annotations=excluded_annotations,
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(species=False),
             word_index_dict=tokens.word_index_dict
         )
