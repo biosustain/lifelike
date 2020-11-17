@@ -112,14 +112,20 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         this.taxID = '559292';
       }
       this.organism = resultArray[2];
-      if (resultArray[3] !== '') {
-        this.domains = resultArray[3].split(',');
-        this.columnOrder = resultArray[3].split(',');
-        if (this.columnOrder.includes('Regulon')) {
-          const index = this.columnOrder.indexOf('Regulon');
-          this.columnOrder.splice(index + 1, 0, 'Regulon 3');
-          this.columnOrder.splice(index + 1, 0, 'Regulon 2');
+      if (resultArray.length > 3) {
+        if (resultArray[3] !== '') {
+          this.domains = resultArray[3].split(',');
+          this.columnOrder = resultArray[3].split(',');
+          if (this.columnOrder.includes('Regulon')) {
+            const index = this.columnOrder.indexOf('Regulon');
+            this.columnOrder.splice(index + 1, 0, 'Regulon 3');
+            this.columnOrder.splice(index + 1, 0, 'Regulon 2');
+          }
         }
+      } else {
+        // Default view for existing tables
+        this.domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
+        this.columnOrder = ['Regulon', 'Regulon 2', 'Regulon 3', 'UniProt', 'String', 'GO', 'Biocyc'];
       }
       this.initializeHeaders();
       this.removeDuplicates(this.importGenes);
