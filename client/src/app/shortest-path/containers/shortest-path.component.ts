@@ -1,5 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 
+import { combineLatest, Subscription } from 'rxjs';
+
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+
 import { ShortestPathService } from '../services/shortest-path.service';
 
 export interface GraphData {
@@ -14,12 +18,31 @@ export interface GraphData {
 })
 export class ShortestPathComponent implements OnInit {
 
+  loadTask: BackgroundTask<[], any>;
+  annotationsLoadedSub: Subscription;
+
+  loadedQuery: number;
   displayType: string;
   graphData: GraphData;
 
   constructor(
     public shortestPathService: ShortestPathService,
-  ) {}
+  ) {
+    this.loadTask = new BackgroundTask(() => {
+      return combineLatest(
+        this.shortestPathService.getShortestPathQueryResult(this.loadedQuery),
+      );
+    });
+    this.annotationsLoadedSub = this.loadTask.results$.subscribe(({
+      result: [shortestPathResult],
+      value: [],
+    }) => {
+      this.graphData = {
+        nodes: shortestPathResult.nodes,
+        edges: shortestPathResult.edges,
+      };
+    });
+  }
 
   ngOnInit() { }
 
@@ -29,11 +52,7 @@ export class ShortestPathComponent implements OnInit {
 
   loadNewQuery(query: number) {
     this.graphData = null;
-    this.shortestPathService.getShortestPathQueryResult(query).subscribe((result) => {
-      this.graphData = {
-        nodes: result.nodes,
-        edges: result.edges,
-      };
-    });
+    this.loadedQuery = query;
+    this.loadTask.update([]);
   }
 }
