@@ -610,4 +610,25 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     return this.isPendingScroll() || this.isPendingJump()
       || this.pendingAnnotationHighlightId != null;
   }
+
+  dragStarted(event: DragEvent) {
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    dataTransfer.setData('text/plain', this.pdfFile.filename);
+    dataTransfer.setData('application/lifelike-node', JSON.stringify({
+      display_name: this.pdfFile.filename,
+      label: 'link',
+      sub_labels: [],
+      data: {
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.pdfFile.file_id + '',
+        }],
+        sources: [{
+          domain: 'File Source',
+          url: ['/projects', encodeURIComponent(this.projectName),
+            'files', encodeURIComponent(this.pdfFile.file_id)].join('/'),
+        }],
+      },
+    } as Partial<UniversalGraphNode>));
+  }
 }
