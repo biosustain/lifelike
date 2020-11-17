@@ -51,7 +51,11 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
       const resultArray = result.data.split('/');
       const importGenes: string = resultArray[0].split(',').filter(gene => gene !== '').join('\n');
       this.organismTaxId = resultArray[1];
-      this.domains = resultArray[3].split(',');
+      if (resultArray.length > 3) {
+        if (resultArray[3] !== '') {
+          this.domains = resultArray[3].split(',');
+        }
+      }
       this.search.getOrganismFromTaxId(this.organismTaxId).subscribe((searchResult) => {
         this.form.get('name').setValue(this.filename || '');
         this.form.get('description').setValue(description || '');
