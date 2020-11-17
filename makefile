@@ -39,6 +39,8 @@ init: set-gcloud ansible-secrets gcp-sa lmdb reset-gcloud
 	docker-compose build --no-cache
 
 docker-run: docker-stop set-gcloud gcp-sa reset-gcloud
+	export DOCKER_CLIENT_TIMEOUT=300
+	export COMPOSE_HTTP_TIMEOUT=300
 	docker-compose up -d
 
 docker-stop:
