@@ -1,6 +1,8 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
+
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
 import { RouteSearchComponent } from './route-search.component';
 
@@ -10,6 +12,9 @@ describe('RouteSearchComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
+      imports: [
+        RootStoreModule
+      ],
       declarations: [ RouteSearchComponent ]
     });
   });

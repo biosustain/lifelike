@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
+
 import { RouteBuilderComponent } from './route-builder.component';
 
 describe('RouteBuilderComponent', () => {
@@ -10,6 +12,9 @@ describe('RouteBuilderComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
+      imports: [
+        RootStoreModule,
+      ],
       declarations: [ RouteBuilderComponent ]
     });
   });

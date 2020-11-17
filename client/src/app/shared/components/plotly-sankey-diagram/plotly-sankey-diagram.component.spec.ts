@@ -17,6 +17,10 @@ describe('PlotlySankeyDiagramComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(PlotlySankeyDiagramComponent);
     component = fixture.componentInstance;
+
+    // For now, replace ngAfterViewInit with an empty mock. This is to avoid errors related to declaring `Plotly` as a global const.
+    spyOn(component, 'ngAfterViewInit').and.callFake(() => {});
+
     fixture.detectChanges();
   });
 
