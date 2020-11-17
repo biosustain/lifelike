@@ -18,7 +18,7 @@
           <button type="button" class="module-title-bar-back mr-2" [appLink]="returnUrl" *ngIf="returnUrl">
             <i class="fa fa-fw fa-arrow-left"></i>
           </button>
-          <h1 class="toolbar-title text-truncate pr-4" (click)="displayEditDialog()">
+          <h1 class="toolbar-title text-truncate pr-4" (click)="displayEditDialog()" draggable="true" (dragstart)="dragStarted($event)">
             {{ pdfFile?.filename }}
           </h1>
 
