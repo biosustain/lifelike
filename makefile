@@ -1,11 +1,11 @@
 APPSERVER_PATH=./appserver
 ANSIBLE_PATH=./deployment/ansible
 LMDB_PATH = $(APPSERVER_PATH)/neo4japp/services/annotations/lmdb
-PROJECT_ID=?kg-prototypes?
+PROJECT_ID=able-goods-221820
+PREV_PROJECT_ID=$(shell gcloud config get-value project)
 
 # Set gcloud project
 set-gcloud:
-	PREV_PROJECT_ID=$(gcloud config get project)
 	gcloud config set project $(PROJECT_ID)
 
 # Restore gcloud setting
