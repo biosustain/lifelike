@@ -64,7 +64,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   currentGenes: string[];
 
   // Enrichment Table and NCBI Matching Results
-  domains: string[];
+  domains: string[] = [];
   projectName: string;
   fileId: string;
   geneNames: string[];
@@ -81,7 +81,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   unmatchedGenes: string;
   ncbiIds: number[];
   duplicateGenes: string;
-  columnOrder: string[];
+  columnOrder: string[] = [];
 
   constructor(
     private readonly worksheetViewerService: EnrichmentTableService,
@@ -112,12 +112,14 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         this.taxID = '559292';
       }
       this.organism = resultArray[2];
-      this.domains = resultArray[3].split(',');
-      this.columnOrder = resultArray[3].split(',');
-      if (this.columnOrder.includes('Regulon')) {
-        const index = this.columnOrder.indexOf('Regulon');
-        this.columnOrder.splice(index + 1, 0, 'Regulon 3');
-        this.columnOrder.splice(index + 1, 0, 'Regulon 2');
+      if (resultArray[3] !== '') {
+        this.domains = resultArray[3].split(',');
+        this.columnOrder = resultArray[3].split(',');
+        if (this.columnOrder.includes('Regulon')) {
+          const index = this.columnOrder.indexOf('Regulon');
+          this.columnOrder.splice(index + 1, 0, 'Regulon 3');
+          this.columnOrder.splice(index + 1, 0, 'Regulon 2');
+        }
       }
       this.initializeHeaders();
       this.removeDuplicates(this.importGenes);
