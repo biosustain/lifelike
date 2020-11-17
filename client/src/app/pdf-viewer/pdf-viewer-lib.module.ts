@@ -18,7 +18,9 @@ import { MatRadioModule } from '@angular/material/radio';
 import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
-  declarations: [PdfViewerLibComponent, AnnotationEditDialogComponent, AnnotationExcludeDialogComponent],
+  declarations: [
+    PdfViewerLibComponent, AnnotationEditDialogComponent, AnnotationExcludeDialogComponent
+  ],
   imports: [
     PdfViewerModule,
     CommonModule,

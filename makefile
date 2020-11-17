@@ -2,15 +2,16 @@ APPSERVER_PATH=./appserver
 ANSIBLE_PATH=./deployment/ansible
 LMDB_PATH = $(APPSERVER_PATH)/neo4japp/services/annotations/lmdb
 PROJECT_ID=able-goods-221820
-PREV_PROJECT_ID=$(shell gcloud config get-value project)
+PROJECT_ID_BACKUP=project_id.backup
 
 # Set gcloud project
 set-gcloud:
+	gcloud config get-value project > $(PROJECT_ID_BACKUP)
 	gcloud config set project $(PROJECT_ID)
 
 # Restore gcloud setting
 reset-gcloud:
-	gcloud config set project $(PREV_PROJECT_ID)
+	cat $(PROJECT_ID_BACKUP) | xargs gcloud config set project
 
 # Fetches the password to unlock Ansible vault files
 ansible-secrets:
@@ -57,3 +58,5 @@ clean: clean-docker clean-pyc
 	find . -name 'ansible_service_account.json' -delete
 	# Remove Ansible vault secrets
 	find . -name '.vault_secrets_pw' -delete
+	# Remove project_id backup
+	rm -f $(PROJECT_ID_BACKUP)
