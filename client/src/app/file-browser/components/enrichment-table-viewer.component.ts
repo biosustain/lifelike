@@ -14,6 +14,7 @@ import {
   NCBINode,
   EnrichmentWrapper,
   GoNode,
+  Synonym,
 } from '../services/enrichment-table.service';
 import { ActivatedRoute } from '@angular/router';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
@@ -35,6 +36,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     // Primary headers
     [
       { name: 'Imported Gene Name', span: '1' },
+      { name: 'Matched Gene Name', span: '1'},
       { name: 'NCBI Gene Full Name', span: '1' },
     ]
   ];
@@ -46,7 +48,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     ['Biocyc', [{ name: 'Biocyc Pathways', span: '1' }]],
   ]);
   secondHeaderMap: Map<string, TableHeader[]> = new Map([
-    ['Default', [{ name: '', span: '1' }, { name: '', span: '1' },]],
+    ['Default', [{ name: '', span: '1' }, { name: '', span: '1' }, { name: '', span: '1' }]],
     ['Regulon', [{ name: 'Regulator Family', span: '1' }, { name: 'Activated By', span: '1' },
     { name: 'Repressed By', span: '1' }]],
     ['UniProt', [{ name: '', span: '1' }]],
@@ -72,12 +74,14 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   loadTaskSubscription: Subscription;
   sheetname: string;
   neo4jId: number;
+  synonyms: Synonym[];
   ncbiNodes: NCBINode[];
   ncbiLinks: string[];
   importGenes: string[];
   unmatchedGenes: string;
   ncbiIds: number[];
   duplicateGenes: string;
+  columnOrder: string[];
 
   constructor(
     private readonly worksheetViewerService: EnrichmentTableService,
@@ -109,6 +113,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       }
       this.organism = resultArray[2];
       this.domains = resultArray[3].split(',');
+      this.columnOrder = resultArray[3].split(',');
+      if (this.columnOrder.includes('Regulon')) {
+        const index = this.columnOrder.indexOf('Regulon');
+        this.columnOrder.splice(index + 1, 0, 'Regulon 3');
+        this.columnOrder.splice(index + 1, 0, 'Regulon 2');
+      }
       this.initializeHeaders();
       this.removeDuplicates(this.importGenes);
       this.currentPage = 1;
@@ -128,17 +138,24 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     dialogRef.componentInstance.domains = this.domains;
     return dialogRef.result.then((result) => {
       this.domains = result;
+      this.columnOrder = [ ...result];
+      if (this.columnOrder.includes('Regulon')) {
+        const index = this.columnOrder.indexOf('Regulon');
+        this.columnOrder.splice(index + 1, 0, 'Regulon 3');
+        this.columnOrder.splice(index + 1, 0, 'Regulon 2');
+      }
       this.tableHeader = [
         // Primary headers
         [
           { name: 'Imported Gene Name', span: '1' },
+          { name: 'Matched Gene Name', span: '1'},
           { name: 'NCBI Gene Full Name', span: '1' },
         ]
       ];
       this.initializeHeaders();
-      this.getDomains();
-      
-    }, ()=>{});
+      this.matchNCBINodes(this.currentPage);
+
+    }, () => {});
   }
 
   emitModuleProperties() {
@@ -157,7 +174,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       if (this.domains.includes('Regulon')) {
         this.tableHeader[1] = this.tableHeader[1].concat(this.secondHeaderMap.get(domain));
       }
-    })
+    });
   }
 
   goToPage(page: number) {
@@ -172,6 +189,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.worksheetViewerService
       .matchNCBINodes(this.currentGenes, this.taxID)
       .subscribe((result) => {
+        this.synonyms = result.map((wrapper) => wrapper.s);
         this.ncbiNodes = result.map((wrapper) => wrapper.x);
         this.ncbiIds = result.map((wrapper) => wrapper.neo4jID);
         this.ncbiLinks = result.map((wrapper) => wrapper.link);
@@ -211,8 +229,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
             },
           });
           this.tableEntries[i].unshift({ text: this.ncbiNodes[i].name });
+          this.tableEntries[i].unshift({ text: this.synonyms[i].name });
         }
-        this.geneNames = this.ncbiNodes.map((node) => node.name);
+        this.geneNames = this.synonyms.map((node) => node.name);
         this.processUnmatchedNodes();
       });
   }
@@ -242,10 +261,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   // Process wrapper to convert domain data into string array that represents domain columns.
   processEnrichmentNodeArray(wrapper: EnrichmentWrapper): TableCell[] {
     const result: TableCell[] = [];
-    console.log(wrapper.regulon.result.regulator_family);
     if (this.domains.includes('Regulon')) {
       if (wrapper.regulon.result !== null) {
-        result[this.domains.indexOf('Regulon') + 2] = (
+        result[this.columnOrder.indexOf('Regulon')] = (
           wrapper.regulon.result.regulator_family
             ? {
                 text: wrapper.regulon.result.regulator_family,
@@ -262,7 +280,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
                 },
               }
         );
-        result[this.domains.indexOf('Regulon') + 3] = (
+        result[this.columnOrder.indexOf('Regulon 2')] = (
           wrapper.regulon.result.activated_by
             ? {
                 text: wrapper.regulon.result.activated_by.join('; '),
@@ -279,7 +297,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
                 },
               }
         );
-        result[this.domains.indexOf('Regulon') + 4] = (
+        result[this.columnOrder.indexOf('Regulon 3')] = (
           wrapper.regulon.result.repressed_by
             ? {
                 text: wrapper.regulon.result.repressed_by.join('; '),
@@ -298,12 +316,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         );
       } else {
         for (let i = 0; i < 3; i++) {
-          result[this.domains.indexOf('Regulon') + i + 2] = ({ text: '' });
+          result[this.columnOrder.indexOf('Regulon') + i] = ({ text: '' });
         }
       }
     }
     if (this.domains.includes('UniProt')) {
-      result[this.domains.indexOf('UniProt') + 2] = (
+      result[this.columnOrder.indexOf('UniProt')] = (
         wrapper.uniprot.result
           ? {
               text: wrapper.uniprot.result.function,
@@ -316,7 +334,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       );
     }
     if (this.domains.includes('String')) {
-      result[this.domains.indexOf('String') + 2] = (
+      result[this.columnOrder.indexOf('String')] = (
         wrapper.string.result
           ? {
               text:
@@ -339,7 +357,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       );
     }
     if (this.domains.includes('GO')) {
-      result[this.domains.indexOf('GO') + 2] = (
+      result[this.columnOrder.indexOf('GO')] = (
         wrapper.go.result
           ? {
               text: this.processGoWrapper(wrapper.go.result),
@@ -359,7 +377,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       );
     }
     if (this.domains.includes('Biocyc')) {
-      result[this.domains.indexOf('Biocyc') + 2] = (
+      result[this.columnOrder.indexOf('Biocyc')] = (
         wrapper.biocyc.result
           ? wrapper.biocyc.result.pathways
             ? {
@@ -379,7 +397,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           : { text: '' }
       );
     }
-    console.log(result);
     return result;
   }
 
