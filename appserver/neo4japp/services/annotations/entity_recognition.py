@@ -844,19 +844,25 @@ class EntityRecognitionService:
             nlp_predicted_type = token.token_type
 
         if token.keyword.startswith(self.greek_symbols):
-            tmp = ''
+            tmp_char_positions = {k: v for k, v in token.char_positions.items()}
+            keys = list(tmp_char_positions)
+            counter = 0
             for c in token.keyword:
-                if c not in self.greek_symbols:
-                    tmp += c
+                if c in self.greek_symbols:
+                    counter += 1
+                else:
+                    break
+            for i in range(0, counter):
+                tmp_char_positions.pop(keys[i])
 
-            if tmp:
-                token = PDFTokenPositions(
-                    page_number=token.page_number,
-                    keyword=tmp,
-                    normalized_keyword=normalize_str(tmp),
-                    char_positions=token.char_positions,
-                    token_type=token.token_type
-                )
+            new_token_keyword = token.keyword[counter:]
+            token = PDFTokenPositions(
+                page_number=token.page_number,
+                keyword=new_token_keyword,
+                normalized_keyword=normalize_str(new_token_keyword),
+                char_positions=tmp_char_positions,
+                token_type=token.token_type
+            )
 
         if synonym:
             lookup_key = normalize_str(synonym)
