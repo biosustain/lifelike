@@ -46,6 +46,9 @@ paramiko = "==2.7.2"
 google-cloud-storage = "*"
 fastjsonschema = "*"
 pexpect = "*"
+deepdiff = "*"
+marshmallow-dataclass = "*"
+marshmallow-enum = "*"
 
 [requires]
 python_version = "3.8.2"

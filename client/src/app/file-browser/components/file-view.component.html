@@ -127,6 +127,11 @@
             </div>
 
             <button type="button" class="btn btn-secondary"
+                    [disabled]="!ready" (click)="openFileAnnotationHistoryDialog()"
+                    ngbTooltip="File Annotation History" placement="bottom">
+              <i class="fas fa-fw fa-history"></i>
+            </button>
+            <button type="button" class="btn btn-secondary"
                     [disabled]="!ready" (click)="openFileNavigatorPane()"
                     ngbTooltip="File Navigator" placement="bottom">
               <i class="fas fa-fw fa-compass"></i>

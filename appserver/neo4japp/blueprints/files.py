@@ -507,6 +507,7 @@ def get_file_info(id: str, project_name: str):
         'description': file.description,
         'username': file.user.username,
         'creation_date': file.creation_date,
+        'dir_id': file.dir_id,
         'modified_date': file.modified_date,
         'doi': file.doi,
         'upload_url': file.upload_url,
@@ -781,7 +782,7 @@ def remove_custom_annotation(file_id, uuid, removeAll, project_name):
     yield user, project
 
     removed_annotation_uuids = manual_annotations_service.remove_inclusions(
-        project.id, file_id, uuid, removeAll
+        project.id, file_id, uuid, removeAll, user_id=user.id
     )
 
     yield jsonify(removed_annotation_uuids)

@@ -32,6 +32,7 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { DefaultMap } from '../../shared/utils/collections';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { FileSelectionDialogComponent } from '../components/dialog/file-selection-dialog.component';
+import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 
 @Injectable()
 export class FilesystemObjectActions {
@@ -323,6 +324,14 @@ export class FilesystemObjectActions {
     return dialogRef.result.then(() => {
       return this.delete(objects);
     });
+  }
+
+  openFileAnnotationHistoryDialog(object: FilesystemObject): Promise<any> {
+    const dialogRef = this.modalService.open(FileAnnotationHistoryDialogComponent, {
+      size: 'lg',
+    });
+    dialogRef.componentInstance.object = object;
+    return dialogRef.result;
   }
 
   // ========================================
