@@ -30,6 +30,12 @@ export class EnrichmentTableCreateDialogComponent extends CommonFormDialogCompon
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
+
+    // Each domain is checked by default so add them to the list
+    const formArray: FormArray = this.form.get('domainsList') as FormArray;
+    this.checks.forEach(check => {
+      formArray.push(new FormControl(check));
+    });
   }
 
   getValue() {
@@ -65,5 +71,3 @@ export class EnrichmentTableCreateDialogComponent extends CommonFormDialogCompon
     }
   }
 }
-
-
