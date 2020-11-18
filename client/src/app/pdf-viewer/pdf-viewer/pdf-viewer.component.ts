@@ -204,7 +204,7 @@ export class PdfViewerComponent
       ? `https://unpkg.com/pdfjs-dist@${(PDFJS as any).version}/cmaps/`
       : null;
   private internalRenderText = true;
-  private internalRenderTextMode: RenderTextMode = RenderTextMode.ENABLED;
+  private internalRenderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
   private internalStickToPage = false;
   private internalOriginalSize = true;
   private internalPdf: PDFDocumentProxy;
@@ -484,7 +484,7 @@ export class PdfViewerComponent
       linkService: this.pdfMultiPageLinkService,
       textLayerMode: this.internalRenderText
         ? this.internalRenderTextMode
-        : RenderTextMode.DISABLED,
+        : RenderTextMode.ENHANCED,
       findController: this.pdfMultiPageFindController
     };
 
@@ -537,7 +537,7 @@ export class PdfViewerComponent
       linkService: this.pdfSinglePageLinkService,
       textLayerMode: this.internalRenderText
         ? this.internalRenderTextMode
-        : RenderTextMode.DISABLED,
+        : RenderTextMode.ENHANCED,
       findController: this.pdfSinglePageFindController
     };
 
