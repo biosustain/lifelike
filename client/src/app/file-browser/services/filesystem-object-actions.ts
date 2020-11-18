@@ -135,7 +135,7 @@ export class FilesystemObjectActions {
     return dialogRef.result.then((result) => {
       const progressDialogRef = this.createProgressDialog('Creating map...');
 
-      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
       return this.filesService.addGeneList(parent.locator.projectName, parent.directory.id, enrichmentData, result.description, result.name)
           .pipe(
               this.errorHandler.create(),
@@ -167,7 +167,7 @@ export class FilesystemObjectActions {
     return dialogRef.result.then((result) => {
       const progressDialogRef = this.createProgressDialog('Saving changes...');
 
-      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
       return this.filesService.editGeneList(
           target.locator.projectName,
           target.id,

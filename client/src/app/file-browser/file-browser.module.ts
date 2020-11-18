@@ -24,10 +24,11 @@ import { EnrichmentTableEditDialogComponent } from './components/enrichment-tabl
 import { FilesystemService } from './services/filesystem.service';
 import { FileListComponent } from './components/file-list.component';
 import { FilesystemObjectActions } from './services/filesystem-object-actions';
+import { EnrichmentTableOrderDialogComponent } from './components/enrichment-table-order-dialog.component';
 import { FileAnnotationHistoryDialogComponent } from './components/dialog/file-annotation-history-dialog.component';
 import { FileAnnotationHistoryComponent } from './components/file-annotation-history.component';
-import { FileSelectionDialogComponent } from './components/dialog/file-selection-dialog.component';
 import { ObjectUploadDialogComponent } from './components/object-upload-dialog.component';
+import { FileSelectionDialogComponent } from './components/dialog/file-selection-dialog.component';
 
 @NgModule({
   declarations: [
@@ -51,6 +52,7 @@ import { ObjectUploadDialogComponent } from './components/object-upload-dialog.c
     EnrichmentTableViewerComponent,
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,
+    EnrichmentTableOrderDialogComponent,
     FileSelectionDialogComponent,
     FileListComponent,
     FileAnnotationHistoryDialogComponent,
@@ -72,6 +74,7 @@ import { ObjectUploadDialogComponent } from './components/object-upload-dialog.c
     ObjectDeletionResultDialogComponent,
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,
+    EnrichmentTableOrderDialogComponent,
     FileSelectionDialogComponent,
     FileAnnotationHistoryDialogComponent,
     FileAnnotationHistoryComponent,
