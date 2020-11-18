@@ -38,7 +38,7 @@ def create_annotations_from_text(text, title):
 
     with app.app_context():
         try:
-            bioc_json = create_annotations_helper(
+            pdf_text, bioc_json = create_annotations_helper(
                 annotation_method='Rules Based',
                 specified_organism_synonym='',
                 specified_organism_tax_id='',
@@ -48,7 +48,7 @@ def create_annotations_from_text(text, title):
 
             nlp_annotations_list.append((NLPAnnotations(
                 filename=title,
-                text=text,
+                text=pdf_text,
             ), bioc_json))
         except Exception as ex:
             raise ex
@@ -121,6 +121,71 @@ def mp_text_to_pubtator2(line):
     client.close()
 
 
+def mp_text_to_pubtator(
+    text,
+    chem_file,
+    gene_file,
+    disease_file,
+    species_file
+):
+    title = 'Nurnberg_et_al._PLOS_Genetics_2020'
+    identifier = '12345678'
+    results = create_annotations_from_text(text, f'{title}')
+
+    add_offset = False
+    offset_length = len(f'{title}') + 1 if add_offset else 0
+
+    chem_mem = StringIO()
+    gene_mem = StringIO()
+    disease_mem = StringIO()
+    species_mem = StringIO()
+
+    pdf_text = results[0][0].text
+
+    for mem_file in [chem_mem, gene_mem, disease_mem, species_mem]:
+        print(f'{identifier}|t|{title}', file=mem_file)
+        print(f'{identifier}|a|{pdf_text}', file=mem_file)
+
+    for (_, bioc_json) in results:
+        nlp_annotations = bioc_json['documents'][0]['passages'][0]['annotations']
+
+        for annotation in nlp_annotations:
+            lo_offset = annotation['loLocationOffset'] + offset_length
+            hi_offset = annotation['hiLocationOffset'] + offset_length
+            keyword = annotation['textInDocument']
+            keyword_type = annotation['meta']['type']
+            id = annotation['meta']['id']
+
+            if keyword_type == EntityType.CHEMICAL.value:
+                print(
+                    f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
+                    file=chem_mem,
+                )
+            elif keyword_type == EntityType.GENE.value:
+                print(
+                    f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
+                    file=gene_mem,
+                )
+            elif keyword_type == EntityType.DISEASE.value:
+                print(
+                    f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
+                    file=disease_mem,
+                )
+            elif keyword_type == EntityType.SPECIES.value:
+                print(
+                    f'{identifier}\t{lo_offset}\t{hi_offset}\t{keyword}\t{keyword_type}\t{id}',
+                    file=species_mem,
+                )
+
+    print(chem_mem.getvalue(), file=chem_file)
+    print(gene_mem.getvalue(), file=gene_file)
+    print(disease_mem.getvalue(), file=disease_file)
+    print(species_mem.getvalue(), file=species_file)
+
+    for mem_file in [chem_mem, gene_mem, disease_mem, species_mem]:
+        mem_file.close()
+
+
 def text_to_pubtator2():
     def get_data():
         with open(os.path.join(directory, 'abstracts/data-1602546717626.csv')) as path_file:
@@ -131,32 +196,51 @@ def text_to_pubtator2():
         pool.map(mp_text_to_pubtator2, get_data())
 
 
+def text_to_pubtator(
+    chem_file,
+    gene_file,
+    disease_file,
+    species_file
+):
+    with open(os.path.join(directory, 'abstracts/Nurnberg_et_al._PLOS_Genetics_2020.txt')) as path_file:  # noqa
+        file_str = path_file.read().replace('\n', ' ')
+
+    mp_text_to_pubtator(file_str, chem_file, gene_file, disease_file, species_file)
+
+
 def main():
-    # chemical_pubtator = open(os.path.join(directory, 'chemical_pubtator.txt'), 'w+')
-    # gene_pubtator = open(os.path.join(directory, 'gene_pubtator.txt'), 'w+')
-    # disease_pubtator = open(os.path.join(directory, 'disease_pubtator.txt'), 'w+')
-    # species_pubtator = open(os.path.join(directory, 'species_pubtator.txt'), 'w+')
+    chemical_pubtator = open(os.path.join(directory, 'chemical_pubtator.txt'), 'w+')
+    gene_pubtator = open(os.path.join(directory, 'gene_pubtator.txt'), 'w+')
+    disease_pubtator = open(os.path.join(directory, 'disease_pubtator.txt'), 'w+')
+    species_pubtator = open(os.path.join(directory, 'species_pubtator.txt'), 'w+')
 
-    text_to_pubtator2()
+    # text_to_pubtator2()
 
-    client = paramiko.SSHClient()
-    client.load_system_host_keys()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect('', username='', password='')
-    sftp = client.open_sftp()
-    date = datetime.now()
-    sftp.put(
-        os.path.join(directory, 'processed_records.txt'),
-        f'/home/jining/processed_nlp_dict_training_data/processed_records-{date}.txt')  # noqa
-    sftp.put(
-        os.path.join(directory, 'errors.txt'),
-        f'/home/jining/processed_nlp_dict_training_data/errors-{date}.txt')  # noqa
+    text_to_pubtator(
+        chemical_pubtator,
+        gene_pubtator,
+        disease_pubtator,
+        species_pubtator
+    )
 
-    client.close()
-    sftp.close()
+    # client = paramiko.SSHClient()
+    # client.load_system_host_keys()
+    # client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # client.connect('', username='', password='')
+    # sftp = client.open_sftp()
+    # date = datetime.now()
+    # sftp.put(
+    #     os.path.join(directory, 'processed_records.txt'),
+    #     f'/home/jining/processed_nlp_dict_training_data/processed_records-{date}.txt')  # noqa
+    # sftp.put(
+    #     os.path.join(directory, 'errors.txt'),
+    #     f'/home/jining/processed_nlp_dict_training_data/errors-{date}.txt')  # noqa
 
-    # for f in [chemical_pubtator, gene_pubtator, disease_pubtator, species_pubtator]:
-    #     f.close()
+    # client.close()
+    # sftp.close()
+
+    for f in [chemical_pubtator, gene_pubtator, disease_pubtator, species_pubtator]:
+        f.close()
 
 
 if __name__ == '__main__':
