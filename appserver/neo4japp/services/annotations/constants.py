@@ -68,7 +68,7 @@ SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial', 'pigs', 
 # utf-32 unicode
 # can search these up here: https://www.fileformat.info/info/unicode/index.htm
 MISC_SYMBOLS_AND_CHARS = {8211, 160, 8220, 8221, 8216, 8217, 183, 61623}
-GREEK_SYMBOLS = {916}  # just delta for now
+GREEK_SYMBOLS = {916, 8710}  # just delta unicodes for now
 
 COMMON_TYPOS = {
     'Multiple Mitochondrial Dysfunctions Syndromes': ['Multiple Mitochondrial Dysfunctions Syndrome'],  # noqa
