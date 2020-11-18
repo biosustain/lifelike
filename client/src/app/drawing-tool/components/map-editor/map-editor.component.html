@@ -18,7 +18,7 @@
           <button type="button" class="module-title-bar-back mr-2" (click)="goToReturnUrl()" *ngIf="returnUrl">
             <i class="fa fa-fw fa-arrow-left"></i>
           </button>
-          <h1 class="module-title text-truncate" (click)="displayEditDialog()">
+          <h1 class="module-title text-truncate" (click)="displayEditDialog()" draggable="true" (dragstart)="this.dragStarted($event)">
             {{ map?.label }}
           </h1>
           <div class="text-danger ml-2" *ngIf="unsavedChanges$.value; else saved">
@@ -84,23 +84,11 @@
             </button>
           </div>
 
-          <div class="input-group ml-2" style="width: 300px;">
-            <input [(ngModel)]='entitySearchTerm' (change)='search()' type="text" class="form-control" placeholder="Search" aria-label="Graph search" aria-describedby="graph-search">
-            <div *ngIf='entitySearchList.length' class="input-group-append">
-              <span class="input-group-text" id="increment-btn">
-                {{entitySearchListIdx+1}} of {{entitySearchList.length}}
-              </span>
-            </div>
-            <div class="input-group-append" id="decrement-btn">
-              <button class="btn btn-secondary" type="button" (click)="previous()"
-                      [disabled]="entitySearchList.length == 0">
-                <i class="fa fa-fw fa-chevron-up"></i>
-              </button>
-              <button class="btn btn-secondary" type="button" (click)="next()"
-                      [disabled]="entitySearchList.length == 0">
-                <i class="fa fa-fw fa-chevron-down"></i>
-              </button>
-            </div>
+          <div class="ml-2" style="width: 300px;">
+            <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
+                                [resultIndex]="entitySearchListIdx" [resultCount]="entitySearchList.length"
+                                (previous)="previous()" (next)="next()">
+            </app-search-control>
           </div>
         </div>
       </div>
