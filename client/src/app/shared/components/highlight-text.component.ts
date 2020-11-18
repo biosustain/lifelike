@@ -86,7 +86,7 @@ export class HighlightTextComponent {
 
     if (uploadUrl != null) {
       sources.push({
-        domain: 'Upload URL',
+        domain: 'External URL',
         url: uploadUrl,
       });
     }
