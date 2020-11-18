@@ -274,4 +274,4 @@ def create_annotations(
         f'Time to create annotations {time.time() - start}',
         extra=EventLog(event_type='annotations').to_dict()
     )
-    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+    return pdf_text, bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
