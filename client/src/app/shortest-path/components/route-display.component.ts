@@ -96,14 +96,16 @@ export class RouteDisplayComponent {
       color.push(node.color.border);
     });
 
-    const sankeyEdgeSet = new Set<number[]>();
+    const seenEdges = new Map<string, number>();
     edges.forEach(edge => {
       const sankeyEdge = [nodeIdentityMap.get(edge.from), nodeIdentityMap.get(edge.to)];
-      if (!sankeyEdgeSet.has(sankeyEdge)) {
-        sankeyEdgeSet.add(sankeyEdge);
+      if (seenEdges.has(sankeyEdge.toString())) {
+        value[seenEdges.get(sankeyEdge.toString())] += 1;
+      } else {
         source.push(sankeyEdge[0]);
         target.push(sankeyEdge[1]);
         value.push(1);
+        seenEdges.set(sankeyEdge.toString(), value.length - 1);
       }
     });
 
