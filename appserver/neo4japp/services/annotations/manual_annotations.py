@@ -18,6 +18,7 @@ from neo4japp.models import (
     FileContent,
     GlobalList,
 )
+from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.services.annotations.constants import ManualAnnotationType
 
 
@@ -109,12 +110,21 @@ class ManualAnnotationsService:
                 file.content_id
             )
 
+        version = FileAnnotationsVersion()
+        version.cause = AnnotationChangeCause.USER
+        version.file = file
+        version.custom_annotations = file.custom_annotations
+        version.excluded_annotations = file.excluded_annotations
+        version.user_id = user_id
+        db.session.add(version)
+
         file.custom_annotations = [*inclusions, *file.custom_annotations]
+
         db.session.commit()
 
         return inclusions
 
-    def remove_inclusions(self, project_id, file_id, uuid, remove_all):
+    def remove_inclusions(self, project_id, file_id, uuid, remove_all, user_id):
         """ Removes custom annotation from a given file.
         If remove_all is True, removes all custom annotations with matching term and entity type.
 
@@ -145,9 +155,18 @@ class ManualAnnotationsService:
         else:
             removed_annotation_uuids = [uuid]
 
+        version = FileAnnotationsVersion()
+        version.cause = AnnotationChangeCause.USER
+        version.file = file
+        version.custom_annotations = file.custom_annotations
+        version.excluded_annotations = file.excluded_annotations
+        version.user_id = user_id
+        db.session.add(version)
+
         file.custom_annotations = [
             ann for ann in file.custom_annotations if ann['uuid'] not in removed_annotation_uuids
         ]
+
         db.session.commit()
 
         return removed_annotation_uuids
@@ -175,7 +194,16 @@ class ManualAnnotationsService:
                 file.content_id
             )
 
+        version = FileAnnotationsVersion()
+        version.cause = AnnotationChangeCause.USER
+        version.file = file
+        version.custom_annotations = file.custom_annotations
+        version.excluded_annotations = file.excluded_annotations
+        version.user_id = user_id
+        db.session.add(version)
+
         file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
+
         db.session.commit()
 
     def remove_exclusion(self, project_id, file_id, user_id, entity_type, term):
@@ -187,6 +215,14 @@ class ManualAnnotationsService:
         ).one_or_none()
         if file is None:
             raise RecordNotFoundException('File does not exist')
+
+        version = FileAnnotationsVersion()
+        version.cause = AnnotationChangeCause.USER
+        version.file = file
+        version.custom_annotations = file.custom_annotations
+        version.excluded_annotations = file.excluded_annotations
+        version.user_id = user_id
+        db.session.add(version)
 
         initial_length = len(file.excluded_annotations)
         file.excluded_annotations = [

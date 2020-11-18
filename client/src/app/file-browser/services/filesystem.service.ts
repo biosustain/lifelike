@@ -4,25 +4,31 @@ import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ProjectPageService } from './project-page.service';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { map } from 'rxjs/operators';
+import { FileAnnotationHistory } from '../models/file-annotation-history';
+import { HttpClient } from '@angular/common/http';
+import { ApiService } from '../../shared/services/api.service';
+import { FileAnnotationHistoryResponse } from '../schema';
+import { PaginatedRequestOptions } from '../../interfaces/shared.interface';
+import { serializePaginatedParams } from '../../shared/utils/params';
 
 @Injectable()
 export class FilesystemService {
   protected lmdbsDates = new BehaviorSubject<object>({});
 
-  constructor(private readonly filesService: PdfFilesService,
-              private readonly router: Router,
-              private readonly snackBar: MatSnackBar,
-              private readonly modalService: NgbModal,
-              private readonly progressDialog: ProgressDialog,
-              private readonly errorHandler: ErrorHandler,
-              private readonly route: ActivatedRoute,
-              private readonly projectPageService: ProjectPageService) {
+  constructor(protected readonly filesService: PdfFilesService,
+              protected readonly router: Router,
+              protected readonly snackBar: MatSnackBar,
+              protected readonly modalService: NgbModal,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly route: ActivatedRoute,
+              protected readonly projectPageService: ProjectPageService,
+              protected readonly http: HttpClient,
+              protected readonly apiService: ApiService) {
     this.filesService.getLMDBsDates().subscribe(lmdbsDates => {
       this.lmdbsDates.next(lmdbsDates);
     });
@@ -30,8 +36,8 @@ export class FilesystemService {
 
   get(locator: PathLocator): Observable<FilesystemObject> {
     return this.projectPageService.getDirectory(
-        locator.projectName,
-        locator.directoryId,
+      locator.projectName,
+      locator.directoryId,
     ).pipe(map(result => {
       const object = new FilesystemObject();
       object.type = 'dir';
@@ -66,6 +72,23 @@ export class FilesystemService {
     }));
   }
 
+  /**
+   * Get the annotation history for a file.
+   * @param hashId the file hash ID
+   * @param options additional options
+   */
+  getAnnotationHistory(hashId: string, options: Partial<PaginatedRequestOptions> = {}):
+    Observable<FileAnnotationHistory> {
+    return this.http.get<FileAnnotationHistoryResponse>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotation-history`, {
+        ...this.apiService.getHttpOptions(true),
+        params: serializePaginatedParams(options, false),
+      },
+    ).pipe(
+      map(data => new FileAnnotationHistory().update(data)),
+    );
+  }
+
   annotate(object: FilesystemObject): Subscription {
     return this.lmdbsDates.subscribe(data => {
       object.children.items.forEach((child: FilesystemObject) => {
@@ -79,14 +102,14 @@ export class FilesystemService {
 
   private generateTooltipContent(file: PdfFile): string {
     const outdated = Array
-        .from(Object.entries(this.lmdbsDates))
-        .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
+      .from(Object.entries(this.lmdbsDates))
+      .filter(([, date]: [string, string]) => Date.parse(date) >= Date.parse(file.annotations_date));
     if (outdated.length === 0) {
       return '';
     }
     return outdated.reduce(
-        (tooltip: string, [name, date]: [string, string]) => `${tooltip}\n- ${name}, ${new Date(date).toDateString()}`,
-        'Outdated:',
+      (tooltip: string, [name, date]: [string, string]) => `${tooltip}\n- ${name}, ${new Date(date).toDateString()}`,
+      'Outdated:',
     );
   }
 }

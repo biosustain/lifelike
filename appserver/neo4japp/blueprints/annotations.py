@@ -4,7 +4,7 @@ import sqlalchemy as sa
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from flask import (
     Blueprint,
@@ -31,6 +31,7 @@ from neo4japp.database import (
 )
 from neo4japp.data_transfer_objects import AnnotationRequest, GlobalAnnotationData
 from neo4japp.data_transfer_objects.common import ResultList
+from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.request_schemas.annotations import GlobalAnnotationsDeleteSchema
 from neo4japp.exceptions import (
     AnnotationError,
@@ -66,9 +67,11 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 def annotate(
     doc: Files,
+    cause: AnnotationChangeCause,
     specified_organism: Optional[FallbackOrganism] = None,
     annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
-):
+    user_id: int = None,
+) -> Tuple[Dict, Dict]:
     annotations_json = create_annotations(
         annotation_method=annotation_method,
         specified_organism_synonym=specified_organism.organism_synonym if specified_organism else '',  # noqa
@@ -89,7 +92,16 @@ def annotate(
     if specified_organism:
         update['fallback_organism'] = specified_organism
         update['fallback_organism_id'] = specified_organism.id
-    return update
+
+    version = {
+        'file_id': doc.id,
+        'cause': cause,
+        'custom_annotations': doc.custom_annotations,
+        'excluded_annotations': doc.excluded_annotations,
+        'user_id': user_id,
+    }
+
+    return update, version
 
 
 @bp.route('/<string:project_name>', methods=['GET'])
@@ -155,16 +167,15 @@ def annotate_file(req: AnnotationRequest, project_name: str, file_id: str):
         db.session.add(fallback)
         db.session.flush()
 
-    annotated: List[dict] = []
-    annotated.append(
-        annotate(
-            doc=doc,
-            annotation_method=req.annotation_method,
-            specified_organism=fallback
-        )
+    update, version = annotate(
+        doc=doc,
+        cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
+        annotation_method=req.annotation_method,
+        specified_organism=fallback
     )
 
-    db.session.bulk_update_mappings(Files, annotated)
+    db.session.bulk_insert_mappings(FileAnnotationsVersion, [version])
+    db.session.bulk_update_mappings(Files, [update])
     db.session.commit()
     yield SuccessResponse(
         result={
@@ -203,23 +214,27 @@ def reannotate(req: AnnotationRequest, project_name: str):
         outcome[not_found] = AnnotationOutcome.NOT_FOUND.value
 
     updated_files: List[dict] = []
+    versions: List[dict] = []
 
     for f in files:
         try:
-            annotations = annotate(
+            update, version = annotate(
                 doc=f,
+                cause=AnnotationChangeCause.USER_REANNOTATION,
                 specified_organism=FallbackOrganism.query.get(f.fallback_organism_id))
         except AnnotationError as e:
             current_app.logger.error(
                 'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
             outcome[f.file_id] = AnnotationOutcome.NOT_ANNOTATED.value
         else:
-            updated_files.append(annotations)
+            updated_files.append(update)
+            versions.append(version)
             current_app.logger.debug(
                 'File successfully reannotated: %s, %s', f.file_id, f.filename)
             outcome[f.file_id] = AnnotationOutcome.ANNOTATED.value
 
     # low level fast bulk operation
+    db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
     db.session.bulk_update_mappings(Files, updated_files)
     db.session.commit()
     yield SuccessResponse(result=outcome, status_code=200)
