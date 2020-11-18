@@ -2,7 +2,6 @@ import { cloneDeep, uniqueId } from 'lodash';
 import { Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
 import { BehaviorSubject, combineLatest, Subject, Subscription } from 'rxjs';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { AnnotationType, DatabaseType, Hyperlink } from 'app/shared/constants';
 
 import { PdfAnnotationsService } from '../../drawing-tool/services';
 
@@ -30,6 +29,8 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { FilesystemObjectActions } from '../services/filesystem-object-actions';
+import { pdfFileToFilesystemObject } from '../utils/objects';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -116,6 +117,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     private readonly errorHandler: ErrorHandler,
     private readonly progressDialog: ProgressDialog,
     private readonly workSpaceManager: WorkspaceManager,
+    private readonly filesystemObjectActions: FilesystemObjectActions,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
 
@@ -604,6 +606,14 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   openFileNavigatorPane() {
     const url = `/file-navigator/${this.projectName}/${this.pdfFile.file_id}`;
     this.workSpaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
+  }
+
+  openFileAnnotationHistoryDialog() {
+    this.filesystemObjectActions.openFileAnnotationHistoryDialog(
+      pdfFileToFilesystemObject(this.pdfFile),
+    ).then(() => {
+    }, () => {
+    });
   }
 
   isPendingScroll() {
