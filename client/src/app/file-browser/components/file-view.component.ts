@@ -217,6 +217,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.invalidateEntityTypeVisibility();
   }
 
+  enableEntityTypeVisibility(annotation: Annotation) {
+    this.entityTypeVisibilityMap.set(annotation.meta.type, true);
+    this.invalidateEntityTypeVisibility();
+  }
+
   invalidateEntityTypeVisibility() {
     // Keep track if the user has some entity types disabled
     let entityTypeVisibilityChanged = false;
@@ -252,6 +257,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           (annotations: Annotation[]) => {
             progressDialogRef.close();
             this.addedAnnotations = annotations;
+            this.enableEntityTypeVisibility(annotations[0]);
             this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
           },
           err => {
