@@ -11,6 +11,7 @@ from neo4japp.services.annotations.constants import (
     COMMON_TYPOS,
     EntityType,
     EntityIdStr,
+    GREEK_SYMBOLS,
     ManualAnnotationType,
     ABBREVIATION_WORD_LENGTH,
     SPECIES_EXCLUSION
@@ -48,6 +49,7 @@ class EntityRecognitionService:
     ) -> None:
         self.lmdb_session = lmdb_session
         self.annotation_neo4j = annotation_neo4j
+        self.greek_symbols = tuple([chr(g) for g in GREEK_SYMBOLS])
 
         # for inclusions, structured the same as LMDB
         self._inclusion_type_anatomy: Dict[str, List[dict]] = {}
@@ -908,6 +910,27 @@ class EntityRecognitionService:
 
         if token.token_type:
             nlp_predicted_type = token.token_type
+
+        if token.keyword.startswith(self.greek_symbols):
+            tmp_char_positions = {k: v for k, v in token.char_positions.items()}
+            keys = list(tmp_char_positions)
+            counter = 0
+            for c in token.keyword:
+                if c in self.greek_symbols:
+                    counter += 1
+                else:
+                    break
+            for i in range(0, counter):
+                tmp_char_positions.pop(keys[i])
+
+            new_token_keyword = token.keyword[counter:]
+            token = PDFTokenPositions(
+                page_number=token.page_number,
+                keyword=new_token_keyword,
+                normalized_keyword=normalize_str(new_token_keyword),
+                char_positions=tmp_char_positions,
+                token_type=token.token_type
+            )
 
         if synonym:
             lookup_key = normalize_str(synonym)
