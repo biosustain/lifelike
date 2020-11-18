@@ -503,6 +503,7 @@ def get_file_info(id: str, project_name: str):
     return jsonify({
         'id': file.id,  # TODO: is this of any use?
         'file_id': file.file_id,
+        'dir_id': file.dir_id,
         'filename': file.filename,
         'description': file.description,
         'username': file.user.username,
@@ -516,18 +517,10 @@ def get_file_info(id: str, project_name: str):
 
 @newbp.route('/<string:project_name>/files/<string:file_id>/associated-maps', methods=['GET'])
 @auth.login_required
-@requires_project_permission(AccessActionType.READ)
 def get_associated_maps(file_id: str, project_name: str):
     user = g.current_user
 
-    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if projects is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    yield user, projects
-
-    # Limit length of string just in case
-    file_id = file_id[:100]
+    file = get_file(file_id, user, AccessActionType.READ)
 
     query = f"""
     SELECT
@@ -594,14 +587,27 @@ def get_associated_maps(file_id: str, project_name: str):
         for (dir_id, project_name) in directory_project_query_result
     }
 
-    yield jsonify([
-        {
+    return jsonify({
+        'file': {
+            'id': file.id,  # TODO: is this of any use?
+            'file_id': file.file_id,
+            'dir_id': file.dir_id,
+            'filename': file.filename,
+            'description': file.description,
+            'username': file.user.username,
+            'creation_date': file.creation_date,
+            'modified_date': file.modified_date,
+            'doi': file.doi,
+            'upload_url': file.upload_url,
+            'project_name': file.project_.project_name,
+        },
+        'results': [{
             'hash_id': row[1],
             'label': row[2],
             'author': row[3],
             'project_name': dir_project_map[row[4]]
-        } for row in results
-    ])
+        } for row in results],
+    })
 
 
 @newbp.route('/<string:project_name>/files/<string:id>', methods=['GET', 'PATCH'])
