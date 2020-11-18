@@ -567,7 +567,7 @@ export class WorkspaceManager {
   navigateByUrl(url: string | UrlTree, extras?: NavigationExtras & WorkspaceNavigationExtras): Promise<boolean> {
     extras = extras || {};
 
-    const withinWorkspace = this.isWithinWorkspace;
+    const withinWorkspace = this.isWithinWorkspace();
 
     if (withinWorkspace) {
       let targetPane = this.focusedPane || this.panes.getFirstOrCreate();
