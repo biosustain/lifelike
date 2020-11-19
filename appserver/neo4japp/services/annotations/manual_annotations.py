@@ -69,15 +69,19 @@ class ManualAnnotationsService:
             if file_content is None:
                 raise RecordNotFoundException('Content for a given file does not exist')
 
+            # TODO: make use of ./service_helpers.py to be consistent
+            # and avoid code change bugs
             fp = io.BytesIO(file_content.raw_file)
             pdf_parser = get_annotations_pdf_parser()
-            parsed_pdf_chars = pdf_parser.parse_pdf(pdf=fp)
+            parsed = pdf_parser.parse_pdf(pdf=fp)
             fp.close()
-            tokens = pdf_parser.extract_tokens(parsed_chars=parsed_pdf_chars)
+            tokens_list = pdf_parser.extract_tokens(parsed=parsed)
             annotator = get_annotations_service()
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
             matches = annotator.get_matching_manual_annotations(
-                keyword=term, is_case_insensitive=is_case_insensitive, tokens=tokens
+                keyword=term,
+                is_case_insensitive=is_case_insensitive,
+                tokens_list=tokens_list
             )
 
             def add_annotation(new_annotation):
