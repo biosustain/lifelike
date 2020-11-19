@@ -21,7 +21,7 @@ import {
   Rect,
 } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
-import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
+import {PdfViewerComponent, RenderTextMode} from './pdf-viewer/pdf-viewer.component';
 import { PDFPageViewport } from 'pdfjs-dist';
 import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -50,6 +50,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Input() debugMode: boolean;
   @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
   @Input() filterChanges: Observable<void>;
+  @Input() renderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
   currentHighlightAnnotationId: string | undefined;
   private filterChangeSubscription: Subscription;
 
