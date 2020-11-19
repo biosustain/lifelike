@@ -15,6 +15,7 @@ import { map } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { tokenizeQuery } from '../../shared/utils/find';
 
 @Component({
   selector: 'app-map',
@@ -216,7 +217,12 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   search() {
     if (this.entitySearchTerm.length) {
-      this.entitySearchList = this.graphCanvas.findMatching(this.entitySearchTerm.split(/ +/g));
+      this.entitySearchList = this.graphCanvas.findMatching(
+        tokenizeQuery(this.entitySearchTerm, {
+          singleTerm: true,
+        }), {
+        wholeWord: false,
+      });
       this.entitySearchListIdx = -1;
 
       this.graphCanvas.searchHighlighting.replace(this.entitySearchList);
