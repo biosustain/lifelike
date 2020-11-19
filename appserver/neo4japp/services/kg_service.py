@@ -1,4 +1,7 @@
 import attr
+import json
+import os
+
 from typing import Dict, List
 
 from flask import current_app
@@ -449,25 +452,38 @@ class KgService(HybridDBDao):
             3: 'SIRT5 to NFE2L2 Using Literature Data',
             4: 'CTNNB1 to Diarrhea Using Literature Data',
             5: 'Two pathways using BioCyc',
-            6: 'Glycolisis Regulon'
+            6: 'Glycolisis Regulon',
+            7: 'Serine',
         }
 
     def get_query_id_to_func_map(self):
         return {
-            0: self.get_three_hydroxisobuteric_acid_to_pykf_chebi_query,
-            1: self.get_three_hydroxisobuteric_acid_to_pykf_biocyc_query,
-            2: self.get_icd_to_rhse_query,
-            3: self.get_sirt5_to_nfe2l2_literature_query,
-            4: self.ctnnb1_to_diarrhea_literature_query,
-            5: self.get_two_pathways_biocyc_query,
-            6: self.get_glycolisis_regulon_query,
+            0: [self.get_data_from_query, self.get_three_hydroxisobuteric_acid_to_pykf_chebi_query],
+            1: [
+                self.get_data_from_query,
+                self.get_three_hydroxisobuteric_acid_to_pykf_biocyc_query
+            ],
+            2: [self.get_data_from_query, self.get_icd_to_rhse_query],
+            3: [self.get_data_from_query, self.get_sirt5_to_nfe2l2_literature_query],
+            4: [self.get_data_from_query, self.get_ctnnb1_to_diarrhea_literature_query],
+            5: [self.get_data_from_query, self.get_two_pathways_biocyc_query],
+            6: [self.get_data_from_query, self.get_glycolisis_regulon_query],
+            7: [self.get_data_from_file, 'serine.json']
         }
 
-    def get_shortest_path_query(self, query_id):
-        query_func = self.get_query_id_to_func_map()[query_id]
+    def get_shortest_path_data(self, query_id):
+        func, arg = self.get_query_id_to_func_map()[query_id]
+        return func(arg)
+
+    def get_data_from_query(self, query_func):
         query = query_func()
         result = self.graph.run(query).data()
         return self.get_nodes_and_edges_from_paths(result)
+
+    def get_data_from_file(self, filename):
+        directory = os.path.realpath(os.path.dirname(__file__))
+        with open(os.path.join(directory, f'./shortest-path-data/{filename}'), 'r') as data_file:
+            return json.load(data_file)
 
     def get_uniprot_genes_query(self):
         return """
@@ -584,7 +600,7 @@ class KgService(HybridDBDao):
             RETURN nodes(p) as nodes, relationships(p) as edges
         """
 
-    def ctnnb1_to_diarrhea_literature_query(self):
+    def get_ctnnb1_to_diarrhea_literature_query(self):
         return """
             MATCH (g:db_Literature:Gene {name:'CTNNB1'})-[:HAS_TAXONOMY]->(t:Taxonomy {id:'9606'})
             MATCH (d:Disease {name:'Diarrhea'})

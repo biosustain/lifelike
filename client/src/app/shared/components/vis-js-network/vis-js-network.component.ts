@@ -40,7 +40,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
       this.config
     );
     this.setupEventBinds();
-    this.networkGraph.stabilize(100);
+    this.networkGraph.stabilize(500);
   }
 
   setNetworkData() {

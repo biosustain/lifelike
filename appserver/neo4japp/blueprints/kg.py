@@ -125,7 +125,7 @@ def get_ncbi_enrichment_domains():
 @auth.login_required
 def get_shortest_path_query_result(query_id):
     kg = get_kg_service()
-    result = kg.get_shortest_path_query(query_id)
+    result = kg.get_shortest_path_data(query_id)
     return jsonify({'result': result}), 200
 
 
