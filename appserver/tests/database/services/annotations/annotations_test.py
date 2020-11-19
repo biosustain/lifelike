@@ -1345,3 +1345,38 @@ def test_no_annotation_for_abbreviation(
     assert len(annotations) == 2
     assert annotations[0].keyword == 'Pentose Phosphate Pathway'
     assert annotations[1].keyword == 'Pentose Phosphate Pathway'
+
+
+def test_delta_gene_deletion_detected(
+    gene_organism_escherichia_coli_pdf_lmdb_setup,
+    mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf,
+    get_annotations_service,
+    entity_service
+):
+    annotation_service = get_annotations_service
+    pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_service
+
+    pdf = path.join(
+        directory,
+        'pdf_samples/annotations_test/test_delta_gene_deletion_detected.pdf')
+
+    with open(pdf, 'rb') as f:
+        parsed = pdf_parser.parse_pdf(pdf=f)
+        tokens = pdf_parser.extract_tokens(parsed=parsed)
+
+        lookup_entities(entity_service=entity_service, tokens_list=tokens)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            excluded_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
+        )
+
+    assert len(annotations) == 4
+    assert annotations[0].keyword == 'purB'
+    assert annotations[1].keyword == 'purC'
+    assert annotations[2].keyword == 'purF'
