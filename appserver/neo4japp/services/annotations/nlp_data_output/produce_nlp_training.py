@@ -11,7 +11,7 @@ from neo4japp.data_transfer_objects import SpecifiedOrganismStrain
 from neo4japp.factory import create_app
 from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.annotations.service_helpers import (
-    create_annotations as create_annotations_helper
+    create_annotations2 as create_annotations_helper
 )
 
 import base64
