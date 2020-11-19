@@ -221,8 +221,8 @@
                 <i class="fa fa-fw fa-trash"></i>
               </button>
 
-              <button class="btn btn-secondary ml-4" ngbTooltip="Project Entity Cloud"
-                      (click)="openEntityCloudPane()">
+              <button #entityCloudBtn class="btn btn-secondary ml-4" ngbTooltip="Project Entity Cloud"
+                      (click)="openEntityCloudPane(); entityCloudBtn.blur()">
                 <i class="fa fa-fw fa-cloud"></i>
               </button>
             </div>
