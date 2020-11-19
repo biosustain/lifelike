@@ -383,60 +383,62 @@ class KgService(HybridDBDao):
         edges = []
         edge_ids = set()
         for path in paths:
-            for node in path['nodes']:
-                if node.identity not in node_ids:
-                    node_as_dict = dict(node)
+            if path.get('nodes', None) is not None:
+                for node in path['nodes']:
+                    if node.identity not in node_ids:
+                        node_as_dict = dict(node)
 
-                    node_display_name = 'Node Display Name Unknown'
-                    if node_as_dict.get('displayName', None) is not None:
-                        node_display_name = node_as_dict['displayName']
-                    elif node_as_dict.get('name', None) is not None:
-                        node_display_name = node_as_dict['name']
+                        node_display_name = 'Node Display Name Unknown'
+                        if node_as_dict.get('displayName', None) is not None:
+                            node_display_name = node_as_dict['displayName']
+                        elif node_as_dict.get('name', None) is not None:
+                            node_display_name = node_as_dict['name']
 
-                    try:
-                        node_label = get_first_known_label_from_node(node)
-                        node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
-                    except ValueError:
-                        node_color = '#000000'
+                        try:
+                            node_label = get_first_known_label_from_node(node)
+                            node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
+                        except ValueError:
+                            node_color = '#000000'
 
-                    node_data = {
-                        'id': node.identity,
-                        'label': node_display_name,
-                        'font': {
-                            'color': node_color,
-                        },
-                        'color': {
-                            'background': '#FFFFFF',
-                            'border': node_color,
-                            'hover': {
+                        node_data = {
+                            'id': node.identity,
+                            'label': node_display_name,
+                            'font': {
+                                'color': node_color,
+                            },
+                            'color': {
                                 'background': '#FFFFFF',
                                 'border': node_color,
-                            },
-                            'highlight': {
-                                'background': '#FFFFFF',
-                                'border': node_color,
-                            },
+                                'hover': {
+                                    'background': '#FFFFFF',
+                                    'border': node_color,
+                                },
+                                'highlight': {
+                                    'background': '#FFFFFF',
+                                    'border': node_color,
+                                },
+                            }
                         }
-                    }
 
-                    nodes.append(node_data)
-                    node_ids.add(node.identity)
+                        nodes.append(node_data)
+                        node_ids.add(node.identity)
 
-            for edge in path['edges']:
-                if edge.identity not in edge_ids:
-                    edge_data = {
-                        'id': edge.identity,
-                        'label': type(edge).__name__,
-                        'from': edge.start_node.identity,
-                        'to': edge.end_node.identity,
-                        'color': {
-                            'color': '#3797DB',
-                        },
-                        'arrows': 'to',
-                    }
+            if path.get('edges', None) is not None:
+                for edge in path['edges']:
+                    if edge.identity not in edge_ids:
+                        edge_data = {
+                            'id': edge.identity,
+                            'label': type(edge).__name__,
+                            'from': edge.start_node.identity,
+                            'to': edge.end_node.identity,
+                            'color': {
+                                'color': '#3797DB',
+                            },
+                            'arrows': 'to',
+                        }
 
-                    edges.append(edge_data)
-                    edge_ids.add(edge.identity)
+                        edges.append(edge_data)
+                        edge_ids.add(edge.identity)
         return {'nodes': nodes, 'edges': edges}
 
     def get_shortest_path_query_list(self):
@@ -447,6 +449,7 @@ class KgService(HybridDBDao):
             3: 'SIRT5 to NFE2L2 Using Literature Data',
             4: 'CTNNB1 to Diarrhea Using Literature Data',
             5: 'Two pathways using BioCyc',
+            6: 'Glycolisis Regulon'
         }
 
     def get_query_id_to_func_map(self):
@@ -457,6 +460,7 @@ class KgService(HybridDBDao):
             3: self.get_sirt5_to_nfe2l2_literature_query,
             4: self.ctnnb1_to_diarrhea_literature_query,
             5: self.get_two_pathways_biocyc_query,
+            6: self.get_glycolisis_regulon_query,
         }
 
     def get_shortest_path_query(self, query_id):
@@ -596,4 +600,22 @@ class KgService(HybridDBDao):
             WHERE NONE (r IN relationships(p) WHERE type(r) IN ['TYPE_OF'])
                 AND NONE (n IN nodes(p) WHERE n.biocyc_id IN ['WATER','PROTON','Pi','ATP', 'ADP'])
             RETURN nodes(p) as nodes, relationships(p) as edges
+        """
+
+    def get_glycolisis_regulon_query(self):
+        return """
+            MATCH path=
+                (:Pathway {biocyc_id: 'GLYCOLYSIS'})--(r:Reaction)--
+                (e:EnzReaction:db_EcoCyc)-[:CATALYZES]-
+                (:Protein)<-[:COMPONENT_OF*0..]-
+                (:Protein)-[:ENCODES]-
+                (:Gene:db_EcoCyc)-[:IS]-
+                (:db_NCBI)-[:IS]-
+                (g:db_RegulonDB)
+            WITH path, g, r
+            MATCH p1=(left)-[:CONSUMED_BY]->(r)-[:PRODUCES]->(right)
+            OPTIONAL MATCH p2=(g)--(:TranscriptionUnit)--(:Promoter)-[:REGULATES]-(rg:Regulon)
+            RETURN
+                nodes(path) + nodes(p1) + nodes(p2) as nodes,
+                relationships(path) + relationships(p1) + relationships(p2) as edges
         """
