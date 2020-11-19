@@ -4,9 +4,10 @@ import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode } from 
 import { LINE_TYPES } from '../../services/line-types';
 import { annotationTypes, annotationTypesMap } from '../../../shared/annotation-styles';
 import { nullIfEmpty, RecursivePartial } from '../../../shared/utils/types';
-import { openLink } from '../../../shared/utils/browser';
+import { openPotentialInternalLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
 import { isNullOrUndefined } from 'util';
+import { WorkspaceManager } from '../../../shared/workspace-manager';
 
 @Component({
   selector: 'app-node-form',
@@ -36,6 +37,9 @@ export class NodeFormComponent implements AfterViewInit {
 
   activeTab: string;
   previousLabel: string;
+
+  constructor(protected readonly workspaceManager: WorkspaceManager) {
+  }
 
   ngAfterViewInit() {
     setTimeout(() => this.focus(), 10);
@@ -177,7 +181,7 @@ export class NodeFormComponent implements AfterViewInit {
    * Allow user to navigate to a link in a new tab
    */
   goToLink(hyperlink) {
-    openLink(hyperlink);
+    openPotentialInternalLink(this.workspaceManager, hyperlink);
   }
 
   /**

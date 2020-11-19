@@ -30,6 +30,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { SearchControlComponent } from '../../shared/components/search-control.component';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -104,7 +105,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   projectName: string;
 
   @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
-  @ViewChild('search', {static: false}) searchElement: ElementRef;
 
   constructor(
     private readonly filesService: PdfFilesService,
@@ -217,6 +217,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.invalidateEntityTypeVisibility();
   }
 
+  enableEntityTypeVisibility(annotation: Annotation) {
+    this.entityTypeVisibilityMap.set(annotation.meta.type, true);
+    this.invalidateEntityTypeVisibility();
+  }
+
   invalidateEntityTypeVisibility() {
     // Keep track if the user has some entity types disabled
     let entityTypeVisibilityChanged = false;
@@ -252,6 +257,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           (annotations: Annotation[]) => {
             progressDialogRef.close();
             this.addedAnnotations = annotations;
+            this.enableEntityTypeVisibility(annotations[0]);
             this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
           },
           err => {
@@ -348,7 +354,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     if (this.pdfFile.upload_url) {
       sources.push({
-        domain: 'Upload URL',
+        domain: 'External URL',
         url: this.pdfFile.upload_url,
       });
     }
@@ -524,14 +530,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  clearSearchQuery(focus = true) {
-    this.searchQuery = '';
-    this.searchQueryChanged();
-    if (focus) {
-      this.searchElement.nativeElement.focus();
-    }
-  }
-
   displayEditDialog() {
     this.filesService.getFileFallbackOrganism(
       this.projectName, this.pdfFile.file_id,
@@ -617,5 +615,26 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   isPendingPostLoadAction() {
     return this.isPendingScroll() || this.isPendingJump()
       || this.pendingAnnotationHighlightId != null;
+  }
+
+  dragStarted(event: DragEvent) {
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    dataTransfer.setData('text/plain', this.pdfFile.filename);
+    dataTransfer.setData('application/lifelike-node', JSON.stringify({
+      display_name: this.pdfFile.filename,
+      label: 'link',
+      sub_labels: [],
+      data: {
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.pdfFile.file_id + '',
+        }],
+        sources: [{
+          domain: 'File Source',
+          url: ['/projects', encodeURIComponent(this.projectName),
+            'files', encodeURIComponent(this.pdfFile.file_id)].join('/'),
+        }],
+      },
+    } as Partial<UniversalGraphNode>));
   }
 }
