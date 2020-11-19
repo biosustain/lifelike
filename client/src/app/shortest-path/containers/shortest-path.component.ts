@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -16,10 +16,10 @@ export interface GraphData {
   templateUrl: './shortest-path.component.html',
   styleUrls: ['./shortest-path.component.scss']
 })
-export class ShortestPathComponent implements OnInit {
+export class ShortestPathComponent implements OnDestroy {
 
   loadTask: BackgroundTask<[], any>;
-  annotationsLoadedSub: Subscription;
+  shortestPathLoadedSub: Subscription;
 
   loadedQuery: number;
   displayType: string;
@@ -33,7 +33,7 @@ export class ShortestPathComponent implements OnInit {
         this.shortestPathService.getShortestPathQueryResult(this.loadedQuery),
       );
     });
-    this.annotationsLoadedSub = this.loadTask.results$.subscribe(({
+    this.shortestPathLoadedSub = this.loadTask.results$.subscribe(({
       result: [shortestPathResult],
       value: [],
     }) => {
@@ -44,7 +44,9 @@ export class ShortestPathComponent implements OnInit {
     });
   }
 
-  ngOnInit() { }
+  ngOnDestroy() {
+    this.shortestPathLoadedSub.unsubscribe();
+  }
 
   changeDisplayType(type: string) {
     this.displayType = type;

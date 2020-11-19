@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -13,7 +13,7 @@ import { DisplayType } from './route-display.component';
   templateUrl: './route-builder.component.html',
   styleUrls: ['./route-builder.component.scss']
 })
-export class RouteBuilderComponent implements OnInit {
+export class RouteBuilderComponent implements OnInit, OnDestroy {
   @Output() loadNewQuery: EventEmitter<number>;
   @Output() changeDisplayType: EventEmitter<string>;
 
@@ -54,6 +54,10 @@ export class RouteBuilderComponent implements OnInit {
     this.loadNewQuery.emit(0);
     this.changeDisplayType.emit('NETWORK');
     this.loadShortestPathQueries.update([]);
+  }
+
+  ngOnDestroy() {
+    this.queriesLoadedsub.unsubscribe();
   }
 
   toggleRouteBuilderOpen() {
