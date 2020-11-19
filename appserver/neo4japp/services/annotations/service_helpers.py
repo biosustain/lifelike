@@ -151,7 +151,7 @@ def get_nlp_entities(
     return nlp_tokens, nlp_resp
 
 
-def create_annotations(
+def _create_annotations(
     annotation_method,
     specified_organism_synonym,
     specified_organism_tax_id,
@@ -194,8 +194,7 @@ def create_annotations(
                     [
                         {
                             'id': document.file_content_id,
-                            'parsed_content': json.dumps(
-                                [word.to_dict() for word in parsed.words])
+                            'parsed_content': [word.to_dict() for word in parsed.words]
                         }
                     ]
                 )
@@ -213,7 +212,7 @@ def create_annotations(
     start = time.time()
     if not parsed:
         parsed = PDFParsedContent(
-            words=[PDFWord.from_dict(d) for d in json.loads(document.parsed_content)]
+            words=[PDFWord.from_dict(d) for d in document.parsed_content]
         )
 
     pdf_text = ' '.join([c.keyword for c in parsed.words])
@@ -305,3 +304,41 @@ def create_annotations(
         extra=EventLog(event_type='annotations').to_dict()
     )
     return pdf_text, bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+
+
+def create_annotations(
+    annotation_method,
+    specified_organism_synonym,
+    specified_organism_tax_id,
+    document,
+    filename
+):
+    _, annotations = _create_annotations(
+        annotation_method,
+        specified_organism_synonym,
+        specified_organism_tax_id,
+        document,
+        filename
+    )
+    return annotations
+
+
+def create_annotations2(
+    annotation_method,
+    specified_organism_synonym,
+    specified_organism_tax_id,
+    document,
+    filename
+):
+    """Used for one-off scripts where the text is needed
+    to be saved to pubtator file.
+
+    (not used by lifelike app)
+    """
+    return _create_annotations(
+        annotation_method,
+        specified_organism_synonym,
+        specified_organism_tax_id,
+        document,
+        filename
+    )
