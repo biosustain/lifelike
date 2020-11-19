@@ -911,27 +911,6 @@ class EntityRecognitionService:
         if token.token_type:
             nlp_predicted_type = token.token_type
 
-        if token.keyword.startswith(self.greek_symbols):
-            tmp_char_positions = {k: v for k, v in token.char_positions.items()}
-            keys = list(tmp_char_positions)
-            counter = 0
-            for c in token.keyword:
-                if c in self.greek_symbols:
-                    counter += 1
-                else:
-                    break
-            for i in range(0, counter):
-                tmp_char_positions.pop(keys[i])
-
-            new_token_keyword = token.keyword[counter:]
-            token = PDFTokenPositions(
-                page_number=token.page_number,
-                keyword=new_token_keyword,
-                normalized_keyword=normalize_str(new_token_keyword),
-                char_positions=tmp_char_positions,
-                token_type=token.token_type
-            )
-
         if synonym:
             lookup_key = normalize_str(synonym)
         else:
@@ -1284,6 +1263,30 @@ class EntityRecognitionService:
         token: PDFWord,
         check_entities: Dict[str, bool],
     ) -> None:
+        if token.keyword.startswith(self.greek_symbols):
+            meta = token.meta
+            counter = 0
+            for c in token.keyword:
+                if c in self.greek_symbols:
+                    counter += 1
+                else:
+                    break
+            for i in range(0, counter):
+                meta.coordinates.pop(i)
+                meta.heights.pop(i)
+                meta.widths.pop(i)
+
+            new_token_keyword = token.keyword[counter:]
+            token = PDFWord(
+                keyword=new_token_keyword,
+                normalized_keyword=normalize_str(new_token_keyword),
+                page_number=token.page_number,
+                cropbox=token.cropbox,
+                meta=meta,
+                previous_words=token.previous_words,
+                token_type=token.token_type
+            )
+
         if check_entities.get(EntityType.ANATOMY.value, False):
             self._find_match_type_anatomy(token)
 
