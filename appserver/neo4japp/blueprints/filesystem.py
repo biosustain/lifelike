@@ -1,3 +1,4 @@
+import itertools
 from typing import Dict, Union, Literal, List, Iterable
 
 from deepdiff import DeepDiff
@@ -37,11 +38,8 @@ class FileAnnotationHistoryView(MethodView):
         page = pagination['page']
 
         total = query.order_by(None).count()
-        if page == 1:
-            items = [file, *query.limit(per_page).offset((page - 1) * per_page).all()]
-        else:
-            items = query.limit(per_page + 1).offset((page - 1) * per_page - 1).all()
-
+        items = itertools.chain(*([iter([file])] if page == 1 else []),
+                                query.limit(per_page).offset((page - 1) * per_page))
         results = []
 
         for newer, older in window(items):
