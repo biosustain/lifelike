@@ -125,6 +125,14 @@ ANNOTATION_STYLES_DICT = {
         'label': 'ENTITY',
         'color': '#7f7f7f'
     },
+    'lab_strain': {
+        'color': '#f71698',
+        'label': 'lab strain',
+    },
+    'lab_sample': {
+        'color': '#f71698',
+        'label': 'lab sample',
+    },
     'link': {
         'label': 'link',
         'color': '#669999'
