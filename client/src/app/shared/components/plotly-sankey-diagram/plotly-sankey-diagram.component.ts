@@ -15,7 +15,10 @@ export class PlotlySankeyDiagramComponent implements AfterViewInit {
 
   sankeyContainerId: string;
 
+  stabilized: boolean;
+
   constructor() {
+    this.stabilized = false;
     this.sankeyContainerId = uuidv4();
   }
 
@@ -26,6 +29,8 @@ export class PlotlySankeyDiagramComponent implements AfterViewInit {
       [this.data],
       this.config,
       { staticPlot: false }
-    );
+    ).then(() => {
+      this.stabilized = true;
+    });
   }
 }
