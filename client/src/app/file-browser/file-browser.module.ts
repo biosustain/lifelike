@@ -26,6 +26,7 @@ import { FileSelectionDialogComponent } from './components/dialog/file-selection
 import { FilesystemService } from './services/filesystem.service';
 import { FileListComponent } from './components/file-list.component';
 import { FilesystemObjectActions } from './services/filesystem-object-actions';
+import { EnrichmentTableOrderDialogComponent } from './components/enrichment-table-order-dialog.component';
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import { FilesystemObjectActions } from './services/filesystem-object-actions';
     EnrichmentTableViewerComponent,
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,
+    EnrichmentTableOrderDialogComponent,
     FileSelectionDialogComponent,
     FileListComponent,
   ],
@@ -68,6 +70,7 @@ import { FilesystemObjectActions } from './services/filesystem-object-actions';
     ObjectDeletionResultDialogComponent,
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,
+    EnrichmentTableOrderDialogComponent,
     FileSelectionDialogComponent,
   ],
   exports: [

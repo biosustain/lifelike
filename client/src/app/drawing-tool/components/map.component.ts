@@ -1,10 +1,9 @@
-import { escapeRegExp } from 'lodash';
 import { AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Output, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { MapService } from '../services';
-import { GraphEntity, GraphEntityType, KnowledgeMap } from '../services/interfaces';
+import { GraphEntity, KnowledgeMap, UniversalGraphNode } from '../services/interfaces';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ModuleProperties } from '../../shared/modules';
@@ -16,7 +15,7 @@ import { map } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { emptyIfNull } from '../../shared/utils/types';
+import { tokenizeQuery } from '../../shared/utils/find';
 
 @Component({
   selector: 'app-map',
@@ -191,13 +190,39 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.graphCanvas.redo();
   }
 
+  dragStarted(event: DragEvent) {
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    dataTransfer.setData('text/plain', this.map.label);
+    dataTransfer.setData('application/lifelike-node', JSON.stringify({
+      display_name: this.map.label,
+      label: 'map',
+      sub_labels: [],
+      data: {
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.locator.hashId + '',
+        }],
+        sources: [{
+          domain: 'File Source',
+          url: ['/projects', encodeURIComponent(this.locator.projectName),
+            'maps', encodeURIComponent(this.locator.hashId)].join('/'),
+        }],
+      },
+    } as Partial<UniversalGraphNode>));
+  }
+
   // ========================================
   // Search stuff
   // ========================================
 
   search() {
     if (this.entitySearchTerm.length) {
-      this.entitySearchList = this.graphCanvas.findMatching(this.entitySearchTerm.split(/ +/g));
+      this.entitySearchList = this.graphCanvas.findMatching(
+        tokenizeQuery(this.entitySearchTerm, {
+          singleTerm: true,
+        }), {
+        wholeWord: false,
+      });
       this.entitySearchListIdx = -1;
 
       this.graphCanvas.searchHighlighting.replace(this.entitySearchList);
@@ -212,6 +237,11 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.graphCanvas.searchFocus.replace([]);
       this.graphCanvas.requestRender();
     }
+  }
+
+  clearSearchQuery() {
+    this.entitySearchTerm = '';
+    this.search();
   }
 
   next() {

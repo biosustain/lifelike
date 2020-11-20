@@ -10,12 +10,11 @@ def clean_char(c) -> str:
 
 
 def normalize_str(s) -> str:
-    normalized = clean_char(s).lower()
+    normalized = s.lower()
     normalized = normalized.translate(str.maketrans('', '', punctuation))
     return normalized.translate(str.maketrans('', '', whitespace))
 
 
 def standardize_str(s) -> str:
-    standardized = clean_char(s)
-    standardized = standardized.translate(str.maketrans('', '', punctuation))
+    standardized = s.translate(str.maketrans('', '', punctuation))
     return " ".join(standardized.split())
