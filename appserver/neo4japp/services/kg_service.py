@@ -454,6 +454,7 @@ class KgService(HybridDBDao):
             5: 'Two pathways using BioCyc',
             # 6: 'Glycolisis Regulon',
             7: 'Serine SP Pathway',
+            8: 'Serine to malZp',
         }
 
     def get_query_id_to_func_map(self):
@@ -468,7 +469,8 @@ class KgService(HybridDBDao):
             4: [self.get_data_from_query, self.get_ctnnb1_to_diarrhea_literature_query],
             5: [self.get_data_from_query, self.get_two_pathways_biocyc_query],
             # 6: [self.get_data_from_query, self.get_glycolisis_regulon_query],
-            7: [self.get_data_from_file, 'serine.json']
+            7: [self.get_data_from_file, 'serine.json'],
+            8: [self.get_data_from_file, 'serine-to-malZp.json'],
         }
 
     def get_shortest_path_data(self, query_id):
