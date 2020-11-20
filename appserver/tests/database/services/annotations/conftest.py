@@ -864,7 +864,10 @@ def mock_general_human_genes(monkeypatch):
 def mock_get_gene_to_organism_match_result(monkeypatch):
     def get_match_result(*args, **kwargs):
         # match to 'Moniliophthora roreri' in create_species_lmdb()
-        return {'hyp27': {'hyp27': {'221103': '2846957'}}}
+        return {
+            'hyp27': {'hyp27': {'221103': '2846957'}},
+            'SERPINA1': {'serpina1': {'9606': '5265'}, 'SERPINA1': {'9606': '5265'}}
+        }
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
@@ -874,19 +877,7 @@ def mock_get_gene_to_organism_match_result(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_get_gene_to_organism_serpina1_match_result(monkeypatch):
-    def get_match_result(*args, **kwargs):
-        return {'SERPINA1': {'serpina1': {'9606': '5265'}, 'SERPINA1': {'9606': '5265'}}}
-
-    monkeypatch.setattr(
-        AnnotationsNeo4jService,
-        'get_gene_to_organism_match_result',
-        get_match_result,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_get_gene_to_organism_match_result_for_fish_gene(monkeypatch):
+def mock_gene_to_organism_crossmatch_human_fish(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {'il-7': {'IL7': {'7897': '102353780'}, 'il-7': {'31033': '99999'}}}
 
@@ -910,7 +901,7 @@ def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_get_gene_to_organism_match_result_for_human_rat_gene(monkeypatch):
+def mock_gene_to_organism_crossmatch_human_rat(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {'EDEM3': {'EDEM3': {'9606': '80267'}, 'Edem3': {'10116': '289085'}}}
 

@@ -231,7 +231,7 @@ class SearchService(GraphBaseDao):
 
         domains = 'n:null' if len(result_domains) == 0 else ' OR '.join(result_domains)
         entities = 'n:null' if len(result_entities) == 0 else ' OR '.join(result_entities)
-        return f'({domains}) AND {entities}'
+        return f'({domains}) AND ({entities})'
 
     def visualizer_search_temp(
         self,
@@ -258,12 +258,9 @@ class SearchService(GraphBaseDao):
             MATCH (node)-[]-(n)
             WHERE {result_filters}
             WITH score, n
-            ORDER BY score DESC
             {organism_match_string}
-            WITH MAX(score) as score, collect(DISTINCT [n, t.id, t.name, n.namespace]) AS nodes
-            UNWIND nodes as node
-            RETURN score, node[0] AS node, node[1] AS taxonomy_id, node[2] AS taxonomy_name,
-                node[3] AS go_class
+            RETURN DISTINCT score as score, n AS node, t.id AS taxonomy_id,
+                t.name AS taxonomy_name, n.namespace AS go_class
             SKIP $amount
             LIMIT $limit
         """
@@ -282,19 +279,23 @@ class SearchService(GraphBaseDao):
 
         total_query = f"""
             CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
-            YIELD node
+            YIELD node, score
             MATCH (node)-[]-(n)
             WHERE {result_filters}
+            WITH score, n
             {organism_match_string}
-            RETURN COUNT(DISTINCT n) as total
+            RETURN DISTINCT score as score, n AS node, t.id AS taxonomy_id,
+                t.name AS taxonomy_name, n.namespace AS go_class
+            LIMIT 1001
         """
-        total_results = self.graph.run(
+
+        total_results = len(self.graph.run(
             total_query,
             parameters={
                 'search_term': query_term,
                 'organism': organism
             }
-        ).evaluate()
+        ).data())
 
         return FTSResult(term, records, total_results, page, limit)
 

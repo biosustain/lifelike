@@ -6,17 +6,20 @@
       <a routerLink="/workspaces/local" placement="right" ngbTooltip="Workbench">
         <i class="far fa-window-restore"></i>
       </a>
+      <a appLink="/projects" placement="right" ngbTooltip="File Browser" [forceWorkbench]="true" [newTab]="true" preferPane="left">
+        <i class="fa fa-folder"></i>
+      </a>
+      <a appLink="/search/graph" placement="right" ngbTooltip="Visualizer" [forceWorkbench]="true" [newTab]="true" preferPane="left">
+        <i class="fa fa-database"></i>
+      </a>
+      <a appLink="/search/content" placement="right" ngbTooltip="Search" [forceWorkbench]="true" [newTab]="true" preferPane="left">
+        <i class="fa fa-search"></i>
+      </a>
       <div class="button-divider"></div>
       <!-- Hiding this for now, we'll re-enable it once we have a view for imported data -->
       <!-- <a routerLink="/kg-import" placement="right" ngbTooltip="Knowledge Graph Import">
         <i class="fa fa-cloud-upload"></i>
       </a> -->
-      <a routerLink="/search/graph" placement="right" ngbTooltip="Visualizer">
-        <i class="fa fa-database"></i>
-      </a>
-      <a routerLink="/search/content" placement="right" ngbTooltip="Search">
-        <i class="fa fa-search"></i>
-      </a>
       <a routerLink="/pathway-browser-prototype" placement="right" ngbTooltip="Pathway Browser Prototype">
         <i class="fas fa-drafting-compass"></i>
       </a>

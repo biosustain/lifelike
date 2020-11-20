@@ -7,6 +7,14 @@ export interface PdfFiles {
 export interface PdfFile {
   // minimum field needed for the interface
   file_id: string;
+  /**
+   * Containing directory ID. Most endpoints do not return this.
+   */
+  dir_id?: any;
+  /**
+   * Most endpoints do not return this.
+   */
+  project_name?: string;
   // optional
   doi?: string;
   upload_url?: string;
