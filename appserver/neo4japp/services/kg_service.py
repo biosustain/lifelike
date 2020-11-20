@@ -452,8 +452,8 @@ class KgService(HybridDBDao):
             3: 'SIRT5 to NFE2L2 Using Literature Data',
             4: 'CTNNB1 to Diarrhea Using Literature Data',
             5: 'Two pathways using BioCyc',
-            6: 'Glycolisis Regulon',
-            7: 'Serine',
+            # 6: 'Glycolisis Regulon',
+            7: 'Serine SP Pathway',
         }
 
     def get_query_id_to_func_map(self):
@@ -467,7 +467,7 @@ class KgService(HybridDBDao):
             3: [self.get_data_from_query, self.get_sirt5_to_nfe2l2_literature_query],
             4: [self.get_data_from_query, self.get_ctnnb1_to_diarrhea_literature_query],
             5: [self.get_data_from_query, self.get_two_pathways_biocyc_query],
-            6: [self.get_data_from_query, self.get_glycolisis_regulon_query],
+            # 6: [self.get_data_from_query, self.get_glycolisis_regulon_query],
             7: [self.get_data_from_file, 'serine.json']
         }
 
@@ -506,7 +506,7 @@ class KgService(HybridDBDao):
         MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
         OPTIONAL MATCH (g)-[:GO_LINK]-(x:MolecularFunction:db_GO)
-        RETURN g, collect(x) as xArray
+        RETURN g, collect(x) AS xArray
         """
 
     def get_biological_go_genes_query(self):
@@ -514,7 +514,7 @@ class KgService(HybridDBDao):
         MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
         OPTIONAL MATCH (g)-[:GO_LINK]-(x:BiologicalProcess:db_GO)
-        RETURN g, collect(x) as xArray
+        RETURN g, collect(x) AS xArray
         """
 
     def get_cellular_go_genes_query(self):
@@ -522,7 +522,7 @@ class KgService(HybridDBDao):
         MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
         OPTIONAL MATCH (g)-[:GO_LINK]-(x:CellularComponent:db_GO)
-        RETURN g, collect(x) as xArray
+        RETURN g, collect(x) AS xArray
         """
 
     def get_go_genes_query(self):
@@ -530,7 +530,7 @@ class KgService(HybridDBDao):
         MATCH (g:Gene:db_NCBI)
         WHERE ID(g) IN $ncbi_gene_ids
         OPTIONAL MATCH (g)-[:GO_LINK]-(x:db_GO)
-        RETURN g, collect(x) as xArray
+        RETURN g, collect(x) AS xArray
         """
 
     def get_biocyc_genes_query(self):
@@ -563,7 +563,7 @@ class KgService(HybridDBDao):
                 'HAS_ROLE',
                 'GO_LINK'
             ])
-            RETURN nodes(p) as nodes, relationships(p) as edges
+            RETURN nodes(p) AS nodes, relationships(p) AS edges
         """
 
     def get_three_hydroxisobuteric_acid_to_pykf_biocyc_query(self):
@@ -579,7 +579,7 @@ class KgService(HybridDBDao):
                 'HAS_ROLE',
                 'TYPE_OF'
             ])
-            RETURN nodes(p) as nodes, relationships(p) as edges
+            RETURN nodes(p) AS nodes, relationships(p) AS edges
         """
 
     def get_icd_to_rhse_query(self):
@@ -588,7 +588,7 @@ class KgService(HybridDBDao):
                 (gene:db_EcoCyc:Gene {name:'icd'})-[*..13]-(gene2:db_EcoCyc:Gene {name:'rhsE'})
             )
             WHERE none(r IN relationships(p) WHERE type(r) IN ['HAS_TAXONOMY'])
-            RETURN nodes(p) as nodes, relationships(p) as edges
+            RETURN nodes(p) AS nodes, relationships(p) AS edges
         """
 
     def get_sirt5_to_nfe2l2_literature_query(self):
@@ -597,7 +597,7 @@ class KgService(HybridDBDao):
             (t)<-[:HAS_TAXONOMY]-(g2:db_Literature:Gene {name:'NFE2L2'})
             MATCH p=allShortestPaths((g)-[*]-(g2))
             WHERE all(rel IN relationships(p) WHERE type(rel) = 'ASSOCIATED')
-            RETURN nodes(p) as nodes, relationships(p) as edges
+            RETURN nodes(p) AS nodes, relationships(p) AS edges
         """
 
     def get_ctnnb1_to_diarrhea_literature_query(self):
@@ -605,7 +605,7 @@ class KgService(HybridDBDao):
             MATCH (g:db_Literature:Gene {name:'CTNNB1'})-[:HAS_TAXONOMY]->(t:Taxonomy {id:'9606'})
             MATCH (d:Disease {name:'Diarrhea'})
             MATCH p=allShortestPaths((g)-[*]-(d))
-            RETURN nodes(p) as nodes, relationships(p) as edges
+            RETURN nodes(p) AS nodes, relationships(p) AS edges
         """
 
     def get_two_pathways_biocyc_query(self):
@@ -615,7 +615,7 @@ class KgService(HybridDBDao):
             MATCH p=allShortestPaths((p1)-[*]-(p2))
             WHERE NONE (r IN relationships(p) WHERE type(r) IN ['TYPE_OF'])
                 AND NONE (n IN nodes(p) WHERE n.biocyc_id IN ['WATER','PROTON','Pi','ATP', 'ADP'])
-            RETURN nodes(p) as nodes, relationships(p) as edges
+            RETURN nodes(p) AS nodes, relationships(p) AS edges
         """
 
     def get_glycolisis_regulon_query(self):
@@ -632,6 +632,6 @@ class KgService(HybridDBDao):
             MATCH p1=(left)-[:CONSUMED_BY]->(r)-[:PRODUCES]->(right)
             OPTIONAL MATCH p2=(g)--(:TranscriptionUnit)--(:Promoter)-[:REGULATES]-(rg:Regulon)
             RETURN
-                nodes(path) + nodes(p1) + nodes(p2) as nodes,
-                relationships(path) + relationships(p1) + relationships(p2) as edges
+                nodes(path) + nodes(p1) + nodes(p2) AS nodes,
+                relationships(path) + relationships(p1) + relationships(p2) AS edges
         """
