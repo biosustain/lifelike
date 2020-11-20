@@ -11,7 +11,9 @@ from neo4japp.services.annotations.constants import (
     COMMON_TYPOS,
     EntityType,
     EntityIdStr,
+    GREEK_SYMBOLS,
     ManualAnnotationType,
+    ABBREVIATION_WORD_LENGTH,
     SPECIES_EXCLUSION
 )
 from neo4japp.services.annotations.lmdb_dao import LMDBDao
@@ -33,7 +35,7 @@ from neo4japp.services.annotations.util import normalize_str
 from neo4japp.data_transfer_objects import (
     EntityResults,
     LMDBMatch,
-    PDFTokenPositions,
+    PDFWord
 )
 from neo4japp.models import AnnotationStopWords, GlobalList
 from neo4japp.utils.logger import EventLog
@@ -47,6 +49,7 @@ class EntityRecognitionService:
     ) -> None:
         self.lmdb_session = lmdb_session
         self.annotation_neo4j = annotation_neo4j
+        self.greek_symbols = tuple([chr(g) for g in GREEK_SYMBOLS])
 
         # for inclusions, structured the same as LMDB
         self._inclusion_type_anatomy: Dict[str, List[dict]] = {}
@@ -82,6 +85,8 @@ class EntityRecognitionService:
 
         self._type_gene_case_insensitive_exclusion: Set[str] = set()
         self._type_protein_case_insensitive_exclusion: Set[str] = set()
+
+        self._abbreviations: Set[str] = set()
 
         self._matched_type_anatomy: Dict[str, LMDBMatch] = {}
         self._matched_type_chemical: Dict[str, LMDBMatch] = {}
@@ -121,6 +126,10 @@ class EntityRecognitionService:
     @property
     def type_protein_case_insensitive_exclusion(self) -> Set[str]:
         return self._type_protein_case_insensitive_exclusion
+
+    @property
+    def abbreviations(self) -> Set[str]:
+        return self._abbreviations
 
     @property
     def inclusion_type_anatomy(self) -> Dict[str, List[dict]]:
@@ -533,9 +542,55 @@ class EntityRecognitionService:
                     else:
                         inclusion_collection[normalized_entity_name] = [entity]
 
+    def _is_abbrev(self, token: PDFWord) -> bool:
+        """Determine if a word is an abbreviation.
+
+        Start from closest word to abbreviation, and check the first character.
+        """
+        if not token.previous_words:
+            return False
+
+        if token.keyword not in self.abbreviations:
+            if all([c.isupper() for c in token.keyword]) and len(token.keyword) in ABBREVIATION_WORD_LENGTH:  # noqa
+                previous_words = token.previous_words.split(' ')
+                abbrev = ''
+                for word in reversed(previous_words):
+                    if '-' in word or '/' in word:
+                        word_split = []
+                        if '-' in word:
+                            word_split = word.split('-')
+                        elif '/' in word:
+                            word_split = word.split('/')
+
+                        for split in reversed(word_split):
+                            if len(abbrev) == len(token.keyword):
+                                break
+                            else:
+                                if split:
+                                    abbrev = split[0] + abbrev
+                        if len(abbrev) == len(token.keyword):
+                            break
+                    else:
+                        if word:
+                            abbrev = word[0] + abbrev
+
+                    if len(abbrev) == len(token.keyword):
+                        break
+
+                if abbrev.lower() != token.keyword.lower():
+                    return False
+                else:
+                    # is an abbreviation so mark it as so
+                    self.abbreviations.add(token.keyword)
+                    return True
+            else:
+                return False
+        else:
+            return True
+
     def entity_lookup_for_type_anatomy(
         self,
-        token: PDFTokenPositions,
+        token: PDFWord,
         synonym: Optional[str] = None,
     ):
         """Do entity lookups for anatomy. First check in LMDB,
@@ -570,6 +625,9 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
+                if self._is_abbrev(token):
+                    return anatomy_val
+
                 if nlp_predicted_type == EntityType.ANATOMY.value or nlp_predicted_type is None:  # noqa
                     anatomy_val = self.lmdb_session.get_lmdb_values(
                         txn=self.lmdb_session.anatomy_txn,
@@ -593,7 +651,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_type_chemical(
         self,
-        token: PDFTokenPositions,
+        token: PDFWord,
         synonym: Optional[str] = None,
     ):
         """Do entity lookups for chemical. First check in LMDB,
@@ -628,6 +686,9 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
+                if self._is_abbrev(token):
+                    return chem_val
+
                 if nlp_predicted_type == EntityType.CHEMICAL.value or nlp_predicted_type is None:  # noqa
                     chem_val = self.lmdb_session.get_lmdb_values(
                         txn=self.lmdb_session.chemicals_txn,
@@ -651,7 +712,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_type_compound(
         self,
-        token: PDFTokenPositions,
+        token: PDFWord,
         synonym: Optional[str] = None,
     ):
         """Do entity lookups for compound. First check in LMDB,
@@ -686,6 +747,9 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
+                if self._is_abbrev(token):
+                    return comp_val
+
                 if nlp_predicted_type == EntityType.COMPOUND.value or nlp_predicted_type is None:  # noqa
                     comp_val = self.lmdb_session.get_lmdb_values(
                         txn=self.lmdb_session.compounds_txn,
@@ -709,7 +773,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_type_disease(
         self,
-        token: PDFTokenPositions,
+        token: PDFWord,
         synonym: Optional[str] = None,
     ):
         """Do entity lookups for disease. First check in LMDB,
@@ -744,6 +808,9 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
+                if self._is_abbrev(token):
+                    return diseases_val
+
                 if nlp_predicted_type == EntityType.DISEASE.value or nlp_predicted_type is None:  # noqa
                     diseases_val = self.lmdb_session.get_lmdb_values(
                         txn=self.lmdb_session.diseases_txn,
@@ -767,7 +834,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_type_food(
         self,
-        token: PDFTokenPositions,
+        token: PDFWord,
         synonym: Optional[str] = None,
     ):
         """Do entity lookups for food. First check in LMDB,
@@ -802,6 +869,9 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
+                if self._is_abbrev(token):
+                    return food_val
+
                 if nlp_predicted_type == EntityType.FOOD.value or nlp_predicted_type is None:  # noqa
                     food_val = self.lmdb_session.get_lmdb_values(
                         txn=self.lmdb_session.foods_txn,
@@ -825,7 +895,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_type_gene(
         self,
-        token: PDFTokenPositions,
+        token: PDFWord,
         synonym: Optional[str] = None,
     ):
         """Do entity lookups for gene. First check in LMDB,
@@ -861,6 +931,9 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
+                if self._is_abbrev(token):
+                    return gene_val
+
                 if nlp_predicted_type == EntityType.GENE.value or nlp_predicted_type is None:  # noqa
                     gene_val = self.lmdb_session.get_lmdb_values(
                         txn=self.lmdb_session.genes_txn,
@@ -884,7 +957,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_type_phenotype(
         self,
-        token: PDFTokenPositions,
+        token: PDFWord,
         synonym: Optional[str] = None,
     ):
         """Do entity lookups for phenotype. First check in LMDB,
@@ -919,6 +992,9 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
+                if self._is_abbrev(token):
+                    return phenotype_val
+
                 if nlp_predicted_type == EntityType.PHENOTYPE.value or nlp_predicted_type is None:  # noqa
                     phenotype_val = self.lmdb_session.get_lmdb_values(
                         txn=self.lmdb_session.phenotypes_txn,
@@ -942,7 +1018,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_type_protein(
         self,
-        token: PDFTokenPositions,
+        token: PDFWord,
         synonym: Optional[str] = None,
     ):
         """Do entity lookups for protein. First check in LMDB,
@@ -978,6 +1054,9 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
+                if self._is_abbrev(token):
+                    return protein_val
+
                 if nlp_predicted_type == EntityType.PROTEIN.value or nlp_predicted_type is None:  # noqa
                     protein_val = self.lmdb_session.get_lmdb_values(
                         txn=self.lmdb_session.proteins_txn,
@@ -1006,7 +1085,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_type_species(
         self,
-        token: PDFTokenPositions,
+        token: PDFWord,
         synonym: Optional[str] = None,
     ):
         """Do entity lookups for species. First check in LMDB,
@@ -1041,6 +1120,9 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
+                if self._is_abbrev(token):
+                    return species_val
+
                 # check species
                 # TODO: Bacteria because for now NLP has that instead of
                 # generic `Species`
@@ -1082,7 +1164,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_type_company(
         self,
-        token: PDFTokenPositions,
+        token: PDFWord,
         synonym: Optional[str] = None,
     ):
         """Do entity lookups for company, check only in
@@ -1113,6 +1195,9 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
+                if self._is_abbrev(token):
+                    return company_val
+
                 company_val = self.inclusion_type_company.get(lookup_key, [])
 
                 if company_val:
@@ -1127,7 +1212,7 @@ class EntityRecognitionService:
 
     def entity_lookup_for_type_entity(
         self,
-        token: PDFTokenPositions,
+        token: PDFWord,
         synonym: Optional[str] = None,
     ):
         """Do entity lookups for entity, check only in
@@ -1158,6 +1243,9 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
+                if self._is_abbrev(token):
+                    return entity_val
+
                 entity_val = self.inclusion_type_entity.get(lookup_key, [])
 
                 if entity_val:
@@ -1172,9 +1260,33 @@ class EntityRecognitionService:
 
     def _entity_lookup_dispatch(
         self,
-        token: PDFTokenPositions,
+        token: PDFWord,
         check_entities: Dict[str, bool],
     ) -> None:
+        if token.keyword.startswith(self.greek_symbols):
+            meta = token.meta
+            counter = 0
+            for c in token.keyword:
+                if c in self.greek_symbols:
+                    counter += 1
+                else:
+                    break
+            for i in range(0, counter):
+                meta.coordinates.pop(i)
+                meta.heights.pop(i)
+                meta.widths.pop(i)
+
+            new_token_keyword = token.keyword[counter:]
+            token = PDFWord(
+                keyword=new_token_keyword,
+                normalized_keyword=normalize_str(new_token_keyword),
+                page_number=token.page_number,
+                cropbox=token.cropbox,
+                meta=meta,
+                previous_words=token.previous_words,
+                token_type=token.token_type
+            )
+
         if check_entities.get(EntityType.ANATOMY.value, False):
             self._find_match_type_anatomy(token)
 
@@ -1209,7 +1321,7 @@ class EntityRecognitionService:
         if check_entities.get(EntityType.ENTITY.value, False):
             self._find_match_type_entity(token)
 
-    def _find_match_type_anatomy(self, token: PDFTokenPositions) -> None:
+    def _find_match_type_anatomy(self, token: PDFWord) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
@@ -1227,7 +1339,7 @@ class EntityRecognitionService:
                     token=token
                 )
 
-    def _find_match_type_chemical(self, token: PDFTokenPositions) -> None:
+    def _find_match_type_chemical(self, token: PDFWord) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
@@ -1245,7 +1357,7 @@ class EntityRecognitionService:
                     token=token
                 )
 
-    def _find_match_type_compound(self, token: PDFTokenPositions) -> None:
+    def _find_match_type_compound(self, token: PDFWord) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
@@ -1263,7 +1375,7 @@ class EntityRecognitionService:
                     token=token
                 )
 
-    def _find_match_type_disease(self, token: PDFTokenPositions) -> None:
+    def _find_match_type_disease(self, token: PDFWord) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
@@ -1281,7 +1393,7 @@ class EntityRecognitionService:
                     token=token
                 )
 
-    def _find_match_type_food(self, token: PDFTokenPositions) -> None:
+    def _find_match_type_food(self, token: PDFWord) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
@@ -1299,7 +1411,7 @@ class EntityRecognitionService:
                     token=token
                 )
 
-    def _find_match_type_gene(self, token: PDFTokenPositions) -> None:
+    def _find_match_type_gene(self, token: PDFWord) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
@@ -1317,7 +1429,7 @@ class EntityRecognitionService:
                     token=token
                 )
 
-    def _find_match_type_phenotype(self, token: PDFTokenPositions) -> None:
+    def _find_match_type_phenotype(self, token: PDFWord) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
@@ -1335,7 +1447,7 @@ class EntityRecognitionService:
                     token=token
                 )
 
-    def _find_match_type_protein(self, token: PDFTokenPositions) -> None:
+    def _find_match_type_protein(self, token: PDFWord) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
@@ -1353,7 +1465,7 @@ class EntityRecognitionService:
                     token=token
                 )
 
-    def _find_match_type_species(self, token: PDFTokenPositions) -> None:
+    def _find_match_type_species(self, token: PDFWord) -> None:
         word = token.keyword
         if word:
             if word in COMMON_TYPOS:
@@ -1371,12 +1483,12 @@ class EntityRecognitionService:
                     token=token
                 )
 
-    def _find_match_type_company(self, token: PDFTokenPositions) -> None:
+    def _find_match_type_company(self, token: PDFWord) -> None:
         word = token.keyword
         if word:
             self.entity_lookup_for_type_company(token=token)
 
-    def _find_match_type_entity(self, token: PDFTokenPositions) -> None:
+    def _find_match_type_entity(self, token: PDFWord) -> None:
         word = token.keyword
         if word:
             self.entity_lookup_for_type_entity(
@@ -1476,7 +1588,7 @@ class EntityRecognitionService:
 
     def identify_entities(
         self,
-        tokens: List[PDFTokenPositions],
+        tokens: List[PDFWord],
         check_entities_in_lmdb: Dict[str, bool],
     ) -> None:
         deque(map(partial(

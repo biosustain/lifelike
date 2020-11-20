@@ -20,11 +20,13 @@ NLP_ENDPOINT = 'http://nlpapi:5001/infer/v1'
 
 HOMO_SAPIENS_TAX_ID = '9606'
 
+SPACE_COORDINATE_FLOAT = -61390.61390  # used to identify space in the list of coordinates
 ORGANISM_DISTANCE_THRESHOLD = 200
 PDF_NEW_LINE_THRESHOLD = .30
 PDF_CHARACTER_SPACING_THRESHOLD = .325
 
 ABBREVIATION_WORD_LENGTH = {3, 4}
+MAX_ABBREVIATION_WORD_LENGTH = 4
 
 COMMON_TWO_LETTER_WORDS = {
     'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',
@@ -68,6 +70,7 @@ SPECIES_EXCLUSION = {'collection', 'covid-19', 'covid19', 'artificial', 'pigs', 
 # utf-32 unicode
 # can search these up here: https://www.fileformat.info/info/unicode/index.htm
 MISC_SYMBOLS_AND_CHARS = {8211, 160, 8220, 8221, 8216, 8217, 183, 61623}
+GREEK_SYMBOLS = {916, 8710}  # just delta unicodes for now
 
 COMMON_TYPOS = {
     'Multiple Mitochondrial Dysfunctions Syndromes': ['Multiple Mitochondrial Dysfunctions Syndrome'],  # noqa

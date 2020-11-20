@@ -1,5 +1,3 @@
-import re
-
 from bisect import bisect_left
 from math import inf
 from typing import cast, Dict, List, Set, Tuple, Union
@@ -19,6 +17,7 @@ from .constants import (
     EntityIdStr,
     EntityType,
     OrganismCategory,
+    SPACE_COORDINATE_FLOAT,
     ABBREVIATION_WORD_LENGTH,
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
@@ -36,8 +35,9 @@ from neo4japp.data_transfer_objects import (
     GeneAnnotation,
     LMDBMatch,
     OrganismAnnotation,
-    PDFTokenPositions,
-    PDFTokenPositionsList,
+    PDFChar,
+    PDFWord,
+    PDFTokensList,
     SpecifiedOrganismStrain
 )
 from neo4japp.exceptions import AnnotationError
@@ -121,10 +121,8 @@ class AnnotationsService:
 
     def _create_keyword_objects(
         self,
-        curr_page_coor_obj: List[Union[LTChar, LTAnno]],
-        indexes: List[int],
-        cropbox: Tuple[int, int],
-        keyword_positions: List[Annotation.TextPosition] = [],
+        token: PDFWord,
+        keyword_positions: List[Annotation.TextPosition] = []
     ) -> None:
         """Creates the keyword objects with the keyword
         text, along with their coordinate positions and
@@ -141,63 +139,65 @@ class AnnotationsService:
 
             E. Coli -> [{keyword: 'E. Coli', x: ..., ...}]
         """
-        def _skip_lt_anno(
-            curr_page_coor_obj: List[Union[LTChar, LTAnno]],
-            pos_idx: int,
-        ) -> int:
-            i = pos_idx
-            while i >= 0 and isinstance(curr_page_coor_obj[i], LTAnno):
-                i -= 1
-            return i
-
-        start_lower_x = None
-        start_lower_y = None
-        end_upper_x = None
-        end_upper_y = None
+        start_lower_x = 0.0
+        start_lower_y = 0.0
+        end_upper_x = 0.0
+        end_upper_y = 0.0
+        prev_height = 0.0
 
         keyword = ''
-        for i, pos_idx in enumerate(indexes):
+        cropbox = token.cropbox
+
+        for i, coordinates in enumerate(token.meta.coordinates):
             try:
-                if isinstance(curr_page_coor_obj[pos_idx], LTChar):
-                    lower_x, lower_y, upper_x, upper_y = curr_page_coor_obj[pos_idx].bbox  # noqa
+                if coordinates == SPACE_COORDINATE_FLOAT:
+                    keyword += ' '
+                    continue
 
-                    if (start_lower_x is None and
-                            start_lower_y is None and
-                            end_upper_x is None and
-                            end_upper_y is None):
-                        start_lower_x = lower_x
-                        start_lower_y = lower_y
-                        end_upper_x = upper_x
-                        end_upper_y = upper_y
+                lower_x, lower_y, upper_x, upper_y = coordinates
 
-                        keyword += curr_page_coor_obj[pos_idx].get_text()
-                    else:
-                        if lower_y != start_lower_y:
-                            diff = abs(lower_y - start_lower_y)
-                            prev_idx = _skip_lt_anno(
-                                curr_page_coor_obj=curr_page_coor_obj,
-                                pos_idx=pos_idx-1,
-                            )
-                            height = curr_page_coor_obj[prev_idx].height
+                if (start_lower_x == 0.0 and
+                        start_lower_y == 0.0 and
+                        end_upper_x == 0.0 and
+                        end_upper_y == 0.0):
+                    start_lower_x = lower_x
+                    start_lower_y = lower_y
+                    end_upper_x = upper_x
+                    end_upper_y = upper_y
 
-                            # if diff is greater than height ratio
-                            # then part of keyword is on a new line
-                            if diff > height * PDF_NEW_LINE_THRESHOLD:
-                                self._create_keyword_objects(
-                                    curr_page_coor_obj=curr_page_coor_obj,
-                                    indexes=indexes[i:],
-                                    keyword_positions=keyword_positions,
-                                    cropbox=cropbox,
+                    keyword += token.keyword[i]
+                    # set prev height to current height
+                    prev_height = token.meta.heights[i]
+                else:
+                    if lower_y != start_lower_y:
+                        diff = abs(lower_y - start_lower_y)
+
+                        # if diff is greater than height ratio
+                        # then part of keyword is on a new line
+                        if diff > prev_height * PDF_NEW_LINE_THRESHOLD:
+                            start_lower_x += cropbox[0]  # type: ignore
+                            end_upper_x += cropbox[0]  # type: ignore
+                            start_lower_y += cropbox[1]  # type: ignore
+                            end_upper_y += cropbox[1]  # type: ignore
+
+                            keyword_positions.append(
+                                Annotation.TextPosition(
+                                    value=keyword,
+                                    positions=[
+                                        start_lower_x,
+                                        start_lower_y,
+                                        end_upper_x,
+                                        end_upper_y
+                                    ],
                                 )
-                                break
-                            else:
-                                if upper_y > end_upper_y:
-                                    end_upper_y = upper_y
+                            )
 
-                                if upper_x > end_upper_x:
-                                    end_upper_x = upper_x
-
-                                keyword += curr_page_coor_obj[pos_idx].get_text()
+                            start_lower_x = lower_x
+                            start_lower_y = lower_y
+                            end_upper_x = upper_x
+                            end_upper_y = upper_y
+                            prev_height = token.meta.heights[i]
+                            keyword = token.keyword[i]
                         else:
                             if upper_y > end_upper_y:
                                 end_upper_y = upper_y
@@ -205,7 +205,15 @@ class AnnotationsService:
                             if upper_x > end_upper_x:
                                 end_upper_x = upper_x
 
-                            keyword += curr_page_coor_obj[pos_idx].get_text()
+                            keyword += token.keyword[i]
+                    else:
+                        if upper_y > end_upper_y:
+                            end_upper_y = upper_y
+
+                        if upper_x > end_upper_x:
+                            end_upper_x = upper_x
+
+                        keyword += token.keyword[i]
             except IndexError:
                 raise AnnotationError(
                     'An indexing error occurred when creating annotation keyword objects.')
@@ -222,39 +230,35 @@ class AnnotationsService:
             Annotation.TextPosition(
                 value=keyword,
                 positions=[
-                    start_lower_x, start_lower_y, end_upper_x, end_upper_y],  # type: ignore
+                    start_lower_x,
+                    start_lower_y,
+                    end_upper_x,
+                    end_upper_y
+                ],
             )
         )
 
     def _create_annotation_object(
         self,
-        token_positions: PDFTokenPositions,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
+        token: PDFWord,
         token_type: str,
         entity: dict,
         entity_id: str,
         entity_category: str,
         color: str,
     ) -> Annotation:
-        curr_page_coor_obj = char_coord_objs_in_pdf
-        cropbox = cropbox_in_pdf
-
         keyword_positions: List[Annotation.TextPosition] = []
-        char_indexes = list(token_positions.char_positions.keys())
 
         self._create_keyword_objects(
-            curr_page_coor_obj=curr_page_coor_obj,
-            indexes=char_indexes,
             keyword_positions=keyword_positions,
-            cropbox=cropbox,
+            token=token
         )
 
         # entity here is data structure from LMDB
         # see services/annotations/util.py for definition
-        keyword_starting_idx = char_indexes[0]
-        keyword_ending_idx = char_indexes[-1]
-        link_search_term = token_positions.keyword
+        keyword_starting_idx = token.meta.lo_location_offset
+        keyword_ending_idx = token.meta.hi_location_offset
+        link_search_term = token.keyword
         if entity['id_type'] != DatabaseType.NCBI.value:
             hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
         else:
@@ -284,12 +288,12 @@ class AnnotationsService:
             # we want to actually use the real name inside LMDB
             # for the `keyword` property
             annotation = OrganismAnnotation(
-                page_number=token_positions.page_number,
+                page_number=token.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
                 keyword=entity['synonym'],
-                text_in_document=token_positions.keyword,
-                keyword_length=len(token_positions.keyword),
+                text_in_document=token.keyword,
+                keyword_length=len(token.keyword),
                 lo_location_offset=keyword_starting_idx,
                 hi_location_offset=keyword_ending_idx,
                 meta=organism_meta,
@@ -309,12 +313,12 @@ class AnnotationsService:
                 all_text=entity['synonym'],
             )
             annotation = GeneAnnotation(
-                page_number=token_positions.page_number,
+                page_number=token.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
                 keyword=entity['synonym'],
-                text_in_document=token_positions.keyword,
-                keyword_length=len(token_positions.keyword),
+                text_in_document=token.keyword,
+                keyword_length=len(token.keyword),
                 lo_location_offset=keyword_starting_idx,
                 hi_location_offset=keyword_ending_idx,
                 meta=gene_meta,
@@ -333,12 +337,12 @@ class AnnotationsService:
                 all_text=entity['synonym'],
             )
             annotation = Annotation(
-                page_number=token_positions.page_number,
+                page_number=token.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
                 keyword=entity['synonym'],
-                text_in_document=token_positions.keyword,
-                keyword_length=len(token_positions.keyword),
+                text_in_document=token.keyword,
+                keyword_length=len(token.keyword),
                 lo_location_offset=keyword_starting_idx,
                 hi_location_offset=keyword_ending_idx,
                 meta=meta,
@@ -352,8 +356,6 @@ class AnnotationsService:
         token_type: str,
         color: str,
         id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         """Create annotation objects for tokens.
 
@@ -381,7 +383,7 @@ class AnnotationsService:
         tokens_lowercased = set([normalize_str(s) for s in list(tokens.keys())])
 
         for word, lmdb_match in tokens.items():
-            for token_positions in lmdb_match.tokens:
+            for token in lmdb_match.tokens:
                 synonym_common_names_dict: Dict[str, Set[str]] = {}
 
                 for entity in lmdb_match.entities:
@@ -409,9 +411,7 @@ class AnnotationsService:
 
                     try:
                         annotation = self._create_annotation_object(
-                            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                            cropbox_in_pdf=cropbox_in_pdf,
-                            token_positions=token_positions,
+                            token=token,
                             token_type=token_type,
                             entity=entity,
                             entity_id=entity[id_str],
@@ -426,7 +426,7 @@ class AnnotationsService:
 
     def _get_closest_entity_organism_pair(
         self,
-        entity_position: PDFTokenPositions,
+        entity: PDFWord,
         organism_matches: Dict[str, str],
     ) -> Tuple[str, str, float]:
         """Gets the correct entity/organism pair for a given entity
@@ -442,10 +442,8 @@ class AnnotationsService:
 
         Currently used for proteins and genes.
         """
-
-        char_indexes = list(entity_position.char_positions.keys())
-        entity_location_lo = char_indexes[0]
-        entity_location_hi = char_indexes[-1]
+        entity_location_lo = entity.meta.lo_location_offset
+        entity_location_hi = entity.meta.hi_location_offset
 
         closest_dist = inf
         curr_closest_organism = None
@@ -496,8 +494,6 @@ class AnnotationsService:
     def _annotate_type_gene(
         self,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
     ) -> List[Annotation]:
         """Gene specific annotation. Nearly identical to `_get_annotation`,
         except that we check genes against the matched organisms found in the
@@ -522,15 +518,15 @@ class AnnotationsService:
 
         matches: List[Annotation] = []
 
-        entity_tokenpos_pairs = []
+        entity_token_pairs = []
         gene_names: Set[str] = set()
         for word, lmdb_match in tokens.items():
-            for token_positions in lmdb_match.tokens:
+            for token in lmdb_match.tokens:
                 for entity in lmdb_match.entities:
                     entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
                     gene_names.add(entity_synonym)
 
-                    entity_tokenpos_pairs.append((entity, token_positions))
+                    entity_token_pairs.append((entity, token))
 
         gene_names_list = list(gene_names)
 
@@ -550,7 +546,7 @@ class AnnotationsService:
                     matched_organism_ids=[self.specified_organism.organism_id],
                 )
 
-        for entity, token_positions in entity_tokenpos_pairs:
+        for entity, token in entity_token_pairs:
             gene_id = None
             category = None
             try:
@@ -573,7 +569,7 @@ class AnnotationsService:
                                 organisms_to_match[key] = d[key]
 
                     gene_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(
-                        entity_position=token_positions,
+                        entity=token,
                         organism_matches=organisms_to_match
                     )
 
@@ -619,9 +615,7 @@ class AnnotationsService:
 
                 if gene_id and category:
                     annotation = self._create_annotation_object(
-                        char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                        cropbox_in_pdf=cropbox_in_pdf,
-                        token_positions=token_positions,
+                        token=token,
                         token_type=EntityType.GENE.value,
                         entity=entity,
                         entity_id=gene_id,
@@ -633,99 +627,73 @@ class AnnotationsService:
 
     def _annotate_anatomy(
         self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
+        entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_type_anatomy,
             token_type=EntityType.ANATOMY.value,
             color=EntityColor.ANATOMY.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
+            id_str=entity_id_str
         )
 
     def _annotate_type_chemical(
         self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
+        entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_type_chemical,
             token_type=EntityType.CHEMICAL.value,
             color=EntityColor.CHEMICAL.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
+            id_str=entity_id_str
         )
 
     def _annotate_type_compound(
         self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
+        entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_type_compound,
             token_type=EntityType.COMPOUND.value,
             color=EntityColor.COMPOUND.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
+            id_str=entity_id_str
         )
 
     def _annotate_type_disease(
         self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
+        entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_type_disease,
             token_type=EntityType.DISEASE.value,
             color=EntityColor.DISEASE.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
+            id_str=entity_id_str
         )
 
     def _annotate_type_food(
         self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
+        entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_type_food,
             token_type=EntityType.FOOD.value,
             color=EntityColor.FOOD.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
+            id_str=entity_id_str
         )
 
     def _annotate_type_phenotype(
         self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
+        entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_type_phenotype,
             token_type=EntityType.PHENOTYPE.value,
             color=EntityColor.PHENOTYPE.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
+            id_str=entity_id_str
         )
 
     def _annotate_type_protein(
         self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
+        entity_id_str: str
     ) -> List[Annotation]:
         """Nearly identical to `self._annotate_type_gene`. Return a list of
         protein annotations with the correct protein_id. If the protein
@@ -736,14 +704,14 @@ class AnnotationsService:
 
         matches: List[Annotation] = []
 
-        entity_tokenpos_pairs = []
+        entity_token_pairs = []
         protein_names: Set[str] = set()
         for word, lmdb_match in tokens.items():
             for token_positions in lmdb_match.tokens:
                 for entity in lmdb_match.entities:
                     protein_names.add(entity['synonym'])
 
-                    entity_tokenpos_pairs.append((entity, token_positions))
+                    entity_token_pairs.append((entity, token_positions))
 
         protein_names_list = list(protein_names)
 
@@ -763,7 +731,7 @@ class AnnotationsService:
                     organisms=[self.specified_organism.organism_id],
                 )
 
-        for entity, token_positions in entity_tokenpos_pairs:
+        for entity, token in entity_token_pairs:
             category = entity.get('category', '')
             try:
                 protein_id = entity[EntityIdStr.PROTEIN.value]
@@ -775,7 +743,7 @@ class AnnotationsService:
                 # move into function later if more than these two use
                 if entity_synonym in protein_organism_matches:
                     protein_id, organism_id, closest_distance = self._get_closest_entity_organism_pair(  # noqa
-                        entity_position=token_positions,
+                        entity=token,
                         organism_matches=protein_organism_matches[entity_synonym]
                     )
 
@@ -795,23 +763,17 @@ class AnnotationsService:
                         continue
 
                 annotation = self._create_annotation_object(
-                    char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                    cropbox_in_pdf=cropbox_in_pdf,
-                    token_positions=token_positions,
+                    token=token,
                     token_type=EntityType.PROTEIN.value,
                     entity=entity,
                     entity_id=protein_id,
                     entity_category=category,
-                    color=EntityColor.PROTEIN.value,
+                    color=EntityColor.PROTEIN.value
                 )
                 matches.append(annotation)
         return matches
 
-    def _annotate_type_species_local(
-        self,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
-    ) -> List[Annotation]:
+    def _annotate_type_species_local(self,) -> List[Annotation]:
         """Similar to self._get_annotation() but for creating
         annotations of custom species.
         However, does not check if a synonym is used by multiple
@@ -824,18 +786,16 @@ class AnnotationsService:
         custom_annotations: List[Annotation] = []
 
         for word, lmdb_match in tokens.items():
-            for token_positions in lmdb_match.tokens:
+            for token in lmdb_match.tokens:
                 for entity in lmdb_match.entities:
                     try:
                         annotation = self._create_annotation_object(
-                            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                            cropbox_in_pdf=cropbox_in_pdf,
-                            token_positions=token_positions,
+                            token=token,
                             token_type=EntityType.SPECIES.value,
                             entity=entity,
                             entity_id=entity[EntityIdStr.SPECIES.value],
                             entity_category=entity.get('category', ''),
-                            color=EntityColor.SPECIES.value,
+                            color=EntityColor.SPECIES.value
                         )
                     except KeyError:
                         continue
@@ -846,28 +806,27 @@ class AnnotationsService:
     def _annotate_type_species(
         self,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
-        word_index_dict: Dict[int, str],
-        custom_annotations: List[dict]
+        custom_annotations: List[dict],
+        excluded_annotations: List[dict]
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
             tokens=self.matched_type_species,
             token_type=EntityType.SPECIES.value,
             color=EntityColor.SPECIES.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
+            id_str=entity_id_str
         )
 
-        species_annotations_local = self._annotate_type_species_local(
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
-        )
+        species_annotations_local = self._annotate_type_species_local()
 
-        custom_annotations_species = [
+        inclusion_type_species_local = [
             custom for custom in custom_annotations if custom.get(
-                'meta', {}).get('type') == EntityType.SPECIES.value]
+                'meta', {}).get('type') == EntityType.SPECIES.value and not custom.get(
+                    'meta', {}).get('includeGlobally')]
+
+        exclusion_type_species_local = [
+            exclude for exclude in excluded_annotations if exclude.get(
+                'type') == EntityType.SPECIES.value and not exclude.get(
+                    'excludeGlobally')]
 
         def has_center_point(
             custom_rect_coords: List[float],
@@ -893,7 +852,7 @@ class AnnotationsService:
         # of its occurrences annotated as a custom annotation
         filtered_species_annotations_local: List[Annotation] = []
 
-        for custom in custom_annotations_species:
+        for custom in inclusion_type_species_local:
             for custom_anno in species_annotations_local:
                 if custom.get('rects') and len(custom['rects']) == len(custom_anno.rects):
                     # check if center point for each rect in custom_anno.rects
@@ -907,55 +866,71 @@ class AnnotationsService:
 
         # clean species annotations first
         # because genes depend on them
-        species_annotations = self._clean_annotations(
-            annotations=species_annotations,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            word_index_dict=word_index_dict
+        species_annotations = self._get_fixed_false_positive_unified_annotations(
+            annotations_list=species_annotations
         )
+
+        # we only want the annotations with correct coordinates
+        # because it is possible for a word to only have one
+        # of its occurrences annotated as a custom annotation
+        exclusions_to_remove: Set[str] = set()
+
+        for custom in exclusion_type_species_local:
+            for anno in species_annotations:
+                if custom.get('rects') and len(custom['rects']) == len(anno.rects):
+                    # check if center point for each rect in anno.rects
+                    # is in the corresponding rectangle from custom annotations
+                    valid = all(list(map(has_center_point, custom['rects'], anno.rects)))
+
+                    # if center point is in custom annotation rectangle
+                    # then remove it from list
+                    if valid:
+                        exclusions_to_remove.add(anno.uuid)
+
+        filtered_species_annotations_of_exclusions = [
+            anno for anno in species_annotations if anno.uuid not in exclusions_to_remove]
+
+        filtered_species_annotations: List[Annotation] = []
+
+        if inclusion_type_species_local:
+            filtered_species_annotations += filtered_species_annotations_local
+
+        if exclusion_type_species_local:
+            filtered_species_annotations += filtered_species_annotations_of_exclusions
+        else:
+            filtered_species_annotations += species_annotations
 
         self.organism_frequency, self.organism_locations, self.organism_categories = \
             self._get_entity_frequency_location_and_category(
-                annotations=species_annotations + filtered_species_annotations_local)
+                annotations=filtered_species_annotations)
+
         return species_annotations
 
-    def _annotate_type_company(
-        self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
-    ) -> List[Annotation]:
+    def _annotate_type_company(self, entity_id_str: str) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_type_company,
             token_type=EntityType.COMPANY.value,
             color=EntityColor.COMPANY.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
+            id_str=entity_id_str
         )
 
     def _annotate_type_entity(
         self,
-        entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
+        entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
             tokens=self.matched_type_entity,
             token_type=EntityType.ENTITY.value,
             color=EntityColor.ENTITY.value,
-            id_str=entity_id_str,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
+            id_str=entity_id_str
         )
 
     def annotate(
         self,
         annotation_type: str,
         entity_id_str: str,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
-        word_index_dict: Dict[int, str],
-        custom_annotations: List[dict]
+        custom_annotations: List[dict],
+        excluded_annotations: List[dict]
     ) -> List[Annotation]:
         funcs = {
             EntityType.ANATOMY.value: self._annotate_anatomy,
@@ -975,17 +950,12 @@ class AnnotationsService:
         if annotation_type == EntityType.SPECIES.value:
             return annotate_entities(
                 entity_id_str=entity_id_str,
-                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                cropbox_in_pdf=cropbox_in_pdf,
-                word_index_dict=word_index_dict,
-                custom_annotations=custom_annotations
+                custom_annotations=custom_annotations,
+                excluded_annotations=excluded_annotations
             )  # type: ignore
         else:
             return annotate_entities(
-                entity_id_str=entity_id_str,
-                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                cropbox_in_pdf=cropbox_in_pdf
-            )  # type: ignore
+                entity_id_str=entity_id_str)  # type: ignore
 
     def _update_entity_frequency_map(
         self,
@@ -1070,9 +1040,7 @@ class AnnotationsService:
 
     def _get_fixed_false_positive_unified_annotations(
         self,
-        annotations_list: List[Annotation],
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        word_index_dict: Dict[int, str]
+        annotations_list: List[Annotation]
     ) -> List[Annotation]:
         """Removes any false positive annotations.
 
@@ -1086,60 +1054,7 @@ class AnnotationsService:
         but the casing were not taken into account, e.g
         gene 'marA' is correct, but 'mara' is not.
         """
-        def is_abbrev(text_in_document, annotation, word_index_list, abbrevs) -> bool:
-            """Determine if a word is an abbreviation. If wrapped inside parenthesis,
-            look at x previous words. Start from closest word to abbreviation, and
-            check the first character.
-            """
-            if text_in_document not in abbrevs:
-                if all([c.isupper() for c in text_in_document]) and \
-                    len(text_in_document) in ABBREVIATION_WORD_LENGTH:  # noqa
-                    try:
-                        begin = char_coord_objs_in_pdf[annotation.lo_location_offset - 1].get_text()  # noqa
-                        end = char_coord_objs_in_pdf[annotation.hi_location_offset + 1].get_text()  # noqa
-                    except IndexError:
-                        # if index out of range than
-                        # character is beginning/end of paper
-                        return False
-                    if begin == '(' and end == ')':
-                        i = bisect_left(word_index_list, annotation.lo_location_offset)
-                        abbrev = ''
-
-                        for idx in reversed(word_index_list[i-len(text_in_document):i]):
-                            word = word_index_dict[idx]
-                            if '-' in word or '/' in word:
-                                word_split = []
-                                if '-' in word:
-                                    word_split = word.split('-')
-                                elif '/' in word:
-                                    word_split = word.split('/')
-
-                                for split in reversed(word_split):
-                                    if len(abbrev) == len(text_in_document):
-                                        break
-                                    else:
-                                        if split:
-                                            abbrev = split[0] + abbrev
-                                if len(abbrev) == len(text_in_document):
-                                    break
-                            else:
-                                abbrev = word[0] + abbrev
-                        if abbrev.lower() != text_in_document.lower():
-                            return False
-                        else:
-                            # is an abbreviation so mark it as so
-                            return True
-                    else:
-                        return False
-                else:
-                    return False
-            else:
-                return True
-
         fixed_annotations: List[Annotation] = []
-        word_index_list = list(word_index_dict)
-
-        abbrevs: Set[str] = set()
 
         for annotation in annotations_list:
             text_in_document = annotation.text_in_document.split(' ')
@@ -1150,10 +1065,7 @@ class AnnotationsService:
             (annotation.meta.type == EntityType.PROTEIN.value and len(text_in_document) == 1):  # noqa
                 text_in_document = text_in_document[0]  # type: ignore
                 if text_in_document == annotation.keyword:
-                    if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):
-                        abbrevs.add(text_in_document)  # type: ignore
-                    else:
-                        fixed_annotations.append(annotation)
+                    fixed_annotations.append(annotation)
             elif len(text_in_document) > 1:
                 keyword_from_annotation = annotation.keyword.split(' ')
                 if len(keyword_from_annotation) >= len(text_in_document):
@@ -1165,28 +1077,19 @@ class AnnotationsService:
                         fixed_annotations.append(annotation)
             else:
                 text_in_document = text_in_document[0]  # type: ignore
-                if is_abbrev(text_in_document, annotation, word_index_list, abbrevs):
-                    abbrevs.add(text_in_document)  # type: ignore
-                else:
-                    fixed_annotations.append(annotation)
+                fixed_annotations.append(annotation)
 
         return fixed_annotations
 
     def _create_annotations(
         self,
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
         types_to_annotate: List[Tuple[str, str]],
-        word_index_dict: Dict[int, str],
-        custom_annotations: List[dict]
+        custom_annotations: List[dict],
+        excluded_annotations: List[dict]
     ) -> List[Annotation]:
         """Create annotations.
 
         Args:
-            tokens: list of PDFTokenPositions
-            char_coord_objs_in_pdf: list of char objects from pdfminer
-            cropbox_in_pdf: the mediabox/cropbox offset from pdfminer
-                - boolean determines whether to check lmdb for that entity
             types_to_annotate: list of entity types to create annotations of
                 - NOTE: IMPORTANT: should always match with `EntityRecognition.identify_entities()`
                 - NOTE: IMPORTANT: Species should always be before Genes
@@ -1203,10 +1106,8 @@ class AnnotationsService:
             annotations = self.annotate(
                 annotation_type=entity_type,
                 entity_id_str=entity_id_str,
-                char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-                cropbox_in_pdf=cropbox_in_pdf,
-                word_index_dict=word_index_dict,
-                custom_annotations=custom_annotations
+                custom_annotations=custom_annotations,
+                excluded_annotations=excluded_annotations
             )
             unified_annotations.extend(annotations)
 
@@ -1215,7 +1116,8 @@ class AnnotationsService:
     def create_rules_based_annotations(
         self,
         custom_annotations: List[dict],
-        tokens: PDFTokenPositionsList,
+        excluded_annotations: List[dict],
+        tokens: PDFTokensList,
         entity_results: EntityResults,
         entity_type_and_id_pairs: List[Tuple[str, str]],
         specified_organism: SpecifiedOrganismStrain,
@@ -1237,35 +1139,26 @@ class AnnotationsService:
         self.specified_organism = specified_organism
 
         annotations = self._create_annotations(
-            char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
-            cropbox_in_pdf=tokens.cropbox_in_pdf,
             types_to_annotate=entity_type_and_id_pairs,
-            word_index_dict=tokens.word_index_dict,
-            custom_annotations=custom_annotations
+            custom_annotations=custom_annotations,
+            excluded_annotations=excluded_annotations
         )
         return self._clean_annotations(
-            annotations=annotations,
-            char_coord_objs_in_pdf=tokens.char_coord_objs_in_pdf,
-            word_index_dict=tokens.word_index_dict
-        )
+            annotations=annotations)
 
     def create_nlp_annotations(
         self,
         nlp_resp: List[dict],
         species_annotations: List[Annotation],
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        cropbox_in_pdf: Tuple[int, int],
         custom_annotations: List[dict],
-        entity_type_and_id_pairs: List[Tuple[str, str]],
-        word_index_dict: Dict[int, str]
+        excluded_annotations: List[dict],
+        entity_type_and_id_pairs: List[Tuple[str, str]]
     ) -> List[Annotation]:
         """Create annotations based on NLP."""
         nlp_annotations = self._create_annotations(
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            cropbox_in_pdf=cropbox_in_pdf,
             types_to_annotate=entity_type_and_id_pairs,
-            word_index_dict=word_index_dict,
-            custom_annotations=custom_annotations
+            custom_annotations=custom_annotations,
+            excluded_annotations=excluded_annotations
         )
 
         unified_annotations = species_annotations + nlp_annotations
@@ -1295,22 +1188,15 @@ class AnnotationsService:
             extra=EventLog(event_type='annotations').to_dict()
         )
         return self._clean_annotations(
-            annotations=unified_annotations,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            word_index_dict=word_index_dict
-        )
+            annotations=unified_annotations)
 
     def _clean_annotations(
         self,
-        annotations: List[Annotation],
-        char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]],
-        word_index_dict: Dict[int, str]
+        annotations: List[Annotation]
     ) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
-            annotations_list=annotations,
-            char_coord_objs_in_pdf=char_coord_objs_in_pdf,
-            word_index_dict=word_index_dict
-        )
+            annotations_list=annotations)
+
         fixed_unified_annotations = self.fix_conflicting_annotations(
             unified_annotations=fixed_unified_annotations,
         )
@@ -1491,13 +1377,13 @@ class AnnotationsService:
         self,
         keyword: str,
         is_case_insensitive: bool,
-        tokens: PDFTokenPositionsList
+        tokens_list: PDFTokensList
     ):
         """Returns coordinate positions and page numbers
         for all matching terms in the document
         """
         matches = []
-        for token in tokens.token_positions:
+        for token in tokens_list.tokens:
             if not is_case_insensitive:
                 if token.keyword != keyword:
                     continue
@@ -1505,10 +1391,8 @@ class AnnotationsService:
                 continue
             keyword_positions: List[Annotation.TextPosition] = []
             self._create_keyword_objects(
-                curr_page_coor_obj=tokens.char_coord_objs_in_pdf,
-                indexes=list(token.char_positions.keys()),
-                keyword_positions=keyword_positions,
-                cropbox=tokens.cropbox_in_pdf,
+                token=token,
+                keyword_positions=keyword_positions
             )
             rects = [pos.positions for pos in keyword_positions]
             keywords = [pos.value for pos in keyword_positions]

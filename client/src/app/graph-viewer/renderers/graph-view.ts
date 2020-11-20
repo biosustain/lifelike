@@ -17,6 +17,7 @@ import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 import { Subject } from 'rxjs';
 import { emptyIfNull } from '../../shared/utils/types';
 import { escapeRegExp } from 'lodash';
+import { compileFind, FindOptions } from '../../shared/utils/find';
 
 /**
  * A rendered view of a graph.
@@ -379,19 +380,17 @@ export abstract class GraphView implements GraphActionReceiver {
   /**
    * Get all nodes and edges that match some search terms.
    * @param terms the terms
+   * @param options addiitonal find options
    */
-  findMatching(terms: string[]): GraphEntity[] {
-    const pattern = new RegExp(
-      '\\b(' + terms.map(
-      term => escapeRegExp(term).replace(' ', ' +'),
-      ).join('|') + ')\\b', 'i');
+  findMatching(terms: string[], options: FindOptions = {}): GraphEntity[] {
+    const matcher = compileFind(terms, options);
     const matches: GraphEntity[] = [];
 
     for (const node of this.nodes) {
       const data: { detail?: string } = node.data != null ? node.data : {};
       const text = (emptyIfNull(node.display_name) + ' ' + emptyIfNull(data.detail)).toLowerCase();
 
-      if (pattern.test(text)) {
+      if (matcher(text)) {
         matches.push({
           type: GraphEntityType.Node,
           entity: node,
@@ -402,7 +401,7 @@ export abstract class GraphView implements GraphActionReceiver {
     for (const edge of this.edges) {
       const data: { detail?: string } = edge.data != null ? edge.data : {};
       const text = (emptyIfNull(edge.label) + ' ' + emptyIfNull(data.detail)).toLowerCase();
-      if (pattern.test(text)) {
+      if (matcher(text)) {
         matches.push({
           type: GraphEntityType.Edge,
           entity: edge,

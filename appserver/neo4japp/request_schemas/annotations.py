@@ -25,7 +25,6 @@ class MetaSchema(StrictSchema):
     isCustom = ma.Boolean(required=True)
     allText = ma.String(required=True)
     links = ma.Nested(LinksSchema, required=True)
-    primaryLink = ma.String(required=True)
     includeGlobally = ma.Boolean(required=True)
     isCaseInsensitive = ma.Boolean(required=True)
 
