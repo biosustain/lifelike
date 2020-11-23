@@ -61,6 +61,7 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
   }
 
   createMap() {
+    /*
     this.filesystemObjectActions.openMapCreateDialog(null).then(result => {
       this.workspaceManager.navigate([
         '/projects',
@@ -73,5 +74,7 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
       });
     }, () => {
     });
+     */
+    // TODO
   }
 }

@@ -116,17 +116,6 @@ class FileListSchema(CamelCaseSchema):
     results = fields.List(fields.Nested(FileSchema))
 
 
-@dataclass
-class FileUpdateRequest:
-    filename: str = None
-    parent_hash_id: str = None
-    description: str = None
-    mime_type: str = None
-    upload_url: str = None
-    content_value: Any = None
-    public: bool = None
-
-
 class BulkFileRequestSchema(CamelCaseSchema):
     hash_ids = fields.List(fields.String(validate=marshmallow.validate.Length(min=1, max=200)),
                            required=True,

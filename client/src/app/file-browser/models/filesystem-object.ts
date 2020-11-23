@@ -425,35 +425,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
     return this;
   }
-
-  getContentData(): Pick<FileCreateRequest, 'contentValue' | 'contentHashId' | 'contentUrl'> {
-    if (this.contentValue) {
-      return {
-        contentValue: this.contentValue,
-      };
-    } else if (this.uploadUrl) {
-      return {
-        contentUrl: this.uploadUrl,
-      };
-    } else {
-      return {};
-    }
-  }
-
-  getCreateRequest(): PartialCreateRequest {
-    return {
-      filename: this.filename,
-      parentHashId: this.parent != null ? this.parent.hashId : null,
-      description: this.description,
-      uploadUrl: this.uploadUrl,
-      public: this.public,
-      mimeType: this.mimeType,
-    };
-  }
 }
-
-export type PartialCreateRequest = Omit<FileCreateRequest, 'contentValue' | 'contentHashId'
-  | 'contentUrl' | 'organism' | 'annotationMethod'>;
 
 export interface PathLocator {
   projectName?: string;

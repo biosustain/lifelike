@@ -323,7 +323,8 @@ class FilesystemBaseView(MethodView):
         :param user: the user to check permissions for
         :return: the response
         """
-        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids))
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids),
+                                                   require_hash_ids=hash_ids)
         self.check_file_permissions(files, user, ['readable'], permit_recycled=True)
 
         returned_files = {}
@@ -571,7 +572,8 @@ class FileListView(FilesystemBaseView):
 
         hash_ids = targets['hash_ids']
 
-        files = self.get_nondeleted_recycled_files(hash_ids, current_user)
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids),
+                                                   require_hash_ids=hash_ids)
         self.check_file_permissions(files, current_user, ['writable'], permit_recycled=True)
 
         # ========================================
