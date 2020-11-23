@@ -6,6 +6,7 @@ import { ProjectList } from '../models/project-list';
 import { ResultList } from '../../interfaces/shared.interface';
 import { Observable } from 'rxjs';
 import { ProjectImpl } from '../models/filesystem-object';
+import { ProjectData } from '../schema';
 
 @Injectable()
 export class ProjectService {

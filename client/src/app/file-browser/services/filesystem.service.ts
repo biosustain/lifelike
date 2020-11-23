@@ -35,12 +35,12 @@ export class FilesystemService {
     });
   }
 
-  put(request: RecursivePartial<FileCreateRequest>): Observable<HttpEvent<object> & {
+  put(request: RecursivePartial<FileCreateRequest>): Observable<HttpEvent<any> & {
     bodyValue?: FilesystemObject,
   }> {
     return this.http.put(
       `/api/filesystem/objects`,
-      objectToMixedFormData(request), {
+      objectToFormData(request), {
         ...this.apiService.getHttpOptions(true),
         observe: 'events',
         reportProgress: true,
@@ -49,7 +49,8 @@ export class FilesystemService {
     ).pipe(
       map(event => {
         if (event.type === HttpEventType.Response) {
-          (event as any).bodyValue = new FilesystemObject().update(event.body);
+          const body: FileDataResponse = event.body as FileDataResponse;
+          (event as any).bodyValue = new FilesystemObject().update(body.object);
         }
         return event;
       }),

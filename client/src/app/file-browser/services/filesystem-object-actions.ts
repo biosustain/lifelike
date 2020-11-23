@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Directory } from './project-space.service';
-import { KnowledgeMap } from '../../drawing-tool/services/interfaces';
 import { EnrichmentTableCreateDialogComponent } from '../components/enrichment-table-create-dialog.component';
-import { EnrichmentTableEditDialogComponent } from '../components/enrichment-table-edit-dialog.component';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { FileEditDialogComponent } from '../components/file-edit-dialog.component';
 import { ObjectDeleteDialogComponent } from '../components/object-delete-dialog.component';
 import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,21 +10,13 @@ import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { ProjectPageService } from './project-page.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { MapService } from '../../drawing-tool/services';
-import { BehaviorSubject, combineLatest, from, Observable, throwError } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { Progress, ProgressMode } from '../../interfaces/common-dialog.interface';
-import { catchError, filter, finalize, map, tap } from 'rxjs/operators';
-import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
+import { filter, finalize, map, tap } from 'rxjs/operators';
+import { HttpEventType } from '@angular/common/http';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { DirectoryObject } from '../../interfaces/projects.interface';
-import { ObjectDeletionResultDialogComponent } from '../components/object-deletion-result-dialog.component';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
-import {
-  DIRECTORY_MIMETYPE,
-  ENRICHMENT_TABLE_MIMETYPE,
-  FilesystemObject,
-  MAP_MIMETYPE,
-  PDF_MIMETYPE,
-} from '../models/filesystem-object';
+import { DIRECTORY_MIMETYPE, FilesystemObject, MAP_MIMETYPE } from '../models/filesystem-object';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { DefaultMap } from '../../shared/utils/collections';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
@@ -140,14 +128,13 @@ export class FilesystemObjectActions {
         dialogRef.componentInstance[key] = options[key];
       }
     }
-    return dialogRef.result.then((value: ObjectEditDialogValue) => {
+    dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
       return this.executePutWithProgressDialog({
-        ...target.getCreateRequest(),
         ...value.request,
-        ...target.getContentData(),
         ...(options.request || {}),
       }).toPromise();
     });
+    return dialogRef.result;
   }
 
   /**
@@ -206,14 +193,16 @@ export class FilesystemObjectActions {
     object.filename = 'Untitled Map';
     object.mimeType = MAP_MIMETYPE;
     object.parent = parent;
-    object.contentValue = new Blob([JSON.stringify({
-      edges: [],
-      nodes: [],
-    })], {
-      type: MAP_MIMETYPE,
-    });
     return this.openCreateDialog(object, {
       title: 'New Map',
+      request: {
+        contentValue: new Blob([JSON.stringify({
+          edges: [],
+          nodes: [],
+        })], {
+          type: MAP_MIMETYPE,
+        }),
+      }
     });
   }
 
@@ -243,10 +232,10 @@ export class FilesystemObjectActions {
     dialogRef.componentInstance.title = `Move ${getObjectLabel(targets)}`;
     dialogRef.componentInstance.emptyDirectoryMessage = 'There are no sub-folders in this folder.';
     dialogRef.componentInstance.objectFilter = (o: FilesystemObject) => o.isDirectory;
-    return dialogRef.result.then((destinations: FilesystemObject[]) => {
+    dialogRef.componentInstance.accept = ((destinations: FilesystemObject[]) => {
       const destination = destinations[0];
 
-      const progressDialogRef = this.createProgressDialog(`Moving  ${getObjectLabel(target)}...`);
+      const progressDialogRef = this.createProgressDialog(`Moving  ${getObjectLabel(targets)}...`);
 
       return this.filesystemService.save(targets.map(target => target.hashId), {
         parentHashId: destination.hashId,
@@ -260,6 +249,7 @@ export class FilesystemObjectActions {
           destination,
         }));
     });
+    return dialogRef.result;
   }
 
   /**
@@ -269,9 +259,9 @@ export class FilesystemObjectActions {
   openEditDialog(target: FilesystemObject): Promise<any> {
     const dialogRef = this.modalService.open(ObjectEditDialogComponent);
     dialogRef.componentInstance.object = target;
-    return dialogRef.result.then(changes => {
+    dialogRef.componentInstance.accept = ((changes: ObjectEditDialogValue) => {
       const progressDialogRef = this.createProgressDialog(`Saving changes to ${getObjectLabel(target)}...`);
-      return this.filesystemService.save([target.hashId], changes, {
+      return this.filesystemService.save([target.hashId], changes.request, {
         [target.hashId]: target,
       })
         .pipe(
@@ -280,12 +270,13 @@ export class FilesystemObjectActions {
         )
         .toPromise();
     });
+    return dialogRef.result;
   }
 
   openDeleteDialog(targets: FilesystemObject[]): Promise<any> {
     const dialogRef = this.modalService.open(ObjectDeleteDialogComponent);
     dialogRef.componentInstance.objects = targets;
-    return dialogRef.result.then(() => {
+    dialogRef.componentInstance.accept = (() => {
       const progressDialogRef = this.createProgressDialog(`Deleting ${getObjectLabel(targets)}...`);
       return this.filesystemService.delete(targets.map(target => target.hashId))
         .pipe(
@@ -294,6 +285,7 @@ export class FilesystemObjectActions {
         )
         .toPromise();
     });
+    return dialogRef.result;
   }
 
   openShareDialog(object: FilesystemObject): Promise<any> {

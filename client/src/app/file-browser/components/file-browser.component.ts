@@ -68,6 +68,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   goUp(object: FilesystemObject) {
+    /*
     if (object.path != null) {
       if (object.path.length > 2) {
         this.workspaceManager.navigate(
@@ -82,6 +83,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
         this.workspaceManager.navigate(['/projects']);
       }
     }
+     */
+    // TODO
   }
 
   getObjectQueryParams(object: FilesystemObject) {
@@ -113,8 +116,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   openDirectoryCreateDialog(parent: FilesystemObject) {
-    return this.actions.openDirectoryCreateDialog(parent).then(() => {
-      this.snackBar.open(`Directory created.`, 'Close', {
+    return this.actions.openDirectoryCreateDialog(parent).then(object => {
+      this.snackBar.open(`Directory ${getObjectLabel(object)} created.`, 'Close', {
         duration: 5000,
       });
       this.load(this.hashId);
@@ -123,8 +126,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   openMapCreateDialog(parent: FilesystemObject) {
-    return this.actions.openMapCreateDialog(parent).then(() => {
-      this.snackBar.open(`Map created.`, 'Close', {
+    return this.actions.openMapCreateDialog(parent).then(object => {
+      this.snackBar.open(`Map ${getObjectLabel(object)} created.`, 'Close', {
         duration: 5000,
       });
       this.load(this.hashId);
@@ -133,8 +136,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   openEnrichmentTableCreateDialog(parent: FilesystemObject) {
-    return this.actions.openEnrichmentTableCreateDialog(parent).then(() => {
-      this.snackBar.open(`Enrichment table created.`, 'Close', {
+    return this.actions.openEnrichmentTableCreateDialog(parent).then(object => {
+      this.snackBar.open(`Enrichment table ${getObjectLabel(object)} created.`, 'Close', {
         duration: 5000,
       });
       this.load(this.hashId);
@@ -143,8 +146,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   openUploadDialog(parent: FilesystemObject) {
-    return this.actions.openUploadDialog(parent).then(() => {
-      this.snackBar.open(`File saved to folder.`, 'Close', {
+    return this.actions.openUploadDialog(parent).then(object => {
+      this.snackBar.open(`${getObjectLabel(object)} successfully uploaded.`, 'Close', {
         duration: 5000,
       });
       this.load(this.hashId);
@@ -192,8 +195,8 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
-  openEntityCloudPane() {
-    const url = `/entity-cloud/${this.projectName}`;
+  openEntityCloudPane(target: FilesystemObject) {
+    const url = `/entity-cloud/${target.project.name}`;
     this.workspaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
   }
 

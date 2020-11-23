@@ -4,7 +4,7 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../../shared/services/message-dialog.service';
 import { FilesystemObject } from '../../models/filesystem-object';
 import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
-import { FileCreateRequest } from '../../schema';
+import { FileContentSource, FileCreateRequest } from '../../schema';
 import { OrganismAutocomplete } from '../../../interfaces';
 import { select, Store } from '@ngrx/store';
 import { AuthSelectors } from '../../../auth/store';
@@ -16,7 +16,7 @@ import { ObjectSelectionDialogComponent } from './object-selection-dialog.compon
   selector: 'app-object-edit-dialog',
   templateUrl: './object-edit-dialog.component.html',
 })
-export class ObjectEditDialogComponent extends CommonFormDialogComponent {
+export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectEditDialogValue> {
   @ViewChild('fileInput', {static: false})
   protected readonly fileInputElement: ElementRef;
 
@@ -106,18 +106,22 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent {
     return this.object.isAnnotatable || this.filePossiblyAnnotatable;
   }
 
-  private getFileCreateRequest(value: { [key: string]: any }): Pick<FileCreateRequest, 'contentValue' | 'contentUrl'> {
-    switch (value.contentSource) {
-      case 'contentValue':
-        return {
-          contentValue: value.contentValue,
-        };
-      case 'contentUrl':
-        return {
-          contentValue: value.contentValue,
-        };
-      default:
-        return {};
+  private getFileContentRequest(value: { [key: string]: any }): Partial<FileContentSource> {
+    if (this.promptUpload) {
+      switch (value.contentSource) {
+        case 'contentValue':
+          return {
+            contentValue: value.contentValue,
+          };
+        case 'contentUrl':
+          return {
+            contentValue: value.contentValue,
+          };
+        default:
+          return {};
+      }
+    } else {
+      return {};
     }
   }
 
@@ -128,10 +132,17 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent {
     this.object.description = value.description;
     this.object.public = value.public;
 
-    const request: Partial<FileCreateRequest> = {};
+    const request: FileCreateRequest = {
+      filename: this.object.filename,
+      parentHashId: this.object.parent ? this.object.parent.hashId : null,
+      description: this.object.description,
+      public: this.object.public,
+      mimeType: this.object.mimeType,
+      ...this.getFileContentRequest(value),
+    };
     return {
       object: this.object,
-      request: this.getFileCreateRequest(value),
+      request,
       annotationMethod: value.annotationMethod,
       organism: value.organism,
     };
@@ -188,7 +199,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent {
     }
   }
 
-  private getDocumentPossibility(file: File): Promise<boolean> {
+  private getDocumentPossibility(file): Promise<boolean> {
     // Too big, assume it could be a document
     if (file.size >= 1024 * 500) {
       return Promise.resolve(true);
@@ -224,7 +235,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent {
 
 export interface ObjectEditDialogValue {
   object: FilesystemObject;
-  request: Pick<FileCreateRequest, 'contentValue' | 'contentUrl'>;
+  request: FileCreateRequest;
   annotationMethod: string;
   organism: OrganismAutocomplete;
 }
