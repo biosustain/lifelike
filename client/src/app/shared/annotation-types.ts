@@ -20,7 +20,9 @@ export const ENTITY_TYPES = [
   new EntityType('Entity', '#7f7f7f'),
   new EntityType('Compound', '#4caf50'),
   new EntityType('Food', '#8eff69'),
-  new EntityType('Anatomy', '#0202bd')
+  new EntityType('Anatomy', '#0202bd'),
+  new EntityType('Lab Strain', '#f71698'),
+  new EntityType('Lab Sample', '#f71698')
 ];
 
 export const ENTITY_TYPE_MAP = ENTITY_TYPES.reduce((map, item) => {
