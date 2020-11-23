@@ -464,6 +464,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     let target = event.target as any;
     let parent = target.closest('.textLayer');
     if (parent) {
+      parent.style.zIndex = 100;
       // coming from pdf-viewer
       // prepare it for drag and drop
       this.dragAndDropOriginCoord = {
@@ -498,6 +499,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       // coming not from pdf-viewer
       return false;
     }
+    parent.closest('.textLayer').style.zIndex = null;
+    const range = selection.getRangeAt(0);
+    const selectionBounds = range.getBoundingClientRect();
     const selectedRects = selection.getRangeAt(0).getClientRects();
     if (selectedRects.length === 0) {
       this.clearSelection();
@@ -538,7 +542,34 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const fixedSelectedRects = [];
     const newLineThreshold = .30;
 
-    function createCorrectRects(rects: DOMRectList) {
+    const clonedSelection = selection.getRangeAt(0).cloneContents();
+
+    let rects = [];
+    clonedSelection.children.forEach(org_span=>{
+      const span = org_span.cloneNode(true);
+      const { transform  } = span.style;
+      const transform_match = transform.match(/[\d\.]+/);
+
+      // decompose https://github.com/mozilla/pdf.js/blob/b1d3b6eb12b471af060c40a2d1fe479b1878ceb7/src/display/text_layer.js#L679:L739
+      span.style.padding = null;
+      if (transform_match) {
+        span.style.transform = `scaleX(${transform_match[0]})`;
+      }
+      span.style.display = 'block';
+      span.style.position = 'absolute'
+      span.style.lineHeight = 1;
+      span.style.transformOrigin = '0% 0%';
+
+      pageElement.appendChild(span)
+
+      rects = [...rects, ...span.getClientRects()];
+
+      span.remove()
+    });
+
+    rects[0] = selectedRects[0] // first one used to be wrong
+
+    function createCorrectRects(rects: Array<DOMRect>) {
       let startLowerX = null, startLowerY = null;
 
       let currentRect = new DOMRect(0, 0, 0, 0);
@@ -571,7 +602,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
                 rectsOnNewLine.push(rects[j]);
               }
 
-              const unprocessedDOMRects = {length: rectsOnNewLine.length} as DOMRectList;
+              const unprocessedDOMRects = {length: rectsOnNewLine.length} as Array<DOMRect>;
               rectsOnNewLine.forEach((r, i) => unprocessedDOMRects[i] = r);
               createCorrectRects(unprocessedDOMRects);
               // break because the recursion already calculated the
@@ -587,7 +618,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         if (currentRect.width === 0) {
           currentRect.width = rect.width;
         } else if (rect.width !== prevRect.width) {
-          currentRect.width += rect.width;
+          currentRect.width = rect.x - currentRect.x + rect.width;
         }
       }
 
@@ -602,7 +633,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     // Each section rectangle represent one selection,
     // this means multiple words on the same line should
     // create one selection rectangle
-    createCorrectRects(selectedRects);
+    createCorrectRects(rects);
 
     this.selectedTextCoords = [];
     const that = this;
@@ -647,9 +678,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       el.setAttribute('location', JSON.stringify(location));
       el.setAttribute('meta', JSON.stringify(meta));
       el.setAttribute('class', 'frictionless-annotation');
-      el.setAttribute('style', 'position: absolute; background-color: rgba(255, 255, 51, 0.3);' +
-          'left:' + left + 'px; top:' + (top + 2) + 'px;' +
-          'width:' + width + 'px; height:' + height + 'px;');
+      el.setAttribute('style', `
+        position: absolute;
+        background-color: rgba(255, 255, 51, 0.3);
+        left: ${left}px;
+        top: ${top}px;
+        width: ${width}px;
+        height: ${height}px;
+      `);
       el.setAttribute('id', 'newElement' + idx);
 
       if (mouseRecTopBorder <= top && mouseRectBottomBorder >= top) {
