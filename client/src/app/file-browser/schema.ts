@@ -1,5 +1,3 @@
-import { FilesystemObject } from './models/filesystem-object';
-
 export interface ProjectData {
   hashId: string;
   name: string;
@@ -29,31 +27,42 @@ export interface FilesystemObjectData {
   effectivelyRecycled: boolean;
 }
 
-export interface MultipleFileDataResponse {
-  objects: { [hashId: string]: FilesystemObjectData };
+interface FileContentValueRequest {
+  contentValue: Blob;
 }
 
-export interface BulkFileUpdateRequest {
-  filename: string;
-  parentHashId: string;
-  description: string;
-  uploadUrl: string;
-  public: boolean;
-  annotationMethod: string;
-  organism: string;
-  contentValue?: Blob;
+/**
+ * You can specify content one of three ways.
+ */
+export type FileContentSource = { contentHashId: string }
+  | { contentUrl: string }
+  | FileContentValueRequest;
+
+export interface BulkFileUpdateRequest extends Partial<FileContentValueRequest> {
+  filename?: string;
+  parentHashId?: string;
+  description?: string;
+  uploadUrl?: string;
+  public?: boolean;
 }
 
-// tslint:disable-next-line
+// tslint:disable-next-line:no-empty-interface
 export interface FileUpdateRequest extends BulkFileUpdateRequest {
 }
 
-export interface FileCreateRequest extends FileUpdateRequest {
-  mimeType: string;
-  contentHashId?: string;
-  contentUrl?: string;
-}
+// We need to require the filename and parentHashId fields
+type RequiredFileCreateRequestFields = 'filename' | 'parentHashId';
+type BaseFileCreateRequest = Required<Pick<BulkFileUpdateRequest, RequiredFileCreateRequestFields>>
+  & Omit<FileUpdateRequest, RequiredFileCreateRequestFields>;
+
+export type FileCreateRequest = BaseFileCreateRequest & Partial<FileContentSource> & {
+  mimeType?: string;
+};
 
 export interface FileDataResponse {
   object: FilesystemObjectData;
+}
+
+export interface MultipleFileDataResponse {
+  objects: { [hashId: string]: FilesystemObjectData };
 }

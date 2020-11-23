@@ -86,8 +86,10 @@ def load_mixed_form_json(request, name, field):
             def getter():
                 return data
         except (KeyError, ValueError) as e:
+            exception = e
+
             def getter():
-                raise e
+                raise exception
 
         setattr(request, cache_field, getter)
 
