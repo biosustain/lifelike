@@ -24,7 +24,7 @@ import { ObjectSelectionDialogComponent } from '../components/dialog/object-sele
 import { FilesystemService } from './filesystem.service';
 import { ObjectEditDialogComponent, ObjectEditDialogValue } from '../components/dialog/object-edit-dialog.component';
 import { getObjectLabel } from '../utils/objects';
-import { FileCreateRequest } from '../schema';
+import { ObjectCreateRequest } from '../schema';
 import { clone } from 'lodash';
 
 @Injectable()
@@ -80,7 +80,7 @@ export class FilesystemObjectActions {
    * @param request the request data
    * @return the created object
    */
-  protected executePutWithProgressDialog(request: Partial<FileCreateRequest>): Observable<FilesystemObject> {
+  protected executePutWithProgressDialog(request: ObjectCreateRequest): Observable<FilesystemObject> {
     const progressObservable = new BehaviorSubject<Progress>(new Progress({
       status: 'Preparing...',
     }));
@@ -351,5 +351,5 @@ export class CreateDialogOptions {
   promptAnnotationOptions: boolean;
   promptParent: boolean;
   parentLabel: string;
-  request: Partial<FileCreateRequest>;
+  request: Partial<ObjectCreateRequest>;
 }

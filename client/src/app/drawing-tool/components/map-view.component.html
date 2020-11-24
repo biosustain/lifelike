@@ -80,10 +80,10 @@
               <div class="window-body">
                 <div class="detail-overlay-properties text-muted">
                   <div class="text-truncate">
-                    By {{map?.author}}
+                    By {{map?.user.firstName}}
                   </div>
                   <div class="text-truncate">
-                    Modified {{map?.modified_date | friendlyDateStr}}
+                    Modified {{map?.modificationDate | friendlyDateStr}}
                   </div>
                 </div>
                 <div class="detail-overlay-description mt-2">

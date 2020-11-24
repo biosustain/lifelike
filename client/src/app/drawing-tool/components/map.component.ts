@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { MapService } from '../services';
-import { GraphEntity, GraphEntityType, KnowledgeMap } from '../services/interfaces';
+import { GraphEntity, GraphEntityType, KnowledgeMap, UniversalGraph } from '../services/interfaces';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ModuleProperties } from '../../shared/modules';
@@ -19,6 +19,8 @@ import { WorkspaceManager } from '../../shared/workspace-manager';
 import { emptyIfNull } from '../../shared/utils/types';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
+import { mapBufferToJson, readBlobAsBuffer } from '../../shared/utils/files';
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 
 @Component({
   selector: 'app-map',
@@ -61,6 +63,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       readonly route: ActivatedRoute,
       readonly errorHandler: ErrorHandler,
       readonly workspaceManager: WorkspaceManager,
+      readonly filesystemObjectActions: FilesystemObjectActions,
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
@@ -134,7 +137,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.initializeMap();
   }
 
-  get map() {
+  get map(): FilesystemObject {
     return this._map;
   }
 
@@ -148,19 +151,22 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = e => {
-      // TODO: Handle corrupt map data
-      const graph = JSON.parse(e.target.result as string);
-      this.graphCanvas.setGraph(graph);
-      this.graphCanvas.zoomToFit(0);
-    };
-    reader.readAsText(this.map.contentValue);
-    this.emitModuleProperties();
-
     if (this.highlightTerms != null && this.highlightTerms.length) {
       this.graphCanvas.highlighting.replace(this.graphCanvas.findMatching(this.highlightTerms));
     }
+
+    this.emitModuleProperties();
+
+    readBlobAsBuffer(this.map.contentValue).pipe(
+      mapBufferToJson<UniversalGraph>('utf-8'),
+      this.errorHandler.create(),
+    ).subscribe(graph => {
+      this.graphCanvas.setGraph(graph);
+      this.graphCanvas.zoomToFit(0);
+    }, e => {
+      // Data is corrupt
+      // TODO: Prevent the user from editing or something so the user doesnt lose data?
+    });
   }
 
   registerGraphBehaviors() {
