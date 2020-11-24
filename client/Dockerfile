@@ -1,11 +1,9 @@
 FROM node:13.10.1 as base
-LABEL app=kg-prototypes
 # ========================================
 # Landing page
 # ========================================
 
 FROM base as landing
-LABEL app=kg-prototypes
 # Clean up the image cache (see the Docker best practices guide: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#run)
 RUN apt-get autoclean && \
     apt-get autoremove -y && \
@@ -31,7 +29,6 @@ RUN yarn build
 # Angular app
 # ========================================
 FROM base as build
-LABEL app=kg-prototypes
 # OPTIONAL: Install dumb-init (Very handy for easier signal handling of SIGINT/SIGTERM/SIGKILL etc.)
 RUN wget https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64.deb \
     && dpkg -i dumb-init_*.deb
@@ -63,7 +60,6 @@ RUN yarn install \
 COPY . $ANGULAR_DIR
 
 FROM build as compile
-LABEL app=kg-prototypes
 # ========================================
 # angular bundle compilation
 # ========================================
@@ -73,7 +69,6 @@ ENV ANGULAR_DIR $CLIENT_HOME/client
 ENV PATH $ANGULAR_DIR/node_modules/.bin:$PATH
 WORKDIR $ANGULAR_DIR
 COPY --from=build /home/node/client .
-# If fails check if docker can access enough RAM (4GB?)
 RUN yarn build --configuration="production" --output-path=dist
 
 # ========================================
@@ -81,7 +76,6 @@ RUN yarn build --configuration="production" --output-path=dist
 # ========================================
 # Set the nginx conf file to use
 FROM nginx:latest AS webserver
-LABEL app=kg-prototypes
 RUN mkdir -p /home/node/client/dist
 RUN mkdir -p /home/node/client/landing/dist
 COPY --from=compile /home/node/client/dist /usr/share/nginx/html
