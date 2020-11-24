@@ -144,6 +144,21 @@ export class FilesystemObjectActions {
     });
   }
 
+  openEnrichmentVisualisationCreateDialog(parent: FilesystemObject): Promise<any> {
+    const dialogRef = this.modalService.open(EnrichmentVisualisationCreateDialogComponent);
+    return dialogRef.result.then((result) => {
+      const progressDialogRef = this.createProgressDialog('Creating visualisation...');
+
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
+      return this.filesService.addGeneList(parent.locator.projectName, parent.directory.id, enrichmentData, result.description, result.name)
+          .pipe(
+              this.errorHandler.create(),
+              finalize(() => progressDialogRef.close()),
+          )
+          .toPromise();
+    });
+  }
+
   openUploadDialog(parent: FilesystemObject): Promise<any> {
     const dialogRef = this.modalService.open(ObjectUploadDialogComponent);
     dialogRef.componentInstance.directoryId = parent.directory.id;
