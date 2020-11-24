@@ -1,5 +1,4 @@
 FROM python:3.6-buster AS builder
-LABEL app=kg-prototypes
 
 ENV NLP_USER nlp-api-user
 ENV NLP_HOME /home/$NLP_USER
@@ -21,7 +20,6 @@ COPY ./requirements.txt ./
 RUN pip3 install --upgrade pip && pip3 install --no-cache-dir -r ./requirements.txt
 
 FROM python:3.6-slim-buster AS prod
-LABEL app=kg-prototypes
 
 ENV NLP_USER nlp-api-user
 ENV NLP_HOME /home/$NLP_USER

@@ -1,5 +1,4 @@
 FROM fedora:32 as base
-LABEL app=kg-prototypes
 
 # Install dependencies
 RUN dnf install postgresql graphviz python-pip python3-devel which -y \
