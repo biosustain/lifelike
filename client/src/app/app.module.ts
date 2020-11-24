@@ -27,6 +27,7 @@ import { DashboardComponent } from './dashboard.component';
 import { KgImportModule } from './kg-import/kg-import.module';
 import { AppVersionDialogComponent } from './app-version-dialog.component';
 import { FileNavigatorModule } from './file-navigator/file-navigator.module';
+import { ShortestPathModule } from './shortest-path/shortest-path.module';
 
 @NgModule({
   declarations: [
@@ -58,6 +59,7 @@ import { FileNavigatorModule } from './file-navigator/file-navigator.module';
     DrawingToolModule,
     NgbModule,
     FileNavigatorModule,
+    ShortestPathModule,
   ],
   providers: [
     httpInterceptorProviders,
