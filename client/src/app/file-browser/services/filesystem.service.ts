@@ -7,15 +7,27 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ProjectPageService } from './project-page.service';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subscription, throwError } from 'rxjs';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { map, mergeMap } from 'rxjs/operators';
-import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
+import { catchError, map, mergeMap } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 import { ApiService } from '../../shared/services/api.service';
-import { RecursivePartial } from '../../shared/utils/types';
-import { BulkFileUpdateRequest, FileCreateRequest, FileDataResponse, MultipleFileDataResponse } from '../schema';
+import {
+  BulkObjectUpdateRequest,
+  ObjectBackupCreateRequest,
+  ObjectCreateRequest,
+  ObjectDataResponse,
+  ObjectVersionData,
+  MultipleObjectDataResponse,
+} from '../schema';
 import { objectToFormData, objectToMixedFormData } from '../../shared/utils/forms';
+import { PaginatedRequestOptions, ResultList } from '../../interfaces/shared.interface';
+import { ObjectVersion, ObjectVersionList } from '../models/object-version';
+import { serializePaginatedParams } from '../../shared/utils/params';
 
+/**
+ * Endpoints to manage with the filesystem exposed to the user.
+ */
 @Injectable()
 export class FilesystemService {
   protected lmdbsDates = new BehaviorSubject<object>({});
@@ -35,7 +47,7 @@ export class FilesystemService {
     });
   }
 
-  put(request: RecursivePartial<FileCreateRequest>): Observable<HttpEvent<any> & {
+  put(request: ObjectCreateRequest): Observable<HttpEvent<any> & {
     bodyValue?: FilesystemObject,
   }> {
     return this.http.put(
@@ -49,7 +61,7 @@ export class FilesystemService {
     ).pipe(
       map(event => {
         if (event.type === HttpEventType.Response) {
-          const body: FileDataResponse = event.body as FileDataResponse;
+          const body: ObjectDataResponse = event.body as ObjectDataResponse;
           (event as any).bodyValue = new FilesystemObject().update(body.object);
         }
         return event;
@@ -58,7 +70,7 @@ export class FilesystemService {
   }
 
   get(hashId: string, options: Partial<FetchOptions> = {}): Observable<FilesystemObject> {
-    let result: Observable<FilesystemObject> = this.http.get<FileDataResponse>(
+    let result: Observable<FilesystemObject> = this.http.get<ObjectDataResponse>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}`,
       this.apiService.getHttpOptions(true),
     ).pipe(
@@ -89,10 +101,10 @@ export class FilesystemService {
     );
   }
 
-  save(hashIds: string[], changes: Partial<BulkFileUpdateRequest>,
+  save(hashIds: string[], changes: Partial<BulkObjectUpdateRequest>,
        updateWithLatest?: { [hashId: string]: FilesystemObject }):
     Observable<{ [hashId: string]: FilesystemObject }> {
-    return this.http.patch<MultipleFileDataResponse>(
+    return this.http.patch<MultipleObjectDataResponse>(
       `/api/filesystem/objects`, objectToMixedFormData({
         ...changes,
         hashIds,
@@ -114,7 +126,7 @@ export class FilesystemService {
   delete(hashIds: string[],
          updateWithLatest?: { [hashId: string]: FilesystemObject }):
     Observable<{ [hashId: string]: FilesystemObject }> {
-    return this.http.request<MultipleFileDataResponse>(
+    return this.http.request<MultipleObjectDataResponse>(
       'DELETE',
       `/api/filesystem/objects`, {
         ...this.apiService.getHttpOptions(true, {
@@ -136,6 +148,71 @@ export class FilesystemService {
         }
         return ret;
       }),
+    );
+  }
+
+  getBackupContent(hashId: string): Observable<ArrayBuffer | null> {
+    return this.http.get(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/backup/content`, {
+        ...this.apiService.getHttpOptions(true),
+        responseType: 'arraybuffer',
+      },
+    ).pipe(catchError(e => {
+      // If the backup doesn't exist, don't let the caller have to figure out
+      // that it's a HTTP error and then check the status!
+      // Let's return a null indicating that there's no backup
+      if (e instanceof HttpErrorResponse) {
+        if (e.status === 404) {
+          return of(null);
+        }
+      }
+
+      // If it's any other type of error, we need to propagate it so
+      // the calling code can handle it through its normal error handling
+      return throwError(e);
+    }));
+  }
+
+  putBackup(request: ObjectBackupCreateRequest): Observable<any> {
+    return this.http.put<unknown>(
+      `/api/filesystem/objects/${encodeURIComponent(request.hashId)}/backup`,
+      objectToMixedFormData(request),
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(() => ({})),
+    );
+  }
+
+  deleteBackup(hashId: string): Observable<any> {
+    return this.http.delete<unknown>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/backup`, {
+        ...this.apiService.getHttpOptions(true),
+      },
+    ).pipe(map(() => ({})));
+  }
+
+  getVersions(fileHashId: string,
+              options: PaginatedRequestOptions = {}): Observable<ObjectVersionList> {
+    return this.http.get<ResultList<ObjectVersionData>>(
+      `/api/filesystem/objects/${encodeURIComponent(fileHashId)}/versions`, {
+        ...this.apiService.getHttpOptions(true),
+        params: serializePaginatedParams(options, false),
+      },
+    ).pipe(
+      map(data => {
+        const list = new ObjectVersionList();
+        list.results.replace(data.results.map(itemData => new ObjectVersion().update(itemData)));
+        return list;
+      }),
+    );
+  }
+
+  getVersionContent(hashId: string): Observable<ArrayBuffer> {
+    return this.http.get(
+      `/api/filesystem/versions/${encodeURIComponent(hashId)}/content`, {
+        ...this.apiService.getHttpOptions(true),
+        responseType: 'arraybuffer',
+      },
     );
   }
 
