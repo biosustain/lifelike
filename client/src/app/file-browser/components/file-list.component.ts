@@ -58,6 +58,16 @@ export class FileListComponent {
     });
   }
 
+  openEnrichmentVisualisationEditDialog(target: FilesystemObject) {
+    return this.actions.openEnrichmentVisualisationEditDialog(target).then(() => {
+      this.snackBar.open(`Changes saved.`, 'Close', {
+        duration: 5000,
+      });
+      this.locatorChange.next(this.parent.locator);
+    }, () => {
+    });
+  }
+
   openMoveDialog(target: FilesystemObject) {
     return this.actions.openMoveDialog(target).then(() => {
       this.snackBar.open(`File moved.`, 'Close', {
