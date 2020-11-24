@@ -6,6 +6,7 @@ import {
   EventEmitter,
 } from '@angular/core';
 
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { TableHeader, TableCell, TableLink } from 'app/shared/components/table/generic-table.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
@@ -21,6 +22,7 @@ import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { ModuleProperties } from 'app/shared/modules';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
+import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -87,6 +89,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     private readonly worksheetViewerService: EnrichmentTableService,
     private readonly filesService: PdfFilesService,
     private route: ActivatedRoute,
+    readonly snackBar: MatSnackBar,
     private readonly modalService: NgbModal,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
@@ -152,18 +155,31 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         this.columnOrder.splice(index + 1, 0, 'Regulon 3');
         this.columnOrder.splice(index + 1, 0, 'Regulon 2');
       }
-      this.tableHeader = [
-        // Primary headers
-        [
-          { name: 'Imported Gene Name', span: '1' },
-          { name: 'Matched Gene Name', span: '1'},
-          { name: 'NCBI Gene Full Name', span: '1' },
-        ]
-      ];
       this.initializeHeaders();
       this.matchNCBINodes(this.currentPage);
 
     }, () => {});
+  }
+
+  openEnrichmentTableEditDialog(): Promise<any> {
+    const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
+    dialogRef.componentInstance.fileId = this.fileId;
+    dialogRef.componentInstance.projectName = this.projectName;
+    return dialogRef.result.then((result) => {
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
+      return this.filesService.editGeneList(
+          this.projectName,
+          this.fileId,
+          enrichmentData,
+          result.name,
+          result.description,
+      ).subscribe((status) => {
+        this.snackBar.open(`Enrichment table updated.`, 'Close', {
+          duration: 5000,
+        });
+        this.loadTask.update();
+      }, () => {});
+    });
   }
 
   emitModuleProperties() {
@@ -174,6 +190,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   initializeHeaders() {
+    this.tableHeader = [
+      [
+        { name: 'Imported Gene Name', span: '1' },
+        { name: 'Matched Gene Name', span: '1'},
+        { name: 'NCBI Gene Full Name', span: '1' },
+      ]
+    ];
     if (this.domains.includes('Regulon')) {
       this.tableHeader[1] = this.secondHeaderMap.get('Default');
     }
