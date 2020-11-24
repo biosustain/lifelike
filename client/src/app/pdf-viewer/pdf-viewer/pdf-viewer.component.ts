@@ -86,7 +86,7 @@ export class PdfViewerComponent
   }
 
   @Input('render-text-mode')
-  set renderTextMode(renderTextMode: RenderTextMode) {
+  set renderTextMode(renderTextMode: RenderTextMode = RenderTextMode.ENHANCED) {
     this.internalRenderTextMode = renderTextMode;
   }
 
