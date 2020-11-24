@@ -140,6 +140,16 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
+  openEnrichmentVisualisationCreateDialog(parent: FilesystemObject) {
+    return this.actions.openEnrichmentVisualisationCreateDialog(parent).then(() => {
+      this.snackBar.open(`Enrichment visualisation created.`, 'Close', {
+        duration: 5000,
+      });
+      this.load(parent.locator);
+    }, () => {
+    });
+  }
+
   openUploadDialog(parent: FilesystemObject) {
     return this.actions.openUploadDialog(parent).then(() => {
       this.snackBar.open(`File saved to folder.`, 'Close', {
