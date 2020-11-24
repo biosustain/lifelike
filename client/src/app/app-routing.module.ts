@@ -26,6 +26,7 @@ import { BrowserComponent } from './file-browser/components/browser/browser.comp
 // import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
 import { EnrichmentTableViewerComponent } from './file-browser/components/enrichment-table-viewer.component';
+import { EnrichmentVisualisationViewerComponent } from './file-browser/components/enrichment-visualisation-viewer.component';
 import { FileNavigatorComponent } from './file-navigator/file-navigator.component';
 import { WordCloudProjectComponent } from './word-cloud/word-cloud-project.component';
 import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
@@ -114,6 +115,15 @@ const routes: Routes = [
     data: {
       title: 'Enrichment Table',
       fontAwesomeIcon: 'table',
+    },
+  },
+  {
+    path: 'projects/:project_name/enrichment-visualisation/:file_id',
+    canActivate: [AuthGuard],
+    component: EnrichmentVisualisationViewerComponent,
+    data: {
+      title: 'Enrichment Visualisation',
+      fontAwesomeIcon: 'chart-bar',
     },
   },
   {

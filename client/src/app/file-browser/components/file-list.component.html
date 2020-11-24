@@ -128,6 +128,11 @@
                   Edit Enrichment Params
                 </button>
                 <button ngbDropdownItem
+                        *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) === '.enrichment'"
+                        (click)="openEnrichmentVisualisationEditDialog(object)">
+                  Edit Enrichment Visualisation Params
+                </button>
+                <button ngbDropdownItem
                         *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) !== '.enrichment'"
                         (click)="reannotate([object])">
                   Re-annotate

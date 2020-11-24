@@ -27,6 +27,10 @@ import { FilesystemService } from './services/filesystem.service';
 import { FileListComponent } from './components/file-list.component';
 import { FilesystemObjectActions } from './services/filesystem-object-actions';
 import { EnrichmentTableOrderDialogComponent } from './components/enrichment-table-order-dialog.component';
+import {EnrichmentVisualisationViewerComponent} from "./components/enrichment-visualisation-viewer.component";
+import {EnrichmentVisualisationCreateDialogComponent} from "./components/enrichment-visualisation-create-dialog.component";
+import {EnrichmentVisualisationEditDialogComponent} from "./components/enrichment-visualisation-edit-dialog.component";
+import {EnrichmentVisualisationOrderDialogComponent} from "./components/enrichment-visualisation-order-dialog.component";
 
 @NgModule({
   declarations: [
@@ -51,6 +55,10 @@ import { EnrichmentTableOrderDialogComponent } from './components/enrichment-tab
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,
     EnrichmentTableOrderDialogComponent,
+    EnrichmentVisualisationViewerComponent,
+    EnrichmentVisualisationCreateDialogComponent,
+    EnrichmentVisualisationEditDialogComponent,
+    EnrichmentVisualisationOrderDialogComponent,
     FileSelectionDialogComponent,
     FileListComponent,
   ],
@@ -71,6 +79,9 @@ import { EnrichmentTableOrderDialogComponent } from './components/enrichment-tab
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,
     EnrichmentTableOrderDialogComponent,
+    EnrichmentVisualisationCreateDialogComponent,
+    EnrichmentVisualisationEditDialogComponent,
+    EnrichmentVisualisationOrderDialogComponent,
     FileSelectionDialogComponent,
   ],
   exports: [

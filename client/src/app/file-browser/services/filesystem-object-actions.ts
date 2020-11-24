@@ -32,6 +32,8 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { DefaultMap } from '../../shared/utils/collections';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { FileSelectionDialogComponent } from '../components/dialog/file-selection-dialog.component';
+import {EnrichmentVisualisationCreateDialogComponent} from '../components/enrichment-visualisation-create-dialog.component';
+import {EnrichmentVisualisationEditDialogComponent} from '../components/enrichment-visualisation-edit-dialog.component';
 
 @Injectable()
 export class FilesystemObjectActions {
@@ -176,6 +178,29 @@ export class FilesystemObjectActions {
 
   openEnrichmentTableEditDialog(target: FilesystemObject): Promise<any> {
     const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
+    dialogRef.componentInstance.fileId = target.id;
+    dialogRef.componentInstance.projectName = target.locator.projectName;
+    return dialogRef.result.then((result) => {
+      const progressDialogRef = this.createProgressDialog('Saving changes...');
+
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
+      return this.filesService.editGeneList(
+          target.locator.projectName,
+          target.id,
+          enrichmentData,
+          result.name,
+          result.description,
+      )
+          .pipe(
+              this.errorHandler.create(),
+              finalize(() => progressDialogRef.close()),
+          )
+          .toPromise();
+    });
+  }
+
+  openEnrichmentVisualisationEditDialog(target: FilesystemObject): Promise<any> {
+    const dialogRef = this.modalService.open(EnrichmentVisualisationEditDialogComponent);
     dialogRef.componentInstance.fileId = target.id;
     dialogRef.componentInstance.projectName = target.locator.projectName;
     return dialogRef.result.then((result) => {
