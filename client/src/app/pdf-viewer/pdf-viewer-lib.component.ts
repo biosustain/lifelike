@@ -545,7 +545,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const clonedSelection = selection.getRangeAt(0).cloneContents();
 
     let rects = [];
-    clonedSelection.children.forEach(org_span=>{
+    const elements: any[] = Array.from(clonedSelection.children);
+    elements.forEach((org_span: any) => {
       const span = org_span.cloneNode(true);
       const { transform  } = span.style;
       const transform_match = transform.match(/[\d\.]+/);
