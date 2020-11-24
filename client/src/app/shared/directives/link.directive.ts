@@ -21,6 +21,9 @@ export class AbstractLinkDirective {
   @Input() newTab: boolean;
   @Input() sideBySide: boolean;
   @Input() handleClick = true;
+  @Input() forceWorkbench = false;
+  @Input() preferPane: string;
+  @Input() preferStartupPane: string;
   commands: any[] = [];
 
   constructor(readonly workspaceManager: WorkspaceManager,
@@ -57,6 +60,9 @@ export class AbstractLinkDirective {
       state: this.state,
       newTab: attrBoolValue(this.newTab),
       sideBySide: attrBoolValue(this.sideBySide),
+      forceWorkbench: attrBoolValue(this.forceWorkbench),
+      preferPane: this.preferPane,
+      preferStartupPane: this.preferStartupPane,
     };
     this.workspaceManager.navigateByUrl(this.urlTree, extras);
 

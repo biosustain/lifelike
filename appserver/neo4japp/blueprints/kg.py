@@ -119,3 +119,19 @@ def get_ncbi_enrichment_domains():
                 }
         nodes.append(node)
     return jsonify({'result': nodes}), 200
+
+
+@bp.route('/shortest-path-query/<int:query_id>', methods=['GET'])
+@auth.login_required
+def get_shortest_path_query_result(query_id):
+    kg = get_kg_service()
+    result = kg.get_shortest_path_data(query_id)
+    return jsonify({'result': result}), 200
+
+
+@bp.route('/shortest-path-query-list', methods=['GET'])
+@auth.login_required
+def get_shortest_path_query_list():
+    kg = get_kg_service()
+    result = kg.get_shortest_path_query_list()
+    return jsonify({'result': result}), 200
