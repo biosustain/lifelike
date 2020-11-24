@@ -102,10 +102,17 @@ const Template: Story<PdfViewerLibComponent> = (args) => ({
             </lib-pdf-viewer-lib>`,
 });
 
+export const Default = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+Default.args = {
+  debugMode: true,
+  pdfSrc: './assets/pdfs/sample.pdf'
+};
+
 export const Base = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
 Base.args = {
   debugMode: true,
-  pdfSrc: './assets/pdfs/sample.pdf'
+  pdfSrc: './assets/pdfs/sample.pdf',
+  renderTextMode: 1
 };
 
 export const Enhanced = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
