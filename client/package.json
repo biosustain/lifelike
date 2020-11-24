@@ -8,10 +8,7 @@
     "build": "node --max_old_space_size=4096 ./node_modules/@angular/cli/bin/ng build --prod",
     "test": "ng test --watch=false --progress=false --browsers=ChromeCustom",
     "lint": "ng lint",
-    "e2e": "ng e2e",
-    "docs:json": "compodoc -p ./tsconfig.json -e json -d .",
-    "storybook": "yarn docs:json && start-storybook -p 6006 --no-dll",
-    "build-storybook": "yarn docs:json && build-storybook --no-dll"
+    "e2e": "ng e2e"
   },
   "husky": {
     "hooks": {
@@ -77,11 +74,6 @@
     "@angular/language-service": "~8.2.14",
     "@babel/core": "^7.12.3",
     "@compodoc/compodoc": "^1.1.11",
-    "@storybook/addon-actions": "^6.0.28",
-    "@storybook/addon-essentials": "^6.0.28",
-    "@storybook/addon-knobs": "^6.0.28",
-    "@storybook/addon-links": "^6.0.28",
-    "@storybook/angular": "^6.0.28",
     "@types/jasmine": "^3.5.2",
     "@types/jasminewd2": "~2.0.3",
     "@types/jquery": "^3.3.33",
