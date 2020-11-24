@@ -1,6 +1,17 @@
 APPSERVER_PATH=./appserver
 ANSIBLE_PATH=./deployment/ansible
 LMDB_PATH = $(APPSERVER_PATH)/neo4japp/services/annotations/lmdb
+PROJECT_ID=able-goods-221820
+PROJECT_ID_BACKUP=project_id.backup
+
+# Set gcloud project
+set-gcloud:
+	gcloud config get-value project > $(PROJECT_ID_BACKUP)
+	gcloud config set project $(PROJECT_ID)
+
+# Restore gcloud setting
+reset-gcloud:
+	cat $(PROJECT_ID_BACKUP) | xargs gcloud config set project
 
 # Fetches the password to unlock Ansible vault files
 ansible-secrets:
@@ -25,10 +36,12 @@ lmdb:
 
 # Sets up everything you need to run the application
 # Mostly used for first time dev environment setup
-init: ansible-secrets gcp-sa lmdb
+init: set-gcloud ansible-secrets gcp-sa lmdb reset-gcloud
 	docker-compose build --no-cache
 
-docker-run: docker-stop gcp-sa
+docker-run: docker-stop set-gcloud gcp-sa reset-gcloud
+	export DOCKER_CLIENT_TIMEOUT=300
+	export COMPOSE_HTTP_TIMEOUT=300
 	docker-compose up -d
 
 docker-stop:
@@ -38,10 +51,12 @@ clean-pyc:
 	find . -name '*.pyc' -delete
 
 clean-docker:
-	docker system prune -a --volumes
+	docker system prune -a --volumes --filter app=kg-prototypes
 
 clean: clean-docker clean-pyc
 	# Remove service account for Google Cloud
 	find . -name 'ansible_service_account.json' -delete
 	# Remove Ansible vault secrets
 	find . -name '.vault_secrets_pw' -delete
+	# Remove project_id backup
+	rm -f $(PROJECT_ID_BACKUP)
