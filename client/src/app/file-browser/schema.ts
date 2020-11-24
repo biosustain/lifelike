@@ -27,18 +27,18 @@ export interface FilesystemObjectData {
   effectivelyRecycled: boolean;
 }
 
-interface FileContentValueRequest {
+interface ObjectContentValueRequest {
   contentValue: Blob;
 }
 
 /**
  * You can specify content one of three ways.
  */
-export type FileContentSource = { contentHashId: string }
+export type ObjectContentSource = { contentHashId: string }
   | { contentUrl: string }
-  | FileContentValueRequest;
+  | ObjectContentValueRequest;
 
-export interface BulkFileUpdateRequest extends Partial<FileContentValueRequest> {
+export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueRequest> {
   filename?: string;
   parentHashId?: string;
   description?: string;
@@ -47,22 +47,37 @@ export interface BulkFileUpdateRequest extends Partial<FileContentValueRequest> 
 }
 
 // tslint:disable-next-line:no-empty-interface
-export interface FileUpdateRequest extends BulkFileUpdateRequest {
+export interface ObjectUpdateRequest extends BulkObjectUpdateRequest {
 }
 
 // We need to require the filename and parentHashId fields
-type RequiredFileCreateRequestFields = 'filename' | 'parentHashId';
-type BaseFileCreateRequest = Required<Pick<BulkFileUpdateRequest, RequiredFileCreateRequestFields>>
-  & Omit<FileUpdateRequest, RequiredFileCreateRequestFields>;
+type RequiredObjectCreateRequestFields = 'filename' | 'parentHashId';
+type BaseObjectCreateRequest = Required<Pick<BulkObjectUpdateRequest, RequiredObjectCreateRequestFields>>
+  & Omit<ObjectUpdateRequest, RequiredObjectCreateRequestFields>;
 
-export type FileCreateRequest = BaseFileCreateRequest & Partial<FileContentSource> & {
+export type ObjectCreateRequest = BaseObjectCreateRequest & Partial<ObjectContentSource> & {
   mimeType?: string;
 };
 
-export interface FileDataResponse {
+export interface ObjectDataResponse {
   object: FilesystemObjectData;
 }
 
-export interface MultipleFileDataResponse {
+export interface MultipleObjectDataResponse {
   objects: { [hashId: string]: FilesystemObjectData };
+}
+
+export interface ObjectBackupCreateRequest extends ObjectContentValueRequest {
+  hashId: string;
+}
+
+export interface ObjectVersionData {
+  hashId: string;
+  message?: string;
+  user: unknown;
+  creationDate: string;
+}
+
+export interface FileVersionDataResponse {
+  version: ObjectVersionData;
 }

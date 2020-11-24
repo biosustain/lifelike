@@ -7,7 +7,6 @@ import { MessageDialog } from '../../services/message-dialog.service';
  */
 export abstract class CommonDialogComponent<T = any, V = any> {
   form: AbstractControl;
-  failed = false;
   /**
    * If you perform an action after the dialog returns a value via NgbModal.result,
    * but that action fails, the dialog will have been closed and the user will have
@@ -32,9 +31,7 @@ export abstract class CommonDialogComponent<T = any, V = any> {
   }
 
   submit(): void {
-    this.failed = false;
     this.accept(this.getValue()).then(result => this.modal.close(result), () => {
-      this.failed = true;
     });
   }
 }

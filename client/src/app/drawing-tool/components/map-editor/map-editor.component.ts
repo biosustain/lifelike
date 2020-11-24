@@ -3,7 +3,7 @@ import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } fro
 import { cloneDeep } from 'lodash';
 
 import { makeid } from '../../services';
-import { KnowledgeMap, UniversalGraphNode } from '../../services/interfaces';
+import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
 
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
@@ -14,15 +14,17 @@ import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/b
 import { PasteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
 import { HistoryKeyboardShortcuts } from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
 import { MapViewComponent } from '../map-view.component';
-import { from, Observable, Subscription, throwError } from 'rxjs';
-import { auditTime, catchError, switchMap } from 'rxjs/operators';
-import { HttpErrorResponse } from '@angular/common/http';
+import { from, Observable, Subscription } from 'rxjs';
+import { auditTime, switchMap } from 'rxjs/operators';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
-import { MapEditDialogComponent } from '../map-edit-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
-import { MapVersionDialogComponent } from '../map-version-dialog.component';
-import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+import { mapBufferToJson } from '../../../shared/utils/files';
+import { MAP_MIMETYPE } from '../../../file-browser/models/filesystem-object';
+import {
+  ObjectEditDialogComponent,
+  ObjectEditDialogValue,
+} from '../../../file-browser/components/dialog/object-edit-dialog.component';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -32,7 +34,7 @@ import { FilesystemObject } from '../../../file-browser/models/filesystem-object
     './map-editor.component.scss',
   ],
 })
-export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implements OnInit, OnDestroy {
+export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefined> implements OnInit, OnDestroy {
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
@@ -60,35 +62,30 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     this.autoSaveSubscription.unsubscribe();
   }
 
-  // TODO
-  /*
-  getExtraSource(): Observable<FilesystemObject> {
-    return from([this.locator]).pipe(switchMap(locator => {
-      return this.mapService.getBackup(locator.projectName, locator.hashId).pipe(catchError(error => {
-        if (error instanceof HttpErrorResponse) {
-          const res = error as HttpErrorResponse;
-          if (res.status === 404) {
-            return from([null]);
-          }
-        }
-        return throwError(error);
-      }));
-    }));
+  getExtraSource(): Observable<UniversalGraph | null> {
+    return from([this.locator]).pipe(switchMap(
+      locator => this.filesystemService.getBackupContent(locator)
+        .pipe(
+          mapBufferToJson<UniversalGraph>('utf-8'),
+          this.errorHandler.create(),
+        ),
+    ));
   }
 
-  handleExtra(backup: KnowledgeMap) {
+  handleExtra(backup: UniversalGraph | null) {
     if (backup != null) {
       this.modalService.open(MapRestoreDialogComponent, {
         container: this.modalContainer.nativeElement,
       }).result.then(() => {
-        this.map = backup;
+        this.graphCanvas.setGraph(backup);
+        this.graphCanvas.zoomToFit(0);
         this.unsavedChanges$.next(true);
       }, () => {
-        this.mapService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
+        this.filesystemService.deleteBackup(this.locator)
+          .subscribe(); // Need to subscribe so it actually runs
       });
     }
   }
-   */
 
   registerGraphBehaviors() {
     super.registerGraphBehaviors();
@@ -103,54 +100,42 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
 
   save() {
     super.save();
-    // this.mapService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
+    this.filesystemService.deleteBackup(this.locator)
+      .subscribe(); // Need to subscribe so it actually runs
   }
 
-  saveBackup() {
+  saveBackup(): Observable<any> {
     if (this.map) {
-      // this.map.graph = this.graphCanvas.getGraph();
-      // this.map.modified_date = new Date().toISOString();
-      /*
-      const observable = this.mapService.createOrUpdateBackup(this.locator.projectName, cloneDeep(this.map));
-      observable.subscribe();
+      const observable = this.filesystemService.putBackup({
+        hashId: this.locator,
+        contentValue: new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
+          type: MAP_MIMETYPE,
+        }),
+      });
+      observable.subscribe(); // Need to subscribe so it actually runs
       return observable;
-      */
     }
   }
 
   displayEditDialog() {
-    const dialogRef = this.modalService.open(MapEditDialogComponent);
-    dialogRef.componentInstance.map = cloneDeep(this.map);
-    dialogRef.result.then((newMap: KnowledgeMap) => {
+    const target = cloneDeep(this.map);
+    const dialogRef = this.modalService.open(ObjectEditDialogComponent);
+    dialogRef.componentInstance.object = target;
+    dialogRef.componentInstance.accept = ((changes: ObjectEditDialogValue) => {
       this.graphCanvas.execute(new KnowledgeMapUpdate(
         'Update map properties',
-        this.map, {
-          label: newMap.label,
-          description: newMap.description,
-          public: newMap.public,
-        }, {
-          label: this.map.label,
-          description: this.map.description,
-          public: this.map.public,
-        },
+        this.map, changes.objectChanges, Object.keys(changes.objectChanges).reduce((obj, key) => {
+          obj[key] = this.map[key];
+          return obj;
+        }, {}),
       ));
       this.unsavedChanges$.next(true);
-    }, () => {
+      return Promise.resolve();
     });
+    return dialogRef.result;
   }
 
   mapVersionDialog() {
-    const dialogRef = this.modalService.open(MapVersionDialogComponent);
-    dialogRef.componentInstance.map = cloneDeep(this.map);
-    dialogRef.result.then((newMap: Observable<{ version: KnowledgeMap }>) => {
-      newMap.subscribe(result => {
-        this.graphCanvas.setGraph(result.version.graph);
-        this.snackBar.open('Map reverted to Version from ' + result.version.modified_date, null, {
-          duration: 3000,
-        });
-      });
-    }, () => {
-    });
   }
 
   @HostListener('window:beforeunload', ['$event'])

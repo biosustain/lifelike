@@ -20,6 +20,7 @@ import { ShareDialogComponent } from '../../shared/components/dialog/share-dialo
 import { GraphEntity, GraphEntityType } from '../services/interfaces';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { MAP_MIMETYPE } from '../../file-browser/models/filesystem-object';
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 
 @Component({
   selector: 'app-map-view',
@@ -29,7 +30,7 @@ import { MAP_MIMETYPE } from '../../file-browser/models/filesystem-object';
   ],
 })
 export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResult>
-    implements OnDestroy, AfterViewInit, ModuleAwareComponent {
+  implements OnDestroy, AfterViewInit, ModuleAwareComponent {
   @Input() titleVisible = true;
 
   paramsSubscription: Subscription;
@@ -44,8 +45,10 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               ngZone: NgZone, route: ActivatedRoute,
               errorHandler: ErrorHandler,
               workspaceManager: WorkspaceManager,
+              filesystemObjectActions: FilesystemObjectActions,
               public readonly progressDialog: ProgressDialog) {
-    super(filesystemService, snackBar, modalService, messageDialog, ngZone, route, errorHandler, workspaceManager);
+    super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
+      errorHandler, workspaceManager, filesystemObjectActions);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
@@ -84,16 +87,16 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
     // Push to backend to save
     this.filesystemService.save([this.locator], {
-      contentValue
+      contentValue,
     })
-        .pipe(this.errorHandler.create())
-        .subscribe(() => {
-          this.unsavedChanges$.next(false);
-          this.emitModuleProperties();
-          this.snackBar.open('Map saved.', null, {
-            duration: 2000,
-          });
+      .pipe(this.errorHandler.create())
+      .subscribe(() => {
+        this.unsavedChanges$.next(false);
+        this.emitModuleProperties();
+        this.snackBar.open('Map saved.', null, {
+          duration: 2000,
         });
+      });
   }
 
   // ========================================
@@ -140,10 +143,10 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
       });
 
       project().pipe(
-          tap(
-              () => progressDialogRef.close(),
-              () => progressDialogRef.close()),
-          this.errorHandler.create(),
+        tap(
+          () => progressDialogRef.close(),
+          () => progressDialogRef.close()),
+        this.errorHandler.create(),
       ).subscribe(resp => {
         // It is necessary to create a new blob object with mime-type explicitly set
         // otherwise only Chrome works like it should

@@ -313,7 +313,7 @@ class FallbackOrganism(RDBMSBase):
     organism_taxonomy_id = db.Column(db.String(50), nullable=False)
 
 
-class FileVersion(RDBMSBase, FullTimestampMixin):
+class FileVersion(RDBMSBase, FullTimestampMixin, HashIdMixin):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     file_id = db.Column(db.Integer, db.ForeignKey('files.id'),
                         index=True, nullable=False)
@@ -327,7 +327,7 @@ class FileVersion(RDBMSBase, FullTimestampMixin):
     user = db.relationship('AppUser', foreign_keys=user_id)
 
 
-class FileBackup(RDBMSBase, FullTimestampMixin):
+class FileBackup(RDBMSBase, FullTimestampMixin, HashIdMixin):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     file_id = db.Column(db.Integer, db.ForeignKey('files.id'),
                         index=True, nullable=False)

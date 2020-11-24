@@ -9,7 +9,6 @@ import { BrowserProjectListComponent } from './components/browser/browser-projec
 import { ProjectTitleAcronymPipe } from './services/project-title-acronym.pipe';
 import { ProjectEditDialogComponent } from './components/project-edit-dialog.component';
 import { ProjectCreateDialogComponent } from './components/project-create-dialog.component';
-import { DirectoryEditDialogComponent } from './components/directory-edit-dialog.component';
 import { ObjectDeletionResultDialogComponent } from './components/object-deletion-result-dialog.component';
 import { CommunityBrowserComponent } from './components/community-browser.component';
 import { BrowserComponent } from './components/browser/browser.component';
@@ -27,6 +26,7 @@ import { FileListComponent } from './components/file-list.component';
 import { FilesystemObjectActions } from './services/filesystem-object-actions';
 import { ProjectService } from './services/project.service';
 import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialog.component';
+import { ObjectVersionComponent } from './components/object-version.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +42,6 @@ import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialo
     ProjectTitleAcronymPipe,
     ProjectEditDialogComponent,
     ProjectCreateDialogComponent,
-    DirectoryEditDialogComponent,
     CommunityBrowserComponent,
     FileInfoComponent,
     FileTypeLabelComponent,
@@ -52,6 +51,7 @@ import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialo
     ObjectSelectionDialogComponent,
     FileListComponent,
     ObjectEditDialogComponent,
+    ObjectVersionComponent,
   ],
   imports: [
     SharedModule,
@@ -64,7 +64,6 @@ import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialo
     FileViewComponent,
     ProjectCreateDialogComponent,
     ProjectEditDialogComponent,
-    DirectoryEditDialogComponent,
     ObjectDeletionResultDialogComponent,
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,

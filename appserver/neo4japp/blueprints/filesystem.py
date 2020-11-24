@@ -1,3 +1,4 @@
+import hashlib
 import io
 import json
 import re
@@ -7,11 +8,11 @@ from datetime import datetime
 from typing import Optional, List, Dict
 from urllib.error import URLError
 
-from flask import Blueprint, jsonify, g, make_response, request
+from flask import Blueprint, jsonify, g, request
 from flask.views import MethodView
 from marshmallow import ValidationError
 from pdfminer import high_level
-from sqlalchemy import and_
+from sqlalchemy import and_, desc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload, lazyload
 from webargs.flaskparser import use_args
@@ -19,14 +20,16 @@ from webargs.flaskparser import use_args
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db
 from neo4japp.exceptions import RecordNotFoundException, AccessRequestRequiredError
-from neo4japp.models import Projects, Files, FileContent, AppUser, FileVersion
+from neo4japp.models import Projects, Files, FileContent, AppUser, FileVersion, FileBackup
 from neo4japp.models.files_queries import add_user_permission_columns, FileHierarchy, \
     build_file_hierarchy_query
 from neo4japp.schemas.common import PaginatedRequest
 from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponse, FileResponseSchema, \
     FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, BulkFileUpdateRequestSchema, \
-    FileListSchema, FileListRequestSchema
+    FileListSchema, FileListRequestSchema, FileBackupCreateRequestSchema, FileVersionListSchema, \
+    FileVersionResponseSchema
 from neo4japp.schemas.formats.drawing_tool import validate_map_data
+from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import read_url
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
@@ -626,14 +629,14 @@ class FileListView(FilesystemBaseView):
 class FileDetailView(FilesystemBaseView):
     decorators = [auth.login_required]
 
-    def get(self, hash_id):
+    def get(self, hash_id: str):
         """Fetch a single file."""
         current_user = g.current_user
         return self.get_file_response(hash_id, current_user)
 
     @use_args(lambda request: FileUpdateRequestSchema(partial=True),
               locations=['json', 'form', 'files', 'mixed_form_json'])
-    def patch(self, params, hash_id):
+    def patch(self, params: dict, hash_id: str):
         """Update a single file."""
         current_user = g.current_user
         self.update_files([hash_id], params, current_user)
@@ -643,7 +646,7 @@ class FileDetailView(FilesystemBaseView):
 class FileContentView(FilesystemBaseView):
     decorators = [auth.login_required]
 
-    def get(self, hash_id):
+    def get(self, hash_id: str):
         """Fetch a single file's content."""
         current_user = g.current_user
 
@@ -654,19 +657,13 @@ class FileContentView(FilesystemBaseView):
         content = file.content
 
         if content:
-            etag = content.checksum_sha256.hex()
-
-            # Handle ETag cache response
-            if request.if_none_match and etag in request.if_none_match:
-                return '', 304
-            else:
-                response = make_response(content.raw_file)
-                response.headers['Cache-Control'] = 'no-cache, max-age=0'
-                response.headers['Content-Type'] = file.mime_type
-                response.headers['Content-Length'] = len(content.raw_file)
-                response.headers['Content-Disposition'] = f"attachment;filename={file.filename}"
-                response.headers['ETag'] = f'"{etag}"'
-                return response
+            return make_cacheable_file_response(
+                request,
+                content.raw_file,
+                etag=content.checksum_sha256.hex(),
+                filename=file.filename,
+                mime_type=file.mime_type
+            )
         else:
             raise RecordNotFoundException('Requested object has no content')
 
@@ -704,7 +701,137 @@ class FileAnnotationsView(FilesystemBaseView):
             annotations = []
 
 
-bp.add_url_rule('objects', view_func=FileListView.as_view('file'))
-bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file_detail'))
+class FileBackupView(FilesystemBaseView):
+    """Endpoint to manage 'backups' that are recorded for the user when they are editing a file
+    so that they don't lose their work."""
+    decorators = [auth.login_required]
+
+    @use_args(FileBackupCreateRequestSchema, locations=['json', 'form', 'files', 'mixed_form_json'])
+    def put(self, params: dict, hash_id: str):
+        """Endpoint to create a backup for a file for a user."""
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=False)
+
+        backup = FileBackup()
+        backup.file = file
+        backup.raw_value = params['content_value'].read()
+        backup.user = current_user
+        db.session.add(backup)
+        db.session.commit()
+
+        return jsonify({})
+
+    def delete(self, hash_id: str):
+        """Get the backup stored for a file for a user."""
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        # They should only have a backup if the file was writable to them, so we're
+        # only going to let users retrieve their backup if they can still write to the file
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=False)
+
+        file_backup_table = FileBackup.__table__
+        db.session.execute(
+            file_backup_table.delete() \
+                .where(and_(file_backup_table.c.file_id == file.id,
+                            file_backup_table.c.user_id == current_user.id))
+        )
+        db.session.commit()
+
+        return jsonify({})
+
+
+class FileBackupContentView(FilesystemBaseView):
+    """Endpoint to get the backup's content."""
+    decorators = [auth.login_required]
+
+    def get(self, hash_id):
+        """Get the backup stored for a file for a user."""
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        # They should only have a backup if the file was writable to them, so we're
+        # only going to let users retrieve their backup if they can still write to the file
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=False)
+
+        backup = db.session.query(FileBackup) \
+            .options(raiseload('*')) \
+            .filter(FileBackup.file_id == file.id,
+                    FileBackup.user_id == current_user.id) \
+            .order_by(desc(FileBackup.creation_date)) \
+            .first()
+
+        if backup is None:
+            raise RecordNotFoundException('No backup stored for this file')
+
+        content = backup.raw_value
+        etag = hashlib.sha256(content).hexdigest()
+
+        return make_cacheable_file_response(
+            request,
+            content,
+            etag=etag,
+            filename=file.filename,
+            mime_type=file.mime_type
+        )
+
+
+class FileVersionListView(FilesystemBaseView):
+    """Endpoint to fetch the versions of a file."""
+    decorators = [auth.login_required]
+
+    @use_args(PaginatedRequest)
+    def get(self, pagination: dict, hash_id: str):
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=False)
+
+        query = db.session.query(FileVersion) \
+            .options(raiseload('*'),
+                     joinedload(FileVersion.user)) \
+            .filter(FileVersion.file_id == file.id) \
+            .order_by(desc(FileVersion.creation_date))
+
+        result = query.paginate(pagination['page'], pagination['limit'])
+
+        return jsonify(FileVersionListSchema().dump({
+            'total': result.total,
+            'results': result.items,
+        }))
+
+
+class FileVersionContentView(FilesystemBaseView):
+    """Endpoint to fetch a file version."""
+    decorators = [auth.login_required]
+
+    @use_args(PaginatedRequest)
+    def get(self, pagination: dict, hash_id: str):
+        current_user = g.current_user
+
+        file_version = db.session.query(FileVersion) \
+            .options(raiseload('*'),
+                     joinedload(FileVersion.user)) \
+            .filter(FileVersion.hash_id == hash_id) \
+            .one()
+
+        file = self.get_nondeleted_recycled_file(Files.id == file_version.file_id)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=False)
+
+        return jsonify(FileVersionResponseSchema().dump({
+            'version': file_version
+        }))
+
+
+# Use /content for endpoints that return binary data
+bp.add_url_rule('objects', view_func=FileListView.as_view('file_list'))
+bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file'))
 bp.add_url_rule('objects/<string:hash_id>/content', view_func=FileContentView.as_view('file_content'))
 bp.add_url_rule('objects/<string:hash_id>/annotations', view_func=FileAnnotationsView.as_view('file_annotations'))
+bp.add_url_rule('objects/<string:hash_id>/backup', view_func=FileBackupView.as_view('file_backup'))
+bp.add_url_rule('objects/<string:hash_id>/backup/content',
+                view_func=FileBackupContentView.as_view('file_backup_content'))
+bp.add_url_rule('objects/<string:hash_id>/versions', view_func=FileVersionListView.as_view('file_version_list'))
+bp.add_url_rule('versions/<string:hash_id>/content', view_func=FileVersionContentView.as_view('file_version_content'))

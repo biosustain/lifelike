@@ -6,7 +6,7 @@ import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { AppUser, User } from '../../interfaces';
-import { FileCreateRequest, FilesystemObjectData, ProjectData } from '../schema';
+import { ObjectCreateRequest, FilesystemObjectData, ProjectData } from '../schema';
 
 export const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
 export const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
@@ -49,6 +49,12 @@ export class ProjectImpl implements Project {
   }
 }
 
+export interface FilePrivileges {
+  readable: boolean;
+  writable: boolean;
+  commentable: boolean;
+}
+
 /**
  * This object represents both directories and every type of file in Lifelike. Due
  * to a lot of legacy code, we implement several legacy interfaces to reduce the
@@ -74,7 +80,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     multipleSelection: true,
     sort: this.defaultSort,
   });
-  privileges: unknown;
+  privileges: FilePrivileges;
   recycled: boolean;
   effectivelyRecycled: boolean;
 

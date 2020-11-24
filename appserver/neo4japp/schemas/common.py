@@ -11,3 +11,8 @@ class PaginatedRequest(CamelCaseSchema):
     limit = fields.Integer(required=False,
                            missing=lambda: 50,
                            validate=marshmallow.validate.Range(min=1, max=1000))
+
+
+class FileUploadField(fields.Field):
+    pass
+    # TODO: validate

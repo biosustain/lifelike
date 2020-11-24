@@ -1,13 +1,13 @@
 from dataclasses import dataclass, field
-from typing import Any
 
 import marshmallow.validate
 import marshmallow_dataclass
-from marshmallow import fields, Schema, validates_schema, ValidationError
+from marshmallow import fields, validates_schema, ValidationError
 
 from neo4japp.models import Files, Projects
 from neo4japp.models.files import FilePrivileges
 from neo4japp.schemas.base import CamelCaseSchema
+from neo4japp.schemas.common import FileUploadField
 from neo4japp.schemas.fields import SortField
 
 
@@ -147,7 +147,7 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
     mime_type = fields.String(validate=marshmallow.validate.Length(min=1, max=2048))
     content_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
     content_url = fields.URL()
-    content_value = fields.Field(required=False)
+    content_value = FileUploadField(required=False)
 
     @validates_schema
     def validate_content(self, data, **kwargs):
@@ -180,3 +180,23 @@ class FileResponseSchema(CamelCaseSchema):
 class MultipleFileResponseSchema(CamelCaseSchema):
     objects = fields.Dict(keys=fields.String(),
                           values=fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',)))
+
+
+class FileBackupCreateRequestSchema(CamelCaseSchema):
+    content_value = FileUploadField(required=True)
+
+
+class FileVersionSchema(CamelCaseSchema):
+    hash_id = fields.String()
+    message = fields.String()
+    user = fields.Nested(UserSchema)
+    creation_date = fields.DateTime()
+
+
+class FileVersionResponseSchema(CamelCaseSchema):
+    version = fields.Nested(FileVersionSchema)
+
+
+class FileVersionListSchema(CamelCaseSchema):
+    total = fields.Integer()
+    results = fields.List(fields.Nested(FileSchema))

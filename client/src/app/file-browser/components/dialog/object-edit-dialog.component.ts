@@ -4,7 +4,7 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../../shared/services/message-dialog.service';
 import { FilesystemObject } from '../../models/filesystem-object';
 import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
-import { FileContentSource, FileCreateRequest } from '../../schema';
+import { ObjectContentSource, ObjectCreateRequest } from '../../schema';
 import { OrganismAutocomplete } from '../../../interfaces';
 import { select, Store } from '@ngrx/store';
 import { AuthSelectors } from '../../../auth/store';
@@ -106,7 +106,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     return this.object.isAnnotatable || this.filePossiblyAnnotatable;
   }
 
-  private getFileContentRequest(value: { [key: string]: any }): Partial<FileContentSource> {
+  private getFileContentRequest(value: { [key: string]: any }): Partial<ObjectContentSource> {
     if (this.promptUpload) {
       switch (value.contentSource) {
         case 'contentValue':
@@ -127,12 +127,17 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   getValue(): ObjectEditDialogValue {
     const value = this.form.value;
-    this.object.parent = value.parent;
-    this.object.filename = value.filename;
-    this.object.description = value.description;
-    this.object.public = value.public;
 
-    const request: FileCreateRequest = {
+    const objectChanges = {
+      parent: value.parent,
+      filename: value.filename,
+      description: value.description,
+      public: value.public,
+    };
+
+    Object.assign(this.object, objectChanges);
+
+    const request: ObjectCreateRequest = {
       filename: this.object.filename,
       parentHashId: this.object.parent ? this.object.parent.hashId : null,
       description: this.object.description,
@@ -140,8 +145,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       mimeType: this.object.mimeType,
       ...this.getFileContentRequest(value),
     };
+
     return {
       object: this.object,
+      objectChanges,
       request,
       annotationMethod: value.annotationMethod,
       organism: value.organism,
@@ -235,7 +242,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
 export interface ObjectEditDialogValue {
   object: FilesystemObject;
-  request: FileCreateRequest;
+  objectChanges: Partial<FilesystemObject>;
+  request: ObjectCreateRequest;
   annotationMethod: string;
   organism: OrganismAutocomplete;
 }

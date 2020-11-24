@@ -127,6 +127,7 @@ t_file_version = sa.Table(
     'file_version',
     sa.MetaData(),
     sa.Column('id', sa.Integer(), primary_key=True),
+    sa.Column('hash_id'),
     sa.Column('file_id'),
     sa.Column('message'),
     sa.Column('content_id'),
@@ -140,6 +141,7 @@ t_file_backup = sa.Table(
     'file_backup',
     sa.MetaData(),
     sa.Column('id', sa.Integer(), primary_key=True),
+    sa.Column('hash_id'),
     sa.Column('file_id'),
     sa.Column('raw_value', sa.LargeBinary()),
     sa.Column('user_id'),
@@ -524,6 +526,7 @@ def upgrade():
                     sa.Column('modified_date', sa.TIMESTAMP(timezone=True), nullable=False),
                     sa.Column('deletion_date', sa.TIMESTAMP(timezone=True), nullable=True),
                     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+                    sa.Column('hash_id', sa.String(length=36), nullable=True),
                     sa.Column('message', sa.Text(), nullable=True),
                     sa.Column('file_id', sa.Integer(), nullable=False),
                     sa.Column('content_id', sa.Integer(), nullable=False),
@@ -548,6 +551,7 @@ def upgrade():
     op.create_index(op.f('ix_file_version_file_id'), 'file_version', ['file_id'], unique=False)
     op.create_index(op.f('ix_file_version_content_id'), 'file_version', ['content_id'], unique=False)
     op.create_index(op.f('ix_file_version_user_id'), 'file_version', ['user_id'], unique=False)
+    op.create_unique_constraint(op.f('uq_file_version_hash_id'), 'file_version', ['hash_id'])
 
     # ========================================
     # Migrate map version table to the new file version table
@@ -585,6 +589,7 @@ def upgrade():
                     sa.Column('modified_date', sa.TIMESTAMP(timezone=True), nullable=False),
                     sa.Column('deletion_date', sa.TIMESTAMP(timezone=True), nullable=True),
                     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+                    sa.Column('hash_id', sa.String(length=36), nullable=True),
                     sa.Column('file_id', sa.Integer(), nullable=False),
                     sa.Column('raw_value', sa.LargeBinary(), nullable=False),
                     sa.Column('user_id', sa.Integer(), nullable=False),
@@ -604,6 +609,7 @@ def upgrade():
                     )
     op.create_index(op.f('ix_file_backup_file_id'), 'file_backup', ['file_id'], unique=False)
     op.create_index(op.f('ix_file_backup_user_id'), 'file_backup', ['user_id'], unique=False)
+    op.create_unique_constraint(op.f('uq_file_backup_hash_id'), 'file_backup', ['hash_id'])
 
     # ========================================
     # Migrate map backup table to the new file backup table
