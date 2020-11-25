@@ -1,15 +1,14 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserComponent } from './components/file-browser.component';
-import { FileEditDialogComponent } from './components/file-edit-dialog.component';
-import { ObjectDeleteDialogComponent } from './components/object-delete-dialog.component';
+import { ObjectDeleteDialogComponent } from './components/dialog/object-delete-dialog.component';
 import { FileViewComponent } from './components/file-view.component';
 import { PdfViewerLibModule } from '../pdf-viewer/pdf-viewer-lib.module';
 import { BrowserProjectListComponent } from './components/browser/browser-project-list.component';
 import { ProjectTitleAcronymPipe } from './services/project-title-acronym.pipe';
-import { ProjectEditDialogComponent } from './components/project-edit-dialog.component';
-import { ProjectCreateDialogComponent } from './components/project-create-dialog.component';
-import { ObjectDeletionResultDialogComponent } from './components/object-deletion-result-dialog.component';
+import { ProjectEditDialogComponent } from './components/dialog/project-edit-dialog.component';
+import { ProjectCreateDialogComponent } from './components/dialog/project-create-dialog.component';
+import { ObjectDeletionResultDialogComponent } from './components/dialog/object-deletion-result-dialog.component';
 import { CommunityBrowserComponent } from './components/community-browser.component';
 import { BrowserComponent } from './components/browser/browser.component';
 import { BrowserCommunityListComponent } from './components/browser/browser-community-list.component';
@@ -26,11 +25,12 @@ import { FileListComponent } from './components/file-list.component';
 import { FilesystemObjectActions } from './services/filesystem-object-actions';
 import { ProjectService } from './services/project.service';
 import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialog.component';
-import { ObjectVersionComponent } from './components/object-version.component';
+import { ObjectVersionHistoryComponent } from './components/object-version-history.component';
+import { ObjectVersionHistoryDialogComponent } from './components/dialog/object-version-history-dialog.component';
+import { ObjectPreviewComponent } from './components/object-preview.component';
 
 @NgModule({
   declarations: [
-    FileEditDialogComponent,
     ObjectDeleteDialogComponent,
     ObjectDeletionResultDialogComponent,
     FileBrowserComponent,
@@ -51,7 +51,9 @@ import { ObjectVersionComponent } from './components/object-version.component';
     ObjectSelectionDialogComponent,
     FileListComponent,
     ObjectEditDialogComponent,
-    ObjectVersionComponent,
+    ObjectVersionHistoryComponent,
+    ObjectVersionHistoryDialogComponent,
+    ObjectPreviewComponent,
   ],
   imports: [
     SharedModule,
@@ -59,7 +61,6 @@ import { ObjectVersionComponent } from './components/object-version.component';
     DrawingToolModule,
   ],
   entryComponents: [
-    FileEditDialogComponent,
     ObjectDeleteDialogComponent,
     FileViewComponent,
     ProjectCreateDialogComponent,
@@ -69,6 +70,8 @@ import { ObjectVersionComponent } from './components/object-version.component';
     EnrichmentTableEditDialogComponent,
     ObjectSelectionDialogComponent,
     ObjectEditDialogComponent,
+    ObjectVersionHistoryDialogComponent,
+    ObjectPreviewComponent,
   ],
   exports: [
     FileInfoComponent,
@@ -76,6 +79,7 @@ import { ObjectVersionComponent } from './components/object-version.component';
     ObjectSelectionDialogComponent,
     FileListComponent,
     ObjectEditDialogComponent,
+    ObjectVersionHistoryDialogComponent,
   ],
   providers: [
     ProjectService,

@@ -1,0 +1,23 @@
+<div class="d-flex flex-column h-100">
+  <ng-container *ngIf="object">
+    <ng-container *ngIf="objectWithContent; else loading">
+      <ng-container *ngIf="objectWithContent.mimeType === 'vnd.lifelike.document/map'; else noPreview">
+        <app-map [map]="objectWithContent" class="flex-fill"></app-map>
+      </ng-container>
+      <ng-template #noPreview>
+        <div class="d-flex flex-fill align-items-center justify-content-center">
+          <div class="p-4 text-muted">
+            No preview available.
+          </div>
+        </div>
+      </ng-template>
+    </ng-container>
+    <ng-template #loading>
+      <div class="d-flex flex-fill align-items-center justify-content-center">
+        <div class="p-4">
+          <i class="fas fa-circle-notch fa-spin fa-2x text-muted"></i>
+        </div>
+      </div>
+    </ng-template>
+  </ng-container>
+</div>

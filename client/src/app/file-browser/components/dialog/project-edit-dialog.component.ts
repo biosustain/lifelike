@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
-import { ProjectSpaceService, Collaborator, Project } from '../services/project-space.service';
+import { ProjectSpaceService, Collaborator, Project } from '../../services/project-space.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormArray, FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';

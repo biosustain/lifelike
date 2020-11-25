@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { DirectoryObject } from '../../interfaces/projects.interface';
+import { FilesystemObject } from '../models/filesystem-object';
 
 @Component({
   selector: 'app-file-info',
@@ -9,13 +9,13 @@ export class FileInfoComponent implements OnInit {
   @Input() defaultHighlightLimit = 5;
   highlightLimit = this.defaultHighlightLimit;
   @Input() highlightTerms: string[] | undefined;
-  @Output() objectEdit = new EventEmitter<DirectoryObject>();
+  @Output() objectEdit = new EventEmitter<FilesystemObject>();
   @Output() highlightClick = new EventEmitter<string>();
   @Output() highlightDisplayLimitChange = new EventEmitter<HighlightDisplayLimitChange>();
-  _object: DirectoryObject | undefined;
+  _object: FilesystemObject | undefined;
 
   @Input()
-  set object(object: DirectoryObject | undefined) {
+  set object(object: FilesystemObject | undefined) {
     this._object = object;
     this.highlightLimit = this.defaultHighlightLimit;
     this.highlightDisplayLimitChange.emit({
@@ -33,7 +33,7 @@ export class FileInfoComponent implements OnInit {
     this.highlightDisplayLimitChange.emit({
       previous: 0,
       limit: Math.min(this.highlightLimit,
-          this.object.highlight != null ? this.object.highlight.length : 0),
+        this.object.highlight != null ? this.object.highlight.length : 0),
     });
   }
 
@@ -51,7 +51,7 @@ export class FileInfoComponent implements OnInit {
     this.highlightDisplayLimitChange.emit({
       previous,
       limit: Math.min(this.highlightLimit,
-          this.object.highlight != null ? this.object.highlight.length : 0),
+        this.object.highlight != null ? this.object.highlight.length : 0),
     });
   }
 }
