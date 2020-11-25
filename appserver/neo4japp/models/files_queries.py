@@ -1,7 +1,7 @@
 """TODO: Possibly turn this into a DAO in the future.
 For now, it's just a file with query functions to help DRY.
 """
-from typing import List, Set, Dict, Optional
+from typing import List, Set, Dict, Optional, Union, Literal
 
 from flask_sqlalchemy import BaseQuery
 from sqlalchemy import and_, inspect
@@ -53,11 +53,12 @@ def get_all_files_by_id(file_ids: Set[str], project_id: int):
     return files
 
 
-def build_file_parents_cte(filter, max_depth=Files.MAX_DEPTH,
-                           files_table=Files, projects_table=Projects) -> BaseQuery:
+def _build_file_cte(direction: Union[Literal['children'], Literal['parents']],
+                    filter, max_depth=Files.MAX_DEPTH,
+                    files_table=Files, projects_table=Projects) -> BaseQuery:
     """
-    Build a query for fetching *just* the parent IDs of a file, and the file itself.
-    The query returned is to be combined with another query to actually
+    Build a query for fetching *just* the parent (or) child IDs of a file,
+    and the file itself. The query returned is to be combined with another query to actually
     fetch file or file information (see :func:`get_file_hierarchy_query`).
 
     :param filter: WHERE for finding the desired file (i.e. Files.id == X)
@@ -66,6 +67,8 @@ def build_file_parents_cte(filter, max_depth=Files.MAX_DEPTH,
     :param projects_table: a projects table to use, if not the default Projects model
     :return: a hierarchy CTE query
     """
+    get_children = direction == 'children'
+    assert get_children or direction == 'parents'
 
     # This CTE gets the child and then joins all parents of the child, getting us
     # the whole hierarchy. We need the whole hierarchy to (1) determine the
@@ -91,6 +94,9 @@ def build_file_parents_cte(filter, max_depth=Files.MAX_DEPTH,
     t_parent = db.aliased(q_hierarchy, name="parent")  # Names help debug the query
     t_children = db.aliased(files_table, name="child")
 
+    relationship = t_children.parent_id == t_parent.c.id if \
+        get_children else t_children.id == t_parent.c.parent_id
+
     q_hierarchy = q_hierarchy.union_all(
         db.session.query(
             t_children.id,
@@ -100,7 +106,7 @@ def build_file_parents_cte(filter, max_depth=Files.MAX_DEPTH,
             (t_parent.c.level + 1).label("level")
         ) \
             .outerjoin(projects_table, projects_table.root_id == t_children.id) \
-            .filter(t_children.id == t_parent.c.parent_id,
+            .filter(relationship,
                     t_parent.c.level < max_depth))  # len(results) will max at (max_depth + 1)
 
     # The returned hierarchy doesn't provide any permissions or project information --
@@ -108,6 +114,38 @@ def build_file_parents_cte(filter, max_depth=Files.MAX_DEPTH,
     # that can be joined onto a query
 
     return q_hierarchy
+
+
+def build_file_parents_cte(filter, max_depth=Files.MAX_DEPTH,
+                           files_table=Files, projects_table=Projects) -> BaseQuery:
+    """
+    Build a query for fetching *just* the parent IDs of a file, and the file itself.
+    The query returned is to be combined with another query to actually
+    fetch file or file information (see :func:`get_file_hierarchy_query`).
+
+    :param filter: WHERE for finding the desired file (i.e. Files.id == X)
+    :param max_depth: a maximum number of parents to return (infinite recursion mitigation)
+    :param files_table: a files table to use, if not the default Files model
+    :param projects_table: a projects table to use, if not the default Projects model
+    :return: a hierarchy CTE query
+    """
+    return _build_file_cte('parents', filter, max_depth, files_table, projects_table)
+
+
+def build_file_children_cte(filter, max_depth=Files.MAX_DEPTH,
+                            files_table=Files, projects_table=Projects) -> BaseQuery:
+    """
+    Build a query for fetching *just* the child IDs of a file, and the file itself.
+    The query returned is to be combined with another query to actually
+    fetch file or file information (see :func:`get_file_hierarchy_query`).
+
+    :param filter: WHERE for finding the desired file (i.e. Files.id == X)
+    :param max_depth: a maximum number of parents to return (infinite recursion mitigation)
+    :param files_table: a files table to use, if not the default Files model
+    :param projects_table: a projects table to use, if not the default Projects model
+    :return: a hierarchy CTE query
+    """
+    return _build_file_cte('children', filter, max_depth, files_table, projects_table)
 
 
 def join_projects_to_parents_cte(q_hierarchy: Query):
