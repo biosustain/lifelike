@@ -2,8 +2,7 @@ import { AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Outpu
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
-import { MapService } from '../services';
-import { GraphEntity, GraphEntityType, KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../services/interfaces';
+import { GraphEntity, UniversalGraph, UniversalGraphNode } from '../services/interfaces';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ModuleProperties } from '../../shared/modules';
@@ -11,12 +10,10 @@ import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { map } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { tokenizeQuery } from '../../shared/utils/find';
-import { emptyIfNull } from '../../shared/utils/types';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBufferToJson, readBlobAsBuffer } from '../../shared/utils/files';
@@ -55,15 +52,15 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   entitySearchListIdx = -1;
 
   constructor(
-      readonly filesystemService: FilesystemService,
-      readonly snackBar: MatSnackBar,
-      readonly modalService: NgbModal,
-      readonly messageDialog: MessageDialog,
-      readonly ngZone: NgZone,
-      readonly route: ActivatedRoute,
-      readonly errorHandler: ErrorHandler,
-      readonly workspaceManager: WorkspaceManager,
-      readonly filesystemObjectActions: FilesystemObjectActions,
+    readonly filesystemService: FilesystemService,
+    readonly snackBar: MatSnackBar,
+    readonly modalService: NgbModal,
+    readonly messageDialog: MessageDialog,
+    readonly ngZone: NgZone,
+    readonly route: ActivatedRoute,
+    readonly errorHandler: ErrorHandler,
+    readonly workspaceManager: WorkspaceManager,
+    readonly filesystemObjectActions: FilesystemObjectActions,
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
@@ -234,8 +231,8 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         tokenizeQuery(this.entitySearchTerm, {
           singleTerm: true,
         }), {
-        wholeWord: false,
-      });
+          wholeWord: false,
+        });
       this.entitySearchListIdx = -1;
 
       this.graphCanvas.searchHighlighting.replace(this.entitySearchList);
@@ -264,7 +261,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.entitySearchListIdx = 0;
     }
     this.graphCanvas.panToEntity(
-      this.entitySearchList[this.entitySearchListIdx] as GraphEntity
+      this.entitySearchList[this.entitySearchListIdx] as GraphEntity,
     );
   }
 
@@ -275,7 +272,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.entitySearchListIdx = this.entitySearchList.length - 1;
     }
     this.graphCanvas.panToEntity(
-      this.entitySearchList[this.entitySearchListIdx] as GraphEntity
+      this.entitySearchList[this.entitySearchListIdx] as GraphEntity,
     );
   }
 }

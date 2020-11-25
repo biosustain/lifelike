@@ -14,14 +14,15 @@ import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angula
 import { ApiService } from '../../shared/services/api.service';
 import {
   BulkObjectUpdateRequest,
+  MultipleObjectDataResponse,
   ObjectBackupCreateRequest,
   ObjectCreateRequest,
   ObjectDataResponse,
-  ObjectVersionData,
-  MultipleObjectDataResponse, ObjectVersionHistoryResponse,
+  ObjectExportRequest,
+  ObjectVersionHistoryResponse,
 } from '../schema';
 import { objectToFormData, objectToMixedFormData } from '../../shared/utils/forms';
-import { PaginatedRequestOptions, ResultList } from '../../interfaces/shared.interface';
+import { PaginatedRequestOptions } from '../../interfaces/shared.interface';
 import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
 import { serializePaginatedParams } from '../../shared/utils/params';
 
@@ -93,6 +94,16 @@ export class FilesystemService {
   getContent(hashId: string): Observable<Blob> {
     return this.http.get(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/content`, {
+        ...this.apiService.getHttpOptions(true),
+        responseType: 'blob',
+      },
+    );
+  }
+
+  generateExport(hashId: string, request: ObjectExportRequest): Observable<Blob> {
+    return this.http.post(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/export`,
+      request, {
         ...this.apiService.getHttpOptions(true),
         responseType: 'blob',
       },
