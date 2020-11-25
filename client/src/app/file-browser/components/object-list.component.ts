@@ -107,6 +107,10 @@ export class ObjectListComponent {
     return this.actions.openExportDialog(target);
   }
 
+  openShareDialog(target: FilesystemObject) {
+    return this.actions.openShareDialog(target);
+  }
+
   getDateShown(object: DirectoryObject) {
     return nullCoalesce(object.modificationDate, object.creationDate);
   }
