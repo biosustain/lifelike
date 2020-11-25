@@ -28,6 +28,7 @@ import { ObjectCreateRequest } from '../schema';
 import { clone } from 'lodash';
 import { ObjectVersionHistoryDialogComponent } from '../components/dialog/object-version-history-dialog.component';
 import { ObjectVersion } from '../models/object-version';
+import { EnrichmentTableEditDialogComponent } from '../components/enrichment-table-edit-dialog.component';
 
 @Injectable()
 export class FilesystemObjectActions {
@@ -212,13 +213,36 @@ export class FilesystemObjectActions {
     return dialogRef.result.then((result) => {
       const progressDialogRef = this.createProgressDialog('Creating map...');
 
-      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism;
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
       return this.filesService.addGeneList(parent.locator.projectName, parent.directory.id, enrichmentData, result.description, result.name)
-        .pipe(
-          finalize(() => progressDialogRef.close()),
-          this.errorHandler.create(),
-        )
-        .toPromise();
+          .pipe(
+              this.errorHandler.create(),
+              finalize(() => progressDialogRef.close()),
+          )
+          .toPromise();
+    });
+  }
+
+  openEnrichmentTableEditDialog(target: FilesystemObject): Promise<any> {
+    const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
+    dialogRef.componentInstance.fileId = target.id;
+    dialogRef.componentInstance.projectName = target.locator.projectName;
+    return dialogRef.result.then((result) => {
+      const progressDialogRef = this.createProgressDialog('Saving changes...');
+
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
+      return this.filesService.editGeneList(
+          target.locator.projectName,
+          target.id,
+          enrichmentData,
+          result.name,
+          result.description,
+      )
+          .pipe(
+              this.errorHandler.create(),
+              finalize(() => progressDialogRef.close()),
+          )
+          .toPromise();
     });
   }
 

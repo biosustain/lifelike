@@ -1,0 +1,2 @@
+app_environment: staging
+elastic_file_content_index_id: file_nlptraining
