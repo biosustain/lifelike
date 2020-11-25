@@ -360,12 +360,9 @@ export class FilesystemObjectActions {
     return dialogRef.result;
   }
 
-  openShareDialog(object: FilesystemObject): Promise<any> {
+  openShareDialog(object: FilesystemObject, forEditing = false): Promise<any> {
     const modalRef = this.modalService.open(ShareDialogComponent);
-    modalRef.componentInstance.url = `${window.location.origin}/projects/`
-      + `${object.locator.projectName}` + (object.locator.directoryId ?
-        `/folders/${object.locator.directoryId}` : '')
-      + '?fromWorkspace';
+    modalRef.componentInstance.url = `${window.location.origin}/${object.getURL(forEditing)}`;
     return modalRef.result;
   }
 
