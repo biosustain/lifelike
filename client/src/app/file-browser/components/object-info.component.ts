@@ -3,9 +3,9 @@ import { FilesystemObject } from '../models/filesystem-object';
 
 @Component({
   selector: 'app-file-info',
-  templateUrl: './file-info.component.html',
+  templateUrl: './object-info.component.html',
 })
-export class FileInfoComponent implements OnInit {
+export class ObjectInfoComponent implements OnInit {
   @Input() defaultHighlightLimit = 5;
   highlightLimit = this.defaultHighlightLimit;
   @Input() highlightTerms: string[] | undefined;
