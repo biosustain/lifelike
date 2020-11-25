@@ -1,4 +1,7 @@
 import { ResultList } from '../interfaces/shared.interface';
+import { Annotation } from '../pdf-viewer/annotation-type';
+import { AnnotationMethod } from '../interfaces/annotation';
+import { OrganismAutocomplete } from '../interfaces';
 
 export interface ProjectData {
   hashId: string;
@@ -67,6 +70,7 @@ export interface ObjectDataResponse {
 
 export interface MultipleObjectDataResponse {
   objects: { [hashId: string]: FilesystemObjectData };
+  missing: string[];
 }
 
 export interface ObjectBackupCreateRequest extends ObjectContentValueRequest {
@@ -86,4 +90,23 @@ export interface ObjectVersionHistoryResponse extends ResultList<ObjectVersionDa
 
 export interface ObjectExportRequest {
   format: string;
+}
+
+export interface ObjectAnnotationsDataResponse {
+  annotations: Annotation[];
+}
+
+export interface AnnotationGenerationRequest {
+  organism?: OrganismAutocomplete;
+  annotationMethod?: AnnotationMethod;
+}
+
+export interface AnnotationGenerationResultData {
+  attempted: boolean;
+  success: boolean;
+}
+
+export interface MultipleAnnotationGenerationResponse {
+  results: { [hashId: string]: AnnotationGenerationResultData };
+  missing: string[];
 }

@@ -90,7 +90,7 @@
         <ng-container *ngIf="(userRoles$ | async)?.includes('admin')">
           <app-form-row class="mt-2" for="annotationMethod" label="Annotations"
                         [control]="form.get('annotationMethod')">
-            <div *ngFor="let method of annotationMethods">
+            <div *ngFor="let method of annotationMethodChoices">
               <div class="custom-control custom-checkbox">
                 <input type="checkbox" class="custom-control-input"
                        id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
