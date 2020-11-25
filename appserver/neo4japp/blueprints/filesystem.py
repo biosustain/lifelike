@@ -15,7 +15,7 @@ from marshmallow import ValidationError
 from pdfminer import high_level
 from sqlalchemy import and_, desc
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import raiseload, joinedload, lazyload
+from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
@@ -24,7 +24,7 @@ from neo4japp.database import db
 from neo4japp.exceptions import RecordNotFoundException, AccessRequestRequiredError
 from neo4japp.models import Projects, Files, FileContent, AppUser, FileVersion, FileBackup
 from neo4japp.models.files_queries import add_user_permission_columns, FileHierarchy, \
-    build_file_hierarchy_query
+    build_file_hierarchy_query, build_file_children_cte
 from neo4japp.schemas.common import PaginatedRequest
 from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponse, FileResponseSchema, \
     FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, BulkFileUpdateRequestSchema, \
@@ -135,6 +135,37 @@ class FilesystemBaseView(MethodView):
 
         return files
 
+    def get_nondeleted_recycled_children(self, filter, lazy_load_content=False) -> List[Files]:
+        """
+        Retrieve all files that match the provided filter, including the children of those
+        files, even if those children do not match the filter. The files returned by
+        this method do not have complete information to determine permissions.
+
+        :param filter: the SQL Alchemy filter
+        :param lazy_load_content: whether to load the file's content into memory
+        :return: the result, which may be an empty list
+        """
+        q_hierarchy = build_file_children_cte(and_(
+            filter,
+            Files.deletion_date.is_(None)
+        ))
+
+        t_parent_files = aliased(Files)
+
+        query = db.session.query(Files) \
+            .join(q_hierarchy, q_hierarchy.c.id == Files.id) \
+            .outerjoin(t_parent_files, t_parent_files.id == Files.parent_id) \
+            .options(raiseload('*'),
+                     contains_eager(Files.parent, alias=t_parent_files),
+                     joinedload(Files.user),
+                     joinedload(Files.fallback_organism)) \
+            .order_by(q_hierarchy.c.level)
+
+        if lazy_load_content:
+            query = query.options(lazyload(Files.content))
+
+        return query.all()
+
     def check_file_permissions(self, files: List[Files], user: AppUser,
                                require_permissions: List[str], *, permit_recycled: bool):
         """
@@ -159,13 +190,18 @@ class FilesystemBaseView(MethodView):
                 raise ValidationError(f"The file or directory '{file.filename}' has been trashed and "
                                       "must be restored first.")
 
-    def update_files(self, hash_ids: List[str], params: Dict, user: AppUser):
+    def check_recursive_selection_permission(self, user: AppUser):
+        raise ValidationError(f'Recursive selection is not permitted.', "recursive")
+
+    def update_files(self, hash_ids: List[str], params: Dict, user: AppUser, *,
+                     recursive=False):
         """
         Updates the specified files using the parameters from a validated request.
 
         :param hash_ids: the object hash IDs
         :param params: the parameters
         :param user: the user that is making the change
+        :param recursive: apply settings to children of folders
         """
         changed_fields = set()
 
@@ -180,10 +216,6 @@ class FilesystemBaseView(MethodView):
             query_hash_ids.append(parent_hash_id)
             require_hash_ids.append(parent_hash_id)
 
-        if parent_hash_id in target_hash_ids:
-            raise ValidationError(f'An object cannot be set as the parent of itself.',
-                                  "parent_hash_id")
-
         # ========================================
         # Fetch and check
         # ========================================
@@ -192,11 +224,23 @@ class FilesystemBaseView(MethodView):
                                                    require_hash_ids=require_hash_ids)
         self.check_file_permissions(files, user, ['writable'], permit_recycled=False)
 
-        target_files = [file for file in files if file.hash_id in target_hash_ids]
+        # This flag allows a user to update all files within a folder (however
+        # deep the folder hierarchy may get) by simply selecting the folder
+        if recursive:
+            self.check_recursive_selection_permission(user)
+            files = self.get_nondeleted_recycled_children(Files.id.in_([file.id for file in files]),
+                                                          lazy_load_content=True)
+
+        target_files = [file for file in files if file.hash_id != parent_hash_id]
         parent_file = None
         missing_hash_ids = self.get_missing_hash_ids(query_hash_ids, files)
 
-        # Check parent
+        # Prevent recursive parent hash IDs
+        if parent_hash_id is not None and parent_hash_id in [file.hash_id for file in target_files]:
+            raise ValidationError(f'An object cannot be set as the parent of itself.',
+                                  "parent_hash_id")
+
+        # Check the specified parent to see if it can even be a parent
         if parent_hash_id is not None:
             parent_file = next(filter(lambda file: file.hash_id == parent_hash_id, files), None)
 
@@ -581,7 +625,8 @@ class FileListView(FilesystemBaseView):
         """File update endpoint."""
 
         current_user = g.current_user
-        missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
+        missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user,
+                                             recursive=targets.get('recursive', False))
         return self.get_bulk_file_response(targets['hash_ids'], current_user,
                                            missing_hash_ids=missing_hash_ids)
 
