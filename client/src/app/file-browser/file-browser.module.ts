@@ -13,15 +13,15 @@ import { CommunityBrowserComponent } from './components/community-browser.compon
 import { BrowserComponent } from './components/browser/browser.component';
 import { BrowserCommunityListComponent } from './components/browser/browser-community-list.component';
 import { BrowserContextComponent } from './components/browser/browser-context.component';
-import { FileInfoComponent } from './components/file-info.component';
+import { ObjectInfoComponent } from './components/object-info.component';
 import { DrawingToolModule } from '../drawing-tool/drawing-tool.module';
-import { FileTypeLabelComponent } from './components/file-type-label.component';
+import { ObjectTypeLabelComponent } from './components/object-type-label.component';
 import { EnrichmentTableViewerComponent } from './components/enrichment-table-viewer.component';
 import { EnrichmentTableCreateDialogComponent } from './components/enrichment-table-create-dialog.component';
 import { EnrichmentTableEditDialogComponent } from './components/enrichment-table-edit-dialog.component';
 import { ObjectSelectionDialogComponent } from './components/dialog/object-selection-dialog.component';
 import { FilesystemService } from './services/filesystem.service';
-import { FileListComponent } from './components/file-list.component';
+import { ObjectListComponent } from './components/object-list.component';
 import { FilesystemObjectActions } from './services/filesystem-object-actions';
 import { ProjectService } from './services/project.service';
 import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialog.component';
@@ -44,14 +44,14 @@ import { EnrichmentTableOrderDialogComponent } from './components/enrichment-tab
     ProjectEditDialogComponent,
     ProjectCreateDialogComponent,
     CommunityBrowserComponent,
-    FileInfoComponent,
-    FileTypeLabelComponent,
+    ObjectInfoComponent,
+    ObjectTypeLabelComponent,
     EnrichmentTableViewerComponent,
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,
     EnrichmentTableOrderDialogComponent,
     ObjectSelectionDialogComponent,
-    FileListComponent,
+    ObjectListComponent,
     ObjectEditDialogComponent,
     ObjectVersionHistoryComponent,
     ObjectVersionHistoryDialogComponent,
@@ -77,10 +77,10 @@ import { EnrichmentTableOrderDialogComponent } from './components/enrichment-tab
     ObjectPreviewComponent,
   ],
   exports: [
-    FileInfoComponent,
-    FileTypeLabelComponent,
+    ObjectInfoComponent,
+    ObjectTypeLabelComponent,
     ObjectSelectionDialogComponent,
-    FileListComponent,
+    ObjectListComponent,
     ObjectEditDialogComponent,
     ObjectVersionHistoryDialogComponent,
   ],
