@@ -29,6 +29,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { SearchControlComponent } from '../../shared/components/search-control.component';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -103,7 +104,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   projectName: string;
 
   @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
-  @ViewChild('search', {static: false}) searchElement: ElementRef;
 
   constructor(
     private readonly filesService: PdfFilesService,
@@ -216,6 +216,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.invalidateEntityTypeVisibility();
   }
 
+  enableEntityTypeVisibility(annotation: Annotation) {
+    this.entityTypeVisibilityMap.set(annotation.meta.type, true);
+    this.invalidateEntityTypeVisibility();
+  }
+
   invalidateEntityTypeVisibility() {
     // Keep track if the user has some entity types disabled
     let entityTypeVisibilityChanged = false;
@@ -235,35 +240,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   annotationCreated(annotation: Annotation) {
-    // try getting id from the ncbi or uniprot link
-    let id = '';
-    let idType = '';
-
-    const uniprotRegExp = new RegExp('uniprot\.org\.uniprot\/([^?#]*)');
-    const uniprotResult = uniprotRegExp.exec(annotation.meta.links.uniprot);
-    if (uniprotResult && uniprotResult[1]) {
-      id = uniprotResult[1];
-      idType = 'UNIPROT';
-    }
-
-    const ncbiRegExp = new RegExp('ncbi\.nlm\.nih\.gov\/gene\/([^?#]*)');
-    const ncbiResult = ncbiRegExp.exec(annotation.meta.links.ncbi);
-    if (ncbiResult && ncbiResult[1]) {
-      id = ncbiResult[1];
-      idType = 'NCBI';
-    }
-
-    const annotationToAdd: Annotation = {
-      ...annotation,
-      meta: {
-        ...annotation.meta,
-        id: annotation.meta.id || id,
-        idType,
-      },
-    };
-
-    annotationToAdd.meta.idHyperlink = this.generateHyperlink(annotationToAdd);
-
     const dialogRef = this.modalService.open(ConfirmDialogComponent);
     dialogRef.componentInstance.message = 'Do you want to annotate the rest of the document with this term as well?';
     dialogRef.result.then((annotateAll: boolean) => {
@@ -274,12 +250,13 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         })),
       });
 
-      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotationToAdd, annotateAll, this.projectName)
+      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotation, annotateAll, this.projectName)
         .pipe(this.errorHandler.create())
         .subscribe(
           (annotations: Annotation[]) => {
             progressDialogRef.close();
             this.addedAnnotations = annotations;
+            this.enableEntityTypeVisibility(annotations[0]);
             this.snackBar.open('Annotation has been added', 'Close', {duration: 5000});
           },
           err => {
@@ -376,12 +353,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     if (this.pdfFile.upload_url) {
       sources.push({
-        domain: 'Upload URL',
+        domain: 'External URL',
         url: this.pdfFile.upload_url,
       });
     }
 
-    const hyperlink = meta.idHyperlink || meta.primaryLink || '';
+    const hyperlink = meta.idHyperlink || '';
 
     const search = Object.keys(meta.links || []).map(k => {
       return {
@@ -483,31 +460,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     }
   }
 
-  generateHyperlink(ann: Annotation): string {
-    switch (ann.meta.idType) {
-      case DatabaseType.Chebi:
-        return this.buildUrl(Hyperlink.Chebi, ann.meta.id);
-      case DatabaseType.Mesh:
-        // prefix 'MESH:' should be removed from the id in order for search to work
-        return this.buildUrl(Hyperlink.Mesh, ann.meta.id.substring(5));
-      case DatabaseType.Uniprot:
-        return this.buildUrl(Hyperlink.Uniprot, ann.meta.id);
-      case DatabaseType.Ncbi:
-        if (ann.meta.type === AnnotationType.Gene) {
-          return this.buildUrl(Hyperlink.NcbiGenes, ann.meta.id);
-        } else if (ann.meta.type === AnnotationType.Species) {
-          return this.buildUrl(Hyperlink.NcbiSpecies, ann.meta.id);
-        }
-        return '';
-      default:
-        return '';
-    }
-  }
-
-  private buildUrl(provider: Hyperlink, query: string): string {
-    return provider + query;
-  }
-
   scrollInPdf(loc: Location) {
     if (!this.pdfFileLoaded) {
       console.log('File in the pdf viewer is not loaded yet. So, I cant scroll');
@@ -577,14 +529,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  clearSearchQuery(focus = true) {
-    this.searchQuery = '';
-    this.searchQueryChanged();
-    if (focus) {
-      this.searchElement.nativeElement.focus();
-    }
-  }
-
   displayEditDialog() {
     this.filesService.getFileFallbackOrganism(
       this.projectName, this.pdfFile.file_id,
@@ -648,5 +592,26 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   isPendingPostLoadAction() {
     return this.isPendingScroll() || this.isPendingJump()
       || this.pendingAnnotationHighlightId != null;
+  }
+
+  dragStarted(event: DragEvent) {
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    dataTransfer.setData('text/plain', this.pdfFile.filename);
+    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
+      display_name: this.pdfFile.filename,
+      label: 'link',
+      sub_labels: [],
+      data: {
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.pdfFile.file_id + '',
+        }],
+        sources: [{
+          domain: 'File Source',
+          url: ['/projects', encodeURIComponent(this.projectName),
+            'files', encodeURIComponent(this.pdfFile.file_id)].join('/'),
+        }],
+      },
+    } as Partial<UniversalGraphNode>));
   }
 }

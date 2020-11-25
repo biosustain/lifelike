@@ -220,8 +220,8 @@
                 </div>
               </div>
 
-              <button class="btn btn-secondary ml-3" ngbTooltip="Project Entity Cloud"
-                      (click)="openEntityCloudPane(result.value)">
+              <button #entityCloudBtn class="btn btn-secondary ml-4" ngbTooltip="Project Entity Cloud"
+                      (click)="openEntityCloudPane(result.value); entityCloudBtn.blur()">
                 <i class="fa fa-fw fa-cloud"></i>
               </button>
             </div>

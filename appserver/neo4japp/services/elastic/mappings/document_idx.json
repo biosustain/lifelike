@@ -1,13 +1,34 @@
 {
     "settings": {
-      "highlight": {
-        "max_analyzed_offset": "100000000"
-      }
+        "analysis": {
+            "analyzer": {
+              "filename_analyzer": {
+                "tokenizer": "standard",
+                "char_filter": [
+                  "replace_dot"
+                ]
+              },
+              "default": {
+                  "type": "standard"
+              }
+            },
+            "char_filter": {
+              "replace_dot": {
+                "type": "pattern_replace",
+                "pattern": "\\.",
+                "replacement": " "
+              }
+            }
+        },
+        "highlight": {
+            "max_analyzed_offset": "100000000"
+        }
     },
     "mappings": {
         "properties": {
             "filename": {
-                "type": "text"
+                "type": "text",
+                "analyzer": "filename_analyzer"
             },
             "description": {
                 "type": "text"

@@ -28,6 +28,7 @@ import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialo
 import { ObjectVersionHistoryComponent } from './components/object-version-history.component';
 import { ObjectVersionHistoryDialogComponent } from './components/dialog/object-version-history-dialog.component';
 import { ObjectPreviewComponent } from './components/object-preview.component';
+import { EnrichmentTableOrderDialogComponent } from './components/enrichment-table-order-dialog.component';
 
 @NgModule({
   declarations: [
@@ -48,6 +49,7 @@ import { ObjectPreviewComponent } from './components/object-preview.component';
     EnrichmentTableViewerComponent,
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,
+    EnrichmentTableOrderDialogComponent,
     ObjectSelectionDialogComponent,
     FileListComponent,
     ObjectEditDialogComponent,
@@ -68,6 +70,7 @@ import { ObjectPreviewComponent } from './components/object-preview.component';
     ObjectDeletionResultDialogComponent,
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,
+    EnrichmentTableOrderDialogComponent,
     ObjectSelectionDialogComponent,
     ObjectEditDialogComponent,
     ObjectVersionHistoryDialogComponent,

@@ -28,6 +28,7 @@ import { ContentSearchComponent } from './search/components/content-search.compo
 import { EnrichmentTableViewerComponent } from './file-browser/components/enrichment-table-viewer.component';
 import { FileNavigatorComponent } from './file-navigator/file-navigator.component';
 import { WordCloudProjectComponent } from './word-cloud/word-cloud-project.component';
+import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -100,6 +101,11 @@ const routes: Routes = [
       title: 'Search',
       fontAwesomeIcon: 'search',
     },
+  },
+  {
+    path: 'pathway-browser-prototype',
+    canActivate: [AuthGuard],
+    component: ShortestPathComponent,
   },
   {
     path: 'projects/:project_name/enrichment-table/:file_id',

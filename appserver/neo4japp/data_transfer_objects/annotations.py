@@ -1,8 +1,6 @@
 import attr
 
-from typing import Any, Dict, List, Optional, Tuple, Union
-
-from pdfminer.layout import LTAnno, LTChar
+from typing import Any, Dict, List, Optional, Tuple
 
 from neo4japp.util import CamelDictMixin
 
@@ -14,31 +12,70 @@ class AnnotationRequest(CamelDictMixin):
     organism: dict = attr.ib(default=attr.Factory(dict))
 
 
-@attr.s(frozen=True)
-class PDFParsedCharacters(CamelDictMixin):
-    chars_in_pdf: List[str] = attr.ib()
-    char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
-    cropbox_in_pdf: Tuple[int, int] = attr.ib()
-    min_idx_in_page: Dict[int, int] = attr.ib()
+@attr.s(frozen=False)
+class PDFBase():
+    def to_dict(self):
+        return attr.asdict(self)
 
 
-@attr.s(frozen=True)
-class PDFTokenPositions(CamelDictMixin):
+@attr.s(frozen=False)
+class PDFChar(PDFBase):
+    text: str = attr.ib()
+    height: float = attr.ib()
+    width: float = attr.ib()
+    x0: float = attr.ib()
+    y0: float = attr.ib()
+    x1: float = attr.ib()
+    y1: float = attr.ib()
     page_number: int = attr.ib()
+    cropbox: Tuple[int, int] = attr.ib()
+    space: bool = attr.ib(default=False)
+
+
+@attr.s(frozen=False)
+class PDFMeta(PDFBase):
+    lo_location_offset: int = attr.ib(default=-1)
+    hi_location_offset: int = attr.ib(default=-1)
+    coordinates: List[List[float]] = attr.ib(default=attr.Factory(list))
+    heights: List[float] = attr.ib(default=attr.Factory(list))
+    widths: List[float] = attr.ib(default=attr.Factory(list))
+
+
+@attr.s(frozen=True)
+class PDFWord(PDFBase):
     keyword: str = attr.ib()
     normalized_keyword: str = attr.ib()
-    char_positions: Dict[int, str] = attr.ib()
-    # used in NLP because it returns the type
-    token_type: Optional[str] = attr.ib(default='')
+    page_number: int = attr.ib()
+    cropbox: Tuple[int, int] = attr.ib()
+    meta: PDFMeta = attr.ib()
+    # used to determine abbreviations
+    # if word is wrapped in parenthesis
+    # this attribute will not be empty string
+    previous_words: str = attr.ib()
+    # used with NLP because it returns the type
+    token_type: Optional[str] = attr.ib(default=None)
+
+    @classmethod
+    def from_dict(self, d):
+        return self(
+            keyword=d['keyword'],
+            normalized_keyword=d['normalized_keyword'],
+            page_number=d['page_number'],
+            cropbox=(d['cropbox'][0], d['cropbox'][1]),
+            meta=PDFMeta(**d['meta']),
+            previous_words=d['previous_words'],
+            token_type=d['token_type']
+        )
 
 
 @attr.s(frozen=True)
-class PDFTokenPositionsList(CamelDictMixin):
-    token_positions: Any = attr.ib()
-    char_coord_objs_in_pdf: List[Union[LTChar, LTAnno]] = attr.ib()
-    cropbox_in_pdf: Tuple[int, int] = attr.ib()
-    min_idx_in_page: Dict[int, int] = attr.ib()
-    word_index_dict: Dict[int, str] = attr.ib(default=attr.Factory(list))
+class PDFParsedContent(PDFBase):
+    words: List[PDFWord] = attr.ib()
+
+
+@attr.s(frozen=True)
+class PDFTokensList():
+    tokens: Any = attr.ib()
 
 
 # IMPORTANT NOTE/TODO: JIRA LL-465
@@ -115,13 +152,13 @@ class GeneAnnotation(Annotation):
 
 
 @attr.s(frozen=False)
-class LMDBMatch(CamelDictMixin):
+class LMDBMatch():
     entities: List[dict] = attr.ib()
-    tokens: List[PDFTokenPositions] = attr.ib()
+    tokens: List[PDFWord] = attr.ib()
 
 
 @attr.s(frozen=True)
-class EntityResults(CamelDictMixin):
+class EntityResults():
     matched_type_anatomy: Dict[str, LMDBMatch] = attr.ib()
     matched_type_chemical: Dict[str, LMDBMatch] = attr.ib()
     matched_type_compound: Dict[str, LMDBMatch] = attr.ib()
@@ -131,13 +168,14 @@ class EntityResults(CamelDictMixin):
     matched_type_phenotype: Dict[str, LMDBMatch] = attr.ib()
     matched_type_protein: Dict[str, LMDBMatch] = attr.ib()
     matched_type_species: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_species_local: Dict[str, LMDBMatch] = attr.ib()
     # non LMDB entity types
     matched_type_company: Dict[str, LMDBMatch] = attr.ib()
     matched_type_entity: Dict[str, LMDBMatch] = attr.ib()
 
 
 @attr.s(frozen=True)
-class SpecifiedOrganismStrain(CamelDictMixin):
+class SpecifiedOrganismStrain():
     synonym: str = attr.ib()
     organism_id: str = attr.ib()
     category: str = attr.ib()
