@@ -197,6 +197,7 @@ class FileVersionResponseSchema(CamelCaseSchema):
     version = fields.Nested(FileVersionSchema)
 
 
-class FileVersionListSchema(CamelCaseSchema):
+class FileVersionHistorySchema(CamelCaseSchema):
+    object = fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',))
     total = fields.Integer()
-    results = fields.List(fields.Nested(FileSchema))
+    results = fields.List(fields.Nested(FileVersionSchema))

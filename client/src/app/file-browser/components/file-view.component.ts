@@ -25,7 +25,6 @@ import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
 import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { FileEditDialogComponent } from './file-edit-dialog.component';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
@@ -590,29 +589,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.filesService.getFileFallbackOrganism(
       this.projectName, this.pdfFile.file_id,
     ).subscribe(organismTaxId => {
-      const dialogRef = this.modalService.open(FileEditDialogComponent);
-      dialogRef.componentInstance.organism = organismTaxId;
-      dialogRef.componentInstance.file = cloneDeep(this.pdfFile);
-
-      dialogRef.result.then(newFile => {
-        if (newFile) {
-          this.filesService.updateFileMeta(
-            this.projectName,
-            this.pdfFile.file_id,
-            newFile.filename,
-            newFile.organism,
-            newFile.description,
-          )
-            .pipe(this.errorHandler.create())
-            .subscribe(() => {
-              this.pdfFile.filename = newFile.filename;
-              this.pdfFile.description = newFile.description;
-              this.emitModuleProperties();
-              this.snackBar.open(`File details updated`, 'Close', {duration: 5000});
-            });
-        }
-      }, () => {
-      });
+      // TODO
     });
   }
 

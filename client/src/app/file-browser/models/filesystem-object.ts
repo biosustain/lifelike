@@ -68,7 +68,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   mimeType: string;
   doi: string;
   public: boolean;
-  contentValue: Blob;
+  contentValue?: Blob;
   uploadUrl: string;
   annotationsDate: string;
   creationDate: string;

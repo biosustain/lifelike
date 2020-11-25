@@ -26,7 +26,7 @@ from neo4japp.models.files_queries import add_user_permission_columns, FileHiera
 from neo4japp.schemas.common import PaginatedRequest
 from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponse, FileResponseSchema, \
     FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, BulkFileUpdateRequestSchema, \
-    FileListSchema, FileListRequestSchema, FileBackupCreateRequestSchema, FileVersionListSchema, \
+    FileListSchema, FileListRequestSchema, FileBackupCreateRequestSchema, FileVersionHistorySchema, \
     FileVersionResponseSchema
 from neo4japp.schemas.formats.drawing_tool import validate_map_data
 from neo4japp.utils.http import make_cacheable_file_response
@@ -797,7 +797,10 @@ class FileVersionListView(FilesystemBaseView):
 
         result = query.paginate(pagination['page'], pagination['limit'])
 
-        return jsonify(FileVersionListSchema().dump({
+        return jsonify(FileVersionHistorySchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }).dump({
+            'object': file,
             'total': result.total,
             'results': result.items,
         }))
@@ -813,16 +816,15 @@ class FileVersionContentView(FilesystemBaseView):
 
         file_version = db.session.query(FileVersion) \
             .options(raiseload('*'),
-                     joinedload(FileVersion.user)) \
+                     joinedload(FileVersion.user),
+                     joinedload(FileVersion.content)) \
             .filter(FileVersion.hash_id == hash_id) \
             .one()
 
         file = self.get_nondeleted_recycled_file(Files.id == file_version.file_id)
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=False)
 
-        return jsonify(FileVersionResponseSchema().dump({
-            'version': file_version
-        }))
+        return file_version.content.raw_file
 
 
 # Use /content for endpoints that return binary data

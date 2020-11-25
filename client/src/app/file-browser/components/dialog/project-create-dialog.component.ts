@@ -3,10 +3,10 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { CommonDialogComponent } from '../../shared/components/dialog/common-dialog.component';
-import { MessageType } from '../../interfaces/message-dialog.interface';
-import { ProjectSpaceService } from '../services/project-space.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { CommonDialogComponent } from '../../../shared/components/dialog/common-dialog.component';
+import { MessageType } from '../../../interfaces/message-dialog.interface';
+import { ProjectSpaceService } from '../../services/project-space.service';
+import { ErrorHandler } from '../../../shared/services/error-handler.service';
 import { catchError } from 'rxjs/operators';
 import { EMPTY, throwError } from 'rxjs';
 

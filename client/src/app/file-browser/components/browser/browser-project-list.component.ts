@@ -3,8 +3,8 @@ import { Project, ProjectSpaceService } from '../../services/project-space.servi
 
 // @ts-ignore
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ProjectCreateDialogComponent } from '../project-create-dialog.component';
-import { ProjectEditDialogComponent } from '../project-edit-dialog.component';
+import { ProjectCreateDialogComponent } from '../dialog/project-create-dialog.component';
+import { ProjectEditDialogComponent } from '../dialog/project-edit-dialog.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
 import { WorkspaceManager } from '../../../shared/workspace-manager';

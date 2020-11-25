@@ -1,0 +1,14 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
+    Version History for '{{ object.effectiveName }}'
+  </app-modal-header>
+
+  <app-modal-body>
+    <app-object-version-history [object]="object" formControlName="version"></app-object-version-history>
+  </app-modal-body>
+
+  <app-modal-footer class="text-truncate">
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Close</button>
+    <button type="submit" class="btn btn-primary">Restore</button>
+  </app-modal-footer>
+</form>

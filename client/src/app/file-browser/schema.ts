@@ -1,3 +1,5 @@
+import { ResultList } from '../interfaces/shared.interface';
+
 export interface ProjectData {
   hashId: string;
   name: string;
@@ -78,6 +80,6 @@ export interface ObjectVersionData {
   creationDate: string;
 }
 
-export interface FileVersionDataResponse {
-  version: ObjectVersionData;
+export interface ObjectVersionHistoryResponse extends ResultList<ObjectVersionData> {
+  object: FilesystemObjectData;
 }

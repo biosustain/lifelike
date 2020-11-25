@@ -158,7 +158,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.emitModuleProperties();
 
     readBlobAsBuffer(this.map.contentValue).pipe(
-      mapBufferToJson<UniversalGraph>('utf-8'),
+      mapBufferToJson<UniversalGraph>(),
       this.errorHandler.create(),
     ).subscribe(graph => {
       this.graphCanvas.setGraph(graph);
