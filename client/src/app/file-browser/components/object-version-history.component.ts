@@ -24,6 +24,7 @@ export class ObjectVersionHistoryComponent implements ControlValueAccessor {
   _object: FilesystemObject;
   page = 1;
   @Input() limit = 20;
+  @Input() showCheckboxes = true;
   log$: Observable<ObjectVersionHistory> = from([]);
   private changeCallback: any;
   private touchCallback: any;
