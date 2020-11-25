@@ -11,6 +11,7 @@ import { AuthSelectors } from '../../../auth/store';
 import { State } from 'app/root-store';
 import { Observable } from 'rxjs';
 import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
+import { AnnotationMethod } from '../../../interfaces/annotation';
 
 @Component({
   selector: 'app-object-edit-dialog',
@@ -26,7 +27,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   @Input() promptAnnotationOptions = false;
   @Input() promptParent = false;
 
-  readonly annotationMethods = ['NLP', 'Rules Based'];
+  readonly annotationMethodChoices: AnnotationMethod[] = ['NLP', 'Rules Based'];
   readonly userRoles$: Observable<string[]>;
 
   private _object: FilesystemObject;
@@ -40,8 +41,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     filename: new FormControl('', Validators.required),
     description: new FormControl(),
     public: new FormControl(false),
-    annotationMethod: new FormControl(this.annotationMethods[1], [Validators.required]),
-    organism: new FormControl(''),
+    annotationMethod: new FormControl(this.annotationMethodChoices[1], [Validators.required]),
+    organism: new FormControl(null),
   }, (group: FormGroup): ValidationErrors | null => {
     if (this.promptUpload) {
       const contentValueControl = group.get('contentValue');
@@ -244,6 +245,6 @@ export interface ObjectEditDialogValue {
   object: FilesystemObject;
   objectChanges: Partial<FilesystemObject>;
   request: ObjectCreateRequest;
-  annotationMethod: string;
+  annotationMethod: AnnotationMethod;
   organism: OrganismAutocomplete;
 }

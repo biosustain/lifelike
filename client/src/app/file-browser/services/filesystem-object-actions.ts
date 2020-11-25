@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { EnrichmentTableCreateDialogComponent } from '../components/enrichment-table-create-dialog.component';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,21 +8,20 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { ProjectPageService } from './project-page.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Progress, ProgressMode } from '../../interfaces/common-dialog.interface';
-import { filter, finalize, map, tap } from 'rxjs/operators';
+import { filter, finalize, map, mergeMap, tap } from 'rxjs/operators';
 import { HttpEventType } from '@angular/common/http';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { DIRECTORY_MIMETYPE, FilesystemObject, MAP_MIMETYPE } from '../models/filesystem-object';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { DefaultMap } from '../../shared/utils/collections';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ObjectSelectionDialogComponent } from '../components/dialog/object-selection-dialog.component';
 import { FilesystemService } from './filesystem.service';
 import { ObjectEditDialogComponent, ObjectEditDialogValue } from '../components/dialog/object-edit-dialog.component';
 import { getObjectLabel } from '../utils/objects';
-import { ObjectCreateRequest } from '../schema';
+import { AnnotationGenerationRequest, ObjectCreateRequest } from '../schema';
 import { clone } from 'lodash';
 import { ObjectVersionHistoryDialogComponent } from '../components/dialog/object-version-history-dialog.component';
 import { ObjectVersion } from '../models/object-version';
@@ -33,22 +31,24 @@ import {
   ObjectExportDialogValue,
 } from '../components/dialog/object-export-dialog.component';
 import { openDownloadForBlob } from '../../shared/utils/files';
+import { PdfAnnotationsService } from '../../drawing-tool/services';
 
 @Injectable()
 export class FilesystemObjectActions {
 
-  constructor(private readonly filesService: PdfFilesService,
-              private readonly router: Router,
-              private readonly snackBar: MatSnackBar,
-              private readonly modalService: NgbModal,
-              private readonly progressDialog: ProgressDialog,
-              private readonly route: ActivatedRoute,
-              private readonly projectPageService: ProjectPageService,
-              private readonly workspaceManager: WorkspaceManager,
-              private readonly ngbModal: NgbModal,
-              private readonly messageDialog: MessageDialog,
-              private readonly errorHandler: ErrorHandler,
-              private readonly filesystemService: FilesystemService) {
+  constructor(protected readonly filesService: PdfFilesService,
+              protected readonly annotationsService: PdfAnnotationsService,
+              protected readonly router: Router,
+              protected readonly snackBar: MatSnackBar,
+              protected readonly modalService: NgbModal,
+              protected readonly progressDialog: ProgressDialog,
+              protected readonly route: ActivatedRoute,
+              protected readonly projectPageService: ProjectPageService,
+              protected readonly workspaceManager: WorkspaceManager,
+              protected readonly ngbModal: NgbModal,
+              protected readonly messageDialog: MessageDialog,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly filesystemService: FilesystemService) {
   }
 
   protected createProgressDialog(message: string, title = 'Working...') {
@@ -110,9 +110,12 @@ export class FilesystemObjectActions {
   /**
    * Handles the filesystem PUT request with a progress dialog.
    * @param request the request data
+   * @param annotationOptions options for the annotation process
    * @return the created object
    */
-  protected executePutWithProgressDialog(request: ObjectCreateRequest): Observable<FilesystemObject> {
+  protected executePutWithProgressDialog(request: ObjectCreateRequest,
+                                         annotationOptions: AnnotationGenerationRequest = {}):
+    Observable<FilesystemObject> {
     const progressObservable = new BehaviorSubject<Progress>(new Progress({
       status: 'Preparing...',
     }));
@@ -123,8 +126,8 @@ export class FilesystemObjectActions {
 
     return this.filesystemService.put(request)
       .pipe(
-        finalize(() => progressDialogRef.close()),
         tap(event => {
+          // First we show progress for the upload itself
           if (event.type === HttpEventType.UploadProgress) {
             progressObservable.next(new Progress({
               mode: ProgressMode.Determinate,
@@ -134,7 +137,21 @@ export class FilesystemObjectActions {
           }
         }),
         filter(event => event.bodyValue != null),
-        map(event => event.bodyValue),
+        map((event): FilesystemObject => event.bodyValue),
+        mergeMap((object: FilesystemObject) => {
+          // Then we show progress for the annotation generation (although
+          // we can't actually show a progress percentage)
+          progressObservable.next(new Progress({
+            mode: ProgressMode.Indeterminate,
+            status: 'Generating annotations...',
+          }));
+          return this.annotationsService.generateAnnotations(
+            [object.hashId], annotationOptions
+          ).pipe(
+            map(() => object), // This method returns the object
+          );
+        }),
+        finalize(() => progressDialogRef.close()),
         this.errorHandler.create(),
       );
   }
@@ -164,6 +181,9 @@ export class FilesystemObjectActions {
       return this.executePutWithProgressDialog({
         ...value.request,
         ...(options.request || {}),
+      }, {
+        annotationMethod: value.annotationMethod,
+        organism: value.organism,
       }).toPromise();
     });
     return dialogRef.result;
@@ -366,51 +386,14 @@ export class FilesystemObjectActions {
     return modalRef.result;
   }
 
-  // ========================================
-  // Actions
-  // ========================================
-
-  reannotate(targets: readonly FilesystemObject[]): Promise<any> {
-    const filteredTargets: FilesystemObject[] = targets
-      .filter(object => object.type === 'file' && object.name.slice(object.name.length - 11) !== '.enrichment');
-
-    if (filteredTargets.length) {
-      const progressObservable = new BehaviorSubject<Progress>(new Progress({
-        status: 'Re-creating annotations in file...',
-        mode: ProgressMode.Buffer,
-      }));
-
-      const progressDialogRef = this.progressDialog.display({
-        title: `Reannotating file${filteredTargets.length === 1 ? '' : 's'}...`,
-        progressObservable,
-      });
-
-      const filesByProject = new DefaultMap<string, PdfFile[]>(() => []);
-      for (const target of filteredTargets) {
-        filesByProject.get(target.locator.projectName).push(target.data as PdfFile);
-      }
-
-      return combineLatest([...filesByProject.entries()].map(([projectName, files]) => {
-        const ids: string[] = files.map((file: PdfFile) => file.file_id);
-        return this.filesService.reannotateFiles(projectName, ids);
-      })).pipe(
-        finalize(() => {
-          progressDialogRef.close();
-        }),
+  reannotate(targets: FilesystemObject[]): Promise<any> {
+    const progressDialogRef = this.createProgressDialog('Generating annotations...');
+    return this.annotationsService.generateAnnotations(targets.map(object => object.hashId))
+      .pipe(
+        finalize(() => progressDialogRef.close()),
         this.errorHandler.create(),
-      ).toPromise();
-    } else {
-      this.messageDialog.display({
-        title: 'Nothing to Re-annotate',
-        message: 'No files were selected to re-annotate.',
-        type: MessageType.Warning,
-      });
-    }
-  }
-}
-
-class DeletionError {
-  constructor(readonly message: string) {
+      )
+      .toPromise();
   }
 }
 
