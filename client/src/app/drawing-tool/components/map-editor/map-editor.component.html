@@ -41,7 +41,7 @@
             </button>
             <button type="button" class="btn btn-secondary"
                     ngbTooltip="Download map as an image or PDF" placement="bottom" container="body"
-                    (click)="download()">
+                    (click)="openExportDialog()">
               <i class="fa fa-fw fa-file-export"></i> Export
             </button>
           </div>
@@ -71,7 +71,7 @@
 
           <div class="btn-group mr-2">
             <button type="button" class="btn btn-secondary"
-                    (click)="displayShareDialog()">
+                    (click)="openShareDialog()">
               <i class="fa fa-fw fa-share-square"></i> Share
             </button>
           </div>
@@ -79,7 +79,7 @@
           <div class="btn-group">
             <button type="button" class="btn btn-secondary" container="body"
                     ngbTooltip="Map Version History" placement="bottom"
-                    (click)="openVersionHistoryDialog()">
+                    (click)="openVersionRestoreDialog()">
               Version History
             </button>
           </div>

@@ -5,7 +5,6 @@ import { CopyPasteMapsService } from './services/copy-paste-maps.service';
 
 import { PaletteComponent } from './components/map-editor/palette.component';
 import { InfoPanelComponent } from './components/map-editor/info-panel.component';
-import { MapExportDialogComponent } from './components/map-export-dialog.component';
 import { MapViewComponent } from './components/map-view.component';
 import { SharedModule } from 'app/shared/shared.module';
 import { RouterModule } from '@angular/router';
@@ -22,13 +21,11 @@ import { MapComponent } from './components/map.component';
     InfoPanelComponent,
     MapComponent,
     MapViewComponent,
-    MapExportDialogComponent,
     NodeFormComponent,
     EdgeFormComponent,
     MapRestoreDialogComponent,
   ],
   entryComponents: [
-    MapExportDialogComponent,
     ConfirmDialogComponent,
     MapRestoreDialogComponent,
   ],

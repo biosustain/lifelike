@@ -3,16 +3,15 @@ import { ProjectSpaceService } from '../services/project-space.service';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { Subscription } from 'rxjs';
+import { from, Subscription } from 'rxjs';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { CollectionModal } from '../../shared/utils/collection-modal';
-import { MapService } from '../../drawing-tool/services';
 import { PaginatedRequestOptions, ResultList, StandardRequestOptions } from '../../interfaces/shared.interface';
-import { PublicMap } from '../../drawing-tool/services/map.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { FormControl, FormGroup } from '@angular/forms';
+import { FilesystemObject } from '../models/filesystem-object';
 
 @Component({
   selector: 'app-community-browser',
@@ -24,8 +23,8 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
     page: 1,
     sort: '+label,-dateModified',
   };
-  public readonly loadTask: BackgroundTask<PaginatedRequestOptions, ResultList<PublicMap>> = new BackgroundTask(
-    (locator: PaginatedRequestOptions) => this.mapService.getCommunityMaps(locator),
+  public readonly loadTask: BackgroundTask<PaginatedRequestOptions, ResultList<FilesystemObject>> = new BackgroundTask(
+    (locator: PaginatedRequestOptions) => from([]), // TODO
   );
 
   public locator: StandardRequestOptions = {
@@ -38,7 +37,7 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
   });
 
   public collectionSize = 0;
-  public readonly results = new CollectionModal<PublicMap>([], {
+  public readonly results = new CollectionModal<FilesystemObject>([], {
     multipleSelection: true,
   });
 
@@ -46,7 +45,6 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
   private loadTaskSubscription: Subscription;
 
   constructor(private readonly projectSpaceService: ProjectSpaceService,
-              private readonly mapService: MapService,
               private readonly workspaceManager: WorkspaceManager,
               private readonly progressDialog: ProgressDialog,
               private readonly ngbModal: NgbModal,
@@ -102,8 +100,8 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
-  getObjectCommands(object: PublicMap): any[] {
-    return ['/projects', object.project.projectName, 'maps', object.map.hash_id];
+  getObjectCommands(object: FilesystemObject): any[] {
+    return ['/projects', object.project.projectName, 'maps', object.hashId];
   }
 
   getObjectQueryParams() {

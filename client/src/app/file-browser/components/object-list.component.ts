@@ -81,7 +81,7 @@ export class ObjectListComponent {
   }
 
   reannotate(targets: FilesystemObject[]) {
-    this.actions.reannotate(targets).then(() => {
+    return this.actions.reannotate(targets).then(() => {
       this.snackBar.open(`${getObjectLabel(targets)} re-annotated.`, 'Close', {
         duration: 5000,
       });
@@ -90,13 +90,21 @@ export class ObjectListComponent {
     });
   }
 
+  openVersionHistoryDialog(target: FilesystemObject) {
+    return this.actions.openVersionHistoryDialog(target);
+  }
+
   download(target: FilesystemObject) {
-    this.actions.openDownloadDialog(target).then(() => {
+    return this.actions.openDownloadDialog(target).then(() => {
       this.snackBar.open(`File download of ${getObjectLabel(target)} opened.`, 'Close', {
         duration: 5000,
       });
     }, () => {
     });
+  }
+
+  openExportDialog(target: FilesystemObject) {
+    return this.actions.openExportDialog(target);
   }
 
   getDateShown(object: DirectoryObject) {
