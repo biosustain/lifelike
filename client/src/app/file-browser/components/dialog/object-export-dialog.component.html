@@ -1,6 +1,6 @@
 <form [formGroup]="form" (ngSubmit)="submit()">
   <app-modal-header (cancel)="cancel()">
-    Export
+    Export '{{ object.filename}}'
   </app-modal-header>
 
   <app-modal-body>

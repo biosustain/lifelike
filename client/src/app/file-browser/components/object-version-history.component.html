@@ -19,14 +19,19 @@
           <tr *ngFor="let version of log.results.view"
               [class.active]="log.results.isSelected(version)">
             <td (click)="log.results.toggle(version)">
-              <div class="custom-control custom-checkbox">
-                <input type="checkbox" class="custom-control-input" id="version-{{ version.hashId }}"
-                       (change)="log.results.toggle(version)"
-                       [checked]="log.results.isSelected(version)">
-                <label class="custom-control-label d-block" for="version-{{ version.hashId }}">
-                  {{ version.creationDate | date: 'short' }}
-                </label>
-              </div>
+              <ng-container *ngIf="showCheckboxes; else noCheckboxes">
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" id="version-{{ version.hashId }}"
+                         (change)="log.results.toggle(version)"
+                         [checked]="log.results.isSelected(version)">
+                  <label class="custom-control-label d-block" for="version-{{ version.hashId }}">
+                    {{ version.creationDate | date: 'short' }}
+                  </label>
+                </div>
+              </ng-container>
+              <ng-template #noCheckboxes>
+                {{ version.creationDate | date: 'short' }}
+              </ng-template>
               <div class="mt-2" *ngIf="version.message">
                 <em>
                   {{ version.message }}

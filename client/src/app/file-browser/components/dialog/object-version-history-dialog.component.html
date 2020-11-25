@@ -9,7 +9,8 @@
   </app-modal-header>
 
   <app-modal-body>
-    <app-object-version-history [object]="object" formControlName="version"></app-object-version-history>
+    <app-object-version-history [object]="object" formControlName="version"
+                                [showCheckboxes]="promptRestore"></app-object-version-history>
   </app-modal-body>
 
   <app-modal-footer class="text-truncate">
@@ -18,7 +19,7 @@
       <button type="submit" class="btn btn-primary">Restore</button>
     </ng-container>
     <ng-template #viewOnlyFooter>
-      <button type="submit" class="btn btn-primary">Close</button>
+      <button type="button" class="btn btn-primary" (click)="cancel()">Close</button>
     </ng-template>
   </app-modal-footer>
 </form>
