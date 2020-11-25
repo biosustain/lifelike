@@ -6,10 +6,7 @@ import { GraphEntityUpdate } from '../../../graph-viewer/actions/graph';
 import { EdgeDeletion, NodeDeletion } from '../../../graph-viewer/actions/nodes';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
 import { GraphAction } from '../../../graph-viewer/actions/actions';
-import { MessageDialog } from '../../../shared/services/message-dialog.service';
-import { MessageType } from '../../../interfaces/message-dialog.interface';
-import { FileViewComponent } from '../../../file-browser/components/file-view.component';
-import { escapeRegExp } from 'lodash';
+import { openPotentialInternalLink } from '../../../shared/utils/browser';
 
 @Component({
   selector: 'app-info-panel',
@@ -19,8 +16,7 @@ export class InfoPanelComponent {
   @Input() selected: GraphEntity | undefined;
   @Output() actionCreated = new EventEmitter<GraphAction>();
 
-  constructor(private readonly workspaceManager: WorkspaceManager,
-              private readonly messageDialog: MessageDialog) {
+  constructor(private readonly workspaceManager: WorkspaceManager) {
   }
 
   isSelectionNode() {
@@ -49,61 +45,6 @@ export class InfoPanelComponent {
    * Bring user to original source of node information
    */
   openSource(source: string): void {
-    let m;
-
-    m = source.match(/^\/projects\/[^\/]+\/(files|maps)\/([^\/#?]+)/);
-    if (m != null) {
-      this.workspaceManager.navigateByUrl(source, {
-        newTab: true,
-        sideBySide: true,
-        matchExistingTab: `^/+projects/[^/]+/files/${escapeRegExp(m[2])}.*`,
-        shouldReplaceTab: component => {
-          if (m[1] === 'files') {
-            const fileViewComponent = component as FileViewComponent;
-            const fragmentMatch = source.match(/^[^#]+#(.+)$/);
-            if (fragmentMatch) {
-              fileViewComponent.scrollInPdf(fileViewComponent.parseLocationFromUrl(fragmentMatch[1]));
-            }
-          }
-          return false;
-        },
-      });
-      return;
-    }
-
-    m = source.match(/^\/dt\/pdf/);
-    if (m != null) {
-      const [
-        fileId,
-        page,
-        coordA,
-        coordB,
-        coordC,
-        coordD,
-      ] = source.replace(/^\/dt\/pdf\//, '').split('/');
-      const url = `/projects/beta-project/files/${fileId}#page=${page}&coords=${coordA},${coordB},${coordC},${coordD}`;
-      this.workspaceManager.navigateByUrl(url, {
-        newTab: true,
-        sideBySide: true,
-        matchExistingTab: `^/projects/beta-project/files/${fileId}`,
-      });
-      return;
-    }
-
-    m = source.match(/^\/dt\/map\/([0-9a-f]+)$/);
-    if (m != null) {
-      this.workspaceManager.navigateByUrl(`/dt/map/${m[1]}`, {
-        newTab: true,
-        sideBySide: true,
-        matchExistingTab: `/maps/${m[1]}`,
-      });
-      return;
-    }
-
-    this.messageDialog.display({
-      type: MessageType.Warning,
-      title: 'Unknown Source Link',
-      message: `The selected item has an unknown source link of '${source}'.`,
-    });
+    openPotentialInternalLink(this.workspaceManager, source);
   }
 }

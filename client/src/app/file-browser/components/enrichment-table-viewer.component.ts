@@ -14,10 +14,13 @@ import {
   NCBINode,
   EnrichmentWrapper,
   GoNode,
+  Synonym,
 } from '../services/enrichment-table.service';
 import { ActivatedRoute } from '@angular/router';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { ModuleProperties } from 'app/shared/modules';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -33,26 +36,26 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     // Primary headers
     [
       { name: 'Imported Gene Name', span: '1' },
+      { name: 'Matched Gene Name', span: '1'},
       { name: 'NCBI Gene Full Name', span: '1' },
-      { name: 'Regulon Data', span: '3' },
-      { name: 'Uniprot Function', span: '1' },
-      { name: 'String Annotation', span: '1' },
-      { name: 'GO Annotation', span: '1' },
-      { name: 'Biocyc Pathways', span: '1' },
-    ],
-    // Secondary headers
-    [
-      { name: '', span: '1' },
-      { name: '', span: '1' },
-      { name: 'Regulator Family', span: '1' },
-      { name: 'Activated By', span: '1' },
-      { name: 'Repressed By', span: '1' },
-      { name: '', span: '1' },
-      { name: '', span: '1' },
-      { name: '', span: '1' },
-      { name: '', span: '1' },
-    ],
+    ]
   ];
+  headerMap: Map<string, TableHeader[]> = new Map([
+    ['Regulon', [{ name: 'Regulon Data', span: '3' }]],
+    ['UniProt', [{ name: 'Uniprot Function', span: '1' }]],
+    ['String', [{ name: 'String Annotation', span: '1' }]],
+    ['GO', [{ name: 'GO Annotation', span: '1' }]],
+    ['Biocyc', [{ name: 'Biocyc Pathways', span: '1' }]],
+  ]);
+  secondHeaderMap: Map<string, TableHeader[]> = new Map([
+    ['Default', [{ name: '', span: '1' }, { name: '', span: '1' }, { name: '', span: '1' }]],
+    ['Regulon', [{ name: 'Regulator Family', span: '1' }, { name: 'Activated By', span: '1' },
+    { name: 'Repressed By', span: '1' }]],
+    ['UniProt', [{ name: '', span: '1' }]],
+    ['String', [{ name: '', span: '1' }]],
+    ['GO', [{ name: '', span: '1' }]],
+    ['Biocyc', [{ name: '', span: '1' }]],
+  ]);
 
   // Pagination
   currentPage: number;
@@ -60,10 +63,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   collectionSize: number;
   currentGenes: string[];
 
-  // condition if ecoli org
-  ecoli: boolean;
-
   // Enrichment Table and NCBI Matching Results
+  domains: string[] = [];
   projectName: string;
   fileId: string;
   geneNames: string[];
@@ -73,17 +74,20 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   loadTaskSubscription: Subscription;
   sheetname: string;
   neo4jId: number;
+  synonyms: Synonym[];
   ncbiNodes: NCBINode[];
   ncbiLinks: string[];
   importGenes: string[];
   unmatchedGenes: string;
   ncbiIds: number[];
   duplicateGenes: string;
+  columnOrder: string[] = [];
 
   constructor(
     private readonly worksheetViewerService: EnrichmentTableService,
     private readonly filesService: PdfFilesService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private readonly modalService: NgbModal,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
     this.fileId = this.route.snapshot.params.file_id || '';
@@ -108,13 +112,22 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         this.taxID = '559292';
       }
       this.organism = resultArray[2];
-      if (this.organism.slice(0, 16) !== 'Escherichia coli') {
-        this.ecoli = false;
-        this.tableHeader[0].splice(2, 1);
-        this.tableHeader.splice(1, 1);
+      if (resultArray.length > 3) {
+        if (resultArray[3] !== '') {
+          this.domains = resultArray[3].split(',');
+          this.columnOrder = resultArray[3].split(',');
+          if (this.columnOrder.includes('Regulon')) {
+            const index = this.columnOrder.indexOf('Regulon');
+            this.columnOrder.splice(index + 1, 0, 'Regulon 3');
+            this.columnOrder.splice(index + 1, 0, 'Regulon 2');
+          }
+        }
       } else {
-        this.ecoli = true;
+        // Default view for existing tables
+        this.domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
+        this.columnOrder = ['Regulon', 'Regulon 2', 'Regulon 3', 'UniProt', 'String', 'GO', 'Biocyc'];
       }
+      this.initializeHeaders();
       this.removeDuplicates(this.importGenes);
       this.currentPage = 1;
       this.pageSize = 10;
@@ -128,10 +141,47 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.loadTaskSubscription.unsubscribe();
   }
 
+  openOrderDialog(): Promise<any> {
+    const dialogRef = this.modalService.open(EnrichmentTableOrderDialogComponent);
+    dialogRef.componentInstance.domains = this.domains;
+    return dialogRef.result.then((result) => {
+      this.domains = result;
+      this.columnOrder = [ ...result];
+      if (this.columnOrder.includes('Regulon')) {
+        const index = this.columnOrder.indexOf('Regulon');
+        this.columnOrder.splice(index + 1, 0, 'Regulon 3');
+        this.columnOrder.splice(index + 1, 0, 'Regulon 2');
+      }
+      this.tableHeader = [
+        // Primary headers
+        [
+          { name: 'Imported Gene Name', span: '1' },
+          { name: 'Matched Gene Name', span: '1'},
+          { name: 'NCBI Gene Full Name', span: '1' },
+        ]
+      ];
+      this.initializeHeaders();
+      this.matchNCBINodes(this.currentPage);
+
+    }, () => {});
+  }
+
   emitModuleProperties() {
     this.modulePropertiesChange.emit({
       title: this.sheetname ? this.sheetname : 'Enrichment Table',
       fontAwesomeIcon: 'table',
+    });
+  }
+
+  initializeHeaders() {
+    if (this.domains.includes('Regulon')) {
+      this.tableHeader[1] = this.secondHeaderMap.get('Default');
+    }
+    this.domains.forEach((domain) => {
+      this.tableHeader[0] = this.tableHeader[0].concat(this.headerMap.get(domain));
+      if (this.domains.includes('Regulon')) {
+        this.tableHeader[1] = this.tableHeader[1].concat(this.secondHeaderMap.get(domain));
+      }
     });
   }
 
@@ -147,6 +197,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.worksheetViewerService
       .matchNCBINodes(this.currentGenes, this.taxID)
       .subscribe((result) => {
+        this.synonyms = result.map((wrapper) => wrapper.s);
         this.ncbiNodes = result.map((wrapper) => wrapper.x);
         this.ncbiIds = result.map((wrapper) => wrapper.neo4jID);
         this.ncbiLinks = result.map((wrapper) => wrapper.link);
@@ -186,8 +237,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
             },
           });
           this.tableEntries[i].unshift({ text: this.ncbiNodes[i].name });
+          this.tableEntries[i].unshift({ text: this.synonyms[i].name });
         }
-        this.geneNames = this.ncbiNodes.map((node) => node.name);
+        this.geneNames = this.synonyms.map((node) => node.name);
         this.processUnmatchedNodes();
       });
   }
@@ -217,9 +269,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   // Process wrapper to convert domain data into string array that represents domain columns.
   processEnrichmentNodeArray(wrapper: EnrichmentWrapper): TableCell[] {
     const result: TableCell[] = [];
-    if (this.ecoli) {
+    if (this.domains.includes('Regulon')) {
       if (wrapper.regulon.result !== null) {
-        result.push(
+        result[this.columnOrder.indexOf('Regulon')] = (
           wrapper.regulon.result.regulator_family
             ? {
                 text: wrapper.regulon.result.regulator_family,
@@ -236,7 +288,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
                 },
               }
         );
-        result.push(
+        result[this.columnOrder.indexOf('Regulon 2')] = (
           wrapper.regulon.result.activated_by
             ? {
                 text: wrapper.regulon.result.activated_by.join('; '),
@@ -253,7 +305,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
                 },
               }
         );
-        result.push(
+        result[this.columnOrder.indexOf('Regulon 3')] = (
           wrapper.regulon.result.repressed_by
             ? {
                 text: wrapper.regulon.result.repressed_by.join('; '),
@@ -272,80 +324,87 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         );
       } else {
         for (let i = 0; i < 3; i++) {
-          result.push({ text: '' });
+          result[this.columnOrder.indexOf('Regulon') + i] = ({ text: '' });
         }
       }
     }
-
-    result.push(
-      wrapper.uniprot.result
-        ? {
-            text: wrapper.uniprot.result.function,
-            singleLink: {
-              link: wrapper.uniprot.link,
-              linkText: 'Uniprot Link',
-            },
-          }
-        : { text: '' }
-    );
-    result.push(
-      wrapper.string.result
-        ? {
-            text:
-              wrapper.string.result.annotation !== 'annotation not available'
-                ? wrapper.string.result.annotation
-                : '',
-            singleLink: wrapper.string.result.id
-              ? {
-                  link: wrapper.string.link + wrapper.string.result.id,
-                  linkText: 'String Link',
-                }
-              : wrapper.biocyc.result.biocyc_id
-              ? {
-                  link: wrapper.string.link + wrapper.biocyc.result.biocyc_id,
-                  linkText: 'String Link',
-                }
-              : null,
-          }
-        : { text: '' }
-    );
-    result.push(
-      wrapper.go.result
-        ? {
-            text: this.processGoWrapper(wrapper.go.result),
-            singleLink: wrapper.uniprot.result
-              ? {
-                  link: wrapper.go.link + wrapper.uniprot.result.id,
-                  linkText: 'GO Link',
-                }
-              : {
-                  link:
-                    'http://amigo.geneontology.org/amigo/search/annotation?q=' +
-                    this.ncbiNodes[this.ncbiIds.indexOf(wrapper.node_id)].name,
-                  linkText: 'GO Link',
-                },
-          }
-        : { text: '' }
-    );
-    result.push(
-      wrapper.biocyc.result
-        ? wrapper.biocyc.result.pathways
+    if (this.domains.includes('UniProt')) {
+      result[this.columnOrder.indexOf('UniProt')] = (
+        wrapper.uniprot.result
           ? {
-              text: wrapper.biocyc.result.pathways.join('; '),
+              text: wrapper.uniprot.result.function,
               singleLink: {
-                link: wrapper.biocyc.link,
-                linkText: 'Biocyc Link',
+                link: wrapper.uniprot.link,
+                linkText: 'Uniprot Link',
               },
             }
-          : {
-              text: '',
-              singleLink: {
-                link: wrapper.biocyc.link,
-                linkText: 'Biocyc Link',
-              },
+          : { text: '' }
+      );
+    }
+    if (this.domains.includes('String')) {
+      result[this.columnOrder.indexOf('String')] = (
+        wrapper.string.result
+          ? {
+              text:
+                wrapper.string.result.annotation !== 'annotation not available'
+                  ? wrapper.string.result.annotation
+                  : '',
+              singleLink: wrapper.string.result.id
+                ? {
+                    link: wrapper.string.link + wrapper.string.result.id,
+                    linkText: 'String Link',
+                  }
+                : wrapper.biocyc.result.biocyc_id
+                ? {
+                    link: wrapper.string.link + wrapper.biocyc.result.biocyc_id,
+                    linkText: 'String Link',
+                  }
+                : null,
             }
-        : { text: '' }
-    );
+          : { text: '' }
+      );
+    }
+    if (this.domains.includes('GO')) {
+      result[this.columnOrder.indexOf('GO')] = (
+        wrapper.go.result
+          ? {
+              text: this.processGoWrapper(wrapper.go.result),
+              singleLink: wrapper.uniprot.result
+                ? {
+                    link: wrapper.go.link + wrapper.uniprot.result.id,
+                    linkText: 'GO Link',
+                  }
+                : {
+                    link:
+                      'http://amigo.geneontology.org/amigo/search/annotation?q=' +
+                      this.ncbiNodes[this.ncbiIds.indexOf(wrapper.node_id)].name,
+                    linkText: 'GO Link',
+                  },
+            }
+          : { text: '' }
+      );
+    }
+    if (this.domains.includes('Biocyc')) {
+      result[this.columnOrder.indexOf('Biocyc')] = (
+        wrapper.biocyc.result
+          ? wrapper.biocyc.result.pathways
+            ? {
+                text: wrapper.biocyc.result.pathways.join('; '),
+                singleLink: {
+                  link: wrapper.biocyc.link,
+                  linkText: 'Biocyc Link',
+                },
+              }
+            : {
+                text: '',
+                singleLink: {
+                  link: wrapper.biocyc.link,
+                  linkText: 'Biocyc Link',
+                },
+              }
+          : { text: '' }
+      );
+    }
     return result;
   }
 
