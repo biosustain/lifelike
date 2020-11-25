@@ -1,8 +1,6 @@
-import { cloneDeep, uniqueId } from 'lodash';
-import { Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, Subject, Subscription } from 'rxjs';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { AnnotationType, DatabaseType, Hyperlink } from 'app/shared/constants';
+import { uniqueId } from 'lodash';
+import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { BehaviorSubject, combineLatest, of, Subject, Subscription } from 'rxjs';
 
 import { PdfAnnotationsService } from '../../drawing-tool/services';
 
@@ -27,20 +25,12 @@ import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
-import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { SearchControlComponent } from '../../shared/components/search-control.component';
-
-class DummyFile implements PdfFile {
-  constructor(
-    // tslint:disable-next-line
-    public file_id: string,
-    public filename: string = null,
-    // tslint:disable-next-line
-    public creation_date: string = null,
-    public username: string = null) {
-  }
-}
+import { FilesystemService } from '../services/filesystem.service';
+import { FilesystemObject } from '../models/filesystem-object';
+import { mergeMap } from 'rxjs/operators';
+import { readBlobAsBuffer } from '../../shared/utils/files';
+import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 
 class EntityTypeEntry {
   constructor(public type: EntityType, public annotations: Annotation[]) {
@@ -78,12 +68,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   searchQuery = '';
   goToPosition: Subject<Location> = new Subject<Location>();
   highlightAnnotations: Subject<string> = new Subject<string>();
-  loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]>;
+  loadTask: BackgroundTask<[string, Location], [[FilesystemObject, ArrayBuffer], Annotation[]]>;
   pendingScroll: Location;
   pendingAnnotationHighlightId: string;
   openPdfSub: Subscription;
   ready = false;
-  pdfFile: PdfFile;
+  object?: FilesystemObject;
   // Type information coming from interface PDFSource at:
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pdfjs-dist/index.d.ts
   pdfData: { url?: string, data?: Uint8Array };
@@ -101,28 +91,29 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   showExcludedAnnotations = false;
   removeAnnotationExclusionSub: Subscription;
   removedAnnotationExclusion: RemovedAnnotationExclusion;
-  projectName: string;
 
   @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
 
   constructor(
-    private readonly filesService: PdfFilesService,
-    private pdfAnnService: PdfAnnotationsService,
-    private pdf: PdfFilesService,
-    private snackBar: MatSnackBar,
-    private readonly modalService: NgbModal,
-    private route: ActivatedRoute,
-    private readonly errorHandler: ErrorHandler,
-    private readonly progressDialog: ProgressDialog,
-    private readonly workSpaceManager: WorkspaceManager,
+    protected readonly filesystemService: FilesystemService,
+    protected readonly fileObjectActions: FilesystemObjectActions,
+    protected pdfAnnService: PdfAnnotationsService,
+    protected snackBar: MatSnackBar,
+    protected readonly modalService: NgbModal,
+    protected route: ActivatedRoute,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly progressDialog: ProgressDialog,
+    protected readonly workSpaceManager: WorkspaceManager,
   ) {
-    this.projectName = this.route.snapshot.params.project_name || '';
-
-    this.loadTask = new BackgroundTask(([file, loc]) => {
+    this.loadTask = new BackgroundTask(([hashId, loc]) => {
       return combineLatest(
-        this.pdf.getFileMeta(file.file_id, this.projectName),
-        this.pdf.getFile(file.file_id, this.projectName),
-        this.pdfAnnService.getFileAnnotations(file.file_id, this.projectName));
+        this.filesystemService.get(hashId, {
+          loadContent: true,
+        }).pipe(mergeMap(object => combineLatest(
+          of(object),
+          readBlobAsBuffer(object.contentValue),
+        ))),
+        this.pdfAnnService.getAnnotations(hashId));
     });
 
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
@@ -131,22 +122,17 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     // Listener for file open
     this.openPdfSub = this.loadTask.results$.subscribe(({
-                                                          result: [pdfFile, pdfFileContent, ann],
+                                                          result: [[object, content], ann],
                                                           value: [file, loc],
                                                         }) => {
-      // Could be an old link that we're loading
-      if ((pdfFile as any).project_name.toLowerCase() !== this.projectName.toLowerCase()) {
-        this.projectName = (pdfFile as any).project_name;
-      }
-
-      this.pdfData = {data: new Uint8Array(pdfFileContent)};
+      this.pdfData = {data: new Uint8Array(content)};
       this.annotations = ann;
       this.updateAnnotationIndex();
       this.updateSortedEntityTypeEntries();
-      this.pdfFile = pdfFile;
+      this.object = object;
       this.emitModuleProperties();
 
-      this.currentFileId = file.file_id;
+      this.currentFileId = object.hashId;
       setTimeout(() => {
         this.ready = true;
       }, 10);
@@ -158,7 +144,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       const linkedFileId = this.route.snapshot.params.file_id;
       const fragment = this.route.snapshot.fragment || '';
       // TODO: Do proper query string parsing
-      this.openPdf(new DummyFile(linkedFileId),
+      this.openPdf(linkedFileId,
         this.parseLocationFromUrl(fragment),
         this.parseHighlightFromUrl(fragment));
     }
@@ -250,7 +236,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         })),
       });
 
-      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotation, annotateAll, this.projectName)
+      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotation, annotateAll)
         .pipe(this.errorHandler.create())
         .subscribe(
           (annotations: Annotation[]) => {
@@ -275,7 +261,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const dialogRef = this.modalService.open(ConfirmDialogComponent);
     dialogRef.componentInstance.message = 'Do you want to remove all matching annotations from the file as well?';
     dialogRef.result.then((removeAll: boolean) => {
-      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll, this.projectName)
+      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll)
         .pipe(this.errorHandler.create())
         .subscribe(
           response => {
@@ -292,7 +278,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   annotationExclusionAdded(exclusionData: AddedAnnotationExclusion) {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
-      this.currentFileId, exclusionData, this.projectName,
+      this.currentFileId, exclusionData,
     )
       .pipe(this.errorHandler.create())
       .subscribe(
@@ -307,7 +293,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   annotationExclusionRemoved({type, text}) {
-    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, type, text, this.projectName)
+    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, type, text)
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
@@ -335,7 +321,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     // use location object to scroll in the pdf.
     const loc: Location = JSON.parse(nodeDom.getAttribute('location')) as Location;
 
-    const source = `/projects/${encodeURIComponent(this.projectName)}`
+    const source = `/projects/${encodeURIComponent(this.object.project.name)}`
       + `/files/${encodeURIComponent(this.currentFileId)}`
       + `#page=${loc.pageNumber}&coords=${loc.rect[0]},${loc.rect[1]},${loc.rect[2]},${loc.rect[3]}`;
 
@@ -344,17 +330,17 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       url: source,
     }];
 
-    if (this.pdfFile.doi) {
+    if (this.object.doi) {
       sources.push({
         domain: 'DOI',
-        url: this.pdfFile.doi,
+        url: this.object.doi,
       });
     }
 
-    if (this.pdfFile.upload_url) {
+    if (this.object.uploadUrl) {
       sources.push({
         domain: 'External URL',
-        url: this.pdfFile.upload_url,
+        url: this.object.uploadUrl,
       });
     }
 
@@ -380,7 +366,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         search,
         references: [{
           type: 'PROJECT_OBJECT',
-          id: this.pdfFile.file_id,
+          id: this.object.hashId,
         }, {
           type: 'DATABASE',
           url: hyperlink,
@@ -417,12 +403,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   /**
    * Open pdf by file_id along with location to scroll to
-   * @param file - represent the pdf to open
+   * @param hashId - represent the pdf to open
    * @param loc - the location of the annotation we want to scroll to
    * @param annotationHighlightId - the ID of an annotation to highlight, if any
    */
-  openPdf(file: PdfFile, loc: Location = null, annotationHighlightId: string = null) {
-    if (this.currentFileId === file.file_id) {
+  openPdf(hashId: string, loc: Location = null, annotationHighlightId: string = null) {
+    if (this.object != null && this.currentFileId === this.object.hashId) {
       if (loc) {
         this.scrollInPdf(loc);
       }
@@ -436,7 +422,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.pdfFileLoaded = false;
     this.ready = false;
 
-    this.loadTask.update([file, loc]);
+    this.loadTask.update([hashId, loc]);
   }
 
   ngOnDestroy() {
@@ -530,16 +516,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   displayEditDialog() {
-    this.filesService.getFileFallbackOrganism(
-      this.projectName, this.pdfFile.file_id,
-    ).subscribe(organismTaxId => {
-      // TODO
-    });
+    return this.fileObjectActions.openEditDialog(this.object);
   }
 
   emitModuleProperties() {
     this.modulePropertiesChange.next({
-      title: this.pdfFile.filename,
+      title: this.object.filename,
       fontAwesomeIcon: 'file-pdf',
     });
   }
@@ -571,13 +553,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   displayShareDialog() {
-    const modalRef = this.modalService.open(ShareDialogComponent);
-    modalRef.componentInstance.url = `${window.location.origin}/projects/`
-      + `${this.projectName}/files/${this.currentFileId}?fromWorkspace`;
+    return this.fileObjectActions.openShareDialog(this.object);
   }
 
   openFileNavigatorPane() {
-    const url = `/file-navigator/${this.projectName}/${this.pdfFile.file_id}`;
+    const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
     this.workSpaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
   }
 
@@ -596,20 +576,20 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
-    dataTransfer.setData('text/plain', this.pdfFile.filename);
+    dataTransfer.setData('text/plain', this.object.filename);
     dataTransfer.setData('application/lifelike-node', JSON.stringify({
-      display_name: this.pdfFile.filename,
+      display_name: this.object.filename,
       label: 'link',
       sub_labels: [],
       data: {
         references: [{
           type: 'PROJECT_OBJECT',
-          id: this.pdfFile.file_id + '',
+          id: this.object.hashId + '',
         }],
         sources: [{
           domain: 'File Source',
-          url: ['/projects', encodeURIComponent(this.projectName),
-            'files', encodeURIComponent(this.pdfFile.file_id)].join('/'),
+          url: ['/projects', encodeURIComponent(this.object.project.name),
+            'files', encodeURIComponent(this.object.hashId)].join('/'),
         }],
       },
     } as Partial<UniversalGraphNode>));

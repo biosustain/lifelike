@@ -2,7 +2,7 @@
   <app-module-progress *ngIf="status.running" class="position-absolute w-100 h-100 bg-white p-4"
                        style="z-index: 2">
     <div>
-      Downloading {{loadTask.pendingValue[0].filename ? loadTask.pendingValue[0].filename : 'file'}}...
+      Downloading file...
     </div>
   </app-module-progress>
 
@@ -19,7 +19,7 @@
             <i class="fa fa-fw fa-arrow-left"></i>
           </button>
           <h1 class="toolbar-title text-truncate pr-4" (click)="displayEditDialog()" draggable="true" (dragstart)="dragStarted($event)">
-            {{ pdfFile?.filename }}
+            {{ object?.filename }}
           </h1>
 
           <div class="btn-group ml-auto mr-2 d-flex align-items-stretch">

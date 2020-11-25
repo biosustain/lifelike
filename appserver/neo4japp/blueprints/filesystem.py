@@ -5,7 +5,7 @@ import re
 import urllib.request
 from collections import defaultdict
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Iterable, Sequence
 from urllib.error import URLError
 
 import graphviz
@@ -104,7 +104,8 @@ class FilesystemBaseView(MethodView):
             Files.deletion_date.is_(None)
         ), t_project, t_file) \
             .options(raiseload('*'),
-                     joinedload(t_file.user))
+                     joinedload(t_file.user),
+                     joinedload(t_file.fallback_organism))
 
         # Fetch permissions for the given user
         query = add_user_permission_columns(query, t_project, t_file, current_user.id)
@@ -126,13 +127,7 @@ class FilesystemBaseView(MethodView):
             files.append(hierarchy.file)
 
         if require_hash_ids:
-            missing_hash_ids = set()
-
-            # Check we got all the files
-            if len(files) != len(require_hash_ids):
-                found_hash_ids = [file.hash_id for file in files]
-                missing_hash_ids.update([hash_id for hash_id in require_hash_ids
-                                         if hash_id not in found_hash_ids])
+            missing_hash_ids = self.get_missing_hash_ids(require_hash_ids, files)
 
             if len(missing_hash_ids):
                 raise RecordNotFoundException(f"The request specified one or more file or directory "
@@ -179,8 +174,11 @@ class FilesystemBaseView(MethodView):
         parent_hash_id = params.get('parent_hash_id')
 
         query_hash_ids = hash_ids[:]
+        require_hash_ids = []
+
         if parent_hash_id is not None:
             query_hash_ids.append(parent_hash_id)
+            require_hash_ids.append(parent_hash_id)
 
         if parent_hash_id in target_hash_ids:
             raise ValidationError(f'An object cannot be set as the parent of itself.',
@@ -191,11 +189,12 @@ class FilesystemBaseView(MethodView):
         # ========================================
 
         files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
-                                                   require_hash_ids=query_hash_ids)
+                                                   require_hash_ids=require_hash_ids)
         self.check_file_permissions(files, user, ['writable'], permit_recycled=False)
 
         target_files = [file for file in files if file.hash_id in target_hash_ids]
         parent_file = None
+        missing_hash_ids = self.get_missing_hash_ids(query_hash_ids, files)
 
         # Check parent
         if parent_hash_id is not None:
@@ -295,6 +294,8 @@ class FilesystemBaseView(MethodView):
                 raise ValidationError("The requested changes would result in a duplicate filename "
                                       "within the same folder.")
 
+        return missing_hash_ids
+
     def get_file_response(self, hash_id: str, user: AppUser):
         """
         Fetch a file and return a response that can be sent to the client. Permissions
@@ -323,7 +324,8 @@ class FilesystemBaseView(MethodView):
             object=return_file,
         )))
 
-    def get_bulk_file_response(self, hash_ids: List[str], user: AppUser):
+    def get_bulk_file_response(self, hash_ids: List[str], user: AppUser, *,
+                               missing_hash_ids: Iterable[str] = None):
         """
         Fetch several files and return a response that can be sent to the client. Could
         possibly return a response with an empty list if there were no matches. Permissions
@@ -349,6 +351,7 @@ class FilesystemBaseView(MethodView):
             'objects.children',
         )).dump(dict(
             objects=returned_files,
+            missing=list(missing_hash_ids) or [],
         )))
 
     def detect_mime_type(self, buffer):
@@ -400,6 +403,14 @@ class FilesystemBaseView(MethodView):
         while doi and doi[-1] in './%':
             doi = doi[:-1]
         return doi if doi.startswith('http') else f'https://doi.org/{doi}'
+
+    def get_missing_hash_ids(self, expected_hash_ids: Iterable[str], files: Iterable[Files]):
+        found_hash_ids = set(file.hash_id for file in files)
+        missing = set()
+        for hash_id in expected_hash_ids:
+            if hash_id not in found_hash_ids:
+                missing.add(hash_id)
+        return missing
 
 
 class FileListView(FilesystemBaseView):
@@ -570,8 +581,9 @@ class FileListView(FilesystemBaseView):
         """File update endpoint."""
 
         current_user = g.current_user
-        self.update_files(targets['hash_ids'], params, current_user)
-        return self.get_bulk_file_response(targets['hash_ids'], current_user)
+        missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
+        return self.get_bulk_file_response(targets['hash_ids'], current_user,
+                                           missing_hash_ids=missing_hash_ids)
 
     # noinspection DuplicatedCode
     @use_args(lambda request: BulkFileRequestSchema())
@@ -582,9 +594,10 @@ class FileListView(FilesystemBaseView):
 
         hash_ids = targets['hash_ids']
 
-        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids),
-                                                   require_hash_ids=hash_ids)
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids))
         self.check_file_permissions(files, current_user, ['writable'], permit_recycled=True)
+
+        missing_hash_ids = self.get_missing_hash_ids(hash_ids, files)
 
         # ========================================
         # Apply
@@ -607,7 +620,8 @@ class FileListView(FilesystemBaseView):
         # Return changed files
         # ========================================
 
-        return self.get_bulk_file_response(hash_ids, current_user)
+        return self.get_bulk_file_response(hash_ids, current_user,
+                                           missing_hash_ids=missing_hash_ids)
 
     def _get_content_from_params(self, params: dict):
         # Fetch from URL
@@ -767,39 +781,6 @@ class FileExportView(FilesystemBaseView):
         return graph.pipe()
 
 
-class FileAnnotationsView(FilesystemBaseView):
-    decorators = [auth.login_required]
-
-    def get(self, hash_id):
-        """Fetch annotations for a file.."""
-        current_user = g.current_user
-
-        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
-        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
-
-        if file.annotations:
-            annotations = file.annotations['documents'][0]['passages'][0]['annotations']
-
-            def terms_match(term_in_exclusion, term_in_annotation, is_case_insensitive):
-                if is_case_insensitive:
-                    return term_in_exclusion.lower() == term_in_annotation.lower()
-                return term_in_exclusion == term_in_annotation
-
-            # Add additional information for annotations that were excluded
-            for annotation in annotations:
-                for exclusion in file.excluded_annotations:
-                    if (exclusion.get('type') == annotation['meta']['type'] and
-                            terms_match(
-                                exclusion.get('text', 'True'),
-                                annotation.get('textInDocument', 'False'),
-                                exclusion['isCaseInsensitive'])):
-                        annotation['meta']['isExcluded'] = True
-                        annotation['meta']['exclusionReason'] = exclusion['reason']
-                        annotation['meta']['exclusionComment'] = exclusion['comment']
-        else:
-            annotations = []
-
-
 class FileBackupView(FilesystemBaseView):
     """Endpoint to manage 'backups' that are recorded for the user when they are editing a file
     so that they don't lose their work."""
@@ -931,7 +912,6 @@ bp.add_url_rule('objects', view_func=FileListView.as_view('file_list'))
 bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file'))
 bp.add_url_rule('objects/<string:hash_id>/content', view_func=FileContentView.as_view('file_content'))
 bp.add_url_rule('objects/<string:hash_id>/export', view_func=FileExportView.as_view('file_export'))
-bp.add_url_rule('objects/<string:hash_id>/annotations', view_func=FileAnnotationsView.as_view('file_annotations'))
 bp.add_url_rule('objects/<string:hash_id>/backup', view_func=FileBackupView.as_view('file_backup'))
 bp.add_url_rule('objects/<string:hash_id>/backup/content',
                 view_func=FileBackupContentView.as_view('file_backup_content'))
