@@ -13,9 +13,9 @@ import { getObjectLabel } from '../utils/objects';
 
 @Component({
   selector: 'app-file-list',
-  templateUrl: './file-list.component.html',
+  templateUrl: './object-list.component.html',
 })
-export class FileListComponent {
+export class ObjectListComponent {
   id = uniqueId('FileListComponent-');
 
   @Input() appLinks: false;

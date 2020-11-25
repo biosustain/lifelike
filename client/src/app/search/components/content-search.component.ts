@@ -13,7 +13,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { ContentSearchOptions, TYPES, TYPES_MAP } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
-import { HighlightDisplayLimitChange } from '../../file-browser/components/file-info.component';
+import { HighlightDisplayLimitChange } from '../../file-browser/components/object-info.component';
 import { escapeRegExp } from 'lodash';
 import { FileViewComponent } from '../../file-browser/components/file-view.component';
 

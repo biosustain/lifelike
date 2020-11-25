@@ -3,8 +3,8 @@ import { DirectoryObject } from '../../interfaces/projects.interface';
 
 @Component({
   selector: 'app-file-type-label',
-  templateUrl: './file-type-label.component.html',
+  templateUrl: './object-type-label.component.html',
 })
-export class FileTypeLabelComponent {
+export class ObjectTypeLabelComponent {
   @Input() object: DirectoryObject;
 }
