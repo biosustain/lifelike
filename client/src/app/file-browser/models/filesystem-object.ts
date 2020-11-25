@@ -315,22 +315,27 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     } : null;
   }
 
-  getCommands(): any[] {
-    switch (this.type) {
-      case 'dir':
+  getCommands(forEditing = true): any[] {
+    switch (this.mimeType) {
+      case DIRECTORY_MIMETYPE:
         // TODO: Convert to hash ID
-        return ['/projects', this.project.projectName, 'folders', this.id];
-      case 'file':
-        if (this.name.slice(this.name.length - 11) === '.enrichment') {
-          return ['/projects', this.project.projectName, 'enrichment-table', this.id];
-        } else {
-          return ['/projects', this.project.projectName, 'files', this.id];
-        }
-      case 'map':
-        return ['/projects', this.project.projectName, 'maps', this.id, 'edit'];
+        return ['/projects', this.project.name, 'folders', this.hashId];
+      case ENRICHMENT_TABLE_MIMETYPE:
+        return ['/projects', this.project.name, 'enrichment-table', this.hashId];
+      case PDF_MIMETYPE:
+        return ['/projects', this.project.name, 'files', this.hashId];
+      case MAP_MIMETYPE:
+        return ['/projects', this.project.name, 'maps', this.hashId,
+          ...(forEditing ? ['edit'] : [])];
       default:
-        throw new Error(`unknown directory object type: ${this.type}`);
+        throw new Error(`unknown directory object type: ${this.mimeType}`);
     }
+  }
+
+  getURL(forEditing = true): string {
+    return this.getCommands(forEditing).map(item => {
+      return encodeURIComponent(item.replace(/^\//, ''));
+    }).join('/');
   }
 
   addDataTransferData(dataTransfer: DataTransfer) {
