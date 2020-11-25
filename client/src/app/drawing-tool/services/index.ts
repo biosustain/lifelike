@@ -2,10 +2,6 @@
 import {
   PdfAnnotationsService,
 } from './pdf-annotations.service';
-import {
-  DragDropEventFactory,
-  ContainerModel,
-} from './event-factory';
 
 // TODO: Should consolidate this with the existing shared method at the root of the app
 /**
@@ -38,6 +34,4 @@ export {
   PdfAnnotationsService,
   uuidv4,
   makeid,
-  DragDropEventFactory,
-  ContainerModel,
 };

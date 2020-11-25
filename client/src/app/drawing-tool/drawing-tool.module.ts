@@ -1,8 +1,6 @@
 import { NgModule } from '@angular/core';
 import { MapEditorComponent } from './components/map-editor/map-editor.component';
 
-import { CopyPasteMapsService } from './services/copy-paste-maps.service';
-
 import { PaletteComponent } from './components/map-editor/palette.component';
 import { InfoPanelComponent } from './components/map-editor/info-panel.component';
 import { MapViewComponent } from './components/map-view.component';
@@ -32,9 +30,7 @@ import { MapComponent } from './components/map.component';
   imports: [
     SharedModule,
   ],
-  providers: [
-    CopyPasteMapsService,
-  ],
+  providers: [],
   exports: [
     RouterModule,
     MapComponent,
