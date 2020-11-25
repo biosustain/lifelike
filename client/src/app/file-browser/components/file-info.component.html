@@ -51,10 +51,7 @@
   </div>
   <div class="flex-grow-1 position-relative" *ngIf="object.type === 'map'">
     <div class="border-bottom h-100">
-      <ng-container *ngIf="object.type === 'map'">
-        <app-map [locator]="{projectName: object.project.projectName, hashId: object.id}"
-                 [highlightTerms]="highlightTerms"></app-map>
-      </ng-container>
+      <app-object-preview [object]="object"></app-object-preview>
     </div>
   </div>
 </div>

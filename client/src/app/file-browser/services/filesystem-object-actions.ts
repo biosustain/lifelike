@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { EnrichmentTableCreateDialogComponent } from '../components/enrichment-table-create-dialog.component';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { ObjectDeleteDialogComponent } from '../components/object-delete-dialog.component';
+import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -26,6 +26,8 @@ import { ObjectEditDialogComponent, ObjectEditDialogValue } from '../components/
 import { getObjectLabel } from '../utils/objects';
 import { ObjectCreateRequest } from '../schema';
 import { clone } from 'lodash';
+import { ObjectVersionHistoryDialogComponent } from '../components/dialog/object-version-history-dialog.component';
+import { ObjectVersion } from '../models/object-version';
 
 @Injectable()
 export class FilesystemObjectActions {
@@ -63,8 +65,7 @@ export class FilesystemObjectActions {
     const progressDialogRef = this.createProgressDialog('Downloading file...');
     return this.filesystemService.getContent(target.hashId).pipe(
       finalize(() => progressDialogRef.close()),
-      map(data => {
-        const blob = new Blob([data], {type: target.mimeType});
+      map(blob => {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = target.downloadFilename;
@@ -285,6 +286,14 @@ export class FilesystemObjectActions {
         )
         .toPromise();
     });
+    return dialogRef.result;
+  }
+
+  openVersionHistoryDialog(target: FilesystemObject): Promise<ObjectVersion> {
+    const dialogRef = this.modalService.open(ObjectVersionHistoryDialogComponent, {
+      size: 'xl',
+    });
+    dialogRef.componentInstance.object = target;
     return dialogRef.result;
   }
 

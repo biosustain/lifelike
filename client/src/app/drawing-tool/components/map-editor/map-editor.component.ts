@@ -14,17 +14,18 @@ import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/b
 import { PasteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
 import { HistoryKeyboardShortcuts } from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
 import { MapViewComponent } from '../map-view.component';
-import { from, Observable, Subscription } from 'rxjs';
+import { from, Observable, of, Subscription } from 'rxjs';
 import { auditTime, switchMap } from 'rxjs/operators';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
-import { mapBufferToJson } from '../../../shared/utils/files';
+import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../../shared/utils/files';
 import { MAP_MIMETYPE } from '../../../file-browser/models/filesystem-object';
 import {
   ObjectEditDialogComponent,
   ObjectEditDialogValue,
 } from '../../../file-browser/components/dialog/object-edit-dialog.component';
+import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -66,7 +67,12 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     return from([this.locator]).pipe(switchMap(
       locator => this.filesystemService.getBackupContent(locator)
         .pipe(
-          mapBufferToJson<UniversalGraph>('utf-8'),
+          switchMap(blob => blob
+            ? of(blob).pipe(
+              mapBlobToBuffer(),
+              mapBufferToJson<UniversalGraph>(),
+            )
+            : of(null)),
           this.errorHandler.create(),
         ),
     ));
@@ -77,9 +83,12 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
       this.modalService.open(MapRestoreDialogComponent, {
         container: this.modalContainer.nativeElement,
       }).result.then(() => {
-        this.graphCanvas.setGraph(backup);
-        this.graphCanvas.zoomToFit(0);
-        this.unsavedChanges$.next(true);
+        this.graphCanvas.execute(new KnowledgeMapRestore(
+          `Restore map to backup`,
+          this.graphCanvas,
+          backup,
+          cloneDeep(this.graphCanvas.getGraph()),
+        ));
       }, () => {
         this.filesystemService.deleteBackup(this.locator)
           .subscribe(); // Need to subscribe so it actually runs
@@ -117,7 +126,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     }
   }
 
-  displayEditDialog() {
+  openEditDialog() {
     const target = cloneDeep(this.map);
     const dialogRef = this.modalService.open(ObjectEditDialogComponent);
     dialogRef.componentInstance.object = target;
@@ -135,7 +144,24 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     return dialogRef.result;
   }
 
-  mapVersionDialog() {
+  openVersionHistoryDialog() {
+    return this.filesystemObjectActions.openVersionHistoryDialog(this.map).then(version => {
+      readBlobAsBuffer(version.contentValue).pipe(
+        mapBufferToJson<UniversalGraph>(),
+        this.errorHandler.create(),
+      ).subscribe(graph => {
+        this.graphCanvas.execute(new KnowledgeMapRestore(
+          `Restore map to '${version.hashId}'`,
+          this.graphCanvas,
+          graph,
+          cloneDeep(this.graphCanvas.getGraph()),
+        ));
+      }, e => {
+        // Data is corrupt
+        // TODO: Prevent the user from editing or something so the user doesnt lose data?
+      });
+    }, () => {
+    });
   }
 
   @HostListener('window:beforeunload', ['$event'])
@@ -185,5 +211,24 @@ class KnowledgeMapUpdate implements GraphAction {
 
   rollback(component: GraphActionReceiver) {
     mergeDeep(this.map, this.originalData);
+  }
+}
+
+
+class KnowledgeMapRestore implements GraphAction {
+  constructor(public description: string,
+              public graphCanvas: CanvasGraphView,
+              public updatedData: UniversalGraph,
+              public originalData: UniversalGraph) {
+  }
+
+  apply(component: GraphActionReceiver) {
+    this.graphCanvas.setGraph(cloneDeep(this.updatedData));
+    this.graphCanvas.zoomToFit(0);
+  }
+
+  rollback(component: GraphActionReceiver) {
+    this.graphCanvas.setGraph(cloneDeep(this.originalData));
+    this.graphCanvas.zoomToFit(0);
   }
 }

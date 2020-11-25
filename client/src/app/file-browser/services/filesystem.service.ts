@@ -18,11 +18,11 @@ import {
   ObjectCreateRequest,
   ObjectDataResponse,
   ObjectVersionData,
-  MultipleObjectDataResponse,
+  MultipleObjectDataResponse, ObjectVersionHistoryResponse,
 } from '../schema';
 import { objectToFormData, objectToMixedFormData } from '../../shared/utils/forms';
 import { PaginatedRequestOptions, ResultList } from '../../interfaces/shared.interface';
-import { ObjectVersion, ObjectVersionList } from '../models/object-version';
+import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
 import { serializePaginatedParams } from '../../shared/utils/params';
 
 /**
@@ -81,9 +81,7 @@ export class FilesystemService {
     if (options.loadContent) {
       result = result.pipe(
         mergeMap(object => this.getContent(object.hashId).pipe(map(contentValue => {
-          object.contentValue = new Blob([contentValue], {
-            type: object.mimeType,
-          });
+          object.contentValue = contentValue;
           return object;
         }))),
       );
@@ -92,11 +90,11 @@ export class FilesystemService {
     return result;
   }
 
-  getContent(hashId: string): Observable<ArrayBuffer> {
+  getContent(hashId: string): Observable<Blob> {
     return this.http.get(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/content`, {
         ...this.apiService.getHttpOptions(true),
-        responseType: 'arraybuffer',
+        responseType: 'blob',
       },
     );
   }
@@ -151,11 +149,11 @@ export class FilesystemService {
     );
   }
 
-  getBackupContent(hashId: string): Observable<ArrayBuffer | null> {
+  getBackupContent(hashId: string): Observable<Blob | null> {
     return this.http.get(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/backup/content`, {
         ...this.apiService.getHttpOptions(true),
-        responseType: 'arraybuffer',
+        responseType: 'blob',
       },
     ).pipe(catchError(e => {
       // If the backup doesn't exist, don't let the caller have to figure out
@@ -191,27 +189,33 @@ export class FilesystemService {
     ).pipe(map(() => ({})));
   }
 
-  getVersions(fileHashId: string,
-              options: PaginatedRequestOptions = {}): Observable<ObjectVersionList> {
-    return this.http.get<ResultList<ObjectVersionData>>(
+  getVersionHistory(fileHashId: string,
+                    options: PaginatedRequestOptions = {}): Observable<ObjectVersionHistory> {
+    return this.http.get<ObjectVersionHistoryResponse>(
       `/api/filesystem/objects/${encodeURIComponent(fileHashId)}/versions`, {
         ...this.apiService.getHttpOptions(true),
         params: serializePaginatedParams(options, false),
       },
     ).pipe(
       map(data => {
-        const list = new ObjectVersionList();
-        list.results.replace(data.results.map(itemData => new ObjectVersion().update(itemData)));
+        const object = new FilesystemObject().update(data.object);
+        const list = new ObjectVersionHistory();
+        list.results.replace(data.results.map(itemData => {
+          const version = new ObjectVersion();
+          version.originalObject = object;
+          version.update(itemData);
+          return version;
+        }));
         return list;
       }),
     );
   }
 
-  getVersionContent(hashId: string): Observable<ArrayBuffer> {
+  getVersionContent(hashId: string): Observable<Blob> {
     return this.http.get(
       `/api/filesystem/versions/${encodeURIComponent(hashId)}/content`, {
         ...this.apiService.getHttpOptions(true),
-        responseType: 'arraybuffer',
+        responseType: 'blob',
       },
     );
   }

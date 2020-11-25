@@ -18,7 +18,7 @@
           <button type="button" class="module-title-bar-back mr-2" (click)="goToReturnUrl()" *ngIf="returnUrl">
             <i class="fa fa-fw fa-arrow-left"></i>
           </button>
-          <h1 class="module-title text-truncate" (click)="displayEditDialog()">
+          <h1 class="module-title text-truncate" (click)="openEditDialog()">
             {{ map?.label }}
           </h1>
           <div class="text-danger ml-2" *ngIf="unsavedChanges$.value; else saved">
@@ -79,7 +79,7 @@
           <div class="btn-group">
             <button type="button" class="btn btn-secondary" container="body"
                     ngbTooltip="Map Version History" placement="bottom"
-                    (click)="mapVersionDialog()">
+                    (click)="openVersionHistoryDialog()">
               Version History
             </button>
           </div>
