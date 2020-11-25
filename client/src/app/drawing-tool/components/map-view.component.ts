@@ -1,23 +1,16 @@
 import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { MapService } from '../services';
-
-import { MapExportDialogComponent } from './map-export-dialog.component';
+import { Subscription } from 'rxjs';
 import { ModuleAwareComponent } from '../../shared/modules';
 import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { tap } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { Progress } from '../../interfaces/common-dialog.interface';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { MapComponent } from './map.component';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
-import { GraphEntity, GraphEntityType } from '../services/interfaces';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { MAP_MIMETYPE } from '../../file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
@@ -46,7 +39,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               errorHandler: ErrorHandler,
               workspaceManager: WorkspaceManager,
               filesystemObjectActions: FilesystemObjectActions,
-              public readonly progressDialog: ProgressDialog) {
+              protected readonly progressDialog: ProgressDialog) {
     super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
       errorHandler, workspaceManager, filesystemObjectActions);
 
@@ -59,10 +52,6 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     });
   }
 
-// ========================================
-  // Angular events
-  // ========================================
-
   ngOnDestroy() {
     super.ngOnDestroy();
     this.queryParamsSubscription.unsubscribe();
@@ -72,10 +61,6 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
   shouldConfirmUnload() {
     return this.unsavedChanges$.getValue();
   }
-
-  // ========================================
-  // States
-  // ========================================
 
   /**
    * Save the current representation of knowledge model
@@ -99,14 +84,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
       });
   }
 
-  // ========================================
-  // Download
-  // ========================================
-
-  /**
-   * Asks for the format to download the map
-   */
-  download() {
+  openExportDialog() {
     if (this.unsavedChanges$.getValue()) {
       this.messageDialog.display({
         title: 'Save Required',
@@ -114,116 +92,13 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
         type: MessageType.Error,
       });
     } else {
-      this.modalService.open(MapExportDialogComponent).result.then(format => {
-        if (format === 'pdf') {
-          this.downloadPDF();
-        } else if (format === 'svg') {
-          this.downloadSVG();
-        } else if (format === 'png') {
-          this.downloadPNG();
-        } else {
-          throw new Error('invalid format');
-        }
-      }, () => {
-      });
+      return this.filesystemObjectActions.openExportDialog(this.map);
     }
   }
 
-  private requestDownload(project: () => Observable<any>, mimeType: string, extension: string) {
-    if (this.unsavedChanges$.getValue()) {
-      this.snackBar.open('Please save the project before exporting', null, {
-        duration: 2000,
-      });
-    } else {
-      const progressDialogRef = this.progressDialog.display({
-        title: `Export`,
-        progressObservable: new BehaviorSubject<Progress>(new Progress({
-          status: 'Generating the requested export...',
-        })),
-      });
-
-      project().pipe(
-        tap(
-          () => progressDialogRef.close(),
-          () => progressDialogRef.close()),
-        this.errorHandler.create(),
-      ).subscribe(resp => {
-        // It is necessary to create a new blob object with mime-type explicitly set
-        // otherwise only Chrome works like it should
-        const newBlob = new Blob([resp], {
-          type: mimeType,
-        });
-
-        // IE doesn't allow using a blob object directly as link href
-        // instead it is necessary to use msSaveOrOpenBlob
-        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-          window.navigator.msSaveOrOpenBlob(newBlob);
-          return;
-        }
-
-        // For other browsers:
-        // Create a link pointing to the ObjectURL containing the blob.
-        const data = window.URL.createObjectURL(newBlob);
-
-        const link = document.createElement('a');
-        link.href = data;
-        link.download = this.map.label + extension;
-        // this is necessary as link.click() does not work on the latest firefox
-        link.dispatchEvent(new MouseEvent('click', {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        }));
-
-        setTimeout(() => {
-          // For Firefox it is necessary to delay revoking the ObjectURL
-          window.URL.revokeObjectURL(data);
-          link.remove();
-        }, 100);
-      });
-    }
+  openShareDialog() {
+    return this.filesystemObjectActions.openShareDialog(this.map);
   }
-
-  /**
-   * Saves and downloads the PDF version of the current map
-   */
-  downloadPDF() {
-    /*this.requestDownload(
-        () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'pdf'),
-        'application/pdf',
-        '.pdf',
-    );*/
-  }
-
-  /**
-   * Saves and downloads the SVG version of the current map
-   */
-  downloadSVG() {
-    /*
-    this.requestDownload(
-        () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'svg'),
-        'application/svg',
-        '.svg',
-    );
-     */
-  }
-
-  /**
-   * Saves and downloads the PNG version of the current map
-   */
-  downloadPNG() {
-    /*
-    this.requestDownload(
-        () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'png'),
-        'application/png',
-        '.png',
-    );
-     */
-  }
-
-  // ========================================
-  // Template stuff
-  // ========================================
 
   goToReturnUrl() {
     if (this.shouldConfirmUnload()) {
@@ -233,11 +108,5 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     } else {
       this.workspaceManager.navigateByUrl(this.returnUrl);
     }
-  }
-
-  displayShareDialog() {
-    const modalRef = this.modalService.open(ShareDialogComponent);
-    modalRef.componentInstance.url = `${window.location.origin}/projects/`
-      + `${this.map.project.name}/maps/${this.locator}?fromWorkspace`;
   }
 }

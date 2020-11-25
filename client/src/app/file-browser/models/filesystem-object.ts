@@ -6,7 +6,7 @@ import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { AppUser, User } from '../../interfaces';
-import { ObjectCreateRequest, FilesystemObjectData, ProjectData } from '../schema';
+import { FilesystemObjectData, ProjectData } from '../schema';
 
 export const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
 export const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
@@ -116,6 +116,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isDeletable() {
     return true;
+  }
+
+  get isVersioned() {
+    return this.mimeType === MAP_MIMETYPE;
   }
 
   get isDownloadable() {
@@ -430,6 +434,14 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       }
     }
     return this;
+  }
+
+  get exportFormats(): string[] {
+    if (this.mimeType === MAP_MIMETYPE) {
+      return ['pdf', 'png', 'svg'];
+    } else {
+      return [];
+    }
   }
 }
 

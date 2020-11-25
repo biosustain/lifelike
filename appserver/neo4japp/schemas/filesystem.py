@@ -201,3 +201,7 @@ class FileVersionHistorySchema(CamelCaseSchema):
     object = fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',))
     total = fields.Integer()
     results = fields.List(fields.Nested(FileVersionSchema))
+
+
+class FileExportRequestSchema(CamelCaseSchema):
+    format = fields.String(required=True)

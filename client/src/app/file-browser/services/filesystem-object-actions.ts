@@ -9,7 +9,6 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { ProjectPageService } from './project-page.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { MapService } from '../../drawing-tool/services';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { Progress, ProgressMode } from '../../interfaces/common-dialog.interface';
 import { filter, finalize, map, tap } from 'rxjs/operators';
@@ -29,6 +28,11 @@ import { clone } from 'lodash';
 import { ObjectVersionHistoryDialogComponent } from '../components/dialog/object-version-history-dialog.component';
 import { ObjectVersion } from '../models/object-version';
 import { EnrichmentTableEditDialogComponent } from '../components/enrichment-table-edit-dialog.component';
+import {
+  ObjectExportDialogComponent,
+  ObjectExportDialogValue,
+} from '../components/dialog/object-export-dialog.component';
+import { openDownloadForBlob } from '../../shared/utils/files';
 
 @Injectable()
 export class FilesystemObjectActions {
@@ -41,7 +45,6 @@ export class FilesystemObjectActions {
               private readonly route: ActivatedRoute,
               private readonly projectPageService: ProjectPageService,
               private readonly workspaceManager: WorkspaceManager,
-              private readonly mapService: MapService,
               private readonly ngbModal: NgbModal,
               private readonly messageDialog: MessageDialog,
               private readonly errorHandler: ErrorHandler,
@@ -67,14 +70,41 @@ export class FilesystemObjectActions {
     return this.filesystemService.getContent(target.hashId).pipe(
       finalize(() => progressDialogRef.close()),
       map(blob => {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = target.downloadFilename;
-        link.click();
+        openDownloadForBlob(blob, target.downloadFilename);
         return true;
       }),
       this.errorHandler.create(),
     ).toPromise();
+  }
+
+  /**
+   * Open the dialog to export an object.
+   * @param target the object to export
+   */
+  openExportDialog(target: FilesystemObject): Promise<boolean> {
+    if (target.exportFormats.length) {
+      const dialogRef = this.ngbModal.open(ObjectExportDialogComponent);
+      dialogRef.componentInstance.object = target;
+      dialogRef.componentInstance.accept = (value: ObjectExportDialogValue) => {
+        const progressDialogRef = this.createProgressDialog('Generating export...');
+        return this.filesystemService.generateExport(value.object.hashId, value.request).pipe(
+          finalize(() => progressDialogRef.close()),
+          map(blob => {
+            openDownloadForBlob(blob, `${target.downloadFilename}${value.extension}`);
+            return true;
+          }),
+          this.errorHandler.create(),
+        ).toPromise();
+      };
+      return dialogRef.result;
+    } else {
+      this.messageDialog.display({
+        title: 'No Export Formats',
+        message: `No export formats are supported for ${getObjectLabel(target)}.`,
+        type: MessageType.Warning,
+      });
+      return Promise.reject();
+    }
   }
 
   /**
@@ -204,7 +234,7 @@ export class FilesystemObjectActions {
         })], {
           type: MAP_MIMETYPE,
         }),
-      }
+      },
     });
   }
 
@@ -215,11 +245,11 @@ export class FilesystemObjectActions {
 
       const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
       return this.filesService.addGeneList(parent.locator.projectName, parent.directory.id, enrichmentData, result.description, result.name)
-          .pipe(
-              this.errorHandler.create(),
-              finalize(() => progressDialogRef.close()),
-          )
-          .toPromise();
+        .pipe(
+          this.errorHandler.create(),
+          finalize(() => progressDialogRef.close()),
+        )
+        .toPromise();
     });
   }
 
@@ -232,17 +262,17 @@ export class FilesystemObjectActions {
 
       const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
       return this.filesService.editGeneList(
-          target.locator.projectName,
-          target.id,
-          enrichmentData,
-          result.name,
-          result.description,
+        target.locator.projectName,
+        target.id,
+        enrichmentData,
+        result.name,
+        result.description,
       )
-          .pipe(
-              this.errorHandler.create(),
-              finalize(() => progressDialogRef.close()),
-          )
-          .toPromise();
+        .pipe(
+          this.errorHandler.create(),
+          finalize(() => progressDialogRef.close()),
+        )
+        .toPromise();
     });
   }
 
@@ -310,6 +340,15 @@ export class FilesystemObjectActions {
         )
         .toPromise();
     });
+    return dialogRef.result;
+  }
+
+  openVersionRestoreDialog(target: FilesystemObject): Promise<ObjectVersion> {
+    const dialogRef = this.modalService.open(ObjectVersionHistoryDialogComponent, {
+      size: 'xl',
+    });
+    dialogRef.componentInstance.object = target;
+    dialogRef.componentInstance.promptRestore = true;
     return dialogRef.result;
   }
 

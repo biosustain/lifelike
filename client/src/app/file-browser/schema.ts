@@ -83,3 +83,7 @@ export interface ObjectVersionData {
 export interface ObjectVersionHistoryResponse extends ResultList<ObjectVersionData> {
   object: FilesystemObjectData;
 }
+
+export interface ObjectExportRequest {
+  format: string;
+}

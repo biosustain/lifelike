@@ -1,6 +1,11 @@
 <form [formGroup]="form" (ngSubmit)="submit()">
   <app-modal-header (cancel)="cancel()">
-    Version History for '{{ object.effectiveName }}'
+    <ng-container *ngIf="promptRestore; else viewOnlyHeader">
+      Restore Version of '{{ object.effectiveName }}'
+    </ng-container>
+    <ng-template #viewOnlyHeader>
+      Version History for '{{ object.effectiveName }}'
+    </ng-template>
   </app-modal-header>
 
   <app-modal-body>
@@ -8,7 +13,12 @@
   </app-modal-body>
 
   <app-modal-footer class="text-truncate">
-    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Close</button>
-    <button type="submit" class="btn btn-primary">Restore</button>
+    <ng-container *ngIf="promptRestore; else viewOnlyFooter">
+      <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Close</button>
+      <button type="submit" class="btn btn-primary">Restore</button>
+    </ng-container>
+    <ng-template #viewOnlyFooter>
+      <button type="submit" class="btn btn-primary">Close</button>
+    </ng-template>
   </app-modal-footer>
 </form>

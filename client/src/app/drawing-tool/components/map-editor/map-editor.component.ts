@@ -144,8 +144,8 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     return dialogRef.result;
   }
 
-  openVersionHistoryDialog() {
-    return this.filesystemObjectActions.openVersionHistoryDialog(this.map).then(version => {
+  openVersionRestoreDialog() {
+    return this.filesystemObjectActions.openVersionRestoreDialog(this.map).then(version => {
       readBlobAsBuffer(version.contentValue).pipe(
         mapBufferToJson<UniversalGraph>(),
         this.errorHandler.create(),

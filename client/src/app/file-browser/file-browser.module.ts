@@ -29,6 +29,7 @@ import { ObjectVersionHistoryComponent } from './components/object-version-histo
 import { ObjectVersionHistoryDialogComponent } from './components/dialog/object-version-history-dialog.component';
 import { ObjectPreviewComponent } from './components/object-preview.component';
 import { EnrichmentTableOrderDialogComponent } from './components/enrichment-table-order-dialog.component';
+import { ObjectExportDialogComponent } from './components/dialog/object-export-dialog.component';
 
 @NgModule({
   declarations: [
@@ -56,6 +57,7 @@ import { EnrichmentTableOrderDialogComponent } from './components/enrichment-tab
     ObjectVersionHistoryComponent,
     ObjectVersionHistoryDialogComponent,
     ObjectPreviewComponent,
+    ObjectExportDialogComponent,
   ],
   imports: [
     SharedModule,
@@ -75,6 +77,7 @@ import { EnrichmentTableOrderDialogComponent } from './components/enrichment-tab
     ObjectEditDialogComponent,
     ObjectVersionHistoryDialogComponent,
     ObjectPreviewComponent,
+    ObjectExportDialogComponent,
   ],
   exports: [
     ObjectInfoComponent,

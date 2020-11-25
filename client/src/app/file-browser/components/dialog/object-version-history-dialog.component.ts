@@ -12,6 +12,7 @@ import { ObjectVersion } from '../../models/object-version';
 })
 export class ObjectVersionHistoryDialogComponent extends CommonFormDialogComponent {
   @Input() object: FilesystemObject;
+  @Input() promptRestore = false;
 
   readonly form: FormGroup = new FormGroup({
     version: new FormControl(null, Validators.required),

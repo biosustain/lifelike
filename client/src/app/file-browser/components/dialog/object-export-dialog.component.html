@@ -1,15 +1,13 @@
 <form [formGroup]="form" (ngSubmit)="submit()">
   <app-modal-header (cancel)="cancel()">
-    Export Map
+    Export
   </app-modal-header>
 
   <app-modal-body>
     <app-form-row for="format" label="Format" [control]="form.get('label')">
       <select class="custom-select" formControlName="format" id="format"
               [appFormInput]="form.get('format')" appAutoFocus>
-        <option value="pdf">PDF</option>
-        <option value="png">PNG</option>
-        <option value="svg">SVG</option>
+        <option *ngFor="let format of formats" [value]="format">{{ format.toUpperCase() }}</option>
       </select>
     </app-form-row>
   </app-modal-body>
