@@ -634,6 +634,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     // Each section rectangle represent one selection,
     // this means multiple words on the same line should
     // create one selection rectangle
+    // See LL-1437 (https://github.com/SBRG/kg-prototypes/pull/474)
     createCorrectRects(rects);
 
     this.selectedTextCoords = [];
