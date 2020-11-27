@@ -1,0 +1,41 @@
+<form (ngSubmit)="submit()" [formGroup]="form">
+  <div>
+    <app-modal-header (cancel)="cancel()">
+      New Enrichment Visualisation
+    </app-modal-header>
+
+    <app-modal-body>
+      <app-form-row [control]="form.get('name')" for="name" label="Name">
+        <input [appFormInput]="form.get('name')" appAutoFocus formControlName="name" id="username" type="text">
+      </app-form-row>
+      <app-form-row [control]="form.get('description')" for="description" label="Description">
+        <textarea [appFormInput]="form.get('description')" formControlName="description" id="description"
+                  maxlength="2048" rows="5"></textarea>
+      </app-form-row>
+      <app-form-row [control]="form.get('entitiesList')" for="entitiesList" label="List of Gene Names">
+        <textarea [appFormInput]="form.get('entitiesList')" formControlName="entitiesList" id="entitiesList"
+                  maxlength="2048" placeholder="* New line for each gene name" rows="5"></textarea>
+      </app-form-row>
+      <app-form-row [control]="form.get('organism')" for="organism" label="Organism">
+        <app-organism-autocomplete
+          (organismPicked)="setOrganism($event)"
+          formId="organism"
+          style="width: 400px"
+        ></app-organism-autocomplete>
+      </app-form-row>
+      <app-form-row [control]="form.get('domainsList')" for="domainsList" label="Domains to Show">
+        <div *ngFor="let choice of checks; let i=index">
+          <label>
+            <input (change)="onCheckChange($event)" [value]="choice" checked type="checkbox">
+            {{choice}}
+          </label>
+        </div>
+      </app-form-row>
+    </app-modal-body>
+
+    <app-modal-footer>
+      <button (click)="cancel()" class="btn btn-secondary mr-2" type="button">Cancel</button>
+      <button class="btn btn-primary" type="submit">Create</button>
+    </app-modal-footer>
+  </div>
+</form>

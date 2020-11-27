@@ -19,18 +19,19 @@ import { BrowserContextComponent } from './components/browser/browser-context.co
 import { FileInfoComponent } from './components/file-info.component';
 import { DrawingToolModule } from '../drawing-tool/drawing-tool.module';
 import { FileTypeLabelComponent } from './components/file-type-label.component';
-import { EnrichmentTableViewerComponent } from './components/enrichment-table-viewer.component';
-import { EnrichmentTableCreateDialogComponent } from './components/enrichment-table-create-dialog.component';
-import { EnrichmentTableEditDialogComponent } from './components/enrichment-table-edit-dialog.component';
+import { EnrichmentTableViewerComponent } from './components/enrichment/table/enrichment-table-viewer.component';
+import { EnrichmentTableCreateDialogComponent } from './components/enrichment/table/enrichment-table-create-dialog.component';
+import { EnrichmentTableEditDialogComponent } from './components/enrichment/table/enrichment-table-edit-dialog.component';
 import { FileSelectionDialogComponent } from './components/dialog/file-selection-dialog.component';
 import { FilesystemService } from './services/filesystem.service';
 import { FileListComponent } from './components/file-list.component';
 import { FilesystemObjectActions } from './services/filesystem-object-actions';
-import { EnrichmentTableOrderDialogComponent } from './components/enrichment-table-order-dialog.component';
-import {EnrichmentVisualisationViewerComponent} from "./components/enrichment-visualisation-viewer.component";
-import {EnrichmentVisualisationCreateDialogComponent} from "./components/enrichment-visualisation-create-dialog.component";
-import {EnrichmentVisualisationEditDialogComponent} from "./components/enrichment-visualisation-edit-dialog.component";
-import {EnrichmentVisualisationOrderDialogComponent} from "./components/enrichment-visualisation-order-dialog.component";
+import { EnrichmentTableOrderDialogComponent } from './components/enrichment/table/enrichment-table-order-dialog.component';
+import {EnrichmentVisualisationViewerComponent} from "./components/enrichment/visualisation/enrichment-visualisation-viewer.component";
+import {EnrichmentVisualisationCreateDialogComponent} from "./components/enrichment/visualisation/dialog/enrichment-visualisation-create-dialog.component";
+import {EnrichmentVisualisationEditDialogComponent} from "./components/enrichment/visualisation/dialog/enrichment-visualisation-edit-dialog.component";
+import {EnrichmentVisualisationOrderDialogComponent} from "./components/enrichment/visualisation/dialog/enrichment-visualisation-order-dialog.component";
+import {WordCloudModule} from "./components/enrichment/visualisation/word-cloud/word-cloud.module";
 
 @NgModule({
   declarations: [
@@ -66,6 +67,7 @@ import {EnrichmentVisualisationOrderDialogComponent} from "./components/enrichme
     SharedModule,
     PdfViewerLibModule,
     DrawingToolModule,
+    WordCloudModule,
   ],
   entryComponents: [
     FileEditDialogComponent,
