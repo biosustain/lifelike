@@ -7,7 +7,7 @@ import {FormRowComponent} from "../../../shared/components/form/form-row.compone
 import {PercentInputComponent} from "../../../shared/components/form/percent-input.component";
 import {SelectComponent} from "../../../shared/components/form/select.component";
 import {FileListComponent} from "../file-list.component";
-import {EnrichmentVisualisationCreateDialogComponent} from "../enrichment-visualisation-create-dialog.component";
+import {EnrichmentVisualisationCreateDialogComponent} from "../enrichment/visualisation/dialog/enrichment-visualisation-create-dialog.component";
 import {MapCreateDialogComponent} from "../../../drawing-tool/components/map-create-dialog.component";
 import {MapDeleteDialogComponent} from "../../../drawing-tool/components/map-delete-dialog.component";
 import {MapCloneDialogComponent} from "../../../drawing-tool/components/map-clone-dialog.component";

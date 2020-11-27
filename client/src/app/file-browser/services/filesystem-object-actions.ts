@@ -4,8 +4,8 @@ import { DirectoryEditDialogComponent } from '../components/directory-edit-dialo
 import { Directory } from './project-space.service';
 import { MapCreateDialogComponent } from '../../drawing-tool/components/map-create-dialog.component';
 import { KnowledgeMap } from '../../drawing-tool/services/interfaces';
-import { EnrichmentTableCreateDialogComponent } from '../components/enrichment-table-create-dialog.component';
-import { EnrichmentTableEditDialogComponent } from '../components/enrichment-table-edit-dialog.component';
+import { EnrichmentTableCreateDialogComponent } from '../components/enrichment/table/enrichment-table-create-dialog.component';
+import { EnrichmentTableEditDialogComponent } from '../components/enrichment/table/enrichment-table-edit-dialog.component';
 import { PdfFile, UploadPayload, UploadType } from '../../interfaces/pdf-files.interface';
 import { FileEditDialogComponent } from '../components/file-edit-dialog.component';
 import { MapEditDialogComponent } from '../../drawing-tool/components/map-edit-dialog.component';
@@ -32,8 +32,8 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { DefaultMap } from '../../shared/utils/collections';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { FileSelectionDialogComponent } from '../components/dialog/file-selection-dialog.component';
-import {EnrichmentVisualisationCreateDialogComponent} from '../components/enrichment-visualisation-create-dialog.component';
-import {EnrichmentVisualisationEditDialogComponent} from '../components/enrichment-visualisation-edit-dialog.component';
+import {EnrichmentVisualisationCreateDialogComponent} from '../components/enrichment/visualisation/dialog/enrichment-visualisation-create-dialog.component';
+import {EnrichmentVisualisationEditDialogComponent} from '../components/enrichment/visualisation/dialog/enrichment-visualisation-edit-dialog.component';
 
 @Injectable()
 export class FilesystemObjectActions {
