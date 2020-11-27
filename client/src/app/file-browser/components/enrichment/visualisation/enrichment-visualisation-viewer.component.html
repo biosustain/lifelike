@@ -1,0 +1,45 @@
+<div #modalContainer class="position-relative h-100">
+  <div
+    class="position-absolute w-100 h-100 d-flex flex-column"
+    style="z-index: 0; overflow: scroll"
+  >
+    <div class="module">
+      <div class="module-header">
+        <div class="module-title-bar">
+          <h1 *ngIf="sheetname" class="module-title text-truncate">
+            {{ sheetname }}
+          </h1>
+        </div>
+        <div *ngIf="organism"> Organism name: {{ organism }}</div>
+        <div *ngIf="duplicateGenes" class="warning">
+          Warning! The following gene names were found to be duplicated and were
+          removed from the table: {{ duplicateGenes }}
+        </div>
+        <button (click)="openOrderDialog()" class="btn btn-secondary" style="margin-top: 1rem">
+          Change Order of Columns
+        </button>
+      </div>
+
+      <div *ngIf="tableEntries" class="module-body">
+        <app-generic-table [entries]="tableEntries" [header]="tableHeader">
+        </app-generic-table>
+        <app-generic-table [entries]="tableEntries" [header]="tableHeader">
+        </app-generic-table>
+        <app-generic-table [entries]="tableEntries" [header]="tableHeader">
+        </app-generic-table>
+        <app-word-cloud WordCloudComponent></app-word-cloud>
+        <div class="col-12 justify-content-center">
+          <ngb-pagination
+            (pageChange)="goToPage($event)"
+            *ngIf="collectionSize"
+            [collectionSize]="collectionSize"
+            [pageSize]="pageSize"
+            [page]="currentPage"
+            style="text-align: center;"
+          ></ngb-pagination>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
