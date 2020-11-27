@@ -23,7 +23,7 @@ export class EnrichmentVisualisationCreateDialogComponent extends CommonFormDial
   form: FormGroup = new FormGroup({
     name: new FormControl('', Validators.required),
     description: new FormControl(''),
-    organism: new FormControl('', Validators.required),
+    organism: new FormControl(''),
     entitiesList: new FormControl('', Validators.required),
     domainsList: new FormArray([]),
   });
