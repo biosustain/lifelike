@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { PlacementArray } from '@ng-bootstrap/ng-bootstrap/util/positioning';
 import { NgbDropdown } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
