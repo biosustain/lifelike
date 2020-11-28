@@ -280,7 +280,8 @@ class ManualAnnotationsService:
                 new_term = annotation['text']
                 new_type = annotation['type']
                 is_case_insensitive = annotation['isCaseInsensitive']
-            return new_type == existing_type and self._terms_match(new_term, existing_term, is_case_insensitive)
+            return new_type == existing_type and \
+                self._terms_match(new_term, existing_term, is_case_insensitive)
 
     def _terms_match(self, term1, term2, is_case_insensitive):
         if is_case_insensitive:
