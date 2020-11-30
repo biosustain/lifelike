@@ -10,6 +10,7 @@ import { DirectoryObject } from '../../interfaces/projects.interface';
 import { nullCoalesce } from '../../shared/utils/types';
 import { uniqueId } from 'lodash';
 import { getObjectLabel } from '../utils/objects';
+import { CollectionModal } from '../../shared/utils/collection-modal';
 
 @Component({
   selector: 'app-file-list',
@@ -18,11 +19,12 @@ import { getObjectLabel } from '../utils/objects';
 export class ObjectListComponent {
   id = uniqueId('FileListComponent-');
 
-  @Input() appLinks: false;
-  @Input() parent: FilesystemObject;
+  @Input() appLinks = false;
+  @Input() forEditing = true;
+  @Input() objects: CollectionModal<FilesystemObject> | undefined;
   @Input() objectControls = true;
   @Input() emptyDirectoryMessage = 'There are no items in this folder.';
-  @Output() hashIdChange = new EventEmitter<string>();
+  @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
 
   constructor(readonly router: Router,
@@ -53,7 +55,7 @@ export class ObjectListComponent {
       this.snackBar.open(`Copied ${getObjectLabel(target)} to ${getObjectLabel(clone)}.`, 'Close', {
         duration: 5000,
       });
-      this.hashIdChange.next(this.parent.hashId);
+      this.refreshRequest.next();
     }, () => {
     });
   }
@@ -65,7 +67,7 @@ export class ObjectListComponent {
         'Close', {
           duration: 5000,
         });
-      this.hashIdChange.next(this.parent.hashId);
+      this.refreshRequest.next();
     }, () => {
     });
   }
@@ -75,7 +77,7 @@ export class ObjectListComponent {
       this.snackBar.open(`Deleted ${getObjectLabel(targets)}.`, 'Close', {
         duration: 5000,
       });
-      this.hashIdChange.next(this.parent.hashId);
+      this.refreshRequest.next();
     }, () => {
     });
   }
@@ -85,7 +87,7 @@ export class ObjectListComponent {
       this.snackBar.open(`${getObjectLabel(targets)} re-annotated.`, 'Close', {
         duration: 5000,
       });
-      this.hashIdChange.next(this.parent.hashId);
+      this.refreshRequest.next();
     }, () => {
     });
   }

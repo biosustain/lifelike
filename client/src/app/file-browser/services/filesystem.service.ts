@@ -14,17 +14,20 @@ import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angula
 import { ApiService } from '../../shared/services/api.service';
 import {
   BulkObjectUpdateRequest,
+  FilesystemObjectData,
   MultipleObjectDataResponse,
   ObjectBackupCreateRequest,
   ObjectCreateRequest,
   ObjectDataResponse,
   ObjectExportRequest,
+  ObjectSearchRequest,
   ObjectVersionHistoryResponse,
 } from '../schema';
 import { objectToFormData, objectToMixedFormData } from '../../shared/utils/forms';
-import { PaginatedRequestOptions } from '../../interfaces/shared.interface';
+import { PaginatedRequestOptions, ResultList } from '../../interfaces/shared.interface';
 import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
 import { serializePaginatedParams } from '../../shared/utils/params';
+import { FilesystemObjectList } from '../models/filesystem-object-list';
 
 /**
  * Endpoints to manage with the filesystem exposed to the user.
@@ -48,10 +51,24 @@ export class FilesystemService {
     });
   }
 
+  search(options: ObjectSearchRequest): Observable<FilesystemObjectList> {
+    return this.http.post<ResultList<FilesystemObjectData>>(
+      `/api/filesystem/search`,
+      options,
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(data => {
+        const list = new FilesystemObjectList();
+        list.results.replace(data.results.map(itemData => new FilesystemObject().update(itemData)));
+        return list;
+      }),
+    );
+  }
+
   put(request: ObjectCreateRequest): Observable<HttpEvent<any> & {
     bodyValue?: FilesystemObject,
   }> {
-    return this.http.put(
+    return this.http.post(
       `/api/filesystem/objects`,
       objectToFormData(request), {
         ...this.apiService.getHttpOptions(true),
