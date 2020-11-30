@@ -107,6 +107,24 @@
                     </ng-template>
                   </a>
                 </div>
+
+                <div class="d-inline-block ml-1" *ngIf="object.public"
+                     ngbTooltip="This item is public and can be viewed by any logged-in user."
+                     container="body">
+                  <i class="fa fa-fw text-icon fa-globe"></i>
+                </div>
+
+                <div class="d-inline-block ml-1" *ngIf="!object.privileges.writable && !object.privileges.commentable"
+                     ngbTooltip="You do not have permission to edit this item."
+                     container="body">
+                  <i class="fa fa-fw text-icon fa-lock"></i>
+                </div>
+
+                <div class="d-inline-block ml-1" *ngIf="!object.privileges.writable && object.privileges.commentable"
+                     ngbTooltip="You can make comments on this item, but you cannot edit it."
+                     container="body">
+                  <i class="fa fa-fw text-icon fa-comment"></i>
+                </div>
               </div>
             </label>
           </div>
@@ -208,7 +226,7 @@
   </div>
 
   <div class="d-none d-cbp-lg-block module-body-split-sidebar">
-    <app-file-info [object]="objects.lastSelection"
-                   *ngIf="objects != null && objects.selection.length"></app-file-info>
+    <app-object-info [object]="objects.lastSelection"
+                   *ngIf="objects != null && objects.selection.length"></app-object-info>
   </div>
 </div>
