@@ -28,13 +28,19 @@ from neo4japp.models.files_queries import add_user_permission_columns, FileHiera
 from neo4japp.schemas.common import PaginatedRequest
 from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponse, FileResponseSchema, \
     FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, BulkFileUpdateRequestSchema, \
-    FileListSchema, FileListRequestSchema, FileBackupCreateRequestSchema, FileVersionHistorySchema, \
+    FileListSchema, FileSearchRequestSchema, FileBackupCreateRequestSchema, FileVersionHistorySchema, \
     FileExportRequestSchema
 from neo4japp.schemas.formats.drawing_tool import validate_map_data
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import read_url
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
+
+
+# When working with files, remember that:
+# - They may be recycled
+# - They may be deleted
+# - The project that the files are in may be recycled
 
 
 class FilesystemBaseView(MethodView):
@@ -460,23 +466,8 @@ class FilesystemBaseView(MethodView):
 class FileListView(FilesystemBaseView):
     decorators = [auth.login_required]
 
-    @use_args(FileListRequestSchema)
-    @use_args(PaginatedRequest)
-    def get(self, params: dict, pagination: dict):
-        assert params['type'] == 'public'
-
-        # TODO
-        return jsonify(FileListSchema(context={
-            'user_privilege_filter': g.current_user.id,
-        }, exclude=(
-            'results.children',
-        )).dump({
-            'total': 0,
-            'results': [],
-        }))
-
     @use_args(FileCreateRequestSchema, locations=['json', 'form', 'files', 'mixed_form_json'])
-    def put(self, params: dict):
+    def post(self, params: dict):
         """Endpoint to create a new file or to clone a file into a new one."""
 
         current_user = g.current_user
@@ -690,6 +681,38 @@ class FileListView(FilesystemBaseView):
             return 'content_value', buffer, None
         else:
             return None, None, None
+
+
+class FileSearchView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(FileSearchRequestSchema)
+    @use_args(PaginatedRequest)
+    def post(self, params: dict, pagination: dict):
+        assert params['public']
+
+        # First we query for public files without getting parent directory
+        # or project information
+        query = db.session.query(Files.id) \
+            .filter(Files.recycling_date.is_(None),
+                    Files.deletion_date.is_(None),
+                    Files.public.is_(True),
+                    Files.mime_type.in_(params['mime_types'])) \
+            .order_by(*params['sort'])
+
+        result = query.paginate(pagination['page'], pagination['limit'])
+
+        # Now we get the full file information for this slice of the results
+        files = self.get_nondeleted_recycled_files(Files.id.in_(result.items))
+
+        return jsonify(FileListSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }, exclude=(
+            'results.children',
+        )).dump({
+            'total': result.total,
+            'results': files,
+        }))
 
 
 class FileDetailView(FilesystemBaseView):
@@ -954,6 +977,7 @@ class FileVersionContentView(FilesystemBaseView):
 
 # Use /content for endpoints that return binary data
 bp.add_url_rule('objects', view_func=FileListView.as_view('file_list'))
+bp.add_url_rule('search', view_func=FileSearchView.as_view('file_search'))
 bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file'))
 bp.add_url_rule('objects/<string:hash_id>/content', view_func=FileContentView.as_view('file_content'))
 bp.add_url_rule('objects/<string:hash_id>/export', view_func=FileExportView.as_view('file_export'))

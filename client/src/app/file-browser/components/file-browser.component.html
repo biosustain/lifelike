@@ -244,8 +244,8 @@
 
       <!-- Body -->
       <div class="flex-fill overflow-auto">
-        <app-file-list [parent]="result.value" [appLinks]="true"
-                       (hashIdChange)="load($event)"
+        <app-file-list [objects]="result.value.children" [appLinks]="true"
+                       (refreshRequest)="load(result.value.hashId)"
                        (objectOpen)="openObject($event)"></app-file-list>
       </div>
 

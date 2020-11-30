@@ -37,7 +37,8 @@
           </div>
 
           <div class="flex-fill overflow-auto border-top">
-            <app-file-list [parent]="result.value" (hashIdChange)="objectSelect.load($event)"
+            <app-file-list [objects]="result.value.children"
+                           (refreshRequest)="objectSelect.load(result.value.hashId)"
                            (objectOpen)="objectSelect.open($event)"
                            [objectControls]="false"
                            [emptyDirectoryMessage]="emptyDirectoryMessage"></app-file-list>

@@ -29,7 +29,7 @@ class SortField(fields.String):
             field_name = m.group(2)
             if field_name in self.value_to_column:
                 column = self.value_to_column[field_name]
-                return lambda query: query.order_by(dir_func(column))
+                return [dir_func(column)]
             else:
                 raise ValidationError(f'Unknown sort field \'{field_name}\'')
 
