@@ -1,4 +1,4 @@
-import { ResultList } from '../interfaces/shared.interface';
+import { PaginatedRequestOptions, ResultList } from '../interfaces/shared.interface';
 import { Annotation } from '../pdf-viewer/annotation-type';
 import { AnnotationMethod } from '../interfaces/annotation';
 import { OrganismAutocomplete } from '../interfaces';
@@ -42,6 +42,11 @@ interface ObjectContentValueRequest {
 export type ObjectContentSource = { contentHashId: string }
   | { contentUrl: string }
   | ObjectContentValueRequest;
+
+export interface ObjectSearchRequest extends PaginatedRequestOptions {
+  public: boolean;
+  mimeTypes: string[];
+}
 
 export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueRequest> {
   filename?: string;

@@ -1,6 +1,6 @@
 <div class="module-body-split module-body-browser-split">
   <div class="module-body-split-main">
-    <table class="table module-body-table" [class.table-selectable]="parent"
+    <table class="table module-body-table table-selectable"
            style="table-layout: fixed">
       <colgroup>
         <col>
@@ -12,11 +12,11 @@
       <thead>
       <tr>
         <th class="text-truncate">
-          <ng-container *ngIf="parent.children.multipleSelection; else singleSelectionSelectAll">
+          <ng-container *ngIf="objects != null && objects.multipleSelection; else singleSelectionSelectAll">
             <div class="custom-control custom-checkbox">
               <input type="checkbox" class="custom-control-input" id="{{ id }}-select-all"
-                     [checked]="parent.children.isAllSelected()"
-                     (change)="parent.children.toggleAll()">
+                     [checked]="objects.isAllSelected()"
+                     (change)="objects.toggleAll()">
               <label class="custom-control-label" for="{{ id }}-select-all">Name</label>
             </div>
           </ng-container>
@@ -31,17 +31,61 @@
       </tr>
       </thead>
 
+      <!-- Placeholders -->
+      <tbody *ngIf="objects == null">
+      <tr>
+        <td class="align-middle text-nowrap text-truncate">
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td class="align-middle text-nowrap text-truncate d-cbp-md-table-cell">
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td class="align-middle text-nowrap text-truncate">
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <div class="d-flex align-items-end">
+            <div ngbDropdown class="d-inline-block ml-auto">
+              <button class="btn btn-sm" ngbDropdownToggle>
+                <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
+              </button>
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="align-middle text-nowrap text-truncate">
+          <span class="placeholder-box">Loading loading loading</span>
+        </td>
+        <td class="align-middle text-nowrap text-truncate d-cbp-md-table-cell">
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td class="align-middle text-nowrap text-truncate">
+          <span class="placeholder-box">Loading loading</span>
+        </td>
+        <td>
+          <div class="d-flex align-items-end">
+            <div ngbDropdown class="d-inline-block ml-auto">
+              <button class="btn btn-sm" ngbDropdownToggle>
+                <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
+              </button>
+            </div>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+
       <!-- Results -->
-      <tbody>
-      <tr *ngFor="let object of parent.children.view; index as objectIndex" tabindex="0"
-          [class.active]="this.parent.children.isSelected(object)" draggable="true"
+      <tbody *ngIf="objects != null">
+      <tr *ngFor="let object of objects.view; index as objectIndex" tabindex="0"
+          [class.active]="this.objects.isSelected(object)" draggable="true"
           (dragstart)="dragStarted($event, object)">
         <td class="align-middle text-nowrap text-truncate"
-            (click)="parent.children.toggle(object)">
+            (click)="objects.toggle(object)">
           <div class="custom-control custom-checkbox text-truncate">
             <input type="checkbox" class="custom-control-input" id="{{ id }}-object-{{ objectIndex }}"
-                   (change)="parent.children.toggle(object)"
-                   [checked]="parent.children.isSelected(object)">
+                   (change)="objects.toggle(object)"
+                   [checked]="objects.isSelected(object)">
             <label class="custom-control-label d-block" for="{{ id }}-object-{{ objectIndex }}">
               <div class="d-flex align-items-center text-truncate"
                    popoverTitle="Description" container="body" triggers="mouseenter:mouseleave"
@@ -53,7 +97,7 @@
                 </div>
 
                 <div class="d-inline-block text-truncate">
-                  <a [appLink]="object.getCommands()" [handleClick]="appLinks"
+                  <a [appLink]="object.getCommands(forEditing)" [handleClick]="appLinks"
                      (click)="objectOpen.next(object); $event.preventDefault()">
                     <ng-container *ngIf="!object.isDirectory; else dirLabel">
                       {{ object.filename }}
@@ -69,7 +113,7 @@
         </td>
 
         <td class="align-middle text-nowrap text-truncate d-none d-cbp-sm-table-cell"
-            (click)="parent.children.toggle(object)">
+            (click)="objects.toggle(object)">
           <div popoverTitle="Annotation Status" [ngbPopover]="object.annotationsTooltipContent"
                container="body" class="text-truncate"
                placement="right" triggers="mouseenter:mouseleave"
@@ -84,13 +128,13 @@
         </td>
 
         <td class="align-middle text-nowrap text-truncate d-none d-cbp-md-table-cell"
-            (click)="parent.children.toggle(object)">
+            (click)="objects.toggle(object)">
           <div class="text-truncate" *ngIf="object.user">
             {{ getDateShown(object) | date: 'shortDate' }}
           </div>
         </td>
 
-        <td class="align-middle text-nowrap text-truncate" (click)="parent.children.toggle(object)">
+        <td class="align-middle text-nowrap text-truncate" (click)="objects.toggle(object)">
           <div *ngIf="object.user" class="text-truncate">
             {{ object.user.username }}
           </div>
@@ -106,12 +150,14 @@
                 <button ngbDropdownItem (click)="this.objectOpen.next(object)" [disabled]="!object.isOpenable">
                   Open
                 </button>
-                <button ngbDropdownItem (click)="openEditDialog(object)">
-                  Edit details...
-                </button>
-                <button ngbDropdownItem (click)="reannotate([object])" *ngIf="object.isAnnotatable">
-                  Re-annotate
-                </button>
+                <ng-container *ngIf="object.privileges.writable">
+                  <button ngbDropdownItem (click)="openEditDialog(object)">
+                    Edit details...
+                  </button>
+                  <button ngbDropdownItem (click)="reannotate([object])" *ngIf="object.isAnnotatable">
+                    Re-annotate
+                  </button>
+                </ng-container>
                 <button ngbDropdownItem (click)="openVersionHistoryDialog(object)" *ngIf="object.isVersioned">
                   History...
                 </button>
@@ -129,17 +175,22 @@
                   </button>
                 </ng-container>
 
-                <ng-container *ngIf="object.isCloneable || object.isMovable || object.isDeletable">
+                <ng-container
+                  *ngIf="object.isCloneable || object.privileges.writable && (object.isMovable || object.isDeletable)">
                   <div class="dropdown-divider"></div>
                   <button ngbDropdownItem (click)="openCloneDialog(object)" *ngIf="object.isCloneable">
                     Copy to...
                   </button>
-                  <button ngbDropdownItem (click)="openMoveDialog([object])" [disabled]="!object.isMovable">
-                    Move to...
-                  </button>
-                  <button ngbDropdownItem (click)="openDeleteDialog([object])" [disabled]="!object.isDeletable">
-                    Delete...
-                  </button>
+                  <ng-container *ngIf="object.privileges.writable && forEditing">
+                    <button ngbDropdownItem (click)="openMoveDialog([object])" [disabled]="!object.isMovable">
+                      Move to...
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="object.privileges.writable">
+                    <button ngbDropdownItem (click)="openDeleteDialog([object])" [disabled]="!object.isDeletable">
+                      Delete...
+                    </button>
+                  </ng-container>
                 </ng-container>
               </div>
             </div>
@@ -149,15 +200,15 @@
       </tbody>
     </table>
 
-    <div class="module-body">
-      <div *ngIf="parent.children.viewLength === 0" class="text-center">
+    <div class="module-body" *ngIf="objects != null">
+      <div *ngIf="objects.viewLength === 0" class="text-center">
         {{ emptyDirectoryMessage }}
       </div>
     </div>
   </div>
 
   <div class="d-none d-cbp-lg-block module-body-split-sidebar">
-    <app-file-info [object]="parent.children.lastSelection"
-                   *ngIf="parent.children.selection.length"></app-file-info>
+    <app-file-info [object]="objects.lastSelection"
+                   *ngIf="objects != null && objects.selection.length"></app-file-info>
   </div>
 </div>

@@ -132,11 +132,16 @@ class BulkFileUpdateRequestSchema(CamelCaseSchema):
     content_value = fields.Field(required=False)
 
 
-class FileListRequestSchema(CamelCaseSchema):
-    type = fields.String(required=True,
-                         validate=marshmallow.validate.OneOf(['public']))
+class FileSearchRequestSchema(CamelCaseSchema):
+    public = fields.Boolean(required=True, validate=marshmallow.validate.OneOf([True]))
+    mime_types = fields.List(fields.String(validate=marshmallow.validate.OneOf([
+        'vnd.lifelike.document/map',
+        'application/pdf',
+    ])), required=True, validate=marshmallow.validate.Length(min=1))
     sort = SortField(columns={
-        'filename': Files.filename
+        'filename': Files.filename,
+        'creationDate': Files.creation_date,
+        'modificationDate': Files.modified_date,
     })
 
 
