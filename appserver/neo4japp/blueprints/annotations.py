@@ -1,3 +1,6 @@
+import csv
+import hashlib
+import io
 from datetime import datetime
 from typing import Optional
 
@@ -11,14 +14,14 @@ from flask import (
     jsonify,
 )
 from flask_apispec import use_kwargs
+from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.blueprints.permissions import (
-    requires_role,
-    requires_project_permission
+    requires_role
 )
 from neo4japp.constants import TIMEZONE
 from neo4japp.data_transfer_objects import GlobalAnnotationData
@@ -30,16 +33,13 @@ from neo4japp.database import (
     get_manual_annotations_service,
 )
 from neo4japp.exceptions import (
-    AnnotationError,
-    RecordNotFoundException
+    AnnotationError
 )
 from neo4japp.models import (
-    AccessActionType,
     AppUser,
     Files,
     FileContent,
     GlobalList,
-    Projects,
     FallbackOrganism
 )
 from neo4japp.request_schemas.annotations import GlobalAnnotationsDeleteSchema
@@ -54,6 +54,7 @@ from .filesystem import bp as filesystem_bp
 from ..schemas.annotations import FileAnnotationsResponseSchema, AnnotationGenerationRequestSchema, \
     MultipleAnnotationGenerationResponseSchema
 from ..schemas.filesystem import BulkFileRequestSchema
+from ..utils.http import make_cacheable_file_response
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
@@ -95,6 +96,113 @@ class FileAnnotationsView(FilesystemBaseView):
         }))
 
 
+class FileAnnotationCountsView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    def get_rows(self, files):
+        manual_annotations_service = get_manual_annotations_service()
+
+        yield [
+            'entity_id',
+            'type',
+            'text',
+            'count',
+        ]
+
+        counts = {}
+
+        for file in files:
+            combined_annotations = manual_annotations_service.get_combined_annotations(file)
+            for annotation in combined_annotations:
+                key = annotation['meta']['id']
+                if key not in counts:
+                    counts[key] = {
+                        'meta': annotation['meta'],
+                        'count': 1
+                    }
+                else:
+                    counts[key]['count'] += 1
+
+        count_keys = sorted(
+            counts,
+            key=lambda key: counts[key]['count'],
+            reverse=True
+        )
+
+        for key in count_keys:
+            meta = counts[key]['meta']
+            yield [
+                meta['id'],
+                meta['type'],
+                meta['allText'],
+                counts[key]
+            ]
+
+    def post(self, hash_id: str):
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+        files = self.get_nondeleted_recycled_children(and_(Files.id == file.id,
+                                                           Files.mime_type == 'application.pdf'),
+                                                      lazy_load_content=True)
+
+        buffer = io.StringIO()
+        writer = csv.writer(buffer, delimiter="\t", quotechar='"')
+        for row in self.get_rows(files):
+            writer.writerow(*row)
+
+        result = buffer.getvalue().encode('utf-8')
+
+        return make_cacheable_file_response(
+            request,
+            result,
+            etag=hashlib.sha256(result).hexdigest(),
+            filename=f'{file.filename} - Annotations.tsv',
+            mime_type='text/tsv'
+        )
+
+
+class FileAnnotationGeneCountsView(FileAnnotationCountsView):
+    def get_rows(self, files):
+        manual_annotations_service = get_manual_annotations_service()
+        annotation_neo4j_service = get_annotation_neo4j()
+
+        yield [
+            'gene_id',
+            'gene_name',
+            'organism_id',
+            'organism_name',
+            'gene_annotation_count'
+        ]
+
+        gene_ids = {}
+
+        for file in files:
+            combined_annotations = manual_annotations_service.get_combined_annotations(file)
+            for annotation in combined_annotations:
+                if annotation['meta']['type'] == EntityType.GENE.value:
+                    gene_id = annotation['meta']['id']
+                    if gene_ids.get(gene_id, None) is not None:
+                        gene_ids[gene_id] += 1
+                    else:
+                        gene_ids[gene_id] = 1
+
+        gene_organism_pairs = annotation_neo4j_service.get_organisms_from_gene_ids(
+            gene_ids=list(gene_ids.keys())
+        )
+        sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']], reverse=True)  # noqa
+
+        for pair in sorted_pairs:
+            yield [
+                pair['gene_id'],
+                pair['gene_name'],
+                pair['taxonomy_id'],
+                pair['species_name'],
+                gene_ids[pair['gene_id']],
+            ]
+
+
 class FileAnnotationsGenerationView(FilesystemBaseView):
     decorators = [auth.login_required]
 
@@ -113,7 +221,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         if targets.get('recursive'):
             self.check_recursive_selection_permission(current_user)
             files = self.get_nondeleted_recycled_children(Files.id.in_([file.id for file in files]),
-                                                      lazy_load_content=True)
+                                                          lazy_load_content=True)
 
         organism = None
         method = params.get('method', AnnotationMethod.RULES)
@@ -187,47 +295,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             update['fallback_organism_id'] = organism.id
 
         return update
-
-
-filesystem_bp.add_url_rule('objects/<string:hash_id>/annotations',
-                           view_func=FileAnnotationsView.as_view('file_annotations'))
-filesystem_bp.add_url_rule('annotations/generate',
-                           view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'))
-
-
-@bp.route('/<string:project_name>', methods=['GET'])
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_all_annotations_from_project(project_name):
-    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if project is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-    user = g.current_user
-    yield user, project
-    annotation_service = get_manual_annotations_service()
-    combined_annotations = annotation_service.get_combined_annotations_in_project(project.id)
-    distinct_annotations = {}
-    for annotation in combined_annotations:
-        annotation_data = (
-            annotation['meta']['id'],
-            annotation['meta']['type'],
-            annotation['meta']['allText'],
-        )
-        if distinct_annotations.get(annotation_data, None) is not None:
-            distinct_annotations[annotation_data] += 1
-        else:
-            distinct_annotations[annotation_data] = 1
-    sorted_distintct_annotations = sorted(
-        distinct_annotations,
-        key=lambda annotation: distinct_annotations[annotation],
-        reverse=True,
-    )
-    result = 'entity_id\ttype\ttext\tcount\n'
-    for annotation_data in sorted_distintct_annotations:
-        result += f"{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t{distinct_annotations[annotation_data]}\n"  # noqa
-    response = make_response(result)
-    response.headers['Content-Type'] = 'text/tsv'
-    yield response
 
 
 @bp.route('/global-list/inclusions')
@@ -434,90 +501,11 @@ def delete_global_annotations(pids):
     yield jsonify(dict(result='success'))
 
 
-@bp.route('/<string:project_name>/<string:file_id>', methods=['GET'])
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_all_annotations_from_file(project_name, file_id):
-    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if project is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    user = g.current_user
-
-    # yield to requires_project_permission
-    yield user, project
-
-    manual_annotations_service = get_manual_annotations_service()
-    combined_annotations = manual_annotations_service.get_combined_annotations(project.id, file_id)
-
-    distinct_annotations = {}
-    for annotation in combined_annotations:
-        annotation_data = (
-            annotation['meta']['id'],
-            annotation['meta']['type'],
-            annotation['meta']['allText'],
-        )
-
-        if distinct_annotations.get(annotation_data, None) is not None:
-            distinct_annotations[annotation_data] += 1
-        else:
-            distinct_annotations[annotation_data] = 1
-
-    sorted_distinct_annotations = sorted(
-        distinct_annotations,
-        key=lambda annotation: distinct_annotations[annotation],
-        reverse=True
-    )
-
-    result = 'entity_id\ttype\ttext\tcount\n'
-    for annotation_data in sorted_distinct_annotations:
-        result += f"{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t{distinct_annotations[annotation_data]}\n"  # noqa
-
-    response = make_response(result)
-    response.headers['Content-Type'] = 'text/tsv'
-
-    yield response
-
-
-@bp.route('/<string:project_name>/<string:file_id>/genes')
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_gene_list_from_file(project_name, file_id):
-    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if project is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    user = g.current_user
-
-    # yield to requires_project_permission
-    yield user, project
-
-    file = Files.query.filter_by(file_id=file_id, project=project.id).one_or_none()
-    if not file:
-        raise RecordNotFoundException('File does not exist')
-
-    manual_annotations_service = get_manual_annotations_service()
-    combined_annotations = manual_annotations_service.get_combined_annotations(project.id, file_id)
-    gene_ids = {}
-    for annotation in combined_annotations:
-        if annotation['meta']['type'] == EntityType.GENE.value:
-            gene_id = annotation['meta']['id']
-            if gene_ids.get(gene_id, None) is not None:
-                gene_ids[gene_id] += 1
-            else:
-                gene_ids[gene_id] = 1
-
-    annotation_neo4j_service = get_annotation_neo4j()
-    gene_organism_pairs = annotation_neo4j_service.get_organisms_from_gene_ids(
-        gene_ids=list(gene_ids.keys())
-    )
-    sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']], reverse=True)  # noqa
-
-    result = 'gene_id\tgene_name\torganism_id\torganism_name\tgene_annotation_count\n'
-    for pair in sorted_pairs:
-        result += f"{pair['gene_id']}\t{pair['gene_name']}\t{pair['taxonomy_id']}\t{pair['species_name']}\t{gene_ids[pair['gene_id']]}\n"  # noqa
-
-    response = make_response(result)
-    response.headers['Content-Type'] = 'text/tsv'
-
-    yield response
+filesystem_bp.add_url_rule('objects/<string:hash_id>/annotations',
+                           view_func=FileAnnotationsView.as_view('file_annotations'))
+filesystem_bp.add_url_rule('objects/<string:hash_id>/annotations/counts',
+                           view_func=FileAnnotationCountsView.as_view('file_annotation_counts'))
+filesystem_bp.add_url_rule('objects/<string:hash_id>/annotations/gene-counts',
+                           view_func=FileAnnotationGeneCountsView.as_view('file_annotation_gene_counts'))
+filesystem_bp.add_url_rule('annotations/generate',
+                           view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'))
