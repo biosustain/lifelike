@@ -9,7 +9,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TableHeader, TableCell, TableLink } from 'app/shared/components/table/generic-table.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import {
   EnrichmentTableService,
   NCBINode,
@@ -23,6 +23,7 @@ import { ModuleProperties } from 'app/shared/modules';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
 import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
+import {flatMap, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -136,12 +137,71 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       this.pageSize = 10;
       this.collectionSize = this.importGenes.length;
       this.matchNCBINodes(this.currentPage);
+      this.download();
     });
     this.loadTask.update();
   }
 
   ngOnDestroy() {
     this.loadTaskSubscription.unsubscribe();
+  }
+
+  download() {
+    this.worksheetViewerService
+    .matchNCBINodes(this.currentGenes, this.taxID)
+    .pipe(
+      flatMap(wrapper => forkJoin(
+        [wrapper.map((wrapper) => wrapper.s)],
+        [wrapper.map((wrapper) => wrapper.x)],
+        [wrapper.map((wrapper) => wrapper.link)],
+        this.worksheetViewerService.getNCBIEnrichmentDomains(
+          wrapper.map((wrapper) => wrapper.neo4jID), this.taxID)
+      )),
+      map(([synonyms, ncbiNodes, ncbiLinks, domains]) => {
+        const tableEntries = domains.map((wrapper) =>
+          this.processEnrichmentNodeArray(wrapper)
+        );
+        for (let i = 0; i < ncbiNodes.length; i++) {
+          tableEntries[i].unshift({
+            text: ncbiNodes[i].full_name,
+            singleLink: {
+              link: ncbiLinks[i],
+              linkText: 'NCBI Link',
+            },
+          });
+          tableEntries[i].unshift({ text: ncbiNodes[i].name });
+          tableEntries[i].unshift({ text: synonyms[i].name });
+        }
+        const geneNames = synonyms.map((node) => node.name);
+        const unmatchedGenes = this.importGenes.filter(
+          (gene) => !geneNames.includes(gene)
+        );
+        unmatchedGenes.forEach((gene) => {
+          const cell: TableCell[] = [];
+          cell.push({ text: gene, highlight: true });
+          cell.push({ text: 'No match found.', highlight: true });
+          const colNum = Math.max.apply(
+            null,
+            this.tableHeader.map((x) =>
+              x.reduce((a, b) => a + parseInt(b.span, 10), 0)
+            )
+          );
+          for (let i = 0; i < colNum - 2; i++) {
+            cell.push({ text: '', highlight: true });
+          }
+          tableEntries.push(cell);
+        });
+        const stringEntries = this.convertEntriesToString(tableEntries);
+        return tableEntries;
+      })
+    ).subscribe(x => console.log(x));
+  }
+
+  convertEntriesToString(entries: TableCell[][]): string[][] {
+    const result = [];
+    this.tableHeader.forEach(row => result.push(
+      row));
+    return result;
   }
 
   openOrderDialog(): Promise<any> {
