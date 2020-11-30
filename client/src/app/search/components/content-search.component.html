@@ -131,9 +131,9 @@
       </div>
       <div class="module-body-split-sidebar">
         <ng-container *ngIf="results.selection.length">
-          <app-file-info (highlightClick)="highlightClicked(results.selection[0].item, $event)"
+          <app-object-info (highlightClick)="highlightClicked(results.selection[0].item, $event)"
                          (highlightDisplayLimitChange)="highlightDisplayLimitChanged(results.selection[0].item, $event)"
-                         [object]="results.selection[0].item" [highlightTerms]="resultQuery.phrases"></app-file-info>
+                         [object]="results.selection[0].item" [highlightTerms]="resultQuery.phrases"></app-object-info>
         </ng-container>
       </div>
     </div>

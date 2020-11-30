@@ -20,6 +20,9 @@
     <hr class="my-3">
 
     <ul class="list-unstyled mt-3 mb-0">
+      <li *ngIf="object.public">
+        <i class="fa fa-fw text-icon fa-globe"></i> Public
+      </li>
       <li *ngIf="object.annotationDate">
         <strong>Annotated:</strong> {{ object.annotationDate | date: 'short' }}
       </li>

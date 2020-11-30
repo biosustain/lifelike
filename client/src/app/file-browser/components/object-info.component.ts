@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
 
 @Component({
-  selector: 'app-file-info',
+  selector: 'app-object-info',
   templateUrl: './object-info.component.html',
 })
 export class ObjectInfoComponent implements OnInit {
