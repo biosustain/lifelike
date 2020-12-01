@@ -327,14 +327,6 @@ def get_lmdbs_dates():
     return {row.name: row.date for row in rows}
 
 
-@newbp.route('/<string:project_name>/files/<string:file_id>/associated-maps', methods=['GET'])
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_associated_maps(file_id: str, project_name: str):
-    pass
-    # TODO
-
-
 @newbp.route('/<string:project_name>/files/<string:file_id>/fallback-organism', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)

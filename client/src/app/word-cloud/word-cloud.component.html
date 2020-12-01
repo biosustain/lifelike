@@ -12,10 +12,10 @@
   </app-module-error>
 
   <div *ngIf="status.resultsShown" class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
-    <div class="module">
-      <div class="module-header">
+    <div class="module-section w-100 h-100">
+      <div class="module-section-header mb-2">
         <div class="module-title-bar">
-          <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">{{ windowTitle }}</h1>
+          <h2 class="module-section-header-title m-0">{{ title }}</h2>
           <div class="btn-group ml-auto d-flex align-items-stretch" role="group">
             <button class="btn btn-secondary text-nowrap"
                     ngbTooltip="Copy Cloud to Clipboard"
@@ -52,7 +52,7 @@
         <as-split-area [order]="0">
           <ng-container *ngIf="annotationData.length === 0">
             <ngb-alert [dismissible]="false">
-              <strong>NOTICE:</strong> No annotations were found within the project.
+              No entities (annotations) found.
             </ngb-alert>
           </ng-container>
           <div [id]="id + 'cloud-wrapper'" class="h-100 w-100 overflow-hidden"></div>

@@ -76,10 +76,10 @@
 
       <!-- Body -->
       <div class="flex-fill overflow-auto">
-        <app-file-list [objects]="status.placeholdersShown ? null : list.results" [appLinks]="true"
+        <app-object-list [objects]="status.placeholdersShown ? null : list.results" [appLinks]="true"
                        [forEditing]="false"
                        (refreshRequest)="refresh()"
-                       (objectOpen)="openObject($event)"></app-file-list>
+                       (objectOpen)="openObject($event)"></app-object-list>
       </div>
     </div>
   </ng-template>

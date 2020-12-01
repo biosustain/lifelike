@@ -126,6 +126,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return this.isFile;
   }
 
+  get isNavigable() {
+    return this.isDirectory || this.mimeType === PDF_MIMETYPE;
+  }
+
   /**
    * @deprecated
    */
@@ -316,16 +320,17 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   getCommands(forEditing = true): any[] {
+    const projectName = this.project ? this.project.name : 'default';
     switch (this.mimeType) {
       case DIRECTORY_MIMETYPE:
         // TODO: Convert to hash ID
-        return ['/projects', this.project.name, 'folders', this.hashId];
+        return ['/projects', projectName, 'folders', this.hashId];
       case ENRICHMENT_TABLE_MIMETYPE:
-        return ['/projects', this.project.name, 'enrichment-table', this.hashId];
+        return ['/projects', projectName, 'enrichment-table', this.hashId];
       case PDF_MIMETYPE:
-        return ['/projects', this.project.name, 'files', this.hashId];
+        return ['/projects', projectName, 'files', this.hashId];
       case MAP_MIMETYPE:
-        return ['/projects', this.project.name, 'maps', this.hashId,
+        return ['/projects', projectName, 'maps', this.hashId,
           ...(forEditing ? ['edit'] : [])];
       default:
         throw new Error(`unknown directory object type: ${this.mimeType}`);
@@ -423,16 +428,26 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       this.project = data.project != null ? new ProjectImpl().update(data.project) : null;
     }
     if ('parent' in data) {
-      this.parent = data.parent != null ? new FilesystemObject().update(data.parent) : null;
+      if (data.parent != null) {
+        const parent = new FilesystemObject();
+        if (this.project != null) {
+          parent.project = this.project;
+        }
+        this.parent = parent.update(data.parent);
+      } else {
+        this.parent = null;
+      }
     }
     if ('children' in data) {
       if (data.children != null) {
         this.children.replace(data.children.map(
           itemData => {
-            const child = new FilesystemObject().update(itemData);
+            const child = new FilesystemObject();
             child.parent = this;
-            child.project = this.project;
-            return child;
+            if (this.project != null) {
+              child.project = this.project;
+            }
+            return child.update(itemData);
           }));
       } else {
         this.children.replace([]);
@@ -447,6 +462,14 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     } else {
       return [];
     }
+  }
+
+  get ***ARANGO_USERNAME***(): FilesystemObject {
+    let ***ARANGO_USERNAME***: FilesystemObject = this;
+    while (***ARANGO_USERNAME***.parent != null) {
+      ***ARANGO_USERNAME*** = ***ARANGO_USERNAME***.parent;
+    }
+    return ***ARANGO_USERNAME***;
   }
 }
 

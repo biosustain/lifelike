@@ -161,15 +161,8 @@
             <li class="breadcrumb-item">
               <a appLink="/projects">File Browser</a>
             </li>
-
-            <li *ngFor="let element of result.value.path; index as i" class="breadcrumb-item"
-                [class.active]="i === result.value.path.length - 1">
-              <ng-container *ngIf="i !== result.value.path.length - 1">
-                <a
-                    [appLink]="i === 0 ? ['/projects', result.value.locator.projectName] : ['/projects', result.value.locator.projectName, 'folders', element.id]">
-                  {{ i === 0 ? result.value.locator.projectName : element.name }}
-                </a>
-              </ng-container>
+            <li class="breadcrumb-item" *ngIf="result.value.parent">
+              <app-object-path [object]="result.value.parent"></app-object-path>
             </li>
           </ol>
         </div>
@@ -196,7 +189,8 @@
                 <div ngbDropdownMenu>
                   <button ngbDropdownItem (click)="openMapCreateDialog(result.value)">New Map...</button>
                   <button ngbDropdownItem (click)="openDirectoryCreateDialog(result.value)">New Folder...</button>
-                  <button ngbDropdownItem (click)="openEnrichmentTableCreateDialog(result.value)">New Enrichment Table...
+                  <button ngbDropdownItem (click)="openEnrichmentTableCreateDialog(result.value)">New Enrichment
+                    Table...
                   </button>
                   <div class="dropdown-divider"></div>
                   <button ngbDropdownItem (click)="openUploadDialog(result.value)">Upload File...</button>
@@ -208,7 +202,8 @@
                 <i class="fa fa-fw fa-upload"></i> Upload
               </button>
 
-              <div ngbDropdown class="d-inline-block ml-2" container="body" *ngIf="result.value.children.selection.length">
+              <div ngbDropdown class="d-inline-block ml-2" container="body"
+                   *ngIf="result.value.children.selection.length">
                 <button class="btn btn-secondary" ngbDropdownToggle>
                   Actions
                 </button>
@@ -220,10 +215,17 @@
                 </div>
               </div>
 
-              <button #entityCloudBtn class="btn btn-secondary ml-4" ngbTooltip="Project Entity Cloud"
-                      (click)="openEntityCloudPane(result.value); entityCloudBtn.blur()">
-                <i class="fa fa-fw fa-cloud"></i>
-              </button>
+              <div ngbDropdown class="d-inline-block ml-2" container="body" ngbTooltip="Entity Cloud">
+                <button class="btn btn-secondary" ngbDropdownToggle>
+                  <i class="fa fa-fw fa-cloud"></i>
+                </button>
+                <div ngbDropdownMenu>
+                  <button ngbDropdownItem [appLink]="['/file-navigator', result.value.project.name, result.value.***ARANGO_USERNAME***.hashId]"
+                          [newTab]="true" [sideBySide]="true">For entire project...</button>
+                  <button ngbDropdownItem [appLink]="['/file-navigator', result.value.project.name, result.value.hashId]"
+                          [newTab]="true" [sideBySide]="true" *ngIf="result.value !== result.value.***ARANGO_USERNAME***">For this folder...</button>
+                </div>
+              </div>
             </div>
 
             <div class="ml-auto d-flex flex-grow-1">
@@ -244,9 +246,9 @@
 
       <!-- Body -->
       <div class="flex-fill overflow-auto">
-        <app-file-list [objects]="result.value.children" [appLinks]="true"
-                       (refreshRequest)="load(result.value.hashId)"
-                       (objectOpen)="openObject($event)"></app-file-list>
+        <app-object-list [objects]="result.value.children" [appLinks]="true"
+                         (refreshRequest)="load(result.value.hashId)"
+                         (objectOpen)="openObject($event)"></app-object-list>
       </div>
 
     </div>

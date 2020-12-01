@@ -141,7 +141,8 @@ class FilesystemBaseView(MethodView):
 
         return files
 
-    def get_nondeleted_recycled_children(self, filter, lazy_load_content=False) -> List[Files]:
+    def get_nondeleted_recycled_children(self, filter, children_filter=None,
+                                         lazy_load_content=False) -> List[Files]:
         """
         Retrieve all files that match the provided filter, including the children of those
         files, even if those children do not match the filter. The files returned by
@@ -166,6 +167,9 @@ class FilesystemBaseView(MethodView):
                      joinedload(Files.user),
                      joinedload(Files.fallback_organism)) \
             .order_by(q_hierarchy.c.level)
+
+        if children_filter:
+            query = query.filter(children_filter)
 
         if lazy_load_content:
             query = query.options(lazyload(Files.content))
@@ -689,28 +693,35 @@ class FileSearchView(FilesystemBaseView):
     @use_args(FileSearchRequestSchema)
     @use_args(PaginatedRequest)
     def post(self, params: dict, pagination: dict):
-        assert params['public']
+        if params['type'] == 'public':
+            # First we query for public files without getting parent directory
+            # or project information
+            query = db.session.query(Files.id) \
+                .filter(Files.recycling_date.is_(None),
+                        Files.deletion_date.is_(None),
+                        Files.public.is_(True),
+                        Files.mime_type.in_(params['mime_types'])) \
+                .order_by(*params['sort'])
 
-        # First we query for public files without getting parent directory
-        # or project information
-        query = db.session.query(Files.id) \
-            .filter(Files.recycling_date.is_(None),
-                    Files.deletion_date.is_(None),
-                    Files.public.is_(True),
-                    Files.mime_type.in_(params['mime_types'])) \
-            .order_by(*params['sort'])
+            result = query.paginate(pagination['page'], pagination['limit'])
 
-        result = query.paginate(pagination['page'], pagination['limit'])
+            # Now we get the full file information for this slice of the results
+            files = self.get_nondeleted_recycled_files(Files.id.in_(result.items))
+            total = result.total
 
-        # Now we get the full file information for this slice of the results
-        files = self.get_nondeleted_recycled_files(Files.id.in_(result.items))
+        elif params['type'] == 'linked':
+            total = 0
+            files = []
+
+        else:
+            raise NotImplementedError()
 
         return jsonify(FileListSchema(context={
             'user_privilege_filter': g.current_user.id,
         }, exclude=(
             'results.children',
         )).dump({
-            'total': result.total,
+            'total': total,
             'results': files,
         }))
 

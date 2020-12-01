@@ -133,7 +133,11 @@ class BulkFileUpdateRequestSchema(CamelCaseSchema):
 
 
 class FileSearchRequestSchema(CamelCaseSchema):
-    public = fields.Boolean(required=True, validate=marshmallow.validate.OneOf([True]))
+    type = fields.String(required=True, validate=marshmallow.validate.OneOf([
+        'public',
+        'linked',
+    ]))
+    linked_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
     mime_types = fields.List(fields.String(validate=marshmallow.validate.OneOf([
         'vnd.***ARANGO_DB_NAME***.document/map',
         'application/pdf',
@@ -143,6 +147,13 @@ class FileSearchRequestSchema(CamelCaseSchema):
         'creationDate': Files.creation_date,
         'modificationDate': Files.modified_date,
     })
+
+    @validates_schema
+    def validate_options(self, data, **kwargs):
+        if data['type'] == 'linked':
+            if data.get('linked_hash_id') is None:
+                raise ValidationError("A linkedHashId is required.", 'linked_hash_id')
+
 
 
 class FileUpdateRequestSchema(BulkFileUpdateRequestSchema):
