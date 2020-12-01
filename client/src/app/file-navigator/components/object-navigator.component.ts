@@ -8,7 +8,7 @@ import { FilesystemService } from '../../file-browser/services/filesystem.servic
 import { WordCloudAnnotationFilterEntity } from '../../interfaces/annotation-filter.interface';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { escapeRegExp } from 'lodash';
-import { FileViewComponent } from '../../file-browser/components/file-view.component';
+import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
 import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 
 @Component({

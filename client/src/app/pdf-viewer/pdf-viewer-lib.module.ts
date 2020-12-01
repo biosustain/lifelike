@@ -16,9 +16,15 @@ import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { SharedModule } from '../shared/shared.module';
+import { FileViewComponent } from './components/file-view.component';
 
 @NgModule({
-  declarations: [PdfViewerLibComponent, AnnotationEditDialogComponent, AnnotationExcludeDialogComponent],
+  declarations: [
+    PdfViewerLibComponent,
+    AnnotationEditDialogComponent,
+    AnnotationExcludeDialogComponent,
+    FileViewComponent,
+  ],
   imports: [
     PdfViewerModule,
     CommonModule,
@@ -36,8 +42,14 @@ import { SharedModule } from '../shared/shared.module';
     MatRadioModule,
     SharedModule,
   ],
-  entryComponents: [AnnotationEditDialogComponent, AnnotationExcludeDialogComponent],
-  exports: [PdfViewerLibComponent]
+  entryComponents: [
+    FileViewComponent,
+    AnnotationEditDialogComponent,
+    AnnotationExcludeDialogComponent
+  ],
+  exports: [
+    FileViewComponent,
+  ],
 })
 export class PdfViewerLibModule {
 }
