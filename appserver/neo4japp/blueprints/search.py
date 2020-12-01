@@ -208,6 +208,7 @@ def search(q, types, limit, page):
             # default for now.
             # 'fragment_size': FRAGMENT_SIZE,
             'fragment_size': 0,
+            'order': 'score',
             'pre_tags': ['@@@@$'],
             'post_tags': ['@@@@/$'],
             'number_of_fragments': 200,
