@@ -137,7 +137,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       this.pageSize = 10;
       this.collectionSize = this.importGenes.length;
       this.matchNCBINodes(this.currentPage);
-      this.download();
     });
     this.loadTask.update();
   }
@@ -146,16 +145,16 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.loadTaskSubscription.unsubscribe();
   }
 
-  download() {
-    this.worksheetViewerService
+  loadAllEntries(): Promise<TableCell[][]> {
+    return this.worksheetViewerService
     .matchNCBINodes(this.currentGenes, this.taxID)
     .pipe(
-      flatMap(wrapper => forkJoin(
-        [wrapper.map((wrapper) => wrapper.s)],
-        [wrapper.map((wrapper) => wrapper.x)],
-        [wrapper.map((wrapper) => wrapper.link)],
+      flatMap(matched => forkJoin(
+        [matched.map((wrapper) => wrapper.s)],
+        [matched.map((wrapper) => wrapper.x)],
+        [matched.map((wrapper) => wrapper.link)],
         this.worksheetViewerService.getNCBIEnrichmentDomains(
-          wrapper.map((wrapper) => wrapper.neo4jID), this.taxID)
+          matched.map((wrapper) => wrapper.neo4jID), this.taxID)
       )),
       map(([synonyms, ncbiNodes, ncbiLinks, domains]) => {
         const tableEntries = domains.map((wrapper) =>
@@ -191,16 +190,82 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           }
           tableEntries.push(cell);
         });
-        const stringEntries = this.convertEntriesToString(tableEntries);
         return tableEntries;
       })
-    ).subscribe(x => console.log(x));
+    ).toPromise();
+  }
+
+  processRowCSV(row) {
+    let finalVal = '';
+    for (let j = 0; j < row.length; j++) {
+        let innerValue = row[j] === null ? '' : row[j].toString();
+        if (row[j] instanceof Date) {
+            innerValue = row[j].toLocaleString();
+        }
+        let result = innerValue.replace(/"/g, '""');
+        if (result.search(/("|,|\n)/g) >= 0) {
+            result = '"' + result + '"';
+        }
+        if (j > 0) {
+            finalVal += ',';
+        }
+        finalVal += result;
+    }
+    return finalVal + '\n';
+  }
+
+  downloadAsCSV() {
+    this.loadAllEntries().then(entries => {
+      const stringEntries = this.convertEntriesToString(entries);
+      let csvFile = '';
+      stringEntries.forEach(entry => csvFile += this.processRowCSV(entry));
+      const blob = new Blob([csvFile], { type: 'text/csv;charset=utf-8;' });
+      if (navigator.msSaveBlob) { // IE 10+
+          navigator.msSaveBlob(blob, this.sheetname);
+      } else {
+          const link = document.createElement('a');
+          if (link.download !== undefined) { // feature detection
+              // Browsers that support HTML5 download attribute
+              const url = URL.createObjectURL(blob);
+              link.setAttribute('href', url);
+              link.setAttribute('download', this.sheetname);
+              link.style.visibility = 'hidden';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+          }
+      }
+      });
   }
 
   convertEntriesToString(entries: TableCell[][]): string[][] {
     const result = [];
-    this.tableHeader.forEach(row => result.push(
-      row));
+    this.tableHeader.forEach(row => {
+      const rowString = [];
+      row.forEach(header => {
+        rowString.push(header.name);
+        if (header.span !== '1') {
+          for (let i = 1; i < parseInt(header.span, 10); i++) {
+            rowString.push('');
+          }
+        }
+      });
+      result.push(rowString);
+    });
+    entries.forEach(row => {
+      const rowString = [];
+      row.forEach(entry => {
+        let entryString = entry.text;
+        if (typeof entry.singleLink !== 'undefined') {
+          entryString += '\n' + entry.singleLink.link;
+        }
+        if (typeof entry.multiLink !== 'undefined') {
+          entry.multiLink.forEach(link => entryString += '\n' + link.link);
+        }
+        rowString.push(entryString);
+      });
+      result.push(rowString);
+    });
     return result;
   }
 
