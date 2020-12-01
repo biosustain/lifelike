@@ -108,6 +108,8 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
   }
 
   openObject(target: FilesystemObject) {
-    this.workspaceManager.navigate(target.getCommands(false));
+    this.workspaceManager.navigate(target.getCommands(false), {
+      newTab: true,
+    });
   }
 }
