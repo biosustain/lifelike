@@ -3,15 +3,14 @@ import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { FilesystemObjectActions } from '../../../file-browser/services/filesystem-object-actions';
-import { WorkspaceManager } from '../../../shared/workspace-manager';
-import { FilesystemService } from '../../../file-browser/services/filesystem.service';
-import { FilesystemObjectList } from '../../../file-browser/models/filesystem-object-list';
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
+import { WorkspaceManager } from '../../shared/workspace-manager';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { FilesystemObjectList } from '../../file-browser/models/filesystem-object-list';
 
 @Component({
   selector: 'app-associated-maps',
   templateUrl: './associated-maps.component.html',
-  styleUrls: ['./associated-maps.component.scss'],
 })
 export class AssociatedMapsComponent implements OnInit, OnDestroy {
   private loadTaskSubscription: Subscription;
