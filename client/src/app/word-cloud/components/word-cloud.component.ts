@@ -9,12 +9,12 @@ import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filte
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { LegendService } from 'app/shared/services/legend.service';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { WordCloudService } from './services/word-cloud.service';
+import { WordCloudService } from '../services/word-cloud.service';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
-import { FilesystemObject } from '../file-browser/models/filesystem-object';
-import { PdfAnnotationsService } from '../drawing-tool/services';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
+import { PdfAnnotationsService } from '../../drawing-tool/services';
 
 @Component({
   selector: 'app-word-cloud',

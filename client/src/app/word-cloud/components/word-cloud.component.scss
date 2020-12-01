@@ -1,6 +1,6 @@
-@import '~bootstrap/scss/functions';
-@import '~bootstrap/scss/variables';
-@import 'src/scss/variables';
+@import '../../../../node_modules/bootstrap/scss/functions';
+@import '../../../../node_modules/bootstrap/scss/variables';
+@import '../../../scss/variables';
 
 .annotation-filter-btns-container {
     height: 1.5rem;
