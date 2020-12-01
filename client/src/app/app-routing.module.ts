@@ -27,7 +27,6 @@ import { BrowserComponent } from './file-browser/components/browser/browser.comp
 import { ContentSearchComponent } from './search/components/content-search.component';
 import { EnrichmentTableViewerComponent } from './file-browser/components/enrichment-table-viewer.component';
 import { ObjectNavigatorComponent } from './file-navigator/components/object-navigator.component';
-import { WordCloudProjectComponent } from './word-cloud/word-cloud-project.component';
 import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
 
 // TODO: Add an unprotected home page
@@ -255,15 +254,6 @@ const routes: Routes = [
       title: 'File Navigator',
       fontAwesomeIcon: 'fas fa-compass',
     },
-  },
-  {
-    path: 'entity-cloud/:project_name',
-    component: WordCloudProjectComponent,
-    canActivate: [AuthGuard],
-    data: {
-      title: 'Project Entity Cloud',
-      fontAwesomeIcon: 'fas fa-compass',
-    }
   },
   // Old links
   {path: 'file-browser', redirectTo: 'projects', pathMatch: 'full'},
