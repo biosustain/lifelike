@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 
 import { uniqueId } from 'lodash';
 
@@ -8,8 +7,6 @@ import { combineLatest, Subscription } from 'rxjs';
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { LegendService } from 'app/shared/services/legend.service';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { WordCloudService } from '../services/word-cloud.service';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
