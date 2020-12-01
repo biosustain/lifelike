@@ -1380,3 +1380,41 @@ def test_delta_gene_deletion_detected(
     assert annotations[0].keyword == 'purB'
     assert annotations[1].keyword == 'purC'
     assert annotations[2].keyword == 'purF'
+
+
+def test_user_source_database_input_priority(
+    get_manual_annotations_service
+):
+    manual = get_manual_annotations_service
+    bioc = {
+        'documents': [
+            {
+                'passages': [
+                    {
+                        'annotations': [{
+                            'textInDocument': 'carbon',
+                            'meta': {
+                                'idType': 'CHEBI',
+                                'idHyperlink': 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27594',  # noqa
+                                'isCustom': False,
+                                'allText': 'Carbon'
+                            },
+                        }]
+                    }
+                ]
+            }
+        ]
+    }
+
+    custom = [{
+        'meta': {
+            'idType': 'mesh',
+            'allText': 'Carbon',
+            'idHyperlink': 'http://google.com',
+            'isCaseInsensitive': True
+        },
+    }]
+    updated = manual.apply_custom_hyperlink_and_type(bioc, custom)
+    annotations = updated['documents'][0]['passages'][0]['annotations']
+    assert annotations[0]['meta']['idHyperlink'] == custom[0]['meta']['idHyperlink']
+    assert annotations[0]['meta']['idType'] == custom[0]['meta']['idType'].upper()
