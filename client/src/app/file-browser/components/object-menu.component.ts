@@ -20,13 +20,13 @@ export class ObjectMenuComponent {
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
 
-  constructor(readonly router: Router,
-              readonly snackBar: MatSnackBar,
-              readonly modalService: NgbModal,
-              readonly errorHandler: ErrorHandler,
-              readonly route: ActivatedRoute,
-              readonly workspaceManager: WorkspaceManager,
-              readonly actions: FilesystemObjectActions) {
+  constructor(protected readonly router: Router,
+              protected readonly snackBar: MatSnackBar,
+              protected readonly modalService: NgbModal,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly route: ActivatedRoute,
+              protected readonly workspaceManager: WorkspaceManager,
+              protected readonly actions: FilesystemObjectActions) {
   }
 
   openEditDialog(target: FilesystemObject) {
