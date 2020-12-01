@@ -11,12 +11,12 @@ import {
   Location,
   Meta,
   RemovedAnnotationExclusion,
-} from '../../pdf-viewer/annotation-type';
+} from '../annotation-type';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component';
+import { PdfViewerLibComponent } from '../pdf-viewer-lib.component';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { ActivatedRoute } from '@angular/router';
 import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
@@ -26,11 +26,11 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { FilesystemService } from '../services/filesystem.service';
-import { FilesystemObject } from '../models/filesystem-object';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mergeMap } from 'rxjs/operators';
 import { readBlobAsBuffer } from '../../shared/utils/files';
-import { FilesystemObjectActions } from '../services/filesystem-object-actions';
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 
 class EntityTypeEntry {
   constructor(public type: EntityType, public annotations: Annotation[]) {

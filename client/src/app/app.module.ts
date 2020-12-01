@@ -28,6 +28,7 @@ import { KgImportModule } from './kg-import/kg-import.module';
 import { AppVersionDialogComponent } from './app-version-dialog.component';
 import { FileNavigatorModule } from './file-navigator/file-navigator.module';
 import { ShortestPathModule } from './shortest-path/shortest-path.module';
+import { PdfViewerLibModule } from './pdf-viewer/pdf-viewer-lib.module';
 
 @NgModule({
   declarations: [
@@ -43,6 +44,7 @@ import { ShortestPathModule } from './shortest-path/shortest-path.module';
   ],
   imports: [
     BrowserModule,
+    PdfViewerLibModule,
     AdminModule,
     AuthModule,
     SharedModule,
