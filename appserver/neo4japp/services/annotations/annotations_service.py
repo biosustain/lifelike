@@ -27,7 +27,7 @@ from .constants import (
     SEARCH_LINKS,
 )
 from .lmdb_dao import LMDBDao
-from .util import normalize_str, standardize_str
+from .util import has_center_point, normalize_str, standardize_str
 
 from neo4japp.data_transfer_objects import (
     Annotation,
@@ -266,7 +266,7 @@ class AnnotationsService:
             hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
 
         if entity['id_type'] == DatabaseType.MESH.value:
-            hyperlink += entity_id[5:]  # type: ignore
+            hyperlink += entity_id[5:] if DatabaseType.MESH.value in entity_id else entity_id  # type: ignore  # noqa
         else:
             hyperlink += entity_id  # type: ignore
 
@@ -827,25 +827,6 @@ class AnnotationsService:
             exclude for exclude in excluded_annotations if exclude.get(
                 'type') == EntityType.SPECIES.value and not exclude.get(
                     'excludeGlobally')]
-
-        def has_center_point(
-            custom_rect_coords: List[float],
-            rect_coords: List[float],
-        ) -> bool:
-            x1 = rect_coords[0]
-            y1 = rect_coords[1]
-            x2 = rect_coords[2]
-            y2 = rect_coords[3]
-
-            center_x = (x1 + x2)/2
-            center_y = (y1 + y2)/2
-
-            rect_x1 = custom_rect_coords[0]
-            rect_y1 = custom_rect_coords[1]
-            rect_x2 = custom_rect_coords[2]
-            rect_y2 = custom_rect_coords[3]
-
-            return rect_x1 <= center_x <= rect_x2 and rect_y1 <= center_y <= rect_y2
 
         # we only want the annotations with correct coordinates
         # because it is possible for a word to only have one
