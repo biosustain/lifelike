@@ -11,6 +11,7 @@ import { nullCoalesce } from '../../shared/utils/types';
 import { uniqueId } from 'lodash';
 import { getObjectLabel } from '../utils/objects';
 import { CollectionModal } from '../../shared/utils/collection-modal';
+import { cloneDeep } from 'lodash';
 
 @Component({
   selector: 'app-object-list',
@@ -51,7 +52,9 @@ export class ObjectListComponent {
   }
 
   openCloneDialog(target: FilesystemObject) {
-    return this.actions.openCloneDialog(target).then(clone => {
+    const newTarget: FilesystemObject = cloneDeep(target);
+    newTarget.public = false;
+    return this.actions.openCloneDialog(newTarget).then(clone => {
       this.snackBar.open(`Copied ${getObjectLabel(target)} to ${getObjectLabel(clone)}.`, 'Close', {
         duration: 5000,
       });
