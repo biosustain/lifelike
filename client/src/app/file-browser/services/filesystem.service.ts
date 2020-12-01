@@ -6,7 +6,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { ProjectPageService } from './project-page.service';
 import { BehaviorSubject, Observable, of, Subscription, throwError } from 'rxjs';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { catchError, map, mergeMap } from 'rxjs/operators';
@@ -43,7 +42,6 @@ export class FilesystemService {
               protected readonly progressDialog: ProgressDialog,
               protected readonly errorHandler: ErrorHandler,
               protected readonly route: ActivatedRoute,
-              protected readonly projectPageService: ProjectPageService,
               protected readonly http: HttpClient,
               protected readonly apiService: ApiService) {
     this.filesService.getLMDBsDates().subscribe(lmdbsDates => {

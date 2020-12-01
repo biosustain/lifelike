@@ -6,7 +6,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { ProjectPageService } from './project-page.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Progress, ProgressMode } from '../../interfaces/common-dialog.interface';
@@ -43,7 +42,6 @@ export class FilesystemObjectActions {
               protected readonly modalService: NgbModal,
               protected readonly progressDialog: ProgressDialog,
               protected readonly route: ActivatedRoute,
-              protected readonly projectPageService: ProjectPageService,
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly ngbModal: NgbModal,
               protected readonly messageDialog: MessageDialog,
