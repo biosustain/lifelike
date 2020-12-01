@@ -17,7 +17,7 @@ export class ObjectPreviewComponent {
   private readonly object$ = new BehaviorSubject<FilesystemObject>(null);
   readonly previewComponent$ = this.object$.pipe(mergeMap(object => {
     if (object) {
-      return this.objectTypeService.get(object).pipe(map(typeProvider => {
+      return this.objectTypeService.get(object).pipe(mergeMap(typeProvider => {
         return typeProvider.createPreviewComponent(object);
       }));
     } else {
