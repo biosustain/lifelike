@@ -270,6 +270,22 @@ class AnnotationsService:
         else:
             hyperlink += entity_id  # type: ignore
 
+        # prepend the prefix to entity_id to be consistent
+        if entity['id_type'] == DatabaseType.CHEBI.value and DatabaseType.CHEBI.value not in entity_id:  # noqa
+            entity_id = f'{DatabaseType.CHEBI.value}:{entity_id}'
+        elif entity['id_type'] == DatabaseType.CUSTOM.value and DatabaseType.CUSTOM.value not in entity_id:  # noqa
+            entity_id = f'{DatabaseType.CUSTOM.value}:{entity_id}'
+        elif entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value not in entity_id:  # noqa
+            entity_id = f'{DatabaseType.MESH.value}:{entity_id}'
+        elif entity['id_type'] == DatabaseType.UNIPROT.value and DatabaseType.UNIPROT.value not in entity_id:  # noqa
+            entity_id = f'{DatabaseType.UNIPROT.value}:{entity_id}'
+        elif entity['id_type'] == DatabaseType.NCBI.value and DatabaseType.NCBI.value not in entity_id:  # noqa
+            entity_id = f'{DatabaseType.NCBI.value}:{entity_id}'
+        elif entity['id_type'] == DatabaseType.BIOCYC.value and DatabaseType.BIOCYC.value not in entity_id:  # noqa
+            entity_id = f'{DatabaseType.BIOCYC.value}:{entity_id}'
+        elif entity['id_type'] == DatabaseType.PUBCHEM.value and DatabaseType.PUBCHEM.value not in entity_id:  # noqa
+            entity_id = f'{DatabaseType.PUBCHEM.value}:{entity_id}'
+
         if token_type == EntityType.SPECIES.value:
             organism_meta = OrganismAnnotation.OrganismMeta(
                 category=entity_category,
