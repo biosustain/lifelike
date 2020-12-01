@@ -127,6 +127,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get isNavigable() {
+    return this.isDirectory || this.mimeType === PDF_MIMETYPE || this.mimeType === MAP_MIMETYPE;
+  }
+
+  get hasWordCloud() {
     return this.isDirectory || this.mimeType === PDF_MIMETYPE;
   }
 
