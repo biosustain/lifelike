@@ -5,7 +5,7 @@ import { AdminPanelComponent } from 'app/admin/components/admin-panel.component'
 import { UserFileImportComponent } from 'app/user-file-import/components/user-file-import.component';
 import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
 import { GraphSearchComponent } from 'app/search/components/graph-search.component';
-import { FileBrowserComponent } from 'app/file-browser/components/file-browser.component';
+import { ObjectBrowserComponent } from 'app/file-browser/components/object-browser.component';
 import { LoginComponent } from 'app/auth/components/login.component';
 import { DashboardComponent } from 'app/dashboard.component';
 
@@ -174,7 +174,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name',
-    component: FileBrowserComponent,
+    component: ObjectBrowserComponent,
     canActivate: [AuthGuard],
     data: {
       title: 'Projects',
@@ -193,7 +193,7 @@ const routes: Routes = [
   },
   {
     path: 'folders/:dir_id',
-    component: FileBrowserComponent,
+    component: ObjectBrowserComponent,
     canActivate: [AuthGuard],
     data: {
       title: 'Projects',
