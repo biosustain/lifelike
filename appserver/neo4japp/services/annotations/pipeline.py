@@ -32,7 +32,7 @@ from neo4japp.utils.logger import EventLog
 
 
 """File is to put helper functions that abstract away
-multiple steps needed in a certain annotation pipeline.
+multiple steps needed in the annotation pipeline.
 """
 
 
@@ -218,7 +218,7 @@ def _create_annotations(
         )
 
     pdf_text = ' '.join([c.keyword for c in parsed.words])
-    tokens_list = parser.extract_tokens(parsed)
+    tokens_list = entity_recog.extract_tokens(parsed)
 
     if annotation_method == AnnotationMethod.RULES.value:
         entity_recog.set_entity_inclusions(custom_annotations=custom_annotations)

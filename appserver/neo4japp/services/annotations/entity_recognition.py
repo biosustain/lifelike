@@ -1,6 +1,9 @@
+import re
+
 from collections import deque
 from functools import partial
 from itertools import starmap
+from string import ascii_letters, digits, punctuation
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from flask import current_app
@@ -8,13 +11,15 @@ from sqlalchemy import and_
 
 from neo4japp.services.annotations.annotations_neo4j_service import AnnotationsNeo4jService
 from neo4japp.services.annotations.constants import (
+    ABBREVIATION_WORD_LENGTH,
     COMMON_TYPOS,
+    COMMON_WORDS,
+    SPACE_COORDINATE_FLOAT,
+    SPECIES_EXCLUSION,
     EntityType,
     EntityIdStr,
     GREEK_SYMBOLS,
-    ManualAnnotationType,
-    ABBREVIATION_WORD_LENGTH,
-    SPECIES_EXCLUSION
+    ManualAnnotationType
 )
 from neo4japp.services.annotations.lmdb_dao import LMDBDao
 from neo4japp.services.annotations.lmdb_util import (
@@ -31,11 +36,13 @@ from neo4japp.services.annotations.lmdb_util import (
     create_ner_type_entity
 )
 from neo4japp.services.annotations.util import normalize_str
-
 from neo4japp.data_transfer_objects import (
     EntityResults,
     LMDBMatch,
-    PDFWord
+    PDFMeta,
+    PDFWord,
+    PDFParsedContent,
+    PDFTokensList
 )
 from neo4japp.models import AnnotationStopWords, GlobalList
 from neo4japp.utils.logger import EventLog
@@ -1594,3 +1601,87 @@ class EntityRecognitionService:
         deque(map(partial(
             self._entity_lookup_dispatch,
             check_entities=check_entities_in_lmdb), tokens), maxlen=0)
+
+    def _combine_sequential_words(self, words, compiled_regex):
+        """Generator that combines a list of words into sequentially increment words.
+
+        E.g ['A', 'B', 'C', 'D', 'E'] -> ['A', 'A B', 'A B C', 'B', 'B C', ...]
+            - NOTE: each character here represents a word
+        """
+        processed_tokens: Set[str] = set()
+
+        # TODO: go into constants.py if used by other classes
+        max_word_length = 6
+        end_idx = curr_max_words = 1
+        max_length = len(words)
+
+        # now create keyword tokens up to max_word_length
+        for i, _ in enumerate(words):
+            while curr_max_words <= max_word_length and end_idx <= max_length:  # noqa
+                words_subset = words[i:end_idx]
+                curr_keyword = ''
+                coordinates = []
+                heights = []
+                widths = []
+
+                for word in words_subset:
+                    curr_keyword += word.keyword
+                    coordinates += word.meta.coordinates
+                    heights += word.meta.heights
+                    widths += word.meta.widths
+
+                    # space
+                    curr_keyword += ' '
+                    coordinates += [SPACE_COORDINATE_FLOAT]
+                    heights += [SPACE_COORDINATE_FLOAT]
+                    widths += [SPACE_COORDINATE_FLOAT]
+
+                # remove trailing space
+                curr_keyword = curr_keyword[:-1]
+                coordinates = coordinates[:-1]
+                heights = heights[:-1]
+                widths = widths[:-1]
+
+                if (curr_keyword.lower() not in COMMON_WORDS and
+                    not compiled_regex.match(curr_keyword) and
+                    curr_keyword not in ascii_letters and
+                    curr_keyword not in digits):  # noqa
+
+                    token = PDFWord(
+                        keyword=curr_keyword,
+                        normalized_keyword=normalize_str(curr_keyword),
+                        # take the page of the first word
+                        # if multi-word, consider it as part
+                        # of page of first word
+                        page_number=words_subset[0].page_number,
+                        cropbox=words_subset[0].cropbox,
+                        meta=PDFMeta(
+                            lo_location_offset=words_subset[0].meta.lo_location_offset,
+                            hi_location_offset=words_subset[-1].meta.hi_location_offset,
+                            coordinates=coordinates,
+                            heights=heights,
+                            widths=widths
+                        ),
+                        previous_words=words_subset[0].previous_words
+                    )
+                    yield token
+
+                curr_max_words += 1
+                end_idx += 1
+            curr_max_words = 1
+            end_idx = i + 2
+
+    def extract_tokens(self, parsed: PDFParsedContent) -> PDFTokensList:
+        """Extract word tokens from the parsed characters.
+
+        Returns a token list of sequentially concatentated.
+        """
+        # regex to check for digits with punctuation
+        compiled_regex = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
+
+        return PDFTokensList(
+            tokens=self._combine_sequential_words(
+                words=parsed.words,
+                compiled_regex=compiled_regex,
+            )
+        )

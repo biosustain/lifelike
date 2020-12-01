@@ -53,7 +53,10 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   getValue(): Annotation {
     const text = this.form.getRawValue().text;
     const links = {};
-    const sourceDomains = new Set(['ncbi', 'uniprot', 'mesh', 'chebi', 'pubchem']);
+    const sourceDomains = new Set(
+      this.linkTemplates.filter(
+        link => link.isDatabase).map(
+          dbDomain => dbDomain.domain.toLowerCase()));
     // idHyperlink should be taken from the search links (entered by user) considering
     // the priority (elements in SEARCH_LINKS array have the prioritized order)
     let idHyperlink;
@@ -64,7 +67,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
 
       if (!idHyperlink && value) {
         idHyperlink = value;
-        idType = sourceDomains.has(domain) ? domain : '';
+        idType = sourceDomains.has(domain) ? domain.toUpperCase() : '';
       }
     });
 
