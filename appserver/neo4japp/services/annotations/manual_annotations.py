@@ -64,7 +64,7 @@ class ManualAnnotationsService:
             if file_content is None:
                 raise RecordNotFoundException('Content for a given file does not exist')
 
-            # TODO: make use of ./service_helpers.py to be consistent
+            # TODO: make use of ./pipeline.py to be consistent
             # and avoid code change bugs
             fp = io.BytesIO(file_content.raw_file)
             pdf_parser = get_annotations_pdf_parser()

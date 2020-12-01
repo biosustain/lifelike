@@ -265,8 +265,8 @@ class AnnotationsService:
             # type ignore, see https://github.com/python/mypy/issues/8277
             hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
 
-        if entity['id_type'] == DatabaseType.MESH.value:
-            hyperlink += entity_id[5:] if DatabaseType.MESH.value in entity_id else entity_id  # type: ignore  # noqa
+        if entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value in entity_id:  # noqa
+            hyperlink += entity_id[5:]  # type: ignore
         else:
             hyperlink += entity_id  # type: ignore
 
