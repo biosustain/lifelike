@@ -1,4 +1,4 @@
-import { Component, ComponentFactoryResolver, ComponentRef, Injectable, InjectionToken, Injector } from '@angular/core';
+import { ComponentRef, Injectable, InjectionToken, Injector } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
 import { Observable, of } from 'rxjs';
 
@@ -11,7 +11,7 @@ export interface ObjectTypeProvider {
 
   handles(object: FilesystemObject): boolean;
 
-  createPreviewComponent(object: FilesystemObject): ComponentRef<any> | undefined;
+  createPreviewComponent(object: FilesystemObject): Observable<ComponentRef<any> | undefined>;
 
 }
 
@@ -22,7 +22,7 @@ class DefaultObjectTypeProvider implements ObjectTypeProvider {
   }
 
   createPreviewComponent(object: FilesystemObject) {
-    return null;
+    return of(null);
   }
 
 }

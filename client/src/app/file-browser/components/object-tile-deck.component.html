@@ -1,10 +1,10 @@
 <ng-container *ngIf="objects != null">
-  <div class="tile-deck">
+  <div class="tile-deck tile-deck-{{ tileDeckSize }}">
     <div *ngFor="let o of objects.view" class="tile d-flex flex-column">
       <div class="flex-fill d-flex justify-content-center align-items-center my-2">
         <a [appLink]="o.getCommands(forEditing)" [newTab]="newTabObject"
            class="text-muted">
-          <i class="fas fa-project-diagram fa-2x"></i>
+          <i class="fa-2x {{ o.fontAwesomeIcon }}"></i>
         </a>
       </div>
       <div class="text-truncate text-center">

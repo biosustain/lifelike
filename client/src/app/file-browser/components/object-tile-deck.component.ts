@@ -13,6 +13,7 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 })
 export class ObjectTileDeckComponent extends ObjectListComponent {
 
+  @Input() tileDeckSize = 'md';
   @Input() newTabObject = false;
   @Input() newTabMore = false;
   @Input() showMoreButton = false;

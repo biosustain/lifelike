@@ -29,7 +29,9 @@ import { EnrichmentTableOrderDialogComponent } from './components/enrichment-tab
 import { ObjectExportDialogComponent } from './components/dialog/object-export-dialog.component';
 import { ObjectTileDeckComponent } from './components/object-tile-deck.component';
 import { ObjectPathComponent } from './components/object-path.component';
-import { ObjectTypeService } from './services/object-type.service';
+import { ObjectTypeService, TYPE_PROVIDER } from './services/object-type.service';
+import { DirectoryTypeProvider } from './providers/directory-type-provider';
+import { DirectoryPreviewComponent } from './components/directory-preview.component';
 
 @NgModule({
   declarations: [
@@ -60,6 +62,7 @@ import { ObjectTypeService } from './services/object-type.service';
     ObjectPreviewOutletComponent,
     ObjectExportDialogComponent,
     ObjectPathComponent,
+    DirectoryPreviewComponent,
   ],
   imports: [
     SharedModule,
@@ -77,6 +80,9 @@ import { ObjectTypeService } from './services/object-type.service';
     ObjectVersionHistoryDialogComponent,
     ObjectPreviewComponent,
     ObjectExportDialogComponent,
+    ObjectListComponent,
+    ObjectTileDeckComponent,
+    DirectoryPreviewComponent,
   ],
   exports: [
     ObjectInfoComponent,
@@ -93,6 +99,11 @@ import { ObjectTypeService } from './services/object-type.service';
     FilesystemService,
     FilesystemObjectActions,
     ObjectTypeService,
+    {
+      provide: TYPE_PROVIDER,
+      useClass: DirectoryTypeProvider,
+      multi: true,
+    },
   ],
 })
 export class FileBrowserModule {
