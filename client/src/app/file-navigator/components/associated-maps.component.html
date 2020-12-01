@@ -42,9 +42,20 @@
       <div class="module-section">
         <div class="module-section-header d-flex align-items-center">
           <h2 class="module-section-header-title mr-2">Associated Maps</h2>
-          <button type="button" class="btn btn-secondary ml-auto" (click)="openMapCreateDialog()">
-            <i class="fa fa-fw fa-plus-circle" aria-hidden="true"></i> New Map
-          </button>
+
+          <div class="d-flex ml-auto">
+            <button type="button" class="btn btn-secondary" (click)="openMapCreateDialog()">
+              <i class="fa fa-fw fa-plus-circle" aria-hidden="true"></i> New Map
+            </button>
+
+            <button class="btn btn-secondary ml-2"
+                    ngbTooltip="Reload List"
+                    container="body"
+                    placement="bottom top left right"
+                    (click)="refresh()">
+              <i class="fa fa-fw fa-sync"></i>
+            </button>
+          </div>
         </div>
 
         <div class="module-section-body">

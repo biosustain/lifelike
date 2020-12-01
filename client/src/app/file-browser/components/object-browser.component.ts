@@ -26,15 +26,15 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
   protected annotationSubscription: Subscription;
   object$: Observable<FilesystemObject> = from([]);
 
-  constructor(readonly router: Router,
-              readonly snackBar: MatSnackBar,
-              readonly modalService: NgbModal,
-              readonly messageDialog: MessageDialog,
-              readonly errorHandler: ErrorHandler,
-              readonly route: ActivatedRoute,
-              readonly workspaceManager: WorkspaceManager,
-              readonly filesystemService: FilesystemService,
-              readonly actions: FilesystemObjectActions) {
+  constructor(protected readonly router: Router,
+              protected readonly snackBar: MatSnackBar,
+              protected readonly modalService: NgbModal,
+              protected readonly messageDialog: MessageDialog,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly route: ActivatedRoute,
+              protected readonly workspaceManager: WorkspaceManager,
+              protected readonly filesystemService: FilesystemService,
+              protected readonly actions: FilesystemObjectActions) {
   }
 
   ngOnInit() {
@@ -63,28 +63,20 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
     return object$;
   }
 
+  refresh() {
+    this.load(this.hashId);
+  }
+
   applyFilter(object: FilesystemObject, filter: string) {
     object.filterChildren(filter);
   }
 
   goUp(object: FilesystemObject) {
-    /*
-    if (object.path != null) {
-      if (object.path.length > 2) {
-        this.workspaceManager.navigate(
-          ['/projects', object.locator.projectName, 'folders',
-            object.path[object.path.length - 2].id],
-        );
-      } else if (object.path.length === 2) {
-        this.workspaceManager.navigate(
-          ['/projects', object.locator.projectName],
-        );
-      } else {
-        this.workspaceManager.navigate(['/projects']);
-      }
+    if (object.parent) {
+      this.workspaceManager.navigate(object.parent.getCommands());
+    } else {
+      this.workspaceManager.navigate(['/projects']);
     }
-     */
-    // TODO
   }
 
   getObjectQueryParams(object: FilesystemObject) {
