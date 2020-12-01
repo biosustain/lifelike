@@ -51,7 +51,7 @@ from neo4japp.services.annotations.constants import (
     EntityType,
     ManualAnnotationType,
 )
-from neo4japp.services.annotations.service_helpers import create_annotations
+from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.util import (
     CasePreservedDict,
     jsonify_with_class,
