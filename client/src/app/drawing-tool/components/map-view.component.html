@@ -46,6 +46,14 @@
 
           <div class="btn-group mr-2">
             <button type="button" class="btn btn-secondary"
+                    ngbTooltip="Download map as an image or PDF" placement="bottom" container="body"
+                    (click)="openExportDialog()">
+              <i class="fa fa-fw fa-file-export"></i> Export
+            </button>
+          </div>
+
+          <div class="btn-group mr-2">
+            <button type="button" class="btn btn-secondary"
                     (click)="openVersionHistoryDialog()">
               Version History
             </button>
@@ -61,6 +69,12 @@
             </div>
 
             <div class="btn-group mr-2">
+              <button type="button" class="btn btn-secondary" container="body"
+                      [appLink]="['/file-navigator', map.project.name, map.hashId]" [newTab]="true"
+                      [sideBySide]="true"
+                      ngbTooltip="File Navigator" placement="bottom">
+                <i class="fas fa-fw fa-compass"></i>
+              </button>
               <button type="button" class="btn btn-secondary" container="body"
                       ngbTooltip="Share" placement="bottom"
                       (click)="openShareDialog()">

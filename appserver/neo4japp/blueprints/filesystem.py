@@ -801,7 +801,7 @@ class FileSearchView(FilesystemBaseView):
             """
 
             params = {
-                'url_1': f'/projects/(?:[^/]+)/files/{re.escape(hash_id)}(?:#.*)?',
+                'url_1': f'/projects/(?:[^/]+)/[^/]+/{re.escape(hash_id)}(?:#.*)?',
                 'url_2': f'/dt/pdf/{re.escape(hash_id)}(?:#.*)?',
                 'user_id': g.current_user.id,
             }

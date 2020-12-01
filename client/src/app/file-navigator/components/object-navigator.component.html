@@ -35,10 +35,11 @@
       </div>
 
       <!-- Body -->
-      <div class="module-body border-bottom" *ngIf="object.isFile">
+      <div class="module-body" *ngIf="object.isFile" [class.border-bottom]="object.hasWordCloud">
         <app-associated-maps [object]="object"></app-associated-maps>
       </div>
-      <div class="module-body flex-fill">
+
+      <div class="module-body flex-fill" *ngIf="object.hasWordCloud">
         <app-word-cloud [object]="object" [clickableWords]="clickableWords"
                         (wordOpen)="openWord($event)"></app-word-cloud>
       </div>
