@@ -144,7 +144,7 @@ export class FilesystemObjectActions {
             status: 'Generating annotations...',
           }));
           return this.annotationsService.generateAnnotations(
-            [object.hashId], annotationOptions
+            [object.hashId], annotationOptions,
           ).pipe(
             map(() => object), // This method returns the object
           );
@@ -160,7 +160,7 @@ export class FilesystemObjectActions {
    * @param options options for the dialog
    */
   openCreateDialog(target: FilesystemObject,
-                   options: Partial<CreateDialogOptions>): Promise<FilesystemObject> {
+                   options: CreateDialogOptions = {}): Promise<FilesystemObject> {
     const dialogRef = this.ngbModal.open(ObjectEditDialogComponent);
     dialogRef.componentInstance.title = options.title || 'New File';
     dialogRef.componentInstance.object = target;
@@ -236,13 +236,13 @@ export class FilesystemObjectActions {
 
   /**
    * Open a dialog to create a new map in another folder.
-   * @param parent the folder to put the new map in
+   * @param options options for the dialog
    */
-  openMapCreateDialog(parent?: FilesystemObject): Promise<FilesystemObject> {
+  openMapCreateDialog(options: MapCreateDialogOptions = {}): Promise<FilesystemObject> {
     const object = new FilesystemObject();
     object.filename = 'Untitled Map';
     object.mimeType = MAP_MIMETYPE;
-    object.parent = parent;
+    object.parent = options.parent;
     return this.openCreateDialog(object, {
       title: 'New Map',
       request: {
@@ -253,6 +253,7 @@ export class FilesystemObjectActions {
           type: MAP_MIMETYPE,
         }),
       },
+      ...(options.createDialog || {}),
     });
   }
 
@@ -395,11 +396,16 @@ export class FilesystemObjectActions {
   }
 }
 
+export class MapCreateDialogOptions {
+  parent?: FilesystemObject;
+  createDialog?: Omit<CreateDialogOptions, 'request'>;
+}
+
 export class CreateDialogOptions {
-  title: string;
-  promptUpload: boolean;
-  promptAnnotationOptions: boolean;
-  promptParent: boolean;
-  parentLabel: string;
-  request: Partial<ObjectCreateRequest>;
+  title?: string;
+  promptUpload?: boolean;
+  promptAnnotationOptions?: boolean;
+  promptParent?: boolean;
+  parentLabel?: string;
+  request?: Partial<ObjectCreateRequest>;
 }

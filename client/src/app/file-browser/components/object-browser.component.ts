@@ -126,7 +126,9 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
   }
 
   openMapCreateDialog(parent: FilesystemObject) {
-    return this.actions.openMapCreateDialog(parent).then(object => {
+    return this.actions.openMapCreateDialog({
+      parent,
+    }).then(object => {
       this.snackBar.open(`Map ${getObjectLabel(object)} created.`, 'Close', {
         duration: 5000,
       });
