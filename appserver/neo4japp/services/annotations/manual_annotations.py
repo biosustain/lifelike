@@ -1,6 +1,5 @@
 import io
 import uuid
-import re
 
 from datetime import datetime
 from sqlalchemy import and_
@@ -21,7 +20,7 @@ from neo4japp.models import (
     FileContent,
     GlobalList,
 )
-from neo4japp.services.annotations.constants import ManualAnnotationType
+from neo4japp.services.annotations.constants import DatabaseType, ManualAnnotationType
 from neo4japp.services.annotations.util import has_center_point
 
 
@@ -213,8 +212,6 @@ class ManualAnnotationsService:
         if custom_annotations:
             annotations = bioc['documents'][0]['passages'][0]['annotations']
 
-            compiled = re.compile(r'(?:[A-Z]+(?=[:]))')
-
             for anno in annotations:
                 for custom in custom_annotations:
                     if (anno.get('meta', {}).get('type') == custom.get('meta', {}).get('type') and
@@ -226,11 +223,32 @@ class ManualAnnotationsService:
                         if custom.get('meta', {}).get('idHyperlink'):
                             anno['meta']['idHyperlink'] = custom['meta']['idHyperlink']
 
-                        if custom.get('meta', {}).get('idType'):
-                            custom_id = custom['meta']['idType'].upper()
-                            anno['meta']['idType'] = custom_id
-                            if anno.get('meta', {}).get('id') and custom_id not in anno['meta']['id']:  # noqa
-                                anno['meta']['id'] = re.sub(compiled, custom_id, anno['meta']['id'])
+                        if custom.get('meta', {}).get('idType') and anno.get('meta', {}).get('idType'):  # noqa
+                            if custom['meta']['idType'] != anno['meta']['idType']:
+                                # prioritize custom id type since it should be
+                                # based on custom idHyperlink
+                                custom_id_type = custom['meta']['idType'].upper()
+                                anno['meta']['idType'] = custom_id_type
+
+                        if anno.get('meta', {}).get('id') and anno.get('meta', {}).get('idType'):
+                            entity_id = anno['meta']['id']
+                            entity_id_type = anno['meta']['idType']
+
+                            # prepend the prefix to entity_id to be consistent
+                            if entity_id_type == DatabaseType.CHEBI.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+                            elif entity_id_type == DatabaseType.CUSTOM.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+                            elif entity_id_type == DatabaseType.MESH.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+                            elif entity_id_type == DatabaseType.UNIPROT.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+                            elif entity_id_type == DatabaseType.NCBI.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+                            elif entity_id_type == DatabaseType.BIOCYC.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+                            elif entity_id_type == DatabaseType.PUBCHEM.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
 
         return bioc
 
