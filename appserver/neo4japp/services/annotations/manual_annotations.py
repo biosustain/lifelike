@@ -1,7 +1,8 @@
-from datetime import datetime
 import io
 import uuid
+import re
 
+from datetime import datetime
 from sqlalchemy import and_
 
 from neo4japp.constants import TIMEZONE
@@ -212,6 +213,8 @@ class ManualAnnotationsService:
         if custom_annotations:
             annotations = bioc['documents'][0]['passages'][0]['annotations']
 
+            compiled = re.compile(r'(?:[A-Z]+(?=[:]))')
+
             for anno in annotations:
                 for custom in custom_annotations:
                     if (anno.get('meta', {}).get('type') == custom.get('meta', {}).get('type') and
@@ -224,7 +227,11 @@ class ManualAnnotationsService:
                             anno['meta']['idHyperlink'] = custom['meta']['idHyperlink']
 
                         if custom.get('meta', {}).get('idType'):
-                            anno['meta']['idType'] = custom['meta']['idType'].upper()
+                            custom_id = custom['meta']['idType'].upper()
+                            anno['meta']['idType'] = custom_id
+                            if anno.get('meta', {}).get('id') and custom_id not in anno['meta']['id']:  # noqa
+                                anno['meta']['id'] = re.sub(compiled, custom_id, anno['meta']['id'])
+
         return bioc
 
     def get_combined_annotations(self, project_id, file_id):
