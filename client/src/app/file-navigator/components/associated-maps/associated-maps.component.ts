@@ -2,15 +2,11 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
-
-import { KnowledgeMap } from 'app/drawing-tool/services/interfaces';
-import { AssociatedMapsResponse, FileNavigatorService } from 'app/file-navigator/services/file-navigator.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { CollectionModal } from 'app/shared/utils/collection-modal';
 import { FilesystemObjectActions } from '../../../file-browser/services/filesystem-object-actions';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
-import { PdfFile } from '../../../interfaces/pdf-files.interface';
-import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+import { FilesystemService } from '../../../file-browser/services/filesystem.service';
+import { FilesystemObjectList } from '../../../file-browser/models/filesystem-object-list';
 
 @Component({
   selector: 'app-associated-maps',
@@ -20,37 +16,29 @@ import { FilesystemObject } from '../../../file-browser/models/filesystem-object
 export class AssociatedMapsComponent implements OnInit, OnDestroy {
   private loadTaskSubscription: Subscription;
 
-  readonly loadTask: BackgroundTask<void, AssociatedMapsResponse> = new BackgroundTask(
-    () => this.fileNavigatorService.getAssociatedMaps(this.projectName, this.fileId),
+  readonly loadTask: BackgroundTask<string, FilesystemObjectList> = new BackgroundTask(
+    hashId => this.filesystemService.search({
+      type: 'linked',
+      linkedHashId: hashId,
+      mimeTypes: ['vnd.lifelike.document/map'],
+    }),
   );
 
-  readonly results = new CollectionModal<KnowledgeMap>([], {
-    multipleSelection: true,
-  });
-
-  collectionSize: number;
-
-  projectName: string;
-  fileId: string;
-  file: PdfFile;
+  hashId: string;
+  list: FilesystemObjectList;
 
   constructor(
     protected readonly route: ActivatedRoute,
-    protected readonly fileNavigatorService: FileNavigatorService,
+    protected readonly filesystemService: FilesystemService,
     protected readonly filesystemObjectActions: FilesystemObjectActions,
     protected readonly workspaceManager: WorkspaceManager,
   ) {
-    this.projectName = this.route.snapshot.params.project_name;
-    this.fileId = this.route.snapshot.params.file_id;
-
-    this.collectionSize = 0;
+    this.hashId = this.route.snapshot.params.file_id;
   }
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: response}) => {
-      this.collectionSize = response.results.length;
-      this.results.replace(response.results);
-      this.file = response.file;
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: list}) => {
+      this.list = list;
     });
 
     this.refresh();
@@ -61,7 +49,7 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
   }
 
   refresh() {
-    this.loadTask.update();
+    this.loadTask.update(this.hashId);
   }
 
   createMap() {

@@ -37,11 +37,11 @@
           </div>
 
           <div class="flex-fill overflow-auto border-top">
-            <app-file-list [objects]="result.value.children"
+            <app-object-list [objects]="result.value.children"
                            (refreshRequest)="objectSelect.load(result.value.hashId)"
                            (objectOpen)="objectSelect.open($event)"
                            [objectControls]="false"
-                           [emptyDirectoryMessage]="emptyDirectoryMessage"></app-file-list>
+                           [emptyDirectoryMessage]="emptyDirectoryMessage"></app-object-list>
           </div>
         </ng-template>
       </ng-container>

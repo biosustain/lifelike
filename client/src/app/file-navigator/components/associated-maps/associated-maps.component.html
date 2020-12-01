@@ -48,35 +48,9 @@
         </div>
 
         <div class="module-section-body">
-          <ng-container *ngIf="results.length; else noMapResults">
-            <div class="tile-deck">
-              <div *ngFor="let map of results.view" class="tile d-flex flex-column">
-                <div class="flex-fill d-flex justify-content-center align-items-center my-2">
-                  <a [appLink]="['/projects', map.project_name, 'maps', map.hash_id, 'edit']"
-                     [newTab]="true"
-                     class="text-muted">
-                    <i class="fa faw fa-project-diagram fa-2x"></i>
-                  </a>
-                </div>
-                <div class="text-truncate text-center">
-                  <a [appLink]="['/projects', map.project_name, 'maps', map.hash_id, 'edit']"
-                     [newTab]="true"
-                     class="d-block text-truncate">
-                    <strong>{{ map.label }}</strong>
-                  </a>
-                </div>
-                <div class="text-truncate text-center">By {{ map.author }}</div>
-              </div>
-              <!-- TODO: Disabling this for now, might be misleading to create a new map here because it may not show up in this list later -->
-              <!-- <div class="tile d-flex flex-column text-primary">
-                <div class="flex-fill d-flex justify-content-center align-items-center my-2">
-                  <i class="fa fa-plus fa-4x"></i>
-                </div>
-                <div class="text-truncate text-center">
-                  <strong>Create New Map</strong>
-                </div>
-              </div> -->
-            </div>
+          <ng-container *ngIf="list.results.length; else noMapResults">
+            <app-object-tile-deck [objects]="list.results" [forEditing]="false"
+                                  [newTabObject]="true"></app-object-tile-deck>
           </ng-container>
 
           <ng-template #noMapResults>

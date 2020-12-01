@@ -6,7 +6,11 @@ import { Observable, of } from 'rxjs';
 import { ANNOTATIONS } from './mock_data';
 import { AddedAnnotationExclusion, Annotation } from '../../pdf-viewer/annotation-type';
 import { ApiService } from '../../shared/services/api.service';
-import { AnnotationGenerationRequest, ObjectAnnotationsDataResponse, MultipleAnnotationGenerationResponse } from '../../file-browser/schema';
+import {
+  AnnotationGenerationRequest,
+  ObjectAnnotationsDataResponse,
+  MultipleAnnotationGenerationResponse,
+} from '../../file-browser/schema';
 import { map } from 'rxjs/operators';
 
 @Injectable({
@@ -31,6 +35,15 @@ export class PdfAnnotationsService {
       this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => data.annotations),
+    );
+  }
+
+  getCombinedAnnotations(hashId: string): Observable<string> {
+    return this.http.post(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/combined-annotations`, {}, {
+        ...this.apiService.getHttpOptions(true),
+        responseType: 'text',
+      },
     );
   }
 

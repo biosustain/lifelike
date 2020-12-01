@@ -112,8 +112,8 @@ class FileAnnotationCountsView(FilesystemBaseView):
         counts = {}
 
         for file in files:
-            combined_annotations = manual_annotations_service.get_combined_annotations(file)
-            for annotation in combined_annotations:
+            annotations = manual_annotations_service.get_file_annotations(file)
+            for annotation in annotations:
                 key = annotation['meta']['id']
                 if key not in counts:
                     counts[key] = {
@@ -135,7 +135,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
                 meta['id'],
                 meta['type'],
                 meta['allText'],
-                counts[key]
+                counts[key]['count']
             ]
 
     def post(self, hash_id: str):
@@ -143,14 +143,14 @@ class FileAnnotationCountsView(FilesystemBaseView):
 
         file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
-        files = self.get_nondeleted_recycled_children(and_(Files.id == file.id,
-                                                           Files.mime_type == 'application.pdf'),
+        files = self.get_nondeleted_recycled_children(Files.id == file.id,
+                                                      children_filter=Files.mime_type == 'application/pdf',
                                                       lazy_load_content=True)
 
         buffer = io.StringIO()
         writer = csv.writer(buffer, delimiter="\t", quotechar='"')
         for row in self.get_rows(files):
-            writer.writerow(*row)
+            writer.writerow(row)
 
         result = buffer.getvalue().encode('utf-8')
 
@@ -503,9 +503,7 @@ def delete_global_annotations(pids):
 
 filesystem_bp.add_url_rule('objects/<string:hash_id>/annotations',
                            view_func=FileAnnotationsView.as_view('file_annotations'))
-filesystem_bp.add_url_rule('objects/<string:hash_id>/annotations/counts',
+filesystem_bp.add_url_rule('objects/<string:hash_id>/combined-annotations',
                            view_func=FileAnnotationCountsView.as_view('file_annotation_counts'))
-filesystem_bp.add_url_rule('objects/<string:hash_id>/annotations/gene-counts',
-                           view_func=FileAnnotationGeneCountsView.as_view('file_annotation_gene_counts'))
 filesystem_bp.add_url_rule('annotations/generate',
                            view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'))

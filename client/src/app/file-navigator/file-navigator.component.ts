@@ -1,46 +1,66 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { combineLatest, Subscription } from 'rxjs';
-
-import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+import { FilesystemObject, PDF_MIMETYPE } from '../file-browser/models/filesystem-object';
+import { FilesystemService } from '../file-browser/services/filesystem.service';
+import { WordCloudAnnotationFilterEntity } from '../interfaces/annotation-filter.interface';
+import { WorkspaceManager } from '../shared/workspace-manager';
+import { escapeRegExp } from 'lodash';
+import { FileViewComponent } from '../file-browser/components/file-view.component';
 
 @Component({
   selector: 'app-file-navigator',
   templateUrl: './file-navigator.component.html',
-  styleUrls: ['./file-navigator.component.scss']
+  styleUrls: ['./file-navigator.component.scss'],
 })
 export class FileNavigatorComponent {
 
-  loadTask: BackgroundTask<[], [PdfFile]>;
+  loadTask: BackgroundTask<string, [FilesystemObject]>;
   fileLoadedSub: Subscription;
 
-  projectName: string;
-  fileId: string;
-  fileName: string;
+  object: FilesystemObject;
 
-  constructor(
-    readonly route: ActivatedRoute,
-    private pdf: PdfFilesService,
-  ) {
-    this.projectName = this.route.snapshot.params.project_name;
-    this.fileId = this.route.snapshot.params.file_id;
+  constructor(protected readonly route: ActivatedRoute,
+              protected readonly filesystemService: FilesystemService,
+              protected readonly workspaceManager: WorkspaceManager) {
 
-    this.loadTask = new BackgroundTask(() => {
+    this.loadTask = new BackgroundTask(hashId => {
       return combineLatest(
-        this.pdf.getFileMeta(this.fileId, this.projectName),
+        this.filesystemService.get(hashId),
       );
     });
 
     this.fileLoadedSub = this.loadTask.results$.subscribe(({
-      result: [pdfFile],
-      value: []
-    }) => {
-      this.fileName = pdfFile.filename;
+                                                             result: [object],
+                                                             value: [],
+                                                           }) => {
+      this.object = object;
     });
 
-    this.loadTask.update([]);
+    this.loadTask.update(this.route.snapshot.params.file_id);
+  }
+
+  get clickableWords() {
+    return this.object.mimeType === PDF_MIMETYPE;
+  }
+
+  openWord(annotation: WordCloudAnnotationFilterEntity) {
+    if (this.clickableWords) {
+      const url = this.object.getURL();
+      this.workspaceManager.navigateByUrl(
+        `${url}#annotation=${encodeURIComponent(annotation.id)}`, {
+          newTab: true,
+          sideBySide: true,
+          matchExistingTab: `^/*${escapeRegExp(url)}.*`,
+          shouldReplaceTab: component => {
+            const fileViewComponent = component as FileViewComponent;
+            fileViewComponent.highlightAnnotation(annotation.id);
+            return false;
+          },
+        },
+      );
+    }
   }
 }
