@@ -153,8 +153,8 @@
         </td>
 
         <td class="align-middle text-nowrap text-truncate" (click)="objects.toggle(object)">
-          <div *ngIf="object.user" class="text-truncate">
-            {{ object.user.username }}
+          <div class="text-truncate">
+            <app-user [user]="object.user"></app-user>
           </div>
         </td>
 

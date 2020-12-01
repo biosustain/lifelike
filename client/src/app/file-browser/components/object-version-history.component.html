@@ -32,6 +32,9 @@
               <ng-template #noCheckboxes>
                 {{ version.creationDate | date: 'short' }}
               </ng-template>
+              <div class="mt-2">
+                By <app-user [user]="version.user"></app-user>
+              </div>
               <div class="mt-2" *ngIf="version.message">
                 <em>
                   {{ version.message }}
