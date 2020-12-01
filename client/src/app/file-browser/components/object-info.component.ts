@@ -9,9 +9,13 @@ export class ObjectInfoComponent implements OnInit {
   @Input() defaultHighlightLimit = 5;
   highlightLimit = this.defaultHighlightLimit;
   @Input() highlightTerms: string[] | undefined;
+  @Input() objectControls = true;
+  @Input() forEditing = true;
   @Output() objectEdit = new EventEmitter<FilesystemObject>();
   @Output() highlightClick = new EventEmitter<string>();
   @Output() highlightDisplayLimitChange = new EventEmitter<HighlightDisplayLimitChange>();
+  @Output() refreshRequest = new EventEmitter<string>();
+  @Output() objectOpen = new EventEmitter<FilesystemObject>();
   _object: FilesystemObject | undefined;
 
   @Input()
