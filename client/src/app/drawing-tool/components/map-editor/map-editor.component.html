@@ -23,7 +23,8 @@
           <button type="button" class="module-title-bar-back mr-2" (click)="goToReturnUrl()" *ngIf="returnUrl">
             <i class="fa fa-fw fa-arrow-left"></i>
           </button>
-          <h1 class="module-title text-truncate" (click)="openEditDialog()" draggable="true" (dragstart)="this.dragStarted($event)">
+          <h1 class="module-title text-truncate" (click)="openEditDialog()" draggable="true"
+              (dragstart)="this.dragStarted($event)">
             {{ map?.label }}
           </h1>
           <div class="text-danger ml-2" *ngIf="unsavedChanges$.value; else saved">
@@ -44,6 +45,9 @@
                     (click)="save()">
               <i class="fa fa-fw fa-save"></i> Save
             </button>
+          </div>
+
+          <div class="btn-group mr-2">
             <button type="button" class="btn btn-secondary"
                     ngbTooltip="Download map as an image or PDF" placement="bottom" container="body"
                     (click)="openExportDialog()">
@@ -66,21 +70,6 @@
             </button>
           </div>
 
-          <div class="btn-group mr-2">
-            <button type="button" class="btn btn-secondary" container="body"
-                    ngbTooltip="Fit Map to Window" placement="bottom"
-                    (click)="zoomToFit()">
-              <i class="fas fa-expand-arrows-alt"></i>
-            </button>
-          </div>
-
-          <div class="btn-group mr-2">
-            <button type="button" class="btn btn-secondary"
-                    (click)="openShareDialog()">
-              <i class="fa fa-fw fa-share-square"></i> Share
-            </button>
-          </div>
-
           <div class="btn-group">
             <button type="button" class="btn btn-secondary" container="body"
                     ngbTooltip="Map Version History" placement="bottom"
@@ -89,11 +78,35 @@
             </button>
           </div>
 
-          <div class="ml-2" style="width: 300px;">
-            <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
-                                [resultIndex]="entitySearchListIdx" [resultCount]="entitySearchList.length"
-                                (previous)="previous()" (next)="next()">
-            </app-search-control>
+          <div class="ml-auto d-flex">
+            <div class="btn-group mr-2">
+              <button type="button" class="btn btn-secondary" container="body"
+                      ngbTooltip="Fit Map to Window" placement="bottom"
+                      (click)="zoomToFit()">
+                <i class="fas fa-expand-arrows-alt"></i>
+              </button>
+            </div>
+
+            <div class="btn-group mr-2">
+              <button type="button" class="btn btn-secondary" container="body"
+                      [appLink]="['/file-navigator', map.project.name, map.hashId]" [newTab]="true"
+                      [sideBySide]="true"
+                      ngbTooltip="File Navigator" placement="bottom">
+                <i class="fas fa-fw fa-compass"></i>
+              </button>
+              <button type="button" class="btn btn-secondary" container="body"
+                      ngbTooltip="Share" placement="bottom"
+                      (click)="openShareDialog()">
+                <i class="fa fa-share-square"></i>
+              </button>
+            </div>
+
+            <div style="width: 300px;">
+              <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
+                                  [resultIndex]="entitySearchListIdx" [resultCount]="entitySearchList.length"
+                                  (previous)="previous()" (next)="next()">
+              </app-search-control>
+            </div>
           </div>
         </div>
       </div>
