@@ -36,7 +36,7 @@
 
       <!-- Body -->
       <div class="module-body border-bottom" *ngIf="object.isFile">
-        <app-associated-maps></app-associated-maps>
+        <app-associated-maps [object]="object"></app-associated-maps>
       </div>
       <div class="module-body flex-fill">
         <app-word-cloud [object]="object" [clickableWords]="clickableWords"

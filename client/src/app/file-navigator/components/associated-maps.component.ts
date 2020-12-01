@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
@@ -7,12 +7,15 @@ import { FilesystemObjectActions } from '../../file-browser/services/filesystem-
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObjectList } from '../../file-browser/models/filesystem-object-list';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-associated-maps',
   templateUrl: './associated-maps.component.html',
 })
 export class AssociatedMapsComponent implements OnInit, OnDestroy {
+  @Input() object: FilesystemObject;
+
   private loadTaskSubscription: Subscription;
 
   readonly loadTask: BackgroundTask<string, FilesystemObjectList> = new BackgroundTask(
@@ -26,13 +29,9 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
   hashId: string;
   list: FilesystemObjectList;
 
-  constructor(
-    protected readonly route: ActivatedRoute,
-    protected readonly filesystemService: FilesystemService,
-    protected readonly filesystemObjectActions: FilesystemObjectActions,
-    protected readonly workspaceManager: WorkspaceManager,
-  ) {
-    this.hashId = this.route.snapshot.params.file_id;
+  constructor(protected readonly filesystemService: FilesystemService,
+              protected readonly filesystemObjectActions: FilesystemObjectActions,
+              protected readonly workspaceManager: WorkspaceManager) {
   }
 
   ngOnInit() {
@@ -48,34 +47,15 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
   }
 
   refresh() {
-    this.loadTask.update(this.hashId);
+    this.loadTask.update(this.object.hashId);
   }
 
-  createMap() {
-    /*
-    const parent = new FilesystemObject();
-    parent.locator = {
-      projectName: this.file.project_name,
-      directoryId: this.file.dir_id,
-    };
-    parent.directory = {
-      id: this.file.dir_id,
-      projectsId: null,
-      directoryParentId: null,
-    };
-    this.filesystemObjectActions.openMapCreateDialog(parent).then(result => {
-      this.workspaceManager.navigate([
-        '/projects',
-        result.project.project_name,
-        'maps',
-        result.project.hash_id,
-        'edit',
-      ], {
-        newTab: true,
-      });
-    }, () => {
+  openMapCreateDialog() {
+    return this.filesystemObjectActions.openMapCreateDialog({
+      parent: this.object.parent,
+      createDialog: {
+        promptParent: true,
+      },
     });
-     */
-    // TODO
   }
 }
