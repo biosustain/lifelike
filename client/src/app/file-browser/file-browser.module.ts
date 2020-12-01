@@ -27,11 +27,12 @@ import { ProjectService } from './services/project.service';
 import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialog.component';
 import { ObjectVersionHistoryComponent } from './components/object-version-history.component';
 import { ObjectVersionHistoryDialogComponent } from './components/dialog/object-version-history-dialog.component';
-import { ObjectPreviewComponent } from './components/object-preview.component';
+import { ObjectPreviewComponent, ObjectPreviewOutletComponent } from './components/object-preview.component';
 import { EnrichmentTableOrderDialogComponent } from './components/enrichment-table-order-dialog.component';
 import { ObjectExportDialogComponent } from './components/dialog/object-export-dialog.component';
 import { ObjectTileDeckComponent } from './components/object-tile-deck.component';
 import { ObjectPathComponent } from './components/object-path.component';
+import { ObjectTypeService } from './services/object-type.service';
 
 @NgModule({
   declarations: [
@@ -60,13 +61,13 @@ import { ObjectPathComponent } from './components/object-path.component';
     ObjectVersionHistoryComponent,
     ObjectVersionHistoryDialogComponent,
     ObjectPreviewComponent,
+    ObjectPreviewOutletComponent,
     ObjectExportDialogComponent,
     ObjectPathComponent,
   ],
   imports: [
     SharedModule,
     PdfViewerLibModule,
-    DrawingToolModule,
   ],
   entryComponents: [
     ObjectDeleteDialogComponent,
@@ -97,6 +98,7 @@ import { ObjectPathComponent } from './components/object-path.component';
     ProjectService,
     FilesystemService,
     FilesystemObjectActions,
+    ObjectTypeService,
   ],
 })
 export class FileBrowserModule {
