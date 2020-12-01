@@ -14,6 +14,11 @@
   <div class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
     <div class="module">
       <div class="module-header">
+        <!-- Breadcrumbs -->
+        <div class="module-breadcrumb-bar mb-1" *ngIf="map">
+          <app-object-path [object]="map.parent"></app-object-path>
+        </div>
+
         <div class="module-title-bar">
           <button type="button" class="module-title-bar-back mr-2" (click)="goToReturnUrl()" *ngIf="returnUrl">
             <i class="fa fa-fw fa-arrow-left"></i>
