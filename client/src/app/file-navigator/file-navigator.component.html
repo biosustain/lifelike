@@ -13,22 +13,34 @@
     <div class="module" appContainerBreakpoints>
       <!-- Header -->
       <div class="module-header">
+        <!-- Breadcrumbs -->
+        <div class="module-breadcrumb-bar mb-1">
+          <app-object-path [object]="object" [newTab]="true"></app-object-path>
+        </div>
+
         <!-- Title bar -->
         <div class="module-titlebar">
           <h1 class="module-title">
-            File Navigator -
-            <a [appLink]="['/projects', projectName]" [newTab]="true">{{ projectName }}</a> /
-            <a [appLink]="['/projects', projectName, 'files', fileId]" [newTab]="true">{{ fileName }}</a>
+            <ng-container *ngIf="object.isDirectory && !object.parent">
+              File Navigator (Entire Project)
+            </ng-container>
+            <ng-container *ngIf="object.isDirectory && object.parent">
+              File Navigator (Folder Contents)
+            </ng-container>
+            <ng-container *ngIf="!object.isDirectory">
+              File Navigator
+            </ng-container>
           </h1>
         </div>
       </div>
 
       <!-- Body -->
-      <div class="module-body border-bottom">
+      <div class="module-body border-bottom" *ngIf="object.isFile">
         <app-associated-maps></app-associated-maps>
       </div>
       <div class="module-body flex-fill">
-        <app-word-cloud-file-navigator></app-word-cloud-file-navigator>
+        <app-word-cloud [object]="object" [clickableWords]="clickableWords"
+                        (wordOpen)="openWord($event)"></app-word-cloud>
       </div>
     </div>
   </div>

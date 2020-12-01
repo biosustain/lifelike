@@ -43,10 +43,14 @@ export type ObjectContentSource = { contentHashId: string }
   | { contentUrl: string }
   | ObjectContentValueRequest;
 
-export interface ObjectSearchRequest extends PaginatedRequestOptions {
-  public: boolean;
+export type ObjectSearchRequest = ({
+  type: 'public';
   mimeTypes: string[];
-}
+} & PaginatedRequestOptions) | {
+  type: 'linked';
+  linkedHashId: string;
+  mimeTypes: ['vnd.lifelike.document/map'];
+};
 
 export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueRequest> {
   filename?: string;

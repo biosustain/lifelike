@@ -195,11 +195,6 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
-  openEntityCloudPane(target: FilesystemObject) {
-    const url = `/entity-cloud/${target.project.name}`;
-    this.workspaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
-  }
-
   openObject(target: FilesystemObject) {
     this.workspaceManager.navigate(target.getCommands(), {
       queryParams: this.getObjectQueryParams(target),

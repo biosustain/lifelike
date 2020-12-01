@@ -46,33 +46,8 @@
           </div>
 
           <div class="module-section-body">
-            <div class="tile-deck">
-              <div *ngFor="let o of list.results.view" class="tile d-flex flex-column">
-                <div class="flex-fill d-flex justify-content-center align-items-center my-2">
-                  <a [appLink]="o.getCommands(false)" [newTab]="true"
-                     class="text-muted">
-                    <i class="fas fa-project-diagram fa-2x"></i>
-                  </a>
-                </div>
-                <div class="text-truncate text-center">
-                  <a [appLink]="o.getCommands(false)" [newTab]="true"
-                     class="d-block text-truncate">
-                    <strong>{{ o.filename }}</strong>
-                  </a>
-                  <div class="text-truncate text-muted">
-                    By {{ o.user.username }}
-                  </div>
-                </div>
-              </div>
-
-              <div class="tile d-flex flex-column align-items-center justify-content-center">
-                <div class="text-truncate text-center">
-                  <a [appLink]="['/community']" class="d-block text-truncate">
-                    View more...
-                  </a>
-                </div>
-              </div>
-            </div>
+            <app-object-tile-deck [objects]="list.results" [newTabObject]="true" [forEditing]="false"
+                                  [showMoreButton]="true" [moreLink]="['/community']"></app-object-tile-deck>
           </div>
         </div>
       </ng-container>

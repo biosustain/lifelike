@@ -30,6 +30,8 @@ import { ObjectVersionHistoryDialogComponent } from './components/dialog/object-
 import { ObjectPreviewComponent } from './components/object-preview.component';
 import { EnrichmentTableOrderDialogComponent } from './components/enrichment-table-order-dialog.component';
 import { ObjectExportDialogComponent } from './components/dialog/object-export-dialog.component';
+import { ObjectTileDeckComponent } from './components/object-tile-deck.component';
+import { ObjectPathComponent } from './components/object-path.component';
 
 @NgModule({
   declarations: [
@@ -53,11 +55,13 @@ import { ObjectExportDialogComponent } from './components/dialog/object-export-d
     EnrichmentTableOrderDialogComponent,
     ObjectSelectionDialogComponent,
     ObjectListComponent,
+    ObjectTileDeckComponent,
     ObjectEditDialogComponent,
     ObjectVersionHistoryComponent,
     ObjectVersionHistoryDialogComponent,
     ObjectPreviewComponent,
     ObjectExportDialogComponent,
+    ObjectPathComponent,
   ],
   imports: [
     SharedModule,
@@ -84,8 +88,10 @@ import { ObjectExportDialogComponent } from './components/dialog/object-export-d
     ObjectTypeLabelComponent,
     ObjectSelectionDialogComponent,
     ObjectListComponent,
+    ObjectTileDeckComponent,
     ObjectEditDialogComponent,
     ObjectVersionHistoryDialogComponent,
+    ObjectPathComponent,
   ],
   providers: [
     ProjectService,

@@ -193,6 +193,14 @@
                   </button>
                 </ng-container>
 
+                <ng-container *ngIf="object.isNavigable">
+                  <div class="dropdown-divider"></div>
+                  <button ngbDropdownItem [appLink]="['/file-navigator', object.project.name, object.hashId]"
+                          [newTab]="true" [sideBySide]="true">
+                    Entity cloud...
+                  </button>
+                </ng-container>
+
                 <ng-container
                   *ngIf="object.isCloneable || object.privileges.writable && (object.isMovable || object.isDeletable)">
                   <div class="dropdown-divider"></div>
@@ -227,6 +235,6 @@
 
   <div class="d-none d-cbp-lg-block module-body-split-sidebar">
     <app-object-info [object]="objects.lastSelection"
-                   *ngIf="objects != null && objects.selection.length"></app-object-info>
+                     *ngIf="objects != null && objects.selection.length"></app-object-info>
   </div>
 </div>

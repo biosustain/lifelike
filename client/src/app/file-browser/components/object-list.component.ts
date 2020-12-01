@@ -13,7 +13,7 @@ import { getObjectLabel } from '../utils/objects';
 import { CollectionModal } from '../../shared/utils/collection-modal';
 
 @Component({
-  selector: 'app-file-list',
+  selector: 'app-object-list',
   templateUrl: './object-list.component.html',
 })
 export class ObjectListComponent {

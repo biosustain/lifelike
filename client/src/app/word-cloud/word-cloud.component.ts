@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { uniqueId } from 'lodash';
@@ -13,6 +13,8 @@ import { WordCloudService } from './services/word-cloud.service';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
+import { FilesystemObject } from '../file-browser/models/filesystem-object';
+import { PdfAnnotationsService } from '../drawing-tool/services';
 
 @Component({
   selector: 'app-word-cloud',
@@ -23,42 +25,32 @@ import * as cloud from 'd3.layout.cloud';
 export class WordCloudComponent {
   id = uniqueId('WordCloudComponent-');
 
+  @Input() title = 'Entity Cloud';
+  @Input() object: FilesystemObject;
+  @Input() clickableWords = false;
   @Output() wordOpen = new EventEmitter<WordCloudAnnotationFilterEntity>();
-
-  projectName: string;
-  fileId: string;
-  windowTitle: string;
 
   loadTask: BackgroundTask<[], any>;
   annotationsLoadedSub: Subscription;
 
   wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
   annotationData: WordCloudAnnotationFilterEntity[] = [];
+  filtersPanelOpened = false;
 
   legend: Map<string, string> = new Map<string, string>();
 
-  filtersPanelOpened = false;
-
-  clickableWords = false;
   WORD_CLOUD_MARGIN = 10;
 
-  constructor(
-      readonly route: ActivatedRoute,
-      public pdf: PdfFilesService,
-      public wordCloudService: WordCloudService,
-      public legendService: LegendService,
-  ) {
-    this.projectName = this.route.snapshot.params.project_name;
-    this.fileId = this.route.snapshot.params.file_id;
+  constructor(protected readonly pdfAnnotationService: PdfAnnotationsService,
+              protected readonly legendService: LegendService) {
     this.initWordCloud();
   }
 
   initDataFetch() {
     this.loadTask = new BackgroundTask(() => {
       return combineLatest(
-        this.pdf.getFileMeta(this.fileId, this.projectName),
         this.legendService.getAnnotationLegend(),
-        this.wordCloudService.getCombinedAnnotations(this.projectName, this.fileId),
+        this.pdfAnnotationService.getCombinedAnnotations(this.object.hashId),
       );
     });
   }
@@ -66,11 +58,9 @@ export class WordCloudComponent {
   initWordCloud() {
     this.initDataFetch();
     this.annotationsLoadedSub = this.loadTask.results$.subscribe(({
-      result: [pdfFile, legend, annotationExport],
-      value: [],
-    }) => {
-      this.windowTitle = pdfFile.filename;
-
+                                                                    result: [legend, annotationExport],
+                                                                    value: [],
+                                                                  }) => {
       // Reset legend
       Object.keys(legend).forEach(label => {
         this.legend.set(label.toLowerCase(), legend[label].color);
@@ -244,7 +234,7 @@ export class WordCloudComponent {
       top: this.WORD_CLOUD_MARGIN,
       right: this.WORD_CLOUD_MARGIN,
       bottom: this.WORD_CLOUD_MARGIN,
-      left: this.WORD_CLOUD_MARGIN
+      left: this.WORD_CLOUD_MARGIN,
     };
     const width = (document.getElementById(`${this.id}cloud-wrapper`).offsetWidth) - margin.left - margin.right;
     const height = (document.getElementById(`${this.id}cloud-wrapper`).offsetHeight) - margin.top - margin.bottom;
@@ -264,28 +254,28 @@ export class WordCloudComponent {
     // Append the svg element to the wrapper, append the grouping element to the svg, and create initial words
     d3.select(`#${this.id}cloud-wrapper`)
       .append('svg')
-        .attr('width', width)
-        .attr('height', height)
+      .attr('width', width)
+      .attr('height', height)
       .append('g')
-        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+      .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
       .selectAll('text')
       .data(words, (d) => d.text)
       .enter()
       .append('text')
-        .on('click', (item: WordCloudAnnotationFilterEntity) => {
-          this.wordOpen.emit(item);
-        })
-        .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
-        .style('fill', (d) => d.color)
-        .attr('text-anchor', 'middle')
-        .style('font-size', (d) =>  d.size + 'px')
-        .transition()
-        .attr('transform', (d) => {
-          return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
-        })
-        .text((d) => d.text)
-        .ease(d3.easeSin)
-        .duration(1000);
+      .on('click', (item: WordCloudAnnotationFilterEntity) => {
+        this.wordOpen.emit(item);
+      })
+      .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
+      .style('fill', (d) => d.color)
+      .attr('text-anchor', 'middle')
+      .style('font-size', (d) => d.size + 'px')
+      .transition()
+      .attr('transform', (d) => {
+        return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
+      })
+      .text((d) => d.text)
+      .ease(d3.easeSin)
+      .duration(1000);
   }
 
   /**
@@ -303,13 +293,13 @@ export class WordCloudComponent {
     // Get the svg element and update
     const svg = d3.select(`#${this.id}cloud-wrapper`)
       .select('svg')
-        .attr('width', width)
-        .attr('height', height);
+      .attr('width', width)
+      .attr('height', height);
 
     // Get and update the grouping element
     const g = svg
-                .select('g')
-                  .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+      .select('g')
+      .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
 
     // Get the word elements
     const wordElements = g.selectAll('text').data(words, (d) => d.text);
@@ -319,20 +309,20 @@ export class WordCloudComponent {
       .enter()
       .append('text')
       .merge(wordElements)
-        .style('fill', (d) => d.color)
-        .attr('text-anchor', 'middle')
-        .text((d) => d.text)
-        .on('click', (item: WordCloudAnnotationFilterEntity) => {
-          this.wordOpen.emit(item);
-        })
-        .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
-        .style('font-size', (d) =>  d.size + 'px')
-        .transition()
-        .attr('transform', (d) => {
-          return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
-        })
-        .ease(d3.easeSin)
-        .duration(1000);
+      .style('fill', (d) => d.color)
+      .attr('text-anchor', 'middle')
+      .text((d) => d.text)
+      .on('click', (item: WordCloudAnnotationFilterEntity) => {
+        this.wordOpen.emit(item);
+      })
+      .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
+      .style('font-size', (d) => d.size + 'px')
+      .transition()
+      .attr('transform', (d) => {
+        return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
+      })
+      .ease(d3.easeSin)
+      .duration(1000);
 
     // Remove any words that have been removed by either the algorithm or the user
     wordElements.exit().remove();
