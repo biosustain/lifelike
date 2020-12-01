@@ -32,6 +32,7 @@ import { ObjectPathComponent } from './components/object-path.component';
 import { ObjectTypeService, TYPE_PROVIDER } from './services/object-type.service';
 import { DirectoryTypeProvider } from './providers/directory-type-provider';
 import { DirectoryPreviewComponent } from './components/directory-preview.component';
+import { ObjectMenuComponent } from './components/object-menu.component';
 
 @NgModule({
   declarations: [
@@ -63,6 +64,7 @@ import { DirectoryPreviewComponent } from './components/directory-preview.compon
     ObjectExportDialogComponent,
     ObjectPathComponent,
     DirectoryPreviewComponent,
+    ObjectMenuComponent,
   ],
   imports: [
     SharedModule,
@@ -83,6 +85,7 @@ import { DirectoryPreviewComponent } from './components/directory-preview.compon
     ObjectListComponent,
     ObjectTileDeckComponent,
     DirectoryPreviewComponent,
+    ObjectMenuComponent,
   ],
   exports: [
     ObjectInfoComponent,
@@ -93,6 +96,7 @@ import { DirectoryPreviewComponent } from './components/directory-preview.compon
     ObjectEditDialogComponent,
     ObjectVersionHistoryDialogComponent,
     ObjectPathComponent,
+    ObjectMenuComponent,
   ],
   providers: [
     ProjectService,

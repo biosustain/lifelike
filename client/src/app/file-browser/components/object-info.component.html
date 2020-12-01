@@ -36,6 +36,19 @@
         <strong>Author:</strong> {{ object.creator.username }}
       </li>
     </ul>
+    <div class="mt-3" *ngIf="objectControls">
+      <div ngbDropdown container="body">
+        <button class="btn btn-secondary" ngbDropdownToggle>
+          Actions
+        </button>
+        <div ngbDropdownMenu>
+          <app-object-menu [object]="object" [forEditing]="forEditing"
+                           (objectOpen)="this.objectOpen.next($event)"
+                           (refreshRequest)="this.refreshRequest.next($event)">
+          </app-object-menu>
+        </div>
+      </div>
+    </div>
     <div *ngIf="object.type === 'file' && object.highlight" class="mt-5">
       <h5>Term matches in document:</h5>
       <div *ngFor="let highlight of shownHighlights">
