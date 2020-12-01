@@ -26,7 +26,7 @@ import { BrowserComponent } from './file-browser/components/browser/browser.comp
 // import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
 import { EnrichmentTableViewerComponent } from './file-browser/components/enrichment-table-viewer.component';
-import { FileNavigatorComponent } from './file-navigator/file-navigator.component';
+import { ObjectNavigatorComponent } from './file-navigator/components/object-navigator.component';
 import { WordCloudProjectComponent } from './word-cloud/word-cloud-project.component';
 import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
 
@@ -249,7 +249,7 @@ const routes: Routes = [
   },
   {
     path: 'file-navigator/:project_name/:file_id',
-    component: FileNavigatorComponent,
+    component: ObjectNavigatorComponent,
     canActivate: [AuthGuard],
     data: {
       title: 'File Navigator',
