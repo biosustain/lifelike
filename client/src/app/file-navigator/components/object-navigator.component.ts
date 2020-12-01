@@ -3,19 +3,18 @@ import { ActivatedRoute } from '@angular/router';
 
 import { combineLatest, Subscription } from 'rxjs';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { FilesystemObject, PDF_MIMETYPE } from '../file-browser/models/filesystem-object';
-import { FilesystemService } from '../file-browser/services/filesystem.service';
-import { WordCloudAnnotationFilterEntity } from '../interfaces/annotation-filter.interface';
-import { WorkspaceManager } from '../shared/workspace-manager';
+import { FilesystemObject, PDF_MIMETYPE } from '../../file-browser/models/filesystem-object';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { WordCloudAnnotationFilterEntity } from '../../interfaces/annotation-filter.interface';
+import { WorkspaceManager } from '../../shared/workspace-manager';
 import { escapeRegExp } from 'lodash';
-import { FileViewComponent } from '../file-browser/components/file-view.component';
+import { FileViewComponent } from '../../file-browser/components/file-view.component';
 
 @Component({
-  selector: 'app-file-navigator',
-  templateUrl: './file-navigator.component.html',
-  styleUrls: ['./file-navigator.component.scss'],
+  selector: 'app-object-navigator',
+  templateUrl: './object-navigator.component.html',
 })
-export class FileNavigatorComponent {
+export class ObjectNavigatorComponent {
 
   loadTask: BackgroundTask<string, [FilesystemObject]>;
   fileLoadedSub: Subscription;
