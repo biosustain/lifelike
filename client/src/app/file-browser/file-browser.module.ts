@@ -2,8 +2,6 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from 'app/shared/shared.module';
 import { ObjectBrowserComponent } from './components/object-browser.component';
 import { ObjectDeleteDialogComponent } from './components/dialog/object-delete-dialog.component';
-import { FileViewComponent } from './components/file-view.component';
-import { PdfViewerLibModule } from '../pdf-viewer/pdf-viewer-lib.module';
 import { BrowserProjectListComponent } from './components/browser/browser-project-list.component';
 import { ProjectTitleAcronymPipe } from './services/project-title-acronym.pipe';
 import { ProjectEditDialogComponent } from './components/dialog/project-edit-dialog.component';
@@ -14,7 +12,6 @@ import { BrowserComponent } from './components/browser/browser.component';
 import { BrowserCommunityListComponent } from './components/browser/browser-community-list.component';
 import { BrowserContextComponent } from './components/browser/browser-context.component';
 import { ObjectInfoComponent } from './components/object-info.component';
-import { DrawingToolModule } from '../drawing-tool/drawing-tool.module';
 import { ObjectTypeLabelComponent } from './components/object-type-label.component';
 import { EnrichmentTableViewerComponent } from './components/enrichment-table-viewer.component';
 import { EnrichmentTableCreateDialogComponent } from './components/enrichment-table-create-dialog.component';
@@ -39,7 +36,6 @@ import { ObjectTypeService } from './services/object-type.service';
     ObjectDeleteDialogComponent,
     ObjectDeletionResultDialogComponent,
     ObjectBrowserComponent,
-    FileViewComponent,
     BrowserComponent,
     BrowserContextComponent,
     BrowserCommunityListComponent,
@@ -67,11 +63,9 @@ import { ObjectTypeService } from './services/object-type.service';
   ],
   imports: [
     SharedModule,
-    PdfViewerLibModule,
   ],
   entryComponents: [
     ObjectDeleteDialogComponent,
-    FileViewComponent,
     ProjectCreateDialogComponent,
     ProjectEditDialogComponent,
     ObjectDeletionResultDialogComponent,

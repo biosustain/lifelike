@@ -15,7 +15,7 @@ import { ContentSearchOptions, TYPES, TYPES_MAP } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { HighlightDisplayLimitChange } from '../../file-browser/components/object-info.component';
 import { escapeRegExp } from 'lodash';
-import { FileViewComponent } from '../../file-browser/components/file-view.component';
+import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
 
 @Component({
   selector: 'app-content-search',
