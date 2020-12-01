@@ -32,8 +32,8 @@
       <li *ngIf="object.creationDate">
         <strong>Created:</strong> {{ object.creationDate | date: 'short' }}
       </li>
-      <li *ngIf="object.creator">
-        <strong>Author:</strong> {{ object.creator.username }}
+      <li *ngIf="object.user">
+        <strong>Author:</strong> <app-user [user]="object.user"></app-user>
       </li>
     </ul>
     <div class="mt-3" *ngIf="objectControls">
