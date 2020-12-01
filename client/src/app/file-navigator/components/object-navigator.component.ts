@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { combineLatest, Subscription } from 'rxjs';
@@ -9,12 +9,15 @@ import { WordCloudAnnotationFilterEntity } from '../../interfaces/annotation-fil
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { escapeRegExp } from 'lodash';
 import { FileViewComponent } from '../../file-browser/components/file-view.component';
+import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 
 @Component({
   selector: 'app-object-navigator',
   templateUrl: './object-navigator.component.html',
 })
-export class ObjectNavigatorComponent {
+export class ObjectNavigatorComponent implements ModuleAwareComponent {
+
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   loadTask: BackgroundTask<string, [FilesystemObject]>;
   fileLoadedSub: Subscription;
@@ -36,6 +39,10 @@ export class ObjectNavigatorComponent {
                                                              value: [],
                                                            }) => {
       this.object = object;
+      this.modulePropertiesChange.emit({
+        title: object.effectiveName,
+        fontAwesomeIcon: 'fas fa-compass',
+      });
     });
 
     this.loadTask.update(this.route.snapshot.params.file_id);

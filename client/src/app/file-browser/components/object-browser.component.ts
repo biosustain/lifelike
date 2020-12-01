@@ -57,6 +57,10 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
       }
       this.annotationSubscription = this.filesystemService.annotate(object);
       this.subscriptions.add(this.annotationSubscription);
+      this.modulePropertiesChange.emit({
+        title: object.effectiveName,
+        fontAwesomeIcon: 'folder',
+      });
       return object;
     }));
     this.object$ = object$;
