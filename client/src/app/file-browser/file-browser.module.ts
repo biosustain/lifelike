@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from 'app/shared/shared.module';
-import { FileBrowserComponent } from './components/file-browser.component';
+import { ObjectBrowserComponent } from './components/object-browser.component';
 import { ObjectDeleteDialogComponent } from './components/dialog/object-delete-dialog.component';
 import { FileViewComponent } from './components/file-view.component';
 import { PdfViewerLibModule } from '../pdf-viewer/pdf-viewer-lib.module';
@@ -37,7 +37,7 @@ import { ObjectPathComponent } from './components/object-path.component';
   declarations: [
     ObjectDeleteDialogComponent,
     ObjectDeletionResultDialogComponent,
-    FileBrowserComponent,
+    ObjectBrowserComponent,
     FileViewComponent,
     BrowserComponent,
     BrowserContextComponent,

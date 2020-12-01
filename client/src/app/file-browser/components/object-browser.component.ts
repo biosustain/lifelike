@@ -15,10 +15,10 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 
 @Component({
-  selector: 'app-file-browser',
-  templateUrl: './file-browser.component.html',
+  selector: 'app-object-browser',
+  templateUrl: './object-browser.component.html',
 })
-export class FileBrowserComponent implements OnInit, OnDestroy {
+export class ObjectBrowserComponent implements OnInit, OnDestroy {
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   protected hashId: string;
