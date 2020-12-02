@@ -67,6 +67,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   collectionSize: number;
   currentGenes: string[];
   morePages: boolean;
+  numDefaultHeader: number = this.tableHeader[0].length;
 
   // Enrichment Table and NCBI Matching Results
   domains: string[] = [];
@@ -287,19 +288,43 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
 
   openOrderDialog(): Promise<any> {
     const dialogRef = this.modalService.open(EnrichmentTableOrderDialogComponent);
-    dialogRef.componentInstance.domains = this.domains;
+    dialogRef.componentInstance.domains = [...this.domains];
     return dialogRef.result.then((result) => {
-      this.domains = result;
-      this.columnOrder = [ ...result];
-      if (this.columnOrder.includes('Regulon')) {
-        const index = this.columnOrder.indexOf('Regulon');
-        this.columnOrder.splice(index + 1, 0, 'Regulon 3');
-        this.columnOrder.splice(index + 1, 0, 'Regulon 2');
+      if (this.domains !== result) {
+        this.reorderEntries(result);
       }
-      this.initializeHeaders();
-      this.matchNCBINodes(this.currentPage);
-
     }, () => {});
+  }
+
+  reorderEntries(order: string[]) {
+    const newEntries = [];
+    this.tableEntries.forEach(row => {
+      const newRow = [];
+      for (let i = 0; i < this.numDefaultHeader; i++) {
+        newRow[i] = row[i];
+      }
+      const newOrder = [...order];
+      newOrder.splice(newOrder.indexOf('Regulon') + 1, 0, 'Regulon 1');
+      newOrder.splice(newOrder.indexOf('Regulon') + 2, 0, 'Regulon 2');
+
+      const newDomains = [...this.domains];
+      newDomains.splice(newDomains.indexOf('Regulon') + 1, 0, 'Regulon 1');
+      newDomains.splice(newDomains.indexOf('Regulon') + 2, 0, 'Regulon 2');
+
+      newOrder.forEach(domain =>
+        newRow[newOrder.indexOf(domain) + this.numDefaultHeader] =
+        row[newDomains.indexOf(domain) + this.numDefaultHeader]);
+      newEntries.push(newRow);
+    });
+    this.tableEntries = newEntries;
+    this.domains = order;
+    this.columnOrder = [ ...order];
+    if (this.columnOrder.includes('Regulon')) {
+      const index = this.columnOrder.indexOf('Regulon');
+      this.columnOrder.splice(index + 1, 0, 'Regulon 3');
+      this.columnOrder.splice(index + 1, 0, 'Regulon 2');
+    }
+    this.initializeHeaders();
   }
 
   openEnrichmentTableEditDialog(): Promise<any> {
@@ -358,7 +383,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       (page - 1) * this.pageSize,
       (page - 1) * this.pageSize + this.pageSize
     );
-    console.log(currentGenes);
     this.worksheetViewerService
       .matchNCBINodes(currentGenes, this.taxID)
       .subscribe((result) => {
