@@ -218,6 +218,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   downloadAsCSV() {
+    try {
     this.loadAllEntries().then(entries => {
       const stringEntries = this.convertEntriesToString(entries);
       let csvFile = '';
@@ -239,6 +240,11 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           }
       }
       });
+    } catch (err) {
+      this.snackBar.open(`Something went wrong.`, 'Close', {
+        duration: 5000,
+      });
+    }
   }
 
   onTableScroll(e) {
