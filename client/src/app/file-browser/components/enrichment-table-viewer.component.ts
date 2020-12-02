@@ -16,6 +16,7 @@ import {
   EnrichmentWrapper,
   GoNode,
   Synonym,
+  NCBIWrapper,
 } from '../services/enrichment-table.service';
 import { ActivatedRoute } from '@angular/router';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
@@ -34,7 +35,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   // Inputs for Generic Table Component
-  tableEntries: TableCell[][];
+  tableEntries: TableCell[][] = [];
   tableHeader: TableHeader[][] = [
     // Primary headers
     [
@@ -65,6 +66,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   pageSize: number;
   collectionSize: number;
   currentGenes: string[];
+  morePages: boolean;
 
   // Enrichment Table and NCBI Matching Results
   domains: string[] = [];
@@ -77,12 +79,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   loadTaskSubscription: Subscription;
   sheetname: string;
   neo4jId: number;
-  synonyms: Synonym[];
-  ncbiNodes: NCBINode[];
-  ncbiLinks: string[];
   importGenes: string[];
   unmatchedGenes: string;
-  ncbiIds: number[];
   duplicateGenes: string;
   columnOrder: string[] = [];
 
@@ -136,6 +134,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       this.currentPage = 1;
       this.pageSize = 10;
       this.collectionSize = this.importGenes.length;
+      if (this.currentPage < Math.ceil(this.collectionSize / this.pageSize)) {
+        this.morePages = true;
+      }
       this.matchNCBINodes(this.currentPage);
     });
     this.loadTask.update();
@@ -147,18 +148,19 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
 
   loadAllEntries(): Promise<TableCell[][]> {
     return this.worksheetViewerService
-    .matchNCBINodes(this.currentGenes, this.taxID)
+    .matchNCBINodes(this.importGenes, this.taxID)
     .pipe(
       flatMap(matched => forkJoin(
         [matched.map((wrapper) => wrapper.s)],
         [matched.map((wrapper) => wrapper.x)],
         [matched.map((wrapper) => wrapper.link)],
+        [matched.map((wrapper) => wrapper.neo4jID)],
         this.worksheetViewerService.getNCBIEnrichmentDomains(
           matched.map((wrapper) => wrapper.neo4jID), this.taxID)
       )),
-      map(([synonyms, ncbiNodes, ncbiLinks, domains]) => {
+      map(([synonyms, ncbiNodes, ncbiLinks, ncbiIds, domains]) => {
         const tableEntries = domains.map((wrapper) =>
-          this.processEnrichmentNodeArray(wrapper)
+          this.processEnrichmentNodeArray(wrapper, ncbiNodes, ncbiIds)
         );
         for (let i = 0; i < ncbiNodes.length; i++) {
           tableEntries[i].unshift({
@@ -238,6 +240,20 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       });
   }
 
+  onTableScroll(e) {
+    const tableViewHeight = e.target.offsetHeight;
+    const tableScrollHeight = e.target.scrollHeight;
+    const scrollLocation = e.target.scrollTop;
+
+    // If the user has scrolled within 10px of the bottom, add more data
+    const buffer = 10;
+    const limit = tableScrollHeight - tableViewHeight - buffer;
+    if (scrollLocation > limit && this.currentPage < Math.ceil(this.collectionSize / this.pageSize)) {
+      this.currentPage += 1;
+      this.goToPage(this.currentPage);
+    }
+  }
+
   convertEntriesToString(entries: TableCell[][]): string[][] {
     const result = [];
     this.tableHeader.forEach(row => {
@@ -303,8 +319,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           duration: 5000,
         });
         this.loadTask.update();
-      }, () => {});
-    });
+      });
+    }, () => {});
   }
 
   emitModuleProperties() {
@@ -338,18 +354,15 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   matchNCBINodes(page: number) {
-    this.currentGenes = this.importGenes.slice(
+    const currentGenes = this.importGenes.slice(
       (page - 1) * this.pageSize,
       (page - 1) * this.pageSize + this.pageSize
     );
+    console.log(currentGenes);
     this.worksheetViewerService
-      .matchNCBINodes(this.currentGenes, this.taxID)
+      .matchNCBINodes(currentGenes, this.taxID)
       .subscribe((result) => {
-        this.synonyms = result.map((wrapper) => wrapper.s);
-        this.ncbiNodes = result.map((wrapper) => wrapper.x);
-        this.ncbiIds = result.map((wrapper) => wrapper.neo4jID);
-        this.ncbiLinks = result.map((wrapper) => wrapper.link);
-        this.getDomains();
+        this.getDomains(result, currentGenes);
       });
   }
 
@@ -369,33 +382,39 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   // Get data from enrichment domains.
-  getDomains() {
+  getDomains(result: NCBIWrapper[], currentGenes: string[]) {
+    const synonyms = result.map((wrapper) => wrapper.s);
+    const ncbiNodes = result.map((wrapper) => wrapper.x);
+    const ncbiIds = result.map((wrapper) => wrapper.neo4jID);
+    const ncbiLinks = result.map((wrapper) => wrapper.link);
     this.worksheetViewerService
-      .getNCBIEnrichmentDomains(this.ncbiIds, this.taxID)
-      .subscribe((result) => {
-        this.tableEntries = result.map((wrapper) =>
-          this.processEnrichmentNodeArray(wrapper)
+      .getNCBIEnrichmentDomains(ncbiIds, this.taxID)
+      .subscribe((domainResult) => {
+        let newEntries = domainResult.map((wrapper) =>
+          this.processEnrichmentNodeArray(wrapper, ncbiNodes, ncbiIds)
         );
-        for (let i = 0; i < this.ncbiNodes.length; i++) {
-          this.tableEntries[i].unshift({
-            text: this.ncbiNodes[i].full_name,
+        for (let i = 0; i < ncbiNodes.length; i++) {
+          newEntries[i].unshift({
+            text: ncbiNodes[i].full_name,
             singleLink: {
-              link: this.ncbiLinks[i],
+              link: ncbiLinks[i],
               linkText: 'NCBI Link',
             },
           });
-          this.tableEntries[i].unshift({ text: this.ncbiNodes[i].name });
-          this.tableEntries[i].unshift({ text: this.synonyms[i].name });
+          newEntries[i].unshift({ text: ncbiNodes[i].name });
+          newEntries[i].unshift({ text: synonyms[i].name });
         }
-        this.geneNames = this.synonyms.map((node) => node.name);
-        this.processUnmatchedNodes();
+        newEntries = newEntries.concat(this.processUnmatchedNodes(synonyms, currentGenes));
+        this.tableEntries = this.tableEntries.concat(newEntries);
       });
   }
 
-  processUnmatchedNodes() {
-    const unmatchedGenes = this.currentGenes.filter(
+  processUnmatchedNodes(synonyms: Synonym[], currentGenes: string[]): TableCell[][] {
+    this.geneNames = synonyms.map((node) => node.name);
+    const unmatchedGenes = currentGenes.filter(
       (gene) => !this.geneNames.includes(gene)
     );
+    const result = [];
     unmatchedGenes.forEach((gene) => {
       const cell: TableCell[] = [];
       cell.push({ text: gene, highlight: true });
@@ -409,13 +428,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       for (let i = 0; i < colNum - 2; i++) {
         cell.push({ text: '', highlight: true });
       }
-      this.tableEntries.push(cell);
+      result.push(cell);
     });
-    this.unmatchedGenes = unmatchedGenes.join(', ');
+    return result;
   }
 
   // Process wrapper to convert domain data into string array that represents domain columns.
-  processEnrichmentNodeArray(wrapper: EnrichmentWrapper): TableCell[] {
+  processEnrichmentNodeArray(wrapper: EnrichmentWrapper, ncbiNodes: NCBINode[], ncbiIds: number[]): TableCell[] {
     const result: TableCell[] = [];
     if (this.domains.includes('Regulon')) {
       if (wrapper.regulon.result !== null) {
@@ -525,7 +544,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
                 : {
                     link:
                       'http://amigo.geneontology.org/amigo/search/annotation?q=' +
-                      this.ncbiNodes[this.ncbiIds.indexOf(wrapper.node_id)].name,
+                      ncbiNodes[ncbiIds.indexOf(wrapper.node_id)].name,
                     linkText: 'GO Link',
                   },
             }
