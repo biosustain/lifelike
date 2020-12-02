@@ -129,7 +129,7 @@ class ElasticService():
                     extra=EventLog(event_type='elastic').to_dict()
                 )
             else:
-                current_app.logger.error(
+                current_app.logger.warning(
                     f'Elastic search bulk operation failed: {info}',
                     extra=EventLog(event_type='elastic').to_dict()
                 )
