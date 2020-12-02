@@ -21,18 +21,21 @@ class BaseException(Exception):
 
 class AnnotationError(BaseException):
     """An error occured during the annotation process"""
+
     def __init__(self, message, additional_msgs=[]) -> None:
         super().__init__('Annotation Error', message, additional_msgs)
 
 
 class LMDBError(BaseException):
     """An error occured during the LMDB process"""
+
     def __init__(self, message, additional_msgs=[]) -> None:
         super().__init__('LMDB Error', message, additional_msgs)
 
 
 class FileUploadError(BaseException):
     """An error occured during the file upload process"""
+
     def __init__(self, message, additional_msgs=[]) -> None:
         super().__init__('File Upload Error', message, additional_msgs)
 
@@ -177,14 +180,10 @@ class FilesystemAccessRequestRequired(BaseException):
 class AccessRequestRequiredError(BaseException):
     """Raised when access needs to be requested."""
 
-    def __init__(self, message, file_hash_id):
+    def __init__(self, message, *, file_hash_id=None, project_hash_id=None):
         super().__init__('Access Request Required Error',
                          message,
                          code='access_request_required',
                          error_return_props={
-                             'request': {
-                                 'file': {
-                                     'hash_id': file_hash_id,
-                                 }
-                             }
+                             # TODO: Return the projet or file ID so you can request acess
                          })

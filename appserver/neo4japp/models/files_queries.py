@@ -1,15 +1,16 @@
 """TODO: Possibly turn this into a DAO in the future.
 For now, it's just a file with query functions to help DRY.
 """
-from typing import List, Set, Dict, Optional, Union, Literal
+from typing import Set, Optional, Union, Literal
 
 from flask_sqlalchemy import BaseQuery
 from sqlalchemy import and_, inspect
 from sqlalchemy.orm import contains_eager, aliased, Query
 
 from neo4japp.database import db
-from . import projects_collaborator_role, AppUser, AppRole, Projects
+from . import AppUser, AppRole, Projects
 from .files import Files, FileContent, file_collaborator_role, FallbackOrganism
+from .projects_queries import add_project_user_role_columns, ProjectCalculator
 from ..schemas.filesystem import FilePrivileges
 
 
@@ -205,7 +206,7 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
                              projects_table) \
         .join(q_hierarchy, q_hierarchy.c.id == files_table.id) \
         .join(q_hierarchy_project, q_hierarchy_project.c.initial_id == q_hierarchy.c.initial_id) \
-        .join(projects_table, projects_table.root_id == q_hierarchy_project.c.project_id) \
+        .join(projects_table, projects_table.id == q_hierarchy_project.c.project_id) \
         .outerjoin(t_parent_files, t_parent_files.id == files_table.parent_id) \
         .options(contains_eager(files_table.parent, alias=t_parent_files)) \
         .order_by(q_hierarchy.c.level)
@@ -217,39 +218,7 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
 
 
 # noinspection DuplicatedCode
-def add_project_user_role_columns(query, project_table, role_names, user_id, column_format="has_{}"):
-    """
-    Add columns to a query for fetching the value of the provided roles for the
-    provided user ID for projects in the provided project table.
-
-    :param query: the query to modify
-    :param project_table: the project table
-    :param role_names: a list of roles to check
-    :param user_id: the user ID to check for
-    :param column_format: the format for the name of the column, where {} is the role name
-    :return: the new query
-    """
-
-    for role_name in role_names:
-        t_role = db.aliased(AppRole)
-        t_user = db.aliased(AppUser)
-
-        project_role_sq = db.session.query(projects_collaborator_role, t_role.name) \
-            .join(t_role, t_role.id == projects_collaborator_role.c.app_role_id) \
-            .join(t_user, t_user.id == projects_collaborator_role.c.appuser_id) \
-            .subquery()
-
-        query = query \
-            .outerjoin(project_role_sq, and_(project_role_sq.c.projects_id == project_table.id,
-                                             project_role_sq.c.appuser_id == user_id,
-                                             project_role_sq.c.name == role_name)) \
-            .add_column(project_role_sq.c.name.isnot(None).label(column_format.format(role_name)))
-
-    return query
-
-
-# noinspection DuplicatedCode
-def add_file_user_role_columns(query, file_table, role_names, user_id, column_format="has_{}"):
+def add_file_user_role_columns(query, file_table, user_id, role_names=None, column_format=None):
     """
     Add columns to a query for fetching the value of the provided roles for the
     provided user ID for files in the provided fi;e table.
@@ -261,6 +230,13 @@ def add_file_user_role_columns(query, file_table, role_names, user_id, column_fo
     :param column_format: the format for the name of the column, where {} is the role name
     :return: the new query
     """
+
+    role_names = role_names if role_names is not None else [
+        'file-read',
+        'file-write',
+        'file-comment'
+    ]
+    column_format = column_format if column_format is not None else f'has_{{}}_{user_id}'
 
     for role_name in role_names:
         t_role = db.aliased(AppRole)
@@ -280,33 +256,6 @@ def add_file_user_role_columns(query, file_table, role_names, user_id, column_fo
     return query
 
 
-def add_user_permission_columns(query, project_table, file_table, user_id):
-    """
-    Add the regular project role columns (read, write, admin) and the regular
-    file role columns (read, write, comment) to the given query.
-
-    :param query: the query to update
-    :param project_table: the projects table to use
-    :param file_table: the files table to use
-    :param user_id: the user ID to check for
-    :return: the new query
-    """
-
-    query = add_project_user_role_columns(query, project_table, [
-        'project-read',
-        'project-write',
-        'project-admin'
-    ], user_id, f'has_{{}}_{user_id}')
-
-    query = add_file_user_role_columns(query, file_table, [
-        'file-read',
-        'file-write',
-        'file-comment'
-    ], user_id, f'has_{{}}_{user_id}')
-
-    return query
-
-
 class FileHierarchy:
     """
     Provides accessors for working with the file hierarchy data returned
@@ -320,6 +269,9 @@ class FileHierarchy:
         self.project_table = project_table
         self.file_key = inspect(self.file_table).name
         self.project_key = inspect(self.project_table).name
+
+        self.project_calculator = ProjectCalculator(results[0], self.project_table)
+
         if self.project_key is None or self.file_key is None:
             raise RuntimeError("the file_table or project_table need to be aliased")
 
@@ -331,8 +283,9 @@ class FileHierarchy:
     def file(self) -> Files:
         return self.results[0][self.file_key]
 
-    def calculate_properties(self):
-        self.file.calculated_project = self.project
+    def calculate_properties(self, user_ids):
+        self.project_calculator.calculate_privileges(user_ids)
+        self.file.calculated_project = self.project_calculator.project
 
         parent_deleted = False
         parent_recycled = False

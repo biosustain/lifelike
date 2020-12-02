@@ -5,7 +5,7 @@ import re
 import urllib.request
 from collections import defaultdict
 from datetime import datetime
-from typing import Optional, List, Dict, Iterable, Sequence
+from typing import Optional, List, Dict, Iterable
 from urllib.error import URLError
 
 import graphviz
@@ -23,8 +23,9 @@ from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import db
 from neo4japp.exceptions import RecordNotFoundException, AccessRequestRequiredError
 from neo4japp.models import Projects, Files, FileContent, AppUser, FileVersion, FileBackup
-from neo4japp.models.files_queries import add_user_permission_columns, FileHierarchy, \
-    build_file_hierarchy_query, build_file_children_cte
+from neo4japp.models.files_queries import FileHierarchy, \
+    build_file_hierarchy_query, build_file_children_cte, add_file_user_role_columns
+from neo4japp.models.projects_queries import add_project_user_role_columns
 from neo4japp.schemas.common import PaginatedRequest
 from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponse, FileResponseSchema, \
     FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, BulkFileUpdateRequestSchema, \
@@ -89,7 +90,8 @@ class FilesystemBaseView(MethodView):
         return files[0]
 
     def get_nondeleted_recycled_files(self, filter, lazy_load_content=False,
-                                      require_hash_ids: List[str] = None) -> List[Files]:
+                                      require_hash_ids: List[str] = None,
+                                      sort=None) -> List[Files]:
         """
         Returns files that are guaranteed to be non-deleted, but may or may not be
         recycled, that matches the provided filter. If you do not want recycled files,
@@ -105,33 +107,66 @@ class FilesystemBaseView(MethodView):
         t_file = db.aliased(Files, name='_file')  # alias required for the FileHierarchy class
         t_project = db.aliased(Projects, name='_project')
 
+        # The following code gets a whole file hierarchy, complete with permission
+        # information for the current user for the whole hierarchy, all in one go, but the
+        # code is unfortunately very complex. However, as long as we can limit the instances of
+        # this complex code to only one place in the codebase (right here), while returning
+        # just a list of file objects (therefore abstracting all complexity to within
+        # this one method), hopefully we manage it. One huge upside is that anything downstream
+        # from this method, including the client, has zero complexity to deal with because
+        # all the required information is available.
+
+        # First, we fetch the requested files, AND the parent folders of these files, AND the
+        # project. Note that to figure out the project, as of writing, you have to walk
+        # up the hierarchy to the top most folder to figure out the associated project, which
+        # the following generated query does. In the future, we MAY want to cache the project of
+        # a file on every file row to make a lot of queries a lot simpler.
         query = build_file_hierarchy_query(and_(
             filter,
             Files.deletion_date.is_(None)
         ), t_project, t_file) \
             .options(raiseload('*'),
                      joinedload(t_file.user),
-                     joinedload(t_file.fallback_organism))
+                     joinedload(t_file.fallback_organism)) \
+            .order_by(*sort or [])
 
-        # Fetch permissions for the given user
-        query = add_user_permission_columns(query, t_project, t_file, current_user.id)
+        # Add extra boolean columns to the result indicating various permissions (read, write, etc.)
+        # for the current user, which then can be read later by FileHierarchy or manually.
+        # Note that file permissions are hierarchical (they are based on their parent folder and also the
+        # project permissions), so you cannot just check these columns for ONE file to determine
+        # a permission -- you also have to read all parent folders and the project! Thankfully, we
+        # just loaded all parent folders and the project above, and so we'll use the handy
+        # FileHierarchy class later to calculate this permission information.
+        query = add_project_user_role_columns(query, t_project, current_user.id)
+        query = add_file_user_role_columns(query, t_file, current_user.id)
 
         if lazy_load_content:
             query = query.options(lazyload(t_file.content))
 
         results = query.all()
-        grouped_results = defaultdict(lambda: [])
-        files = []
 
+        # Because this method supports loading multiple files AND their hierarchy EACH, the query
+        # dumped out every file AND every file's hierarchy. To figure out permissions for a file,
+        # we need to figure out which rows belong to which file, which we can do because the query
+        # put the initial file ID in the initial_id column
+        grouped_results = defaultdict(lambda: [])
         for row in results:
             grouped_results[row._asdict()['initial_id']].append(row)
 
+        # Now we use FileHierarchy to calculate permissions, AND the project (because remember,
+        # projects are only linked to the root folder, and so you cannot just do Files.project).
+        # We also calculate whether a file is recycled for cases when a file itself is not recycled,
+        # but one of its parent folders is (NOTE: maybe in the future,
+        # 'recycled' should not be inherited?)
+        files = []
         for rows in grouped_results.values():
             hierarchy = FileHierarchy(rows, t_file, t_project)
-            hierarchy.calculate_properties()
+            hierarchy.calculate_properties([current_user.id])
             hierarchy.calculate_privileges([current_user.id])
             files.append(hierarchy.file)
 
+        # Handle helper require_hash_ids argument that check to see if all files wanted
+        # actually appeared in the results
         if require_hash_ids:
             missing_hash_ids = self.get_missing_hash_ids(require_hash_ids, files)
 
@@ -139,6 +174,7 @@ class FilesystemBaseView(MethodView):
                 raise RecordNotFoundException(f"The request specified one or more file or directory "
                                               f"({', '.join(missing_hash_ids)}) that could not be found.")
 
+        # In the end, we just return a list of Files instances!
         return files
 
     def get_nondeleted_recycled_children(self, filter, children_filter=None,
@@ -193,8 +229,9 @@ class FilesystemBaseView(MethodView):
                 if not getattr(file.calculated_privileges[user.id], permission):
                     # Do not reveal the filename with the error!
                     raise AccessRequestRequiredError(
-                        f"You do not have access to the specified file object "
-                        f"(with ID of {file.hash_id}) to change it.", file.hash_id)
+                        f"You do not have '{permission}' access to the specified file object "
+                        f"(with ID of {file.hash_id}).",
+                        file_hash_id=file.hash_id)
 
             if not permit_recycled and (file.recycled or file.parent_recycled):
                 raise ValidationError(f"The file or directory '{file.filename}' has been trashed and "

@@ -63,7 +63,7 @@ export class FilesystemService {
     );
   }
 
-  put(request: ObjectCreateRequest): Observable<HttpEvent<any> & {
+  create(request: ObjectCreateRequest): Observable<HttpEvent<any> & {
     bodyValue?: FilesystemObject,
   }> {
     return this.http.post(
