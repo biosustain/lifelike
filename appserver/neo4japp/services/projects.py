@@ -13,7 +13,7 @@ from neo4japp.models import (
     AppUser,
     AppRole,
     Projects,
-    projects_collaborator_role,
+    projects_collaborator_role, Files,
 )
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.util import AttrDict
@@ -52,44 +52,41 @@ class ProjectsService(RDBMSBaseDao):
 
         return query.all()
 
-    def create_projects(self, user: AppUser, projects: Projects) -> Projects:
-        try:
-            self.session.add(projects)
-            self.session.flush()
-        except IntegrityError as e:
-            raise NameUnavailableError('Unable to create projects.')
+    def create_project_uncommitted(self, user: AppUser, projects: Projects) -> Projects:
+        db.session.add(projects)
 
-        # Create a default directory for every project
-        default_dir = Directory(
-            name='/',
-            directory_parent_id=None,
-            projects_id=projects.id,
-            user_id=user.id,
-        )
+        ***ARANGO_USERNAME*** = Files()
+        ***ARANGO_USERNAME***.mime_type = Files.DIRECTORY_MIME_TYPE
+        ***ARANGO_USERNAME***.filename = '/'
+        ***ARANGO_USERNAME***.user = user
+        ***ARANGO_USERNAME***.creator = user
+        db.session.add(***ARANGO_USERNAME***)
 
-        self.session.add(default_dir)
-        self.session.flush()
+        projects.***ARANGO_USERNAME*** = ***ARANGO_USERNAME***
 
         # Set default ownership
-        proj_admin_role = AppRole.query.filter(AppRole.name == 'project-admin').one()
-        self.add_collaborator(user, proj_admin_role, projects)
+        admin_role = db.session.query(AppRole).filter(AppRole.name == 'project-admin').one()
+        self.add_collaborator_uncommitted(user, admin_role, projects)
 
-        self.session.commit()
+        return projects
 
+    def create_projects(self, user: AppUser, projects: Projects) -> Projects:
+        projects = self.create_project_uncommitted(user, projects)
+        db.session.commit()
         return projects
 
     def has_role(self, user: AppUser, projects: Projects) -> Optional[AppRole]:
         user_role = Projects.query_project_roles(user.id, projects.id).one_or_none()
         return user_role
 
-    def add_collaborator(self, user: AppUser, role: AppRole, projects: Projects):
+    def add_collaborator_uncommitted(self, user: AppUser, role: AppRole, projects: Projects):
         """ Add a collaborator to a project or modify existing role """
         existing_role = self.session.execute(
             projects_collaborator_role.select().where(
                 and_(
                     projects_collaborator_role.c.appuser_id == user.id,
                     projects_collaborator_role.c.projects_id == projects.id,
-                )
+                    )
             )
         ).fetchone()
 
@@ -106,6 +103,8 @@ class ProjectsService(RDBMSBaseDao):
             }]
         )
 
+    def add_collaborator(self, user: AppUser, role: AppRole, projects: Projects):
+        self.add_collaborator_uncommitted(user, role, projects)
         self.session.commit()
 
     def edit_collaborator(self, user: AppUser, role: AppRole, projects: Projects):

@@ -214,6 +214,15 @@
                           [newTab]="true" [sideBySide]="true" *ngIf="result.value !== result.value.***ARANGO_USERNAME***">For this folder...</button>
                 </div>
               </div>
+
+              <div ngbDropdown class="d-inline-block ml-2" container="body">
+                <button class="btn btn-secondary" ngbDropdownToggle>
+                  Project
+                </button>
+                <div ngbDropdownMenu>
+                  <app-project-menu [project]="result.value.project"></app-project-menu>
+                </div>
+              </div>
             </div>
 
             <div class="ml-auto d-flex">

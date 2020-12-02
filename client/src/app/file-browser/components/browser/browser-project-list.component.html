@@ -47,7 +47,7 @@
         <div class="module-section-body">
           <div class="mb-3 d-flex align-items-center">
             <div class="mr-2">
-              <button class="btn btn-primary" (click)="displayCreateDialog()">
+              <button class="btn btn-primary" (click)="openCreateDialog()">
                 <i class="fa fa-fw fa-plus-circle"></i>
                 New Project
               </button>
@@ -63,7 +63,7 @@
                       <i class="fas fa-cog fa-fw"></i>
                     </button>
                     <div ngbDropdownMenu>
-                      <button ngbDropdownItem (click)="displayShareDialog(p)">Share...</button>
+                      <app-project-menu [project]="p"></app-project-menu>
                     </div>
                   </div>
                 </div>

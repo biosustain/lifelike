@@ -13,6 +13,12 @@ export const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 export const PDF_MIMETYPE = 'application/pdf';
 
+export interface ProjectPrivileges {
+  readable: boolean;
+  writable: boolean;
+  administrable: boolean;
+}
+
 export class ProjectImpl implements Project {
   /**
    * Legacy ID field that needs to go away.
@@ -24,6 +30,7 @@ export class ProjectImpl implements Project {
   creationDate: string;
   modifiedDate: string;
   ***ARANGO_USERNAME***?: FilesystemObject;
+  privileges: ProjectPrivileges;
 
   get projectName() {
     return this.name;
@@ -37,7 +44,8 @@ export class ProjectImpl implements Project {
     if (data == null) {
       return this;
     }
-    for (const key of ['hashId', 'name', 'description', 'creationDate', 'modifiedDate']) {
+    for (const key of ['hashId', 'name', 'description', 'creationDate', 'modifiedDate',
+      'privileges']) {
       if (data.hasOwnProperty(key)) {
         this[key] = data[key];
       }
@@ -46,6 +54,16 @@ export class ProjectImpl implements Project {
       this.***ARANGO_USERNAME*** = data.***ARANGO_USERNAME*** != null ? new FilesystemObject().update(data.***ARANGO_USERNAME***) : null;
     }
     return this;
+  }
+
+  getCommands(): any[] {
+    return ['/projects', this.name];
+  }
+
+  getURL(): string {
+    return this.getCommands().map(item => {
+      return encodeURIComponent(item.replace(/^\//, ''));
+    }).join('/');
   }
 }
 

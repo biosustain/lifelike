@@ -1,4 +1,6 @@
 import re
+from dataclasses import dataclass
+from typing import Dict
 
 from sqlalchemy import (
     and_,
@@ -46,6 +48,13 @@ projects_collaborator_role = db.Table(
 )
 
 
+@dataclass
+class ProjectPrivileges:
+    readable: bool
+    writable: bool
+    administrable: bool
+
+
 class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
     API_FIELDS = [
         'hash_id',
@@ -61,6 +70,8 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
     description = db.Column(db.Text)
     ***ARANGO_USERNAME***_id = db.Column(db.Integer, db.ForeignKey('files.id'), nullable=False, index=True)
     ***ARANGO_USERNAME*** = db.relationship('Files', foreign_keys=***ARANGO_USERNAME***_id)
+
+    calculated_privileges: Dict[int, ProjectPrivileges] = {}
 
     @validates('name')
     def validate_name(self, key, name):

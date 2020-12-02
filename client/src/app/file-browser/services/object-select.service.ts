@@ -46,7 +46,7 @@ export class ObjectSelectService implements OnDestroy {
     this.object = null;
 
     if (hashId == null) {
-      const projectList$ = this.projectService.getProjects();
+      const projectList$ = this.projectService.list();
       this.projectList$ = projectList$;
       return projectList$;
     } else {

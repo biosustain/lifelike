@@ -6,6 +6,7 @@ from marshmallow import fields, validates_schema, ValidationError
 
 from neo4japp.models import Files, Projects
 from neo4japp.models.files import FilePrivileges
+from neo4japp.models.projects import ProjectPrivileges
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import FileUploadField
 from neo4japp.schemas.fields import SortField
@@ -18,24 +19,60 @@ class UserSchema(CamelCaseSchema):
     last_name = fields.String()
 
 
+ProjectPrivilegesSchema = marshmallow_dataclass.class_schema(ProjectPrivileges)
+
+
 class ProjectSchema(CamelCaseSchema):
     hash_id = fields.String()
     name = fields.String()
     description = fields.String()
     creation_date = fields.DateTime()
     modified_date = fields.DateTime()
+    privileges = fields.Method('get_privileges')
     ***ARANGO_USERNAME*** = fields.Nested(lambda: FileHashIdSchema())
+
+    def get_user_privilege_filter(self):
+        try:
+            return self.context['user_privilege_filter']
+        except KeyError:
+            raise RuntimeError('user_privilege_filter context key should be set '
+                               'for ProjectSchema to determine what to show')
+
+    def get_privileges(self, obj: Projects):
+        privilege_user_id = self.get_user_privilege_filter()
+        if privilege_user_id is not None and obj.calculated_privileges:
+            return ProjectPrivilegesSchema(context=self.context) \
+                .dump(obj.calculated_privileges[privilege_user_id])
+        else:
+            return None
 
 
 class ProjectListRequestSchema(CamelCaseSchema):
     sort = SortField(columns={
         'name': Projects.name
-    })
+    }, missing=lambda: [Projects.name])
 
 
 class ProjectListSchema(CamelCaseSchema):
     total = fields.Integer()
     results = fields.List(fields.Nested(ProjectSchema))
+
+
+class ProjectResponseSchema(CamelCaseSchema):
+    project = fields.Nested(ProjectSchema)
+
+
+class ProjectSearchRequestSchema(ProjectListRequestSchema):
+    name = fields.String(required=True)
+
+
+class ProjectCreateSchema(CamelCaseSchema):
+    name = fields.String(required=True,
+                         validators=[
+                             marshmallow.validate.Regexp('^[A-Za-z0-9-]+$'),
+                             marshmallow.validate.Length(min=1, max=50),
+                         ])
+    description = fields.String(validate=marshmallow.validate.Length(max=1024 * 500))
 
 
 FilePrivilegesSchema = marshmallow_dataclass.class_schema(FilePrivileges)
@@ -153,7 +190,6 @@ class FileSearchRequestSchema(CamelCaseSchema):
         if data['type'] == 'linked':
             if data.get('linked_hash_id') is None:
                 raise ValidationError("A linkedHashId is required.", 'linked_hash_id')
-
 
 
 class FileUpdateRequestSchema(BulkFileUpdateRequestSchema):
