@@ -43,7 +43,6 @@ export class FilesystemObjectActions {
               protected readonly progressDialog: ProgressDialog,
               protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
-              protected readonly ngbModal: NgbModal,
               protected readonly messageDialog: MessageDialog,
               protected readonly errorHandler: ErrorHandler,
               protected readonly filesystemService: FilesystemService) {
@@ -81,7 +80,7 @@ export class FilesystemObjectActions {
    */
   openExportDialog(target: FilesystemObject): Promise<boolean> {
     if (target.exportFormats.length) {
-      const dialogRef = this.ngbModal.open(ObjectExportDialogComponent);
+      const dialogRef = this.modalService.open(ObjectExportDialogComponent);
       dialogRef.componentInstance.object = target;
       dialogRef.componentInstance.accept = (value: ObjectExportDialogValue) => {
         const progressDialogRef = this.createProgressDialog('Generating export...');
@@ -122,7 +121,7 @@ export class FilesystemObjectActions {
       progressObservable,
     });
 
-    return this.filesystemService.put(request)
+    return this.filesystemService.create(request)
       .pipe(
         tap(event => {
           // First we show progress for the upload itself
@@ -161,7 +160,7 @@ export class FilesystemObjectActions {
    */
   openCreateDialog(target: FilesystemObject,
                    options: CreateDialogOptions = {}): Promise<FilesystemObject> {
-    const dialogRef = this.ngbModal.open(ObjectEditDialogComponent);
+    const dialogRef = this.modalService.open(ObjectEditDialogComponent);
     dialogRef.componentInstance.title = options.title || 'New File';
     dialogRef.componentInstance.object = target;
     const keys: Array<keyof CreateDialogOptions> = [

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { from, Observable, Subscription } from 'rxjs';
+import { from, Observable, Subscription, throwError } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
@@ -13,6 +13,8 @@ import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { getObjectLabel } from '../utils/objects';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
+import { ProjectService } from '../services/project.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-object-browser',
@@ -33,13 +35,32 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
               protected readonly errorHandler: ErrorHandler,
               protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
+              protected readonly projectService: ProjectService,
               protected readonly filesystemService: FilesystemService,
               protected readonly actions: FilesystemObjectActions) {
   }
 
   ngOnInit() {
     this.subscriptions.add(this.route.params.subscribe(params => {
-      this.load(params.dir_id);
+      if (params.dir_id) {
+        this.load(params.dir_id);
+      } else {
+        // Legacy URLs use the project name (which we are deprecating) so
+        // we need to figure out what that requested project is
+        this.projectService.search({
+          name: params.project_name,
+        }).pipe(
+          this.errorHandler.create(),
+        ).subscribe(list => {
+          if (list.results.length) {
+            this.load(list.results.items[0].root.hashId);
+          } else {
+            this.object$ = throwError(new HttpErrorResponse({
+              status: 404,
+            }));
+          }
+        });
+      }
     }));
   }
 
@@ -199,4 +220,5 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
       newTab: target.type !== 'dir',
     });
   }
+
 }

@@ -5,7 +5,6 @@ import { ObjectDeleteDialogComponent } from './components/dialog/object-delete-d
 import { BrowserProjectListComponent } from './components/browser/browser-project-list.component';
 import { ProjectTitleAcronymPipe } from './services/project-title-acronym.pipe';
 import { ProjectEditDialogComponent } from './components/dialog/project-edit-dialog.component';
-import { ProjectCreateDialogComponent } from './components/dialog/project-create-dialog.component';
 import { ObjectDeletionResultDialogComponent } from './components/dialog/object-deletion-result-dialog.component';
 import { CommunityBrowserComponent } from './components/community-browser.component';
 import { BrowserComponent } from './components/browser/browser.component';
@@ -33,6 +32,8 @@ import { ObjectTypeService, TYPE_PROVIDER } from './services/object-type.service
 import { DirectoryTypeProvider } from './providers/directory-type-provider';
 import { DirectoryPreviewComponent } from './components/directory-preview.component';
 import { ObjectMenuComponent } from './components/object-menu.component';
+import { ProjectActions } from './services/project-actions';
+import { ProjectMenuComponent } from './components/project-menu.component';
 
 @NgModule({
   declarations: [
@@ -45,7 +46,6 @@ import { ObjectMenuComponent } from './components/object-menu.component';
     BrowserProjectListComponent,
     ProjectTitleAcronymPipe,
     ProjectEditDialogComponent,
-    ProjectCreateDialogComponent,
     CommunityBrowserComponent,
     ObjectInfoComponent,
     ObjectTypeLabelComponent,
@@ -65,13 +65,13 @@ import { ObjectMenuComponent } from './components/object-menu.component';
     ObjectPathComponent,
     DirectoryPreviewComponent,
     ObjectMenuComponent,
+    ProjectMenuComponent,
   ],
   imports: [
     SharedModule,
   ],
   entryComponents: [
     ObjectDeleteDialogComponent,
-    ProjectCreateDialogComponent,
     ProjectEditDialogComponent,
     ObjectDeletionResultDialogComponent,
     EnrichmentTableCreateDialogComponent,
@@ -86,6 +86,7 @@ import { ObjectMenuComponent } from './components/object-menu.component';
     ObjectTileDeckComponent,
     DirectoryPreviewComponent,
     ObjectMenuComponent,
+    ProjectMenuComponent,
   ],
   exports: [
     ObjectInfoComponent,
@@ -102,6 +103,7 @@ import { ObjectMenuComponent } from './components/object-menu.component';
     ProjectService,
     FilesystemService,
     FilesystemObjectActions,
+    ProjectActions,
     ObjectTypeService,
     {
       provide: TYPE_PROVIDER,

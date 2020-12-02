@@ -2,6 +2,11 @@ import { PaginatedRequestOptions, ResultList } from '../interfaces/shared.interf
 import { Annotation } from '../pdf-viewer/annotation-type';
 import { AnnotationMethod } from '../interfaces/annotation';
 import { OrganismAutocomplete } from '../interfaces';
+import { FilePrivileges, ProjectPrivileges } from './models/filesystem-object';
+
+export interface ProjectSearchRequest extends PaginatedRequestOptions {
+  name: string;
+}
 
 export interface ProjectData {
   hashId: string;
@@ -10,6 +15,16 @@ export interface ProjectData {
   creationDate: string;
   modifiedDate: string;
   root: FilesystemObjectData;
+  privileges: ProjectPrivileges;
+}
+
+export interface ProjectDataResponse {
+  project: ProjectData;
+}
+
+export interface ProjectCreateRequest {
+  name: string;
+  description: string;
 }
 
 export interface FilesystemObjectData {
@@ -27,7 +42,7 @@ export interface FilesystemObjectData {
   parent: FilesystemObjectData;
   children: FilesystemObjectData[];
   project: ProjectData;
-  privileges: unknown;
+  privileges: FilePrivileges;
   recycled: boolean;
   effectivelyRecycled: boolean;
 }

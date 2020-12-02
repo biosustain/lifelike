@@ -3,8 +3,6 @@ import { Project, ProjectSpaceService } from '../../services/project-space.servi
 
 // @ts-ignore
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ProjectCreateDialogComponent } from '../dialog/project-create-dialog.component';
-import { ProjectEditDialogComponent } from '../dialog/project-edit-dialog.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
@@ -15,6 +13,7 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { ProjectService } from '../../services/project.service';
 import { map } from 'rxjs/operators';
 import { ProjectImpl } from '../../models/filesystem-object';
+import { ProjectActions } from '../../services/project-actions';
 
 @Component({
   selector: 'app-browser-project-list',
@@ -27,7 +26,7 @@ export class BrowserProjectListComponent implements OnInit, OnDestroy {
     sort: '+name',
   };
   public readonly loadTask: BackgroundTask<void, ProjectImpl[]> = new BackgroundTask(
-    () => this.projectService.getProjects().pipe(map(projectList => {
+    () => this.projectService.list().pipe(map(projectList => {
       return [...projectList.results.items];
     })),
   );
@@ -48,11 +47,12 @@ export class BrowserProjectListComponent implements OnInit, OnDestroy {
 
   private loadTaskSubscription: Subscription;
 
-  constructor(private readonly projectSpaceService: ProjectSpaceService,
-              private readonly projectService: ProjectService,
-              private readonly workspaceManager: WorkspaceManager,
-              private readonly progressDialog: ProgressDialog,
-              private readonly ngbModal: NgbModal) {
+  constructor(protected readonly projectSpaceService: ProjectSpaceService,
+              protected readonly projectService: ProjectService,
+              protected readonly workspaceManager: WorkspaceManager,
+              protected readonly progressDialog: ProgressDialog,
+              protected readonly ngbModal: NgbModal,
+              protected readonly projectActions: ProjectActions) {
   }
 
   ngOnInit() {
@@ -89,22 +89,11 @@ export class BrowserProjectListComponent implements OnInit, OnDestroy {
     } : null;
   }
 
-  displayCreateDialog() {
-    const dialogRef = this.ngbModal.open(ProjectCreateDialogComponent);
-
-    dialogRef.result.then(
-      newProject => {
-        this.results.push(newProject);
-        this.goToProject(newProject);
-      },
-      () => {
-      },
-    );
-  }
-
-  displayShareDialog(project: Project) {
-    const dialogRef = this.ngbModal.open(ProjectEditDialogComponent);
-    dialogRef.componentInstance.project = project;
+  openCreateDialog() {
+    this.projectActions.openCreateDialog().then(project => {
+      this.workspaceManager.navigate(project.getCommands());
+    }, () => {
+    });
   }
 
   goToProject(p: Project) {
