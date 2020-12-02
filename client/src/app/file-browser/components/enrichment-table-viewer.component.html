@@ -2,6 +2,7 @@
   <div
     class="position-absolute w-100 h-100 d-flex flex-column"
     style="z-index: 0; overflow: scroll"
+    (scroll)="onTableScroll($event)"
   >
     <div class="module">
       <div class="module-header">
@@ -32,14 +33,7 @@
         <app-generic-table [header]="tableHeader" [entries]="tableEntries">
         </app-generic-table>
         <div class="col-12 justify-content-center">
-        <ngb-pagination
-        style="text-align: center;"
-        *ngIf="collectionSize"
-        [page]="currentPage"
-        [pageSize]="pageSize"
-        [collectionSize]="collectionSize"
-        (pageChange)="goToPage($event)"
-      ></ngb-pagination>
+
     </div>
       </div>
 
