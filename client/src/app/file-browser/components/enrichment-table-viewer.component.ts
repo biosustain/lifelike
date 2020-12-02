@@ -39,8 +39,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   tableHeader: TableHeader[][] = [
     // Primary headers
     [
-      { name: 'Imported Gene Name', span: '1' },
-      { name: 'Matched Gene Name', span: '1'},
+      { name: 'Imported', span: '1' },
+      { name: 'Matched', span: '1'},
       { name: 'NCBI Gene Full Name', span: '1' },
     ]
   ];
@@ -333,8 +333,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   initializeHeaders() {
     this.tableHeader = [
       [
-        { name: 'Imported Gene Name', span: '1' },
-        { name: 'Matched Gene Name', span: '1'},
+        { name: 'Imported', span: '1' },
+        { name: 'Matched', span: '1'},
         { name: 'NCBI Gene Full Name', span: '1' },
       ]
     ];
