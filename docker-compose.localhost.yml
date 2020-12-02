@@ -1,0 +1,23 @@
+# Use this if you want to spin up a local webserver
+# for testing. This will build the Angular bundle
+# as it does for production and load the bundle into
+# Nginx and accessible via localhost
+#
+# Run:
+#   docker-compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.localhost.yml
+
+version: '3.8'
+
+services:
+    webserver:
+        container_name: webserver
+        build:
+            context: ./client
+            dockerfile: Dockerfile
+            target: webserver
+        ports:
+            - "80:80"
+        networks:
+            - frontend
+        depends_on:
+            - appserver
