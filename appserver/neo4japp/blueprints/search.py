@@ -31,7 +31,7 @@ from neo4japp.request_schemas.search import (
     VizSearchSchema
 )
 from neo4japp.services.annotations.constants import AnnotationMethod
-from neo4japp.services.annotations.service_helpers import create_annotations
+from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.util import jsonify_with_class, SuccessResponse
 
 bp = Blueprint('search', __name__, url_prefix='/search')

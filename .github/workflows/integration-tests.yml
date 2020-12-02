@@ -1,11 +1,8 @@
 name: Integration Checks
 
 on:
-  push:
-    branches-ignore:
-      - master
-    tags-ignore:
-      - demo
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
 
