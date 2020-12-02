@@ -11,19 +11,20 @@ Sequence of events
 (3) Script downloads new file from Google Cloud Storage to GCE
 (4) Script updates Google Cloud SQL with new LMDB modified date
 """
-
-import httplib2
 import logging
 import os
 import urllib.request
 import sqlalchemy
 import time
 from datetime import datetime
-from apiclient import discovery
-from apiclient.errors import HttpError
+from google.api_core.exceptions import NotFound
+from google.auth.compute_engine import credentials
+from google.cloud.pubsub_v1 import SubscriberClient
+from google.pubsub_v1 import PullResponse, Subscription
+from google.auth import compute_engine
+from google.cloud import pubsub_v1
 from google.cloud import storage as gcp_storage
 from google.cloud.storage.blob import Blob
-from oauth2client.client import GoogleCredentials
 from sqlalchemy import Column, String
 from sqlalchemy.types import TIMESTAMP
 from sqlalchemy.orm import sessionmaker
@@ -84,84 +85,65 @@ class PubSub:
         self.pub_scopes = scope if scope else ['https://www.googleapis.com/auth/pubsub']
         self.client = self.get_client()
         self.sub = self.get_subscription(deadline=deadline)
-        self.ackdeadline = self.sub['ackDeadlineSeconds']
-        self.lease_start = None
 
-    def get_client(self):
-        cred = GoogleCredentials.get_application_default()
-        cred = cred.create_scoped(self.pub_scopes)
-        http = httplib2.Http()
-        cred.authorize(http)
-        return discovery.build('pubsub', 'v1beta2', http=http)
+    def get_client(self) -> SubscriberClient:
+        cred = compute_engine.Credentials()
+        subscriber = pubsub_v1.SubscriberClient(credentials=cred)
+        return subscriber
 
-    def create_subscription(self, deadline=60):
+    def create_subscription(self, deadline=60) -> Subscription:
         log.debug('Creating subscription...')
-        body = {
-            'topic': f'projects/{self.project}/topics/{self.topic}',
-            'ackDeadlineSeconds': deadline,
-        }
+        name = f'projects/{self.project}/subscriptions/{self.subname}'
+        topic = f'projects/{self.project}/topics/{self.topic}'
         try:
-            subscription = self.client.projects().subscriptions().create(
-                name=f'projects/{self.project}/subscriptions/{self.subname}',
-                body=body
-            ).execute()
-            return subscription
+            sub = self.client.create_subscription(
+                name=name, topic=topic, ack_deadline_seconds=deadline)
+            return sub
         except Exception as e:
             log.critical(f'Unable to create subscription <{e}>')
 
     def get_subscription(self, deadline=60):
         sub = None
         log.debug('Getting subscription...')
+        name = f'projects/{self.project}/subscriptions/{self.subname}'
         try:
-            self.client.projects().subscriptions().delete(
-                subscription=f'projects/{self.project}/subscriptions/{self.subname}'
-            ).execute()
+            self.client.delete_subscription(request={'subscription': name})
             log.debug('Deleted existing subscription...')
-        except HttpError as e:
-            if e.resp.status == 404:
-                sub = self.create_subscription(deadline=deadline)
-            else:
-                raise
+        except NotFound:
+            sub = self.create_subscription(deadline=deadline)
         else:
             sub = self.create_subscription(deadline=deadline)
-            log.debug(f'Subscription: {sub}')
+        log.debug(f'Subscription: {sub}')
         return sub
 
-    def get_message(self, batch_size=1):
-        body = {
-            'returnImmediately': True,
-            'maxMessages': batch_size,
-        }
+    def get_message(self):
         log.debug(f'Pulling messages...')
-        resp = self.client.projects().subscriptions().pull(
-            subscription=self.sub['name'],
-            body=body,
-        ).execute()
-        if 'receivedMessages' in resp:
-            log.debug(f'Number of msgs: {resp.get("receivedMessages")}')
-            self.lease_start = datetime.now()
-            return resp.get('receivedMessages')
+        resp: PullResponse = self.client.pull(request={'subscription': self.sub.name, 'max_messages': 5})
+        if len(resp.received_messages) != 0:
+            log.debug(f'Number of msgs: {len(resp.received_messages)}')
+            return resp.received_messages
         else:
             return []
 
-
     def process_messages(self, msgs, handler=None):
         for received_message in msgs:
-            pubsub_message = received_message.get('message')
-            log.debug(f'Processing: {received_message.get("ackId")}')
+            pubsub_message = received_message.message
+            log.debug(f'Processing: {received_message.ack_id}')
             if pubsub_message:
                 ack_ids = []
-                ack_ids.append(received_message.get('ackId'))
-                ack_body = {'ackIds': ack_ids}
+                ack_ids.append(received_message.ack_id)
                 if ack_ids:
                     log.debug(f'Acknowledging {ack_ids}')
                     if handler is None:
                         handler = lambda msg: msg
                     handler(received_message)
-                    self.client.projects().subscriptions().acknowledge(
-                        subscription=self.sub['name'],
-                        body=ack_body
-                    ).execute()
+
+                self.client.acknowledge(
+                    request={
+                        'subscription': self.sub.name,
+                        'ack_ids': ack_ids
+                    }
+                )
 
     def watch_topic(self, handler=None):
         # Send initial ping
@@ -243,7 +225,7 @@ def download_lmdb(dest_path='./lmdb'):
     def handler(msg):
         # eventType is a GCP Cloud Storage event type
         # objectId is the file object name; trailing '/' indicates a directory
-        msg = msg['message']['attributes']
+        msg = msg.message.attributes
         if msg['eventType'] == 'OBJECT_FINALIZE' and not msg['objectId'].endswith('/'):
             save_path = os.path.join(dest_path, msg['objectId'])
             # create directories if it does not exist

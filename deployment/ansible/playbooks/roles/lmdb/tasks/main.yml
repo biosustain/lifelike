@@ -13,12 +13,12 @@
   become_user: "{{ deploy_user }}"
   pip:
     name:
+      - google-auth
       - sqlalchemy
       - google-cloud-storage
       - psycopg2-binary
       - six>1.13.0
       - google-api-python-client
-      - oauth2client
       - pytz
     umask: "0022"
     virtualenv: "{{ deploy_dir }}/.venv"
@@ -106,7 +106,7 @@
 
 - name: Run LMDB PubSub Script
   become_user: "{{ deploy_user }}"
-  shell: "nohup {{ deploy_dir}}/.venv/bin/python3 -u lmdb_pubsub.py </dev/null >/dev/null 2>&1 &"
+  shell: "nohup {{ deploy_dir}}/.venv/bin/python3 -u lmdb_pubsub.py >/dev/null 2>&1 &"
   args:
     chdir: "{{ deploy_dir }}"
   environment:
