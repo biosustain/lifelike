@@ -45,9 +45,9 @@ def create_char_objs(parser, word):
         (9, '-*I Have- ')
     ],
 )
-def test_extract_tokens(annotations_setup, index, text):
+def test_extract_tokens(annotations_setup, index, text, entity_service):
     pdf_parser = get_annotations_pdf_parser()
-    tokens_list = pdf_parser.extract_tokens(
+    tokens_list = entity_service.extract_tokens(
         parsed=PDFParsedContent(
             words=pdf_parser._combine_chars_into_words(
                 create_char_objs(pdf_parser, text)

@@ -25,13 +25,14 @@ from neo4japp.data_transfer_objects import (
 )
 from neo4japp.exceptions import AnnotationError
 from neo4japp.models import FileContent
+from neo4japp.services.annotations import ManualAnnotationsService
 from neo4japp.services.annotations.constants import AnnotationMethod, NLP_ENDPOINT
 from neo4japp.services.annotations.util import normalize_str
 from neo4japp.utils.logger import EventLog
 
 
 """File is to put helper functions that abstract away
-multiple steps needed in a certain annotation pipeline.
+multiple steps needed in the annotation pipeline.
 """
 
 
@@ -159,6 +160,7 @@ def _create_annotations(
     filename
 ):
     annotator = get_annotations_service()
+    manual_annotator = ManualAnnotationsService()
     bioc_service = get_bioc_document_service()
     entity_recog = get_entity_recognition()
     parser = get_annotations_pdf_parser()
@@ -216,7 +218,7 @@ def _create_annotations(
         )
 
     pdf_text = ' '.join([c.keyword for c in parsed.words])
-    tokens_list = parser.extract_tokens(parsed)
+    tokens_list = entity_recog.extract_tokens(parsed)
 
     if annotation_method == AnnotationMethod.RULES.value:
         entity_recog.set_entity_inclusions(custom_annotations=custom_annotations)
@@ -303,7 +305,11 @@ def _create_annotations(
         f'Time to create annotations {time.time() - start}',
         extra=EventLog(event_type='annotations').to_dict()
     )
-    return pdf_text, bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+    bioc_json = manual_annotator.apply_custom_hyperlink_and_type(
+        bioc=bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc),
+        custom_annotations=[] if type(document) is str else document.custom_annotations
+    )
+    return pdf_text, bioc_json
 
 
 def create_annotations(

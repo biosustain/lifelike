@@ -11,6 +11,7 @@ from neo4japp.services.annotations import (
     AnnotationsNeo4jService,
     EntityRecognitionService,
     LMDBDao,
+    ManualAnnotationsService
 )
 from neo4japp.services.annotations.constants import (
     DatabaseType,
@@ -1296,3 +1297,16 @@ def get_annotations_service(
     return AnnotationsService(
         annotation_neo4j=get_annotation_n4j,
     )
+
+
+@pytest.fixture(scope='function')
+def get_manual_annotations_service(request):
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+    return ManualAnnotationsService()
