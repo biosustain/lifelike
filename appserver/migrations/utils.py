@@ -1,0 +1,106 @@
+import multiprocessing as mp
+
+from neo4japp.database import get_annotation_neo4j
+from neo4japp.models import Files
+from neo4japp.services.annotations.constants import EntityType
+from neo4japp.services.annotations.pipeline import (
+    create_annotations as create_annotations_helper
+)
+
+
+def update_annotations_add_primary_name(file_id, bioc):
+    """Copied from AnnotationsService.add_primary_name
+    """
+    if not bioc:
+        return
+    neo4j = get_annotation_neo4j()
+
+    chemical_ids = set()
+    compound_ids = set()
+    disease_ids = set()
+    gene_ids = set()
+    protein_ids = set()
+    organism_ids = set()
+
+    annotations = bioc['documents'][0]['passages'][0]['annotations']
+    updated_annotations = []
+
+    # Note: We need to split the ids by semi-colon because
+    # we prepend the database source prefix
+    # in the KG most of these ids do not have those prefix
+
+    for anno in annotations:
+        if anno['meta']['type'] == EntityType.CHEMICAL.value:
+            chemical_ids.add(anno['meta']['id'])
+        elif anno['meta']['type'] == EntityType.COMPOUND.value:
+            compound_ids.add(anno['meta']['id'].split(':')[1])
+        elif anno['meta']['type'] == EntityType.DISEASE.value:
+            disease_ids.add(anno['meta']['id'])
+        elif anno['meta']['type'] == EntityType.GENE.value:
+            gene_ids.add(anno['meta']['id'].split(':')[1])
+        elif anno['meta']['type'] == EntityType.PROTEIN.value:
+            protein_ids.add(anno['meta']['id'].split(':')[1])
+        elif anno['meta']['type'] == EntityType.SPECIES.value:
+            organism_ids.add(anno['meta']['id'].split(':')[1])
+
+    chemical_names = neo4j.get_chemicals_from_chemical_ids(list(chemical_ids))
+    compound_names = neo4j.get_compounds_from_compound_ids(list(compound_ids))
+    disease_names = neo4j.get_diseases_from_disease_ids(list(disease_ids))
+    gene_names = neo4j.get_genes_from_gene_ids(list(gene_ids))
+    protein_names = neo4j.get_proteins_from_protein_ids(list(protein_ids))
+    organism_names = neo4j.get_organisms_from_organism_ids(list(organism_ids))
+
+    for anno in annotations:
+        try:
+            if anno['meta']['type'] == EntityType.CHEMICAL.value:
+                anno['primaryName'] = chemical_names[anno['meta']['id']]
+            elif anno['meta']['type'] == EntityType.COMPOUND.value:
+                anno['primaryName'] = compound_names[anno['meta']['id'].split(':')[1]]
+            elif anno['meta']['type'] == EntityType.DISEASE.value:
+                anno['primaryName'] = disease_names[anno['meta']['id']]
+            elif anno['meta']['type'] == EntityType.GENE.value:
+                anno['primaryName'] = gene_names[anno['meta']['id'].split(':')[1]]
+            elif anno['meta']['type'] == EntityType.PROTEIN.value:
+                anno['primaryName'] = protein_names[anno['meta']['id'].split(':')[1]]
+            elif anno['meta']['type'] == EntityType.SPECIES.value:
+                anno['primaryName'] = organism_names[anno['meta']['id'].split(':')[1]]
+            else:
+                anno['primaryName'] = anno['keyword']
+        except KeyError:
+            # just keep what is already there or use the
+            # synonym if blank
+            if not anno.get('primaryName'):
+                anno['primaryName'] = anno['keyword']
+        updated_annotations.append(anno)
+
+    bioc['documents'][0]['passages'][0]['annotations'] = updated_annotations
+    return {'id': file_id, 'annotations': bioc}
+
+
+def window_chunk(q, windowsize=100):
+    """Yields chunks of data as a stream with only that chunk
+    in memory.
+
+    This means `q` is a ProxyResult used with the argument `stream_results`.
+        - e.g conn.execution_options(stream_results=True).execute(...)
+    """
+    while True:
+        chunk = q.fetchmany(windowsize)
+        if not chunk:
+            break
+        yield chunk
+
+
+def mp_create_annotations(results, session, func):
+    for chunk in window_chunk(results):
+        updated_results = []
+        with mp.Pool(processes=4) as pool:
+            results = pool.starmap(
+                func,
+                [
+                    (result.id, result.annotations) for result in chunk
+                ]
+            )
+            updated_results += [item for item in results if item]
+        session.bulk_update_mappings(Files, updated_results)
+    session.commit()
