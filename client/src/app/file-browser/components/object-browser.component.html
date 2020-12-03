@@ -9,19 +9,12 @@
     <div class="module" appContainerBreakpoints>
       <!-- Header -->
       <div class="module-header">
-        <!-- Title bar -->
-        <div class="module-title-bar">
-          <h1 class="module-title">
-            <span style="width: 28px; height: 28px; display: inline-flex; font-size: 12pt; border-radius: 5px" class="align-items-center justify-content-center mr-1 placeholder-box">
-              X
-            </span>
-            <span class="placeholder-box">Loading loading</span>
-          </h1>
-        </div>
-
         <!-- Breadcrumbs -->
-        <div class="module-breadcrumb-bar mt-1">
+        <div class="module-breadcrumb-bar mb-1">
           <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a appLink="/projects">File Browser</a>
+            </li>
             <li class="breadcrumb-item">
               <span class="placeholder-box">Loading loading</span>
             </li>
@@ -32,6 +25,13 @@
               <span class="placeholder-box">Loading load</span>
             </li>
           </ol>
+        </div>
+
+        <!-- Title bar -->
+        <div class="module-title-bar">
+          <h1 class="module-title">
+            <span class="placeholder-box">Loading</span>
+          </h1>
         </div>
 
         <!-- Toolbar -->
@@ -143,11 +143,27 @@
     <div class="module" appContainerBreakpoints>
       <!-- Header -->
       <div class="module-header">
+        <!-- Breadcrumbs -->
+        <div class="module-breadcrumb-bar mb-1">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a appLink="/projects">File Browser</a>
+            </li>
+            <li class="breadcrumb-item" *ngIf="result.value.parent">
+              <app-object-path [object]="result.value.parent"></app-object-path>
+            </li>
+          </ol>
+        </div>
+
         <!-- Title bar -->
         <div class="module-title-bar">
+          <button type="button" class="module-title-bar-back mr-2" (click)="goUp(result.value)">
+            <i class="fa fa-fw fa-arrow-left"></i>
+          </button>
           <h1 class="module-title">
-            <app-project-icon [project]="result.value.project" size="28px" class="mr-1"></app-project-icon>
-            {{ result.value.project.name }}
+            <app-project-icon [project]="result.value.project" size="28px" class="mr-1"
+                              *ngIf="result.value.parent == null"></app-project-icon>
+            {{ result.value.effectiveName }}
           </h1>
 
           <div ngbDropdown class="d-inline-block ml-1" container="body">
@@ -155,14 +171,25 @@
               <i class="fas fa-chevron-down fa-fw text-icon"></i>
             </a>
             <div ngbDropdownMenu>
-              <app-project-menu [project]="result.value.project"></app-project-menu>
+              <ng-container *ngIf="result.value.parent">
+                <h6 class="dropdown-header">
+                  <i class="fa fa-folder text-icon mr-1"></i> {{ result.value.filename }}
+                </h6>
+                <app-object-menu [object]="result.value" [forEditing]="true"
+                                 (objectOpen)="openObject($event)"
+                                 (refreshRequest)="refresh()" [nameEntity]="true"
+                                 [showOpen]="false">
+                </app-object-menu>
+                <div class="dropdown-section-divider"></div>
+              </ng-container>
+              <h6 class="dropdown-header d-flex align-items-center text-truncate" style="max-width: 200px">
+                <app-project-icon [project]="result.value.project" size="16" class="mr-1"></app-project-icon>
+                {{ result.value.project.name }}
+              </h6>
+              <app-project-menu [project]="result.value.project"
+                                [nameEntity]="true"></app-project-menu>
             </div>
           </div>
-        </div>
-
-        <!-- Breadcrumbs -->
-        <div class="module-breadcrumb-bar mt-2">
-          <app-object-path [object]="result.value" ***ARANGO_USERNAME***Name="Files"></app-object-path>
         </div>
 
         <!-- Toolbar -->

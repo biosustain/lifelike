@@ -129,12 +129,16 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return true;
   }
 
+  get isEditable() {
+    return !(this.isDirectory && !this.parent);
+  }
+
   get isAnnotatable() {
     return this.mimeType === 'application/pdf';
   }
 
   get isMovable() {
-    return true;
+    return !(this.isDirectory && !this.parent);
   }
 
   get isCloneable() {

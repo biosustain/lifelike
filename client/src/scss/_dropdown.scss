@@ -11,3 +11,8 @@
     display: none;
   }
 }
+.dropdown-section-divider {
+  margin-top: $dropdown-divider-margin-y * 2;
+  box-shadow: inset 0 2px 5px $dropdown-divider-bg;
+  height: 7px;
+}
