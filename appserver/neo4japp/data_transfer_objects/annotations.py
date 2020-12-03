@@ -89,7 +89,7 @@ class PDFTokensList():
 # (2) pdf-viewer and (3) NLP, we need to settle on a format
 #
 # for now change to what the pdf-viewer use
-@attr.s(frozen=True)
+@attr.s(frozen=False)
 class Annotation(CamelDictMixin):
     @attr.s(frozen=True)
     class Meta(CamelDictMixin):
@@ -134,16 +134,17 @@ class Annotation(CamelDictMixin):
     hi_location_offset: int = attr.ib()
     meta: Meta = attr.ib()
     uuid: str = attr.ib()
+    primary_name: str = attr.ib(default='')
 
 
-@attr.s(frozen=True)
+@attr.s(frozen=False)
 class OrganismAnnotation(Annotation):
     @attr.s(frozen=True)
     class OrganismMeta(Annotation.Meta):
         category: str = attr.ib(default='')
 
 
-@attr.s(frozen=True)
+@attr.s(frozen=False)
 class GeneAnnotation(Annotation):
     @attr.s(frozen=True)
     class GeneMeta(Annotation.Meta):
