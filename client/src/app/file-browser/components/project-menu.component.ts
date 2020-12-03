@@ -9,6 +9,8 @@ import { ProjectActions } from '../services/project-actions';
 export class ProjectMenuComponent {
 
   @Input() project: ProjectImpl;
+  @Input() nameEntity = false;
+  @Input() showTools = true;
 
   constructor(protected readonly projectActions: ProjectActions) {
   }

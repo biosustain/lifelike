@@ -4,16 +4,18 @@
   </button>
 </ng-container>
 <button ngbDropdownItem (click)="openCollaboratorsDialog(project)">
-  Members...
+  {{ nameEntity ? 'Project members' : 'Members'}}...
 </button>
-<div class="dropdown-divider"></div>
-<button ngbDropdownItem (click)="openShareDialog(project)">
-  Share...
-</button>
-<ng-container *ngIf="project.root">
+<ng-container *ngIf="showTools">
   <div class="dropdown-divider"></div>
-  <button ngbDropdownItem [appLink]="['/file-navigator', project.name, project.root.hashId]"
-          [newTab]="true" [sideBySide]="true">
-    Open in navigator
+  <button ngbDropdownItem (click)="openShareDialog(project)">
+    Share{{ nameEntity ? ' project' : '' }}...
   </button>
+  <ng-container *ngIf="project.root">
+    <div class="dropdown-divider"></div>
+    <button ngbDropdownItem [appLink]="['/file-navigator', project.name, project.root.hashId]"
+            [newTab]="true" [sideBySide]="true">
+      Open in navigator
+    </button>
+  </ng-container>
 </ng-container>
