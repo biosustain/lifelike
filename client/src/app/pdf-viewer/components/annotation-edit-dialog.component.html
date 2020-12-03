@@ -34,10 +34,12 @@
     </app-form-row>
 
     <fieldset class="fieldset-properties mt-4">
-      <legend>Search Links</legend>
+      <legend>Search Links <i class="fas fa-external-link-alt ml-1"></i></legend>
 
       <div class="text-muted mb-3">
-        <i class="fas fa-info-circle"></i> Enter manually sourced links below if desired.
+        <i class="fas fa-info-circle"></i>
+          Click links below to search databases for the annotated text.
+          Find and enter desirable links in the fields below.
       </div>
 
       <ng-container formArrayName="links">
@@ -60,6 +62,11 @@
       <input type="checkbox" class="custom-control-input" id="include-globally"
              formControlName="includeGlobally" (change)="toggleIdFieldValidity()">
       <label class="custom-control-label" for="include-globally">Add this annotation to a global list</label>
+    </div>
+
+    <div *ngIf="form.get('includeGlobally').value" class="text-muted mt-3">
+      <i class="fas fa-info-circle"></i>
+        Re-annotate other documents to incorporate this inclusion.
     </div>
   </app-modal-body>
 
