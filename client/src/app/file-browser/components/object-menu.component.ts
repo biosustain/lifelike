@@ -17,6 +17,9 @@ export class ObjectMenuComponent {
 
   @Input() object: FilesystemObject;
   @Input() forEditing = true;
+  @Input() nameEntity = false;
+  @Input() showOpen = true;
+  @Input() showTools = true;
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
 
