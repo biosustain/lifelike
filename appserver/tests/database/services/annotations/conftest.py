@@ -199,6 +199,14 @@ def default_lmdb_setup(app, request):
         category=OrganismCategory.EUKARYOTA.value,
     )
 
+    ampk = lmdb_gene_factory(
+        gene_id='5564',
+        id_type=DatabaseType.NCBI.value,
+        name='PRKAB1',
+        synonym='AMPK',
+        category=OrganismCategory.EUKARYOTA.value,
+    )
+
     hyp27_gene = lmdb_gene_factory(
         gene_id='2846957',
         id_type=DatabaseType.NCBI.value,
@@ -275,6 +283,14 @@ def default_lmdb_setup(app, request):
         synonym='human',
     )
 
+    homosapiens = lmdb_species_factory(
+        tax_id='9606',
+        category=OrganismCategory.EUKARYOTA.value,
+        id_type=DatabaseType.NCBI.value,
+        name='Homo Sapiens',
+        synonym='Homo Sapiens',
+    )
+
     rat = lmdb_species_factory(
         tax_id='10114',
         category=OrganismCategory.EUKARYOTA.value,
@@ -348,10 +364,10 @@ def default_lmdb_setup(app, request):
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', [adenosine2, guanosine]),
         (DISEASES_MESH_LMDB, 'diseases', [cold_sore]),
         (FOODS_MESH_LMDB, 'foods', []),
-        (GENES_NCBI_LMDB, 'genes', [bola3, hyp27_gene, serpina1_gene, serpina1_gene2]),
+        (GENES_NCBI_LMDB, 'genes', [ampk, bola3, hyp27_gene, serpina1_gene, serpina1_gene2]),
         (PHENOTYPES_MESH_LMDB, 'phenotypes', [whey_protein]),
         (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein, wasabi, ns2a, NS2A]),
-        (SPECIES_NCBI_LMDB, 'species', [human, moniliophthora_roreri, rat]),
+        (SPECIES_NCBI_LMDB, 'species', [homosapiens, human, moniliophthora_roreri, rat]),
     ]
     for db_name, entity, data in entities:
         create_entity_lmdb(f'lmdb/{entity}', db_name, data)
@@ -893,6 +909,18 @@ def mock_gene_to_organism_crossmatch_human_fish(monkeypatch):
 def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {'ACE2': {'ACE2': {'9606': '59272'}}}
+
+    monkeypatch.setattr(
+        AnnotationsNeo4jService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_get_gene_to_organism_match_result_for_gene_primary_name_pdf(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {'AMPK': {'AMPK': {'9606': '5564'}}}
 
     monkeypatch.setattr(
         AnnotationsNeo4jService,
