@@ -385,7 +385,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const collapseTargetId = uniqueId('pdf-tooltip-collapse-target');
     let collapseHtml = `
       <a class="pdf-tooltip-collapse-control collapsed" role="button" data-toggle="collapse" data-target="#${collapseTargetId}" aria-expanded="false" aria-controls="${collapseTargetId}">
-        Search links
+        Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i>
       </a>
       <div class="collapse" id="${collapseTargetId}">
     `;
