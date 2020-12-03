@@ -6,21 +6,25 @@ import {
   EventEmitter,
 } from '@angular/core';
 
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { TableHeader, TableCell, TableLink } from 'app/shared/components/table/generic-table.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import {
   EnrichmentTableService,
   NCBINode,
   EnrichmentWrapper,
   GoNode,
   Synonym,
+  NCBIWrapper,
 } from '../services/enrichment-table.service';
 import { ActivatedRoute } from '@angular/router';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { ModuleProperties } from 'app/shared/modules';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
+import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
+import {flatMap, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -31,12 +35,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   // Inputs for Generic Table Component
-  tableEntries: TableCell[][];
+  tableEntries: TableCell[][] = [];
   tableHeader: TableHeader[][] = [
     // Primary headers
     [
-      { name: 'Imported Gene Name', span: '1' },
-      { name: 'Matched Gene Name', span: '1'},
+      { name: 'Imported', span: '1' },
+      { name: 'Matched', span: '1'},
       { name: 'NCBI Gene Full Name', span: '1' },
     ]
   ];
@@ -62,6 +66,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   pageSize: number;
   collectionSize: number;
   currentGenes: string[];
+  morePages: boolean;
+  numDefaultHeader: number = this.tableHeader[0].length;
 
   // Enrichment Table and NCBI Matching Results
   domains: string[] = [];
@@ -74,12 +80,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   loadTaskSubscription: Subscription;
   sheetname: string;
   neo4jId: number;
-  synonyms: Synonym[];
-  ncbiNodes: NCBINode[];
-  ncbiLinks: string[];
   importGenes: string[];
   unmatchedGenes: string;
-  ncbiIds: number[];
   duplicateGenes: string;
   columnOrder: string[] = [];
 
@@ -87,6 +89,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     private readonly worksheetViewerService: EnrichmentTableService,
     private readonly filesService: PdfFilesService,
     private route: ActivatedRoute,
+    readonly snackBar: MatSnackBar,
     private readonly modalService: NgbModal,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
@@ -132,6 +135,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       this.currentPage = 1;
       this.pageSize = 10;
       this.collectionSize = this.importGenes.length;
+      if (this.currentPage < Math.ceil(this.collectionSize / this.pageSize)) {
+        this.morePages = true;
+      }
       this.matchNCBINodes(this.currentPage);
     });
     this.loadTask.update();
@@ -141,28 +147,210 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.loadTaskSubscription.unsubscribe();
   }
 
+  loadAllEntries(): Promise<TableCell[][]> {
+    return this.worksheetViewerService
+    .matchNCBINodes(this.importGenes, this.taxID)
+    .pipe(
+      flatMap(matched => forkJoin(
+        [matched.map((wrapper) => wrapper.s)],
+        [matched.map((wrapper) => wrapper.x)],
+        [matched.map((wrapper) => wrapper.link)],
+        [matched.map((wrapper) => wrapper.neo4jID)],
+        this.worksheetViewerService.getNCBIEnrichmentDomains(
+          matched.map((wrapper) => wrapper.neo4jID), this.taxID)
+      )),
+      map(([synonyms, ncbiNodes, ncbiLinks, ncbiIds, domains]) => {
+        const tableEntries = domains.map((wrapper) =>
+          this.processEnrichmentNodeArray(wrapper, ncbiNodes, ncbiIds)
+        );
+        for (let i = 0; i < ncbiNodes.length; i++) {
+          tableEntries[i].unshift({
+            text: ncbiNodes[i].full_name,
+            singleLink: {
+              link: ncbiLinks[i],
+              linkText: 'NCBI Link',
+            },
+          });
+          tableEntries[i].unshift({ text: ncbiNodes[i].name });
+          tableEntries[i].unshift({ text: synonyms[i].name });
+        }
+        const geneNames = synonyms.map((node) => node.name);
+        const unmatchedGenes = this.importGenes.filter(
+          (gene) => !geneNames.includes(gene)
+        );
+        unmatchedGenes.forEach((gene) => {
+          const cell: TableCell[] = [];
+          cell.push({ text: gene, highlight: true });
+          cell.push({ text: 'No match found.', highlight: true });
+          const colNum = Math.max.apply(
+            null,
+            this.tableHeader.map((x) =>
+              x.reduce((a, b) => a + parseInt(b.span, 10), 0)
+            )
+          );
+          for (let i = 0; i < colNum - 2; i++) {
+            cell.push({ text: '', highlight: true });
+          }
+          tableEntries.push(cell);
+        });
+        return tableEntries;
+      })
+    ).toPromise();
+  }
+
+  processRowCSV(row) {
+    let finalVal = '';
+    for (let j = 0; j < row.length; j++) {
+        let innerValue = row[j] === null ? '' : row[j].toString();
+        if (row[j] instanceof Date) {
+            innerValue = row[j].toLocaleString();
+        }
+        let result = innerValue.replace(/"/g, '""');
+        if (result.search(/("|,|\n)/g) >= 0) {
+            result = '"' + result + '"';
+        }
+        if (j > 0) {
+            finalVal += ',';
+        }
+        finalVal += result;
+    }
+    return finalVal + '\n';
+  }
+
+  downloadAsCSV() {
+    try {
+    this.loadAllEntries().then(entries => {
+      const stringEntries = this.convertEntriesToString(entries);
+      let csvFile = '';
+      stringEntries.forEach(entry => csvFile += this.processRowCSV(entry));
+      const blob = new Blob([csvFile], { type: 'text/csv;charset=utf-8;' });
+      if (navigator.msSaveBlob) { // IE 10+
+          navigator.msSaveBlob(blob, this.sheetname);
+      } else {
+          const link = document.createElement('a');
+          if (link.download !== undefined) { // feature detection
+              // Browsers that support HTML5 download attribute
+              const url = URL.createObjectURL(blob);
+              link.setAttribute('href', url);
+              link.setAttribute('download', this.sheetname);
+              link.style.visibility = 'hidden';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+          }
+      }
+      });
+    } catch (err) {
+      this.snackBar.open(`Something went wrong.`, 'Close', {
+        duration: 5000,
+      });
+    }
+  }
+
+  onTableScroll(e) {
+    const tableViewHeight = e.target.offsetHeight;
+    const tableScrollHeight = e.target.scrollHeight;
+    const scrollLocation = e.target.scrollTop;
+
+    // If the user has scrolled within 10px of the bottom, add more data
+    const buffer = 10;
+    const limit = tableScrollHeight - tableViewHeight - buffer;
+    if (scrollLocation > limit && this.currentPage < Math.ceil(this.collectionSize / this.pageSize)) {
+      this.currentPage += 1;
+      this.goToPage(this.currentPage);
+    }
+  }
+
+  convertEntriesToString(entries: TableCell[][]): string[][] {
+    const result = [];
+    this.tableHeader.forEach(row => {
+      const rowString = [];
+      row.forEach(header => {
+        rowString.push(header.name);
+        if (header.span !== '1') {
+          for (let i = 1; i < parseInt(header.span, 10); i++) {
+            rowString.push('');
+          }
+        }
+      });
+      result.push(rowString);
+    });
+    entries.forEach(row => {
+      const rowString = [];
+      row.forEach(entry => {
+        let entryString = entry.text;
+        if (typeof entry.singleLink !== 'undefined') {
+          entryString += '\n' + entry.singleLink.link;
+        }
+        if (typeof entry.multiLink !== 'undefined') {
+          entry.multiLink.forEach(link => entryString += '\n' + link.link);
+        }
+        rowString.push(entryString);
+      });
+      result.push(rowString);
+    });
+    return result;
+  }
+
   openOrderDialog(): Promise<any> {
     const dialogRef = this.modalService.open(EnrichmentTableOrderDialogComponent);
-    dialogRef.componentInstance.domains = this.domains;
+    dialogRef.componentInstance.domains = [...this.domains];
     return dialogRef.result.then((result) => {
-      this.domains = result;
-      this.columnOrder = [ ...result];
-      if (this.columnOrder.includes('Regulon')) {
-        const index = this.columnOrder.indexOf('Regulon');
-        this.columnOrder.splice(index + 1, 0, 'Regulon 3');
-        this.columnOrder.splice(index + 1, 0, 'Regulon 2');
+      if (this.domains !== result) {
+        this.reorderEntries(result);
       }
-      this.tableHeader = [
-        // Primary headers
-        [
-          { name: 'Imported Gene Name', span: '1' },
-          { name: 'Matched Gene Name', span: '1'},
-          { name: 'NCBI Gene Full Name', span: '1' },
-        ]
-      ];
-      this.initializeHeaders();
-      this.matchNCBINodes(this.currentPage);
+    }, () => {});
+  }
 
+  reorderEntries(order: string[]) {
+    const newEntries = [];
+    this.tableEntries.forEach(row => {
+      const newRow = [];
+      for (let i = 0; i < this.numDefaultHeader; i++) {
+        newRow[i] = row[i];
+      }
+      const newOrder = [...order];
+      newOrder.splice(newOrder.indexOf('Regulon') + 1, 0, 'Regulon 1');
+      newOrder.splice(newOrder.indexOf('Regulon') + 2, 0, 'Regulon 2');
+
+      const newDomains = [...this.domains];
+      newDomains.splice(newDomains.indexOf('Regulon') + 1, 0, 'Regulon 1');
+      newDomains.splice(newDomains.indexOf('Regulon') + 2, 0, 'Regulon 2');
+
+      newOrder.forEach(domain =>
+        newRow[newOrder.indexOf(domain) + this.numDefaultHeader] =
+        row[newDomains.indexOf(domain) + this.numDefaultHeader]);
+      newEntries.push(newRow);
+    });
+    this.tableEntries = newEntries;
+    this.domains = order;
+    this.columnOrder = [ ...order];
+    if (this.columnOrder.includes('Regulon')) {
+      const index = this.columnOrder.indexOf('Regulon');
+      this.columnOrder.splice(index + 1, 0, 'Regulon 3');
+      this.columnOrder.splice(index + 1, 0, 'Regulon 2');
+    }
+    this.initializeHeaders();
+  }
+
+  openEnrichmentTableEditDialog(): Promise<any> {
+    const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
+    dialogRef.componentInstance.fileId = this.fileId;
+    dialogRef.componentInstance.projectName = this.projectName;
+    return dialogRef.result.then((result) => {
+      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
+      return this.filesService.editGeneList(
+          this.projectName,
+          this.fileId,
+          enrichmentData,
+          result.name,
+          result.description,
+      ).subscribe((status) => {
+        this.snackBar.open(`Enrichment table updated.`, 'Close', {
+          duration: 5000,
+        });
+        this.loadTask.update();
+      });
     }, () => {});
   }
 
@@ -174,6 +362,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   initializeHeaders() {
+    this.tableHeader = [
+      [
+        { name: 'Imported', span: '1' },
+        { name: 'Matched', span: '1'},
+        { name: 'NCBI Gene Full Name', span: '1' },
+      ]
+    ];
     if (this.domains.includes('Regulon')) {
       this.tableHeader[1] = this.secondHeaderMap.get('Default');
     }
@@ -190,18 +385,14 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   matchNCBINodes(page: number) {
-    this.currentGenes = this.importGenes.slice(
+    const currentGenes = this.importGenes.slice(
       (page - 1) * this.pageSize,
       (page - 1) * this.pageSize + this.pageSize
     );
     this.worksheetViewerService
-      .matchNCBINodes(this.currentGenes, this.taxID)
+      .matchNCBINodes(currentGenes, this.taxID)
       .subscribe((result) => {
-        this.synonyms = result.map((wrapper) => wrapper.s);
-        this.ncbiNodes = result.map((wrapper) => wrapper.x);
-        this.ncbiIds = result.map((wrapper) => wrapper.neo4jID);
-        this.ncbiLinks = result.map((wrapper) => wrapper.link);
-        this.getDomains();
+        this.getDomains(result, currentGenes);
       });
   }
 
@@ -221,33 +412,39 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   // Get data from enrichment domains.
-  getDomains() {
+  getDomains(result: NCBIWrapper[], currentGenes: string[]) {
+    const synonyms = result.map((wrapper) => wrapper.s);
+    const ncbiNodes = result.map((wrapper) => wrapper.x);
+    const ncbiIds = result.map((wrapper) => wrapper.neo4jID);
+    const ncbiLinks = result.map((wrapper) => wrapper.link);
     this.worksheetViewerService
-      .getNCBIEnrichmentDomains(this.ncbiIds, this.taxID)
-      .subscribe((result) => {
-        this.tableEntries = result.map((wrapper) =>
-          this.processEnrichmentNodeArray(wrapper)
+      .getNCBIEnrichmentDomains(ncbiIds, this.taxID)
+      .subscribe((domainResult) => {
+        let newEntries = domainResult.map((wrapper) =>
+          this.processEnrichmentNodeArray(wrapper, ncbiNodes, ncbiIds)
         );
-        for (let i = 0; i < this.ncbiNodes.length; i++) {
-          this.tableEntries[i].unshift({
-            text: this.ncbiNodes[i].full_name,
+        for (let i = 0; i < ncbiNodes.length; i++) {
+          newEntries[i].unshift({
+            text: ncbiNodes[i].full_name,
             singleLink: {
-              link: this.ncbiLinks[i],
+              link: ncbiLinks[i],
               linkText: 'NCBI Link',
             },
           });
-          this.tableEntries[i].unshift({ text: this.ncbiNodes[i].name });
-          this.tableEntries[i].unshift({ text: this.synonyms[i].name });
+          newEntries[i].unshift({ text: ncbiNodes[i].name });
+          newEntries[i].unshift({ text: synonyms[i].name });
         }
-        this.geneNames = this.synonyms.map((node) => node.name);
-        this.processUnmatchedNodes();
+        newEntries = newEntries.concat(this.processUnmatchedNodes(synonyms, currentGenes));
+        this.tableEntries = this.tableEntries.concat(newEntries);
       });
   }
 
-  processUnmatchedNodes() {
-    const unmatchedGenes = this.currentGenes.filter(
+  processUnmatchedNodes(synonyms: Synonym[], currentGenes: string[]): TableCell[][] {
+    this.geneNames = synonyms.map((node) => node.name);
+    const unmatchedGenes = currentGenes.filter(
       (gene) => !this.geneNames.includes(gene)
     );
+    const result = [];
     unmatchedGenes.forEach((gene) => {
       const cell: TableCell[] = [];
       cell.push({ text: gene, highlight: true });
@@ -261,13 +458,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       for (let i = 0; i < colNum - 2; i++) {
         cell.push({ text: '', highlight: true });
       }
-      this.tableEntries.push(cell);
+      result.push(cell);
     });
-    this.unmatchedGenes = unmatchedGenes.join(', ');
+    return result;
   }
 
   // Process wrapper to convert domain data into string array that represents domain columns.
-  processEnrichmentNodeArray(wrapper: EnrichmentWrapper): TableCell[] {
+  processEnrichmentNodeArray(wrapper: EnrichmentWrapper, ncbiNodes: NCBINode[], ncbiIds: number[]): TableCell[] {
     const result: TableCell[] = [];
     if (this.domains.includes('Regulon')) {
       if (wrapper.regulon.result !== null) {
@@ -377,7 +574,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
                 : {
                     link:
                       'http://amigo.geneontology.org/amigo/search/annotation?q=' +
-                      this.ncbiNodes[this.ncbiIds.indexOf(wrapper.node_id)].name,
+                      ncbiNodes[ncbiIds.indexOf(wrapper.node_id)].name,
                     linkText: 'GO Link',
                   },
             }

@@ -30,7 +30,7 @@ export interface NCBINode {
   name: string;
 }
 
-interface NCBIWrapper {
+export interface NCBIWrapper {
   neo4jID: number;
   x: NCBINode;
   link: string;
