@@ -1128,9 +1128,12 @@ class AnnotationsService:
             excluded_annotations=excluded_annotations
         )
 
-        # update the annotations with the common primary name
         cleaned = self._clean_annotations(
             annotations=annotations)
+        # update the annotations with the common primary name
+        # do this after cleaning because it's easier to
+        # query the KG for the primary names after the
+        # duplicates/overlapping intervals are removed
         return self.add_primary_name(annotations=cleaned)
 
     def create_nlp_annotations(
@@ -1176,6 +1179,10 @@ class AnnotationsService:
         )
         cleaned = self._clean_annotations(
             annotations=unified_annotations)
+        # update the annotations with the common primary name
+        # do this after cleaning because it's easier to
+        # query the KG for the primary names after the
+        # duplicates/overlapping intervals are removed
         return self.add_primary_name(annotations=cleaned)
 
     def _clean_annotations(
