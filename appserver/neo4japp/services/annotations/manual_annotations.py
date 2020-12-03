@@ -295,17 +295,43 @@ class ManualAnnotationsService:
             annotations.extend(self._get_file_annotations(fi))
         return annotations
 
-    def add_to_global_list(self, annotation, type, file_id):
-        """ Adds inclusion or exclusion to a global_list table
+    def add_to_global_list(self, annotation, annotation_type, file_id):
+        """ Adds inclusion or exclusion to a global_list table.
+        Checks for duplicates and discards them
         """
+        if self._global_annotation_exists(annotation, annotation_type):
+            return
+
         global_list_annotation = GlobalList(
             annotation=annotation,
-            type=type,
+            type=annotation_type,
             file_id=file_id,
         )
 
         db.session.add(global_list_annotation)
         db.session.commit()
+
+    def _global_annotation_exists(self, annotation, annotation_type):
+        global_annotations = GlobalList.query.filter_by(
+            type=annotation_type
+        ).all()
+        for global_annotation in global_annotations:
+            if annotation_type == ManualAnnotationType.INCLUSION.value:
+                existing_term = global_annotation.annotation['meta']['allText']
+                existing_type = global_annotation.annotation['meta']['type']
+                new_term = annotation['meta']['allText']
+                new_type = annotation['meta']['type']
+                is_case_insensitive = annotation['meta']['isCaseInsensitive']
+            else:
+                existing_term = global_annotation.annotation['text']
+                existing_type = global_annotation.annotation['type']
+                new_term = annotation['text']
+                new_type = annotation['type']
+                is_case_insensitive = annotation['isCaseInsensitive']
+            if new_type == existing_type and \
+                    self._terms_match(new_term, existing_term, is_case_insensitive):
+                return True
+        return False
 
     def _terms_match(self, term1, term2, is_case_insensitive):
         if is_case_insensitive:
