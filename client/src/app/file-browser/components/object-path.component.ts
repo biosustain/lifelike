@@ -7,6 +7,7 @@ import { FilesystemObject } from '../models/filesystem-object';
 })
 export class ObjectPathComponent {
 
+  @Input() ***ARANGO_USERNAME***Name = null;
   @Input() forEditing = true;
   _object: FilesystemObject | undefined;
   path: FilesystemObject[] = [];

@@ -9,12 +9,19 @@
     <div class="module" appContainerBreakpoints>
       <!-- Header -->
       <div class="module-header">
+        <!-- Title bar -->
+        <div class="module-title-bar">
+          <h1 class="module-title">
+            <span style="width: 28px; height: 28px; display: inline-flex; font-size: 12pt; border-radius: 5px" class="align-items-center justify-content-center mr-1 placeholder-box">
+              X
+            </span>
+            <span class="placeholder-box">Loading loading</span>
+          </h1>
+        </div>
+
         <!-- Breadcrumbs -->
-        <div class="module-breadcrumb-bar mb-1">
+        <div class="module-breadcrumb-bar mt-1">
           <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-              <a appLink="/projects">File Browser</a>
-            </li>
             <li class="breadcrumb-item">
               <span class="placeholder-box">Loading loading</span>
             </li>
@@ -25,13 +32,6 @@
               <span class="placeholder-box">Loading load</span>
             </li>
           </ol>
-        </div>
-
-        <!-- Title bar -->
-        <div class="module-title-bar">
-          <h1 class="module-title">
-            <span class="placeholder-box">Loading</span>
-          </h1>
         </div>
 
         <!-- Toolbar -->
@@ -143,26 +143,26 @@
     <div class="module" appContainerBreakpoints>
       <!-- Header -->
       <div class="module-header">
-        <!-- Breadcrumbs -->
-        <div class="module-breadcrumb-bar mb-1">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-              <a appLink="/projects">File Browser</a>
-            </li>
-            <li class="breadcrumb-item" *ngIf="result.value.parent">
-              <app-object-path [object]="result.value.parent"></app-object-path>
-            </li>
-          </ol>
-        </div>
-
         <!-- Title bar -->
         <div class="module-title-bar">
-          <button type="button" class="module-title-bar-back mr-2" (click)="goUp(result.value)">
-            <i class="fa fa-fw fa-arrow-left"></i>
-          </button>
           <h1 class="module-title">
-            {{ result.value.effectiveName }}
+            <app-project-icon [project]="result.value.project" size="28px" class="mr-1"></app-project-icon>
+            {{ result.value.project.name }}
           </h1>
+
+          <div ngbDropdown class="d-inline-block ml-1" container="body">
+            <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
+              <i class="fas fa-chevron-down fa-fw text-icon"></i>
+            </a>
+            <div ngbDropdownMenu>
+              <app-project-menu [project]="result.value.project"></app-project-menu>
+            </div>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <div class="module-breadcrumb-bar mt-2">
+          <app-object-path [object]="result.value" ***ARANGO_USERNAME***Name="Files"></app-object-path>
         </div>
 
         <!-- Toolbar -->
@@ -208,19 +208,15 @@
                   <i class="fa fa-fw fa-cloud"></i>
                 </button>
                 <div ngbDropdownMenu>
-                  <button ngbDropdownItem [appLink]="['/file-navigator', result.value.project.name, result.value.***ARANGO_USERNAME***.hashId]"
-                          [newTab]="true" [sideBySide]="true">For entire project...</button>
-                  <button ngbDropdownItem [appLink]="['/file-navigator', result.value.project.name, result.value.hashId]"
-                          [newTab]="true" [sideBySide]="true" *ngIf="result.value !== result.value.***ARANGO_USERNAME***">For this folder...</button>
-                </div>
-              </div>
-
-              <div ngbDropdown class="d-inline-block ml-2" container="body">
-                <button class="btn btn-secondary" ngbDropdownToggle>
-                  Project
-                </button>
-                <div ngbDropdownMenu>
-                  <app-project-menu [project]="result.value.project"></app-project-menu>
+                  <button ngbDropdownItem
+                          [appLink]="['/file-navigator', result.value.project.name, result.value.***ARANGO_USERNAME***.hashId]"
+                          [newTab]="true" [sideBySide]="true">For entire project...
+                  </button>
+                  <button ngbDropdownItem
+                          [appLink]="['/file-navigator', result.value.project.name, result.value.hashId]"
+                          [newTab]="true" [sideBySide]="true" *ngIf="result.value !== result.value.***ARANGO_USERNAME***">For this
+                    folder...
+                  </button>
                 </div>
               </div>
             </div>

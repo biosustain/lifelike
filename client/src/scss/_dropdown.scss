@@ -5,3 +5,9 @@
 .dropdown-body {
   padding: $spacer;
 }
+
+.dropdown-no-arrow {
+  &::after {
+    display: none;
+  }
+}

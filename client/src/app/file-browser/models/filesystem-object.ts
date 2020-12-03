@@ -65,6 +65,15 @@ export class ProjectImpl implements Project {
       return encodeURIComponent(item.replace(/^\//, ''));
     }).join('/');
   }
+
+  get colorHue(): number {
+    let hash = 3242;
+    for (let i = 0; i < this.hashId.length; i++) {
+      // tslint:disable-next-line:no-bitwise
+      hash = ((hash << 3) + hash) + this.hashId.codePointAt(i);
+    }
+    return hash % 100 / 100;
+  }
 }
 
 export interface FilePrivileges {
