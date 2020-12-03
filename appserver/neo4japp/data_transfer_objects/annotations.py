@@ -137,14 +137,14 @@ class Annotation(CamelDictMixin):
     primary_name: str = attr.ib(default='')
 
 
-@attr.s(frozen=True)
+@attr.s(frozen=False)
 class OrganismAnnotation(Annotation):
     @attr.s(frozen=True)
     class OrganismMeta(Annotation.Meta):
         category: str = attr.ib(default='')
 
 
-@attr.s(frozen=True)
+@attr.s(frozen=False)
 class GeneAnnotation(Annotation):
     @attr.s(frozen=True)
     class GeneMeta(Annotation.Meta):
