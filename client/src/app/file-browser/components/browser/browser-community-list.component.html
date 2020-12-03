@@ -25,7 +25,7 @@
             <span class="placeholder-box">Loading loading loading loading</span>
           </div>
 
-          <div class="tile-deck tile-deck">
+          <div class="tile-deck tile-deck tile-deck-sm">
             <div *ngFor="let p of [0, 1, 2]" class="tile d-flex flex-column justify-content-center align-items-center">
               <div class="flex-fill d-flex align-items-center">
             <span class="placeholder-box">
@@ -47,7 +47,8 @@
 
           <div class="module-section-body">
             <app-object-tile-deck [objects]="list.results" [newTabObject]="true" [forEditing]="false"
-                                  [showMoreButton]="true" [moreLink]="['/community']"></app-object-tile-deck>
+                                  [showMoreButton]="true" [moreLink]="['/community']"
+                                  tileDeckSize="sm"></app-object-tile-deck>
           </div>
         </div>
       </ng-container>

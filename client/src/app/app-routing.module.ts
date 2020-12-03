@@ -168,7 +168,7 @@ const routes: Routes = [
     component: BrowserComponent,
     canActivate: [AuthGuard],
     data: {
-      title: 'Browser',
+      title: 'File Browser',
       fontAwesomeIcon: 'layer-group',
     },
   },

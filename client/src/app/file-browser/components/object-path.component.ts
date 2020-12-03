@@ -7,6 +7,7 @@ import { FilesystemObject } from '../models/filesystem-object';
 })
 export class ObjectPathComponent {
 
+  @Input() rootName = null;
   @Input() forEditing = true;
   _object: FilesystemObject | undefined;
   path: FilesystemObject[] = [];

@@ -34,6 +34,7 @@ import { DirectoryPreviewComponent } from './components/directory-preview.compon
 import { ObjectMenuComponent } from './components/object-menu.component';
 import { ProjectActions } from './services/project-actions';
 import { ProjectMenuComponent } from './components/project-menu.component';
+import { ProjectIconComponent } from './components/project-icon.component';
 
 @NgModule({
   declarations: [
@@ -66,6 +67,7 @@ import { ProjectMenuComponent } from './components/project-menu.component';
     DirectoryPreviewComponent,
     ObjectMenuComponent,
     ProjectMenuComponent,
+    ProjectIconComponent,
   ],
   imports: [
     SharedModule,
@@ -87,6 +89,7 @@ import { ProjectMenuComponent } from './components/project-menu.component';
     DirectoryPreviewComponent,
     ObjectMenuComponent,
     ProjectMenuComponent,
+    ProjectIconComponent,
   ],
   exports: [
     ObjectInfoComponent,
@@ -98,6 +101,7 @@ import { ProjectMenuComponent } from './components/project-menu.component';
     ObjectVersionHistoryDialogComponent,
     ObjectPathComponent,
     ObjectMenuComponent,
+    ProjectIconComponent,
   ],
   providers: [
     ProjectService,
