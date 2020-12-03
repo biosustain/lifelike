@@ -1,0 +1,1421 @@
+2020-12-01 14:26:22.084+0000 INFO [o.n.g.f.m.e.CommunityEditionModule] No locking implementation specified, defaulting to 'community'
+2020-12-01 14:26:30.113+0000 INFO [o.n.g.f.GraphDatabaseFacadeFactory] Creating 'graph.db' database.
+2020-12-01 14:26:31.310+0000 INFO [o.n.k.a.DatabaseAvailabilityGuard] Requirement `Database available` makes database graph.db unavailable.
+2020-12-01 14:26:31.324+0000 INFO [o.n.k.a.DatabaseAvailabilityGuard] Database graph.db is unavailable.
+2020-12-01 14:26:40.730+0000 INFO [o.n.i.d.DiagnosticsManager] --- INITIALIZED diagnostics START ---
+2020-12-01 14:26:40.792+0000 INFO [o.n.i.d.DiagnosticsManager] Neo4j Kernel properties:
+2020-12-01 14:26:40.793+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connector.http.enabled=true
+2020-12-01 14:26:40.794+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.security.auth_enabled=true
+2020-12-01 14:26:40.794+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.windows_service_name=neo4j
+2020-12-01 14:26:40.794+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connector.http.listen_address=0.0.0.0:7474
+2020-12-01 14:26:40.795+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connector.https.listen_address=0.0.0.0:7473
+2020-12-01 14:26:40.795+0000 INFO [o.n.i.d.DiagnosticsManager] unsupported.dbms.directories.neo4j_home=/var/lib/neo4j
+2020-12-01 14:26:40.795+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connector.bolt.listen_address=0.0.0.0:7687
+2020-12-01 14:26:40.795+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.directories.import=/import
+2020-12-01 14:26:40.797+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.memory.pagecache.size=512M
+2020-12-01 14:26:40.798+0000 INFO [o.n.i.d.DiagnosticsManager] unsupported.dbms.edition=community
+2020-12-01 14:26:40.798+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.directories.logs=/logs
+2020-12-01 14:26:40.798+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connector.bolt.enabled=true
+2020-12-01 14:26:40.799+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connector.https.enabled=true
+2020-12-01 14:26:40.799+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.jvm.additional=-XX:+UseG1GC
+2020-12-01 14:26:40.799+0000 INFO [o.n.i.d.DiagnosticsManager] wrapper.java.additional=-Dneo4j.ext.udc.source=docker
+2020-12-01 14:26:40.799+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.directories.plugins=/plugins
+2020-12-01 14:26:40.799+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connectors.default_listen_address=0.0.0.0
+2020-12-01 14:26:40.800+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.tx_log.rotation.retention_policy=100M size
+2020-12-01 14:26:40.800+0000 INFO [o.n.i.d.DiagnosticsManager] EDITION=community
+2020-12-01 14:26:40.800+0000 INFO [o.n.i.d.DiagnosticsManager] HOME=/var/lib/neo4j
+2020-12-01 14:26:40.800+0000 INFO [o.n.i.d.DiagnosticsManager] Diagnostics providers:
+2020-12-01 14:26:40.800+0000 INFO [o.n.i.d.DiagnosticsManager] org.neo4j.kernel.configuration.Config
+2020-12-01 14:26:40.892+0000 INFO [o.n.i.d.DiagnosticsManager] org.neo4j.internal.diagnostics.DiagnosticsManager
+2020-12-01 14:26:40.892+0000 INFO [o.n.i.d.DiagnosticsManager] SYSTEM_MEMORY
+2020-12-01 14:26:40.893+0000 INFO [o.n.i.d.DiagnosticsManager] JAVA_MEMORY
+2020-12-01 14:26:40.893+0000 INFO [o.n.i.d.DiagnosticsManager] OPERATING_SYSTEM
+2020-12-01 14:26:40.893+0000 INFO [o.n.i.d.DiagnosticsManager] JAVA_VIRTUAL_MACHINE
+2020-12-01 14:26:40.893+0000 INFO [o.n.i.d.DiagnosticsManager] CLASSPATH
+2020-12-01 14:26:40.893+0000 INFO [o.n.i.d.DiagnosticsManager] LIBRARY_PATH
+2020-12-01 14:26:40.893+0000 INFO [o.n.i.d.DiagnosticsManager] SYSTEM_PROPERTIES
+2020-12-01 14:26:40.894+0000 INFO [o.n.i.d.DiagnosticsManager] TIMEZONE_DATABASE
+2020-12-01 14:26:40.894+0000 INFO [o.n.i.d.DiagnosticsManager] LINUX_SCHEDULERS
+2020-12-01 14:26:40.895+0000 INFO [o.n.i.d.DiagnosticsManager] NETWORK
+2020-12-01 14:26:40.895+0000 INFO [o.n.i.d.DiagnosticsManager] System memory information:
+2020-12-01 14:26:42.344+0000 INFO [o.n.i.d.DiagnosticsManager] Total Physical memory: 7.78 GB
+2020-12-01 14:26:42.346+0000 INFO [o.n.i.d.DiagnosticsManager] Free Physical memory: 2.24 GB
+2020-12-01 14:26:42.349+0000 INFO [o.n.i.d.DiagnosticsManager] Committed virtual memory: 4.83 GB
+2020-12-01 14:26:42.350+0000 INFO [o.n.i.d.DiagnosticsManager] Total swap space: 4.00 GB
+2020-12-01 14:26:42.350+0000 INFO [o.n.i.d.DiagnosticsManager] Free swap space: 4.00 GB
+2020-12-01 14:26:42.354+0000 INFO [o.n.i.d.DiagnosticsManager] JVM memory information:
+2020-12-01 14:26:42.355+0000 INFO [o.n.i.d.DiagnosticsManager] Free  memory: 1.18 GB
+2020-12-01 14:26:42.355+0000 INFO [o.n.i.d.DiagnosticsManager] Total memory: 1.20 GB
+2020-12-01 14:26:42.362+0000 INFO [o.n.i.d.DiagnosticsManager] Max   memory: 1.95 GB
+2020-12-01 14:26:42.380+0000 INFO [o.n.i.d.DiagnosticsManager] Garbage Collector: G1 Young Generation: [G1 Eden Space, G1 Survivor Space, G1 Old Gen]
+2020-12-01 14:26:42.380+0000 INFO [o.n.i.d.DiagnosticsManager] Garbage Collector: G1 Old Generation: [G1 Eden Space, G1 Survivor Space, G1 Old Gen]
+2020-12-01 14:26:42.383+0000 INFO [o.n.i.d.DiagnosticsManager] Memory Pool: Code Cache (Non-heap memory): committed=6.06 MB, used=6.02 MB, max=240.00 MB, threshold=0.00 B
+2020-12-01 14:26:42.384+0000 INFO [o.n.i.d.DiagnosticsManager] Memory Pool: Metaspace (Non-heap memory): committed=21.30 MB, used=20.45 MB, max=-1.00 B, threshold=0.00 B
+2020-12-01 14:26:42.385+0000 INFO [o.n.i.d.DiagnosticsManager] Memory Pool: Compressed Class Space (Non-heap memory): committed=2.63 MB, used=2.42 MB, max=1.00 GB, threshold=0.00 B
+2020-12-01 14:26:42.385+0000 INFO [o.n.i.d.DiagnosticsManager] Memory Pool: G1 Eden Space (Heap memory): committed=58.00 MB, used=1.00 MB, max=-1.00 B, threshold=?
+2020-12-01 14:26:42.386+0000 INFO [o.n.i.d.DiagnosticsManager] Memory Pool: G1 Survivor Space (Heap memory): committed=7.00 MB, used=7.00 MB, max=-1.00 B, threshold=?
+2020-12-01 14:26:42.386+0000 INFO [o.n.i.d.DiagnosticsManager] Memory Pool: G1 Old Gen (Heap memory): committed=1.14 GB, used=16.50 MB, max=1.95 GB, threshold=0.00 B
+2020-12-01 14:26:42.386+0000 INFO [o.n.i.d.DiagnosticsManager] Operating system information:
+2020-12-01 14:26:42.391+0000 INFO [o.n.i.d.DiagnosticsManager] Operating System: Linux; version: 5.4.39-linuxkit; arch: amd64; cpus: 4
+2020-12-01 14:26:42.395+0000 INFO [o.n.i.d.DiagnosticsManager] Max number of file descriptors: 1048576
+2020-12-01 14:26:42.581+0000 INFO [o.n.i.d.DiagnosticsManager] Number of open file descriptors: 135
+2020-12-01 14:26:42.645+0000 INFO [o.n.i.d.DiagnosticsManager] Process id: 8@7cf343918600
+2020-12-01 14:26:42.645+0000 INFO [o.n.i.d.DiagnosticsManager] Byte order: LITTLE_ENDIAN
+2020-12-01 14:26:42.715+0000 INFO [o.n.i.d.DiagnosticsManager] Local timezone: Etc/UTC
+2020-12-01 14:26:42.716+0000 INFO [o.n.i.d.DiagnosticsManager] JVM information:
+2020-12-01 14:26:42.716+0000 INFO [o.n.i.d.DiagnosticsManager] VM Name: OpenJDK 64-Bit Server VM
+2020-12-01 14:26:42.716+0000 INFO [o.n.i.d.DiagnosticsManager] VM Vendor: Oracle Corporation
+2020-12-01 14:26:42.716+0000 INFO [o.n.i.d.DiagnosticsManager] VM Version: 25.275-b01
+2020-12-01 14:26:42.907+0000 INFO [o.n.i.d.DiagnosticsManager] JIT compiler: HotSpot 64-Bit Tiered Compilers
+2020-12-01 14:26:42.932+0000 INFO [o.n.i.d.DiagnosticsManager] VM Arguments: [-XX:+UseG1GC, -XX:-OmitStackTraceInFastThrow, -XX:+AlwaysPreTouch, -XX:+UnlockExperimentalVMOptions, -XX:+TrustFinalNonStaticFields, -XX:+DisableExplicitGC, -Djdk.tls.ephemeralDHKeySize=2048, -Djdk.tls.rejectClientInitiatedRenegotiation=true, -Dunsupported.dbms.udc.source=docker, -Dfile.encoding=UTF-8]
+2020-12-01 14:26:42.932+0000 INFO [o.n.i.d.DiagnosticsManager] Java classpath:
+2020-12-01 14:26:43.914+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-fulltext-index-3.5.14.jar
+2020-12-01 14:26:43.914+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-configuration-3.5.14.jar
+2020-12-01 14:26:43.914+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-codegen-3.5.14.jar
+2020-12-01 14:26:43.914+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-graph-algo-3.5.14.jar
+2020-12-01 14:26:43.914+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jackson-core-asl-1.9.13.jar
+2020-12-01 14:26:43.914+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-parser-3.5-3.5.14.jar
+2020-12-01 14:26:43.915+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-ir-3.5-3.5.14.jar
+2020-12-01 14:26:43.915+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-dbms-3.5.14.jar
+2020-12-01 14:26:43.921+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-http-9.4.17.v20190418.jar
+2020-12-01 14:26:43.921+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/zipfs.jar
+2020-12-01 14:26:43.921+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/concurrentlinkedhashmap-lru-1.4.2.jar
+2020-12-01 14:26:43.921+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jPowerShell-1.9.jar
+2020-12-01 14:26:43.922+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-annotation-processors-3.5.14.jar
+2020-12-01 14:26:43.922+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-util-3.4-3.4.17.jar
+2020-12-01 14:26:43.922+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-logical-plans-3.5-3.5.14.jar
+2020-12-01 14:26:44.002+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-io-3.5.14.jar
+2020-12-01 14:26:44.002+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/sunec.jar
+2020-12-01 14:26:44.002+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/plugins/*
+2020-12-01 14:26:44.002+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jakarta.activation-api-1.2.1.jar
+2020-12-01 14:26:44.003+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/sunjce_provider.jar
+2020-12-01 14:26:44.004+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-io-9.4.17.v20190418.jar
+2020-12-01 14:26:44.004+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jersey-server-1.19.3.jar
+2020-12-01 14:26:44.004+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-rewriting-3.5-3.5.14.jar
+2020-12-01 14:26:44.004+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-consistency-check-3.5.14.jar
+2020-12-01 14:26:44.004+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-procedure-api-3.5.14.jar
+2020-12-01 14:26:44.013+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-csv-3.5.14.jar
+2020-12-01 14:26:44.013+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/server-api-3.5.14.jar
+2020-12-01 14:26:44.013+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-io-2.6.jar
+2020-12-01 14:26:44.013+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-planner-3.4-3.4.17.jar
+2020-12-01 14:26:44.013+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/dnsns.jar
+2020-12-01 14:26:44.024+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jersey-core-1.19.3.jar
+2020-12-01 14:26:44.029+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-xml-9.4.17.v20190418.jar
+2020-12-01 14:26:44.029+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-webapp-9.4.17.v20190418.jar
+2020-12-01 14:26:44.029+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-configuration-1.10.jar
+2020-12-01 14:26:44.029+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-planner-spi-3.4-3.4.17.jar
+2020-12-01 14:26:44.029+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/cldrdata.jar
+2020-12-01 14:26:44.029+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/charsets.jar
+2020-12-01 14:26:44.029+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-collections-3.5.14.jar
+2020-12-01 14:26:44.030+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-push-to-cloud-3.5.14.jar
+2020-12-01 14:26:44.030+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jersey-servlet-1.19.3.jar
+2020-12-01 14:26:44.030+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-data-collector-3.5.14.jar
+2020-12-01 14:26:44.030+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/txw2-2.3.2.jar
+2020-12-01 14:26:44.030+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/resources.jar
+2020-12-01 14:26:44.030+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-server-3.5.14.jar
+2020-12-01 14:26:44.030+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/scala-library-2.11.12.jar
+2020-12-01 14:26:44.030+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/jsse.jar
+2020-12-01 14:26:44.030+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-unsafe-3.5.14.jar
+2020-12-01 14:26:44.030+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/localedata.jar
+2020-12-01 14:26:44.030+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-server-9.4.17.v20190418.jar
+2020-12-01 14:26:44.031+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-udc-3.5.14.jar
+2020-12-01 14:26:44.031+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-command-line-3.5.14.jar
+2020-12-01 14:26:44.031+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-legacy-3.5.14.jar
+2020-12-01 14:26:44.031+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-concurrent-3.5.14.jar
+2020-12-01 14:26:44.031+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/javax.servlet-api-3.1.0.jar
+2020-12-01 14:26:44.031+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/sunrsasign.jar
+2020-12-01 14:26:44.031+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-compiler-2.3-2.3.12.jar
+2020-12-01 14:26:44.031+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jProcesses-1.6.4.jar
+2020-12-01 14:26:44.032+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/istack-commons-runtime-3.0.8.jar
+2020-12-01 14:26:44.032+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-diagnostics-3.5.14.jar
+2020-12-01 14:26:44.032+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/sunpkcs11.jar
+2020-12-01 14:26:44.032+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-ssl-3.5.14.jar
+2020-12-01 14:26:44.032+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/scala-reflect-2.11.12.jar
+2020-12-01 14:26:44.032+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-graphdb-api-3.5.14.jar
+2020-12-01 14:26:44.032+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-values-3.5.14.jar
+2020-12-01 14:26:44.032+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-lang-2.6.jar
+2020-12-01 14:26:44.032+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/netty-all-4.1.43.Final.jar
+2020-12-01 14:26:44.032+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/lucene-core-5.5.5.jar
+2020-12-01 14:26:44.032+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/lucene-codecs-5.5.5.jar
+2020-12-01 14:26:44.033+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/rt.jar
+2020-12-01 14:26:44.042+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/activation-1.1.1.jar
+2020-12-01 14:26:44.043+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-planner-3.5-3.5.14.jar
+2020-12-01 14:26:44.043+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/stax-ex-1.8.1.jar
+2020-12-01 14:26:44.043+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-compiler-3.1-3.1.9.jar
+2020-12-01 14:26:44.043+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/eclipse-collections-9.2.0.jar
+2020-12-01 14:26:44.043+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-compress-1.19.jar
+2020-12-01 14:26:44.044+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-expression-3.4-3.4.17.jar
+2020-12-01 14:26:44.044+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-lang3-3.8.jar
+2020-12-01 14:26:44.044+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-browser-3.2.26.jar
+2020-12-01 14:26:44.044+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-ast-3.5-3.5.14.jar
+2020-12-01 14:26:44.044+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-index-3.5.14.jar
+2020-12-01 14:26:44.044+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-planner-spi-3.5-3.5.14.jar
+2020-12-01 14:26:44.044+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/conf/
+2020-12-01 14:26:44.044+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-3.5.14.jar
+2020-12-01 14:26:44.044+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-util-9.4.17.v20190418.jar
+2020-12-01 14:26:44.045+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jaxb-runtime-2.3.2.jar
+2020-12-01 14:26:44.045+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jaxb-api-2.3.0.jar
+2020-12-01 14:26:44.045+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-kernel-3.5.14.jar
+2020-12-01 14:26:44.045+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-lucene-index-3.5.14.jar
+2020-12-01 14:26:44.045+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/opencsv-2.3.jar
+2020-12-01 14:26:44.045+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-interpreted-runtime-3.5.14.jar
+2020-12-01 14:26:44.046+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-bolt-3.5.14.jar
+2020-12-01 14:26:44.046+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/parboiled-scala_2.11-1.1.7.jar
+2020-12-01 14:26:44.047+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-jmx-3.5.14.jar
+2020-12-01 14:26:44.047+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/classes
+2020-12-01 14:26:44.047+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-runtime-util-3.5.14.jar
+2020-12-01 14:26:44.047+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-servlet-9.4.17.v20190418.jar
+2020-12-01 14:26:44.047+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/openCypher-frontend-1-3.4.17.jar
+2020-12-01 14:26:44.047+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-security-3.5.14.jar
+2020-12-01 14:26:44.047+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-logical-plans-3.4-3.4.17.jar
+2020-12-01 14:26:44.048+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-import-tool-3.5.14.jar
+2020-12-01 14:26:44.048+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/eclipse-collections-api-9.2.0.jar
+2020-12-01 14:26:44.067+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jackson-mapper-asl-1.9.13.jar
+2020-12-01 14:26:44.068+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/FastInfoset-1.2.16.jar
+2020-12-01 14:26:44.068+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/jfr.jar
+2020-12-01 14:26:44.068+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-kernel-api-3.5.14.jar
+2020-12-01 14:26:44.068+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/caffeine-2.6.2.jar
+2020-12-01 14:26:44.068+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-3.5.14.jar
+2020-12-01 14:26:44.068+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/lucene-queryparser-5.5.5.jar
+2020-12-01 14:26:44.068+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/bcprov-jdk15on-1.60.jar
+2020-12-01 14:26:44.068+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jackson-jaxrs-1.9.13.jar
+2020-12-01 14:26:44.068+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/nashorn.jar
+2020-12-01 14:26:44.068+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-lucene-upgrade-3.5.14.jar
+2020-12-01 14:26:44.068+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/jce.jar
+2020-12-01 14:26:44.069+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-frontend-3.1-3.1.9.jar
+2020-12-01 14:26:44.069+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/WMI4Java-1.6.1.jar
+2020-12-01 14:26:44.069+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-logging-3.5.14.jar
+2020-12-01 14:26:44.069+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/zstd-proxy-3.5.14.jar
+2020-12-01 14:26:44.069+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jsr311-api-1.1.2.r612.jar
+2020-12-01 14:26:44.069+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-front-end-3.5-3.5.14.jar
+2020-12-01 14:26:44.069+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-frontend-2.3-2.3.12.jar
+2020-12-01 14:26:44.069+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/plugins/
+2020-12-01 14:26:44.069+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/lucene-analyzers-common-5.5.5.jar
+2020-12-01 14:26:44.069+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-resource-3.5.14.jar
+2020-12-01 14:26:44.069+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-ir-3.4-3.4.17.jar
+2020-12-01 14:26:44.069+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/bcpkix-jdk15on-1.60.jar
+2020-12-01 14:26:44.070+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/zstd-jni-1.3.8-6.jar
+2020-12-01 14:26:44.070+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-expression-evaluator-3.5.14.jar
+2020-12-01 14:26:44.070+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jakarta.xml.bind-api-2.3.2.jar
+2020-12-01 14:26:44.070+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-spatial-index-3.5.14.jar
+2020-12-01 14:26:44.161+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-logging-1.1.1.jar
+2020-12-01 14:26:44.161+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-text-1.4.jar
+2020-12-01 14:26:44.161+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/jaccess.jar
+2020-12-01 14:26:44.161+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-graph-matching-3.1.9.jar
+2020-12-01 14:26:44.161+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/parboiled-core-1.1.7.jar
+2020-12-01 14:26:44.161+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-expressions-3.5-3.5.14.jar
+2020-12-01 14:26:44.161+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-util-3.5-3.5.14.jar
+2020-12-01 14:26:44.162+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-common-3.5.14.jar
+2020-12-01 14:26:44.162+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-security-9.4.17.v20190418.jar
+2020-12-01 14:26:44.162+0000 INFO [o.n.i.d.DiagnosticsManager] Library path:
+2020-12-01 14:26:44.162+0000 INFO [o.n.i.d.DiagnosticsManager] /usr/java/packages/lib/amd64
+2020-12-01 14:26:44.175+0000 INFO [o.n.i.d.DiagnosticsManager] /usr/lib64
+2020-12-01 14:26:44.176+0000 INFO [o.n.i.d.DiagnosticsManager] /lib64
+2020-12-01 14:26:44.176+0000 INFO [o.n.i.d.DiagnosticsManager] /lib
+2020-12-01 14:26:44.176+0000 INFO [o.n.i.d.DiagnosticsManager] /usr/lib
+2020-12-01 14:26:44.176+0000 INFO [o.n.i.d.DiagnosticsManager] System.properties:
+2020-12-01 14:26:44.184+0000 INFO [o.n.i.d.DiagnosticsManager] sun.boot.library.path = /usr/local/openjdk-8/lib/amd64
+2020-12-01 14:26:44.184+0000 INFO [o.n.i.d.DiagnosticsManager] jdk.tls.rejectClientInitiatedRenegotiation = true
+2020-12-01 14:26:44.184+0000 INFO [o.n.i.d.DiagnosticsManager] path.separator = :
+2020-12-01 14:26:44.184+0000 INFO [o.n.i.d.DiagnosticsManager] file.encoding.pkg = sun.io
+2020-12-01 14:26:44.184+0000 INFO [o.n.i.d.DiagnosticsManager] sun.java.launcher = SUN_STANDARD
+2020-12-01 14:26:44.184+0000 INFO [o.n.i.d.DiagnosticsManager] sun.os.patch.level = unknown
+2020-12-01 14:26:44.184+0000 INFO [o.n.i.d.DiagnosticsManager] user.dir = /var/lib/neo4j
+2020-12-01 14:26:44.184+0000 INFO [o.n.i.d.DiagnosticsManager] sun.jnu.encoding = UTF-8
+2020-12-01 14:26:44.184+0000 INFO [o.n.i.d.DiagnosticsManager] unsupported.dbms.udc.source = docker
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] sun.management.compiler = HotSpot 64-Bit Tiered Compilers
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] user.home = /var/lib/neo4j
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] user.timezone = Etc/UTC
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] file.encoding = UTF-8
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] user.name = neo4j
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] sun.java.command = org.neo4j.server.CommunityEntryPoint --home-dir=/var/lib/neo4j --config-dir=/var/lib/neo4j/conf
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] sun.arch.data.model = 64
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] user.language = en
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] awt.toolkit = sun.awt.X11.XToolkit
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] jdk.tls.ephemeralDHKeySize = 2048
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] file.separator = /
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] sun.io.unicode.encoding = UnicodeLittle
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] sun.cpu.endian = little
+2020-12-01 14:26:44.185+0000 INFO [o.n.i.d.DiagnosticsManager] sun.cpu.isalist = 
+2020-12-01 14:26:44.188+0000 INFO [o.n.i.d.DiagnosticsManager] (IANA) TimeZone Database Version:
+2020-12-01 14:26:45.770+0000 INFO [o.n.i.d.DiagnosticsManager]   TimeZone version: 2020a (available for 601 zone identifiers)
+2020-12-01 14:26:45.773+0000 INFO [o.n.i.d.DiagnosticsManager] Linux scheduler information:
+2020-12-01 14:26:45.946+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.096+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.119+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.119+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.120+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.121+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.121+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.123+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.124+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.124+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.195+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.198+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.198+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.199+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.199+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.199+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.200+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.200+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.201+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.204+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.205+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.205+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.206+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.206+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.206+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.207+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.207+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.208+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.208+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.209+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.215+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.216+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.216+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.217+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.217+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.218+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.218+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.218+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.219+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.219+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 14:26:46.219+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 14:26:46.219+0000 INFO [o.n.i.d.DiagnosticsManager] Network information:
+2020-12-01 14:26:46.429+0000 INFO [o.n.i.d.DiagnosticsManager] Interface eth0:
+2020-12-01 14:26:46.482+0000 INFO [o.n.i.d.DiagnosticsManager]     address: 172.18.0.6
+2020-12-01 14:26:46.482+0000 INFO [o.n.i.d.DiagnosticsManager] Interface lo:
+2020-12-01 14:26:46.482+0000 INFO [o.n.i.d.DiagnosticsManager]     address: 127.0.0.1
+2020-12-01 14:26:46.482+0000 INFO [o.n.i.d.DiagnosticsManager] --- INITIALIZED diagnostics END ---
+2020-12-01 14:26:56.092+0000 INFO [o.n.k.i.s.f.RecordFormatSelector] Selected format 'RecordFormat:StandardV3_4[v0.A.9]' for the new store
+2020-12-01 14:27:21.891+0000 INFO [o.n.k.i.i.l.NativeLabelScanStore] No label index found, this might just be first use. Preparing to rebuild.
+2020-12-01 14:27:22.986+0000 INFO [o.n.k.NeoStoreDataSource] Rotated to transaction log [/var/lib/neo4j/data/databases/graph.db/neostore.transaction.db.0] version=0, last transaction in previous log=1
+2020-12-01 14:27:23.000+0000 INFO [o.n.k.NeoStoreDataSource] No commits found after last check point (which is at <no log position given>)
+2020-12-01 14:27:23.279+0000 WARN [o.n.k.i.s.MetaDataStore] Missing counts store, rebuilding it.
+2020-12-01 14:27:23.417+0000 WARN [o.n.k.i.s.MetaDataStore] Counts store rebuild completed.
+2020-12-01 14:27:23.806+0000 INFO [o.n.k.i.i.l.NativeLabelScanStore] Rebuilding label index, this may take a while
+2020-12-01 14:27:24.094+0000 INFO [o.n.k.i.i.l.NativeLabelScanStore] Label index rebuilt (roughly 0 nodes)
+2020-12-01 14:27:24.317+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for KernelDiagnostics:Versions START ---
+2020-12-01 14:27:24.360+0000 INFO [o.n.i.d.DiagnosticsManager] Graph Database: community single StoreId{creationTime=1606832822437, randomId=-5725108340623242805, storeVersion=16094931155187206, upgradeTime=1606832822437, upgradeId=1}
+2020-12-01 14:27:24.392+0000 INFO [o.n.i.d.DiagnosticsManager] Kernel version: 3.5.14,932d555a90a30c92acddd30a504e6ae1932a92ae
+2020-12-01 14:27:24.470+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for KernelDiagnostics:Versions END ---
+2020-12-01 14:27:24.542+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for NEO_STORE_VERSIONS START ---
+2020-12-01 14:27:24.547+0000 INFO [o.n.i.d.DiagnosticsManager] Store versions:
+2020-12-01 14:27:24.552+0000 INFO [o.n.i.d.DiagnosticsManager]   ArrayPropertyStore v0.A.9
+2020-12-01 14:27:24.554+0000 INFO [o.n.i.d.DiagnosticsManager]   NodeStore v0.A.9
+2020-12-01 14:27:24.561+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore v0.A.9
+2020-12-01 14:27:24.563+0000 INFO [o.n.i.d.DiagnosticsManager]   PropertyIndexStore v0.A.9
+2020-12-01 14:27:24.568+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore v0.A.9
+2020-12-01 14:27:24.569+0000 INFO [o.n.i.d.DiagnosticsManager]   ArrayPropertyStore v0.A.9
+2020-12-01 14:27:24.573+0000 INFO [o.n.i.d.DiagnosticsManager]   PropertyStore v0.A.9
+2020-12-01 14:27:24.578+0000 INFO [o.n.i.d.DiagnosticsManager]   RelationshipStore v0.A.9
+2020-12-01 14:27:24.585+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore v0.A.9
+2020-12-01 14:27:24.590+0000 INFO [o.n.i.d.DiagnosticsManager]   RelationshipTypeStore v0.A.9
+2020-12-01 14:27:24.593+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore v0.A.9
+2020-12-01 14:27:24.612+0000 INFO [o.n.i.d.DiagnosticsManager]   LabelTokenStore v0.A.9
+2020-12-01 14:27:24.615+0000 INFO [o.n.i.d.DiagnosticsManager]   SchemaStore v0.A.9
+2020-12-01 14:27:24.627+0000 INFO [o.n.i.d.DiagnosticsManager]   RelationshipGroupStore v0.A.9
+2020-12-01 14:27:24.634+0000 INFO [o.n.i.d.DiagnosticsManager]   NeoStore v0.A.9
+2020-12-01 14:27:24.637+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for NEO_STORE_VERSIONS END ---
+2020-12-01 14:27:24.644+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for NEO_STORE_ID_USAGE START ---
+2020-12-01 14:27:24.657+0000 INFO [o.n.i.d.DiagnosticsManager] Id usage:
+2020-12-01 14:27:24.767+0000 INFO [o.n.i.d.DiagnosticsManager]   ArrayPropertyStore: used=1 high=0
+2020-12-01 14:27:24.774+0000 INFO [o.n.i.d.DiagnosticsManager]   NodeStore: used=0 high=-1
+2020-12-01 14:27:24.778+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore: used=1 high=0
+2020-12-01 14:27:24.817+0000 INFO [o.n.i.d.DiagnosticsManager]   PropertyIndexStore: used=0 high=-1
+2020-12-01 14:27:24.820+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore: used=1 high=0
+2020-12-01 14:27:24.825+0000 INFO [o.n.i.d.DiagnosticsManager]   ArrayPropertyStore: used=1 high=0
+2020-12-01 14:27:24.834+0000 INFO [o.n.i.d.DiagnosticsManager]   PropertyStore: used=0 high=-1
+2020-12-01 14:27:24.836+0000 INFO [o.n.i.d.DiagnosticsManager]   RelationshipStore: used=0 high=-1
+2020-12-01 14:27:24.843+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore: used=1 high=0
+2020-12-01 14:27:24.848+0000 INFO [o.n.i.d.DiagnosticsManager]   RelationshipTypeStore: used=0 high=-1
+2020-12-01 14:27:24.867+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore: used=1 high=0
+2020-12-01 14:27:24.869+0000 INFO [o.n.i.d.DiagnosticsManager]   LabelTokenStore: used=0 high=-1
+2020-12-01 14:27:24.871+0000 INFO [o.n.i.d.DiagnosticsManager]   SchemaStore: used=1 high=0
+2020-12-01 14:27:24.878+0000 INFO [o.n.i.d.DiagnosticsManager]   RelationshipGroupStore: used=1 high=0
+2020-12-01 14:27:24.880+0000 INFO [o.n.i.d.DiagnosticsManager]   NeoStore: used=15 high=14
+2020-12-01 14:27:24.891+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for NEO_STORE_ID_USAGE END ---
+2020-12-01 14:27:24.931+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for NEO_STORE_RECORDS START ---
+2020-12-01 14:27:25.047+0000 INFO [o.n.i.d.DiagnosticsManager] Neostore records:
+2020-12-01 14:27:25.086+0000 INFO [o.n.i.d.DiagnosticsManager] TIME (Creation time): 1606832822437
+2020-12-01 14:27:25.088+0000 INFO [o.n.i.d.DiagnosticsManager] RANDOM_NUMBER (Random number for store id): -5725108340623242805
+2020-12-01 14:27:25.097+0000 INFO [o.n.i.d.DiagnosticsManager] LOG_VERSION (Current log version): 0
+2020-12-01 14:27:25.105+0000 INFO [o.n.i.d.DiagnosticsManager] LAST_TRANSACTION_ID (Last committed transaction): 1
+2020-12-01 14:27:25.769+0000 INFO [o.n.i.d.DiagnosticsManager] STORE_VERSION (Store format version): 16094931155187206
+2020-12-01 14:27:25.875+0000 INFO [o.n.i.d.DiagnosticsManager] FIRST_GRAPH_PROPERTY (First property record containing graph properties): -1
+2020-12-01 14:27:26.018+0000 INFO [o.n.i.d.DiagnosticsManager] LAST_CONSTRAINT_TRANSACTION (Last committed transaction containing constraint changes): 0
+2020-12-01 14:27:26.465+0000 INFO [o.n.i.d.DiagnosticsManager] UPGRADE_TRANSACTION_ID (Transaction id most recent upgrade was performed at): 1
+2020-12-01 14:27:26.492+0000 INFO [o.n.i.d.DiagnosticsManager] UPGRADE_TIME (Time of last upgrade): 1606832822437
+2020-12-01 14:27:26.510+0000 INFO [o.n.i.d.DiagnosticsManager] LAST_TRANSACTION_CHECKSUM (Checksum of last committed transaction): 0
+2020-12-01 14:27:26.592+0000 INFO [o.n.i.d.DiagnosticsManager] UPGRADE_TRANSACTION_CHECKSUM (Checksum of transaction id the most recent upgrade was performed at): 0
+2020-12-01 14:27:26.662+0000 INFO [o.n.i.d.DiagnosticsManager] LAST_CLOSED_TRANSACTION_LOG_VERSION (Log version where the last transaction commit entry has been written into): 0
+2020-12-01 14:27:26.816+0000 INFO [o.n.i.d.DiagnosticsManager] LAST_CLOSED_TRANSACTION_LOG_BYTE_OFFSET (Byte offset in the log file where the last transaction commit entry has been written into): 16
+2020-12-01 14:27:26.971+0000 INFO [o.n.i.d.DiagnosticsManager] LAST_TRANSACTION_COMMIT_TIMESTAMP (Commit time timestamp for last committed transaction): 0
+2020-12-01 14:27:26.991+0000 INFO [o.n.i.d.DiagnosticsManager] UPGRADE_TRANSACTION_COMMIT_TIMESTAMP (Commit timestamp of transaction the most recent upgrade was performed at): 0
+2020-12-01 14:27:26.998+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for NEO_STORE_RECORDS END ---
+2020-12-01 14:27:27.015+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for TRANSACTION_RANGE START ---
+2020-12-01 14:27:27.110+0000 INFO [o.n.i.d.DiagnosticsManager] Transaction log:
+2020-12-01 14:27:27.142+0000 INFO [o.n.i.d.DiagnosticsManager] No transactions found in any log
+2020-12-01 14:27:27.145+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for TRANSACTION_RANGE END ---
+2020-12-01 14:27:27.444+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for KernelDiagnostics:StoreFiles START ---
+2020-12-01 14:27:27.472+0000 INFO [o.n.i.d.DiagnosticsManager] Disk space on partition (Total / Free / Free %): 499963174912 / 405808091136 / 81
+2020-12-01 14:27:27.481+0000 INFO [o.n.i.d.DiagnosticsManager] Storage files: (filename : modification date - size)
+2020-12-01 14:27:27.509+0000 INFO [o.n.i.d.DiagnosticsManager]   index:
+2020-12-01 14:27:27.529+0000 INFO [o.n.i.d.DiagnosticsManager]   - Total: 2020-12-01T14:27:21+0000 - 0.00 B
+2020-12-01 14:27:27.553+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore: 2020-12-01T14:27:02+0000 - 8.00 kB
+2020-12-01 14:27:27.557+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.counts.db.a: 2020-12-01T14:27:23+0000 - 96.00 B
+2020-12-01 14:27:27.566+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.id: 2020-12-01T14:27:02+0000 - 9.00 B
+2020-12-01 14:27:27.657+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.labelscanstore.db: 2020-12-01T14:27:24+0000 - 40.00 kB
+2020-12-01 14:27:27.681+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.labeltokenstore.db: 2020-12-01T14:27:01+0000 - 0.00 B
+2020-12-01 14:27:27.683+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.labeltokenstore.db.id: 2020-12-01T14:27:01+0000 - 9.00 B
+2020-12-01 14:27:27.692+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.labeltokenstore.db.names: 2020-12-01T14:27:01+0000 - 8.00 kB
+2020-12-01 14:27:27.695+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.labeltokenstore.db.names.id: 2020-12-01T14:27:01+0000 - 9.00 B
+2020-12-01 14:27:27.699+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.nodestore.db: 2020-12-01T14:26:58+0000 - 0.00 B
+2020-12-01 14:27:27.819+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.nodestore.db.id: 2020-12-01T14:26:58+0000 - 9.00 B
+2020-12-01 14:27:27.822+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.nodestore.db.labels: 2020-12-01T14:26:58+0000 - 8.00 kB
+2020-12-01 14:27:27.827+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.nodestore.db.labels.id: 2020-12-01T14:26:58+0000 - 9.00 B
+2020-12-01 14:27:27.830+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db: 2020-12-01T14:26:59+0000 - 0.00 B
+2020-12-01 14:27:27.833+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.arrays: 2020-12-01T14:26:59+0000 - 8.00 kB
+2020-12-01 14:27:27.843+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.arrays.id: 2020-12-01T14:26:59+0000 - 9.00 B
+2020-12-01 14:27:27.886+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.id: 2020-12-01T14:26:59+0000 - 9.00 B
+2020-12-01 14:27:27.955+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.index: 2020-12-01T14:26:58+0000 - 0.00 B
+2020-12-01 14:27:27.966+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.index.id: 2020-12-01T14:26:58+0000 - 9.00 B
+2020-12-01 14:27:27.982+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.index.keys: 2020-12-01T14:26:58+0000 - 8.00 kB
+2020-12-01 14:27:27.990+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.index.keys.id: 2020-12-01T14:26:58+0000 - 9.00 B
+2020-12-01 14:27:28.007+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.strings: 2020-12-01T14:26:59+0000 - 8.00 kB
+2020-12-01 14:27:28.016+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.strings.id: 2020-12-01T14:26:59+0000 - 9.00 B
+2020-12-01 14:27:28.031+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshipgroupstore.db: 2020-12-01T14:27:01+0000 - 8.00 kB
+2020-12-01 14:27:28.042+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshipgroupstore.db.id: 2020-12-01T14:27:01+0000 - 9.00 B
+2020-12-01 14:27:28.073+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshipstore.db: 2020-12-01T14:26:59+0000 - 0.00 B
+2020-12-01 14:27:28.077+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshipstore.db.id: 2020-12-01T14:27:00+0000 - 9.00 B
+2020-12-01 14:27:28.091+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshiptypestore.db: 2020-12-01T14:27:01+0000 - 0.00 B
+2020-12-01 14:27:28.127+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshiptypestore.db.id: 2020-12-01T14:27:01+0000 - 9.00 B
+2020-12-01 14:27:28.146+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshiptypestore.db.names: 2020-12-01T14:27:00+0000 - 8.00 kB
+2020-12-01 14:27:28.155+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshiptypestore.db.names.id: 2020-12-01T14:27:01+0000 - 9.00 B
+2020-12-01 14:27:28.195+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.schemastore.db: 2020-12-01T14:27:01+0000 - 8.00 kB
+2020-12-01 14:27:28.230+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.schemastore.db.id: 2020-12-01T14:27:01+0000 - 9.00 B
+2020-12-01 14:27:28.245+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.transaction.db.0: 2020-12-01T14:27:22+0000 - 16.00 B
+2020-12-01 14:27:28.275+0000 INFO [o.n.i.d.DiagnosticsManager] Storage summary: 
+2020-12-01 14:27:28.316+0000 INFO [o.n.i.d.DiagnosticsManager]   Total size of store: 112.24 kB
+2020-12-01 14:27:28.323+0000 INFO [o.n.i.d.DiagnosticsManager]   Total size of mapped files: 112.00 kB
+2020-12-01 14:27:28.335+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for KernelDiagnostics:StoreFiles END ---
+2020-12-01 14:27:28.341+0000 INFO [o.n.k.a.DatabaseAvailabilityGuard] Fulfilling of requirement 'Database available' makes database graph.db available.
+2020-12-01 14:27:28.350+0000 INFO [o.n.k.a.DatabaseAvailabilityGuard] Database graph.db is ready.
+2020-12-01 14:27:28.358+0000 INFO [o.n.k.i.DatabaseHealth] Database health set to OK
+2020-12-01 14:27:35.588+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=107, gcTime=0, gcCount=0}
+2020-12-01 14:27:35.806+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=147, gcTime=0, gcCount=0}
+2020-12-01 14:27:40.625+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=2463, gcTime=2498, gcCount=1}
+2020-12-01 14:27:41.635+0000 INFO [o.n.b.BoltServer] Bolt server loaded
+2020-12-01 14:27:45.264+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1975, gcTime=2024, gcCount=1}
+2020-12-01 14:27:46.377+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=626, gcTime=0, gcCount=0}
+2020-12-01 14:27:47.457+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1029, gcTime=0, gcCount=0}
+2020-12-01 14:27:47.601+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=468, gcTime=0, gcCount=0}
+2020-12-01 14:27:48.596+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=899, gcTime=0, gcCount=0}
+2020-12-01 14:27:51.351+0000 INFO [o.n.b.BoltServer] Bolt enabled on 0.0.0.0:7687.
+2020-12-01 14:27:56.818+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=165, gcTime=0, gcCount=0}
+2020-12-01 14:28:01.166+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=444, gcTime=0, gcCount=0}
+2020-12-01 14:28:04.183+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=172, gcTime=0, gcCount=0}
+2020-12-01 14:28:06.067+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=201, gcTime=0, gcCount=0}
+2020-12-01 14:28:06.836+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=2347, gcTime=0, gcCount=0}
+2020-12-01 14:28:07.207+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=230, gcTime=0, gcCount=0}
+2020-12-01 14:28:07.886+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=210, gcTime=0, gcCount=0}
+2020-12-01 14:28:08.113+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=574, gcTime=0, gcCount=0}
+2020-12-01 14:28:08.601+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=272, gcTime=0, gcCount=0}
+2020-12-01 14:28:08.929+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=231, gcTime=0, gcCount=0}
+2020-12-01 14:28:09.476+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=612, gcTime=0, gcCount=0}
+2020-12-01 14:28:10.530+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=559, gcTime=0, gcCount=0}
+2020-12-01 14:28:13.069+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=136, gcTime=0, gcCount=0}
+2020-12-01 14:28:13.244+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=251, gcTime=0, gcCount=0}
+2020-12-01 14:28:22.287+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=3206, gcTime=3210, gcCount=1}
+2020-12-01 14:28:23.309+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=159, gcTime=0, gcCount=0}
+2020-12-01 14:28:24.647+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=138, gcTime=0, gcCount=0}
+2020-12-01 14:28:24.984+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=307, gcTime=0, gcCount=0}
+2020-12-01 14:28:25.166+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=196, gcTime=0, gcCount=0}
+2020-12-01 14:28:26.597+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=219, gcTime=0, gcCount=0}
+2020-12-01 14:28:27.259+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=506, gcTime=0, gcCount=0}
+2020-12-01 14:28:27.468+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=289, gcTime=0, gcCount=0}
+2020-12-01 14:28:27.900+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=404, gcTime=0, gcCount=0}
+2020-12-01 14:28:28.269+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=156, gcTime=0, gcCount=0}
+2020-12-01 14:28:28.633+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=181, gcTime=0, gcCount=0}
+2020-12-01 14:28:29.035+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=169, gcTime=0, gcCount=0}
+2020-12-01 14:28:29.663+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=580, gcTime=0, gcCount=0}
+2020-12-01 14:28:32.020+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=504, gcTime=0, gcCount=0}
+2020-12-01 14:28:33.167+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=2346, gcTime=0, gcCount=0}
+2020-12-01 14:28:33.443+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=739, gcTime=0, gcCount=0}
+2020-12-01 14:28:34.739+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=245, gcTime=0, gcCount=0}
+2020-12-01 14:28:35.630+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1572, gcTime=0, gcCount=0}
+2020-12-01 14:28:37.125+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=881, gcTime=0, gcCount=0}
+2020-12-01 14:28:37.618+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=911, gcTime=0, gcCount=0}
+2020-12-01 14:28:38.498+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=355, gcTime=0, gcCount=0}
+2020-12-01 14:28:38.886+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=840, gcTime=0, gcCount=0}
+2020-12-01 14:28:39.319+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=406, gcTime=0, gcCount=0}
+2020-12-01 14:28:39.868+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=233, gcTime=0, gcCount=0}
+2020-12-01 14:28:40.154+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=280, gcTime=0, gcCount=0}
+2020-12-01 14:28:40.862+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=263, gcTime=0, gcCount=0}
+2020-12-01 14:28:43.709+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=2780, gcTime=0, gcCount=0}
+2020-12-01 14:28:44.229+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=535, gcTime=0, gcCount=0}
+2020-12-01 14:28:44.467+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=459, gcTime=0, gcCount=0}
+2020-12-01 14:28:45.865+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=169, gcTime=0, gcCount=0}
+2020-12-01 14:28:47.074+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1334, gcTime=0, gcCount=0}
+2020-12-01 14:28:47.693+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1100, gcTime=0, gcCount=0}
+2020-12-01 14:28:48.331+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=579, gcTime=0, gcCount=0}
+2020-12-01 14:28:48.785+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=395, gcTime=0, gcCount=0}
+2020-12-01 14:28:49.118+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=355, gcTime=0, gcCount=0}
+2020-12-01 14:28:49.521+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=202, gcTime=0, gcCount=0}
+2020-12-01 14:28:50.959+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1276, gcTime=0, gcCount=0}
+2020-12-01 14:28:51.367+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=474, gcTime=0, gcCount=0}
+2020-12-01 14:28:51.860+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=541, gcTime=0, gcCount=0}
+2020-12-01 14:28:52.682+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=177, gcTime=0, gcCount=0}
+2020-12-01 14:28:53.138+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=173, gcTime=0, gcCount=0}
+2020-12-01 14:28:53.488+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=254, gcTime=0, gcCount=0}
+2020-12-01 14:28:53.748+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=205, gcTime=0, gcCount=0}
+2020-12-01 14:28:54.075+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=108, gcTime=0, gcCount=0}
+2020-12-01 14:28:55.062+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=732, gcTime=0, gcCount=0}
+2020-12-01 14:28:55.997+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1117, gcTime=0, gcCount=0}
+2020-12-01 14:28:56.748+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=452, gcTime=0, gcCount=0}
+2020-12-01 14:28:57.228+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=395, gcTime=0, gcCount=0}
+2020-12-01 14:28:57.629+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=140, gcTime=0, gcCount=0}
+2020-12-01 14:28:57.885+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=362, gcTime=0, gcCount=0}
+2020-12-01 14:28:58.349+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=128, gcTime=0, gcCount=0}
+2020-12-01 14:28:58.786+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=114, gcTime=0, gcCount=0}
+2020-12-01 14:28:59.356+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=430, gcTime=0, gcCount=0}
+2020-12-01 14:28:59.530+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=109, gcTime=0, gcCount=0}
+2020-12-01 14:29:00.686+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=254, gcTime=0, gcCount=0}
+2020-12-01 14:29:00.852+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=322, gcTime=0, gcCount=0}
+2020-12-01 14:29:01.050+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=145, gcTime=0, gcCount=0}
+2020-12-01 14:29:05.062+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=108, gcTime=0, gcCount=0}
+2020-12-01 14:29:06.357+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=105, gcTime=0, gcCount=0}
+2020-12-01 14:29:06.527+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=456, gcTime=0, gcCount=0}
+2020-12-01 14:29:07.072+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=165, gcTime=0, gcCount=0}
+2020-12-01 14:29:07.282+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=188, gcTime=0, gcCount=0}
+2020-12-01 14:29:07.696+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=112, gcTime=0, gcCount=0}
+2020-12-01 14:29:07.954+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=128, gcTime=0, gcCount=0}
+2020-12-01 14:29:08.170+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=113, gcTime=0, gcCount=0}
+2020-12-01 14:29:08.325+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=125, gcTime=0, gcCount=0}
+2020-12-01 14:29:12.433+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=278, gcTime=0, gcCount=0}
+2020-12-01 14:29:12.839+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=393, gcTime=0, gcCount=0}
+2020-12-01 14:29:13.141+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=224, gcTime=0, gcCount=0}
+2020-12-01 14:29:14.469+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=452, gcTime=0, gcCount=0}
+2020-12-01 14:29:14.753+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=949, gcTime=0, gcCount=0}
+2020-12-01 14:29:21.961+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=118, gcTime=0, gcCount=0}
+2020-12-01 14:29:28.108+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=3530, gcTime=3543, gcCount=1}
+2020-12-01 14:29:28.350+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=119, gcTime=0, gcCount=0}
+2020-12-01 14:29:28.557+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=211, gcTime=0, gcCount=0}
+2020-12-01 14:29:29.123+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=169, gcTime=0, gcCount=0}
+2020-12-01 14:29:29.313+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=145, gcTime=0, gcCount=0}
+2020-12-01 14:29:36.230+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=171, gcTime=0, gcCount=0}
+2020-12-01 14:29:36.382+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=796, gcTime=0, gcCount=0}
+2020-12-01 14:29:40.900+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=174, gcTime=0, gcCount=0}
+2020-12-01 14:29:41.080+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1366, gcTime=0, gcCount=0}
+2020-12-01 14:29:46.465+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=182, gcTime=0, gcCount=0}
+2020-12-01 14:29:46.740+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=117, gcTime=0, gcCount=0}
+2020-12-01 14:29:46.890+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=123, gcTime=0, gcCount=0}
+2020-12-01 14:29:48.269+0000 INFO [o.n.i.d.DiagnosticsManager] --- SERVER STARTED START ---
+2020-12-01 14:29:49.609+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=117, gcTime=0, gcCount=0}
+2020-12-01 14:29:57.105+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=4426, gcTime=4502, gcCount=1}
+2020-12-01 14:29:57.353+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=496, gcTime=0, gcCount=0}
+2020-12-01 14:29:58.446+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=181, gcTime=0, gcCount=0}
+2020-12-01 14:29:59.820+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=250, gcTime=0, gcCount=0}
+2020-12-01 14:30:06.226+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=117, gcTime=0, gcCount=0}
+2020-12-01 14:30:14.903+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=817, gcTime=0, gcCount=0}
+2020-12-01 14:30:15.027+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=536, gcTime=0, gcCount=0}
+2020-12-01 14:30:17.311+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=2176, gcTime=2207, gcCount=1}
+2020-12-01 14:30:19.658+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=127, gcTime=0, gcCount=0}
+2020-12-01 14:30:19.917+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=485, gcTime=0, gcCount=0}
+2020-12-01 14:30:20.511+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=102, gcTime=0, gcCount=0}
+2020-12-01 14:30:20.874+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=274, gcTime=0, gcCount=0}
+2020-12-01 14:30:22.740+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1287, gcTime=0, gcCount=0}
+2020-12-01 14:30:22.879+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=257, gcTime=0, gcCount=0}
+2020-12-01 14:30:26.064+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=202, gcTime=0, gcCount=0}
+2020-12-01 14:30:26.353+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=198, gcTime=0, gcCount=0}
+2020-12-01 14:30:27.286+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=129, gcTime=0, gcCount=0}
+2020-12-01 14:30:27.449+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=235, gcTime=0, gcCount=0}
+2020-12-01 14:30:31.624+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=829, gcTime=0, gcCount=0}
+2020-12-01 14:30:32.196+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=496, gcTime=0, gcCount=0}
+2020-12-01 14:30:32.611+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=432, gcTime=0, gcCount=0}
+2020-12-01 14:30:33.604+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=219, gcTime=0, gcCount=0}
+2020-12-01 14:30:33.770+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=228, gcTime=0, gcCount=0}
+2020-12-01 14:30:35.986+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=326, gcTime=0, gcCount=0}
+2020-12-01 14:30:36.290+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=141, gcTime=0, gcCount=0}
+2020-12-01 14:30:36.492+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=217, gcTime=0, gcCount=0}
+2020-12-01 14:30:36.778+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=140, gcTime=0, gcCount=0}
+2020-12-01 14:30:36.980+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=121, gcTime=0, gcCount=0}
+2020-12-01 14:30:38.952+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=938, gcTime=0, gcCount=0}
+2020-12-01 14:30:39.848+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1729, gcTime=0, gcCount=0}
+2020-12-01 14:30:40.377+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=469, gcTime=0, gcCount=0}
+2020-12-01 14:30:40.797+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=218, gcTime=0, gcCount=0}
+2020-12-01 14:30:41.079+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=278, gcTime=0, gcCount=0}
+2020-12-01 14:30:41.554+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=372, gcTime=0, gcCount=0}
+2020-12-01 14:30:42.443+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=208, gcTime=0, gcCount=0}
+2020-12-01 14:30:42.715+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=537, gcTime=0, gcCount=0}
+2020-12-01 14:30:44.851+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=130, gcTime=0, gcCount=0}
+2020-12-01 14:30:46.682+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=101, gcTime=0, gcCount=0}
+2020-12-01 14:30:46.872+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=546, gcTime=0, gcCount=0}
+2020-12-01 14:30:47.559+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=152, gcTime=0, gcCount=0}
+2020-12-01 14:30:48.019+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=360, gcTime=0, gcCount=0}
+2020-12-01 14:30:49.355+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=341, gcTime=0, gcCount=0}
+2020-12-01 14:30:53.313+0000 INFO [o.n.i.d.DiagnosticsManager] --- SERVER STARTED END ---
+2020-12-01 14:30:58.132+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=109, gcTime=0, gcCount=0}
+2020-12-01 14:30:58.488+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=178, gcTime=0, gcCount=0}
+2020-12-01 14:30:58.693+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=192, gcTime=0, gcCount=0}
+2020-12-01 14:31:00.569+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=184, gcTime=0, gcCount=0}
+2020-12-01 14:31:03.866+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=154, gcTime=0, gcCount=0}
+2020-12-01 14:31:06.622+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=146, gcTime=0, gcCount=0}
+2020-12-01 14:31:07.744+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=149, gcTime=0, gcCount=0}
+2020-12-01 14:31:08.235+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=719, gcTime=0, gcCount=0}
+2020-12-01 14:31:08.466+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=216, gcTime=0, gcCount=0}
+2020-12-01 14:31:14.017+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=443, gcTime=0, gcCount=0}
+2020-12-01 14:31:14.566+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=724, gcTime=0, gcCount=0}
+2020-12-01 14:31:15.506+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=718, gcTime=0, gcCount=0}
+2020-12-01 14:31:15.867+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=807, gcTime=0, gcCount=0}
+2020-12-01 14:31:16.388+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=385, gcTime=0, gcCount=0}
+2020-12-01 14:31:17.077+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=128, gcTime=0, gcCount=0}
+2020-12-01 14:31:23.808+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=137, gcTime=0, gcCount=0}
+2020-12-01 14:31:24.643+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=794, gcTime=0, gcCount=0}
+2020-12-01 14:31:25.014+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=388, gcTime=0, gcCount=0}
+2020-12-01 14:31:25.193+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=311, gcTime=0, gcCount=0}
+2020-12-01 14:31:26.770+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=340, gcTime=0, gcCount=0}
+2020-12-01 14:31:27.271+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=111, gcTime=0, gcCount=0}
+2020-12-01 14:31:27.662+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=144, gcTime=0, gcCount=0}
+2020-12-01 14:31:27.837+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=309, gcTime=0, gcCount=0}
+2020-12-01 14:31:28.434+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=131, gcTime=0, gcCount=0}
+2020-12-01 14:31:31.752+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=115, gcTime=0, gcCount=0}
+2020-12-01 14:31:31.884+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=169, gcTime=0, gcCount=0}
+2020-12-01 14:31:35.461+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=176, gcTime=0, gcCount=0}
+2020-12-01 14:31:36.034+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=344, gcTime=0, gcCount=0}
+2020-12-01 14:31:36.416+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=304, gcTime=0, gcCount=0}
+2020-12-01 14:31:36.659+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=226, gcTime=0, gcCount=0}
+2020-12-01 14:31:37.730+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=151, gcTime=0, gcCount=0}
+2020-12-01 14:31:38.150+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=386, gcTime=0, gcCount=0}
+2020-12-01 14:31:42.275+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=107, gcTime=0, gcCount=0}
+2020-12-01 14:31:42.416+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=744, gcTime=0, gcCount=0}
+2020-12-01 14:31:42.757+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=232, gcTime=0, gcCount=0}
+2020-12-01 14:31:48.209+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=118, gcTime=0, gcCount=0}
+2020-12-01 14:32:08.660+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=170, gcTime=0, gcCount=0}
+2020-12-01 14:32:08.909+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=423, gcTime=0, gcCount=0}
+2020-12-01 14:32:09.067+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=145, gcTime=0, gcCount=0}
+2020-12-01 14:32:09.305+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=160, gcTime=0, gcCount=0}
+2020-12-01 14:32:12.812+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=153, gcTime=0, gcCount=0}
+2020-12-01 14:32:13.025+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=101, gcTime=0, gcCount=0}
+2020-12-01 14:32:20.176+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=132, gcTime=0, gcCount=0}
+2020-12-01 14:32:21.120+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=183, gcTime=0, gcCount=0}
+2020-12-01 14:32:27.670+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=168, gcTime=0, gcCount=0}
+2020-12-01 14:32:28.456+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=2217, gcTime=0, gcCount=0}
+2020-12-01 14:32:29.068+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=483, gcTime=0, gcCount=0}
+2020-12-01 14:32:30.419+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=491, gcTime=0, gcCount=0}
+2020-12-01 14:32:33.947+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=305, gcTime=0, gcCount=0}
+2020-12-01 14:32:34.640+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1524, gcTime=0, gcCount=0}
+2020-12-01 14:32:34.877+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=371, gcTime=0, gcCount=0}
+2020-12-01 14:32:36.249+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=275, gcTime=0, gcCount=0}
+2020-12-01 14:32:36.504+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=134, gcTime=0, gcCount=0}
+2020-12-01 14:32:36.666+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=110, gcTime=0, gcCount=0}
+2020-12-01 14:32:41.199+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=135, gcTime=0, gcCount=0}
+2020-12-01 14:32:49.382+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=123, gcTime=0, gcCount=0}
+2020-12-01 14:32:49.935+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=401, gcTime=0, gcCount=0}
+2020-12-01 14:32:50.266+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=164, gcTime=0, gcCount=0}
+2020-12-01 14:32:50.684+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=242, gcTime=0, gcCount=0}
+2020-12-01 14:32:51.282+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=383, gcTime=0, gcCount=0}
+2020-12-01 14:32:51.466+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=386, gcTime=0, gcCount=0}
+2020-12-01 14:32:57.237+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=108, gcTime=0, gcCount=0}
+2020-12-01 14:32:59.937+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=182, gcTime=0, gcCount=0}
+2020-12-01 14:33:00.100+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=195, gcTime=0, gcCount=0}
+2020-12-01 14:33:00.635+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=383, gcTime=0, gcCount=0}
+2020-12-01 14:33:00.873+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=132, gcTime=0, gcCount=0}
+2020-12-01 14:33:01.945+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=115, gcTime=0, gcCount=0}
+2020-12-01 14:33:02.056+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=153, gcTime=0, gcCount=0}
+2020-12-01 14:33:03.265+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=233, gcTime=0, gcCount=0}
+2020-12-01 14:33:06.246+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=116, gcTime=0, gcCount=0}
+2020-12-01 14:33:07.392+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=110, gcTime=0, gcCount=0}
+2020-12-01 14:33:07.707+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=651, gcTime=0, gcCount=0}
+2020-12-01 14:33:27.189+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=290, gcTime=0, gcCount=0}
+2020-12-01 14:33:27.434+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=145, gcTime=0, gcCount=0}
+2020-12-01 14:33:47.259+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=192, gcTime=0, gcCount=0}
+2020-12-01 14:33:47.468+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=225, gcTime=0, gcCount=0}
+2020-12-01 14:34:00.231+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=112, gcTime=0, gcCount=0}
+2020-12-01 14:34:12.805+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=111, gcTime=0, gcCount=0}
+2020-12-01 14:34:13.052+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=160, gcTime=0, gcCount=0}
+2020-12-01 14:34:21.564+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=162, gcTime=0, gcCount=0}
+2020-12-01 14:34:27.681+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=617, gcTime=0, gcCount=0}
+2020-12-01 14:34:27.792+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=117, gcTime=0, gcCount=0}
+2020-12-01 14:34:35.072+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=2993, gcTime=0, gcCount=0}
+2020-12-01 14:34:36.078+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=801, gcTime=0, gcCount=0}
+2020-12-01 14:34:36.871+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=514, gcTime=0, gcCount=0}
+2020-12-01 14:34:37.110+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=720, gcTime=0, gcCount=0}
+2020-12-01 14:34:39.931+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=177, gcTime=0, gcCount=0}
+2020-12-01 14:34:40.638+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=177, gcTime=0, gcCount=0}
+2020-12-01 14:34:40.941+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=245, gcTime=0, gcCount=0}
+2020-12-01 14:34:41.189+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=138, gcTime=0, gcCount=0}
+2020-12-01 14:34:43.037+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=102, gcTime=0, gcCount=0}
+2020-12-01 14:34:43.263+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=100, gcTime=0, gcCount=0}
+2020-12-01 14:34:43.468+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=125, gcTime=0, gcCount=0}
+2020-12-01 14:34:43.914+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=327, gcTime=0, gcCount=0}
+2020-12-01 14:34:44.117+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=161, gcTime=0, gcCount=0}
+2020-12-01 14:34:44.604+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=146, gcTime=0, gcCount=0}
+2020-12-01 14:34:47.276+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=292, gcTime=0, gcCount=0}
+2020-12-01 14:34:47.910+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=123, gcTime=0, gcCount=0}
+2020-12-01 14:34:49.123+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=635, gcTime=0, gcCount=0}
+2020-12-01 14:34:49.984+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1114, gcTime=0, gcCount=0}
+2020-12-01 14:34:50.249+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=391, gcTime=0, gcCount=0}
+2020-12-01 14:34:50.423+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=120, gcTime=0, gcCount=0}
+2020-12-01 14:34:50.758+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=218, gcTime=0, gcCount=0}
+2020-12-01 14:34:50.989+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=104, gcTime=0, gcCount=0}
+2020-12-01 14:34:51.165+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=152, gcTime=0, gcCount=0}
+2020-12-01 14:35:01.985+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=185, gcTime=0, gcCount=0}
+2020-12-01 14:35:12.877+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=220, gcTime=0, gcCount=0}
+2020-12-01 14:35:39.890+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=160, gcTime=0, gcCount=0}
+2020-12-01 14:35:39.998+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=158, gcTime=0, gcCount=0}
+2020-12-01 14:35:42.594+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=128, gcTime=0, gcCount=0}
+2020-12-01 14:35:42.786+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=454, gcTime=0, gcCount=0}
+2020-12-01 14:35:48.330+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=106, gcTime=0, gcCount=0}
+2020-12-01 14:35:48.445+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=109, gcTime=0, gcCount=0}
+2020-12-01 14:35:49.659+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=303, gcTime=0, gcCount=0}
+2020-12-01 14:35:49.928+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=117, gcTime=0, gcCount=0}
+2020-12-01 14:35:54.223+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=114, gcTime=0, gcCount=0}
+2020-12-01 14:35:54.488+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=162, gcTime=0, gcCount=0}
+2020-12-01 14:36:01.709+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=132, gcTime=0, gcCount=0}
+2020-12-01 14:36:01.861+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=266, gcTime=0, gcCount=0}
+2020-12-01 14:36:07.454+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=161, gcTime=0, gcCount=0}
+2020-12-01 14:36:07.783+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=352, gcTime=0, gcCount=0}
+2020-12-01 14:36:07.977+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=104, gcTime=0, gcCount=0}
+2020-12-01 14:36:08.134+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=108, gcTime=0, gcCount=0}
+2020-12-01 14:36:08.921+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=109, gcTime=0, gcCount=0}
+2020-12-01 14:36:09.076+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=284, gcTime=0, gcCount=0}
+2020-12-01 14:36:13.034+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=182, gcTime=0, gcCount=0}
+2020-12-01 14:36:13.208+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=313, gcTime=0, gcCount=0}
+2020-12-01 14:36:18.091+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=150, gcTime=0, gcCount=0}
+2020-12-01 14:36:27.445+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=234, gcTime=0, gcCount=0}
+2020-12-01 14:36:43.907+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=130, gcTime=0, gcCount=0}
+2020-12-01 14:36:44.086+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=142, gcTime=0, gcCount=0}
+2020-12-01 14:36:47.338+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=198, gcTime=0, gcCount=0}
+2020-12-01 14:36:47.453+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=118, gcTime=0, gcCount=0}
+2020-12-01 14:36:48.240+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=137, gcTime=0, gcCount=0}
+2020-12-01 14:36:56.188+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=243, gcTime=0, gcCount=0}
+2020-12-01 14:37:00.247+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=206, gcTime=0, gcCount=0}
+2020-12-01 14:37:00.776+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=180, gcTime=0, gcCount=0}
+2020-12-01 14:37:01.025+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=251, gcTime=0, gcCount=0}
+2020-12-01 14:37:01.751+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=168, gcTime=0, gcCount=0}
+2020-12-01 14:37:05.822+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=220, gcTime=0, gcCount=0}
+2020-12-01 14:37:05.965+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=136, gcTime=0, gcCount=0}
+2020-12-01 14:37:07.326+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=192, gcTime=0, gcCount=0}
+2020-12-01 14:37:07.480+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=113, gcTime=0, gcCount=0}
+2020-12-01 14:37:26.454+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=969, gcTime=0, gcCount=0}
+2020-12-01 14:37:26.974+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=185, gcTime=0, gcCount=0}
+2020-12-01 14:37:27.354+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=207, gcTime=0, gcCount=0}
+2020-12-01 14:37:31.367+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=183, gcTime=0, gcCount=0}
+2020-12-01 14:37:31.742+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=152, gcTime=0, gcCount=0}
+2020-12-01 14:37:32.161+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=491, gcTime=0, gcCount=0}
+2020-12-01 14:37:37.858+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=159, gcTime=0, gcCount=0}
+2020-12-01 14:37:47.987+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=146, gcTime=0, gcCount=0}
+2020-12-01 14:37:48.440+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1030, gcTime=0, gcCount=0}
+2020-12-01 14:37:48.580+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=183, gcTime=0, gcCount=0}
+2020-12-01 14:38:06.429+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=125, gcTime=0, gcCount=0}
+2020-12-01 14:38:08.863+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=207, gcTime=0, gcCount=0}
+2020-12-01 14:38:09.019+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=232, gcTime=0, gcCount=0}
+2020-12-01 14:38:12.312+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=167, gcTime=0, gcCount=0}
+2020-12-01 14:38:12.432+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=123, gcTime=0, gcCount=0}
+2020-12-01 14:38:17.267+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=172, gcTime=0, gcCount=0}
+2020-12-01 14:38:17.398+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=343, gcTime=0, gcCount=0}
+2020-12-01 14:38:26.429+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=183, gcTime=0, gcCount=0}
+2020-12-01 14:38:28.738+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=141, gcTime=0, gcCount=0}
+2020-12-01 14:38:28.955+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=162, gcTime=0, gcCount=0}
+2020-12-01 14:38:41.332+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=238, gcTime=0, gcCount=0}
+2020-12-01 14:38:41.459+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1730, gcTime=0, gcCount=0}
+2020-12-01 14:38:49.568+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=350, gcTime=0, gcCount=0}
+2020-12-01 14:38:49.685+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=112, gcTime=0, gcCount=0}
+2020-12-01 14:38:56.966+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=233, gcTime=0, gcCount=0}
+2020-12-01 14:39:03.028+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=129, gcTime=0, gcCount=0}
+2020-12-01 14:39:24.360+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1732, gcTime=0, gcCount=0}
+2020-12-01 14:39:30.522+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=134, gcTime=0, gcCount=0}
+2020-12-01 14:39:58.446+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=128, gcTime=0, gcCount=0}
+2020-12-01 14:40:02.340+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=127, gcTime=0, gcCount=0}
+2020-12-01 14:40:04.373+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=108, gcTime=0, gcCount=0}
+2020-12-01 14:40:21.390+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=129, gcTime=0, gcCount=0}
+2020-12-01 14:40:23.957+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=155, gcTime=0, gcCount=0}
+2020-12-01 14:40:24.850+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=177, gcTime=0, gcCount=0}
+2020-12-01 14:41:45.785+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=101, gcTime=0, gcCount=0}
+2020-12-01 14:41:55.628+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=108, gcTime=0, gcCount=0}
+2020-12-01 14:42:01.272+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=110, gcTime=0, gcCount=0}
+2020-12-01 14:42:12.711+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=111, gcTime=0, gcCount=0}
+2020-12-01 14:42:21.330+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=809, gcTime=0, gcCount=0}
+2020-12-01 14:42:27.742+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=314, gcTime=0, gcCount=0}
+2020-12-01 14:42:28.091+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=284, gcTime=0, gcCount=0}
+2020-12-01 14:42:28.471+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=310, gcTime=0, gcCount=0}
+2020-12-01 14:42:29.092+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=484, gcTime=0, gcCount=0}
+2020-12-01 14:42:29.208+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=262, gcTime=0, gcCount=0}
+2020-12-01 14:42:29.845+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=317, gcTime=0, gcCount=0}
+2020-12-01 14:42:30.111+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=293, gcTime=0, gcCount=0}
+2020-12-01 14:42:30.597+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=368, gcTime=0, gcCount=0}
+2020-12-01 14:42:31.264+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=638, gcTime=0, gcCount=0}
+2020-12-01 14:42:31.789+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=435, gcTime=0, gcCount=0}
+2020-12-01 14:42:32.039+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=145, gcTime=0, gcCount=0}
+2020-12-01 14:42:33.389+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=121, gcTime=0, gcCount=0}
+2020-12-01 14:42:34.450+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1620, gcTime=0, gcCount=0}
+2020-12-01 14:42:34.566+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=363, gcTime=0, gcCount=0}
+2020-12-01 14:42:36.770+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=220, gcTime=0, gcCount=0}
+2020-12-01 14:42:37.159+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=113, gcTime=0, gcCount=0}
+2020-12-01 14:42:37.381+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=172, gcTime=0, gcCount=0}
+2020-12-01 14:42:40.194+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=151, gcTime=0, gcCount=0}
+2020-12-01 14:42:40.330+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=106, gcTime=0, gcCount=0}
+2020-12-01 14:42:41.809+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=105, gcTime=0, gcCount=0}
+2020-12-01 14:42:42.162+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=274, gcTime=0, gcCount=0}
+2020-12-01 14:42:42.305+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=126, gcTime=0, gcCount=0}
+2020-12-01 14:42:45.438+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=218, gcTime=0, gcCount=0}
+2020-12-01 14:42:45.628+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=108, gcTime=0, gcCount=0}
+2020-12-01 14:42:47.798+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=134, gcTime=0, gcCount=0}
+2020-12-01 14:42:48.322+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=229, gcTime=0, gcCount=0}
+2020-12-01 14:42:48.485+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=276, gcTime=0, gcCount=0}
+2020-12-01 14:42:52.087+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=168, gcTime=0, gcCount=0}
+2020-12-01 14:43:00.836+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=155, gcTime=0, gcCount=0}
+2020-12-01 14:43:01.188+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=104, gcTime=0, gcCount=0}
+2020-12-01 14:43:02.149+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=128, gcTime=0, gcCount=0}
+2020-12-01 14:43:02.364+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=520, gcTime=0, gcCount=0}
+2020-12-01 14:43:06.019+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=110, gcTime=0, gcCount=0}
+2020-12-01 14:43:06.253+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1130, gcTime=0, gcCount=0}
+2020-12-01 14:43:06.394+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=143, gcTime=0, gcCount=0}
+2020-12-01 14:43:09.527+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=254, gcTime=0, gcCount=0}
+2020-12-01 14:43:09.865+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=342, gcTime=0, gcCount=0}
+2020-12-01 14:43:10.161+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=125, gcTime=0, gcCount=0}
+2020-12-01 14:43:10.658+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=298, gcTime=0, gcCount=0}
+2020-12-01 14:43:10.806+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=332, gcTime=0, gcCount=0}
+2020-12-01 14:43:11.873+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=105, gcTime=0, gcCount=0}
+2020-12-01 14:43:12.217+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=502, gcTime=0, gcCount=0}
+2020-12-01 14:43:12.365+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=128, gcTime=0, gcCount=0}
+2020-12-01 14:43:12.883+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=233, gcTime=0, gcCount=0}
+2020-12-01 14:43:13.044+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=113, gcTime=0, gcCount=0}
+2020-12-01 14:43:16.712+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=429, gcTime=0, gcCount=0}
+2020-12-01 14:43:16.898+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=296, gcTime=0, gcCount=0}
+2020-12-01 14:43:18.124+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=114, gcTime=0, gcCount=0}
+2020-12-01 14:43:18.410+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=167, gcTime=0, gcCount=0}
+2020-12-01 14:43:23.223+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=116, gcTime=0, gcCount=0}
+2020-12-01 14:43:25.415+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=203, gcTime=0, gcCount=0}
+2020-12-01 14:43:26.588+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1993, gcTime=0, gcCount=0}
+2020-12-01 14:43:27.279+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=528, gcTime=0, gcCount=0}
+2020-12-01 14:43:27.639+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=442, gcTime=0, gcCount=0}
+2020-12-01 14:43:28.158+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=197, gcTime=0, gcCount=0}
+2020-12-01 14:43:28.404+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=419, gcTime=0, gcCount=0}
+2020-12-01 14:43:28.601+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=146, gcTime=0, gcCount=0}
+2020-12-01 14:43:30.683+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=229, gcTime=0, gcCount=0}
+2020-12-01 14:43:32.999+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=118, gcTime=0, gcCount=0}
+2020-12-01 14:43:44.446+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=252, gcTime=0, gcCount=0}
+2020-12-01 14:43:44.977+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=125, gcTime=0, gcCount=0}
+2020-12-01 14:43:45.092+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=323, gcTime=0, gcCount=0}
+2020-12-01 14:44:24.308+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=121, gcTime=0, gcCount=0}
+2020-12-01 14:44:24.965+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=534, gcTime=0, gcCount=0}
+2020-12-01 14:44:27.393+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=132, gcTime=0, gcCount=0}
+2020-12-01 14:44:27.574+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=266, gcTime=0, gcCount=0}
+2020-12-01 14:44:27.826+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=150, gcTime=0, gcCount=0}
+2020-12-01 14:44:28.680+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=109, gcTime=0, gcCount=0}
+2020-12-01 14:44:28.856+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=276, gcTime=0, gcCount=0}
+2020-12-01 14:44:29.328+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=114, gcTime=0, gcCount=0}
+2020-12-01 14:44:33.348+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=139, gcTime=0, gcCount=0}
+2020-12-01 14:44:48.697+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=114, gcTime=0, gcCount=0}
+2020-12-01 14:44:48.933+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=134, gcTime=0, gcCount=0}
+2020-12-01 14:44:50.694+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=242, gcTime=0, gcCount=0}
+2020-12-01 14:44:52.412+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=113, gcTime=0, gcCount=0}
+2020-12-01 14:44:52.565+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=111, gcTime=0, gcCount=0}
+2020-12-01 14:45:00.400+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=133, gcTime=0, gcCount=0}
+2020-12-01 14:45:02.769+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=301, gcTime=0, gcCount=0}
+2020-12-01 14:45:03.051+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=314, gcTime=0, gcCount=0}
+2020-12-01 14:45:04.056+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=872, gcTime=0, gcCount=0}
+2020-12-01 14:45:04.578+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=256, gcTime=0, gcCount=0}
+2020-12-01 14:45:04.788+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=311, gcTime=0, gcCount=0}
+2020-12-01 14:45:08.605+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=111, gcTime=0, gcCount=0}
+2020-12-01 14:45:08.835+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=116, gcTime=0, gcCount=0}
+2020-12-01 14:45:09.064+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=115, gcTime=0, gcCount=0}
+2020-12-01 14:45:09.958+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=129, gcTime=0, gcCount=0}
+2020-12-01 14:45:12.826+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=243, gcTime=0, gcCount=0}
+2020-12-01 14:45:20.659+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=168, gcTime=0, gcCount=0}
+2020-12-01 14:45:21.020+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=311, gcTime=0, gcCount=0}
+2020-12-01 14:45:21.339+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=129, gcTime=0, gcCount=0}
+2020-12-01 14:45:21.603+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=150, gcTime=0, gcCount=0}
+2020-12-01 14:45:21.711+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=132, gcTime=0, gcCount=0}
+2020-12-01 14:45:23.214+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=142, gcTime=0, gcCount=0}
+2020-12-01 14:45:28.698+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=179, gcTime=0, gcCount=0}
+2020-12-01 14:45:31.718+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=282, gcTime=0, gcCount=0}
+2020-12-01 14:45:32.219+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=515, gcTime=0, gcCount=0}
+2020-12-01 14:45:32.483+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=315, gcTime=0, gcCount=0}
+2020-12-01 14:45:34.903+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=186, gcTime=0, gcCount=0}
+2020-12-01 14:45:35.863+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=336, gcTime=0, gcCount=0}
+2020-12-01 14:45:48.868+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=353, gcTime=0, gcCount=0}
+2020-12-01 14:45:49.755+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=102, gcTime=0, gcCount=0}
+2020-12-01 14:45:50.098+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=813, gcTime=0, gcCount=0}
+2020-12-01 14:45:50.359+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=167, gcTime=0, gcCount=0}
+2020-12-01 14:45:50.960+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=228, gcTime=0, gcCount=0}
+2020-12-01 14:45:51.875+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=459, gcTime=0, gcCount=0}
+2020-12-01 14:45:52.062+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=438, gcTime=0, gcCount=0}
+2020-12-01 14:46:08.744+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=104, gcTime=0, gcCount=0}
+2020-12-01 14:46:09.364+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=173, gcTime=0, gcCount=0}
+2020-12-01 14:46:09.486+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=130, gcTime=0, gcCount=0}
+2020-12-01 14:46:18.872+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=267, gcTime=0, gcCount=0}
+2020-12-01 14:46:22.104+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=211, gcTime=0, gcCount=0}
+2020-12-01 14:46:23.302+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=112, gcTime=0, gcCount=0}
+2020-12-01 14:46:26.347+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=102, gcTime=0, gcCount=0}
+2020-12-01 14:46:27.653+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=131, gcTime=0, gcCount=0}
+2020-12-01 14:46:28.396+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=225, gcTime=0, gcCount=0}
+2020-12-01 14:46:28.719+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=107, gcTime=0, gcCount=0}
+2020-12-01 14:46:29.129+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=175, gcTime=0, gcCount=0}
+2020-12-01 14:46:29.919+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=130, gcTime=0, gcCount=0}
+2020-12-01 14:46:30.385+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=708, gcTime=0, gcCount=0}
+2020-12-01 14:46:34.631+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=291, gcTime=0, gcCount=0}
+2020-12-01 14:46:34.951+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=241, gcTime=0, gcCount=0}
+2020-12-01 14:46:35.133+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=120, gcTime=0, gcCount=0}
+2020-12-01 14:46:59.724+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=227, gcTime=0, gcCount=0}
+2020-12-01 14:47:00.164+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=215, gcTime=0, gcCount=0}
+2020-12-01 14:47:00.347+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=216, gcTime=0, gcCount=0}
+2020-12-01 14:47:00.601+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=191, gcTime=0, gcCount=0}
+2020-12-01 14:47:02.983+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=150, gcTime=0, gcCount=0}
+2020-12-01 14:47:03.111+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=209, gcTime=0, gcCount=0}
+2020-12-01 14:47:07.283+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=195, gcTime=0, gcCount=0}
+2020-12-01 14:47:29.798+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=103, gcTime=0, gcCount=0}
+2020-12-01 14:47:42.960+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=409, gcTime=0, gcCount=0}
+2020-12-01 14:47:43.868+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=777, gcTime=0, gcCount=0}
+2020-12-01 14:47:45.132+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=617, gcTime=0, gcCount=0}
+2020-12-01 14:47:45.274+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=832, gcTime=0, gcCount=0}
+2020-12-01 14:47:46.879+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=432, gcTime=0, gcCount=0}
+2020-12-01 14:47:47.167+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=512, gcTime=0, gcCount=0}
+2020-12-01 14:47:48.962+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=178, gcTime=0, gcCount=0}
+2020-12-01 14:47:49.098+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=112, gcTime=0, gcCount=0}
+2020-12-01 14:48:33.862+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=421, gcTime=0, gcCount=0}
+2020-12-01 14:48:49.089+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=113, gcTime=0, gcCount=0}
+2020-12-01 14:49:12.961+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=193, gcTime=0, gcCount=0}
+2020-12-01 14:49:13.122+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=169, gcTime=0, gcCount=0}
+2020-12-01 14:49:19.042+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=132, gcTime=0, gcCount=0}
+2020-12-01 14:49:21.177+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=102, gcTime=0, gcCount=0}
+2020-12-01 14:49:21.432+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=105, gcTime=0, gcCount=0}
+2020-12-01 14:49:21.644+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=181, gcTime=0, gcCount=0}
+2020-12-01 14:49:22.026+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=205, gcTime=0, gcCount=0}
+2020-12-01 14:49:22.396+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=167, gcTime=0, gcCount=0}
+2020-12-01 14:49:22.730+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=249, gcTime=0, gcCount=0}
+2020-12-01 14:49:22.883+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=178, gcTime=0, gcCount=0}
+2020-12-01 14:49:23.556+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=121, gcTime=0, gcCount=0}
+2020-12-01 14:49:23.988+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=207, gcTime=0, gcCount=0}
+2020-12-01 14:49:24.121+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=272, gcTime=0, gcCount=0}
+2020-12-01 14:49:24.855+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=169, gcTime=0, gcCount=0}
+2020-12-01 14:49:25.084+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=217, gcTime=0, gcCount=0}
+2020-12-01 14:49:26.997+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=266, gcTime=0, gcCount=0}
+2020-12-01 14:49:27.209+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=154, gcTime=0, gcCount=0}
+2020-12-01 14:49:41.557+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=101, gcTime=0, gcCount=0}
+2020-12-01 14:49:43.011+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=330, gcTime=0, gcCount=0}
+2020-12-01 14:49:49.427+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=170, gcTime=0, gcCount=0}
+2020-12-01 14:49:50.042+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=109, gcTime=0, gcCount=0}
+2020-12-01 14:49:53.538+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=144, gcTime=0, gcCount=0}
+2020-12-01 14:49:55.070+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=152, gcTime=0, gcCount=0}
+2020-12-01 14:50:00.390+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=337, gcTime=0, gcCount=0}
+2020-12-01 14:50:00.592+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=155, gcTime=0, gcCount=0}
+2020-12-01 14:50:05.858+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=272, gcTime=0, gcCount=0}
+2020-12-01 14:50:07.875+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=143, gcTime=0, gcCount=0}
+2020-12-01 14:50:29.054+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=151, gcTime=0, gcCount=0}
+2020-12-01 14:50:31.193+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=131, gcTime=0, gcCount=0}
+2020-12-01 14:50:36.010+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=551, gcTime=0, gcCount=0}
+2020-12-01 14:50:37.628+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=118, gcTime=0, gcCount=0}
+2020-12-01 14:50:46.388+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=117, gcTime=0, gcCount=0}
+2020-12-01 14:50:48.728+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=149, gcTime=0, gcCount=0}
+2020-12-01 14:50:59.260+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=101, gcTime=0, gcCount=0}
+2020-12-01 14:51:12.783+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=186, gcTime=0, gcCount=0}
+2020-12-01 14:51:13.167+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=274, gcTime=0, gcCount=0}
+2020-12-01 14:51:37.038+0000 INFO [o.n.k.a.DatabaseAvailabilityGuard] Database graph.db is unavailable.
+2020-12-01 14:51:38.252+0000 INFO [o.n.g.f.GraphDatabaseFacadeFactory] Shutdown started
+2020-12-01 14:51:38.762+0000 INFO [o.n.g.f.GraphDatabaseFacadeFactory] Shutting down 'graph.db' database.
+2020-12-01 14:51:38.783+0000 INFO [o.n.g.f.GraphDatabaseFacadeFactory] Shutdown started
+2020-12-01 14:51:39.496+0000 INFO [o.n.k.i.t.l.c.CheckPointerImpl] Checkpoint triggered by "Database shutdown" @ txId: 1 checkpoint started...
+2020-12-01 14:51:40.520+0000 INFO [o.n.k.i.t.l.c.CheckPointerImpl] Checkpoint triggered by "Database shutdown" @ txId: 1 checkpoint completed in 985ms
+2020-12-01 14:51:40.574+0000 INFO [o.n.k.i.t.l.p.LogPruningImpl] No log version pruned, last checkpoint was made in version 0
+2020-12-01 14:51:41.108+0000 INFO [o.n.i.d.DiagnosticsManager] --- STOPPING diagnostics START ---
+2020-12-01 14:51:41.111+0000 INFO [o.n.i.d.DiagnosticsManager] --- STOPPING diagnostics END ---
+2020-12-01 15:13:45.239+0000 INFO [o.n.g.f.m.e.CommunityEditionModule] No locking implementation specified, defaulting to 'community'
+2020-12-01 15:13:55.554+0000 INFO [o.n.g.f.GraphDatabaseFacadeFactory] Creating 'graph.db' database.
+2020-12-01 15:13:59.276+0000 INFO [o.n.k.a.DatabaseAvailabilityGuard] Requirement `Database available` makes database graph.db unavailable.
+2020-12-01 15:13:59.471+0000 INFO [o.n.k.a.DatabaseAvailabilityGuard] Database graph.db is unavailable.
+2020-12-01 15:14:07.562+0000 INFO [o.n.i.d.DiagnosticsManager] --- INITIALIZED diagnostics START ---
+2020-12-01 15:14:07.567+0000 INFO [o.n.i.d.DiagnosticsManager] Neo4j Kernel properties:
+2020-12-01 15:14:07.567+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connector.http.enabled=true
+2020-12-01 15:14:07.568+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.security.auth_enabled=true
+2020-12-01 15:14:07.573+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.windows_service_name=neo4j
+2020-12-01 15:14:07.573+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connector.http.listen_address=0.0.0.0:7474
+2020-12-01 15:14:07.573+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connector.https.listen_address=0.0.0.0:7473
+2020-12-01 15:14:07.573+0000 INFO [o.n.i.d.DiagnosticsManager] unsupported.dbms.directories.neo4j_home=/var/lib/neo4j
+2020-12-01 15:14:07.574+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connector.bolt.listen_address=0.0.0.0:7687
+2020-12-01 15:14:07.574+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.directories.import=/import
+2020-12-01 15:14:07.574+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.memory.pagecache.size=512M
+2020-12-01 15:14:07.574+0000 INFO [o.n.i.d.DiagnosticsManager] unsupported.dbms.edition=community
+2020-12-01 15:14:07.574+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.directories.logs=/logs
+2020-12-01 15:14:07.818+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connector.bolt.enabled=true
+2020-12-01 15:14:07.819+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connector.https.enabled=true
+2020-12-01 15:14:07.840+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.jvm.additional=-XX:+UseG1GC
+2020-12-01 15:14:07.866+0000 INFO [o.n.i.d.DiagnosticsManager] wrapper.java.additional=-Dneo4j.ext.udc.source=docker
+2020-12-01 15:14:07.908+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.directories.plugins=/plugins
+2020-12-01 15:14:07.908+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.connectors.default_listen_address=0.0.0.0
+2020-12-01 15:14:07.908+0000 INFO [o.n.i.d.DiagnosticsManager] dbms.tx_log.rotation.retention_policy=100M size
+2020-12-01 15:14:07.909+0000 INFO [o.n.i.d.DiagnosticsManager] EDITION=community
+2020-12-01 15:14:07.909+0000 INFO [o.n.i.d.DiagnosticsManager] HOME=/var/lib/neo4j
+2020-12-01 15:14:07.909+0000 INFO [o.n.i.d.DiagnosticsManager] Diagnostics providers:
+2020-12-01 15:14:07.909+0000 INFO [o.n.i.d.DiagnosticsManager] org.neo4j.kernel.configuration.Config
+2020-12-01 15:14:07.909+0000 INFO [o.n.i.d.DiagnosticsManager] org.neo4j.internal.diagnostics.DiagnosticsManager
+2020-12-01 15:14:07.911+0000 INFO [o.n.i.d.DiagnosticsManager] SYSTEM_MEMORY
+2020-12-01 15:14:07.911+0000 INFO [o.n.i.d.DiagnosticsManager] JAVA_MEMORY
+2020-12-01 15:14:07.916+0000 INFO [o.n.i.d.DiagnosticsManager] OPERATING_SYSTEM
+2020-12-01 15:14:07.917+0000 INFO [o.n.i.d.DiagnosticsManager] JAVA_VIRTUAL_MACHINE
+2020-12-01 15:14:07.917+0000 INFO [o.n.i.d.DiagnosticsManager] CLASSPATH
+2020-12-01 15:14:07.918+0000 INFO [o.n.i.d.DiagnosticsManager] LIBRARY_PATH
+2020-12-01 15:14:07.918+0000 INFO [o.n.i.d.DiagnosticsManager] SYSTEM_PROPERTIES
+2020-12-01 15:14:07.918+0000 INFO [o.n.i.d.DiagnosticsManager] TIMEZONE_DATABASE
+2020-12-01 15:14:07.918+0000 INFO [o.n.i.d.DiagnosticsManager] LINUX_SCHEDULERS
+2020-12-01 15:14:07.919+0000 INFO [o.n.i.d.DiagnosticsManager] NETWORK
+2020-12-01 15:14:08.017+0000 INFO [o.n.i.d.DiagnosticsManager] System memory information:
+2020-12-01 15:14:08.555+0000 INFO [o.n.i.d.DiagnosticsManager] Total Physical memory: 7.78 GB
+2020-12-01 15:14:08.590+0000 INFO [o.n.i.d.DiagnosticsManager] Free Physical memory: 1.93 GB
+2020-12-01 15:14:08.591+0000 INFO [o.n.i.d.DiagnosticsManager] Committed virtual memory: 4.83 GB
+2020-12-01 15:14:08.592+0000 INFO [o.n.i.d.DiagnosticsManager] Total swap space: 4.00 GB
+2020-12-01 15:14:08.593+0000 INFO [o.n.i.d.DiagnosticsManager] Free swap space: 3.93 GB
+2020-12-01 15:14:08.593+0000 INFO [o.n.i.d.DiagnosticsManager] JVM memory information:
+2020-12-01 15:14:08.593+0000 INFO [o.n.i.d.DiagnosticsManager] Free  memory: 772.81 MB
+2020-12-01 15:14:08.594+0000 INFO [o.n.i.d.DiagnosticsManager] Total memory: 802.00 MB
+2020-12-01 15:14:08.594+0000 INFO [o.n.i.d.DiagnosticsManager] Max   memory: 1.95 GB
+2020-12-01 15:14:08.667+0000 INFO [o.n.i.d.DiagnosticsManager] Garbage Collector: G1 Young Generation: [G1 Eden Space, G1 Survivor Space, G1 Old Gen]
+2020-12-01 15:14:08.668+0000 INFO [o.n.i.d.DiagnosticsManager] Garbage Collector: G1 Old Generation: [G1 Eden Space, G1 Survivor Space, G1 Old Gen]
+2020-12-01 15:14:08.673+0000 INFO [o.n.i.d.DiagnosticsManager] Memory Pool: Code Cache (Non-heap memory): committed=6.19 MB, used=6.14 MB, max=240.00 MB, threshold=0.00 B
+2020-12-01 15:14:08.674+0000 INFO [o.n.i.d.DiagnosticsManager] Memory Pool: Metaspace (Non-heap memory): committed=21.30 MB, used=20.47 MB, max=-1.00 B, threshold=0.00 B
+2020-12-01 15:14:08.677+0000 INFO [o.n.i.d.DiagnosticsManager] Memory Pool: Compressed Class Space (Non-heap memory): committed=2.63 MB, used=2.42 MB, max=1.00 GB, threshold=0.00 B
+2020-12-01 15:14:08.682+0000 INFO [o.n.i.d.DiagnosticsManager] Memory Pool: G1 Eden Space (Heap memory): committed=38.00 MB, used=1.00 MB, max=-1.00 B, threshold=?
+2020-12-01 15:14:08.682+0000 INFO [o.n.i.d.DiagnosticsManager] Memory Pool: G1 Survivor Space (Heap memory): committed=4.00 MB, used=4.00 MB, max=-1.00 B, threshold=?
+2020-12-01 15:14:08.683+0000 INFO [o.n.i.d.DiagnosticsManager] Memory Pool: G1 Old Gen (Heap memory): committed=760.00 MB, used=22.69 MB, max=1.95 GB, threshold=0.00 B
+2020-12-01 15:14:08.684+0000 INFO [o.n.i.d.DiagnosticsManager] Operating system information:
+2020-12-01 15:14:08.696+0000 INFO [o.n.i.d.DiagnosticsManager] Operating System: Linux; version: 5.4.39-linuxkit; arch: amd64; cpus: 4
+2020-12-01 15:14:08.696+0000 INFO [o.n.i.d.DiagnosticsManager] Max number of file descriptors: 1048576
+2020-12-01 15:14:08.702+0000 INFO [o.n.i.d.DiagnosticsManager] Number of open file descriptors: 135
+2020-12-01 15:14:08.733+0000 INFO [o.n.i.d.DiagnosticsManager] Process id: 8@799b1787b638
+2020-12-01 15:14:08.737+0000 INFO [o.n.i.d.DiagnosticsManager] Byte order: LITTLE_ENDIAN
+2020-12-01 15:14:08.756+0000 INFO [o.n.i.d.DiagnosticsManager] Local timezone: Etc/UTC
+2020-12-01 15:14:08.756+0000 INFO [o.n.i.d.DiagnosticsManager] JVM information:
+2020-12-01 15:14:08.756+0000 INFO [o.n.i.d.DiagnosticsManager] VM Name: OpenJDK 64-Bit Server VM
+2020-12-01 15:14:08.757+0000 INFO [o.n.i.d.DiagnosticsManager] VM Vendor: Oracle Corporation
+2020-12-01 15:14:08.757+0000 INFO [o.n.i.d.DiagnosticsManager] VM Version: 25.275-b01
+2020-12-01 15:14:08.765+0000 INFO [o.n.i.d.DiagnosticsManager] JIT compiler: HotSpot 64-Bit Tiered Compilers
+2020-12-01 15:14:08.769+0000 INFO [o.n.i.d.DiagnosticsManager] VM Arguments: [-XX:+UseG1GC, -XX:-OmitStackTraceInFastThrow, -XX:+AlwaysPreTouch, -XX:+UnlockExperimentalVMOptions, -XX:+TrustFinalNonStaticFields, -XX:+DisableExplicitGC, -Djdk.tls.ephemeralDHKeySize=2048, -Djdk.tls.rejectClientInitiatedRenegotiation=true, -Dunsupported.dbms.udc.source=docker, -Dfile.encoding=UTF-8]
+2020-12-01 15:14:08.770+0000 INFO [o.n.i.d.DiagnosticsManager] Java classpath:
+2020-12-01 15:14:09.118+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-fulltext-index-3.5.14.jar
+2020-12-01 15:14:09.118+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-configuration-3.5.14.jar
+2020-12-01 15:14:09.118+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-codegen-3.5.14.jar
+2020-12-01 15:14:09.118+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-graph-algo-3.5.14.jar
+2020-12-01 15:14:09.118+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jackson-core-asl-1.9.13.jar
+2020-12-01 15:14:09.118+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-parser-3.5-3.5.14.jar
+2020-12-01 15:14:09.118+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-ir-3.5-3.5.14.jar
+2020-12-01 15:14:09.118+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-dbms-3.5.14.jar
+2020-12-01 15:14:09.128+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-http-9.4.17.v20190418.jar
+2020-12-01 15:14:09.128+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/zipfs.jar
+2020-12-01 15:14:09.129+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/concurrentlinkedhashmap-lru-1.4.2.jar
+2020-12-01 15:14:09.129+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jPowerShell-1.9.jar
+2020-12-01 15:14:09.129+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-annotation-processors-3.5.14.jar
+2020-12-01 15:14:09.130+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-util-3.4-3.4.17.jar
+2020-12-01 15:14:09.131+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-logical-plans-3.5-3.5.14.jar
+2020-12-01 15:14:09.131+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-io-3.5.14.jar
+2020-12-01 15:14:09.140+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/sunec.jar
+2020-12-01 15:14:09.140+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/plugins/*
+2020-12-01 15:14:09.140+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jakarta.activation-api-1.2.1.jar
+2020-12-01 15:14:09.140+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/sunjce_provider.jar
+2020-12-01 15:14:09.140+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-io-9.4.17.v20190418.jar
+2020-12-01 15:14:09.141+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jersey-server-1.19.3.jar
+2020-12-01 15:14:09.141+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-rewriting-3.5-3.5.14.jar
+2020-12-01 15:14:09.141+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-consistency-check-3.5.14.jar
+2020-12-01 15:14:09.141+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-procedure-api-3.5.14.jar
+2020-12-01 15:14:09.141+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-csv-3.5.14.jar
+2020-12-01 15:14:09.142+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/server-api-3.5.14.jar
+2020-12-01 15:14:09.142+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-io-2.6.jar
+2020-12-01 15:14:09.142+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-planner-3.4-3.4.17.jar
+2020-12-01 15:14:09.142+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/dnsns.jar
+2020-12-01 15:14:09.142+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jersey-core-1.19.3.jar
+2020-12-01 15:14:09.142+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-xml-9.4.17.v20190418.jar
+2020-12-01 15:14:09.142+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-webapp-9.4.17.v20190418.jar
+2020-12-01 15:14:09.142+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-configuration-1.10.jar
+2020-12-01 15:14:09.143+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-planner-spi-3.4-3.4.17.jar
+2020-12-01 15:14:09.143+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/cldrdata.jar
+2020-12-01 15:14:09.143+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/charsets.jar
+2020-12-01 15:14:09.143+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-collections-3.5.14.jar
+2020-12-01 15:14:09.143+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-push-to-cloud-3.5.14.jar
+2020-12-01 15:14:09.143+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jersey-servlet-1.19.3.jar
+2020-12-01 15:14:09.143+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-data-collector-3.5.14.jar
+2020-12-01 15:14:09.143+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/txw2-2.3.2.jar
+2020-12-01 15:14:09.143+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/resources.jar
+2020-12-01 15:14:09.143+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-server-3.5.14.jar
+2020-12-01 15:14:09.143+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/scala-library-2.11.12.jar
+2020-12-01 15:14:09.143+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/jsse.jar
+2020-12-01 15:14:09.144+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-unsafe-3.5.14.jar
+2020-12-01 15:14:09.144+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/localedata.jar
+2020-12-01 15:14:09.145+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-server-9.4.17.v20190418.jar
+2020-12-01 15:14:09.146+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-udc-3.5.14.jar
+2020-12-01 15:14:09.146+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-command-line-3.5.14.jar
+2020-12-01 15:14:09.146+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-legacy-3.5.14.jar
+2020-12-01 15:14:09.147+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-concurrent-3.5.14.jar
+2020-12-01 15:14:09.351+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/javax.servlet-api-3.1.0.jar
+2020-12-01 15:14:09.351+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/sunrsasign.jar
+2020-12-01 15:14:09.352+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-compiler-2.3-2.3.12.jar
+2020-12-01 15:14:09.352+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jProcesses-1.6.4.jar
+2020-12-01 15:14:09.352+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/istack-commons-runtime-3.0.8.jar
+2020-12-01 15:14:09.352+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-diagnostics-3.5.14.jar
+2020-12-01 15:14:09.352+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/sunpkcs11.jar
+2020-12-01 15:14:09.353+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-ssl-3.5.14.jar
+2020-12-01 15:14:09.353+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/scala-reflect-2.11.12.jar
+2020-12-01 15:14:09.353+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-graphdb-api-3.5.14.jar
+2020-12-01 15:14:09.353+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-values-3.5.14.jar
+2020-12-01 15:14:09.369+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-lang-2.6.jar
+2020-12-01 15:14:09.369+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/netty-all-4.1.43.Final.jar
+2020-12-01 15:14:09.369+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/lucene-core-5.5.5.jar
+2020-12-01 15:14:09.369+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/lucene-codecs-5.5.5.jar
+2020-12-01 15:14:09.369+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/rt.jar
+2020-12-01 15:14:09.393+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/activation-1.1.1.jar
+2020-12-01 15:14:09.418+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-planner-3.5-3.5.14.jar
+2020-12-01 15:14:09.418+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/stax-ex-1.8.1.jar
+2020-12-01 15:14:09.418+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-compiler-3.1-3.1.9.jar
+2020-12-01 15:14:09.418+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/eclipse-collections-9.2.0.jar
+2020-12-01 15:14:09.418+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-compress-1.19.jar
+2020-12-01 15:14:09.418+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-expression-3.4-3.4.17.jar
+2020-12-01 15:14:09.419+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-lang3-3.8.jar
+2020-12-01 15:14:09.419+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-browser-3.2.26.jar
+2020-12-01 15:14:09.419+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-ast-3.5-3.5.14.jar
+2020-12-01 15:14:09.419+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-index-3.5.14.jar
+2020-12-01 15:14:09.419+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-planner-spi-3.5-3.5.14.jar
+2020-12-01 15:14:09.419+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/conf/
+2020-12-01 15:14:09.419+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-3.5.14.jar
+2020-12-01 15:14:09.419+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-util-9.4.17.v20190418.jar
+2020-12-01 15:14:09.419+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jaxb-runtime-2.3.2.jar
+2020-12-01 15:14:09.420+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jaxb-api-2.3.0.jar
+2020-12-01 15:14:09.420+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-kernel-3.5.14.jar
+2020-12-01 15:14:09.420+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-lucene-index-3.5.14.jar
+2020-12-01 15:14:09.420+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/opencsv-2.3.jar
+2020-12-01 15:14:09.420+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-interpreted-runtime-3.5.14.jar
+2020-12-01 15:14:09.420+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-bolt-3.5.14.jar
+2020-12-01 15:14:09.420+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/parboiled-scala_2.11-1.1.7.jar
+2020-12-01 15:14:09.420+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-jmx-3.5.14.jar
+2020-12-01 15:14:09.420+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/classes
+2020-12-01 15:14:09.420+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-runtime-util-3.5.14.jar
+2020-12-01 15:14:09.421+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-servlet-9.4.17.v20190418.jar
+2020-12-01 15:14:09.421+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/openCypher-frontend-1-3.4.17.jar
+2020-12-01 15:14:09.421+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-security-3.5.14.jar
+2020-12-01 15:14:09.421+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-logical-plans-3.4-3.4.17.jar
+2020-12-01 15:14:09.421+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-import-tool-3.5.14.jar
+2020-12-01 15:14:09.421+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/eclipse-collections-api-9.2.0.jar
+2020-12-01 15:14:09.421+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jackson-mapper-asl-1.9.13.jar
+2020-12-01 15:14:09.422+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/FastInfoset-1.2.16.jar
+2020-12-01 15:14:09.422+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/jfr.jar
+2020-12-01 15:14:09.422+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-kernel-api-3.5.14.jar
+2020-12-01 15:14:09.422+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/caffeine-2.6.2.jar
+2020-12-01 15:14:09.422+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-3.5.14.jar
+2020-12-01 15:14:09.422+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/lucene-queryparser-5.5.5.jar
+2020-12-01 15:14:09.422+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/bcprov-jdk15on-1.60.jar
+2020-12-01 15:14:09.422+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jackson-jaxrs-1.9.13.jar
+2020-12-01 15:14:09.433+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/nashorn.jar
+2020-12-01 15:14:09.433+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-lucene-upgrade-3.5.14.jar
+2020-12-01 15:14:09.434+0000 INFO [o.n.i.d.DiagnosticsManager]  [bootstrap] /usr/local/openjdk-8/lib/jce.jar
+2020-12-01 15:14:09.434+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-frontend-3.1-3.1.9.jar
+2020-12-01 15:14:09.434+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/WMI4Java-1.6.1.jar
+2020-12-01 15:14:09.437+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-logging-3.5.14.jar
+2020-12-01 15:14:09.437+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/zstd-proxy-3.5.14.jar
+2020-12-01 15:14:09.437+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jsr311-api-1.1.2.r612.jar
+2020-12-01 15:14:09.437+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-front-end-3.5-3.5.14.jar
+2020-12-01 15:14:09.438+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-frontend-2.3-2.3.12.jar
+2020-12-01 15:14:09.438+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/plugins/
+2020-12-01 15:14:09.438+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/lucene-analyzers-common-5.5.5.jar
+2020-12-01 15:14:09.438+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-resource-3.5.14.jar
+2020-12-01 15:14:09.438+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-ir-3.4-3.4.17.jar
+2020-12-01 15:14:09.438+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/bcpkix-jdk15on-1.60.jar
+2020-12-01 15:14:09.438+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/zstd-jni-1.3.8-6.jar
+2020-12-01 15:14:09.439+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-cypher-expression-evaluator-3.5.14.jar
+2020-12-01 15:14:09.439+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jakarta.xml.bind-api-2.3.2.jar
+2020-12-01 15:14:09.439+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-spatial-index-3.5.14.jar
+2020-12-01 15:14:09.496+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-logging-1.1.1.jar
+2020-12-01 15:14:09.496+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/commons-text-1.4.jar
+2020-12-01 15:14:09.496+0000 INFO [o.n.i.d.DiagnosticsManager]  [loader.1] file:/usr/local/openjdk-8/lib/ext/jaccess.jar
+2020-12-01 15:14:09.496+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-graph-matching-3.1.9.jar
+2020-12-01 15:14:09.496+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/parboiled-core-1.1.7.jar
+2020-12-01 15:14:09.497+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-expressions-3.5-3.5.14.jar
+2020-12-01 15:14:09.497+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-util-3.5-3.5.14.jar
+2020-12-01 15:14:09.497+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/neo4j-common-3.5.14.jar
+2020-12-01 15:14:09.497+0000 INFO [o.n.i.d.DiagnosticsManager]  [classpath + loader.0] file:/var/lib/neo4j/lib/jetty-security-9.4.17.v20190418.jar
+2020-12-01 15:14:09.497+0000 INFO [o.n.i.d.DiagnosticsManager] Library path:
+2020-12-01 15:14:09.497+0000 INFO [o.n.i.d.DiagnosticsManager] /usr/java/packages/lib/amd64
+2020-12-01 15:14:09.499+0000 INFO [o.n.i.d.DiagnosticsManager] /usr/lib64
+2020-12-01 15:14:09.500+0000 INFO [o.n.i.d.DiagnosticsManager] /lib64
+2020-12-01 15:14:09.500+0000 INFO [o.n.i.d.DiagnosticsManager] /lib
+2020-12-01 15:14:09.500+0000 INFO [o.n.i.d.DiagnosticsManager] /usr/lib
+2020-12-01 15:14:09.500+0000 INFO [o.n.i.d.DiagnosticsManager] System.properties:
+2020-12-01 15:14:09.504+0000 INFO [o.n.i.d.DiagnosticsManager] sun.boot.library.path = /usr/local/openjdk-8/lib/amd64
+2020-12-01 15:14:09.505+0000 INFO [o.n.i.d.DiagnosticsManager] jdk.tls.rejectClientInitiatedRenegotiation = true
+2020-12-01 15:14:09.506+0000 INFO [o.n.i.d.DiagnosticsManager] path.separator = :
+2020-12-01 15:14:09.506+0000 INFO [o.n.i.d.DiagnosticsManager] file.encoding.pkg = sun.io
+2020-12-01 15:14:09.506+0000 INFO [o.n.i.d.DiagnosticsManager] sun.java.launcher = SUN_STANDARD
+2020-12-01 15:14:09.506+0000 INFO [o.n.i.d.DiagnosticsManager] sun.os.patch.level = unknown
+2020-12-01 15:14:09.506+0000 INFO [o.n.i.d.DiagnosticsManager] user.dir = /var/lib/neo4j
+2020-12-01 15:14:09.506+0000 INFO [o.n.i.d.DiagnosticsManager] sun.jnu.encoding = UTF-8
+2020-12-01 15:14:09.507+0000 INFO [o.n.i.d.DiagnosticsManager] unsupported.dbms.udc.source = docker
+2020-12-01 15:14:09.507+0000 INFO [o.n.i.d.DiagnosticsManager] sun.management.compiler = HotSpot 64-Bit Tiered Compilers
+2020-12-01 15:14:09.507+0000 INFO [o.n.i.d.DiagnosticsManager] user.home = /var/lib/neo4j
+2020-12-01 15:14:09.507+0000 INFO [o.n.i.d.DiagnosticsManager] user.timezone = Etc/UTC
+2020-12-01 15:14:09.507+0000 INFO [o.n.i.d.DiagnosticsManager] file.encoding = UTF-8
+2020-12-01 15:14:09.507+0000 INFO [o.n.i.d.DiagnosticsManager] user.name = neo4j
+2020-12-01 15:14:09.507+0000 INFO [o.n.i.d.DiagnosticsManager] sun.java.command = org.neo4j.server.CommunityEntryPoint --home-dir=/var/lib/neo4j --config-dir=/var/lib/neo4j/conf
+2020-12-01 15:14:09.507+0000 INFO [o.n.i.d.DiagnosticsManager] sun.arch.data.model = 64
+2020-12-01 15:14:09.507+0000 INFO [o.n.i.d.DiagnosticsManager] user.language = en
+2020-12-01 15:14:09.507+0000 INFO [o.n.i.d.DiagnosticsManager] awt.toolkit = sun.awt.X11.XToolkit
+2020-12-01 15:14:09.507+0000 INFO [o.n.i.d.DiagnosticsManager] jdk.tls.ephemeralDHKeySize = 2048
+2020-12-01 15:14:09.508+0000 INFO [o.n.i.d.DiagnosticsManager] file.separator = /
+2020-12-01 15:14:09.508+0000 INFO [o.n.i.d.DiagnosticsManager] sun.io.unicode.encoding = UnicodeLittle
+2020-12-01 15:14:09.508+0000 INFO [o.n.i.d.DiagnosticsManager] sun.cpu.endian = little
+2020-12-01 15:14:09.508+0000 INFO [o.n.i.d.DiagnosticsManager] sun.cpu.isalist = 
+2020-12-01 15:14:09.508+0000 INFO [o.n.i.d.DiagnosticsManager] (IANA) TimeZone Database Version:
+2020-12-01 15:14:10.010+0000 INFO [o.n.i.d.DiagnosticsManager]   TimeZone version: 2020a (available for 601 zone identifiers)
+2020-12-01 15:14:10.010+0000 INFO [o.n.i.d.DiagnosticsManager] Linux scheduler information:
+2020-12-01 15:14:10.050+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.052+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.052+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.054+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.118+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.138+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.143+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.143+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.152+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.153+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.154+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.157+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.158+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.160+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.160+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.161+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.162+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.163+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.163+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.164+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.171+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.176+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.183+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.189+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.204+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.221+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.223+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.224+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.224+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.238+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.239+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.239+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.241+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.241+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.242+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.243+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.244+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.244+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.262+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.263+0000 INFO [o.n.i.d.DiagnosticsManager] none
+2020-12-01 15:14:10.264+0000 INFO [o.n.i.d.DiagnosticsManager] [mq-deadline] kyber bfq none
+2020-12-01 15:14:10.264+0000 INFO [o.n.i.d.DiagnosticsManager] Network information:
+2020-12-01 15:14:10.347+0000 INFO [o.n.i.d.DiagnosticsManager] Interface eth0:
+2020-12-01 15:14:10.349+0000 INFO [o.n.i.d.DiagnosticsManager]     address: 172.18.0.4
+2020-12-01 15:14:10.349+0000 INFO [o.n.i.d.DiagnosticsManager] Interface lo:
+2020-12-01 15:14:10.349+0000 INFO [o.n.i.d.DiagnosticsManager]     address: 127.0.0.1
+2020-12-01 15:14:10.349+0000 INFO [o.n.i.d.DiagnosticsManager] --- INITIALIZED diagnostics END ---
+2020-12-01 15:14:20.136+0000 INFO [o.n.k.i.s.f.RecordFormatSelector] Selected RecordFormat:StandardV3_4[v0.A.9] record format from store /data/databases/graph.db
+2020-12-01 15:14:20.725+0000 INFO [o.n.k.i.s.f.RecordFormatSelector] Selected RecordFormat:StandardV3_4[v0.A.9] record format from store /data/databases/graph.db
+2020-12-01 15:14:20.738+0000 INFO [o.n.k.i.s.f.RecordFormatSelector] Format not configured. Selected format from the store: RecordFormat:StandardV3_4[v0.A.9]
+2020-12-01 15:14:41.396+0000 INFO [o.n.k.NeoStoreDataSource] No commits found after last check point (which is at LogPosition{logVersion=0, byteOffset=16})
+2020-12-01 15:14:41.623+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for KernelDiagnostics:Versions START ---
+2020-12-01 15:14:41.628+0000 INFO [o.n.i.d.DiagnosticsManager] Graph Database: community single StoreId{creationTime=1606832822437, randomId=-5725108340623242805, storeVersion=16094931155187206, upgradeTime=1606832822437, upgradeId=1}
+2020-12-01 15:14:41.635+0000 INFO [o.n.i.d.DiagnosticsManager] Kernel version: 3.5.14,932d555a90a30c92acddd30a504e6ae1932a92ae
+2020-12-01 15:14:41.643+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for KernelDiagnostics:Versions END ---
+2020-12-01 15:14:41.667+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for NEO_STORE_VERSIONS START ---
+2020-12-01 15:14:41.671+0000 INFO [o.n.i.d.DiagnosticsManager] Store versions:
+2020-12-01 15:14:41.677+0000 INFO [o.n.i.d.DiagnosticsManager]   ArrayPropertyStore v0.A.9
+2020-12-01 15:14:41.681+0000 INFO [o.n.i.d.DiagnosticsManager]   NodeStore v0.A.9
+2020-12-01 15:14:41.689+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore v0.A.9
+2020-12-01 15:14:41.692+0000 INFO [o.n.i.d.DiagnosticsManager]   PropertyIndexStore v0.A.9
+2020-12-01 15:14:41.702+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore v0.A.9
+2020-12-01 15:14:41.711+0000 INFO [o.n.i.d.DiagnosticsManager]   ArrayPropertyStore v0.A.9
+2020-12-01 15:14:41.717+0000 INFO [o.n.i.d.DiagnosticsManager]   PropertyStore v0.A.9
+2020-12-01 15:14:41.721+0000 INFO [o.n.i.d.DiagnosticsManager]   RelationshipStore v0.A.9
+2020-12-01 15:14:41.727+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore v0.A.9
+2020-12-01 15:14:41.732+0000 INFO [o.n.i.d.DiagnosticsManager]   RelationshipTypeStore v0.A.9
+2020-12-01 15:14:41.738+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore v0.A.9
+2020-12-01 15:14:41.741+0000 INFO [o.n.i.d.DiagnosticsManager]   LabelTokenStore v0.A.9
+2020-12-01 15:14:41.748+0000 INFO [o.n.i.d.DiagnosticsManager]   SchemaStore v0.A.9
+2020-12-01 15:14:41.751+0000 INFO [o.n.i.d.DiagnosticsManager]   RelationshipGroupStore v0.A.9
+2020-12-01 15:14:41.758+0000 INFO [o.n.i.d.DiagnosticsManager]   NeoStore v0.A.9
+2020-12-01 15:14:41.770+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for NEO_STORE_VERSIONS END ---
+2020-12-01 15:14:41.780+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for NEO_STORE_ID_USAGE START ---
+2020-12-01 15:14:41.791+0000 INFO [o.n.i.d.DiagnosticsManager] Id usage:
+2020-12-01 15:14:41.806+0000 INFO [o.n.i.d.DiagnosticsManager]   ArrayPropertyStore: used=1 high=0
+2020-12-01 15:14:41.811+0000 INFO [o.n.i.d.DiagnosticsManager]   NodeStore: used=0 high=-1
+2020-12-01 15:14:41.820+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore: used=1 high=0
+2020-12-01 15:14:41.827+0000 INFO [o.n.i.d.DiagnosticsManager]   PropertyIndexStore: used=0 high=-1
+2020-12-01 15:14:41.831+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore: used=1 high=0
+2020-12-01 15:14:41.838+0000 INFO [o.n.i.d.DiagnosticsManager]   ArrayPropertyStore: used=1 high=0
+2020-12-01 15:14:41.842+0000 INFO [o.n.i.d.DiagnosticsManager]   PropertyStore: used=0 high=-1
+2020-12-01 15:14:41.849+0000 INFO [o.n.i.d.DiagnosticsManager]   RelationshipStore: used=0 high=-1
+2020-12-01 15:14:41.851+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore: used=1 high=0
+2020-12-01 15:14:41.856+0000 INFO [o.n.i.d.DiagnosticsManager]   RelationshipTypeStore: used=0 high=-1
+2020-12-01 15:14:41.862+0000 INFO [o.n.i.d.DiagnosticsManager]   StringPropertyStore: used=1 high=0
+2020-12-01 15:14:41.867+0000 INFO [o.n.i.d.DiagnosticsManager]   LabelTokenStore: used=0 high=-1
+2020-12-01 15:14:41.875+0000 INFO [o.n.i.d.DiagnosticsManager]   SchemaStore: used=1 high=0
+2020-12-01 15:14:41.880+0000 INFO [o.n.i.d.DiagnosticsManager]   RelationshipGroupStore: used=1 high=0
+2020-12-01 15:14:41.889+0000 INFO [o.n.i.d.DiagnosticsManager]   NeoStore: used=15 high=14
+2020-12-01 15:14:41.895+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for NEO_STORE_ID_USAGE END ---
+2020-12-01 15:14:41.898+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for NEO_STORE_RECORDS START ---
+2020-12-01 15:14:41.901+0000 INFO [o.n.i.d.DiagnosticsManager] Neostore records:
+2020-12-01 15:14:41.907+0000 INFO [o.n.i.d.DiagnosticsManager] TIME (Creation time): 1606832822437
+2020-12-01 15:14:41.912+0000 INFO [o.n.i.d.DiagnosticsManager] RANDOM_NUMBER (Random number for store id): -5725108340623242805
+2020-12-01 15:14:41.916+0000 INFO [o.n.i.d.DiagnosticsManager] LOG_VERSION (Current log version): 0
+2020-12-01 15:14:41.922+0000 INFO [o.n.i.d.DiagnosticsManager] LAST_TRANSACTION_ID (Last committed transaction): 1
+2020-12-01 15:14:41.928+0000 INFO [o.n.i.d.DiagnosticsManager] STORE_VERSION (Store format version): 16094931155187206
+2020-12-01 15:14:41.931+0000 INFO [o.n.i.d.DiagnosticsManager] FIRST_GRAPH_PROPERTY (First property record containing graph properties): -1
+2020-12-01 15:14:41.933+0000 INFO [o.n.i.d.DiagnosticsManager] LAST_CONSTRAINT_TRANSACTION (Last committed transaction containing constraint changes): 0
+2020-12-01 15:14:41.936+0000 INFO [o.n.i.d.DiagnosticsManager] UPGRADE_TRANSACTION_ID (Transaction id most recent upgrade was performed at): 1
+2020-12-01 15:14:41.941+0000 INFO [o.n.i.d.DiagnosticsManager] UPGRADE_TIME (Time of last upgrade): 1606832822437
+2020-12-01 15:14:41.946+0000 INFO [o.n.i.d.DiagnosticsManager] LAST_TRANSACTION_CHECKSUM (Checksum of last committed transaction): 0
+2020-12-01 15:14:41.948+0000 INFO [o.n.i.d.DiagnosticsManager] UPGRADE_TRANSACTION_CHECKSUM (Checksum of transaction id the most recent upgrade was performed at): 0
+2020-12-01 15:14:41.952+0000 INFO [o.n.i.d.DiagnosticsManager] LAST_CLOSED_TRANSACTION_LOG_VERSION (Log version where the last transaction commit entry has been written into): 0
+2020-12-01 15:14:41.959+0000 INFO [o.n.i.d.DiagnosticsManager] LAST_CLOSED_TRANSACTION_LOG_BYTE_OFFSET (Byte offset in the log file where the last transaction commit entry has been written into): 16
+2020-12-01 15:14:41.963+0000 INFO [o.n.i.d.DiagnosticsManager] LAST_TRANSACTION_COMMIT_TIMESTAMP (Commit time timestamp for last committed transaction): 0
+2020-12-01 15:14:41.969+0000 INFO [o.n.i.d.DiagnosticsManager] UPGRADE_TRANSACTION_COMMIT_TIMESTAMP (Commit timestamp of transaction the most recent upgrade was performed at): 0
+2020-12-01 15:14:41.972+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for NEO_STORE_RECORDS END ---
+2020-12-01 15:14:41.981+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for TRANSACTION_RANGE START ---
+2020-12-01 15:14:41.985+0000 INFO [o.n.i.d.DiagnosticsManager] Transaction log:
+2020-12-01 15:14:41.994+0000 INFO [o.n.i.d.DiagnosticsManager] Oldest transaction 2 found in log with version 0
+2020-12-01 15:14:41.997+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for TRANSACTION_RANGE END ---
+2020-12-01 15:14:42.030+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for KernelDiagnostics:StoreFiles START ---
+2020-12-01 15:14:42.042+0000 INFO [o.n.i.d.DiagnosticsManager] Disk space on partition (Total / Free / Free %): 499963174912 / 405844652032 / 81
+2020-12-01 15:14:42.048+0000 INFO [o.n.i.d.DiagnosticsManager] Storage files: (filename : modification date - size)
+2020-12-01 15:14:42.077+0000 INFO [o.n.i.d.DiagnosticsManager]   index:
+2020-12-01 15:14:42.120+0000 INFO [o.n.i.d.DiagnosticsManager]   - Total: 2020-12-01T14:27:21+0000 - 0.00 B
+2020-12-01 15:14:42.131+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore: 2020-12-01T14:27:02+0000 - 8.00 kB
+2020-12-01 15:14:42.135+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.counts.db.a: 2020-12-01T14:27:23+0000 - 96.00 B
+2020-12-01 15:14:42.148+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.id: 2020-12-01T15:14:27+0000 - 9.00 B
+2020-12-01 15:14:42.153+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.labelscanstore.db: 2020-12-01T15:14:41+0000 - 40.00 kB
+2020-12-01 15:14:42.157+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.labeltokenstore.db: 2020-12-01T14:27:01+0000 - 0.00 B
+2020-12-01 15:14:42.160+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.labeltokenstore.db.id: 2020-12-01T15:14:26+0000 - 9.00 B
+2020-12-01 15:14:42.163+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.labeltokenstore.db.names: 2020-12-01T14:27:01+0000 - 8.00 kB
+2020-12-01 15:14:42.166+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.labeltokenstore.db.names.id: 2020-12-01T15:14:25+0000 - 9.00 B
+2020-12-01 15:14:42.169+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.nodestore.db: 2020-12-01T14:26:58+0000 - 0.00 B
+2020-12-01 15:14:42.171+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.nodestore.db.id: 2020-12-01T15:14:23+0000 - 9.00 B
+2020-12-01 15:14:42.181+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.nodestore.db.labels: 2020-12-01T14:26:58+0000 - 8.00 kB
+2020-12-01 15:14:42.185+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.nodestore.db.labels.id: 2020-12-01T15:14:22+0000 - 9.00 B
+2020-12-01 15:14:42.188+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db: 2020-12-01T14:26:59+0000 - 0.00 B
+2020-12-01 15:14:42.190+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.arrays: 2020-12-01T14:26:59+0000 - 8.00 kB
+2020-12-01 15:14:42.193+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.arrays.id: 2020-12-01T15:14:25+0000 - 9.00 B
+2020-12-01 15:14:42.198+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.id: 2020-12-01T15:14:25+0000 - 9.00 B
+2020-12-01 15:14:42.201+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.index: 2020-12-01T14:26:58+0000 - 0.00 B
+2020-12-01 15:14:42.205+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.index.id: 2020-12-01T15:14:24+0000 - 9.00 B
+2020-12-01 15:14:42.212+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.index.keys: 2020-12-01T14:26:58+0000 - 8.00 kB
+2020-12-01 15:14:42.220+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.index.keys.id: 2020-12-01T15:14:23+0000 - 9.00 B
+2020-12-01 15:14:42.228+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.strings: 2020-12-01T14:26:59+0000 - 8.00 kB
+2020-12-01 15:14:42.235+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.propertystore.db.strings.id: 2020-12-01T15:14:24+0000 - 9.00 B
+2020-12-01 15:14:42.237+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshipgroupstore.db: 2020-12-01T14:27:01+0000 - 8.00 kB
+2020-12-01 15:14:42.240+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshipgroupstore.db.id: 2020-12-01T15:14:26+0000 - 9.00 B
+2020-12-01 15:14:42.247+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshipstore.db: 2020-12-01T14:26:59+0000 - 0.00 B
+2020-12-01 15:14:42.250+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshipstore.db.id: 2020-12-01T15:14:25+0000 - 9.00 B
+2020-12-01 15:14:42.258+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshiptypestore.db: 2020-12-01T14:27:01+0000 - 0.00 B
+2020-12-01 15:14:42.262+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshiptypestore.db.id: 2020-12-01T15:14:25+0000 - 9.00 B
+2020-12-01 15:14:42.281+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshiptypestore.db.names: 2020-12-01T14:27:00+0000 - 8.00 kB
+2020-12-01 15:14:42.291+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.relationshiptypestore.db.names.id: 2020-12-01T15:14:25+0000 - 9.00 B
+2020-12-01 15:14:42.293+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.schemastore.db: 2020-12-01T14:27:01+0000 - 8.00 kB
+2020-12-01 15:14:42.299+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.schemastore.db.id: 2020-12-01T15:14:26+0000 - 9.00 B
+2020-12-01 15:14:42.330+0000 INFO [o.n.i.d.DiagnosticsManager]   neostore.transaction.db.0: 2020-12-01T14:51:40+0000 - 34.00 B
+2020-12-01 15:14:42.337+0000 INFO [o.n.i.d.DiagnosticsManager] Storage summary: 
+2020-12-01 15:14:42.340+0000 INFO [o.n.i.d.DiagnosticsManager]   Total size of store: 112.26 kB
+2020-12-01 15:14:42.350+0000 INFO [o.n.i.d.DiagnosticsManager]   Total size of mapped files: 112.00 kB
+2020-12-01 15:14:42.360+0000 INFO [o.n.i.d.DiagnosticsManager] --- STARTED diagnostics for KernelDiagnostics:StoreFiles END ---
+2020-12-01 15:14:42.365+0000 INFO [o.n.k.a.DatabaseAvailabilityGuard] Fulfilling of requirement 'Database available' makes database graph.db available.
+2020-12-01 15:14:42.369+0000 INFO [o.n.k.a.DatabaseAvailabilityGuard] Database graph.db is ready.
+2020-12-01 15:14:42.374+0000 INFO [o.n.k.i.DatabaseHealth] Database health set to OK
+2020-12-01 15:14:45.817+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1798, gcTime=1889, gcCount=1}
+2020-12-01 15:14:47.022+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=100, gcTime=0, gcCount=0}
+2020-12-01 15:14:49.634+0000 INFO [o.n.b.BoltServer] Bolt server loaded
+2020-12-01 15:14:53.737+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=2921, gcTime=2996, gcCount=1}
+2020-12-01 15:14:54.506+0000 INFO [o.n.b.BoltServer] Bolt enabled on 0.0.0.0:7687.
+2020-12-01 15:14:55.586+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=148, gcTime=0, gcCount=0}
+2020-12-01 15:15:01.446+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=270, gcTime=0, gcCount=0}
+2020-12-01 15:15:01.650+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=352, gcTime=0, gcCount=0}
+2020-12-01 15:15:06.330+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=172, gcTime=0, gcCount=0}
+2020-12-01 15:15:08.383+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=122, gcTime=0, gcCount=0}
+2020-12-01 15:15:08.627+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=177, gcTime=0, gcCount=0}
+2020-12-01 15:15:08.853+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=103, gcTime=0, gcCount=0}
+2020-12-01 15:15:08.970+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=103, gcTime=0, gcCount=0}
+2020-12-01 15:15:11.683+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1600, gcTime=1681, gcCount=1}
+2020-12-01 15:15:12.340+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=227, gcTime=0, gcCount=0}
+2020-12-01 15:15:13.113+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=315, gcTime=0, gcCount=0}
+2020-12-01 15:15:13.465+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=395, gcTime=0, gcCount=0}
+2020-12-01 15:15:13.625+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=147, gcTime=0, gcCount=0}
+2020-12-01 15:15:16.988+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=139, gcTime=0, gcCount=0}
+2020-12-01 15:15:17.169+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=153, gcTime=0, gcCount=0}
+2020-12-01 15:15:17.354+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=148, gcTime=0, gcCount=0}
+2020-12-01 15:15:17.757+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=305, gcTime=0, gcCount=0}
+2020-12-01 15:15:19.326+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=110, gcTime=0, gcCount=0}
+2020-12-01 15:15:21.722+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=111, gcTime=0, gcCount=0}
+2020-12-01 15:15:26.949+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=2123, gcTime=2165, gcCount=1}
+2020-12-01 15:15:27.844+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=253, gcTime=0, gcCount=0}
+2020-12-01 15:15:28.084+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=258, gcTime=0, gcCount=0}
+2020-12-01 15:15:35.509+0000 INFO [o.n.i.d.DiagnosticsManager] --- SERVER STARTED START ---
+2020-12-01 15:15:36.691+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=661, gcTime=606, gcCount=1}
+2020-12-01 15:15:43.482+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=317, gcTime=0, gcCount=0}
+2020-12-01 15:15:47.237+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=135, gcTime=0, gcCount=0}
+2020-12-01 15:15:49.053+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=119, gcTime=0, gcCount=0}
+2020-12-01 15:15:49.598+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=121, gcTime=0, gcCount=0}
+2020-12-01 15:15:49.912+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=145, gcTime=0, gcCount=0}
+2020-12-01 15:15:50.069+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=265, gcTime=0, gcCount=0}
+2020-12-01 15:15:54.061+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=191, gcTime=0, gcCount=0}
+2020-12-01 15:15:54.441+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=164, gcTime=0, gcCount=0}
+2020-12-01 15:15:54.571+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=190, gcTime=0, gcCount=0}
+2020-12-01 15:15:56.658+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=121, gcTime=0, gcCount=0}
+2020-12-01 15:15:56.862+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=211, gcTime=0, gcCount=0}
+2020-12-01 15:15:57.726+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=426, gcTime=0, gcCount=0}
+2020-12-01 15:15:57.936+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=473, gcTime=0, gcCount=0}
+2020-12-01 15:15:58.298+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=113, gcTime=0, gcCount=0}
+2020-12-01 15:15:58.513+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=101, gcTime=0, gcCount=0}
+2020-12-01 15:15:58.772+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=147, gcTime=0, gcCount=0}
+2020-12-01 15:15:59.040+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=142, gcTime=0, gcCount=0}
+2020-12-01 15:16:00.675+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=1393, gcTime=1454, gcCount=1}
+2020-12-01 15:16:01.627+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=156, gcTime=0, gcCount=0}
+2020-12-01 15:16:01.744+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=272, gcTime=0, gcCount=0}
+2020-12-01 15:16:02.067+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=101, gcTime=0, gcCount=0}
+2020-12-01 15:16:02.952+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=109, gcTime=0, gcCount=0}
+2020-12-01 15:16:05.003+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=548, gcTime=0, gcCount=0}
+2020-12-01 15:16:05.548+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=597, gcTime=0, gcCount=0}
+2020-12-01 15:16:05.757+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=100, gcTime=0, gcCount=0}
+2020-12-01 15:16:07.207+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=126, gcTime=0, gcCount=0}
+2020-12-01 15:16:08.698+0000 INFO [o.n.i.d.DiagnosticsManager] --- SERVER STARTED END ---
+2020-12-01 15:16:09.392+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=189, gcTime=0, gcCount=0}
+2020-12-01 15:16:09.821+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=112, gcTime=0, gcCount=0}
+2020-12-01 15:16:13.435+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=316, gcTime=0, gcCount=0}
+2020-12-01 15:16:13.648+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=245, gcTime=0, gcCount=0}
+2020-12-01 15:16:17.516+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=459, gcTime=0, gcCount=0}
+2020-12-01 15:16:30.878+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=225, gcTime=0, gcCount=0}
+2020-12-01 15:16:31.014+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=126, gcTime=0, gcCount=0}
+2020-12-01 15:16:38.888+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=628, gcTime=0, gcCount=0}
+2020-12-01 15:16:39.195+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=354, gcTime=0, gcCount=0}
+2020-12-01 15:16:39.557+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=267, gcTime=0, gcCount=0}
+2020-12-01 15:17:01.046+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=115, gcTime=0, gcCount=0}
+2020-12-01 15:17:09.844+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=240, gcTime=0, gcCount=0}
+2020-12-01 15:17:24.704+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=103, gcTime=0, gcCount=0}
+2020-12-01 15:17:37.240+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=343, gcTime=0, gcCount=0}
+2020-12-01 15:17:37.451+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=140, gcTime=0, gcCount=0}
+2020-12-01 15:17:38.234+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=271, gcTime=0, gcCount=0}
+2020-12-01 15:17:55.055+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=555, gcTime=0, gcCount=0}
+2020-12-01 15:18:03.970+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=193, gcTime=0, gcCount=0}
+2020-12-01 15:18:08.641+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=247, gcTime=0, gcCount=0}
+2020-12-01 15:18:14.718+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=104, gcTime=0, gcCount=0}
+2020-12-01 15:18:52.017+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=193, gcTime=0, gcCount=0}
+2020-12-01 15:19:35.094+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=333, gcTime=0, gcCount=0}
+2020-12-01 15:19:35.840+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=629, gcTime=0, gcCount=0}
+2020-12-01 15:19:36.102+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=143, gcTime=0, gcCount=0}
+2020-12-01 15:19:36.263+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=212, gcTime=0, gcCount=0}
+2020-12-01 15:19:38.084+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=178, gcTime=0, gcCount=0}
+2020-12-01 15:19:38.555+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=662, gcTime=0, gcCount=0}
+2020-12-01 15:20:01.447+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=121, gcTime=0, gcCount=0}
+2020-12-01 15:20:01.733+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=285, gcTime=0, gcCount=0}
+2020-12-01 15:20:09.699+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=204, gcTime=0, gcCount=0}
+2020-12-01 15:20:26.953+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=184, gcTime=0, gcCount=0}
+2020-12-01 15:20:41.312+0000 INFO [o.n.k.a.DatabaseAvailabilityGuard] Database graph.db is unavailable.
+2020-12-01 15:20:41.848+0000 INFO [o.n.g.f.GraphDatabaseFacadeFactory] Shutdown started
+2020-12-01 15:20:42.005+0000 WARN [o.n.k.i.c.VmPauseMonitorComponent] Detected VM stop-the-world pause: {pauseTime=102, gcTime=0, gcCount=0}
+2020-12-01 15:20:42.112+0000 INFO [o.n.g.f.GraphDatabaseFacadeFactory] Shutting down 'graph.db' database.
+2020-12-01 15:20:42.117+0000 INFO [o.n.g.f.GraphDatabaseFacadeFactory] Shutdown started
+2020-12-01 15:20:42.242+0000 INFO [o.n.k.i.t.l.c.CheckPointerImpl] Checkpoint triggered by "Database shutdown" @ txId: 1 checkpoint started...
+2020-12-01 15:20:42.490+0000 INFO [o.n.k.i.t.l.c.CheckPointerImpl] Checkpoint triggered by "Database shutdown" @ txId: 1 checkpoint completed in 220ms
+2020-12-01 15:20:42.514+0000 INFO [o.n.k.i.t.l.p.LogPruningImpl] No log version pruned, last checkpoint was made in version 0
+2020-12-01 15:20:42.839+0000 INFO [o.n.i.d.DiagnosticsManager] --- STOPPING diagnostics START ---
+2020-12-01 15:20:42.840+0000 INFO [o.n.i.d.DiagnosticsManager] --- STOPPING diagnostics END ---
