@@ -59,7 +59,7 @@
               <div *ngFor="let p of results.view" class="tile d-flex flex-column">
                 <div class="d-flex tile-toolbar">
                   <div ngbDropdown class="d-inline-block ml-auto">
-                    <button class="btn btn-light btn-sm" ngbDropdownToggle>
+                    <button class="btn btn-sm" ngbDropdownToggle>
                       <i class="fas fa-cog fa-fw"></i>
                     </button>
                     <div ngbDropdownMenu>
@@ -69,7 +69,7 @@
                 </div>
                 <div class="flex-fill d-flex justify-content-center align-items-center my-2">
                   <a [appLink]="['/folders', p.root.hashId]" class="text-muted">
-                    <i class="fas fa-layer-group fa-4x"></i>
+                    <app-project-icon [project]="p" size="56px"></app-project-icon>
                   </a>
                 </div>
                 <div class="text-truncate text-center">
