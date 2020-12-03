@@ -80,7 +80,8 @@ def get_map(hash_id: str, user: AppUser, check_access: AccessActionType):
     except NoResultFound:
         raise RecordNotFoundException('Map not found.')
 
-    check_project_permission(map.dir.project, user, check_access)
+    if not map.public:
+        check_project_permission(map.dir.project, user, check_access)
 
     return map
 
