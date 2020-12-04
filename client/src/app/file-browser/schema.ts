@@ -27,6 +27,11 @@ export interface ProjectCreateRequest {
   description: string;
 }
 
+export interface BulkProjectUpdateRequest {
+  name?: string;
+  description?: string;
+}
+
 export interface FilesystemObjectData {
   hashId: string;
   filename: string;
@@ -90,11 +95,6 @@ export type ObjectCreateRequest = BaseObjectCreateRequest & Partial<ObjectConten
 
 export interface ObjectDataResponse {
   object: FilesystemObjectData;
-}
-
-export interface MultipleObjectDataResponse {
-  objects: { [hashId: string]: FilesystemObjectData };
-  missing: string[];
 }
 
 export interface ObjectBackupCreateRequest extends ObjectContentValueRequest {

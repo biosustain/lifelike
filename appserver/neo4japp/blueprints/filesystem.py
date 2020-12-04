@@ -439,9 +439,9 @@ class FilesystemBaseView(MethodView):
         return jsonify(MultipleFileResponseSchema(context={
             'user_privilege_filter': user.id,
         }, exclude=(
-            'objects.children',
+            'items.children',
         )).dump(dict(
-            objects=returned_files,
+            items=returned_files,
             missing=list(missing_hash_ids) or [],
         )))
 

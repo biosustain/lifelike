@@ -231,8 +231,8 @@ class FileResponseSchema(CamelCaseSchema):
 
 
 class MultipleFileResponseSchema(CamelCaseSchema):
-    objects = fields.Dict(keys=fields.String(),
-                          values=fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',)))
+    items = fields.Dict(keys=fields.String(),
+                        values=fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',)))
     missing = fields.List(fields.String)
 
 
