@@ -26,6 +26,7 @@ import {
   ObjectEditDialogValue,
 } from '../../../file-browser/components/dialog/object-edit-dialog.component';
 import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
+import { ObjectVersion } from '../../../file-browser/models/object-version';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -126,41 +127,20 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     }
   }
 
-  openEditDialog() {
-    const target = cloneDeep(this.map);
-    const dialogRef = this.modalService.open(ObjectEditDialogComponent);
-    dialogRef.componentInstance.object = target;
-    dialogRef.componentInstance.accept = ((changes: ObjectEditDialogValue) => {
-      this.graphCanvas.execute(new KnowledgeMapUpdate(
-        'Update map properties',
-        this.map, changes.objectChanges, Object.keys(changes.objectChanges).reduce((obj, key) => {
-          obj[key] = this.map[key];
-          return obj;
-        }, {}),
+  restore(version: ObjectVersion) {
+    readBlobAsBuffer(version.contentValue).pipe(
+      mapBufferToJson<UniversalGraph>(),
+      this.errorHandler.create(),
+    ).subscribe(graph => {
+      this.graphCanvas.execute(new KnowledgeMapRestore(
+        `Restore map to '${version.hashId}'`,
+        this.graphCanvas,
+        graph,
+        cloneDeep(this.graphCanvas.getGraph()),
       ));
-      this.unsavedChanges$.next(true);
-      return Promise.resolve();
-    });
-    return dialogRef.result;
-  }
-
-  openVersionRestoreDialog() {
-    return this.filesystemObjectActions.openVersionRestoreDialog(this.map).then(version => {
-      readBlobAsBuffer(version.contentValue).pipe(
-        mapBufferToJson<UniversalGraph>(),
-        this.errorHandler.create(),
-      ).subscribe(graph => {
-        this.graphCanvas.execute(new KnowledgeMapRestore(
-          `Restore map to '${version.hashId}'`,
-          this.graphCanvas,
-          graph,
-          cloneDeep(this.graphCanvas.getGraph()),
-        ));
-      }, e => {
-        // Data is corrupt
-        // TODO: Prevent the user from editing or something so the user doesnt lose data?
-      });
-    }, () => {
+    }, e => {
+      // Data is corrupt
+      // TODO: Prevent the user from editing or something so the user doesnt lose data?
     });
   }
 
