@@ -87,7 +87,9 @@ export class PdfViewerComponent
 
   @Input('render-text-mode')
   set renderTextMode(renderTextMode: RenderTextMode) {
-    this.internalRenderTextMode = renderTextMode;
+      if (renderTextMode !== undefined) {
+          this.internalRenderTextMode = renderTextMode;
+      }
   }
 
   @Input('original-size')
@@ -204,7 +206,7 @@ export class PdfViewerComponent
       ? `https://unpkg.com/pdfjs-dist@${(PDFJS as any).version}/cmaps/`
       : null;
   private internalRenderText = true;
-  private internalRenderTextMode: RenderTextMode = RenderTextMode.ENABLED;
+  private internalRenderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
   private internalStickToPage = false;
   private internalOriginalSize = true;
   private internalPdf: PDFDocumentProxy;
