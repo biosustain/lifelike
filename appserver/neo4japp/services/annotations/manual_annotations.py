@@ -229,27 +229,6 @@ class ManualAnnotationsService:
                                 # based on custom idHyperlink
                                 custom_id_type = custom['meta']['idType'].upper()
                                 anno['meta']['idType'] = custom_id_type
-
-                        if anno.get('meta', {}).get('id') and anno.get('meta', {}).get('idType'):
-                            entity_id = anno['meta']['id']
-                            entity_id_type = anno['meta']['idType']
-
-                            # prepend the prefix to entity_id to be consistent
-                            if entity_id_type == DatabaseType.CHEBI.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.CUSTOM.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.MESH.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.UNIPROT.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.NCBI.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.BIOCYC.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.PUBCHEM.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-
         return bioc
 
     def get_combined_annotations(self, project_id, file_id):
