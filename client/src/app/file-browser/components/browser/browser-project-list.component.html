@@ -68,12 +68,12 @@
                   </div>
                 </div>
                 <div class="flex-fill d-flex justify-content-center align-items-center my-2">
-                  <a [appLink]="['/folders', p.root.hashId]" class="text-muted">
+                  <a [appLink]="['/folders', p.root.hashId]" class="text-muted" [newTab]="true">
                     <app-project-icon [project]="p" size="56px"></app-project-icon>
                   </a>
                 </div>
                 <div class="text-truncate text-center">
-                  <a [appLink]="['/folders', p.root.hashId]" class="d-block text-truncate">
+                  <a [appLink]="['/folders', p.root.hashId]" class="d-block text-truncate" [newTab]="true">
                     <strong>{{ p.name }}</strong>
                   </a>
                 </div>
