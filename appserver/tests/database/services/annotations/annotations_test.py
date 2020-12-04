@@ -1382,6 +1382,39 @@ def test_delta_gene_deletion_detected(
     assert annotations[2].keyword == 'purF'
 
 
+def test_gene_primary_name(
+    default_lmdb_setup,
+    mock_get_gene_to_organism_match_result_for_gene_primary_name_pdf,
+    get_annotations_service,
+    entity_service
+):
+    annotation_service = get_annotations_service
+    pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_service
+
+    pdf = path.join(
+        directory,
+        'pdf_samples/annotations_test/test_gene_primary_name.pdf')
+
+    with open(pdf, 'rb') as f:
+        parsed = pdf_parser.parse_pdf(pdf=f)
+        tokens = entity_service.extract_tokens(parsed=parsed)
+
+        lookup_entities(entity_service=entity_service, tokens_list=tokens)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            excluded_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
+        )
+
+    assert len(annotations) == 2
+    assert annotations[0].primary_name == 'PRKAB1'
+
+
 def test_user_source_database_input_priority(
     get_manual_annotations_service
 ):
