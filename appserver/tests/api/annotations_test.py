@@ -7,6 +7,28 @@ def generate_headers(jwt_token):
     return {'Authorization': f'Bearer {jwt_token}'}
 
 
+def test_user_can_get_all_annotations_from_project(
+        client,
+        fix_project,
+        fix_api_owner,
+        mock_get_combined_annotations_in_project_result,
+):
+    login_resp = client.login_as_user(fix_api_owner.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    response = client.get(
+        f'/annotations/{fix_project.project_name}',
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == 200
+    assert response.get_data() == \
+        b'entity_id\ttype\ttext\tcount\n' + \
+        b'59272\tGene\tace2\t1\n' + \
+        b'9606\tSpecies\thuman\t1\n'
+
+
 def test_user_can_get_gene_annotations_from_pdf(
         client,
         test_user_with_pdf,
@@ -51,3 +73,76 @@ def test_user_can_get_all_annotations_from_pdf(
         b'entity_id\ttype\ttext\tcount\n' + \
         b'59272\tGene\tace2\t1\n' + \
         b'9606\tSpecies\thuman\t1\n'
+
+
+def test_user_can_get_global_inclusions(
+        client,
+        fix_project,
+        fix_api_owner,
+        mock_global_compound_inclusion,
+):
+    login_resp = client.login_as_user(fix_api_owner.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    response = client.get(
+        f'/annotations/global-list/inclusions',
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == 200
+    assert response.get_data() is not None
+
+
+def test_user_can_get_global_exclusions(
+        client,
+        fix_project,
+        fix_api_owner,
+        mock_global_gene_exclusion,
+):
+    login_resp = client.login_as_user(fix_api_owner.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    response = client.get(
+        f'/annotations/global-list/exclusions',
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == 200
+    assert response.get_data() is not None
+
+
+def test_user_can_get_global_list(
+        client,
+        fix_project,
+        fix_api_owner,
+        mock_global_list,
+):
+    login_resp = client.login_as_user(fix_api_owner.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    response = client.get(
+        f'/annotations/global-list',
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == 200
+
+    data = json.loads(response.get_data().decode('utf-8'))
+    assert data['total'] == 2
+    assert data['query'] is None
+    assert len(data['results']) == 2
+
+    if data['results'][0]['type'] == 'inclusion':
+        inclusion = data['results'][0]
+        exclusion = data['results'][1]
+    else:
+        inclusion = data['results'][1]
+        exclusion = data['results'][0]
+
+    assert inclusion['text'] == 'compound-(12345)'
+    assert inclusion['entityType'] == 'Compound'
+    assert exclusion['text'] == 'fake-gene'
+    assert exclusion['entityType'] == 'Gene'
