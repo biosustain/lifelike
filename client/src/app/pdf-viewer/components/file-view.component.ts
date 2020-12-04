@@ -528,10 +528,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  displayEditDialog() {
-    return this.fileObjectActions.openEditDialog(this.object);
-  }
-
   emitModuleProperties() {
     this.modulePropertiesChange.next({
       title: this.object.filename,
