@@ -141,13 +141,14 @@
       <!-- Header -->
       <div class="module-header">
         <!-- Breadcrumbs -->
-        <div class="module-breadcrumb-bar mb-1">
+        <div class="module-breadcrumb-bar mb-1" *ngIf="result.value.parent">
           <app-object-path [object]="result.value.parent"></app-object-path>
         </div>
 
         <!-- Title bar -->
         <div class="module-title-bar">
-          <button type="button" class="module-title-bar-back mr-2" (click)="goUp(result.value)">
+          <button type="button" class="module-title-bar-back mr-2" (click)="goUp(result.value)"
+                  *ngIf="result.value.parent">
             <i class="fa fa-fw fa-arrow-left"></i>
           </button>
           <h1 class="module-title">
