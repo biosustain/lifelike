@@ -13,9 +13,6 @@
         <div class="module-breadcrumb-bar mb-1">
           <ol class="breadcrumb">
             <li class="breadcrumb-item">
-              <a appLink="/projects">File Browser</a>
-            </li>
-            <li class="breadcrumb-item">
               <span class="placeholder-box">Loading loading</span>
             </li>
             <li class="breadcrumb-item">
@@ -145,14 +142,7 @@
       <div class="module-header">
         <!-- Breadcrumbs -->
         <div class="module-breadcrumb-bar mb-1">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-              <a appLink="/projects">File Browser</a>
-            </li>
-            <li class="breadcrumb-item" *ngIf="result.value.parent">
-              <app-object-path [object]="result.value.parent"></app-object-path>
-            </li>
-          </ol>
+          <app-object-path [object]="result.value.parent"></app-object-path>
         </div>
 
         <!-- Title bar -->
