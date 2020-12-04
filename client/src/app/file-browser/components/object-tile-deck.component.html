@@ -13,7 +13,7 @@
           <strong>{{ o.filename }}</strong>
         </a>
         <div class="text-truncate text-muted">
-          By {{ o.user.username }}
+          By <app-user [user]="o.user"></app-user>
         </div>
       </div>
     </div>
