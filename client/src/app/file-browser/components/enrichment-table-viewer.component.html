@@ -3,6 +3,8 @@
     class="position-absolute w-100 h-100 d-flex flex-column"
     style="z-index: 0; overflow: scroll"
     (scroll)="onTableScroll($event)"
+    id="scrollContainer"
+    #scrollContainer
   >
     <div class="module">
       <div class="module-header">
@@ -29,9 +31,10 @@
         
       </div>
 
-      <div *ngIf="tableEntries" class="module-body">
+      <div *ngIf="tableEntries" class="module-body" #moduleBody>
         <app-generic-table [header]="tableHeader" [entries]="tableEntries">
         </app-generic-table>
+        <button *ngIf="morePages" class="btn btn-primary" style="margin-left: 50%" (click)="loadMore()">Load More</button>
         <div class="col-12 justify-content-center">
 
     </div>

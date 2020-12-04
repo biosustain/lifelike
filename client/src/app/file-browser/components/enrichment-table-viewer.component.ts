@@ -32,6 +32,7 @@ import {flatMap, map } from 'rxjs/operators';
   styleUrls: ['./enrichment-table-viewer.component.scss'],
 })
 export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
+
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   // Inputs for Generic Table Component
@@ -135,9 +136,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       this.currentPage = 1;
       this.pageSize = 10;
       this.collectionSize = this.importGenes.length;
-      if (this.currentPage < Math.ceil(this.collectionSize / this.pageSize)) {
-        this.morePages = true;
-      }
+      this.morePages = this.currentPage < Math.ceil(this.collectionSize / this.pageSize);
       this.matchNCBINodes(this.currentPage);
     });
     this.loadTask.update();
@@ -255,10 +254,15 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     // If the user has scrolled within 10px of the bottom, add more data
     const buffer = 10;
     const limit = tableScrollHeight - tableViewHeight - buffer;
-    if (scrollLocation > limit && this.currentPage < Math.ceil(this.collectionSize / this.pageSize)) {
-      this.currentPage += 1;
-      this.goToPage(this.currentPage);
+    if (scrollLocation > limit && this.morePages) {
+      this.loadMore();
     }
+  }
+
+  loadMore() {
+    this.currentPage += 1;
+    this.goToPage(this.currentPage);
+    this.morePages = this.currentPage < Math.ceil(this.collectionSize / this.pageSize);
   }
 
   convertEntriesToString(entries: TableCell[][]): string[][] {
@@ -310,12 +314,14 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         newRow[i] = row[i];
       }
       const newOrder = [...order];
-      newOrder.splice(newOrder.indexOf('Regulon') + 1, 0, 'Regulon 1');
-      newOrder.splice(newOrder.indexOf('Regulon') + 2, 0, 'Regulon 2');
-
       const newDomains = [...this.domains];
-      newDomains.splice(newDomains.indexOf('Regulon') + 1, 0, 'Regulon 1');
-      newDomains.splice(newDomains.indexOf('Regulon') + 2, 0, 'Regulon 2');
+
+      if (newOrder.includes('Regulon')) {
+        newOrder.splice(newOrder.indexOf('Regulon') + 1, 0, 'Regulon 1');
+        newOrder.splice(newOrder.indexOf('Regulon') + 2, 0, 'Regulon 2');
+        newDomains.splice(newDomains.indexOf('Regulon') + 1, 0, 'Regulon 1');
+        newDomains.splice(newDomains.indexOf('Regulon') + 2, 0, 'Regulon 2');
+      }
 
       newOrder.forEach(domain =>
         newRow[newOrder.indexOf(domain) + this.numDefaultHeader] =
@@ -349,6 +355,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         this.snackBar.open(`Enrichment table updated.`, 'Close', {
           duration: 5000,
         });
+        this.tableEntries = [];
         this.loadTask.update();
       });
     }, () => {});
