@@ -91,7 +91,7 @@ class PDFTokensList():
 # for now change to what the pdf-viewer use
 @attr.s(frozen=False)
 class Annotation(CamelDictMixin):
-    @attr.s(frozen=True)
+    @attr.s(frozen=False)
     class Meta(CamelDictMixin):
         @attr.s(frozen=True)
         class Links(CamelDictMixin):
@@ -139,14 +139,14 @@ class Annotation(CamelDictMixin):
 
 @attr.s(frozen=False)
 class OrganismAnnotation(Annotation):
-    @attr.s(frozen=True)
+    @attr.s(frozen=False)
     class OrganismMeta(Annotation.Meta):
         category: str = attr.ib(default='')
 
 
 @attr.s(frozen=False)
 class GeneAnnotation(Annotation):
-    @attr.s(frozen=True)
+    @attr.s(frozen=False)
     class GeneMeta(Annotation.Meta):
         category: str = attr.ib(default='')
 
