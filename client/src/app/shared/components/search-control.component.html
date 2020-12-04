@@ -1,6 +1,7 @@
-<div class="input-group w-100">
+<div class="input-group w-100 d-flex">
   <input [(ngModel)]="value" (change)="this.changed()" (blur)="this.blurred()"
          type="text" class="form-control input-border"
+         [style.width]="value ? '150px' : '100px'"
          placeholder="Search" aria-label="Graph search" aria-describedby="graph-search"
          [disabled]="disabled" (keyup.enter)="enterPress.next()"
          #searchInput>

@@ -10,9 +10,14 @@
       Re-annotate
     </button>
   </ng-container>
-  <button ngbDropdownItem (click)="openVersionHistoryDialog(object)" *ngIf="object.isVersioned">
-    Version history...
-  </button>
+  <ng-container *ngIf="object.isVersioned">
+    <button ngbDropdownItem (click)="openVersionHistoryDialog(object)" *ngIf="!showRestore">
+      Version history...
+    </button>
+    <button ngbDropdownItem (click)="openVersionRestoreDialog(object)" *ngIf="showRestore">
+      Restore from history...
+    </button>
+  </ng-container>
   <div class="dropdown-divider"></div>
 </ng-container>
 
@@ -35,9 +40,6 @@
 </ng-container>
 
 <ng-container>
-  <button ngbDropdownItem (click)="download(object)" *ngIf="object.isDownloadable">
-    Download original
-  </button>
   <button ngbDropdownItem (click)="openExportDialog(object)" *ngIf="object.exportFormats.length">
     Export...
   </button>

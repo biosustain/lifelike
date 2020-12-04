@@ -59,22 +59,6 @@ export class FilesystemObjectActions {
   }
 
   /**
-   * Create a download dialog for the provided object.
-   * @param target the object to download
-   */
-  openDownloadDialog(target: FilesystemObject): Promise<boolean> {
-    const progressDialogRef = this.createProgressDialog('Downloading file...');
-    return this.filesystemService.getContent(target.hashId).pipe(
-      finalize(() => progressDialogRef.close()),
-      map(blob => {
-        openDownloadForBlob(blob, target.downloadFilename);
-        return true;
-      }),
-      this.errorHandler.create(),
-    ).toPromise();
-  }
-
-  /**
    * Open the dialog to export an object.
    * @param target the object to export
    */
@@ -84,10 +68,23 @@ export class FilesystemObjectActions {
       dialogRef.componentInstance.object = target;
       dialogRef.componentInstance.accept = (value: ObjectExportDialogValue) => {
         const progressDialogRef = this.createProgressDialog('Generating export...');
-        return this.filesystemService.generateExport(value.object.hashId, value.request).pipe(
+        let content$: Observable<Blob>;
+        let filename = target.filename;
+        if (!filename.endsWith(value.extension)) {
+          filename += value.extension;
+        }
+
+        // If the user is getting the original format, then we'll just use the existing endpoint
+        if (value.request.format === target.originalFormat) {
+          content$ = this.filesystemService.getContent(target.hashId);
+        } else {
+          content$ = this.filesystemService.generateExport(value.object.hashId, value.request);
+        }
+
+        return content$.pipe(
           finalize(() => progressDialogRef.close()),
           map(blob => {
-            openDownloadForBlob(blob, `${target.downloadFilename}${value.extension}`);
+            openDownloadForBlob(blob, filename);
             return true;
           }),
           this.errorHandler.create(),
@@ -377,7 +374,7 @@ export class FilesystemObjectActions {
     return dialogRef.result;
   }
 
-  openVersionHistoryDialog(target: FilesystemObject): Promise<ObjectVersion> {
+  openVersionHistoryDialog(target: FilesystemObject): Promise<any> {
     const dialogRef = this.modalService.open(ObjectVersionHistoryDialogComponent, {
       size: 'xl',
     });

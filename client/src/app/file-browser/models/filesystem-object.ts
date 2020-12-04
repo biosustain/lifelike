@@ -153,10 +153,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return this.mimeType === MAP_MIMETYPE;
   }
 
-  get isDownloadable() {
-    return this.isFile;
-  }
-
   get isNavigable() {
     return this.isDirectory || this.mimeType === PDF_MIMETYPE || this.mimeType === MAP_MIMETYPE;
   }
@@ -257,14 +253,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   get effectiveName(): string {
     if (this.isDirectory && this.parent == null && this.project != null) {
       return this.project.name;
-    } else {
-      return this.filename;
-    }
-  }
-
-  get downloadFilename(): string {
-    if (this.mimeType === MAP_MIMETYPE) {
-      return `${this.filename}.llmap.json`;
     } else {
       return this.filename;
     }
@@ -493,9 +481,21 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get exportFormats(): string[] {
     if (this.mimeType === MAP_MIMETYPE) {
-      return ['pdf', 'png', 'svg'];
+      return ['pdf', 'png', 'svg', 'llmap.json'];
+    } else if (this.mimeType === PDF_MIMETYPE) {
+      return ['pdf'];
     } else {
       return [];
+    }
+  }
+
+  get originalFormat(): string | undefined {
+    if (this.mimeType === MAP_MIMETYPE) {
+      return 'llmap.json';
+    } else if (this.mimeType === PDF_MIMETYPE) {
+      return 'pdf';
+    } else {
+      return null;
     }
   }
 
