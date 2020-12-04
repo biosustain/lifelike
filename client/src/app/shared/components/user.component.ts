@@ -5,10 +5,15 @@ import { AppUser } from '../../interfaces';
   selector: 'app-user',
   template: `
     <ng-container *ngIf="user; else noUser">
+      <span [ngbPopover]="infoPopover" popoverTitle="User Information" triggers="hover" container="body">
       {{ user.firstName }} {{ user.lastName }}
+      </span>
     </ng-container>
     <ng-template #noUser>
       <em>Unknown</em>
+    </ng-template>
+    <ng-template #infoPopover>
+      <strong>Username:</strong> {{ user.username }}
     </ng-template>
   `,
 })

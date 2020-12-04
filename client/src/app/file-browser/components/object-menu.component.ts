@@ -19,9 +19,11 @@ export class ObjectMenuComponent {
   @Input() forEditing = true;
   @Input() nameEntity = false;
   @Input() showOpen = true;
+  @Input() showDelete = false;
   @Input() showTools = true;
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
+  @Output() objectRefresh = new EventEmitter<FilesystemObject>();
 
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
@@ -81,6 +83,7 @@ export class ObjectMenuComponent {
         duration: 5000,
       });
       this.refreshRequest.next();
+      this.objectRefresh.next();
     }, () => {
     });
   }

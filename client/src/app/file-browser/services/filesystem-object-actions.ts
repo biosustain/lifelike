@@ -126,11 +126,18 @@ export class FilesystemObjectActions {
         tap(event => {
           // First we show progress for the upload itself
           if (event.type === HttpEventType.UploadProgress) {
-            progressObservable.next(new Progress({
-              mode: ProgressMode.Determinate,
-              status: 'Uploading file...',
-              value: event.loaded / event.total,
-            }));
+            if (event.loaded === event.total && event.total) {
+              progressObservable.next(new Progress({
+                mode: ProgressMode.Indeterminate,
+                status: 'File transmitted; saving...',
+              }));
+            } else {
+              progressObservable.next(new Progress({
+                mode: ProgressMode.Determinate,
+                status: 'Transmitting file...',
+                value: event.loaded / event.total,
+              }));
+            }
           }
         }),
         filter(event => event.bodyValue != null),
@@ -140,7 +147,7 @@ export class FilesystemObjectActions {
           // we can't actually show a progress percentage)
           progressObservable.next(new Progress({
             mode: ProgressMode.Indeterminate,
-            status: 'Generating annotations...',
+            status: 'Saved; identifying annotations...',
           }));
           return this.annotationsService.generateAnnotations(
             [object.hashId], annotationOptions,
@@ -385,7 +392,7 @@ export class FilesystemObjectActions {
   }
 
   reannotate(targets: FilesystemObject[]): Promise<any> {
-    const progressDialogRef = this.createProgressDialog('Generating annotations...');
+    const progressDialogRef = this.createProgressDialog('Identifying annotations...');
     return this.annotationsService.generateAnnotations(targets.map(object => object.hashId))
       .pipe(
         finalize(() => progressDialogRef.close()),

@@ -16,7 +16,7 @@
       <div class="module-header">
         <!-- Breadcrumbs -->
         <div class="module-breadcrumb-bar mb-1">
-          <app-object-path [object]="map.parent"></app-object-path>
+          <app-object-path [object]="map.parent" [newTab]="true"></app-object-path>
         </div>
 
         <div class="module-title-bar">
@@ -26,8 +26,16 @@
           <h1 class="module-title text-truncate" draggable="true" (dragstart)="this.dragStarted($event)">
             {{ map?.label }}
           </h1>
-          <div class="text-muted ml-2">
-            <i class="fa fa-fw fa-eye"></i> View-only mode
+
+          <div ngbDropdown class="d-inline-block ml-1" container="body">
+            <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
+              <i class="fas fa-chevron-down fa-fw text-icon"></i>
+            </a>
+            <div ngbDropdownMenu>
+              <app-object-menu [object]="map" [forEditing]="true"
+                               [showOpen]="false" [showDelete]="false">
+              </app-object-menu>
+            </div>
           </div>
         </div>
 
