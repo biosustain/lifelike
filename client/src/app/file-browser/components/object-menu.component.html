@@ -26,7 +26,7 @@
       Move{{ nameEntity && object.isDirectory ? ' folder' : ''}} to...
     </button>
   </ng-container>
-  <ng-container *ngIf="!nameEntity && object.privileges.writable">
+  <ng-container *ngIf="!nameEntity && object.privileges.writable && showDelete">
     <button ngbDropdownItem (click)="openDeleteDialog([object])" [disabled]="!object.isDeletable">
       Delete...
     </button>
@@ -36,7 +36,7 @@
 
 <ng-container>
   <button ngbDropdownItem (click)="download(object)" *ngIf="object.isDownloadable">
-    Download
+    Download original
   </button>
   <button ngbDropdownItem (click)="openExportDialog(object)" *ngIf="object.exportFormats.length">
     Export...

@@ -138,15 +138,28 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       }, 10);
     });
 
+    this.loadFromUrl();
+  }
+
+  loadFromUrl() {
     // Check if the component was loaded with a url to parse fileId
     // from
     if (this.route.snapshot.params.file_id) {
+      this.object = null;
+      this.currentFileId = null;
+
       const linkedFileId = this.route.snapshot.params.file_id;
       const fragment = this.route.snapshot.fragment || '';
       // TODO: Do proper query string parsing
       this.openPdf(linkedFileId,
         this.parseLocationFromUrl(fragment),
         this.parseHighlightFromUrl(fragment));
+    }
+  }
+
+  requestRefresh() {
+    if (confirm('There have been some changes. Would you like to refresh this open document?')) {
+      this.loadFromUrl();
     }
   }
 
@@ -594,4 +607,5 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       },
     } as Partial<UniversalGraphNode>));
   }
+
 }
