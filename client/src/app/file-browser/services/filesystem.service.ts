@@ -14,7 +14,6 @@ import { ApiService } from '../../shared/services/api.service';
 import {
   BulkObjectUpdateRequest,
   FilesystemObjectData,
-  MultipleObjectDataResponse,
   ObjectBackupCreateRequest,
   ObjectCreateRequest,
   ObjectDataResponse,
@@ -27,6 +26,7 @@ import { PaginatedRequestOptions, ResultList } from '../../interfaces/shared.int
 import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
 import { serializePaginatedParams } from '../../shared/utils/params';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
+import { MultipleItemDataResponse } from '../../shared/schema/common';
 
 /**
  * Endpoints to manage with the filesystem exposed to the user.
@@ -128,7 +128,7 @@ export class FilesystemService {
   save(hashIds: string[], changes: Partial<BulkObjectUpdateRequest>,
        updateWithLatest?: { [hashId: string]: FilesystemObject }):
     Observable<{ [hashId: string]: FilesystemObject }> {
-    return this.http.patch<MultipleObjectDataResponse>(
+    return this.http.patch<MultipleItemDataResponse<FilesystemObjectData>>(
       `/api/filesystem/objects`, objectToMixedFormData({
         ...changes,
         hashIds,
@@ -136,7 +136,7 @@ export class FilesystemService {
     ).pipe(
       map(data => {
         const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
-        for (const [itemHashId, itemData] of Object.entries(data.objects)) {
+        for (const [itemHashId, itemData] of Object.entries(data.items)) {
           if (!(itemHashId in ret)) {
             ret[itemHashId] = new FilesystemObject();
           }
@@ -150,7 +150,7 @@ export class FilesystemService {
   delete(hashIds: string[],
          updateWithLatest?: { [hashId: string]: FilesystemObject }):
     Observable<{ [hashId: string]: FilesystemObject }> {
-    return this.http.request<MultipleObjectDataResponse>(
+    return this.http.request<MultipleItemDataResponse<FilesystemObjectData>>(
       'DELETE',
       `/api/filesystem/objects`, {
         ...this.apiService.getHttpOptions(true, {
@@ -164,7 +164,7 @@ export class FilesystemService {
     ).pipe(
       map(data => {
         const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
-        for (const [itemHashId, itemData] of Object.entries(data.objects)) {
+        for (const [itemHashId, itemData] of Object.entries(data.items)) {
           if (!(itemHashId in ret)) {
             ret[itemHashId] = new FilesystemObject();
           }
