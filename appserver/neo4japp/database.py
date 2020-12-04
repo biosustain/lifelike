@@ -40,7 +40,12 @@ metadata = MetaData(naming_convention=convention)
 # TODO: Set these in a more appropriate location
 # TODO: Handle database connection properly
 
-db = SQLAlchemy(metadata=metadata)
+db = SQLAlchemy(
+    metadata=metadata,
+    engine_options={
+        'executemany_mode': 'values',
+        'executemany_values_page_size': 10000
+    })
 ma = Marshmallow()
 migrate = Migrate(compare_type=True)
 
