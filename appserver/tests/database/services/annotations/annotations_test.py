@@ -303,7 +303,7 @@ def test_protein_organism_escherichia_coli_pdf(
     keywords = {o.keyword: o.meta.id for o in annotations}
 
     assert 'YdhC' in keywords
-    assert keywords['YdhC'] == 'P37597'
+    assert keywords['YdhC'] == 'UNIPROT:P37597'
 
 
 def test_local_inclusion_organism_gene_crossmatch(
@@ -368,7 +368,7 @@ def test_local_inclusion_organism_gene_crossmatch(
         )
 
     assert len(annotations) == 1
-    assert annotations[0].meta.id == '388962'  # human gene
+    assert annotations[0].meta.id == 'NCBI:388962'  # human gene
 
 
 def test_local_exclusion_organism_gene_crossmatch(
@@ -710,7 +710,7 @@ def test_gene_annotation_crossmatch_human_fish(
 
     # id should change to match KG
     # value from mock_gene_to_organism_crossmatch_human_fish
-    assert annotations[0].meta.id == '99999'
+    assert annotations[0].meta.id == 'NCBI:99999'
 
 
 def test_gene_annotation_crossmatch_human_rat(
@@ -746,7 +746,7 @@ def test_gene_annotation_crossmatch_human_rat(
         if a.text_in_document == 'EDEM3':
             # id should change to match KG
             # value from mock_gene_to_organism_crossmatch_human_rat
-            assert annotations[1].meta.id == '80267'
+            assert annotations[1].meta.id == 'NCBI:80267'
 
 
 def test_global_excluded_chemical_annotations(
@@ -1082,7 +1082,7 @@ def test_global_compound_inclusion_annotation(
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'compound-(12345)'
-    assert annotations[0].meta.id == 'BIOC:Fake'
+    assert annotations[0].meta.id == 'BIOCYC:BIOC:Fake'
 
 
 def test_global_gene_inclusion_annotation(
@@ -1121,7 +1121,7 @@ def test_global_gene_inclusion_annotation(
     # new gene should be considered a synonym of
     # main gene with 59272 id (e.g ACE2)
     assert annotations[0].keyword == 'gene-(12345)'
-    assert annotations[0].meta.id == '59272'
+    assert annotations[0].meta.id == 'NCBI:59272'
 
 
 def test_global_disease_inclusion_annotation(
@@ -1155,7 +1155,7 @@ def test_global_disease_inclusion_annotation(
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'disease-(12345)'
-    assert annotations[0].meta.id == 'Ncbi:Fake'
+    assert annotations[0].meta.id == 'MESH:Ncbi:Fake'
 
 
 def test_global_phenotype_inclusion_annotation(
@@ -1189,7 +1189,7 @@ def test_global_phenotype_inclusion_annotation(
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'phenotype-(12345)'
-    assert annotations[0].meta.id == 'Ncbi:Fake'
+    assert annotations[0].meta.id == 'MESH:Ncbi:Fake'
 
 
 def test_global_protein_inclusion_annotation(
@@ -1223,7 +1223,7 @@ def test_global_protein_inclusion_annotation(
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'protein-(12345)'
-    assert annotations[0].meta.id == 'protein-(12345)'
+    assert annotations[0].meta.id == 'UNIPROT:protein-(12345)'
 
 
 def test_global_species_inclusion_annotation(
@@ -1257,7 +1257,7 @@ def test_global_species_inclusion_annotation(
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'species-(12345)'
-    assert annotations[0].meta.id == 'Ncbi:Fake'
+    assert annotations[0].meta.id == 'NCBI:Ncbi:Fake'
 
 
 @pytest.mark.skip(reason='Need to figure out how to mock service to return different values')
