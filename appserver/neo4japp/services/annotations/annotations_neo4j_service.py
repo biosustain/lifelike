@@ -53,10 +53,35 @@ class AnnotationsNeo4jService(KgService):
 
         return gene_to_organism_map
 
+    def get_chemicals_from_chemical_ids(self, chemical_ids: List[str]) -> Dict[str, str]:
+        query = self.get_chemicals_from_chemical_ids_query()
+        result = self.graph.run(query, {'chemical_ids': chemical_ids}).data()
+        return {row['chemical_id']: row['chemical_name'] for row in result}
+
+    def get_compounds_from_compound_ids(self, compound_ids: List[str]) -> Dict[str, str]:
+        query = self.get_compounds_from_compound_ids_query()
+        result = self.graph.run(query, {'compound_ids': compound_ids}).data()
+        return {row['compound_id']: row['compound_name'] for row in result}
+
+    def get_diseases_from_disease_ids(self, disease_ids: List[str]) -> Dict[str, str]:
+        query = self.get_diseases_from_disease_ids_query()
+        result = self.graph.run(query, {'disease_ids': disease_ids}).data()
+        return {row['disease_id']: row['disease_name'] for row in result}
+
     def get_genes_from_gene_ids(self, gene_ids: List[str]) -> Dict[str, str]:
         query = self.get_genes_from_gene_ids_query()
         result = self.graph.run(query, {'gene_ids': gene_ids}).data()
         return {row['gene_id']: row['gene_name'] for row in result}
+
+    def get_proteins_from_protein_ids(self, protein_ids: List[str]) -> Dict[str, str]:
+        query = self.get_proteins_from_protein_ids_query()
+        result = self.graph.run(query, {'protein_ids': protein_ids}).data()
+        return {row['protein_id']: row['protein_name'] for row in result}
+
+    def get_organisms_from_organism_ids(self, organism_ids: List[str]) -> Dict[str, str]:
+        query = self.get_organisms_from_organism_ids_query()
+        result = self.graph.run(query, {'organism_ids': organism_ids}).data()
+        return {row['organism_id']: row['organism_name'] for row in result}
 
     def get_gene_to_organism_match_result(
         self,
@@ -145,12 +170,6 @@ class AnnotationsNeo4jService(KgService):
 
         return protein_to_organism_map
 
-    def get_organisms_from_tax_ids(self, tax_ids: List[str]) -> List[str]:
-        query = self.get_taxonomy_from_synonyms_query()
-        result = self.graph.run(query, {'ids': tax_ids}).data()
-
-        return [row['organism_id'] for row in result]
-
     def get_organisms_from_gene_ids(self, gene_ids: List[str]):
         query = self.get_organisms_from_gene_ids_query()
         result = self.graph.run(
@@ -184,6 +203,27 @@ class AnnotationsNeo4jService(KgService):
         """
         return query
 
+    def get_chemicals_from_chemical_ids_query(self):
+        query = """
+            MATCH (c:Chemical) WHERE c.id IN $chemical_ids
+            RETURN c.id as chemical_id, c.name as chemical_name
+        """
+        return query
+
+    def get_compounds_from_compound_ids_query(self):
+        query = """
+            MATCH (c:Compound) WHERE c.biocyc_id IN $compound_ids
+            RETURN c.biocyc_id as compound_id, c.name as compound_name
+        """
+        return query
+
+    def get_diseases_from_disease_ids_query(self):
+        query = """
+            MATCH (d:Disease) WHERE d.id IN $disease_ids
+            RETURN d.id as disease_id, d.name as disease_name
+        """
+        return query
+
     def get_genes_from_gene_ids_query(self):
         query = """
             MATCH (g:Gene) WHERE g.id IN $gene_ids
@@ -191,11 +231,17 @@ class AnnotationsNeo4jService(KgService):
         """
         return query
 
-    def get_taxonomy_from_synonyms_query(self):
-        """Retrieves a list of all taxonomy with a given taxonomy id.
-        """
+    def get_proteins_from_protein_ids_query(self):
         query = """
-            MATCH (t:Taxonomy) WHERE t.id IN $ids RETURN t.id as organism_id
+            MATCH (p:db_UniProt) WHERE p.id IN $protein_ids
+            RETURN p.id as protein_id, p.name as protein_name
+        """
+        return query
+
+    def get_organisms_from_organism_ids_query(self):
+        query = """
+            MATCH (t:Taxonomy) WHERE t.id IN $organism_ids
+            RETURN t.id as organism_id, t.name as organism_name
         """
         return query
 
