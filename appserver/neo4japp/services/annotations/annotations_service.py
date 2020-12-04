@@ -1198,6 +1198,10 @@ class AnnotationsService:
         return fixed_unified_annotations
 
     def add_primary_name(self, annotations: List[Annotation]) -> List[Annotation]:
+        """Apply the primary name to the annotations based on the returned data
+        from the knowledge graph. Also update the annotation id to have the source
+        database prefix.
+        """
         chemical_ids = set()
         compound_ids = set()
         disease_ids = set()
@@ -1206,6 +1210,9 @@ class AnnotationsService:
         organism_ids = set()
 
         for anno in annotations:
+            if anno.meta.id_type not in anno.meta.id:
+                # update annotation id
+                anno.meta.id = f'{anno.meta.id_type}:{anno.meta.id}'
             if anno.meta.type == EntityType.CHEMICAL.value:
                 chemical_ids.add(anno.meta.id)
             elif anno.meta.type == EntityType.COMPOUND.value:
