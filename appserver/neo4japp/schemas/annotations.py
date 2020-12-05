@@ -33,7 +33,7 @@ class CombinedAnnotationSchema(Schema):
 
 
 class FileAnnotationsResponseSchema(CamelCaseSchema):
-    annotations = fields.List(fields.Nested(CombinedAnnotationSchema))
+    results = fields.List(fields.Nested(CombinedAnnotationSchema))
 
 
 class FallbackOrganismSchema(Schema):  # Not camel case!

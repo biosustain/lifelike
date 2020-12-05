@@ -1,12 +1,12 @@
-import { PaginatedRequestOptions, ResultList } from '../interfaces/shared.interface';
 import { Annotation } from '../pdf-viewer/annotation-type';
 import { AnnotationMethod } from '../interfaces/annotation';
 import { OrganismAutocomplete } from '../interfaces';
 import { FilePrivileges, ProjectPrivileges } from './models/filesystem-object';
+import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
 
-export interface ProjectSearchRequest extends PaginatedRequestOptions {
-  name: string;
-}
+// ========================================
+// Projects
+// ========================================
 
 export interface ProjectData {
   hashId: string;
@@ -18,19 +18,35 @@ export interface ProjectData {
   privileges: ProjectPrivileges;
 }
 
-export interface ProjectDataResponse {
-  project: ProjectData;
+// Requests
+// ----------------------------------------
+
+/**
+ * Search request.
+ */
+export interface ProjectSearchRequest extends PaginatedRequestOptions {
+  name: string;
 }
 
+/**
+ * Create request.
+ */
 export interface ProjectCreateRequest {
   name: string;
   description: string;
 }
 
+/**
+ * Bulk update request.
+ */
 export interface BulkProjectUpdateRequest {
   name?: string;
   description?: string;
 }
+
+// ========================================
+// Objects
+// ========================================
 
 export interface FilesystemObjectData {
   hashId: string;
@@ -63,6 +79,12 @@ export type ObjectContentSource = { contentHashId: string }
   | { contentUrl: string }
   | ObjectContentValueRequest;
 
+// Requests
+// ----------------------------------------
+
+/**
+ * Search request.
+ */
 export type ObjectSearchRequest = ({
   type: 'public';
   mimeTypes: string[];
@@ -72,6 +94,9 @@ export type ObjectSearchRequest = ({
   mimeTypes: ['vnd.***ARANGO_DB_NAME***.document/map'];
 };
 
+/**
+ * Bulk update request.
+ */
 export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueRequest> {
   filename?: string;
   parentHashId?: string;
@@ -79,6 +104,10 @@ export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueReque
   uploadUrl?: string;
   public?: boolean;
 }
+
+/**
+ * Update request.
+ */
 
 // tslint:disable-next-line:no-empty-interface
 export interface ObjectUpdateRequest extends BulkObjectUpdateRequest {
@@ -89,17 +118,34 @@ type RequiredObjectCreateRequestFields = 'filename' | 'parentHashId';
 type BaseObjectCreateRequest = Required<Pick<BulkObjectUpdateRequest, RequiredObjectCreateRequestFields>>
   & Omit<ObjectUpdateRequest, RequiredObjectCreateRequestFields>;
 
+/**
+ * Create request.
+ */
 export type ObjectCreateRequest = BaseObjectCreateRequest & Partial<ObjectContentSource> & {
   mimeType?: string;
 };
 
-export interface ObjectDataResponse {
-  object: FilesystemObjectData;
+/**
+ * Export request.
+ */
+export interface ObjectExportRequest {
+  format: string;
 }
+
+// ========================================
+// Backups
+// ========================================
+
+// Requests
+// ----------------------------------------
 
 export interface ObjectBackupCreateRequest extends ObjectContentValueRequest {
   hashId: string;
 }
+
+// ========================================
+// Versions
+// ========================================
 
 export interface ObjectVersionData {
   hashId: string;
@@ -108,29 +154,26 @@ export interface ObjectVersionData {
   creationDate: string;
 }
 
+// Responses
+// ----------------------------------------
+
 export interface ObjectVersionHistoryResponse extends ResultList<ObjectVersionData> {
   object: FilesystemObjectData;
 }
 
-export interface ObjectExportRequest {
-  format: string;
-}
-
-export interface ObjectAnnotationsDataResponse {
-  annotations: Annotation[];
-}
-
-export interface AnnotationGenerationRequest {
-  organism?: OrganismAutocomplete;
-  annotationMethod?: AnnotationMethod;
-}
+// ========================================
+// Annotations
+// ========================================
 
 export interface AnnotationGenerationResultData {
   attempted: boolean;
   success: boolean;
 }
 
-export interface MultipleAnnotationGenerationResponse {
-  results: { [hashId: string]: AnnotationGenerationResultData };
-  missing: string[];
+// Requests
+// ----------------------------------------
+
+export interface AnnotationGenerationRequest {
+  organism?: OrganismAutocomplete;
+  annotationMethod?: AnnotationMethod;
 }

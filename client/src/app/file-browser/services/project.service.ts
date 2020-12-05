@@ -3,19 +3,12 @@ import { ApiService } from '../../shared/services/api.service';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { ProjectList } from '../models/project-list';
-import { ResultList } from '../../interfaces/shared.interface';
 import { Observable } from 'rxjs';
 import { ProjectImpl } from '../models/filesystem-object';
-import {
-  BulkProjectUpdateRequest,
-  ProjectCreateRequest,
-  ProjectData,
-  ProjectDataResponse,
-  ProjectSearchRequest,
-} from '../schema';
+import { BulkProjectUpdateRequest, ProjectCreateRequest, ProjectData, ProjectSearchRequest } from '../schema';
 import { encode } from 'punycode';
 import { objectToMixedFormData } from '../../shared/utils/forms';
-import { MultipleItemDataResponse } from '../../shared/schema/common';
+import { ResultList, ResultMapping, SingleResult } from '../../shared/schemas/common';
 
 @Injectable()
 export class ProjectService {
@@ -55,12 +48,12 @@ export class ProjectService {
   }
 
   create(request: ProjectCreateRequest) {
-    return this.http.post<ProjectDataResponse>(
+    return this.http.post<SingleResult<ProjectData>>(
       `/api/projects/projects/`,
       request,
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map(data => new ProjectImpl().update(data.project)),
+      map(data => new ProjectImpl().update(data.result)),
     );
   }
 
@@ -76,7 +69,7 @@ export class ProjectService {
   save(hashIds: string[], changes: Partial<BulkProjectUpdateRequest>,
        updateWithLatest?: { [hashId: string]: ProjectImpl }):
     Observable<{ [hashId: string]: ProjectImpl }> {
-    return this.http.patch<MultipleItemDataResponse<ProjectData>>(
+    return this.http.patch<ResultMapping<ProjectData>>(
       `/api/projects/projects`, objectToMixedFormData({
         ...changes,
         hashIds,
@@ -84,7 +77,7 @@ export class ProjectService {
     ).pipe(
       map(data => {
         const ret: { [hashId: string]: ProjectImpl } = updateWithLatest || {};
-        for (const [itemHashId, itemData] of Object.entries(data.items)) {
+        for (const [itemHashId, itemData] of Object.entries(data.results)) {
           if (!(itemHashId in ret)) {
             ret[itemHashId] = new ProjectImpl();
           }
