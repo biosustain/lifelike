@@ -16,17 +16,15 @@ import {
   FilesystemObjectData,
   ObjectBackupCreateRequest,
   ObjectCreateRequest,
-  ObjectDataResponse,
   ObjectExportRequest,
   ObjectSearchRequest,
   ObjectVersionHistoryResponse,
 } from '../schema';
 import { objectToFormData, objectToMixedFormData } from '../../shared/utils/forms';
-import { PaginatedRequestOptions, ResultList } from '../../interfaces/shared.interface';
 import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
 import { serializePaginatedParams } from '../../shared/utils/params';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
-import { MultipleItemDataResponse } from '../../shared/schema/common';
+import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult } from '../../shared/schemas/common';
 
 /**
  * Endpoints to manage with the filesystem exposed to the user.
@@ -77,8 +75,8 @@ export class FilesystemService {
     ).pipe(
       map(event => {
         if (event.type === HttpEventType.Response) {
-          const body: ObjectDataResponse = event.body as ObjectDataResponse;
-          (event as any).bodyValue = new FilesystemObject().update(body.object);
+          const body: SingleResult<FilesystemObjectData> = event.body as SingleResult<FilesystemObjectData>;
+          (event as any).bodyValue = new FilesystemObject().update(body.result);
         }
         return event;
       }),
@@ -86,11 +84,11 @@ export class FilesystemService {
   }
 
   get(hashId: string, options: Partial<FetchOptions> = {}): Observable<FilesystemObject> {
-    let result: Observable<FilesystemObject> = this.http.get<ObjectDataResponse>(
+    let result: Observable<FilesystemObject> = this.http.get<SingleResult<FilesystemObjectData>>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}`,
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map(data => new FilesystemObject().update(data.object)),
+      map(data => new FilesystemObject().update(data.result)),
     );
 
     // Load content via a separate endpoint if requested
@@ -128,7 +126,7 @@ export class FilesystemService {
   save(hashIds: string[], changes: Partial<BulkObjectUpdateRequest>,
        updateWithLatest?: { [hashId: string]: FilesystemObject }):
     Observable<{ [hashId: string]: FilesystemObject }> {
-    return this.http.patch<MultipleItemDataResponse<FilesystemObjectData>>(
+    return this.http.patch<ResultMapping<FilesystemObjectData>>(
       `/api/filesystem/objects`, objectToMixedFormData({
         ...changes,
         hashIds,
@@ -136,7 +134,7 @@ export class FilesystemService {
     ).pipe(
       map(data => {
         const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
-        for (const [itemHashId, itemData] of Object.entries(data.items)) {
+        for (const [itemHashId, itemData] of Object.entries(data.results)) {
           if (!(itemHashId in ret)) {
             ret[itemHashId] = new FilesystemObject();
           }
@@ -150,7 +148,7 @@ export class FilesystemService {
   delete(hashIds: string[],
          updateWithLatest?: { [hashId: string]: FilesystemObject }):
     Observable<{ [hashId: string]: FilesystemObject }> {
-    return this.http.request<MultipleItemDataResponse<FilesystemObjectData>>(
+    return this.http.request<ResultMapping<FilesystemObjectData>>(
       'DELETE',
       `/api/filesystem/objects`, {
         ...this.apiService.getHttpOptions(true, {
@@ -164,7 +162,7 @@ export class FilesystemService {
     ).pipe(
       map(data => {
         const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
-        for (const [itemHashId, itemData] of Object.entries(data.items)) {
+        for (const [itemHashId, itemData] of Object.entries(data.results)) {
           if (!(itemHashId in ret)) {
             ret[itemHashId] = new FilesystemObject();
           }

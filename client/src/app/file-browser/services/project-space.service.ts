@@ -5,7 +5,7 @@ import {
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { ResultList } from '../../interfaces/shared.interface';
+import { ResultList } from '../../shared/schemas/common';
 
 export interface Project {
   hashId: string;
