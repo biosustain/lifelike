@@ -32,11 +32,13 @@
       </div>
 
       <div *ngIf="tableEntries" class="module-body" #moduleBody>
+        <button class="btn btn-secondary fixed" (click)="scrollTop()">
+          Return to Top of Page
+          </button>
         <app-generic-table [header]="tableHeader" [entries]="tableEntries">
         </app-generic-table>
         <button *ngIf="morePages" class="btn btn-primary" style="margin-left: 50%" (click)="loadMore()">Load More</button>
         <div class="col-12 justify-content-center">
-
     </div>
       </div>
 
