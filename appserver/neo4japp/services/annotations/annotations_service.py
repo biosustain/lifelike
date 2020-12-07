@@ -29,7 +29,7 @@ from .constants import (
 from .lmdb_dao import LMDBDao
 from .util import has_center_point, normalize_str, standardize_str
 
-from neo4japp.data_transfer_objects import (
+from neo4japp.services.annotations.data_transfer_objects import (
     Annotation,
     EntityResults,
     GeneAnnotation,
@@ -244,7 +244,9 @@ class AnnotationsService:
         token_type: str,
         entity: dict,
         entity_id: str,
+        entity_id_type: str,
         entity_category: str,
+        entity_id_hyperlink: str,
         color: str,
     ) -> Annotation:
         keyword_positions: List[Annotation.TextPosition] = []
@@ -259,16 +261,24 @@ class AnnotationsService:
         keyword_starting_idx = token.meta.lo_location_offset
         keyword_ending_idx = token.meta.hi_location_offset
         link_search_term = token.keyword
-        if entity['id_type'] != DatabaseType.NCBI.value:
-            hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
-        else:
-            # type ignore, see https://github.com/python/mypy/issues/8277
-            hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
 
-        if entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value in entity_id:  # noqa
-            hyperlink += entity_id[5:]  # type: ignore
+        if not entity_id_hyperlink:
+            if entity['id_type'] != DatabaseType.NCBI.value:
+                hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
+            else:
+                # type ignore, see https://github.com/python/mypy/issues/8277
+                hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
+
+            if entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value in entity_id:  # noqa
+                hyperlink += entity_id[5:]  # type: ignore
+            else:
+                hyperlink += entity_id  # type: ignore
         else:
-            hyperlink += entity_id  # type: ignore
+            hyperlink = entity_id_hyperlink
+
+        id_type = entity_id_type or entity['id_type']
+        synonym = entity['synonym']
+        primary_name = entity['name']
 
         if token_type == EntityType.SPECIES.value:
             organism_meta = OrganismAnnotation.OrganismMeta(
@@ -276,12 +286,12 @@ class AnnotationsService:
                 type=token_type,
                 color=color,
                 id=entity_id,
-                id_type=entity['id_type'],
+                id_type=id_type,
                 id_hyperlink=cast(str, hyperlink),
                 links=OrganismAnnotation.OrganismMeta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
-                all_text=entity['synonym'],
+                all_text=synonym,
             )
             # the `keywords` property here is to allow us to know
             # what coordinates map to what text in the PDF
@@ -291,8 +301,8 @@ class AnnotationsService:
                 page_number=token.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
-                keyword=entity['synonym'],
-                primary_name=entity['name'],
+                keyword=synonym,
+                primary_name=primary_name,
                 text_in_document=token.keyword,
                 keyword_length=len(token.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -306,19 +316,19 @@ class AnnotationsService:
                 type=token_type,
                 color=color,
                 id=entity_id,
-                id_type=entity['id_type'],
+                id_type=id_type,
                 id_hyperlink=cast(str, hyperlink),
                 links=OrganismAnnotation.OrganismMeta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
-                all_text=entity['synonym'],
+                all_text=synonym,
             )
             annotation = GeneAnnotation(
                 page_number=token.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
-                keyword=entity['synonym'],
-                primary_name=entity['name'],
+                keyword=synonym,
+                primary_name=primary_name,
                 text_in_document=token.keyword,
                 keyword_length=len(token.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -331,19 +341,19 @@ class AnnotationsService:
                 type=token_type,
                 color=color,
                 id=entity_id,
-                id_type=entity['id_type'],
+                id_type=id_type,
                 id_hyperlink=cast(str, hyperlink),
                 links=Annotation.Meta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
-                all_text=entity['synonym'],
+                all_text=synonym,
             )
             annotation = Annotation(
                 page_number=token.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
-                keyword=entity['synonym'],
-                primary_name=entity['name'],
+                keyword=synonym,
+                primary_name=primary_name,
                 text_in_document=token.keyword,
                 keyword_length=len(token.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -418,6 +428,8 @@ class AnnotationsService:
                             token_type=token_type,
                             entity=entity,
                             entity_id=entity[id_str],
+                            entity_id_type=lmdb_match.id_type,
+                            entity_id_hyperlink=lmdb_match.id_hyperlink,
                             entity_category=entity.get('category', ''),
                             color=color,
                         )
@@ -529,7 +541,8 @@ class AnnotationsService:
                     entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
                     gene_names.add(entity_synonym)
 
-                    entity_token_pairs.append((entity, token))
+                    entity_token_pairs.append(
+                        (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token))
 
         gene_names_list = list(gene_names)
 
@@ -549,7 +562,7 @@ class AnnotationsService:
                     matched_organism_ids=[self.specified_organism.organism_id],
                 )
 
-        for entity, token in entity_token_pairs:
+        for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
             category = None
             try:
@@ -622,6 +635,8 @@ class AnnotationsService:
                         token_type=EntityType.GENE.value,
                         entity=entity,
                         entity_id=gene_id,
+                        entity_id_type=entity_id_type,
+                        entity_id_hyperlink=entity_id_hyperlink,
                         entity_category=category,
                         color=EntityColor.GENE.value,
                     )
@@ -714,7 +729,8 @@ class AnnotationsService:
                 for entity in lmdb_match.entities:
                     protein_names.add(entity['synonym'])
 
-                    entity_token_pairs.append((entity, token_positions))
+                    entity_token_pairs.append(
+                        (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token_positions))
 
         protein_names_list = list(protein_names)
 
@@ -734,7 +750,7 @@ class AnnotationsService:
                     organisms=[self.specified_organism.organism_id],
                 )
 
-        for entity, token in entity_token_pairs:
+        for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             category = entity.get('category', '')
             try:
                 protein_id = entity[EntityIdStr.PROTEIN.value]
@@ -770,6 +786,8 @@ class AnnotationsService:
                     token_type=EntityType.PROTEIN.value,
                     entity=entity,
                     entity_id=protein_id,
+                    entity_id_type=entity_id_type,
+                    entity_id_hyperlink=entity_id_hyperlink,
                     entity_category=category,
                     color=EntityColor.PROTEIN.value
                 )
@@ -797,6 +815,8 @@ class AnnotationsService:
                             token_type=EntityType.SPECIES.value,
                             entity=entity,
                             entity_id=entity[EntityIdStr.SPECIES.value],
+                            entity_id_type=lmdb_match.id_type,
+                            entity_id_hyperlink=lmdb_match.id_hyperlink,
                             entity_category=entity.get('category', ''),
                             color=EntityColor.SPECIES.value
                         )

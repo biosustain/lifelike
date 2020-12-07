@@ -13,6 +13,13 @@ class AnnotationRequest(CamelDictMixin):
 
 
 @attr.s(frozen=False)
+class Inclusion():
+    entities: List[dict] = attr.ib()
+    entity_id_type: str = attr.ib()
+    entity_id_hyperlink: str = attr.ib()
+
+
+@attr.s(frozen=False)
 class PDFBase():
     def to_dict(self):
         return attr.asdict(self)
@@ -155,6 +162,8 @@ class GeneAnnotation(Annotation):
 class LMDBMatch():
     entities: List[dict] = attr.ib()
     tokens: List[PDFWord] = attr.ib()
+    id_type: str = attr.ib(default='')
+    id_hyperlink: str = attr.ib(default='')
 
 
 @attr.s(frozen=True)

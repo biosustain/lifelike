@@ -29,7 +29,6 @@ from neo4japp.database import (
     get_excel_export_service,
     get_manual_annotations_service,
 )
-from neo4japp.data_transfer_objects import AnnotationRequest, GlobalAnnotationData
 from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.request_schemas.annotations import GlobalAnnotationsDeleteSchema
 from neo4japp.exceptions import (
@@ -50,6 +49,10 @@ from neo4japp.services.annotations.constants import (
     AnnotationMethod,
     EntityType,
     ManualAnnotationType,
+)
+from neo4japp.services.annotations.data_transfer_objects import (
+    AnnotationRequest,
+    GlobalAnnotationData
 )
 from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.util import (
