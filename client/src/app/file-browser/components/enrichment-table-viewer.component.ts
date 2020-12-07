@@ -136,14 +136,19 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       this.currentPage = 1;
       this.pageSize = 10;
       this.collectionSize = this.importGenes.length;
-      this.morePages = this.currentPage < Math.ceil(this.collectionSize / this.pageSize);
       this.matchNCBINodes(this.currentPage);
+      this.morePages = this.currentPage < Math.ceil(this.collectionSize / this.pageSize);
     });
     this.loadTask.update();
   }
 
   ngOnDestroy() {
     this.loadTaskSubscription.unsubscribe();
+  }
+
+  scrollTop() {
+    const scrollContainer = document.getElementById('scrollContainer');
+    scrollContainer.scrollTop = 0;
   }
 
   loadAllEntries(): Promise<TableCell[][]> {
@@ -240,7 +245,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       }
       });
     } catch (err) {
-      this.snackBar.open(`Something went wrong.`, 'Close', {
+      this.snackBar.open(`Something went wrong:` + err, 'Close', {
         duration: 5000,
       });
     }
