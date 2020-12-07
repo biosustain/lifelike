@@ -199,38 +199,6 @@ class ManualAnnotationsService:
 
         db.session.commit()
 
-    def apply_custom_hyperlink_and_type(
-        self,
-        bioc: dict,
-        custom_annotations: list
-    ) -> dict:
-        """Apply custom annotations on top of existing ones.
-
-        This will update the system annotation idHyperlink and idType
-        with the ones from custom annotations.
-        """
-        if custom_annotations:
-            annotations = bioc['documents'][0]['passages'][0]['annotations']
-
-            for anno in annotations:
-                for custom in custom_annotations:
-                    if (anno.get('meta', {}).get('type') == custom.get('meta', {}).get('type') and
-                        self._terms_match(
-                            anno.get('textInDocument', 'False'),
-                            custom.get('meta', {}).get('allText', 'True'),
-                            custom.get('meta', {}).get('isCaseInsensitive'))):
-
-                        if custom.get('meta', {}).get('idHyperlink'):
-                            anno['meta']['idHyperlink'] = custom['meta']['idHyperlink']
-
-                        if custom.get('meta', {}).get('idType') and anno.get('meta', {}).get('idType'):  # noqa
-                            if custom['meta']['idType'] != anno['meta']['idType']:
-                                # prioritize custom id type since it should be
-                                # based on custom idHyperlink
-                                custom_id_type = custom['meta']['idType'].upper()
-                                anno['meta']['idType'] = custom_id_type
-        return bioc
-
     def get_combined_annotations(self, project_id, file_id):
         """ Returns automatic annotations that were not marked for exclusion
         combined with custom annotations.
