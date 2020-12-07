@@ -1,5 +1,3 @@
-import os
-
 import sqlalchemy as sa
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
@@ -53,11 +51,9 @@ from neo4japp.services.annotations.constants import (
 )
 from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.util import (
-    CasePreservedDict,
     jsonify_with_class,
     SuccessResponse,
 )
-from neo4japp.utils.request import paginate_from_args
 from neo4japp.utils.logger import UserEventLog
 
 
@@ -96,6 +92,11 @@ def annotate(
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
 def get_all_annotations_from_project(project_name):
+    current_app.logger.info(
+        f'Project: {project_name}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='view entity word cloud').to_dict()
+    )
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
         raise RecordNotFoundException(f'Project {project_name} not found')
@@ -185,6 +186,10 @@ class AnnotationOutcome(Enum):
 @jsonify_with_class(AnnotationRequest)
 @requires_project_permission(AccessActionType.WRITE)
 def reannotate(req: AnnotationRequest, project_name: str):
+    current_app.logger.info(
+        f'Project: {project_name}',
+        extra=UserEventLog(username=g.current_user.username, event_type='reannotate').to_dict()
+    )
     user = g.current_user
     projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
 
