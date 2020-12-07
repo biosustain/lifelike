@@ -42,6 +42,8 @@ export class WordCloudComponent {
   clickableWords = false;
   WORD_CLOUD_MARGIN = 10;
 
+  keywordsShown = true;
+
   constructor(
       readonly route: ActivatedRoute,
       public pdf: PdfFilesService,
@@ -89,7 +91,7 @@ export class WordCloudComponent {
   }
 
   getAnnotationIdentifier(annotation: WordCloudAnnotationFilterEntity) {
-    return annotation.id + annotation.type + annotation.text;
+    return annotation.id + annotation.type + annotation.keyword;
   }
 
   /**
@@ -112,8 +114,8 @@ export class WordCloudComponent {
     // remove empty line at the end of the tsv response
     annotationList.pop();
     annotationList.forEach(e => {
-      //  entity_id	  type	  text	  count
-      //  col[0]      col[1]  col[2]  col[3]
+      //  entity_id	  type	  text	  primary_name  count
+      //  col[0]      col[1]  col[2]  col[3]        col[4]
       const cols = e.split('\t');
       const uniquePair = cols[0] === '' ? cols[1] + cols[2] : cols[0] + cols[1];
 
@@ -122,8 +124,10 @@ export class WordCloudComponent {
           id: cols[0],
           type: cols[1],
           color: this.legend.get(cols[1].toLowerCase()), // Set lowercase to match the legend
+          keyword: cols[2],
+          primaryName: cols[3],
           text: cols[2],
-          frequency: parseInt(cols[3], 10),
+          frequency: parseInt(cols[4], 10),
           shown: true,
         } as WordCloudAnnotationFilterEntity;
         this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), annotation.frequency >= 1);
@@ -131,7 +135,7 @@ export class WordCloudComponent {
         uniquePairMap.set(uniquePair, this.annotationData.length - 1);
       } else {
         // Add the frequency of the synonym to the original word
-        this.annotationData[uniquePairMap.get(uniquePair)].frequency += parseInt(cols[3], 10);
+        this.annotationData[uniquePairMap.get(uniquePair)].frequency += parseInt(cols[4], 10);
 
         // And also update the word visibility, since the original frequency might have been 1
         this.wordVisibilityMap.set(this.getAnnotationIdentifier(this.annotationData[uniquePairMap.get(uniquePair)]), true);
@@ -166,6 +170,15 @@ export class WordCloudComponent {
 
   toggleFiltersPanel() {
     this.filtersPanelOpened = !this.filtersPanelOpened;
+  }
+
+  toggleShownText() {
+    this.annotationData = this.annotationData.map(annotation => {
+      annotation.text = this.keywordsShown ? annotation.primaryName : annotation.keyword;
+      return annotation;
+    });
+    this.keywordsShown = !this.keywordsShown;
+    this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), false);
   }
 
   copyWordCloudToClipboard() {
@@ -216,12 +229,12 @@ export class WordCloudComponent {
   private updateWordVisibility(words: WordCloudAnnotationFilterEntity[]) {
     const tempWordMap = new Map<string, WordCloudAnnotationFilterEntity>();
     words.forEach((word) => {
-      tempWordMap.set(word.text, word);
+      tempWordMap.set(word.keyword, word);
     });
 
     for (const word of this.annotationData) {
       // If the word was returned by the algorithm then it is not filtered and it is drawable
-      if (tempWordMap.has(word.text)) {
+      if (tempWordMap.has(word.keyword)) {
         word.shown = true;
       } else {
         // If it wasn't returned BUT it's been filtered, we don't need to show a warning

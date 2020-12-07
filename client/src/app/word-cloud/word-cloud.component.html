@@ -14,35 +14,45 @@
   <div *ngIf="status.resultsShown" class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
     <div class="module">
       <div class="module-header">
-        <div class="module-title-bar">
+        <div class="module-title-bar d-flex justify-content-between">
           <h1 class="toolbar-title text-truncate mr-4 word-cloud-title">{{ windowTitle }}</h1>
-          <div class="btn-group ml-auto d-flex align-items-stretch" role="group">
-            <button class="btn btn-secondary text-nowrap"
-                    ngbTooltip="Copy Cloud to Clipboard"
-                    placement="bottom top left right"
-                    (click)="copyWordCloudToClipboard()">
-              <i class="fas fa-fw fa-copy"></i>
-            </button>
-            <button class="btn btn-secondary text-nowrap"
-                    ngbTooltip="Fit Cloud to Window"
-                    placement="bottom top left right"
-                    (click)="fitCloudToWindow()">
-              <i class="fas fa-fw fa-expand-arrows-alt"></i>
-            </button>
-            <button class="btn btn-secondary"
-                    ngbTooltip="Reload Annotations"
-                    container="body"
-                    placement="bottom top left right"
-                    (click)="getAnnotations()">
-              <i class="fa fa-fw fa-sync"></i>
-            </button>
-            <button class="btn btn-secondary"
-                    (click)="toggleFiltersPanel()"
-                    ngbTooltip="Show Annotation Filters"
-                    container="body"
-                    placement="bottom top left right">
-              <i class="fa fa-fw fa-filter"></i>
-            </button>
+          <div class="d-flex">
+            <div class="d-flex align-items-center mr-3">
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" [id]="id + '-toggle-shown-text-checkbox'"
+                      [checked]="false"
+                      (change)="toggleShownText()">
+                <label class="custom-control-label" [for]="id + '-toggle-shown-text-checkbox'">Show Primary Names</label>
+              </div>
+            </div>
+            <div class="btn-group ml-auto d-flex align-items-stretch" role="group">
+              <button class="btn btn-secondary text-nowrap"
+                      ngbTooltip="Copy Cloud to Clipboard"
+                      placement="bottom top left right"
+                      (click)="copyWordCloudToClipboard()">
+                <i class="fas fa-fw fa-copy"></i>
+              </button>
+              <button class="btn btn-secondary text-nowrap"
+                      ngbTooltip="Fit Cloud to Window"
+                      placement="bottom top left right"
+                      (click)="fitCloudToWindow()">
+                <i class="fas fa-fw fa-expand-arrows-alt"></i>
+              </button>
+              <button class="btn btn-secondary"
+                      ngbTooltip="Reload Annotations"
+                      container="body"
+                      placement="bottom top left right"
+                      (click)="getAnnotations()">
+                <i class="fa fa-fw fa-sync"></i>
+              </button>
+              <button class="btn btn-secondary"
+                      (click)="toggleFiltersPanel()"
+                      ngbTooltip="Show Annotation Filters"
+                      container="body"
+                      placement="bottom top left right">
+                <i class="fa fa-fw fa-filter"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
