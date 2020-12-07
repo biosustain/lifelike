@@ -16,6 +16,7 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { tokenizeQuery } from '../../shared/utils/find';
+import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
 
 @Component({
   selector: 'app-map',
@@ -157,6 +158,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   registerGraphBehaviors() {
+    this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcut(this.graphCanvas), -100);
   }
 
