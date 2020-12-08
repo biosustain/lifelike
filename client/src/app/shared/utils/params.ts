@@ -1,4 +1,4 @@
-import { PaginatedRequestOptions } from '../../interfaces/shared.interface';
+import { PaginatedRequestOptions } from '../schemas/common';
 
 export function getChoicesFromQuery<T>(params: { [key: string]: string }, key: string, choicesMap: Map<string, T>): T[] {
   if (params.hasOwnProperty(key)) {
