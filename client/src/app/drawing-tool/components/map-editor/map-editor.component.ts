@@ -15,13 +15,15 @@ import { PasteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/be
 import { HistoryKeyboardShortcuts } from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
 import { MapViewComponent } from '../map-view.component';
 import { from, Observable, Subscription, throwError } from 'rxjs';
-import { auditTime, catchError, switchMap } from 'rxjs/operators';
+import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { MapEditDialogComponent } from '../map-edit-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
 import { MapVersionDialogComponent } from '../map-version-dialog.component';
+import { ObjectLock } from '../../../file-browser/models/object-lock';
+import { LockError } from '../../../file-browser/services/filesystem.service';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -35,6 +37,18 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
+
+  private readonly lockCheckTimeInterval = 1000 * 30;
+  private readonly slowLockCheckTimeInterval = 1000 * 60 * 2;
+  private readonly veryInactiveDuration = 1000 * 60 * 30;
+  private readonly inactiveDuration = 1000 * 60 * 5;
+
+  private lockIntervalId = null;
+  private lockStartIntervalId = null;
+  lockAcquired: boolean | undefined = null;
+  locks: ObjectLock[] = [];
+  private lastLockCheckTime = window.performance.now();
+  private lastActivityTime = window.performance.now();
 
   ngOnInit() {
     this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
@@ -52,11 +66,15 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
         this.drop(e);
       });
     });
+
+    this.startLockInterval();
   }
 
   ngOnDestroy() {
     super.ngOnDestroy();
     this.autoSaveSubscription.unsubscribe();
+
+    this.clearLockInterval();
   }
 
   getExtraSource(): Observable<KnowledgeMap> {
@@ -84,6 +102,8 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
         this.mapService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
       });
     }
+
+    this.acquireLock();
   }
 
   registerGraphBehaviors() {
@@ -137,7 +157,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     const dialogRef = this.modalService.open(MapVersionDialogComponent);
     dialogRef.componentInstance.map = cloneDeep(this.map);
     dialogRef.componentInstance.projectName = this.locator.projectName;
-    dialogRef.result.then((newMap: Observable<{version: KnowledgeMap}>) => {
+    dialogRef.result.then((newMap: Observable<{ version: KnowledgeMap }>) => {
       newMap.subscribe(result => {
         this.graphCanvas.setGraph(result.version.graph);
         this.snackBar.open('Map reverted to Version from ' + result.version.modified_date, null, {
@@ -179,6 +199,106 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
         }, true,
       ));
     }
+  }
+
+  get lockCheckingActive(): boolean {
+    return this.lockIntervalId != null || this.lockStartIntervalId != null;
+  }
+
+  acquireLock() {
+    const monotonicNow = window.performance.now();
+
+    if (monotonicNow - this.lastActivityTime > this.veryInactiveDuration) {
+      // If the user is inactive for too long, stop hitting our poor server
+      this.clearLockInterval();
+    } else if (monotonicNow - this.lastActivityTime > this.inactiveDuration) {
+      // If the user is inactive for a bit, let's slow down the checking interval
+      if (monotonicNow - this.lastLockCheckTime < this.slowLockCheckTimeInterval) {
+        return;
+      }
+    }
+
+    if (this.lockAcquired === false) {
+      this.filesystemService.getLocks(this.locator.hashId).pipe(
+        this.errorHandler.create(),
+      ).pipe(
+        finalize(() => this.lastLockCheckTime = window.performance.now()),
+      ).subscribe(locks => {
+        this.ngZone.run(() => {
+          this.locks = locks;
+        });
+      });
+    } else {
+      this.filesystemService.putLock(this.locator.hashId, {
+        own: true,
+      }).pipe(
+        finalize(() => this.lastLockCheckTime = window.performance.now()),
+        catchError(error => {
+          if (!(error instanceof LockError)) {
+            this.errorHandler.showError(error);
+          }
+          return throwError(error);
+        }),
+      ).subscribe(locks => {
+        this.lockAcquired = true;
+        this.ngZone.run(() => {
+          this.locks = locks;
+        });
+      }, (err: LockError) => {
+        this.lockAcquired = false;
+        this.ngZone.run(() => {
+          this.locks = err.locks;
+        });
+      });
+    }
+  }
+
+  startLockInterval() {
+    this.lockAcquired = null;
+
+    // Make the timer start near the crossing of the second hand, to make it look like the
+    // lock indication is live, even through we actually check infrequently
+    this.lockStartIntervalId = setTimeout(() => {
+      this.lockIntervalId = setInterval(this.acquireLock.bind(this), this.lockCheckTimeInterval);
+    }, (60 - new Date().getSeconds() + 1));
+
+    this.acquireLock();
+  }
+
+  clearLockInterval() {
+    if (this.lockStartIntervalId != null) {
+      clearInterval(this.lockStartIntervalId);
+      this.lockStartIntervalId = null;
+    }
+    if (this.lockIntervalId != null) {
+      clearInterval(this.lockIntervalId);
+      this.lockIntervalId = null;
+    }
+  }
+
+  reload() {
+    const doReload = () => {
+      this.clearLockInterval();
+      this.loadTask.update(this.locator);
+      this.startLockInterval();
+    };
+    if (this.unsavedChanges$.value) {
+      if (confirm('You have unsaved changes. Are you sure that you want to reload?')) {
+        doReload();
+      }
+    } else {
+      doReload();
+    }
+  }
+
+  @HostListener('window:mousemove', ['$event'])
+  mouseMove(event: MouseEvent) {
+    this.lastActivityTime = window.performance.now();
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  keyDown(event: MouseEvent) {
+    this.lastActivityTime = window.performance.now();
   }
 }
 
