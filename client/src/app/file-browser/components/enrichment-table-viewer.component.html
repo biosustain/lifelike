@@ -3,8 +3,7 @@
     class="position-absolute w-100 h-100 d-flex flex-column"
     style="z-index: 0; overflow: scroll"
     (scroll)="onTableScroll($event)"
-    id="scrollContainer"
-    #scrollContainer
+    [scrollTop]="scrollTopAmount"
   >
     <div class="module">
       <div class="module-header">
