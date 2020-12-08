@@ -9,7 +9,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TableHeader, TableCell, TableLink } from 'app/shared/components/table/generic-table.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { Subscription, forkJoin } from 'rxjs';
+import { Subscription, forkJoin, Subject, interval } from 'rxjs';
 import {
   EnrichmentTableService,
   NCBINode,
@@ -24,7 +24,7 @@ import { ModuleProperties } from 'app/shared/modules';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
 import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
-import {flatMap, map } from 'rxjs/operators';
+import {flatMap, map, debounceTime, exhaustMap, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -86,6 +86,11 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   duplicateGenes: string;
   columnOrder: string[] = [];
 
+  scrollTopAmount;
+
+  loadMoreDataSource = new Subject<boolean>();
+  loadMoreSub: Subscription;
+
   constructor(
     private readonly worksheetViewerService: EnrichmentTableService,
     private readonly filesService: PdfFilesService,
@@ -95,6 +100,14 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
     this.fileId = this.route.snapshot.params.file_id || '';
+    this.loadMoreSub = this.loadMoreDataSource.asObservable().pipe(
+      debounceTime(500),
+      exhaustMap(re => interval(1000).pipe(take(4))),
+    ).subscribe(() => {
+      this.matchNCBINodes(this.currentPage + 1);
+      this.currentPage += 1;
+      this.morePages = this.currentPage < Math.ceil(this.collectionSize / this.pageSize);
+    });
   }
 
   ngOnInit() {
@@ -147,8 +160,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   scrollTop() {
-    const scrollContainer = document.getElementById('scrollContainer');
-    scrollContainer.scrollTop = 0;
+    this.scrollTopAmount = 0;
   }
 
   loadAllEntries(): Promise<TableCell[][]> {
@@ -254,6 +266,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   onTableScroll(e) {
     const tableViewHeight = e.target.offsetHeight;
     const tableScrollHeight = e.target.scrollHeight;
+    this.scrollTopAmount = e.target.scrollTop;
     const scrollLocation = e.target.scrollTop;
 
     // If the user has scrolled within 10px of the bottom, add more data
@@ -265,9 +278,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   loadMore() {
-    this.currentPage += 1;
-    this.goToPage(this.currentPage);
-    this.morePages = this.currentPage < Math.ceil(this.collectionSize / this.pageSize);
+    this.loadMoreDataSource.next(true);
   }
 
   convertEntriesToString(entries: TableCell[][]): string[][] {
@@ -390,10 +401,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         this.tableHeader[1] = this.tableHeader[1].concat(this.secondHeaderMap.get(domain));
       }
     });
-  }
-
-  goToPage(page: number) {
-    this.matchNCBINodes(page);
   }
 
   matchNCBINodes(page: number) {
