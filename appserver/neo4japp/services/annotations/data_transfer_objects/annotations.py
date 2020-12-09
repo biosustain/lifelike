@@ -13,6 +13,13 @@ class AnnotationRequest(CamelDictMixin):
 
 
 @attr.s(frozen=False)
+class Inclusion():
+    entities: List[dict] = attr.ib()
+    entity_id_type: str = attr.ib()
+    entity_id_hyperlink: str = attr.ib()
+
+
+@attr.s(frozen=False)
 class PDFBase():
     def to_dict(self):
         return attr.asdict(self)
@@ -91,7 +98,7 @@ class PDFTokensList():
 # for now change to what the pdf-viewer use
 @attr.s(frozen=False)
 class Annotation(CamelDictMixin):
-    @attr.s(frozen=True)
+    @attr.s(frozen=False)
     class Meta(CamelDictMixin):
         @attr.s(frozen=True)
         class Links(CamelDictMixin):
@@ -139,14 +146,14 @@ class Annotation(CamelDictMixin):
 
 @attr.s(frozen=False)
 class OrganismAnnotation(Annotation):
-    @attr.s(frozen=True)
+    @attr.s(frozen=False)
     class OrganismMeta(Annotation.Meta):
         category: str = attr.ib(default='')
 
 
 @attr.s(frozen=False)
 class GeneAnnotation(Annotation):
-    @attr.s(frozen=True)
+    @attr.s(frozen=False)
     class GeneMeta(Annotation.Meta):
         category: str = attr.ib(default='')
 
@@ -155,6 +162,8 @@ class GeneAnnotation(Annotation):
 class LMDBMatch():
     entities: List[dict] = attr.ib()
     tokens: List[PDFWord] = attr.ib()
+    id_type: str = attr.ib(default='')
+    id_hyperlink: str = attr.ib(default='')
 
 
 @attr.s(frozen=True)

@@ -1074,7 +1074,19 @@ def mock_global_chemical_inclusion(session):
         'meta': {
             'id': 'CHEBI:Fake',
             'type': EntityType.CHEMICAL.value,
-            'allText': 'fake-chemical-(12345)'
+            'allText': 'fake-chemical-(12345)',
+            'idType': '',
+            'idHyperlink': ''
+        }
+    }
+
+    annotation2 = {
+        'meta': {
+            'id': 'CHEBI:Fake',
+            'type': EntityType.CHEMICAL.value,
+            'allText': 'Carbon',
+            'idType': 'MESH',
+            'idHyperlink': 'http://fake'
         }
     }
 
@@ -1082,16 +1094,17 @@ def mock_global_chemical_inclusion(session):
     session.add(file_content)
     session.flush()
 
-    inclusion = GlobalList(
-        annotation=annotation,
-        type=ManualAnnotationType.INCLUSION.value,
-        file_id=file_content.id,
-        reviewed=True,
-        approved=True,
-    )
+    for anno in [annotation, annotation2]:
+        inclusion = GlobalList(
+            annotation=anno,
+            type=ManualAnnotationType.INCLUSION.value,
+            file_id=file_content.id,
+            reviewed=True,
+            approved=True,
+        )
 
-    session.add(inclusion)
-    session.flush()
+        session.add(inclusion)
+        session.flush()
 
 
 @pytest.fixture(scope='function')
@@ -1100,7 +1113,9 @@ def mock_global_compound_inclusion(session):
         'meta': {
             'id': 'BIOC:Fake',
             'type': EntityType.COMPOUND.value,
-            'allText': 'compound-(12345)'
+            'allText': 'compound-(12345)',
+            'idType': '',
+            'idHyperlink': ''
         }
     }
 
@@ -1126,7 +1141,9 @@ def mock_global_gene_inclusion(session):
         'meta': {
             'id': '59272',
             'type': EntityType.GENE.value,
-            'allText': 'gene-(12345)'
+            'allText': 'gene-(12345)',
+            'idType': '',
+            'idHyperlink': ''
         }
     }
 
@@ -1152,7 +1169,9 @@ def mock_global_disease_inclusion(session):
         'meta': {
             'id': 'Ncbi:Fake',
             'type': EntityType.DISEASE.value,
-            'allText': 'disease-(12345)'
+            'allText': 'disease-(12345)',
+            'idType': '',
+            'idHyperlink': ''
         }
     }
 
@@ -1178,7 +1197,9 @@ def mock_global_phenotype_inclusion(session):
         'meta': {
             'id': 'Ncbi:Fake',
             'type': EntityType.PHENOTYPE.value,
-            'allText': 'phenotype-(12345)'
+            'allText': 'phenotype-(12345)',
+            'idType': '',
+            'idHyperlink': ''
         }
     }
 
@@ -1204,7 +1225,9 @@ def mock_global_protein_inclusion(session):
         'meta': {
             'id': 'Ncbi:Fake',
             'type': EntityType.PROTEIN.value,
-            'allText': 'protein-(12345)'
+            'allText': 'protein-(12345)',
+            'idType': '',
+            'idHyperlink': ''
         }
     }
 
@@ -1230,7 +1253,9 @@ def mock_global_species_inclusion(session):
         'meta': {
             'id': 'Ncbi:Fake',
             'type': EntityType.SPECIES.value,
-            'allText': 'species-(12345)'
+            'allText': 'species-(12345)',
+            'idType': '',
+            'idHyperlink': ''
         }
     }
 
