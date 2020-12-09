@@ -192,6 +192,6 @@ _lmdb = LMDB()
 
 class LMDBConnection:
     def __init__(self):
+        super().__init__()
         self.session = _lmdb
         self.session.open_envs()
-        super().__init__()

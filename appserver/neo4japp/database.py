@@ -57,14 +57,14 @@ graph = Graph(
 
 class DBConnection:
     def __init__(self):
-        self.session = db.session
         super().__init__()
+        self.session = db.session
 
 
 class GraphConnection:
     def __init__(self):
-        self.graph = graph
         super().__init__()
+        self.graph = graph
 
 
 # TODO: these functions are really not needed
