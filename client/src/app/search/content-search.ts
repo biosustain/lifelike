@@ -1,5 +1,5 @@
 import { SearchType } from './shared';
-import { StandardRequestOptions } from '../interfaces/shared.interface';
+import { StandardRequestOptions } from '../shared/schemas/common';
 
 export const TYPES: readonly SearchType[] = Object.freeze([
   Object.freeze({id: 'map', name: 'Maps'}),
