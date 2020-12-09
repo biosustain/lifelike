@@ -3,7 +3,7 @@ import json
 from typing import List
 
 from neo4japp.exceptions import LMDBError
-from neo4japp.services.annotations.lmdb import LMDBConnection
+from neo4japp.database import LMDBConnection
 
 
 class LMDBService(LMDBConnection):
