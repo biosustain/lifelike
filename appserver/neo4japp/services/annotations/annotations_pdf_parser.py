@@ -13,7 +13,7 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 
-from neo4japp.data_transfer_objects import (
+from neo4japp.services.annotations.data_transfer_objects import (
     PDFChar,
     PDFMeta,
     PDFWord,
