@@ -45,14 +45,19 @@ db = SQLAlchemy(
         'executemany_values_page_size': 10000
     }
 )
+
+
 # NOTE: local network connection to cloud seems to be causing issues
 # Neo4j Lead Dev/Py2neo creator: https://stackoverflow.com/a/63592570
 # https://github.com/technige/py2neo
 # TODO: how to close connection? Py2neo doesn't seem to do this...
-graph = Graph(
-    host=os.environ.get('NEO4J_HOST'),
-    auth=os.environ.get('NEO4J_AUTH').split('/'),  # type: ignore
-)
+def connect_to_neo4j():
+    if 'neo4j' not in g:
+        g.neo4j = Graph(
+            host=current_app.config.get('NEO4J_HOST'),
+            auth=current_app.config.get('NEO4J_AUTH').split('/'),
+        )
+    return g.neo4j
 
 
 class DBConnection:
@@ -64,19 +69,7 @@ class DBConnection:
 class GraphConnection:
     def __init__(self):
         super().__init__()
-        self.graph = graph
-
-
-# TODO: these functions are really not needed
-# the `g` object being used in this context is to
-# ensure one connection to the graph, but that can
-# be done with a variable above like with SQLAlchemy
-# the `close_graph()` will be triggered and close the connections
-def _connect_to_neo4j():
-    return Graph(
-        host=current_app.config.get("NEO4J_HOST"),
-        auth=current_app.config.get('NEO4J_AUTH').split('/'),
-    )
+        self.graph = connect_to_neo4j()
 
 
 def _connect_to_elastic():
@@ -84,13 +77,6 @@ def _connect_to_elastic():
         timeout=180,
         hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
     )
-
-
-def get_neo4j():
-    """ Get a Neo4j Database Connection """
-    if 'neo4j' not in g:
-        g.neo4j = _connect_to_neo4j()
-    return g.neo4j
 
 
 """
@@ -108,7 +94,7 @@ from the postgres service.
 def get_kg_service():
     if 'kg_service' not in g:
         from neo4japp.services import KgService
-        graph = get_neo4j()
+        graph = connect_to_neo4j()
         g.kg_service = KgService(
             graph=graph,
             session=db.session,
@@ -119,7 +105,7 @@ def get_kg_service():
 def get_visualizer_service():
     if 'visualizer_service' not in g:
         from neo4japp.services import VisualizerService
-        graph = get_neo4j()
+        graph = connect_to_neo4j()
         g.visualizer_service = VisualizerService(
             graph=graph,
             session=db.session,
@@ -130,7 +116,7 @@ def get_visualizer_service():
 def get_enrichment_table_service():
     if 'enrichment_table_service' not in g:
         from neo4japp.services import EnrichmentTableService
-        graph = _connect_to_neo4j()
+        graph = connect_to_neo4j()
         g.enrichment_table_service = EnrichmentTableService(
             graph=graph,
             session=db.session,
@@ -141,7 +127,7 @@ def get_enrichment_table_service():
 def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
-        graph = get_neo4j()
+        graph = connect_to_neo4j()
         g.current_user_file_import_service = UserFileImportService(graph=graph, session=db.session)
     return g.current_user_file_import_service
 
@@ -149,7 +135,7 @@ def get_user_file_import_service():
 def get_search_service_dao():
     if 'search_dao' not in g:
         from neo4japp.services import SearchService
-        graph = get_neo4j()
+        graph = connect_to_neo4j()
         g.search_service_dao = SearchService(graph=graph)
     return g.search_service_dao
 
@@ -247,7 +233,6 @@ def reset_dao():
         'authorization_service',
         'account_service',
         'projects_service',
-        'lmdb_dao',
         'visualizer_service',
         'neo4j',
     ]:
