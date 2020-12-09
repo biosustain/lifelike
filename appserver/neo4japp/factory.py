@@ -22,7 +22,7 @@ from werkzeug.utils import (
 )
 from flask.logging import wsgi_errors_stream
 
-from neo4japp.database import db, ma, migrate, close_graph, close_lmdb
+from neo4japp.database import db, ma, migrate
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import (
     AnnotationError,
@@ -130,7 +130,6 @@ def create_app(name='neo4japp', config='config.Development'):
 
     app = Flask(name)
     app.config.from_object(config)
-    app.teardown_appcontext_funcs = [close_graph, close_lmdb]
 
     cors.init_app(app)
     db.init_app(app)

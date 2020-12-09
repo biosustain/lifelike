@@ -10,7 +10,10 @@ from flask import current_app
 from sqlalchemy import and_
 
 from neo4japp.exceptions import AnnotationError
-from neo4japp.services.annotations.annotations_neo4j_service import AnnotationsNeo4jService
+from neo4japp.services.annotations import (
+    AnnotationDBService,
+    AnnotationGraphService
+)
 from neo4japp.services.annotations.constants import (
     ABBREVIATION_WORD_LENGTH,
     COMMON_TYPOS,
@@ -22,8 +25,9 @@ from neo4japp.services.annotations.constants import (
     GREEK_SYMBOLS,
     ManualAnnotationType
 )
-from neo4japp.services.annotations.lmdb_dao import LMDBDao
+from neo4japp.services.annotations.lmdb_service import LMDBService
 from neo4japp.services.annotations.lmdb_util import (
+    # TODO: move these into LMDBService
     create_ner_type_anatomy,
     create_ner_type_chemical,
     create_ner_type_compound,
@@ -53,11 +57,13 @@ from neo4japp.utils.logger import EventLog
 class EntityRecognitionService:
     def __init__(
         self,
-        annotation_neo4j: AnnotationsNeo4jService,
-        lmdb_session: LMDBDao
+        db: AnnotationDBService,
+        graph: AnnotationGraphService,
+        lmdb: LMDBService
     ) -> None:
-        self.lmdb_session = lmdb_session
-        self.annotation_neo4j = annotation_neo4j
+        self.lmdb = lmdb
+        self.graph = graph
+        self.db = db
         self.greek_symbols = tuple([chr(g) for g in GREEK_SYMBOLS])
 
         # for inclusions, structured the same as LMDB
@@ -117,7 +123,7 @@ class EntityRecognitionService:
         # to this list, so that means would have to recache.
         # leave as is for now?
         self.exclusion_words = set(
-            result.word for result in self.annotation_neo4j.session.query(
+            result.word for result in self.db.session.query(
                 AnnotationStopWords).all())
 
     @property
@@ -667,8 +673,8 @@ class EntityRecognitionService:
                     return anatomy_val
 
                 if nlp_predicted_type == EntityType.ANATOMY.value or nlp_predicted_type is None:  # noqa
-                    anatomy_val = self.lmdb_session.get_lmdb_values(
-                        txn=self.lmdb_session.anatomy_txn,
+                    anatomy_val = self.lmdb.get_lmdb_values(
+                        txn=self.lmdb.session.anatomy_txn,
                         key=lookup_key,
                         token_type=EntityType.ANATOMY.value
                     )
@@ -733,8 +739,8 @@ class EntityRecognitionService:
                     return chem_val
 
                 if nlp_predicted_type == EntityType.CHEMICAL.value or nlp_predicted_type is None:  # noqa
-                    chem_val = self.lmdb_session.get_lmdb_values(
-                        txn=self.lmdb_session.chemicals_txn,
+                    chem_val = self.lmdb.get_lmdb_values(
+                        txn=self.lmdb.session.chemicals_txn,
                         key=lookup_key,
                         token_type=EntityType.CHEMICAL.value
                     )
@@ -799,8 +805,8 @@ class EntityRecognitionService:
                     return comp_val
 
                 if nlp_predicted_type == EntityType.COMPOUND.value or nlp_predicted_type is None:  # noqa
-                    comp_val = self.lmdb_session.get_lmdb_values(
-                        txn=self.lmdb_session.compounds_txn,
+                    comp_val = self.lmdb.get_lmdb_values(
+                        txn=self.lmdb.session.compounds_txn,
                         key=lookup_key,
                         token_type=EntityType.COMPOUND.value
                     )
@@ -865,8 +871,8 @@ class EntityRecognitionService:
                     return diseases_val
 
                 if nlp_predicted_type == EntityType.DISEASE.value or nlp_predicted_type is None:  # noqa
-                    diseases_val = self.lmdb_session.get_lmdb_values(
-                        txn=self.lmdb_session.diseases_txn,
+                    diseases_val = self.lmdb.get_lmdb_values(
+                        txn=self.lmdb.session.diseases_txn,
                         key=lookup_key,
                         token_type=EntityType.DISEASE.value
                     )
@@ -931,8 +937,8 @@ class EntityRecognitionService:
                     return food_val
 
                 if nlp_predicted_type == EntityType.FOOD.value or nlp_predicted_type is None:  # noqa
-                    food_val = self.lmdb_session.get_lmdb_values(
-                        txn=self.lmdb_session.foods_txn,
+                    food_val = self.lmdb.get_lmdb_values(
+                        txn=self.lmdb.session.foods_txn,
                         key=lookup_key,
                         token_type=EntityType.FOOD.value
                     )
@@ -998,8 +1004,8 @@ class EntityRecognitionService:
                     return gene_val
 
                 if nlp_predicted_type == EntityType.GENE.value or nlp_predicted_type is None:  # noqa
-                    gene_val = self.lmdb_session.get_lmdb_values(
-                        txn=self.lmdb_session.genes_txn,
+                    gene_val = self.lmdb.get_lmdb_values(
+                        txn=self.lmdb.session.genes_txn,
                         key=lookup_key,
                         token_type=EntityType.GENE.value
                     )
@@ -1064,8 +1070,8 @@ class EntityRecognitionService:
                     return phenotype_val
 
                 if nlp_predicted_type == EntityType.PHENOTYPE.value or nlp_predicted_type is None:  # noqa
-                    phenotype_val = self.lmdb_session.get_lmdb_values(
-                        txn=self.lmdb_session.phenotypes_txn,
+                    phenotype_val = self.lmdb.get_lmdb_values(
+                        txn=self.lmdb.session.phenotypes_txn,
                         key=lookup_key,
                         token_type=EntityType.PHENOTYPE.value
                     )
@@ -1131,8 +1137,8 @@ class EntityRecognitionService:
                     return protein_val
 
                 if nlp_predicted_type == EntityType.PROTEIN.value or nlp_predicted_type is None:  # noqa
-                    protein_val = self.lmdb_session.get_lmdb_values(
-                        txn=self.lmdb_session.proteins_txn,
+                    protein_val = self.lmdb.get_lmdb_values(
+                        txn=self.lmdb.session.proteins_txn,
                         key=lookup_key,
                         token_type=EntityType.PROTEIN.value
                     )
@@ -1205,14 +1211,14 @@ class EntityRecognitionService:
                 # TODO: Bacteria because for now NLP has that instead of
                 # generic `Species`
                 if nlp_predicted_type == EntityType.SPECIES.value or nlp_predicted_type == 'Bacteria':  # noqa
-                    species_val = self.lmdb_session.get_lmdb_values(
-                        txn=self.lmdb_session.species_txn,
+                    species_val = self.lmdb.get_lmdb_values(
+                        txn=self.lmdb.session.species_txn,
                         key=lookup_key,
                         token_type=EntityType.SPECIES.value
                     )
                 elif nlp_predicted_type is None:
-                    species_val = self.lmdb_session.get_lmdb_values(
-                        txn=self.lmdb_session.species_txn,
+                    species_val = self.lmdb.get_lmdb_values(
+                        txn=self.lmdb.session.species_txn,
                         key=lookup_key,
                         token_type=EntityType.SPECIES.value
                     )
@@ -1600,7 +1606,7 @@ class EntityRecognitionService:
         """
         # do this separately to make only one call to KG
         gene_ids = [i for i, _, _, _, _ in self.gene_collection]
-        gene_names = self.annotation_neo4j.get_genes_from_gene_ids(
+        gene_names = self.graph.get_genes_from_gene_ids(
             gene_ids=gene_ids)
 
         current_app.logger.info(
@@ -1631,7 +1637,7 @@ class EntityRecognitionService:
         custom_annotations: List[dict],
     ) -> None:
         global_annotations_to_include = [
-            inclusion for inclusion, in self.annotation_neo4j.session.query(
+            inclusion for inclusion, in self.db.session.query(
                 GlobalList.annotation).filter(
                     and_(
                         GlobalList.type == ManualAnnotationType.INCLUSION.value,
@@ -1672,7 +1678,7 @@ class EntityRecognitionService:
 
     def set_entity_exclusions(self) -> None:
         global_annotations_to_exclude = [
-            exclusion for exclusion, in self.annotation_neo4j.session.query(
+            exclusion for exclusion, in self.db.session.query(
                 GlobalList.annotation).filter(
                     and_(
                         GlobalList.type == ManualAnnotationType.EXCLUSION.value,
