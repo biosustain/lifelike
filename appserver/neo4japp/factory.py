@@ -25,7 +25,6 @@ from flask.logging import wsgi_errors_stream
 from neo4japp.database import db, ma, migrate
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import (
-    AnnotationError,
     BaseException,
     JWTAuthTokenException,
     JWTTokenException,
