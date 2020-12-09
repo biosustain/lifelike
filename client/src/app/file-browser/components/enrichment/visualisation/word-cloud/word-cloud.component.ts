@@ -1,4 +1,13 @@
-import {AfterViewInit, Component, Input, ElementRef, EventEmitter, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  Input,
+  ElementRef,
+  EventEmitter,
+  Output,
+  ViewChild,
+  ViewEncapsulation
+} from '@angular/core';
 
 import {uniqueId} from 'lodash';
 
@@ -9,14 +18,14 @@ import * as cloud from 'd3.layout.cloud';
 
 
 interface Node {
-  value: any;
-  result: any;
+  value?: any;
+  result?: any;
   frequency: any;
   text?: any;
-  shown: any;
-  id: any;
-  type: any;
-  color: any;
+  shown?: any;
+  id?: any;
+  type?: any;
+  color?: any;
 }
 
 @Component({
@@ -33,7 +42,21 @@ export class WordCloudComponent implements AfterViewInit {
   @ViewChild('cloudWrapper', {static: false}) cloudWrapper!: ElementRef<any>;
   @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef<any>;
 
-  @Input('data') data: Node[] = [];
+  @Input('data') set data(data) {
+    const count: any = {};
+    if (Array.isArray(data) && data.every(d => typeof d === "string" && (count[d] = (count[d] || 0) + 1))) {
+      this._data = Object.entries(count).map(([text, frequency]) => ({text, frequency}));
+    } else {
+      this._data = data;
+    }
+    console.log(this._data)
+  }
+
+  get data() {
+    return this._data;
+  }
+
+  private _data: Node[] = [];
 
   clickableWords = false;
   WORD_CLOUD_MARGIN = 10;
@@ -81,17 +104,21 @@ export class WordCloudComponent implements AfterViewInit {
    */
   drawWordCloud(data: WordCloudFilterEntity[], initial: boolean) {
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
-    const { width, height } = this.getCloudSvgDimensions();
+    const {width, height} = this.getCloudSvgDimensions();
     const maximumCount = Math.max(...data.map(d => d.frequency as number));
 
+    const hiddenTextAreaWrapper = this.hiddenTextAreaWrapper.nativeElement;
+    console.log("data", data)
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
     const layout = cloud()
       .size([width, height])
+      .canvas(hiddenTextAreaWrapper)
       .words(data)
       .padding(3)
       // max ~48px, min ~12px
-      .fontSize(d => this.getfontSize(d.frequency / maximumCount))
-      .rotate(() => 0)
+      .fontSize(d => this.getfontSize((d.frequency - 1) / maximumCount))
+      // .spiral("archimedean")
+      // .rotate(() => 0)
       // TODO: Maybe in the future we can allow the user to define their own rotation intervals,
       // but for now just keep it simple and don't rotate the words
       /* tslint:disable:no-bitwise*/
@@ -168,7 +195,7 @@ export class WordCloudComponent implements AfterViewInit {
         this.wordOpen.emit(item);
       })
       .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
-      .style('font-size', (d) => d.size + 'px')
+      //.style('font-size', (d) => d.size + 'px')
       .transition()
       .attr('transform', (d) => {
         return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';

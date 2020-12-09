@@ -3,7 +3,9 @@
   "compilerOptions": {
     "types": [
       "node"
-    ]
+    ],
+    "resolveJsonModule": true //,
+//    "esModuleInterop": true
   },
   "exclude": [
     "../src/test.ts",
