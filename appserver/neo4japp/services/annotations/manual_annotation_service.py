@@ -9,6 +9,7 @@ from neo4japp.database import (
     db,
     get_annotation_service,
     get_annotation_pdf_parser,
+    get_entity_recognition
 )
 from neo4japp.exceptions import (
     AnnotationError,
@@ -99,9 +100,10 @@ class ManualAnnotationService:
             # and avoid code change bugs
             fp = io.BytesIO(file_content.raw_file)
             pdf_parser = get_annotation_pdf_parser()
+            recognition = get_entity_recognition()
             parsed = pdf_parser.parse_pdf(pdf=fp)
             fp.close()
-            tokens_list = pdf_parser.extract_tokens(parsed=parsed)
+            tokens_list = recognition.extract_tokens(parsed=parsed)
             annotator = get_annotation_service()
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
             matches = annotator.get_matching_manual_annotations(
