@@ -1,6 +1,6 @@
 import lmdb
 
-from os import path
+from os import path, environ
 
 from neo4japp.exceptions import AnnotationError, LMDBError
 from neo4japp.services.annotations.constants import (
@@ -17,8 +17,7 @@ from neo4japp.services.annotations.constants import (
 )
 
 
-# reference to this directory
-directory = path.realpath(path.dirname(__file__))
+directory = environ.get('LMDB_HOME_FOLDER')
 
 
 class LMDB:
