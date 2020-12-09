@@ -161,7 +161,7 @@ class AnnotationGraphService(GraphConnection):
 
     def get_mesh_from_mesh_ids_query(self):
         query = """
-            MATCH (n) WHERE n:db_MESH and n:TopicalDescriptor and n.id IN $mesh_ids
+            MATCH (n:db_MESH:TopicalDescriptor) WHERE n.id IN $mesh_ids
             RETURN n.id AS mesh_id, n.name AS mesh_name
         """
         return query
