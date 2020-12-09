@@ -1,7 +1,9 @@
-from datetime import datetime
 import io
 import uuid
+
+from datetime import datetime
 from sqlalchemy import and_
+
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
@@ -19,7 +21,8 @@ from neo4japp.models import (
     GlobalList,
 )
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
-from neo4japp.services.annotations.constants import ManualAnnotationType
+from neo4japp.services.annotations.constants import DatabaseType, ManualAnnotationType
+from neo4japp.services.annotations.util import has_center_point
 
 
 class ManualAnnotationsService:
@@ -44,14 +47,6 @@ class ManualAnnotationsService:
         }
         term = custom_annotation['meta']['allText']
 
-        def is_match(coords, new_coords):
-            # is a match if center point of existing annotation
-            # is in the rectangle coordinates of new annotation
-            center_x = (coords[0] + coords[2]) / 2
-            center_y = (coords[1] + coords[3]) / 2
-            new_x1, new_y1, new_x2, new_y2 = new_coords
-            return new_x1 <= center_x <= new_x2 and new_y1 <= center_y <= new_y2
-
         def annotation_exists(new_annotation):
             for annotation in file.custom_annotations:
                 if (self._terms_match(term, annotation['meta']['allText'], annotation['meta']['isCaseInsensitive']) and  # noqa
@@ -59,7 +54,7 @@ class ManualAnnotationsService:
                     # coordinates can have a small difference depending on
                     # where they come from: annotator or pdf viewer
                     all_rects_match = all(list(map(
-                        is_match, annotation['rects'], new_annotation['rects']
+                        has_center_point, annotation['rects'], new_annotation['rects']
                     )))
                     if all_rects_match:
                         return True
@@ -70,7 +65,7 @@ class ManualAnnotationsService:
             if file_content is None:
                 raise RecordNotFoundException('Content for a given file does not exist')
 
-            # TODO: make use of ./service_helpers.py to be consistent
+            # TODO: make use of ./pipeline.py to be consistent
             # and avoid code change bugs
             fp = io.BytesIO(file_content.raw_file)
             pdf_parser = get_annotations_pdf_parser()
@@ -240,6 +235,59 @@ class ManualAnnotationsService:
 
         db.session.commit()
 
+    def apply_custom_hyperlink_and_type(
+        self,
+        bioc: dict,
+        custom_annotations: list
+    ) -> dict:
+        """Apply custom annotations on top of existing ones.
+
+        This will update the system annotation idHyperlink and idType
+        with the ones from custom annotations.
+        """
+        if custom_annotations:
+            annotations = bioc['documents'][0]['passages'][0]['annotations']
+
+            for anno in annotations:
+                for custom in custom_annotations:
+                    if (anno.get('meta', {}).get('type') == custom.get('meta', {}).get('type') and
+                        self._terms_match(
+                            anno.get('textInDocument', 'False'),
+                            custom.get('meta', {}).get('allText', 'True'),
+                            custom.get('meta', {}).get('isCaseInsensitive'))):
+
+                        if custom.get('meta', {}).get('idHyperlink'):
+                            anno['meta']['idHyperlink'] = custom['meta']['idHyperlink']
+
+                        if custom.get('meta', {}).get('idType') and anno.get('meta', {}).get('idType'):  # noqa
+                            if custom['meta']['idType'] != anno['meta']['idType']:
+                                # prioritize custom id type since it should be
+                                # based on custom idHyperlink
+                                custom_id_type = custom['meta']['idType'].upper()
+                                anno['meta']['idType'] = custom_id_type
+
+                        if anno.get('meta', {}).get('id') and anno.get('meta', {}).get('idType'):
+                            entity_id = anno['meta']['id']
+                            entity_id_type = anno['meta']['idType']
+
+                            # prepend the prefix to entity_id to be consistent
+                            if entity_id_type == DatabaseType.CHEBI.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+                            elif entity_id_type == DatabaseType.CUSTOM.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+                            elif entity_id_type == DatabaseType.MESH.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+                            elif entity_id_type == DatabaseType.UNIPROT.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+                            elif entity_id_type == DatabaseType.NCBI.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+                            elif entity_id_type == DatabaseType.BIOCYC.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+                            elif entity_id_type == DatabaseType.PUBCHEM.value and entity_id_type not in entity_id:  # noqa
+                                entity_id = f'{entity_id_type}:{entity_id}'
+
+        return bioc
+
     def get_combined_annotations(self, project_id, file_id):
         """ Returns automatic annotations that were not marked for exclusion
         combined with custom annotations.
@@ -283,19 +331,45 @@ class ManualAnnotationsService:
             annotations.extend(self._get_file_annotations(fi))
         return annotations
 
-    def add_to_global_list(self, annotation, type, file_id):
-        """ Adds inclusion or exclusion to a global_list table
+    def add_to_global_list(self, annotation, annotation_type, file_id):
+        """ Adds inclusion or exclusion to a global_list table.
+        Checks for duplicates and discards them
         """
+        if self._global_annotation_exists(annotation, annotation_type):
+            return
+
         global_list_annotation = GlobalList(
             annotation=annotation,
-            type=type,
+            type=annotation_type,
             file_id=file_id,
         )
 
         db.session.add(global_list_annotation)
         db.session.commit()
 
+    def _global_annotation_exists(self, annotation, annotation_type):
+        global_annotations = GlobalList.query.filter_by(
+            type=annotation_type
+        ).all()
+        for global_annotation in global_annotations:
+            if annotation_type == ManualAnnotationType.INCLUSION.value:
+                existing_term = global_annotation.annotation['meta']['allText']
+                existing_type = global_annotation.annotation['meta']['type']
+                new_term = annotation['meta']['allText']
+                new_type = annotation['meta']['type']
+                is_case_insensitive = annotation['meta']['isCaseInsensitive']
+            else:
+                existing_term = global_annotation.annotation['text']
+                existing_type = global_annotation.annotation['type']
+                new_term = annotation['text']
+                new_type = annotation['type']
+                is_case_insensitive = annotation['isCaseInsensitive']
+            if new_type == existing_type and \
+                    self._terms_match(new_term, existing_term, is_case_insensitive):
+                return True
+        return False
+
     def _terms_match(self, term1, term2, is_case_insensitive):
         if is_case_insensitive:
-            return term1.lower() == term2.lower()
+            return term1.lower().rstrip() == term2.lower().rstrip()
         return term1 == term2

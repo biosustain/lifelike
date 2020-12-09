@@ -89,7 +89,7 @@ class PDFTokensList():
 # (2) pdf-viewer and (3) NLP, we need to settle on a format
 #
 # for now change to what the pdf-viewer use
-@attr.s(frozen=True)
+@attr.s(frozen=False)
 class Annotation(CamelDictMixin):
     @attr.s(frozen=True)
     class Meta(CamelDictMixin):
@@ -117,16 +117,15 @@ class Annotation(CamelDictMixin):
         # [x1, y1, x2, y2]
         positions: List[float] = attr.ib()
         value: str = attr.ib()
-    #     lower_left: Dict[str, float] = attr.ib()
-    #     upper_right: Dict[str, float] = attr.ib()
 
     page_number: int = attr.ib()
     # keywords and rects are a pair
     # each index in the list correspond to the other
     # these two replaced the old lower_left/upper_right in TextPosition
+    # the keywords attribute is only there to help with debugging the coordinates
     keywords: List[str] = attr.ib()
     rects: List[List[float]] = attr.ib()
-    # the matched str keyword
+    # the matched str keyword (synonym)
     keyword: str = attr.ib()
     # string from document
     text_in_document: str = attr.ib()
@@ -135,16 +134,17 @@ class Annotation(CamelDictMixin):
     hi_location_offset: int = attr.ib()
     meta: Meta = attr.ib()
     uuid: str = attr.ib()
+    primary_name: str = attr.ib(default='')
 
 
-@attr.s(frozen=True)
+@attr.s(frozen=False)
 class OrganismAnnotation(Annotation):
     @attr.s(frozen=True)
     class OrganismMeta(Annotation.Meta):
         category: str = attr.ib(default='')
 
 
-@attr.s(frozen=True)
+@attr.s(frozen=False)
 class GeneAnnotation(Annotation):
     @attr.s(frozen=True)
     class GeneMeta(Annotation.Meta):

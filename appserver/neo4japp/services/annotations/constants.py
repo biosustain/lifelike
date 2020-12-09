@@ -165,6 +165,7 @@ class DatabaseType(Enum):
     UNIPROT = 'UNIPROT'
     NCBI = 'NCBI'
     BIOCYC = 'BIOCYC'
+    PUBCHEM = 'PUBCHEM'
 
 
 class AnnotationMethod(Enum):

@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime, timezone
 
-from sqlalchemy import event
+from sqlalchemy import event, UniqueConstraint
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.query import Query
 from sqlalchemy.types import ARRAY, TIMESTAMP
@@ -180,3 +180,12 @@ class Worksheet(RDBMSBase, TimestampMixin):  # type: ignore
                            db.ForeignKey('files_content.id', ondelete='CASCADE'),
                            index=True,
                            nullable=False)
+
+
+class FileLock(RDBMSBase, TimestampMixin):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    hash_id = db.Column(db.String(50), index=True, nullable=False, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'),
+                        index=True, nullable=False)
+    user = db.relationship('AppUser', foreign_keys=user_id)
+    acquire_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)

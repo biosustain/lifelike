@@ -238,7 +238,7 @@ def test_gene_organism_escherichia_coli_pdf(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -286,7 +286,7 @@ def test_protein_organism_escherichia_coli_pdf(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
 
@@ -350,7 +350,7 @@ def test_local_inclusion_organism_gene_crossmatch(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(
             entity_service=entity_service,
@@ -408,7 +408,7 @@ def test_local_exclusion_organism_gene_crossmatch(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(
             entity_service=entity_service,
@@ -445,7 +445,7 @@ def test_human_gene_pdf(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -485,7 +485,7 @@ def test_foods_pdf(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -522,7 +522,7 @@ def test_anatomy_pdf(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -567,7 +567,7 @@ def test_genes_vs_proteins(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -695,7 +695,7 @@ def test_gene_annotation_crossmatch_human_fish(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -729,7 +729,7 @@ def test_gene_annotation_crossmatch_human_rat(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -765,7 +765,7 @@ def test_global_excluded_chemical_annotations(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -798,7 +798,7 @@ def test_global_excluded_compound_annotations(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -831,7 +831,7 @@ def test_global_excluded_disease_annotations(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -865,7 +865,7 @@ def test_global_excluded_gene_annotations(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -898,7 +898,7 @@ def test_global_excluded_phenotype_annotations(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -931,7 +931,7 @@ def test_global_excluded_protein_annotations(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -964,7 +964,7 @@ def test_global_excluded_species_annotations(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -997,7 +997,7 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -1033,7 +1033,7 @@ def test_global_chemical_inclusion_annotation(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -1067,7 +1067,7 @@ def test_global_compound_inclusion_annotation(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -1104,7 +1104,7 @@ def test_global_gene_inclusion_annotation(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -1140,7 +1140,7 @@ def test_global_disease_inclusion_annotation(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -1174,7 +1174,7 @@ def test_global_phenotype_inclusion_annotation(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -1208,7 +1208,7 @@ def test_global_protein_inclusion_annotation(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -1242,7 +1242,7 @@ def test_global_species_inclusion_annotation(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -1279,7 +1279,7 @@ def test_primary_organism_strain(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -1297,7 +1297,7 @@ def test_primary_organism_strain(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -1329,7 +1329,7 @@ def test_no_annotation_for_abbreviation(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -1363,7 +1363,7 @@ def test_delta_gene_deletion_detected(
 
     with open(pdf, 'rb') as f:
         parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = pdf_parser.extract_tokens(parsed=parsed)
+        tokens = entity_service.extract_tokens(parsed=parsed)
 
         lookup_entities(entity_service=entity_service, tokens_list=tokens)
         annotations = annotation_service.create_rules_based_annotations(
@@ -1380,3 +1380,74 @@ def test_delta_gene_deletion_detected(
     assert annotations[0].keyword == 'purB'
     assert annotations[1].keyword == 'purC'
     assert annotations[2].keyword == 'purF'
+
+
+def test_gene_primary_name(
+    default_lmdb_setup,
+    mock_get_gene_to_organism_match_result_for_gene_primary_name_pdf,
+    get_annotations_service,
+    entity_service
+):
+    annotation_service = get_annotations_service
+    pdf_parser = get_annotations_pdf_parser()
+    entity_service = entity_service
+
+    pdf = path.join(
+        directory,
+        'pdf_samples/annotations_test/test_gene_primary_name.pdf')
+
+    with open(pdf, 'rb') as f:
+        parsed = pdf_parser.parse_pdf(pdf=f)
+        tokens = entity_service.extract_tokens(parsed=parsed)
+
+        lookup_entities(entity_service=entity_service, tokens_list=tokens)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            excluded_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
+        )
+
+    assert len(annotations) == 2
+    assert annotations[0].primary_name == 'PRKAB1'
+
+
+def test_user_source_database_input_priority(
+    get_manual_annotations_service
+):
+    manual = get_manual_annotations_service
+    bioc = {
+        'documents': [
+            {
+                'passages': [
+                    {
+                        'annotations': [{
+                            'textInDocument': 'carbon',
+                            'meta': {
+                                'idType': 'CHEBI',
+                                'idHyperlink': 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27594',  # noqa
+                                'isCustom': False,
+                                'allText': 'Carbon'
+                            },
+                        }]
+                    }
+                ]
+            }
+        ]
+    }
+
+    custom = [{
+        'meta': {
+            'idType': 'mesh',
+            'allText': 'Carbon',
+            'idHyperlink': 'http://google.com',
+            'isCaseInsensitive': True
+        },
+    }]
+    updated = manual.apply_custom_hyperlink_and_type(bioc, custom)
+    annotations = updated['documents'][0]['passages'][0]['annotations']
+    assert annotations[0]['meta']['idHyperlink'] == custom[0]['meta']['idHyperlink']
+    assert annotations[0]['meta']['idType'] == custom[0]['meta']['idType'].upper()
