@@ -147,8 +147,14 @@ class FileAnnotationHistoryView(MethodView):
         page = pagination['page']
 
         total = query.order_by(None).count()
-        items = itertools.chain(*([iter([file])] if page == 1 else []),
-                                query.limit(per_page).offset((page - 1) * per_page))
+        if page == 1:
+            items = itertools.chain(
+                [file],
+                query.limit(per_page).offset((page - 1) * per_page)
+            )
+        else:
+            items = query.limit(per_page + 1).offset((page - 1) * per_page - 1)
+
         results = []
 
         for newer, older in window(items):
