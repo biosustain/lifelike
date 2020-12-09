@@ -1,5 +1,19 @@
-import { ResultList } from '../interfaces/shared.interface';
+import { AppUser } from '../interfaces';
 import { AnnotationChangeExclusionMeta, Meta } from '../pdf-viewer/annotation-type';
+import { ResultList } from '../shared/schemas/common';
+
+// ========================================
+// Locks
+// ========================================
+
+export interface ObjectLockData {
+  user: AppUser;
+  acquireDate: string;
+}
+
+// ========================================
+// Annotation history
+// ========================================
 
 export interface AnnotationChangeData {
   action: 'added' | 'removed';

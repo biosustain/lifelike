@@ -89,6 +89,12 @@ def run_migrations_online():
         config.get_section(config.config_ini_section),
         prefix='sqlalchemy.',
         poolclass=pool.NullPool,
+        # can also consider adding `executemany_values_page_size`
+        # and `executemany_batch_page_size`
+        # these determine how the query is broken up into batch
+        # https://docs.sqlalchemy.org/en/13/dialects/postgresql.html#psycopg2-executemany-mode
+        executemany_mode='values',
+        executemany_values_page_size=10000
     )
 
     with connectable.connect() as connection:

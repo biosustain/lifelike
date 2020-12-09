@@ -54,10 +54,14 @@ import { GenericTableComponent } from './components/table/generic-table.componen
 import { HighlightTextComponent } from './components/highlight-text.component';
 import { AddStatusPipe } from './pipes/add-status.pipe';
 import { TermHighlightComponent } from './components/term-highlight.component';
+import { VisJsNetworkComponent } from './components/vis-js-network/vis-js-network.component';
+import { PlotlySankeyDiagramComponent } from './components/plotly-sankey-diagram/plotly-sankey-diagram.component';
 import { SearchControlComponent } from './components/search-control.component';
 import { ApiService } from './services/api.service';
 
 const components = [
+  VisJsNetworkComponent,
+  PlotlySankeyDiagramComponent,
   AnnotationFilterComponent,
   WordCloudAnnotationFilterComponent,
   MessageDialogComponent,
