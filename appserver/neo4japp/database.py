@@ -60,6 +60,20 @@ def connect_to_neo4j():
     return g.neo4j
 
 
+def connect_to_lmdb():
+    if 'lmdb' not in g:
+        from neo4japp.services.annotations.lmdb import LMDB
+        g.lmdb = LMDB()
+        g.lmdb.open_envs()
+    return g.lmdb
+
+
+class LMDBConnection:
+    def __init__(self):
+        super().__init__()
+        self.session = connect_to_lmdb()
+
+
 class DBConnection:
     def __init__(self):
         super().__init__()
