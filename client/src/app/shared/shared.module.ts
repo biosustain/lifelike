@@ -57,6 +57,7 @@ import { TermHighlightComponent } from './components/term-highlight.component';
 import { VisJsNetworkComponent } from './components/vis-js-network/vis-js-network.component';
 import { PlotlySankeyDiagramComponent } from './components/plotly-sankey-diagram/plotly-sankey-diagram.component';
 import { SearchControlComponent } from './components/search-control.component';
+import { ApiService } from './services/api.service';
 
 const components = [
   VisJsNetworkComponent,
@@ -129,6 +130,7 @@ const components = [
   providers: [
     SharedNgrxEffects,
     SharedSearchService,
+    ApiService,
   ],
   // exported modules are visible to modules that import this one
   exports: [
