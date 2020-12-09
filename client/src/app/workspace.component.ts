@@ -12,6 +12,8 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Pane, Tab, WorkspaceManager } from './shared/workspace-manager';
 import { Observable } from 'rxjs';
 import { SplitComponent } from 'angular-split';
+import { ShareDialogComponent } from './shared/components/dialog/share-dialog.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-workspace',
@@ -24,7 +26,8 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   @ViewChild('splitComponent', {static: false}) splitComponent: SplitComponent;
   panes$: Observable<Pane[]>;
 
-  constructor(readonly workspaceManager: WorkspaceManager) {
+  constructor(protected readonly workspaceManager: WorkspaceManager,
+              protected readonly modalService: NgbModal) {
     this.panes$ = this.workspaceManager.panes$;
   }
 
@@ -50,6 +53,18 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
     this.workspaceManager.openTabByUrl(pane, url);
   }
 
+  duplicateTab(pane: Pane, tab: Tab) {
+    this.workspaceManager.navigateByUrl(tab.url, {
+      newTab: true,
+    });
+  }
+
+  shareTab(pane: Pane, tab: Tab) {
+    const url = new URL(tab.url.replace(/^\/+/, '/'), window.location.href).href;
+    const modalRef = this.modalService.open(ShareDialogComponent);
+    modalRef.componentInstance.url = url;
+  }
+
   closeTab(pane: Pane, tab: Tab) {
     const performClose = () => {
       pane.deleteTab(tab);
@@ -62,6 +77,24 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
       }
     } else {
       performClose();
+    }
+  }
+
+  closeOtherTabs(pane: Pane, tab: Tab) {
+    const targetTabs = pane.tabs.filter(o => o !== tab);
+    let canClose = true;
+    for (const targetTab of targetTabs) {
+      if (this.workspaceManager.shouldConfirmTabUnload(targetTab)) {
+        canClose = !!confirm('Close tabs? Changes you made may not be saved.');
+        break;
+      }
+    }
+    if (canClose) {
+      for (const targetTab of targetTabs) {
+        pane.deleteTab(targetTab);
+      }
+      this.workspaceManager.save();
+      this.workspaceManager.emitEvents();
     }
   }
 

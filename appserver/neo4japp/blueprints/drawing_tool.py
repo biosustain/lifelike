@@ -93,6 +93,11 @@ def get_map_by_hash(hash_id: str, projects_name: str):
     Get a map by its hash.
     """
 
+    current_app.logger.info(
+        f'Map hash: {hash_id}',
+        extra=UserEventLog(username=g.current_user.username, event_type='map open').to_dict()
+    )
+
     map = get_map(hash_id, g.current_user, AccessActionType.READ)
     map_schema = ProjectSchema()
 
@@ -361,7 +366,6 @@ def delete_project(hash_id: str, projects_name: str):
 @auth.login_required
 def get_versions(projects_name: str, hash_id: str):
     """ Return a list of all map versions underneath map """
-    user = g.current_user
 
     map = get_map(hash_id, g.current_user, AccessActionType.READ)
 
@@ -371,6 +375,12 @@ def get_versions(projects_name: str, hash_id: str):
     ).all()
 
     version_schema = ProjectVersionSchema(many=True)
+
+    current_app.logger.info(
+        f'Map hash: {hash_id}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='get map versions').to_dict()
+    )
 
     return jsonify({'versions': version_schema.dump(project_versions)}), 200
 
@@ -386,6 +396,11 @@ def get_version(projects_name: str, hash_id: str, version_id):
             ProjectVersion.id == version_id,
             ProjectVersion.project_id == map.id,
         ).one()
+        current_app.logger.info(
+            f'Map hash: {hash_id}',
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='get map version').to_dict()
+        )
     except NoResultFound:
         raise RecordNotFoundException('not found :-( ')
 
@@ -673,6 +688,11 @@ def move_map(destination: DirectoryDestination, hash_id: str, project_name: str)
 
     target_map.dir_id = destination_dir.id
     db.session.commit()
+
+    current_app.logger.info(
+        f'Map hash: {hash_id}',
+        extra=UserEventLog(username=g.current_user.username, event_type='move map').to_dict()
+    )
 
     return jsonify({
         'success': True,
