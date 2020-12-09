@@ -55,3 +55,17 @@ Default.args = {
     }
   ]
 };
+
+export const ArrayOfStrings = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+ArrayOfStrings.args = {
+  data: [
+    "sfagrsg", "sfafwefwgrsg","", String("fasdf")
+  ]
+};
+
+export const ArrayOfEverything = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+ArrayOfEverything.args = {
+  data: [
+    "sfagrsg", "sfafwefwgrsg","",null, undefined, NaN, 123, {}
+  ]
+};

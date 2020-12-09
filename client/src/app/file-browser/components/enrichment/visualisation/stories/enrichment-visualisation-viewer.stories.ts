@@ -30,7 +30,9 @@ import {PdfFilesService} from "../../../../../shared/services/pdf-files.service"
 import {EnrichmentVisualisationService} from "../../../../services/enrichment-visualisation.service";
 import {EnrichmentVisualisationOrderDialogComponent} from "../dialog/enrichment-visualisation-order-dialog.component";
 import {WordCloudModule} from "../word-cloud/word-cloud.module";
-
+import mockedData from "./assets/mocked_data.json";
+import {ChartModule} from "../chart/chart.module";
+import {ChartsModule} from "ng2-charts";
 // This exports the Stories group for this component
 export default {
   // The title defines the name and where in the structure of
@@ -70,7 +72,9 @@ export default {
         RootStoreModule,
         SharedModule,
         NgbModule,
-        WordCloudModule
+        WordCloudModule,
+        ChartModule,
+        ChartsModule
       ],
       providers: [
         CopyPasteMapsService,
@@ -182,10 +186,13 @@ const Template: Story<EnrichmentVisualisationViewerComponent> = (args) => ({
   template: `
     <app-enrichment-visualisation-viewer
         style='display:block;height:100vh;'
+        [data]="data"
     >
     </app-enrichment-visualisation-viewer>
   `,
 });
 
 export const Default = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
-Default.args = {};
+Default.args = {
+  data: mockedData
+};

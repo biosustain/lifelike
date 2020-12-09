@@ -1,4 +1,4 @@
-import {Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 
 import {TableCell, TableHeader, TableLink} from 'app/shared/components/table/generic-table.component';
 import {BackgroundTask} from 'app/shared/rxjs/background-task';
@@ -98,6 +98,12 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
     this.fileId = this.route.snapshot.params.file_id || '';
+  }
+
+  @Input("data") data: any;
+
+  get cloudData() {
+    return this.data.data[0].Genes.split(';');
   }
 
   ngOnInit() {
