@@ -184,14 +184,3 @@ class LMDB:
         for txn in txns:
             if txn:
                 txn.abort()
-
-
-# open the LMDB memory files
-_lmdb = LMDB()
-
-
-class LMDBConnection:
-    def __init__(self):
-        super().__init__()
-        self.session = _lmdb
-        self.session.open_envs()

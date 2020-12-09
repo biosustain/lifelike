@@ -4,7 +4,7 @@ import pytest
 
 from os import path, remove, walk
 
-from neo4japp.database import DBConnection, GraphConnection
+from neo4japp.database import DBConnection, GraphConnection, LMDBConnection
 from neo4japp.models import FileContent, GlobalList
 from neo4japp.services.annotations import (
     AnnotationService,
@@ -99,6 +99,7 @@ def get_entity_service(db_service, graph_service, lmdb_service, request):
             for fn in filenames:
                 if fn.lower().endswith('.mdb'):
                     remove(path.join(parent, fn))
+        lmdb_service.session.close_envs()
 
     request.addfinalizer(teardown)
 
@@ -145,12 +146,12 @@ def lmdb_service():
         phenotypes_lmdb_path=phenotypes_lmdb_path,
         foods_lmdb_path=foods_lmdb_path
     )
+    lmdb.open_envs()
 
-    class MockLMDBConnection:
+    class MockLMDBConnection(LMDBConnection):
         def __init__(self):
             super().__init__()
             self.session = lmdb
-            self.session.open_envs()
 
     class MockLMDBService(MockLMDBConnection, LMDBService):
         def __init__(self):
