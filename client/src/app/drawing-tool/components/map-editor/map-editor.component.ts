@@ -111,8 +111,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('paste-keyboard-shortcut', new PasteKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shortcut', new HistoryKeyboardShortcuts(this.graphCanvas, this.snackBar), -100);
-    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), 0);
-    this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
+    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizable(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 1);
   }
