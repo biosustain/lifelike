@@ -1,6 +1,5 @@
 import multiprocessing as mp
 
-# from neo4japp.database import get_annotation_neo4j
 from neo4japp.models import Files
 from neo4japp.services.annotations import AnnotationGraphService
 from neo4japp.services.annotations.constants import EntityType
