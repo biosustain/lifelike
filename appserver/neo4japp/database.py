@@ -71,7 +71,7 @@ def connect_to_lmdb():
 def close_lmdb(e=None):
     lmdb = g.pop('lmdb', None)
     if lmdb:
-        lmdb.session.close_envs()
+        lmdb.close_envs()
 
 
 class LMDBConnection:
