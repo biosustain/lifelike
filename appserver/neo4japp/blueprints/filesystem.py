@@ -16,7 +16,8 @@ from neo4japp.database import db
 from neo4japp.exceptions import RecordNotFoundException
 from neo4japp.models import AccessActionType, AppUser, Directory, Projects, Project
 from neo4japp.models.files import FileLock
-from neo4japp.schemas.files import FileLockListResponse, FileLockCreateRequest, FileLockDeleteRequest
+from neo4japp.schemas.files import FileLockListResponse, FileLockCreateRequest,\
+    FileLockDeleteRequest
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
