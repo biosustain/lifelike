@@ -4,7 +4,7 @@ import pytest
 
 from os import path, remove, walk
 
-from neo4japp.database import DBConnection, GraphConnection, LMDBConnection
+from neo4japp.database import DBConnection, GraphConnection
 from neo4japp.models import FileContent, GlobalList
 from neo4japp.services.annotations import (
     AnnotationService,
@@ -148,7 +148,7 @@ def lmdb_service():
     )
     lmdb.open_envs()
 
-    class MockLMDBConnection(LMDBConnection):
+    class MockLMDBConnection:
         def __init__(self):
             super().__init__()
             self.session = lmdb
