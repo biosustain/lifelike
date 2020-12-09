@@ -1,8 +1,8 @@
-"""Update old annotations to have the new primaryName JSON property.
+"""Update old custom annotations to have the new primaryName JSON property.
 
-Revision ID: e4e01bc5ad23
-Revises: b90a32885a8f
-Create Date: 2020-12-02 18:54:06.498369
+Revision ID: 6f57a7647b55
+Revises: e4e01bc5ad23
+Create Date: 2020-12-07 19:42:02.759863
 
 """
 from alembic import context
@@ -15,13 +15,15 @@ from sqlalchemy.dialects import postgresql
 
 from migrations.utils import (
     update_annotations,
-    update_annotations_add_primary_name
+    update_custom_annotations,
+    update_annotations_add_primary_name,
+    update_custom_annotations_add_primary_name
 )
 
 
 # revision identifiers, used by Alembic.
-revision = 'e4e01bc5ad23'
-down_revision = 'b90a32885a8f'
+revision = '6f57a7647b55'
+down_revision = 'e4e01bc5ad23'
 branch_labels = None
 depends_on = None
 
@@ -53,16 +55,22 @@ def data_upgrades():
     tableclause = table(
         'files',
         column('id', sa.Integer),
-        column('annotations', postgresql.JSONB))
+        column('annotations', postgresql.JSONB),
+        column('custom_annotations', postgresql.JSONB))
 
-    results = conn.execution_options(stream_results=True).execute(sa.select([
+    anno_results = conn.execution_options(stream_results=True).execute(sa.select([
             tableclause.c.id,
             tableclause.c.annotations
         ]).where(tableclause.c.annotations != '[]'))
-
+    cust_anno_results = conn.execution_options(stream_results=True).execute(sa.select([
+            tableclause.c.id,
+            tableclause.c.custom_annotations
+        ]).where(tableclause.c.custom_annotations != '[]'))
     try:
         update_annotations(
-            results, session, update_annotations_add_primary_name)
+            anno_results, session, update_annotations_add_primary_name)
+        update_custom_annotations(
+            cust_anno_results, session, update_custom_annotations_add_primary_name)
     except Exception:
         raise Exception('Migration failed.')
 

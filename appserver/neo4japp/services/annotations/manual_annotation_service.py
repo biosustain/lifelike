@@ -7,8 +7,8 @@ from sqlalchemy import and_
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
-    get_annotations_service,
-    get_annotations_pdf_parser,
+    get_annotation_service,
+    get_annotation_pdf_parser,
 )
 from neo4japp.exceptions import (
     AnnotationError,
@@ -20,11 +20,22 @@ from neo4japp.models import (
     FileContent,
     GlobalList,
 )
-from neo4japp.services.annotations.constants import DatabaseType, ManualAnnotationType
+from neo4japp.services.annotations.annotation_graph_service import AnnotationGraphService
+from neo4japp.services.annotations.constants import (
+    DatabaseType,
+    EntityType,
+    ManualAnnotationType
+)
 from neo4japp.services.annotations.util import has_center_point
 
 
-class ManualAnnotationsService:
+class ManualAnnotationService:
+    def __init__(
+        self,
+        graph: AnnotationGraphService,
+    ) -> None:
+        self.graph = graph
+
     def add_inclusions(self, project_id, file_id, user_id, custom_annotation, annotate_all):
         """ Adds custom annotation to a given file.
         If annotate_all is True, parses the file to find all occurrences of the annotated term.
@@ -35,14 +46,34 @@ class ManualAnnotationsService:
             file_id=file_id,
             project=project_id,
         ).one_or_none()
+
         if file is None:
             raise RecordNotFoundException('File does not exist')
+
+        # get the primary name
+        primary_name = ''
+        entity_id = custom_annotation['meta']['id']
+        if custom_annotation['meta']['type'] == EntityType.ANATOMY.value or custom_annotation['meta']['type'] == EntityType.FOOD.value:  # noqa
+            primary_name = self.graph.get_mesh_from_mesh_ids([entity_id])[entity_id]
+        elif custom_annotation['meta']['type'] == EntityType.CHEMICAL.value:
+            primary_name = self.graph.get_chemicals_from_chemical_id([entity_id])[entity_id]
+        elif custom_annotation['meta']['type'] == EntityType.COMPOUND.value:
+            primary_name = self.graph.get_compounds_from_compound_ids([entity_id])[entity_id]
+        elif custom_annotation['meta']['type'] == EntityType.DISEASE.value:
+            primary_name = self.graph.get_diseases_from_disease_ids([entity_id])[entity_id]
+        elif custom_annotation['meta']['type'] == EntityType.GENE.value:
+            primary_name = self.graph.get_genes_from_gene_ids([entity_id])[entity_id]
+        elif custom_annotation['meta']['type'] == EntityType.PROTEIN.value:
+            primary_name = self.graph.get_proteins_from_protein_ids([entity_id])[entity_id]
+        elif custom_annotation['meta']['type'] == EntityType.SPECIES.value:
+            primary_name = self.graph.get_organisms_from_organism_ids([entity_id])[entity_id]
 
         annotation_to_add = {
             **custom_annotation,
             'inclusion_date': str(datetime.now(TIMEZONE)),
             'user_id': user_id,
-            'uuid': str(uuid.uuid4())
+            'uuid': str(uuid.uuid4()),
+            'primaryName': primary_name if primary_name else annotation_to_add['meta']['allText']  # noqa
         }
         term = custom_annotation['meta']['allText']
 
@@ -67,11 +98,11 @@ class ManualAnnotationsService:
             # TODO: make use of ./pipeline.py to be consistent
             # and avoid code change bugs
             fp = io.BytesIO(file_content.raw_file)
-            pdf_parser = get_annotations_pdf_parser()
+            pdf_parser = get_annotation_pdf_parser()
             parsed = pdf_parser.parse_pdf(pdf=fp)
             fp.close()
             tokens_list = pdf_parser.extract_tokens(parsed=parsed)
-            annotator = get_annotations_service()
+            annotator = get_annotation_service()
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
             matches = annotator.get_matching_manual_annotations(
                 keyword=term,
@@ -79,13 +110,14 @@ class ManualAnnotationsService:
                 tokens_list=tokens_list
             )
 
-            def add_annotation(new_annotation):
+            def add_annotation(new_annotation, primary_name=None):
                 return {
                     **annotation_to_add,
                     'pageNumber': new_annotation['pageNumber'],
                     'rects': new_annotation['rects'],
                     'keywords': new_annotation['keywords'],
-                    'uuid': str(uuid.uuid4())
+                    'uuid': str(uuid.uuid4()),
+                    'primaryName': primary_name if primary_name else annotation_to_add['meta']['allText']  # noqa
                 }
 
             inclusions = [

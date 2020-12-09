@@ -26,7 +26,7 @@ from neo4japp.blueprints.permissions import requires_project_permission, \
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.data_transfer_objects import FileUpload
-from neo4japp.database import db, get_manual_annotations_service, get_elastic_service
+from neo4japp.database import db, get_manual_annotation_service, get_elastic_service
 from neo4japp.exceptions import (
     DatabaseError,
     DuplicateRecord,
@@ -754,7 +754,7 @@ def get_annotations(id: str, project_name: str):
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def add_custom_annotation(file_id, project_name, **payload):
-    manual_annotations_service = get_manual_annotations_service()
+    manual_annotation_service = get_manual_annotation_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -764,7 +764,7 @@ def add_custom_annotation(file_id, project_name, **payload):
 
     yield user, project
 
-    inclusions = manual_annotations_service.add_inclusions(
+    inclusions = manual_annotation_service.add_inclusions(
         project.id, file_id, user.id, payload['annotation'], payload['annotateAll']
     )
 
@@ -776,7 +776,7 @@ def add_custom_annotation(file_id, project_name, **payload):
 @use_kwargs(AnnotationRemovalSchema)
 @requires_project_permission(AccessActionType.WRITE)
 def remove_custom_annotation(file_id, uuid, removeAll, project_name):
-    manual_annotations_service = get_manual_annotations_service()
+    manual_annotation_service = get_manual_annotation_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -786,7 +786,7 @@ def remove_custom_annotation(file_id, uuid, removeAll, project_name):
 
     yield user, project
 
-    removed_annotation_uuids = manual_annotations_service.remove_inclusions(
+    removed_annotation_uuids = manual_annotation_service.remove_inclusions(
         project.id, file_id, uuid, removeAll
     )
 
@@ -869,7 +869,7 @@ def delete_files(project_name: str):
 @use_kwargs(AnnotationExclusionSchema)
 @requires_project_permission(AccessActionType.WRITE)
 def add_annotation_exclusion(project_name: str, file_id: str, **payload):
-    manual_annotations_service = get_manual_annotations_service()
+    manual_annotation_service = get_manual_annotation_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -879,7 +879,7 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
 
     yield user, project
 
-    manual_annotations_service.add_exclusion(project.id, file_id, user.id, payload)
+    manual_annotation_service.add_exclusion(project.id, file_id, user.id, payload)
 
     yield jsonify({'status': 'success'})
 
@@ -891,7 +891,7 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
 @use_kwargs(AnnotationExclusionSchema(only=('type', 'text')))
 @requires_project_permission(AccessActionType.WRITE)
 def remove_annotation_exclusion(project_name, file_id, type, text):
-    manual_annotations_service = get_manual_annotations_service()
+    manual_annotation_service = get_manual_annotation_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -901,7 +901,7 @@ def remove_annotation_exclusion(project_name, file_id, type, text):
 
     yield user, project
 
-    manual_annotations_service.remove_exclusion(project.id, file_id, user.id, type, text)
+    manual_annotation_service.remove_exclusion(project.id, file_id, user.id, type, text)
 
     yield jsonify({'status': 'success'})
 
