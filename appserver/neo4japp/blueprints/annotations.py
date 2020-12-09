@@ -25,9 +25,8 @@ from neo4japp.blueprints.permissions import (
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
-    get_annotation_neo4j,
     get_excel_export_service,
-    get_manual_annotations_service,
+    get_manual_annotation_service,
 )
 from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.request_schemas.annotations import GlobalAnnotationsDeleteSchema
@@ -62,6 +61,8 @@ from neo4japp.util import (
 )
 from neo4japp.utils.request import paginate_from_args
 from neo4japp.utils.logger import UserEventLog
+
+from neo4japp.services.annotations import AnnotationGraphService
 
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
@@ -104,7 +105,7 @@ def get_all_annotations_from_project(project_name):
         raise RecordNotFoundException(f'Project {project_name} not found')
     user = g.current_user
     yield user, project
-    annotation_service = get_manual_annotations_service()
+    annotation_service = get_manual_annotation_service()
     combined_annotations = annotation_service.get_combined_annotations_in_project(project.id)
     distinct_annotations = {}
     for annotation in combined_annotations:
@@ -446,8 +447,8 @@ def get_all_annotations_from_file(project_name, file_id):
     # yield to requires_project_permission
     yield user, project
 
-    manual_annotations_service = get_manual_annotations_service()
-    combined_annotations = manual_annotations_service.get_combined_annotations(project.id, file_id)
+    manual_annotation_service = get_manual_annotation_service()
+    combined_annotations = manual_annotation_service.get_combined_annotations(project.id, file_id)
 
     distinct_annotations = {}
     for annotation in combined_annotations:
@@ -495,8 +496,8 @@ def get_gene_list_from_file(project_name, file_id):
     if not file:
         raise RecordNotFoundException('File does not exist')
 
-    manual_annotations_service = get_manual_annotations_service()
-    combined_annotations = manual_annotations_service.get_combined_annotations(project.id, file_id)
+    manual_annotation_service = get_manual_annotation_service()
+    combined_annotations = manual_annotation_service.get_combined_annotations(project.id, file_id)
     gene_ids = {}
     for annotation in combined_annotations:
         if annotation['meta']['type'] == EntityType.GENE.value:
@@ -506,8 +507,8 @@ def get_gene_list_from_file(project_name, file_id):
             else:
                 gene_ids[gene_id] = 1
 
-    annotation_neo4j_service = get_annotation_neo4j()
-    gene_organism_pairs = annotation_neo4j_service.get_organisms_from_gene_ids(
+    annotation_graph_service = AnnotationGraphService()
+    gene_organism_pairs = annotation_graph_service.get_organisms_from_gene_ids(
         gene_ids=list(gene_ids.keys())
     )
     sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']], reverse=True)  # noqa

@@ -7,8 +7,8 @@ import os
 from datetime import datetime
 
 from neo4japp.database import (
-    get_annotations_service,
-    get_annotations_pdf_parser,
+    get_annotation_service,
+    get_annotation_pdf_parser,
     get_bioc_document_service,
     get_entity_recognition,
 )
@@ -94,8 +94,8 @@ def profile_annotations(
 def main():
     app = create_app('Functional Test Flask App', config='config.Testing')
     with app.app_context():
-        service = get_annotations_service()
-        parser = get_annotations_pdf_parser()
+        service = get_annotation_service()
+        parser = get_annotation_pdf_parser()
         entity_service = get_entity_recognition()
         bioc_service = get_bioc_document_service()
 

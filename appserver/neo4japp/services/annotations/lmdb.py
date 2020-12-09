@@ -1,8 +1,6 @@
 import lmdb
-import json
 
 from os import path
-from typing import List
 
 from neo4japp.exceptions import AnnotationError, LMDBError
 from neo4japp.services.annotations.constants import (
@@ -23,7 +21,7 @@ from neo4japp.services.annotations.constants import (
 directory = path.realpath(path.dirname(__file__))
 
 
-class LMDBDao:
+class LMDB:
     def __init__(
         self,
         anatomy_lmdb_path: str = 'lmdb/anatomy',
@@ -35,7 +33,7 @@ class LMDBDao:
         phenotypes_lmdb_path: str = 'lmdb/phenotypes',
         proteins_lmdb_path: str = 'lmdb/proteins',
         species_lmdb_path: str = 'lmdb/species',
-    ) -> None:
+    ):
         self.anatomy_lmdb_path = anatomy_lmdb_path
         self.chemicals_lmdb_path = chemicals_lmdb_path
         self.compounds_lmdb_path = compounds_lmdb_path
@@ -187,17 +185,13 @@ class LMDBDao:
             if txn:
                 txn.abort()
 
-    def get_lmdb_values(self, txn, key, token_type) -> List[dict]:
-        """Return all values for an lmdb key."""
-        cursor = txn.cursor()
-        cursor.set_key(key.encode('utf-8'))
-        try:
-            values = [json.loads(v) for v in cursor.iternext_dup()]
-        except Exception:
-            raise AnnotationError(f'Failed token lookup for type "{token_type}".')
-        cursor.close()
-        return values
 
-    def new_lmdb(self):
-        # TODO: JIRA LL-315 from LL-256
-        raise NotImplementedError
+# open the LMDB memory files
+_lmdb = LMDB()
+
+
+class LMDBConnection:
+    def __init__(self):
+        self.session = _lmdb
+        self.session.open_envs()
+        super().__init__()
