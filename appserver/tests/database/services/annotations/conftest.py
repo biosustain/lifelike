@@ -4,14 +4,16 @@ import pytest
 
 from os import path, remove, walk
 
+from neo4japp.database import DBConnection, GraphConnection
 from neo4japp.models import FileContent, GlobalList
-
 from neo4japp.services.annotations import (
-    AnnotationsService,
-    AnnotationsNeo4jService,
+    AnnotationService,
+    AnnotationDBService,
+    AnnotationGraphService,
     EntityRecognitionService,
-    LMDBDao,
-    ManualAnnotationsService
+    LMDB,
+    LMDBService,
+    ManualAnnotationService
 )
 from neo4japp.services.annotations.constants import (
     DatabaseType,
@@ -34,6 +36,127 @@ from neo4japp.services.annotations.util import normalize_str
 
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
+
+
+@pytest.fixture(scope='function')
+def graph_service(graph):
+    class MockGraphConnection(GraphConnection):
+        def __init__(self):
+            super().__init__()
+            self.graph = graph
+
+    class MockAnnotationGraphService(MockGraphConnection, AnnotationGraphService):
+        def __init__(self):
+            super().__init__()
+
+    return MockAnnotationGraphService()
+
+
+@pytest.fixture(scope='function')
+def db_service(session):
+    class MockDBConnection(DBConnection):
+        def __init__(self):
+            super().__init__()
+            self.session = session
+
+    class MockAnnotationDBService(MockDBConnection, AnnotationDBService):
+        def __init__(self):
+            super().__init__()
+
+    return MockAnnotationDBService()
+
+
+@pytest.fixture(scope='function')
+def get_annotation_service(db_service, graph_service, request):
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+    return AnnotationService(db=db_service, graph=graph_service)
+
+
+@pytest.fixture(scope='function')
+def get_manual_annotation_service(graph_service, request):
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+    return ManualAnnotationService(graph=graph_service)
+
+
+@pytest.fixture(scope='function')
+def get_entity_service(db_service, graph_service, lmdb_service, request):
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+    return EntityRecognitionService(
+        db=db_service,
+        graph=graph_service,
+        lmdb=lmdb_service
+    )
+
+
+@pytest.fixture(scope='function')
+def lmdb_service():
+    for db_name, entity in [
+        (ANATOMY_MESH_LMDB, 'anatomy'),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals'),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds'),
+        (FOODS_MESH_LMDB, 'foods'),
+        (GENES_NCBI_LMDB, 'genes'),
+        (DISEASES_MESH_LMDB, 'diseases'),
+        (PROTEINS_UNIPROT_LMDB, 'proteins'),
+        (PHENOTYPES_MESH_LMDB, 'phenotypes'),
+        (SPECIES_NCBI_LMDB, 'species'),
+    ]:
+        create_empty_lmdb(f'lmdb/{entity}', db_name)
+
+    anatomy_lmdb_path = path.join(directory, 'lmdb/anatomy')
+    chemicals_lmdb_path = path.join(directory, 'lmdb/chemicals')
+    compounds_lmdb_path = path.join(directory, 'lmdb/compounds')
+    diseases_lmdb_path = path.join(directory, 'lmdb/diseases')
+    foods_lmdb_path = path.join(directory, 'lmdb/foods')
+    genes_lmdb_path = path.join(directory, 'lmdb/genes')
+    phenotypes_lmdb_path = path.join(directory, 'lmdb/phenotypes')
+    proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
+    species_lmdb_path = path.join(directory, 'lmdb/species')
+
+    lmdb = LMDB(
+        genes_lmdb_path=genes_lmdb_path,
+        anatomy_lmdb_path=anatomy_lmdb_path,
+        chemicals_lmdb_path=chemicals_lmdb_path,
+        compounds_lmdb_path=compounds_lmdb_path,
+        proteins_lmdb_path=proteins_lmdb_path,
+        species_lmdb_path=species_lmdb_path,
+        diseases_lmdb_path=diseases_lmdb_path,
+        phenotypes_lmdb_path=phenotypes_lmdb_path,
+        foods_lmdb_path=foods_lmdb_path
+    )
+
+    class MockLMDBConnection:
+        def __init__(self):
+            super().__init__()
+            self.session = lmdb
+            self.session.open_envs()
+
+    class MockLMDBService(MockLMDBConnection, LMDBService):
+        def __init__(self):
+            super().__init__()
+
+    return MockLMDBService()
 
 
 # Start LMDB Data Helpers
@@ -859,7 +982,7 @@ def mock_empty_gene_to_organism(monkeypatch):
         return {}
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -871,7 +994,7 @@ def mock_general_human_genes(monkeypatch):
         return {'BOLA3': {'BOLA3': {'9606': '388962'}}}
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -887,7 +1010,7 @@ def mock_get_gene_to_organism_match_result(monkeypatch):
         }
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -899,7 +1022,7 @@ def mock_gene_to_organism_crossmatch_human_fish(monkeypatch):
         return {'il-7': {'IL7': {'7897': '102353780'}, 'il-7': {'31033': '99999'}}}
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -911,7 +1034,7 @@ def mock_get_gene_to_organism_match_result_for_human_gene_pdf(monkeypatch):
         return {'ACE2': {'ACE2': {'9606': '59272'}}}
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -923,7 +1046,7 @@ def mock_get_gene_to_organism_match_result_for_gene_primary_name_pdf(monkeypatch
         return {'AMPK': {'AMPK': {'9606': '5564'}}}
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -935,7 +1058,7 @@ def mock_gene_to_organism_crossmatch_human_rat(monkeypatch):
         return {'EDEM3': {'EDEM3': {'9606': '80267'}, 'Edem3': {'10116': '289085'}}}
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -953,7 +1076,7 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
         }
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -968,7 +1091,7 @@ def mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf(monkeypat
         }
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_proteins_to_organisms',
         get_match_result,
     )
@@ -1043,7 +1166,7 @@ def mock_get_gene_ace2_for_global_gene_inclusion(monkeypatch):
         return {'59272': 'ACE2'}
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_genes_from_gene_ids',
         get_exclusions,
     )
@@ -1062,7 +1185,7 @@ def mock_get_gene_specified_strain(monkeypatch):
         return result.pop()
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_gene_to_organism_match_result',
         get_match_result,
     )
@@ -1278,88 +1401,3 @@ def mock_global_species_inclusion(session):
 @pytest.fixture(scope='function')
 def annotations_setup(app):
     pass
-
-
-@pytest.fixture(scope='function')
-def get_annotation_n4j(graph, session):
-    return AnnotationsNeo4jService(graph=graph, session=session)
-
-
-@pytest.fixture(scope='function')
-def entity_service(get_annotation_n4j, get_lmdb):
-    entity_service = EntityRecognitionService(
-        annotation_neo4j=get_annotation_n4j,
-        lmdb_session=get_lmdb
-    )
-    return entity_service
-
-
-@pytest.fixture(scope='function')
-def get_lmdb():
-    for db_name, entity in [
-        (ANATOMY_MESH_LMDB, 'anatomy'),
-        (CHEMICALS_CHEBI_LMDB, 'chemicals'),
-        (COMPOUNDS_BIOCYC_LMDB, 'compounds'),
-        (FOODS_MESH_LMDB, 'foods'),
-        (GENES_NCBI_LMDB, 'genes'),
-        (DISEASES_MESH_LMDB, 'diseases'),
-        (PROTEINS_UNIPROT_LMDB, 'proteins'),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes'),
-        (SPECIES_NCBI_LMDB, 'species'),
-    ]:
-        create_empty_lmdb(f'lmdb/{entity}', db_name)
-
-    anatomy_lmdb_path = path.join(directory, 'lmdb/anatomy')
-    chemicals_lmdb_path = path.join(directory, 'lmdb/chemicals')
-    compounds_lmdb_path = path.join(directory, 'lmdb/compounds')
-    diseases_lmdb_path = path.join(directory, 'lmdb/diseases')
-    foods_lmdb_path = path.join(directory, 'lmdb/foods')
-    genes_lmdb_path = path.join(directory, 'lmdb/genes')
-    phenotypes_lmdb_path = path.join(directory, 'lmdb/phenotypes')
-    proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
-    species_lmdb_path = path.join(directory, 'lmdb/species')
-
-    lmdb = LMDBDao(
-        genes_lmdb_path=genes_lmdb_path,
-        anatomy_lmdb_path=anatomy_lmdb_path,
-        chemicals_lmdb_path=chemicals_lmdb_path,
-        compounds_lmdb_path=compounds_lmdb_path,
-        proteins_lmdb_path=proteins_lmdb_path,
-        species_lmdb_path=species_lmdb_path,
-        diseases_lmdb_path=diseases_lmdb_path,
-        phenotypes_lmdb_path=phenotypes_lmdb_path,
-        foods_lmdb_path=foods_lmdb_path
-    )
-    lmdb.open_envs()
-    return lmdb
-
-
-@pytest.fixture(scope='function')
-def get_annotations_service(
-    get_annotation_n4j,
-    request
-):
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
-
-    request.addfinalizer(teardown)
-
-    return AnnotationsService(
-        annotation_neo4j=get_annotation_n4j,
-    )
-
-
-@pytest.fixture(scope='function')
-def get_manual_annotations_service(request):
-    def teardown():
-        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
-            for fn in filenames:
-                if fn.lower().endswith('.mdb'):
-                    remove(path.join(parent, fn))
-
-    request.addfinalizer(teardown)
-
-    return ManualAnnotationsService()

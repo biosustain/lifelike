@@ -73,7 +73,7 @@ class ManualAnnotationService:
             'inclusion_date': str(datetime.now(TIMEZONE)),
             'user_id': user_id,
             'uuid': str(uuid.uuid4()),
-            'primaryName': primary_name if primary_name else annotation_to_add['meta']['allText']  # noqa
+            'primaryName': primary_name if primary_name else custom_annotation['meta']['allText']  # noqa
         }
         term = custom_annotation['meta']['allText']
 

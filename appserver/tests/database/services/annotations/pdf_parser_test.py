@@ -2,7 +2,7 @@ import pytest
 
 from os import path
 
-from neo4japp.database import get_annotations_pdf_parser
+from neo4japp.database import get_annotation_pdf_parser
 from neo4japp.services.annotations.data_transfer_objects import (
     PDFChar,
     PDFMeta,
@@ -45,9 +45,9 @@ def create_char_objs(parser, word):
         (9, '-*I Have- ')
     ],
 )
-def test_extract_tokens(annotations_setup, index, text, entity_service):
-    pdf_parser = get_annotations_pdf_parser()
-    tokens_list = entity_service.extract_tokens(
+def test_extract_tokens(annotations_setup, index, text, get_entity_service):
+    pdf_parser = get_annotation_pdf_parser()
+    tokens_list = get_entity_service.extract_tokens(
         parsed=PDFParsedContent(
             words=pdf_parser._combine_chars_into_words(
                 create_char_objs(pdf_parser, text)
@@ -100,7 +100,7 @@ def test_extract_tokens(annotations_setup, index, text, entity_service):
     ],
 )
 def test_combine_char_into_word_with_correct_index_positions(annotations_setup, index, text):
-    pdf_parser = get_annotations_pdf_parser()
+    pdf_parser = get_annotation_pdf_parser()
     words = pdf_parser._combine_chars_into_words(create_char_objs(pdf_parser, text))
 
     if index == 1:
@@ -162,7 +162,7 @@ def test_combine_char_into_word_with_correct_index_positions(annotations_setup, 
     ],
 )
 def test_leading_trailing_punctuation_removed(annotations_setup, index, text):
-    pdf_parser = get_annotations_pdf_parser()
+    pdf_parser = get_annotation_pdf_parser()
     words = pdf_parser._combine_chars_into_words(
         create_char_objs(pdf_parser, text)
     )
@@ -184,7 +184,7 @@ def test_leading_trailing_punctuation_removed(annotations_setup, index, text):
 
 
 def test_expand_ligatures(annotations_setup):
-    pdf_parser = get_annotations_pdf_parser()
+    pdf_parser = get_annotation_pdf_parser()
     pdf = path.join(
         directory,
         'pdf_samples/pdf_parser_test/test_expand_ligatures/ligatures.pdf')
