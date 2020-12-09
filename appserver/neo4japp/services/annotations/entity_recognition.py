@@ -486,29 +486,6 @@ class EntityRecognitionService:
             (self.exclusion_type_entity, self._get_annotation_type_entity_to_exclude)
         ]
 
-    def _get_global_inclusion_values(
-        self,
-        lookup_key: str,
-        entity_type: str
-    ) -> Tuple[list, str, str]:
-        inclusion_types = {
-            EntityType.ANATOMY.value: self.inclusion_type_anatomy,
-            EntityType.CHEMICAL.value: self.inclusion_type_chemical,
-            EntityType.COMPOUND.value: self.inclusion_type_compound,
-            EntityType.DISEASE.value: self.inclusion_type_disease,
-            EntityType.FOOD.value: self.inclusion_type_food,
-            EntityType.GENE.value: self.inclusion_type_gene,
-            EntityType.PHENOTYPE.value: self.inclusion_type_phenotype,
-            EntityType.PROTEIN.value: self.inclusion_type_protein,
-            EntityType.SPECIES.value: self.inclusion_type_species,
-            EntityType.COMPANY.value: self.inclusion_type_company,
-            EntityType.ENTITY.value: self.inclusion_type_entity
-        }
-        found = inclusion_types[entity_type].get(lookup_key, None)
-        if not found:
-            return [], '', ''
-        return found.entities, found.entity_id_type, found.entity_id_hyperlink
-
     def _set_annotation_inclusions(
         self,
         annotations_to_include: List[dict],
@@ -683,19 +660,19 @@ class EntityRecognitionService:
                 id_hyperlink = ''
                 if not anatomy_val:
                     # didn't find in LMDB so look in global inclusion
-                    anatomy_val, id_type, id_hyperlink = self._get_global_inclusion_values(
-                        lookup_key, EntityType.ANATOMY.value)
+                    found = self.inclusion_type_anatomy.get(lookup_key, None)
+                    if found:
+                        anatomy_val = found.entities
+                        id_type = found.entity_id_type
+                        id_hyperlink = found.entity_id_hyperlink
 
                 if anatomy_val:
-                    if token.keyword in self.matched_type_anatomy:
-                        self.matched_type_anatomy[token.keyword].tokens.append(token)
-                    else:
-                        self.matched_type_anatomy[token.keyword] = LMDBMatch(
-                            entities=anatomy_val,  # type: ignore
-                            tokens=[token],
-                            id_type=id_type,
-                            id_hyperlink=id_hyperlink
-                        )
+                    self.matched_type_anatomy[token.keyword] = LMDBMatch(
+                        entities=anatomy_val,  # type: ignore
+                        tokens=[token],
+                        id_type=id_type,
+                        id_hyperlink=id_hyperlink
+                    )
         return anatomy_val
 
     def entity_lookup_for_type_chemical(
@@ -749,19 +726,19 @@ class EntityRecognitionService:
                 id_hyperlink = ''
                 if not chem_val:
                     # didn't find in LMDB so look in global inclusion
-                    chem_val, id_type, id_hyperlink = self._get_global_inclusion_values(
-                        lookup_key, EntityType.CHEMICAL.value)
+                    found = self.inclusion_type_chemical.get(lookup_key, None)
+                    if found:
+                        chem_val = found.entities
+                        id_type = found.entity_id_type
+                        id_hyperlink = found.entity_id_hyperlink
 
                 if chem_val:
-                    if token.keyword in self.matched_type_chemical:
-                        self.matched_type_chemical[token.keyword].tokens.append(token)
-                    else:
-                        self.matched_type_chemical[token.keyword] = LMDBMatch(
-                            entities=chem_val,  # type: ignore
-                            tokens=[token],
-                            id_type=id_type,
-                            id_hyperlink=id_hyperlink
-                        )
+                    self.matched_type_chemical[token.keyword] = LMDBMatch(
+                        entities=chem_val,  # type: ignore
+                        tokens=[token],
+                        id_type=id_type,
+                        id_hyperlink=id_hyperlink
+                    )
         return chem_val
 
     def entity_lookup_for_type_compound(
@@ -815,19 +792,19 @@ class EntityRecognitionService:
                 id_hyperlink = ''
                 if not comp_val:
                     # didn't find in LMDB so look in global inclusion
-                    comp_val, id_type, id_hyperlink = self._get_global_inclusion_values(
-                        lookup_key, EntityType.COMPOUND.value)
+                    found = self.inclusion_type_compound.get(lookup_key, None)
+                    if found:
+                        comp_val = found.entities
+                        id_type = found.entity_id_type
+                        id_hyperlink = found.entity_id_hyperlink
 
                 if comp_val:
-                    if token.keyword in self.matched_type_compound:
-                        self.matched_type_compound[token.keyword].tokens.append(token)
-                    else:
-                        self.matched_type_compound[token.keyword] = LMDBMatch(
-                            entities=comp_val,  # type: ignore
-                            tokens=[token],
-                            id_type=id_type,
-                            id_hyperlink=id_hyperlink
-                        )
+                    self.matched_type_compound[token.keyword] = LMDBMatch(
+                        entities=comp_val,  # type: ignore
+                        tokens=[token],
+                        id_type=id_type,
+                        id_hyperlink=id_hyperlink
+                    )
         return comp_val
 
     def entity_lookup_for_type_disease(
@@ -881,19 +858,19 @@ class EntityRecognitionService:
                 id_hyperlink = ''
                 if not diseases_val:
                     # didn't find in LMDB so look in global inclusion
-                    diseases_val, id_type, id_hyperlink = self._get_global_inclusion_values(
-                        lookup_key, EntityType.DISEASE.value)
+                    found = self.inclusion_type_disease.get(lookup_key, None)
+                    if found:
+                        diseases_val = found.entities
+                        id_type = found.entity_id_type
+                        id_hyperlink = found.entity_id_hyperlink
 
                 if diseases_val:
-                    if token.keyword in self.matched_type_disease:
-                        self.matched_type_disease[token.keyword].tokens.append(token)
-                    else:
-                        self.matched_type_disease[token.keyword] = LMDBMatch(
-                            entities=diseases_val,  # type: ignore
-                            tokens=[token],
-                            id_type=id_type,
-                            id_hyperlink=id_hyperlink
-                        )
+                    self.matched_type_disease[token.keyword] = LMDBMatch(
+                        entities=diseases_val,  # type: ignore
+                        tokens=[token],
+                        id_type=id_type,
+                        id_hyperlink=id_hyperlink
+                    )
         return diseases_val
 
     def entity_lookup_for_type_food(
@@ -947,19 +924,19 @@ class EntityRecognitionService:
                 id_hyperlink = ''
                 if not food_val:
                     # didn't find in LMDB so look in global inclusion
-                    food_val, id_type, id_hyperlink = self._get_global_inclusion_values(
-                        lookup_key, EntityType.FOOD.value)
+                    found = self.inclusion_type_food.get(lookup_key, None)
+                    if found:
+                        food_val = found.entities
+                        id_type = found.entity_id_type
+                        id_hyperlink = found.entity_id_hyperlink
 
                 if food_val:
-                    if token.keyword in self.matched_type_food:
-                        self.matched_type_food[token.keyword].tokens.append(token)
-                    else:
-                        self.matched_type_food[token.keyword] = LMDBMatch(
-                            entities=food_val,  # type: ignore
-                            tokens=[token],
-                            id_type=id_type,
-                            id_hyperlink=id_hyperlink
-                        )
+                    self.matched_type_food[token.keyword] = LMDBMatch(
+                        entities=food_val,  # type: ignore
+                        tokens=[token],
+                        id_type=id_type,
+                        id_hyperlink=id_hyperlink
+                    )
         return food_val
 
     def entity_lookup_for_type_gene(
@@ -1014,19 +991,19 @@ class EntityRecognitionService:
                 id_hyperlink = ''
                 if not gene_val:
                     # didn't find in LMDB so look in global inclusion
-                    gene_val, id_type, id_hyperlink = self._get_global_inclusion_values(
-                        lookup_key, EntityType.GENE.value)
+                    found = self.inclusion_type_gene.get(lookup_key, None)
+                    if found:
+                        gene_val = found.entities
+                        id_type = found.entity_id_type
+                        id_hyperlink = found.entity_id_hyperlink
 
                 if gene_val:
-                    if token.keyword in self.matched_type_gene:
-                        self.matched_type_gene[token.keyword].tokens.append(token)
-                    else:
-                        self.matched_type_gene[token.keyword] = LMDBMatch(
-                            entities=gene_val,  # type: ignore
-                            tokens=[token],
-                            id_type=id_type,
-                            id_hyperlink=id_hyperlink
-                        )
+                    self.matched_type_gene[token.keyword] = LMDBMatch(
+                        entities=gene_val,  # type: ignore
+                        tokens=[token],
+                        id_type=id_type,
+                        id_hyperlink=id_hyperlink
+                    )
         return gene_val
 
     def entity_lookup_for_type_phenotype(
@@ -1080,19 +1057,19 @@ class EntityRecognitionService:
                 id_hyperlink = ''
                 if not phenotype_val:
                     # didn't find in LMDB so look in global inclusion
-                    phenotype_val, id_type, id_hyperlink = self._get_global_inclusion_values(
-                        lookup_key, EntityType.PHENOTYPE.value)
+                    found = self.inclusion_type_phenotype.get(lookup_key, None)
+                    if found:
+                        phenotype_val = found.entities
+                        id_type = found.entity_id_type
+                        id_hyperlink = found.entity_id_hyperlink
 
                 if phenotype_val:
-                    if token.keyword in self.matched_type_phenotype:
-                        self.matched_type_phenotype[token.keyword].tokens.append(token)
-                    else:
-                        self.matched_type_phenotype[token.keyword] = LMDBMatch(
-                            entities=phenotype_val,  # type: ignore
-                            tokens=[token],
-                            id_type=id_type,
-                            id_hyperlink=id_hyperlink
-                        )
+                    self.matched_type_phenotype[token.keyword] = LMDBMatch(
+                        entities=phenotype_val,  # type: ignore
+                        tokens=[token],
+                        id_type=id_type,
+                        id_hyperlink=id_hyperlink
+                    )
         return phenotype_val
 
     def entity_lookup_for_type_protein(
@@ -1152,19 +1129,19 @@ class EntityRecognitionService:
                 id_hyperlink = ''
                 if not protein_val:
                     # didn't find in LMDB so look in global inclusion
-                    protein_val, id_type, id_hyperlink = self._get_global_inclusion_values(
-                        lookup_key, EntityType.PROTEIN.value)
+                    found = self.inclusion_type_protein.get(lookup_key, None)
+                    if found:
+                        protein_val = found.entities
+                        id_type = found.entity_id_type
+                        id_hyperlink = found.entity_id_hyperlink
 
                 if protein_val:
-                    if token.keyword in self.matched_type_protein:
-                        self.matched_type_protein[token.keyword].tokens.append(token)
-                    else:
-                        self.matched_type_protein[token.keyword] = LMDBMatch(
-                            entities=protein_val,  # type: ignore
-                            tokens=[token],
-                            id_type=id_type,
-                            id_hyperlink=id_hyperlink
-                        )
+                    self.matched_type_protein[token.keyword] = LMDBMatch(
+                        entities=protein_val,  # type: ignore
+                        tokens=[token],
+                        id_type=id_type,
+                        id_hyperlink=id_hyperlink
+                    )
         return protein_val
 
     def entity_lookup_for_type_species(
@@ -1227,33 +1204,31 @@ class EntityRecognitionService:
                 id_hyperlink = ''
                 if not species_val:
                     # didn't find in LMDB so look in global inclusion
-                    species_val, id_type, id_hyperlink = self._get_global_inclusion_values(
-                        lookup_key, EntityType.SPECIES.value)
+                    found = self.inclusion_type_species.get(lookup_key, None)
+                    if found:
+                        species_val = found.entities
+                        id_type = found.entity_id_type
+                        id_hyperlink = found.entity_id_hyperlink
 
                 if species_val:
-                    if token.keyword in self.matched_type_species:
-                        self.matched_type_species[token.keyword].tokens.append(token)
-                    else:
-                        self.matched_type_species[token.keyword] = LMDBMatch(
-                            entities=species_val,  # type: ignore
-                            tokens=[token],
-                            id_type=id_type,
-                            id_hyperlink=id_hyperlink
-                        )
+                    self.matched_type_species[token.keyword] = LMDBMatch(
+                        entities=species_val,  # type: ignore
+                        tokens=[token],
+                        id_type=id_type,
+                        id_hyperlink=id_hyperlink
+                    )
                 elif lookup_key in self.inclusion_type_species_local:
                     try:
                         species_val = self.inclusion_type_species_local[lookup_key].entities
                         id_type = self.inclusion_type_species_local[lookup_key].entity_id_type
                         id_hyperlink = self.inclusion_type_species_local[lookup_key].entity_id_hyperlink  # noqa
-                        if token.keyword in self.matched_type_species_local:
-                            self.matched_type_species_local[token.keyword].tokens.append(token)
-                        else:
-                            self.matched_type_species_local[token.keyword] = LMDBMatch(
-                                entities=species_val,  # type: ignore
-                                tokens=[token],
-                                id_type=id_type,
-                                id_hyperlink=id_hyperlink
-                            )
+
+                        self.matched_type_species_local[token.keyword] = LMDBMatch(
+                            entities=species_val,  # type: ignore
+                            tokens=[token],
+                            id_type=id_type,
+                            id_hyperlink=id_hyperlink
+                        )
                     except KeyError:
                         raise AnnotationError('Missing key attribute for local species inclusion.')
         return species_val
@@ -1294,19 +1269,19 @@ class EntityRecognitionService:
                 if self._is_abbrev(token):
                     return company_val
 
-                company_val, id_type, id_hyperlink = self._get_global_inclusion_values(
-                    lookup_key, EntityType.COMPANY.value)
+                found = self.inclusion_type_company.get(lookup_key, None)
+                if found:
+                    company_val = found.entities
+                    id_type = found.entity_id_type
+                    id_hyperlink = found.entity_id_hyperlink
 
                 if company_val:
-                    if token.keyword in self.matched_type_company:
-                        self.matched_type_company[token.keyword].tokens.append(token)
-                    else:
-                        self.matched_type_company[token.keyword] = LMDBMatch(
-                            entities=company_val,  # type: ignore
-                            tokens=[token],
-                            id_type=id_type,
-                            id_hyperlink=id_hyperlink
-                        )
+                    self.matched_type_company[token.keyword] = LMDBMatch(
+                        entities=company_val,  # type: ignore
+                        tokens=[token],
+                        id_type=id_type,
+                        id_hyperlink=id_hyperlink
+                    )
         return company_val
 
     def entity_lookup_for_type_entity(
@@ -1345,19 +1320,19 @@ class EntityRecognitionService:
                 if self._is_abbrev(token):
                     return entity_val
 
-                entity_val, id_type, id_hyperlink = self._get_global_inclusion_values(
-                    lookup_key, EntityType.ENTITY.value)
+                found = self.inclusion_type_entity.get(lookup_key, None)
+                if found:
+                    entity_val = found.entities
+                    id_type = found.entity_id_type
+                    id_hyperlink = found.entity_id_hyperlink
 
                 if entity_val:
-                    if token.keyword in self.matched_type_entity:
-                        self.matched_type_entity[token.keyword].tokens.append(token)
-                    else:
-                        self.matched_type_entity[token.keyword] = LMDBMatch(
-                            entities=entity_val,  # type: ignore
-                            tokens=[token],
-                            id_type=id_type,
-                            id_hyperlink=id_hyperlink
-                        )
+                    self.matched_type_entity[token.keyword] = LMDBMatch(
+                        entities=entity_val,  # type: ignore
+                        tokens=[token],
+                        id_type=id_type,
+                        id_hyperlink=id_hyperlink
+                    )
         return entity_val
 
     def _entity_lookup_dispatch(
@@ -1390,38 +1365,73 @@ class EntityRecognitionService:
             )
 
         if check_entities.get(EntityType.ANATOMY.value, False):
-            self._find_match_type_anatomy(token)
+            if token.keyword in self.matched_type_anatomy:
+                self.matched_type_anatomy[token.keyword].tokens.append(token)
+            else:
+                self._find_match_type_anatomy(token)
 
         if check_entities.get(EntityType.CHEMICAL.value, False):
-            self._find_match_type_chemical(token)
+            if token.keyword in self.matched_type_chemical:
+                self.matched_type_chemical[token.keyword].tokens.append(token)
+            else:
+                self._find_match_type_chemical(token)
 
         if check_entities.get(EntityType.COMPOUND.value, False):
-            self._find_match_type_compound(token)
+            if token.keyword in self.matched_type_compound:
+                self.matched_type_compound[token.keyword].tokens.append(token)
+            else:
+                self._find_match_type_compound(token)
 
         if check_entities.get(EntityType.DISEASE.value, False):
-            self._find_match_type_disease(token)
+            if token.keyword in self.matched_type_disease:
+                self.matched_type_disease[token.keyword].tokens.append(token)
+            else:
+                self._find_match_type_disease(token)
 
         if check_entities.get(EntityType.FOOD.value, False):
-            self._find_match_type_food(token)
+            if token.keyword in self.matched_type_food:
+                self.matched_type_food[token.keyword].tokens.append(token)
+            else:
+                self._find_match_type_food(token)
 
         if check_entities.get(EntityType.GENE.value, False):
-            self._find_match_type_gene(token)
+            if token.keyword in self.matched_type_gene:
+                self.matched_type_gene[token.keyword].tokens.append(token)
+            else:
+                self._find_match_type_gene(token)
 
         if check_entities.get(EntityType.PHENOTYPE.value, False):
-            self._find_match_type_phenotype(token)
+            if token.keyword in self.matched_type_phenotype:
+                self.matched_type_phenotype[token.keyword].tokens.append(token)
+            else:
+                self._find_match_type_phenotype(token)
 
         if check_entities.get(EntityType.PROTEIN.value, False):
-            self._find_match_type_protein(token)
+            if token.keyword in self.matched_type_protein:
+                self.matched_type_protein[token.keyword].tokens.append(token)
+            else:
+                self._find_match_type_protein(token)
 
         if check_entities.get(EntityType.SPECIES.value, False):
-            self._find_match_type_species(token)
+            if token.keyword in self.matched_type_species:
+                self.matched_type_species[token.keyword].tokens.append(token)
+            elif token.keyword in self.matched_type_species_local:
+                self.matched_type_species_local[token.keyword].tokens.append(token)
+            else:
+                self._find_match_type_species(token)
 
         # non LMDB entity types
         if check_entities.get(EntityType.COMPANY.value, False):
-            self._find_match_type_company(token)
+            if token.keyword in self.matched_type_company:
+                self.matched_type_company[token.keyword].tokens.append(token)
+            else:
+                self._find_match_type_company(token)
 
         if check_entities.get(EntityType.ENTITY.value, False):
-            self._find_match_type_entity(token)
+            if token.keyword in self.matched_type_entity:
+                self.matched_type_entity[token.keyword].tokens.append(token)
+            else:
+                self._find_match_type_entity(token)
 
     def _find_match_type_anatomy(self, token: PDFWord) -> None:
         word = token.keyword
