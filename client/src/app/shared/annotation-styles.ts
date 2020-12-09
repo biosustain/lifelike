@@ -41,6 +41,8 @@ const PATHWAY = '#e377c2';
 const PHENOTYPE = '#edc949';
 const FOOD = '#8eff69';
 const ANATOMY = '#0202bd';
+const LABSAMPLE = '#f71698';
+const LABSTRAIN = '#f71698';
 
 const NOTE = '#edc949';
 const MAP = '#0277bd';
@@ -55,10 +57,11 @@ const EFFECT = '#d7d9f8';
 const OBSERVATION = '#d7d9f8';
 const ASSOCIATION = '#d7d9f8';
 
-const annotationTypes: AnnotationStyle[] = [{
-  label: 'gene',
-  color: GENE,
-},
+const annotationTypes: AnnotationStyle[] = [
+  {
+    label: 'gene',
+    color: GENE,
+  },
   {
     label: 'disease',
     color: DISEASE,
@@ -116,6 +119,14 @@ const annotationTypes: AnnotationStyle[] = [{
   {
     label: 'anatomy',
     color: ANATOMY,
+  },
+  {
+    label: 'lab sample',
+    color: LABSAMPLE,
+  },
+  {
+    label: 'lab strain',
+    color: LABSTRAIN,
   },
   {
     label: 'link',

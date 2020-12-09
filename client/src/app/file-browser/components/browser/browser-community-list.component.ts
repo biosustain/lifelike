@@ -4,8 +4,8 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
 import { CollectionModal } from '../../../shared/utils/collection-modal';
 import { MapService } from '../../../drawing-tool/services';
-import { ResultList } from '../../../interfaces/shared.interface';
 import { PublicMap } from '../../../drawing-tool/services/map.service';
+import { ResultList } from '../../../shared/schemas/common';
 
 @Component({
   selector: 'app-browser-community-list',

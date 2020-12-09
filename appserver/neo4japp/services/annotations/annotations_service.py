@@ -27,7 +27,7 @@ from .constants import (
     SEARCH_LINKS,
 )
 from .lmdb_dao import LMDBDao
-from .util import normalize_str, standardize_str
+from .util import has_center_point, normalize_str, standardize_str
 
 from neo4japp.data_transfer_objects import (
     Annotation,
@@ -265,7 +265,7 @@ class AnnotationsService:
             # type ignore, see https://github.com/python/mypy/issues/8277
             hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
 
-        if entity['id_type'] == DatabaseType.MESH.value:
+        if entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value in entity_id:  # noqa
             hyperlink += entity_id[5:]  # type: ignore
         else:
             hyperlink += entity_id  # type: ignore
@@ -292,6 +292,7 @@ class AnnotationsService:
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
                 keyword=entity['synonym'],
+                primary_name=entity['name'],
                 text_in_document=token.keyword,
                 keyword_length=len(token.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -317,6 +318,7 @@ class AnnotationsService:
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
                 keyword=entity['synonym'],
+                primary_name=entity['name'],
                 text_in_document=token.keyword,
                 keyword_length=len(token.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -341,6 +343,7 @@ class AnnotationsService:
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
                 keyword=entity['synonym'],
+                primary_name=entity['name'],
                 text_in_document=token.keyword,
                 keyword_length=len(token.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -828,25 +831,6 @@ class AnnotationsService:
                 'type') == EntityType.SPECIES.value and not exclude.get(
                     'excludeGlobally')]
 
-        def has_center_point(
-            custom_rect_coords: List[float],
-            rect_coords: List[float],
-        ) -> bool:
-            x1 = rect_coords[0]
-            y1 = rect_coords[1]
-            x2 = rect_coords[2]
-            y2 = rect_coords[3]
-
-            center_x = (x1 + x2)/2
-            center_y = (y1 + y2)/2
-
-            rect_x1 = custom_rect_coords[0]
-            rect_y1 = custom_rect_coords[1]
-            rect_x2 = custom_rect_coords[2]
-            rect_y2 = custom_rect_coords[3]
-
-            return rect_x1 <= center_x <= rect_x2 and rect_y1 <= center_y <= rect_y2
-
         # we only want the annotations with correct coordinates
         # because it is possible for a word to only have one
         # of its occurrences annotated as a custom annotation
@@ -1143,8 +1127,14 @@ class AnnotationsService:
             custom_annotations=custom_annotations,
             excluded_annotations=excluded_annotations
         )
-        return self._clean_annotations(
+
+        cleaned = self._clean_annotations(
             annotations=annotations)
+        # update the annotations with the common primary name
+        # do this after cleaning because it's easier to
+        # query the KG for the primary names after the
+        # duplicates/overlapping intervals are removed
+        return self.add_primary_name(annotations=cleaned)
 
     def create_nlp_annotations(
         self,
@@ -1187,8 +1177,13 @@ class AnnotationsService:
             f'NLP TOKENS NOT MATCHED TO LMDB {not_matched}',
             extra=EventLog(event_type='annotations').to_dict()
         )
-        return self._clean_annotations(
+        cleaned = self._clean_annotations(
             annotations=unified_annotations)
+        # update the annotations with the common primary name
+        # do this after cleaning because it's easier to
+        # query the KG for the primary names after the
+        # duplicates/overlapping intervals are removed
+        return self.add_primary_name(annotations=cleaned)
 
     def _clean_annotations(
         self,
@@ -1201,6 +1196,58 @@ class AnnotationsService:
             unified_annotations=fixed_unified_annotations,
         )
         return fixed_unified_annotations
+
+    def add_primary_name(self, annotations: List[Annotation]) -> List[Annotation]:
+        chemical_ids = set()
+        compound_ids = set()
+        disease_ids = set()
+        gene_ids = set()
+        protein_ids = set()
+        organism_ids = set()
+
+        for anno in annotations:
+            if anno.meta.type == EntityType.CHEMICAL.value:
+                chemical_ids.add(anno.meta.id)
+            elif anno.meta.type == EntityType.COMPOUND.value:
+                compound_ids.add(anno.meta.id)
+            elif anno.meta.type == EntityType.DISEASE.value:
+                disease_ids.add(anno.meta.id)
+            elif anno.meta.type == EntityType.GENE.value:
+                gene_ids.add(anno.meta.id)
+            elif anno.meta.type == EntityType.PROTEIN.value:
+                protein_ids.add(anno.meta.id)
+            elif anno.meta.type == EntityType.SPECIES.value:
+                organism_ids.add(anno.meta.id)
+
+        chemical_names = self.annotation_neo4j.get_chemicals_from_chemical_ids(list(chemical_ids))  # noqa
+        compound_names = self.annotation_neo4j.get_compounds_from_compound_ids(list(compound_ids))  # noqa
+        disease_names = self.annotation_neo4j.get_diseases_from_disease_ids(list(disease_ids))  # noqa
+        gene_names = self.annotation_neo4j.get_genes_from_gene_ids(list(gene_ids))
+        protein_names = self.annotation_neo4j.get_proteins_from_protein_ids(list(protein_ids))  # noqa
+        organism_names = self.annotation_neo4j.get_organisms_from_organism_ids(list(organism_ids))  # noqa
+
+        for anno in annotations:
+            try:
+                if anno.meta.type == EntityType.CHEMICAL.value:
+                    anno.primary_name = chemical_names[anno.meta.id]
+                elif anno.meta.type == EntityType.COMPOUND.value:
+                    anno.primary_name = compound_names[anno.meta.id]
+                elif anno.meta.type == EntityType.DISEASE.value:
+                    anno.primary_name = disease_names[anno.meta.id]
+                elif anno.meta.type == EntityType.GENE.value:
+                    anno.primary_name = gene_names[anno.meta.id]
+                elif anno.meta.type == EntityType.PROTEIN.value:
+                    anno.primary_name = protein_names[anno.meta.id]
+                elif anno.meta.type == EntityType.SPECIES.value:
+                    anno.primary_name = organism_names[anno.meta.id]
+                else:
+                    anno.primary_name = anno.keyword
+            except KeyError:
+                # just keep what is already there or use the
+                # synonym if blank
+                if not anno.primary_name:
+                    anno.primary_name = anno.keyword
+        return annotations
 
     def fix_conflicting_annotations(
         self,

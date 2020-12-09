@@ -1,0 +1,4863 @@
+{
+    "nodes": [
+        {
+            "id": "35",
+            "label": "THF-GLU-N",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "61",
+            "label": "D-glucopyranose-6-phosphate",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "74",
+            "label": "RIBOSE-5P",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "76",
+            "label": "1-4-alpha-D-Glucan",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "84",
+            "label": "Ubiquinols",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "86",
+            "label": "Ubiquinones",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "90",
+            "label": "D-GLUCOSAMINE-6-P",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "235",
+            "label": "PYRUVFORMLY-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "330",
+            "label": "RXN66-526",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "336",
+            "label": "RXN0-7352",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "384",
+            "label": "GLYCOGENSYN-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "387",
+            "label": "3-CH3-2-OXOBUTANOATE-OH-CH3-XFER-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "388",
+            "label": "GLUTATHIONE-SYN-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "423",
+            "label": "MALTODEXGLUCOSID-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "456",
+            "label": "RXN0-313",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "471",
+            "label": "RXN-17745",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "574",
+            "label": "PANTOTHENATE-KIN-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "652",
+            "label": "RXN0-6256",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "828",
+            "label": "GLYOHMETRANS-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "839",
+            "label": "RXN-21080",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "995",
+            "label": "L-GLN-FRUCT-6-P-AMINOTRANS-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1150",
+            "label": "RXN-11496",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1163",
+            "label": "GLUTCYSLIG-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1232",
+            "label": "GART-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1245",
+            "label": "M004",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1262",
+            "label": "EG10562",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1379",
+            "label": "EG10528",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1402",
+            "label": "RXN0-1382",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1405",
+            "label": "RXN0-1741",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1426",
+            "label": "PEPDEPHOS-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1431",
+            "label": "RXN0-7347",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1463",
+            "label": "6PFRUCTPHOS-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1493",
+            "label": "RXN0-6373",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1494",
+            "label": "TRANS-RXN-76",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1519",
+            "label": "2PGADEHYDRAT-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1616",
+            "label": "RXN0-5268",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1673",
+            "label": "RXN0-5260",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1680",
+            "label": "ASPDECARBOX-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1698",
+            "label": "TRANS-RXN-157",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1834",
+            "label": "PD00353",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1942",
+            "label": "GLUTCYSLIG-MONOMER",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "1945",
+            "label": "PKI-MONOMER",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2003",
+            "label": "2.7.3.9-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2125",
+            "label": "AMYLOMALT-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2204",
+            "label": "TRANS-RXN-62B",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2297",
+            "label": "RXN0-7169",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2313",
+            "label": "Hpr-pi-phospho-L-histidines",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2399",
+            "label": "P-PANTOCYSLIG-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2437",
+            "label": "PYRUVDEH-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2554",
+            "label": "RXN0-6372",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2604",
+            "label": "PEPSYNTH-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2633",
+            "label": "RIBULP3EPIM-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2655",
+            "label": "2TRANSKETO-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2674",
+            "label": "RXN0-6566",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2704",
+            "label": "RXN0-7166",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2709",
+            "label": "PEPCARBOX-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2747",
+            "label": "TRYPTOPHAN-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2750",
+            "label": "GLUCOKIN-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2757",
+            "label": "GLUC1PADENYLTRANS-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2771",
+            "label": "GLYRIBONUCSYN-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2806",
+            "label": "PANTOATE-BETA-ALANINE-LIG-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2809",
+            "label": "BETAGALACTOSID-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2827",
+            "label": "PHOSPHOGLUCMUT-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2834",
+            "label": "DNA-DIRECTED-RNA-POLYMERASE-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2858",
+            "label": "3.1.27.5-RXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "2961",
+            "label": "REG0-13204",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "3057",
+            "label": "GLY",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "3159",
+            "label": "PYRUVATE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "3205",
+            "label": "TRP",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "3214",
+            "label": "CMP",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "3261",
+            "label": "ACETYL-COA",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "3284",
+            "label": "PANTOTHENATE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "3299",
+            "label": "CYCA-MONOMER",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "3301",
+            "label": "ALKAPHOSPHA-CPLX",
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": "3339",
+            "label": "PHOSPHO-ENOL-PYRUVATE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "3343",
+            "label": "DIHYDROXYACETONE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "3461",
+            "label": "MONOMER0-158",
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": "3752",
+            "label": "ENOLASE-CPLX",
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": "3786",
+            "label": "PKI-COMPLEX",
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": "3824",
+            "label": "EG12504",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "3874",
+            "label": "ADP-D-GLUCOSE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "3875",
+            "label": "EG10804",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4138",
+            "label": "CPLX0-1142",
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": "4290",
+            "label": "ASPDECARBOX-MONOMER",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4349",
+            "label": "REG0-8196",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4375",
+            "label": "REG0-7973",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4492",
+            "label": "REG0-11446",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4630",
+            "label": "REG0-10661",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4634",
+            "label": "REG0-8342",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4639",
+            "label": "REG0-7277",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4757",
+            "label": "B-ALANINE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4762",
+            "label": "MALTOTRIOSE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4792",
+            "label": "FRUCTOSE-6P",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4814",
+            "label": "XYLULOSE-5-PHOSPHATE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4819",
+            "label": "GAP",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4827",
+            "label": "2-MERCAPTOETHANOL",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4911",
+            "label": "RNA polymerase",
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": "4922",
+            "label": "EG10528-MONOMER",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4956",
+            "label": "&beta;-D-fructose 1",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "4995",
+            "label": "ALKAPHOSPHA-MONOMER",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "5080",
+            "label": "CPLX0-7655",
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": "5183",
+            "label": "4-P-PANTOTHENATE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "5184",
+            "label": "CPLX0-2901",
+            "font": {
+                "color": "#bcbd22"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#bcbd22",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#bcbd22"
+                }
+            }
+        },
+        {
+            "id": "5189",
+            "label": "5-PHOSPHO-RIBOSYL-GLYCINEAMIDE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "5191",
+            "label": "GMP",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "5323",
+            "label": "G7237-MONOMER",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "5331",
+            "label": "RPOB-MONOMER",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "5350",
+            "label": "PTSH-PHOSPHORYLATED",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "5955",
+            "label": "GLUTATHIONE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "6117",
+            "label": "L-GAMMA-GLUTAMYLCYSTEINE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "6146",
+            "label": "EG10084",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "6180",
+            "label": "REG0-8401",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "6808",
+            "label": "FORMATE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "6825",
+            "label": "D-glucono-1",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "6911",
+            "label": "MONOMER0-1842",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "6948",
+            "label": "TRANS-ENZRXN-56B",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "6976",
+            "label": "GLUCOKIN-ENZRXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "7028",
+            "label": "PHOSPHOGLUCMUT-ENZRXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "7260",
+            "label": "REG0-11973",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "7739",
+            "label": "EG10547",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "7829",
+            "label": "GCVB-RNA",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "8041",
+            "label": "ENZRXN0-6216",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "8049",
+            "label": "GLUC1PADENYLTRANS-ENZRXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "8150",
+            "label": "BETAGALACTOSID-ENZRXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "8160",
+            "label": "ENZRXN0-6416",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "8380",
+            "label": "RXN-21817",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "8685",
+            "label": "REG0-12560",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "8687",
+            "label": "GLYRIBONUCSYN-ENZRXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "8940",
+            "label": "TRANS-ENZRXN-62B",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "9160",
+            "label": "ENZRXN0-8089",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "9259",
+            "label": "3-METHYL-2-OXOBUT-OHCH3XFER-ENZRXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "9277",
+            "label": "GLUTCYSLIG-ENZRXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "9436",
+            "label": "ENZRXN0-4281",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "9608",
+            "label": "REG0-6159",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "9709",
+            "label": "2PGADEHYDRAT-ENZRXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "10029",
+            "label": "REG0-8914",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "10484",
+            "label": "EG10418",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "10515",
+            "label": "REG0-15526",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "10670",
+            "label": "EG11747",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "11105",
+            "label": "RIBULP3EPIM-ENZRXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "11153",
+            "label": "PEPDEPHOSII-ENZRXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "11194",
+            "label": "REG0-7410",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "11219",
+            "label": "PEPDEPHOSI-ENZRXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "11292",
+            "label": "ENZRXN0-1702",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "12100",
+            "label": "ENZRXN0-6501",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "12138",
+            "label": "PEPCARBOX-ENZRXN",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "14469",
+            "label": "PM0-5642",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "14540",
+            "label": "EG10727",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "14566",
+            "label": "EG10258",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "14647",
+            "label": "Glucopyranose",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "14693",
+            "label": "MALTOSE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "14731",
+            "label": "RNA-Holder",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "14836",
+            "label": "RXN-17330",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "14924",
+            "label": "5Prime-OH-Terminated-RNAs",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "14938",
+            "label": "G7237",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "14939",
+            "label": "EG10894",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "15013",
+            "label": "Hpr-Histidine",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "15025",
+            "label": "G0-8867",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "15097",
+            "label": "AROP-MONOMER",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "15114",
+            "label": "ENOLASE-MONOMER",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "15122",
+            "label": "RIBULP3EPIM-MONOMER",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "15166",
+            "label": "GLUCOSAMINE",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        },
+        {
+            "id": "15187",
+            "label": "PD00237",
+            "font": {
+                "color": "#000000"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#000000",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#000000"
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "528",
+            "label": "ENCODES",
+            "from": "6146",
+            "to": "15097",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "560",
+            "label": "ENCODES",
+            "from": "1245",
+            "to": "15122",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "576",
+            "label": "ENCODES",
+            "from": "14566",
+            "to": "15114",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "675",
+            "label": "ENCODES",
+            "from": "1262",
+            "to": "15187",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1098",
+            "label": "REGULATES",
+            "from": "9608",
+            "to": "14469",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1101",
+            "label": "REGULATES",
+            "from": "3461",
+            "to": "9608",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1288",
+            "label": "CATALYZES",
+            "from": "8687",
+            "to": "2771",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1293",
+            "label": "PRODUCES",
+            "from": "995",
+            "to": "90",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1295",
+            "label": "CONSUMED_BY",
+            "from": "4792",
+            "to": "995",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1466",
+            "label": "PRODUCES",
+            "from": "2771",
+            "to": "5189",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1498",
+            "label": "PRODUCES",
+            "from": "2757",
+            "to": "3874",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1581",
+            "label": "PRODUCES",
+            "from": "2834",
+            "to": "14731",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1657",
+            "label": "PRODUCES",
+            "from": "2827",
+            "to": "61",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1715",
+            "label": "PRODUCES",
+            "from": "2806",
+            "to": "3284",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1718",
+            "label": "CONSUMED_BY",
+            "from": "4757",
+            "to": "2806",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1736",
+            "label": "PRODUCES",
+            "from": "2809",
+            "to": "14647",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1869",
+            "label": "PRODUCES",
+            "from": "2858",
+            "to": "14924",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1873",
+            "label": "CONSUMED_BY",
+            "from": "14731",
+            "to": "2858",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "1940",
+            "label": "ENCODES",
+            "from": "7739",
+            "to": "1834",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2156",
+            "label": "ENCODES",
+            "from": "3875",
+            "to": "1945",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2157",
+            "label": "ENCODES",
+            "from": "10484",
+            "to": "1942",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2226",
+            "label": "CONSUMED_BY",
+            "from": "3159",
+            "to": "1150",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2231",
+            "label": "PRODUCES",
+            "from": "1150",
+            "to": "84",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2425",
+            "label": "REGULATES",
+            "from": "4639",
+            "to": "12138",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2428",
+            "label": "REGULATES",
+            "from": "3214",
+            "to": "4639",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2436",
+            "label": "REGULATES",
+            "from": "4634",
+            "to": "9259",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2438",
+            "label": "REGULATES",
+            "from": "3284",
+            "to": "4634",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2467",
+            "label": "REGULATES",
+            "from": "4630",
+            "to": "6976",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2468",
+            "label": "REGULATES",
+            "from": "3339",
+            "to": "4630",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2504",
+            "label": "COMPONENT_OF",
+            "from": "4995",
+            "to": "3301",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2505",
+            "label": "ENCODES",
+            "from": "3824",
+            "to": "3299",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2930",
+            "label": "COMPONENT_OF",
+            "from": "15187",
+            "to": "3461",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "2936",
+            "label": "COMPONENT_OF",
+            "from": "4762",
+            "to": "3461",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3017",
+            "label": "REGULATES",
+            "from": "2961",
+            "to": "10670",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3018",
+            "label": "REGULATES",
+            "from": "7829",
+            "to": "2961",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3023",
+            "label": "CATALYZES",
+            "from": "3299",
+            "to": "8940",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3024",
+            "label": "CATALYZES",
+            "from": "8940",
+            "to": "2204",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3070",
+            "label": "REGULATES",
+            "from": "74",
+            "to": "7260",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3072",
+            "label": "REGULATES",
+            "from": "7260",
+            "to": "11153",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3290",
+            "label": "PRODUCES",
+            "from": "1163",
+            "to": "6117",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3329",
+            "label": "PRODUCES",
+            "from": "1232",
+            "to": "35",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3330",
+            "label": "CONSUMED_BY",
+            "from": "5189",
+            "to": "1232",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3589",
+            "label": "COMPONENT_OF",
+            "from": "15114",
+            "to": "3752",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3663",
+            "label": "COMPONENT_OF",
+            "from": "1945",
+            "to": "3786",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3784",
+            "label": "CATALYZES",
+            "from": "3301",
+            "to": "9160",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3785",
+            "label": "CATALYZES",
+            "from": "9160",
+            "to": "14836",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3842",
+            "label": "CONSUMED_BY",
+            "from": "14693",
+            "to": "1431",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3844",
+            "label": "PRODUCES",
+            "from": "1431",
+            "to": "4762",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3870",
+            "label": "CONSUMED_BY",
+            "from": "3159",
+            "to": "1426",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "3874",
+            "label": "PRODUCES",
+            "from": "1426",
+            "to": "3339",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "4144",
+            "label": "REGULATES",
+            "from": "4956",
+            "to": "10029",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "4146",
+            "label": "REGULATES",
+            "from": "10029",
+            "to": "8049",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "4158",
+            "label": "PRODUCES",
+            "from": "1402",
+            "to": "6808",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "4175",
+            "label": "PRODUCES",
+            "from": "1405",
+            "to": "14693",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "4319",
+            "label": "CONSUMED_BY",
+            "from": "4792",
+            "to": "1463",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "4321",
+            "label": "PRODUCES",
+            "from": "1463",
+            "to": "4956",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "4436",
+            "label": "CATALYZES",
+            "from": "9277",
+            "to": "1163",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "4438",
+            "label": "CATALYZES",
+            "from": "1942",
+            "to": "9277",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "4467",
+            "label": "CATALYZES",
+            "from": "9259",
+            "to": "387",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "4693",
+            "label": "PRODUCES",
+            "from": "1519",
+            "to": "3339",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "4810",
+            "label": "COMPONENT_OF",
+            "from": "5323",
+            "to": "4138",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "4959",
+            "label": "PRODUCES",
+            "from": "1494",
+            "to": "3205",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "5027",
+            "label": "CONSUMED_BY",
+            "from": "86",
+            "to": "1493",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "5028",
+            "label": "PRODUCES",
+            "from": "1493",
+            "to": "6825",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "5100",
+            "label": "ENCODES",
+            "from": "10670",
+            "to": "4290",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "5101",
+            "label": "MODIFIED_TO",
+            "from": "4290",
+            "to": "6911",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "5329",
+            "label": "CATALYZES",
+            "from": "9436",
+            "to": "1680",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "5332",
+            "label": "CATALYZES",
+            "from": "5184",
+            "to": "9436",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "5689",
+            "label": "PRODUCES",
+            "from": "1616",
+            "to": "86",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "5690",
+            "label": "CONSUMED_BY",
+            "from": "84",
+            "to": "1616",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "5855",
+            "label": "PRODUCES",
+            "from": "1680",
+            "to": "4757",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "5948",
+            "label": "ENCODES",
+            "from": "1379",
+            "to": "4922",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "5971",
+            "label": "COMPONENT_OF",
+            "from": "5331",
+            "to": "4911",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "6040",
+            "label": "ENCODES",
+            "from": "14540",
+            "to": "4995",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "6070",
+            "label": "PRODUCES",
+            "from": "1673",
+            "to": "84",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "6227",
+            "label": "CATALYZES",
+            "from": "3752",
+            "to": "9709",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "6235",
+            "label": "CATALYZES",
+            "from": "9709",
+            "to": "1519",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "6314",
+            "label": "COMPONENT_OF",
+            "from": "4922",
+            "to": "5080",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "6495",
+            "label": "PRODUCES",
+            "from": "1698",
+            "to": "61",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "6497",
+            "label": "CONSUMED_BY",
+            "from": "5350",
+            "to": "1698",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "7020",
+            "label": "COMPONENT_OF",
+            "from": "6911",
+            "to": "5184",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "7371",
+            "label": "REGULATES",
+            "from": "3261",
+            "to": "11194",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "7372",
+            "label": "REGULATES",
+            "from": "11194",
+            "to": "7028",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "7454",
+            "label": "CONSUMED_BY",
+            "from": "15013",
+            "to": "2003",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "7455",
+            "label": "CONSUMED_BY",
+            "from": "3339",
+            "to": "2003",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "7461",
+            "label": "PRODUCES",
+            "from": "2003",
+            "to": "2313",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "7620",
+            "label": "ENCODES",
+            "from": "14938",
+            "to": "5323",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "7901",
+            "label": "PRODUCES",
+            "from": "2125",
+            "to": "4762",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "7903",
+            "label": "CONSUMED_BY",
+            "from": "14647",
+            "to": "2125",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "8037",
+            "label": "CATALYZES",
+            "from": "11105",
+            "to": "2633",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "8041",
+            "label": "CATALYZES",
+            "from": "15122",
+            "to": "11105",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "8096",
+            "label": "CATALYZES",
+            "from": "15097",
+            "to": "6948",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "8098",
+            "label": "CATALYZES",
+            "from": "6948",
+            "to": "1494",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "8133",
+            "label": "CATALYZES",
+            "from": "11153",
+            "to": "1426",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "8204",
+            "label": "PRODUCES",
+            "from": "2204",
+            "to": "3057",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "8257",
+            "label": "CATALYZES",
+            "from": "6976",
+            "to": "2750",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "8312",
+            "label": "ENCODES",
+            "from": "14939",
+            "to": "5331",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "8754",
+            "label": "CATALYZES",
+            "from": "7028",
+            "to": "2827",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "8865",
+            "label": "REGULATES",
+            "from": "6180",
+            "to": "6976",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "8866",
+            "label": "REGULATES",
+            "from": "15166",
+            "to": "6180",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9038",
+            "label": "PRODUCES",
+            "from": "2297",
+            "to": "15013",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9039",
+            "label": "CONSUMED_BY",
+            "from": "3343",
+            "to": "2297",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9330",
+            "label": "PRODUCES",
+            "from": "14836",
+            "to": "14647",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9350",
+            "label": "ENCODES",
+            "from": "15025",
+            "to": "7829",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9643",
+            "label": "REGULATES",
+            "from": "4349",
+            "to": "8150",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9644",
+            "label": "REGULATES",
+            "from": "4827",
+            "to": "4349",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9679",
+            "label": "CONSUMED_BY",
+            "from": "6808",
+            "to": "235",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9686",
+            "label": "PRODUCES",
+            "from": "235",
+            "to": "3159",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9755",
+            "label": "CONSUMED_BY",
+            "from": "5183",
+            "to": "2399",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9760",
+            "label": "PRODUCES",
+            "from": "2399",
+            "to": "3214",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9805",
+            "label": "REGULATES",
+            "from": "4375",
+            "to": "8687",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9806",
+            "label": "REGULATES",
+            "from": "4757",
+            "to": "4375",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9927",
+            "label": "CATALYZES",
+            "from": "3786",
+            "to": "11219",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9932",
+            "label": "CATALYZES",
+            "from": "11219",
+            "to": "1426",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9962",
+            "label": "CATALYZES",
+            "from": "11292",
+            "to": "1402",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "9963",
+            "label": "CATALYZES",
+            "from": "4138",
+            "to": "11292",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10225",
+            "label": "CONSUMED_BY",
+            "from": "3159",
+            "to": "2437",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10227",
+            "label": "PRODUCES",
+            "from": "2437",
+            "to": "3261",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10747",
+            "label": "PRODUCES",
+            "from": "330",
+            "to": "14647",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10751",
+            "label": "CONSUMED_BY",
+            "from": "61",
+            "to": "330",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10772",
+            "label": "CONSUMED_BY",
+            "from": "5191",
+            "to": "336",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10781",
+            "label": "PRODUCES",
+            "from": "336",
+            "to": "74",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10819",
+            "label": "CATALYZES",
+            "from": "12100",
+            "to": "1405",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10824",
+            "label": "CATALYZES",
+            "from": "5080",
+            "to": "12100",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10867",
+            "label": "CATALYZES",
+            "from": "12138",
+            "to": "2709",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10964",
+            "label": "CONSUMED_BY",
+            "from": "76",
+            "to": "423",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "10973",
+            "label": "PRODUCES",
+            "from": "423",
+            "to": "14647",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "11236",
+            "label": "PRODUCES",
+            "from": "384",
+            "to": "76",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "11238",
+            "label": "CONSUMED_BY",
+            "from": "3874",
+            "to": "384",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "11255",
+            "label": "PRODUCES",
+            "from": "387",
+            "to": "35",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "11259",
+            "label": "CONSUMED_BY",
+            "from": "6117",
+            "to": "388",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "11261",
+            "label": "CONSUMED_BY",
+            "from": "3057",
+            "to": "388",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "11265",
+            "label": "PRODUCES",
+            "from": "388",
+            "to": "5955",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "11613",
+            "label": "PRODUCES",
+            "from": "471",
+            "to": "15166",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "11615",
+            "label": "CONSUMED_BY",
+            "from": "90",
+            "to": "471",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "11674",
+            "label": "PRODUCES",
+            "from": "456",
+            "to": "3343",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "11675",
+            "label": "CONSUMED_BY",
+            "from": "4792",
+            "to": "456",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12003",
+            "label": "REGULATES",
+            "from": "3159",
+            "to": "8685",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12004",
+            "label": "REGULATES",
+            "from": "8685",
+            "to": "8049",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12303",
+            "label": "CONSUMED_BY",
+            "from": "6825",
+            "to": "2554",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12313",
+            "label": "PRODUCES",
+            "from": "2554",
+            "to": "14647",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12639",
+            "label": "REGULATES",
+            "from": "4492",
+            "to": "8160",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12640",
+            "label": "REGULATES",
+            "from": "4819",
+            "to": "4492",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12648",
+            "label": "PRODUCES",
+            "from": "8380",
+            "to": "86",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12709",
+            "label": "CONSUMED_BY",
+            "from": "84",
+            "to": "8380",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12826",
+            "label": "CONSUMED_BY",
+            "from": "3284",
+            "to": "574",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "12827",
+            "label": "PRODUCES",
+            "from": "574",
+            "to": "5183",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "13325",
+            "label": "PRODUCES",
+            "from": "652",
+            "to": "4827",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "13327",
+            "label": "CONSUMED_BY",
+            "from": "5955",
+            "to": "652",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "13368",
+            "label": "CATALYZES",
+            "from": "8049",
+            "to": "2757",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "13404",
+            "label": "CATALYZES",
+            "from": "4911",
+            "to": "8041",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "13406",
+            "label": "CATALYZES",
+            "from": "8041",
+            "to": "2834",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "13644",
+            "label": "REGULATES",
+            "from": "1834",
+            "to": "10515",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "13645",
+            "label": "REGULATES",
+            "from": "10515",
+            "to": "14540",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "14110",
+            "label": "PRODUCES",
+            "from": "839",
+            "to": "2313",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "14112",
+            "label": "CONSUMED_BY",
+            "from": "15013",
+            "to": "839",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "14113",
+            "label": "CONSUMED_BY",
+            "from": "3339",
+            "to": "839",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "14607",
+            "label": "CONSUMED_BY",
+            "from": "35",
+            "to": "828",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "14609",
+            "label": "PRODUCES",
+            "from": "828",
+            "to": "3057",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "14794",
+            "label": "CONSUMED_BY",
+            "from": "2313",
+            "to": "1698",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "14956",
+            "label": "CATALYZES",
+            "from": "8160",
+            "to": "1673",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "14973",
+            "label": "CATALYZES",
+            "from": "8150",
+            "to": "2809",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "15015",
+            "label": "PRODUCES",
+            "from": "2633",
+            "to": "4814",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "15138",
+            "label": "CONSUMED_BY",
+            "from": "3159",
+            "to": "2604",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "15147",
+            "label": "PRODUCES",
+            "from": "2604",
+            "to": "3339",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "15733",
+            "label": "CONSUMED_BY",
+            "from": "14924",
+            "to": "2674",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "15740",
+            "label": "PRODUCES",
+            "from": "2674",
+            "to": "5191",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "15848",
+            "label": "PRODUCES",
+            "from": "2655",
+            "to": "4819",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "15850",
+            "label": "PRODUCES",
+            "from": "2655",
+            "to": "4792",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "15851",
+            "label": "CONSUMED_BY",
+            "from": "4814",
+            "to": "2655",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "15877",
+            "label": "PRODUCES",
+            "from": "2750",
+            "to": "61",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "16169",
+            "label": "CONSUMED_BY",
+            "from": "3205",
+            "to": "2747",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "16172",
+            "label": "PRODUCES",
+            "from": "2747",
+            "to": "3159",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "16349",
+            "label": "PRODUCES",
+            "from": "2709",
+            "to": "3339",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "16815",
+            "label": "CONSUMED_BY",
+            "from": "3339",
+            "to": "2704",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": "16820",
+            "label": "PRODUCES",
+            "from": "2704",
+            "to": "5350",
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        }
+    ]
+}

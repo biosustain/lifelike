@@ -6,15 +6,17 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ProjectPageService } from './project-page.service';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, throwError } from 'rxjs';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { map } from 'rxjs/operators';
-import { FileAnnotationHistory } from '../models/file-annotation-history';
-import { HttpClient } from '@angular/common/http';
+import { catchError, map } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ApiService } from '../../shared/services/api.service';
-import { FileAnnotationHistoryResponse } from '../schema';
-import { PaginatedRequestOptions } from '../../interfaces/shared.interface';
+import { PaginatedRequestOptions, ResultList } from '../../shared/schemas/common';
+import { FileAnnotationHistoryResponse, ObjectLockData } from '../schema';
+import { ObjectLock } from '../models/object-lock';
+import { FileAnnotationHistory } from '../models/file-annotation-history';
 import { serializePaginatedParams } from '../../shared/utils/params';
+import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 
 @Injectable()
 export class FilesystemService {
@@ -24,6 +26,7 @@ export class FilesystemService {
               protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
+              protected readonly progressDialog: ProgressDialog,
               protected readonly errorHandler: ErrorHandler,
               protected readonly route: ActivatedRoute,
               protected readonly projectPageService: ProjectPageService,
@@ -111,5 +114,52 @@ export class FilesystemService {
       (tooltip: string, [name, date]: [string, string]) => `${tooltip}\n- ${name}, ${new Date(date).toDateString()}`,
       'Outdated:',
     );
+  }
+
+  getLocks(hashId: string): Observable<ObjectLock[]> {
+    return this.http.get<ResultList<ObjectLockData>>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/locks`, {
+        ...this.apiService.getHttpOptions(true),
+      },
+    ).pipe(
+      map(data => {
+        return data.results.map(itemData => new ObjectLock().update(itemData));
+      }),
+    );
+  }
+
+  acquireLock(hashId: string, options: { own: true }): Observable<ObjectLock[]> {
+    return this.http.put<ResultList<ObjectLockData>>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/locks?own=true`,
+      {},
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(data => {
+        return data.results.map(itemData => new ObjectLock().update(itemData));
+      }),
+      catchError(e => {
+        if (e instanceof HttpErrorResponse) {
+          if (e.status === 409) {
+            const otherLocks = e.error.results.map(itemData => new ObjectLock().update(itemData));
+            return throwError(new LockError(otherLocks));
+          }
+        }
+
+        return throwError(e);
+      }),
+    );
+  }
+
+  deleteLock(hashId: string, options: { own: true }): Observable<any> {
+    return this.http.delete<unknown>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/locks?own=true`, {
+        ...this.apiService.getHttpOptions(true),
+      },
+    ).pipe(map(() => ({})));
+  }
+}
+
+export class LockError {
+  constructor(public readonly locks: ObjectLock[]) {
   }
 }

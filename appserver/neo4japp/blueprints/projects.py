@@ -5,7 +5,6 @@ from flask import (
     jsonify,
     Blueprint,
     g,
-    abort,
 )
 from sqlalchemy import and_
 from neo4japp.blueprints.auth import auth
@@ -57,6 +56,10 @@ def get_project(name):
     proj_service = get_projects_service()
     dir = proj_service.get_***ARANGO_USERNAME***_dir(project)
 
+    current_app.logger.info(
+        f'Project: {name}',
+        extra=UserEventLog(username=g.current_user.username, event_type='get project').to_dict()
+    )
     # Combine both dictionaries
     results = {
         **project.to_dict(),
@@ -220,6 +223,12 @@ def edit_collaborator(username: str, project_name: str):
     new_role = AppRole.query.filter(AppRole.name == project_role).one()
     proj_service.edit_collaborator(new_collaborator, new_role, projects)
 
+    current_app.logger.info(
+        f'Modified collaborator {username} for project {project_name}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='edit project collaborator').to_dict()
+    )
+
     yield jsonify({'result': 'success'}), 200
 
 
@@ -247,6 +256,11 @@ def remove_collaborator(username: str, project_name: str):
     yield user, projects
 
     proj_service.remove_collaborator(new_collaborator, projects)
+    current_app.logger.info(
+        f'Removed collaborator {username} for project {project_name}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='remove project collaborator').to_dict()
+    )
 
     yield jsonify({'result': 'success'}), 200
 
@@ -273,6 +287,11 @@ def add_directory(project_name: str):
 
     yield user, projects
     new_dir = proj_service.add_directory(projects, dir_name, user, parent_dir)
+    current_app.logger.info(
+        f'Added directory {dir_name} for project {project_name}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='create directory').to_dict()
+    )
     yield jsonify({'results': new_dir.to_dict()})
 
 
@@ -318,6 +337,11 @@ def move_files(req: MoveFileRequest, project_name: str):
     else:
         raise DirectoryError('No asset type defined for move operation')
 
+    current_app.logger.info(
+        f'Move {req.asset_type} in project {project_name}',
+        extra=UserEventLog(username=g.current_user.username, event_type='move asset').to_dict()
+    )
+
     yield SuccessResponse(
         result=MoveFileResponse(
             dest=dest.to_dict(),
@@ -357,6 +381,11 @@ def rename_directory(req: DirectoryRenameRequest, current_dir_id: int, project_n
         raise InvalidDirectoryNameException('Directory cannot be empty')
 
     modified_dir = proj_service.rename_directory(req.name, dir)
+    current_app.logger.info(
+        f'Renamed directory {dir.name} to {req.name}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='rename directory').to_dict()
+    )
 
     yield SuccessResponse(result=modified_dir.to_dict(), status_code=200)
 
@@ -388,6 +417,11 @@ def delete_directory(current_dir_id: int, project_name: str):
         raise RecordNotFoundException(f'No directory found')
 
     proj_service.delete_directory(dir)
+    current_app.logger.info(
+        f'Deleted directory {dir.name} in project {project_name}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='delete directory').to_dict()
+    )
 
     yield jsonify(result='successful deleted', status_code=200)
 

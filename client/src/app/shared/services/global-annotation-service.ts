@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { AbstractService } from './abstract-service';
 import { GlobalAnnotation } from 'app/interfaces/annotation';
-import { PaginatedRequestOptions, ResultList } from 'app/interfaces/shared.interface';
+import { PaginatedRequestOptions, ResultList } from '../schemas/common';
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class GlobalAnnotationService extends AbstractService {
