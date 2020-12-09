@@ -68,6 +68,12 @@ def connect_to_lmdb():
     return g.lmdb
 
 
+def close_lmdb(e=None):
+    lmdb = g.pop('lmdb', None)
+    if lmdb:
+        lmdb.session.close_envs()
+
+
 class LMDBConnection:
     def __init__(self):
         super().__init__()

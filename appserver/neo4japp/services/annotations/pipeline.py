@@ -305,8 +305,6 @@ def _create_annotations(
         f'Time to create annotations {time.time() - start}',
         extra=EventLog(event_type='annotations').to_dict()
     )
-
-    entity_recog.lmdb.session.close_envs()
     return pdf_text, bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
 
