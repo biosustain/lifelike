@@ -7,7 +7,7 @@ import {
   HostBinding,
   HostListener,
   Inject,
-  Input,
+  NgZone,
   OnDestroy,
   Renderer2,
 } from '@angular/core';
@@ -34,6 +34,11 @@ export class ContextMenuBodyDirective {
   constructor(@Inject(forwardRef(() => ContextMenuDirective))
               readonly contextMenu: ContextMenuDirective) {
   }
+
+  @HostListener('click', ['$event'])
+  clicked(e: MouseEvent) {
+    e.stopPropagation();
+  }
 }
 
 /**
@@ -50,21 +55,30 @@ export class ContextMenuDirective implements AfterViewInit, OnDestroy {
   protected readonly subscriptions = new Subscription();
   protected mousePosition = [0, 0];
   private readonly viewportSpacing = 5;
+  private mouseMovedBound = this.mouseMoved.bind(this);
 
   constructor(protected readonly element: ElementRef,
-              protected readonly renderer: Renderer2) {
+              protected readonly renderer: Renderer2,
+              protected readonly ngZone: NgZone) {
   }
 
   ngAfterViewInit() {
-    for (const event of ['click', 'contextmenu']) {
-      this.subscriptions.add(fromEvent(document.body, event, {
-        capture: true,
-      }).pipe(map(() => this.open = false)).subscribe());
-    }
+    // This forces all context menus to close on any right click, so we don't need to
+    // keep track of which context menu is supposed to be open, although this means you cannot
+    // right click on the contents of context menus
+    this.subscriptions.add(fromEvent(document.body, 'contextmenu', {
+      capture: true,
+    }).pipe(map(() => this.open = false)).subscribe());
+
+    this.ngZone.runOutsideAngular(() => {
+      // Register this event outside because NgZone may be slow
+      document.addEventListener('mousemove', this.mouseMovedBound);
+    });
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    document.removeEventListener('mousemove', this.mouseMovedBound);
   }
 
   get open(): boolean {
@@ -91,7 +105,6 @@ export class ContextMenuDirective implements AfterViewInit, OnDestroy {
    * Listener to track where the mouse was last.
    * @param e the event
    */
-  @HostListener('document:mousemove', ['$event'])
   mouseMoved(e: MouseEvent) {
     this.mousePosition = [e.pageX, e.pageY];
   }
@@ -103,12 +116,13 @@ export class ContextMenuDirective implements AfterViewInit, OnDestroy {
 
   @HostListener('contextmenu', ['$event'])
   contextMenuClicked(e) {
+    e.stopPropagation();
     e.preventDefault();
     this.open = true;
   }
 
   @HostListener('document:click', ['$event'])
-  clicked(e: MouseEvent) {
+  documentClicked(e: MouseEvent) {
     this.open = false;
   }
 
