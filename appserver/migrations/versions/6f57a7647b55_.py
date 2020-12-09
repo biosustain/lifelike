@@ -1,7 +1,7 @@
 """Update old custom annotations to have the new primaryName JSON property.
 
 Revision ID: 6f57a7647b55
-Revises: e4e01bc5ad23
+Revises: 72ca40805083
 Create Date: 2020-12-07 19:42:02.759863
 
 """
@@ -23,7 +23,7 @@ from migrations.utils import (
 
 # revision identifiers, used by Alembic.
 revision = '6f57a7647b55'
-down_revision = 'e4e01bc5ad23'
+down_revision = '72ca40805083'
 branch_labels = None
 depends_on = None
 
