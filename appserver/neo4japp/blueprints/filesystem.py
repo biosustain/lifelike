@@ -16,7 +16,7 @@ from neo4japp.database import db
 from neo4japp.exceptions import RecordNotFoundException
 from neo4japp.models import AccessActionType, AppUser, Directory, Projects, Project
 from neo4japp.models.files import FileLock
-from neo4japp.schemas.files import FileLockListResponse, FileLockCreateRequest
+from neo4japp.schemas.files import FileLockListResponse, FileLockCreateRequest, FileLockDeleteRequest
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -104,7 +104,7 @@ class FileLockListView(BaseFileLockView):
         else:
             return make_response(self.get_locks_response(hash_id), 409)
 
-    @use_args(FileLockCreateRequest)
+    @use_args(FileLockDeleteRequest)
     def delete(self, params: Dict, hash_id: str):
         current_user = g.current_user
 

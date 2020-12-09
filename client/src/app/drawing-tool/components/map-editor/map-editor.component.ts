@@ -228,7 +228,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
         });
       });
     } else {
-      this.filesystemService.putLock(this.locator.hashId, {
+      this.filesystemService.acquireLock(this.locator.hashId, {
         own: true,
       }).pipe(
         finalize(() => this.lastLockCheckTime = window.performance.now()),
