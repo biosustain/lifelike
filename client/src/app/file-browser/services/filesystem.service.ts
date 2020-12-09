@@ -109,7 +109,7 @@ export class FilesystemService {
     );
   }
 
-  putLock(hashId: string, options: { own: true }): Observable<ObjectLock[]> {
+  acquireLock(hashId: string, options: { own: true }): Observable<ObjectLock[]> {
     return this.http.put<ResultList<ObjectLockData>>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/locks?own=true`,
       {},
