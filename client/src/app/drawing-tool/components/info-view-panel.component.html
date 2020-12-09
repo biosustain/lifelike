@@ -18,23 +18,6 @@
         {{ selected.entity.data.detail }}
       </div>
     </div>
-
-    <div class="mt-4" *ngIf="(selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length === 1)
-        || (selected.entity.data?.sources && selected.entity.data?.sources.length === 1)">
-      <a *ngIf="selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length === 1"
-         [href]="selected.entity.data.hyperlinks[0].url"
-         [ngbTooltip]="selected.entity.data.hyperlinks[0].url"
-         container="body"
-         (click)="goToLink(selected.entity.data.hyperlinks[0].url); $event.preventDefault()"
-         class="btn btn-secondary mr-2">Open Link</a>
-
-      <a *ngIf="selected.entity.data?.sources && selected.entity.data?.sources.length === 1"
-         [href]="selected.entity.data.sources[0].url"
-         [ngbTooltip]="selected.entity.data.sources[0].url"
-         container="body"
-         (click)="goToLink(selected.entity.data.sources[0].url); $event.preventDefault()"
-         class="btn btn-secondary">Go to Source</a>
-    </div>
   </div>
 
   <div class="module-body border-top">
