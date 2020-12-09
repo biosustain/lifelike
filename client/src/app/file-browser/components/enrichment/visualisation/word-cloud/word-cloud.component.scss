@@ -2,6 +2,10 @@
 @import '~bootstrap/scss/variables';
 @import 'src/scss/variables';
 
+.min-h-100-l {
+  min-height: 100px;
+}
+
 .filter-btns-container {
   height: 1.5rem;
   margin-bottom: .25rem;
