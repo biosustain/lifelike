@@ -3,7 +3,7 @@ import pytest
 from os import path
 
 from neo4japp.database import get_annotations_pdf_parser
-from neo4japp.data_transfer_objects import (
+from neo4japp.services.annotations.data_transfer_objects import (
     PDFChar,
     PDFMeta,
     PDFWord,

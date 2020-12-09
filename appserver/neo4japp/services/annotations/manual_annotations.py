@@ -9,6 +9,7 @@ from neo4japp.database import (
     db,
     get_annotations_service,
     get_annotations_pdf_parser,
+    get_entity_recognition
 )
 from neo4japp.exceptions import (
     AnnotationError,
@@ -68,9 +69,10 @@ class ManualAnnotationsService:
             # and avoid code change bugs
             fp = io.BytesIO(file_content.raw_file)
             pdf_parser = get_annotations_pdf_parser()
+            recognition = get_entity_recognition()
             parsed = pdf_parser.parse_pdf(pdf=fp)
             fp.close()
-            tokens_list = pdf_parser.extract_tokens(parsed=parsed)
+            tokens_list = recognition.extract_tokens(parsed=parsed)
             annotator = get_annotations_service()
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
             matches = annotator.get_matching_manual_annotations(
@@ -198,59 +200,6 @@ class ManualAnnotationsService:
             raise RecordNotFoundException('Annotation not found')
 
         db.session.commit()
-
-    def apply_custom_hyperlink_and_type(
-        self,
-        bioc: dict,
-        custom_annotations: list
-    ) -> dict:
-        """Apply custom annotations on top of existing ones.
-
-        This will update the system annotation idHyperlink and idType
-        with the ones from custom annotations.
-        """
-        if custom_annotations:
-            annotations = bioc['documents'][0]['passages'][0]['annotations']
-
-            for anno in annotations:
-                for custom in custom_annotations:
-                    if (anno.get('meta', {}).get('type') == custom.get('meta', {}).get('type') and
-                        self._terms_match(
-                            anno.get('textInDocument', 'False'),
-                            custom.get('meta', {}).get('allText', 'True'),
-                            custom.get('meta', {}).get('isCaseInsensitive'))):
-
-                        if custom.get('meta', {}).get('idHyperlink'):
-                            anno['meta']['idHyperlink'] = custom['meta']['idHyperlink']
-
-                        if custom.get('meta', {}).get('idType') and anno.get('meta', {}).get('idType'):  # noqa
-                            if custom['meta']['idType'] != anno['meta']['idType']:
-                                # prioritize custom id type since it should be
-                                # based on custom idHyperlink
-                                custom_id_type = custom['meta']['idType'].upper()
-                                anno['meta']['idType'] = custom_id_type
-
-                        if anno.get('meta', {}).get('id') and anno.get('meta', {}).get('idType'):
-                            entity_id = anno['meta']['id']
-                            entity_id_type = anno['meta']['idType']
-
-                            # prepend the prefix to entity_id to be consistent
-                            if entity_id_type == DatabaseType.CHEBI.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.CUSTOM.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.MESH.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.UNIPROT.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.NCBI.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.BIOCYC.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.PUBCHEM.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-
-        return bioc
 
     def get_combined_annotations(self, project_id, file_id):
         """ Returns automatic annotations that were not marked for exclusion
