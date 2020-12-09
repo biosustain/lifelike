@@ -67,7 +67,7 @@ def db_service(session):
 
 
 @pytest.fixture(scope='function')
-def get_annotation_service(db_service, graph_service, request):
+def get_annotation_service(db_service, graph_service, lmdb_service, request):
     def teardown():
         for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
             for fn in filenames:
@@ -80,7 +80,7 @@ def get_annotation_service(db_service, graph_service, request):
 
 
 @pytest.fixture(scope='function')
-def get_manual_annotation_service(graph_service, request):
+def get_manual_annotation_service(graph_service, lmdb_service, request):
     def teardown():
         for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
             for fn in filenames:
