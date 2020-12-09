@@ -21,6 +21,7 @@ import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dia
 import { MapRestoreDialogComponent } from './components/map-restore-dialog.component';
 import { MapComponent } from './components/map.component';
 import { MapVersionDialogComponent } from './components/map-version-dialog.component';
+import { InfoViewPanelComponent } from './components/info-view-panel.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +40,7 @@ import { MapVersionDialogComponent } from './components/map-version-dialog.compo
     EdgeFormComponent,
     MapEditDialogComponent,
     MapRestoreDialogComponent,
+    InfoViewPanelComponent,
   ],
   entryComponents: [
     MapCreateDialogComponent,
@@ -50,6 +52,7 @@ import { MapVersionDialogComponent } from './components/map-version-dialog.compo
     MapExportDialogComponent,
     ConfirmDialogComponent,
     MapRestoreDialogComponent,
+    InfoViewPanelComponent,
   ],
   imports: [
     SharedModule,
