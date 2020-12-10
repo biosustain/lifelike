@@ -392,7 +392,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
 
   // Get data from enrichment domains.
   getDomains(result: NCBIWrapper[], currentGenes: string[]) {
-    const synonyms = result.map((wrapper) => wrapper.s);
+    const synonyms = result.map((wrapper) => wrapper.s.name);
     const ncbiNodes = result.map((wrapper) => wrapper.x);
     const ncbiIds = result.map((wrapper) => wrapper.neo4jID);
     const ncbiLinks = result.map((wrapper) => wrapper.link);
@@ -411,15 +411,15 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
             },
           });
           newEntries[i].unshift({ text: ncbiNodes[i].name });
-          newEntries[i].unshift({ text: synonyms[i].name });
+          newEntries[i].unshift({ text: synonyms[i] });
         }
         newEntries = newEntries.concat(this.processUnmatchedNodes(synonyms, currentGenes));
         this.tableEntries = this.tableEntries.concat(newEntries);
       });
   }
 
-  processUnmatchedNodes(synonyms: Synonym[], currentGenes: string[]): TableCell[][] {
-    this.geneNames = synonyms.map((node) => node.name);
+  processUnmatchedNodes(synonyms: string[], currentGenes: string[]): TableCell[][] {
+    this.geneNames = synonyms;
     const unmatchedGenes = currentGenes.filter(
       (gene) => !this.geneNames.includes(gene)
     );
