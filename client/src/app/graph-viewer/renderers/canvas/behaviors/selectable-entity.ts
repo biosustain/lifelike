@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 
 import { CanvasGraphView } from '../canvas-graph-view';
-import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
 import { GraphEntity, UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
 import { isCtrlOrMetaPressed, isShiftPressed } from '../../../../shared/utils';
 
@@ -19,9 +19,9 @@ export class SelectableEntity extends AbstractCanvasBehavior {
     return BehaviorResult.Continue;
   }
 
-  dragEnd(event: MouseEvent): BehaviorResult {
-    const subject: GraphEntity | undefined = d3.event.subject;
-    if (isCtrlOrMetaPressed(event) || isShiftPressed(event)) {
+  dragEnd(event: DragBehaviorEvent): BehaviorResult {
+    const subject = event.entity;
+    if (isCtrlOrMetaPressed(event.event) || isShiftPressed(event.event)) {
       if (subject != null) {
         const selection = [...this.graphView.selection.get()];
         let found = false;

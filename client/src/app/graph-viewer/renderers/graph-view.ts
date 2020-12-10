@@ -118,6 +118,7 @@ export abstract class GraphView implements GraphActionReceiver {
   readonly behaviors = new BehaviorList<any>([
     'isPointIntersectingNode',
     'isPointIntersectingEdge',
+    'shouldDrag',
   ]);
 
   // History

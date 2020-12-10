@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
 import { Arrowhead } from '../../../utils/canvas/line-heads/arrow';
 import { EdgeCreation } from '../../../actions/edges';
 import { asLiteral } from '@angular/compiler/src/render3/view/util';
@@ -119,7 +119,7 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
     }
   }
 
-  drag(event: MouseEvent): BehaviorResult {
+  drag(event: DragBehaviorEvent): BehaviorResult {
     // TODO: Cache
     const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
     const graphX = this.graphView.transform.invertX(mouseX);
@@ -136,7 +136,7 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
     return BehaviorResult.Stop;
   }
 
-  dragEnd(event: MouseEvent): BehaviorResult {
+  dragEnd(event: DragBehaviorEvent): BehaviorResult {
     const subject = this.graphView.getEntityAtMouse(); // TODO: Cache
 
     if (subject && subject.type === GraphEntityType.Node) {
