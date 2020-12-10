@@ -340,10 +340,12 @@ class KgService(HybridDBDao):
         ncbi_gene_ids: List[int],
     ):
         query = self.get_go_genes_query()
+        numbers = range(0, len(ncbi_gene_ids))
+        gene_tuples = list(zip(ncbi_gene_ids, numbers))
         result = self.graph.run(
             query,
             {
-                'ncbi_gene_ids': ncbi_gene_ids,
+                'gene_tuples': gene_tuples
             }
         ).data()
         result_list = []
@@ -529,10 +531,10 @@ class KgService(HybridDBDao):
 
     def get_go_genes_query(self):
         return """
-        MATCH (g:Gene:db_NCBI)
-        WHERE ID(g) IN $ncbi_gene_ids
-        OPTIONAL MATCH (g)-[:GO_LINK]-(x:db_GO)
-        RETURN g, collect(x) AS xArray
+        UNWIND $gene_tuples as genes
+        OPTIONAL MATCH (g:Gene:db_NCBI)-[:GO_LINK]-(x:db_GO)
+        WHERE ID(g)=genes[0]
+        RETURN genes[1], collect(x) as xArray
         """
 
     def get_biocyc_genes_query(self):
