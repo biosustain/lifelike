@@ -98,6 +98,7 @@ class ProjectVersion(RDBMSBase, TimestampMixin):
     graph = db.Column(db.JSON)
     public = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=False)
+    user = db.relationship('AppUser', foreign_keys=user_id)
     dir_id = db.Column(db.Integer, db.ForeignKey('directory.id'), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     search_vector = db.Column(TSVectorType('label'))
