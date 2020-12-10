@@ -1,6 +1,6 @@
 // @ts-ignore
 import * as d3 from 'd3';
-import { AbstractCanvasBehavior, BehaviorResult } from '../../renderers/behaviors';
+import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../renderers/behaviors';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../../drawing-tool/services/interfaces';
 import { PlacedNode } from '../../styles/styles';
 import { CanvasGraphView } from '../../renderers/canvas/canvas-graph-view';
@@ -13,40 +13,40 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
     super();
   }
 
-  dragStart(event: MouseEvent): BehaviorResult {
+  dragStart(event: DragBehaviorEvent): BehaviorResult {
     const transform = this.graphView.transform;
     const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
     const graphX = transform.invertX(mouseX);
     const graphY = transform.invertY(mouseY);
-    const subject: GraphEntity | undefined = d3.event.subject;
+    const subject = event.entity;
 
     if (subject.type === GraphEntityType.Node) {
       this.handle = this.getHandleIntersected(this.graphView.placeNode(this.target), graphX, graphY);
       if (this.handle != null) {
-        this.activeDragStart(event, graphX, graphY, subject);
+        this.activeDragStart(event.event, graphX, graphY, subject);
       }
     }
 
     return BehaviorResult.Continue;
   }
 
-  drag(event: MouseEvent): BehaviorResult {
+  drag(event: DragBehaviorEvent): BehaviorResult {
     if (this.handle) {
       const transform = this.graphView.transform;
       const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
       const graphX = transform.invertX(mouseX);
       const graphY = transform.invertY(mouseY);
-      this.activeDrag(event, graphX, graphY);
+      this.activeDrag(event.event, graphX, graphY);
       return BehaviorResult.Stop;
     } else {
       return BehaviorResult.Continue;
     }
   }
 
-  dragEnd(event: MouseEvent): BehaviorResult {
+  dragEnd(event: DragBehaviorEvent): BehaviorResult {
     this.drag(event);
     this.handle = null;
-    this.activeDragEnd(event);
+    this.activeDragEnd(event.event);
     return BehaviorResult.Continue;
   }
 
