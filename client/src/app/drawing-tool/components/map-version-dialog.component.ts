@@ -59,7 +59,8 @@ export class MapVersionDialogComponent extends CommonFormDialogComponent impleme
       ({ result: versions}) => {
         this.versionIDs = versions.versions.map((version) => (version.id as number));
         this.versionChoices = versions.versions.reverse().map(
-          (version) => 'Version ' + (this.versionIDs.indexOf(version.id as number) + 1) + '. Date Modified: ' + version.modified_date);
+          (version) => 'Version ' + (this.versionIDs.indexOf(version.id as number) + 1) +
+            '. By ' + version.author + '. Date Modified: ' + version.modified_date);
         this.versionChoices.unshift('');
       }
     );
