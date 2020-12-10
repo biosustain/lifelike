@@ -61,13 +61,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     ['GO', [{ name: '', span: '1' }]],
     ['Biocyc', [{ name: '', span: '1' }]],
   ]);
-
-  // Pagination
-  currentPage: number;
-  pageSize: number;
-  collectionSize: number;
-  currentGenes: string[];
-  morePages: boolean;
   numDefaultHeader: number = this.tableHeader[0].length;
 
   // Enrichment Table and NCBI Matching Results
@@ -86,10 +79,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   duplicateGenes: string;
   columnOrder: string[] = [];
 
-  scrollTopAmount;
-
-  loadMoreDataSource = new Subject<boolean>();
-  loadMoreSub: Subscription;
+  scrollTopAmount: number;
 
   constructor(
     private readonly worksheetViewerService: EnrichmentTableService,
@@ -100,14 +90,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
     this.fileId = this.route.snapshot.params.file_id || '';
-    this.loadMoreSub = this.loadMoreDataSource.asObservable().pipe(
-      debounceTime(500),
-      exhaustMap(re => interval(1000).pipe(take(4))),
-    ).subscribe(() => {
-      this.matchNCBINodes(this.currentPage + 1);
-      this.currentPage += 1;
-      this.morePages = this.currentPage < Math.ceil(this.collectionSize / this.pageSize);
-    });
   }
 
   ngOnInit() {
@@ -146,11 +128,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       }
       this.initializeHeaders();
       this.removeDuplicates(this.importGenes);
-      this.currentPage = 1;
-      this.pageSize = 10;
-      this.collectionSize = this.importGenes.length;
-      this.matchNCBINodes(this.currentPage);
-      this.morePages = this.currentPage < Math.ceil(this.collectionSize / this.pageSize);
+      this.matchNCBINodes();
     });
     this.loadTask.update();
   }
@@ -161,6 +139,10 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
 
   scrollTop() {
     this.scrollTopAmount = 0;
+  }
+
+  onTableScroll(e) {
+    this.scrollTopAmount = e.target.scrollTop;
   }
 
   loadAllEntries(): Promise<TableCell[][]> {
@@ -261,24 +243,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         duration: 5000,
       });
     }
-  }
-
-  onTableScroll(e) {
-    const tableViewHeight = e.target.offsetHeight;
-    const tableScrollHeight = e.target.scrollHeight;
-    this.scrollTopAmount = e.target.scrollTop;
-    const scrollLocation = e.target.scrollTop;
-
-    // If the user has scrolled within 10px of the bottom, add more data
-    const buffer = 10;
-    const limit = tableScrollHeight - tableViewHeight - buffer;
-    if (scrollLocation > limit && this.morePages) {
-      this.loadMore();
-    }
-  }
-
-  loadMore() {
-    this.loadMoreDataSource.next(true);
   }
 
   convertEntriesToString(entries: TableCell[][]): string[][] {
@@ -403,15 +367,11 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     });
   }
 
-  matchNCBINodes(page: number) {
-    const currentGenes = this.importGenes.slice(
-      (page - 1) * this.pageSize,
-      (page - 1) * this.pageSize + this.pageSize
-    );
+  matchNCBINodes() {
     this.worksheetViewerService
-      .matchNCBINodes(currentGenes, this.taxID)
+      .matchNCBINodes(this.importGenes, this.taxID)
       .subscribe((result) => {
-        this.getDomains(result, currentGenes);
+        this.getDomains(result, this.importGenes);
       });
   }
 
