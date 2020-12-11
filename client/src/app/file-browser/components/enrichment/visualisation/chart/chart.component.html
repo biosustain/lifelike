@@ -1,8 +1,12 @@
-<canvas baseChart
-        [data]="chartData"
-        [options]="chartOptions"
-        [legend]="chartLegend"
-        [chartType]="chartType"
-        [ngStyle]="{'height': 90+chartData.length*10+'px'}"
->
-</canvas>
+<div class="chartjs-container">
+  <canvas baseChart
+          [ngStyle]="{'height': 130+data.length*15+'px'}"
+          [data]="data"
+          [options]="options"
+          [legend]="legend"
+          [chartType]="chartType"
+          (chartClick)="chartClick.emit($event)"
+          (chartHover)="chartHover.emit($event)"
+  >
+  </canvas>
+</div>
