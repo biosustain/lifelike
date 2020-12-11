@@ -238,8 +238,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
         })
         .on('mouseleave', this.canvasMouseLeave.bind(this))
         .on('mouseup', this.canvasMouseUp.bind(this))
-        .on('dragover', this.canvasDragOver.bind(this))
-        .on('drop', this.canvasDrop.bind(this))
         .call(d3.drag()
             .container(this.canvas)
             .filter(() => !d3.event.button)
@@ -279,6 +277,16 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.trackedSubscriptions.push(
       fromEvent(this.canvas, 'keyup')
         .subscribe(this.canvasKeyDown.bind(this)),
+    );
+
+    this.trackedSubscriptions.push(
+      fromEvent(this.canvas, 'dragover')
+        .subscribe(this.canvasDragOver.bind(this)),
+    );
+
+    this.trackedSubscriptions.push(
+      fromEvent(this.canvas, 'drop')
+        .subscribe(this.canvasDrop.bind(this)),
     );
   }
 
@@ -1098,16 +1106,16 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.requestRender();
   }
 
-  canvasDragOver(): void {
+  canvasDragOver(event): void {
     const behaviorEvent = {
-      event: d3.event,
+      event,
     };
     this.behaviors.apply(behavior => behavior.dragOver(behaviorEvent));
   }
 
-  canvasDrop(): void {
+  canvasDrop(event): void {
     const behaviorEvent = {
-      event: d3.event,
+      event,
     };
     this.behaviors.apply(behavior => behavior.drop(behaviorEvent));
   }
