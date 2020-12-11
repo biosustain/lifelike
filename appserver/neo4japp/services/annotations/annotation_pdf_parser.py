@@ -126,7 +126,8 @@ class AnnotationPDFParser:
                     cropbox=cropbox,
                     page_number=page_number
                 )
-            elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno) and lt_obj.get_text() != '\n':  # noqa
+            elif (isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno)) and (
+                lt_obj.get_text() != '\n' and lt_obj.get_text() != '\x00'):  # noqa
                 is_ltchar = isinstance(lt_obj, LTChar)
                 pdf_char_obj = PDFChar(
                     x0=lt_obj.x0 if is_ltchar else 0,
