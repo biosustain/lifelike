@@ -45,17 +45,17 @@ Default.args = {
   data: [
     {
       name: "sfagrsg",
-      pValue: 2
+      "P-value": 2
     },
     {
       name: "sfafwefwgrsg",
-      pValue: 0.16,
-      eValue: 10
+      "P-value": 0.16,
+      "Adjusted P-value": 1/10
     },
     {
       name: "Sdrgerg",
-      eValue: 12,
-      pValue: 0.123
+      "Adjusted P-value": 1/12,
+      "P-value": 0.123
     }
   ]
 };

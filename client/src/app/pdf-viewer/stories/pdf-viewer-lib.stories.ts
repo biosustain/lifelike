@@ -74,8 +74,8 @@ const Template: Story<PdfViewerLibComponent> = (args) => ({
     ...args
   },
   template: `<lib-pdf-viewer-lib
-              id='pdf-viewer'
               appPdfViewer
+              id='pdf-viewer'
               [pdfSrc]="pdfSrc"
               [annotations]="annotations"
               [goToPosition]="goToPosition"

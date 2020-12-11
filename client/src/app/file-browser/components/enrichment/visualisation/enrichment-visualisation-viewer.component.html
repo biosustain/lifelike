@@ -17,7 +17,7 @@
         </div>
       </div>
 
-      <div *ngIf="tableEntries" class="module-body flex-fill overflow-auto">
+      <div *ngIf="tableEntries" class="module-body flex-fill overflow-auto space-cards">
         <div class="card">
           <div
             class="card-body">
@@ -41,19 +41,21 @@
 
         <div class="card">
           <div class="card-header">
-            Total Number of Nodes
+            P-values
           </div>
           <app-chart [data]="data.data"
                      class="card-body"
                      style="display: block; width: 100%; height: 100%;"
+                      (chartClick)="chartClick($event)"
+                      (chartHover)="chartClick($event)"
           ></app-chart>
         </div>
 
         <div class="card">
           <div class="card-header">
-            Total Number of Nodes
+            Genes for {{ data.data[selectedRow]["Term"] }}
           </div>
-          <app-word-cloud WordCloudComponent
+          <app-word-cloud
                           class="card-body"
                           [data]="cloudData"
           ></app-word-cloud>

@@ -1,15 +1,17 @@
-import {Component, OnInit, Input} from '@angular/core';
-import {ChartDataSets, ChartOptions, ChartType} from 'chart.js';
-import {Color} from 'ng2-charts';
+import {
+  Component,
+  Input,
+  Output, EventEmitter
+} from '@angular/core';
+import {ChartOptions, ChartType} from 'chart.js';
 import {SingleOrMultiDataSet} from "ng2-charts/lib/base-chart.directive";
 
 @Component({
   selector: 'app-chart',
-  templateUrl: './chart.component.html',
-  styleUrls: ['./chart.component.scss']
+  templateUrl: './chart.component.html'
 })
-export class ChartComponent implements OnInit {
-  public chartOptions: ChartOptions = {
+export class ChartComponent {
+  public options: ChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
@@ -20,7 +22,7 @@ export class ChartComponent implements OnInit {
             stepSize: 1,
             // callback: value => value
           },
-          gridLines:{
+          gridLines: {
             drawOnChartArea: false
           },
           offset: true,
@@ -40,7 +42,7 @@ export class ChartComponent implements OnInit {
             callback: (value, index) => index in this.data ? this.data[value]["Term"] : '',
           },
           offset: true,
-          gridLines:{
+          gridLines: {
             drawOnChartArea: false
           }
         }
@@ -48,22 +50,15 @@ export class ChartComponent implements OnInit {
     }
   };
   public chartType: ChartType = 'bubble';
-  public chartLegend = false;
-
+  legend = false;
   public chartData: SingleOrMultiDataSet = [];
 
-  constructor() {
-  }
-
-  ngOnInit(): void {
-  }
-
   @Input("data") set data(data: any[]) {
-    this.chartData = data.slice(0,10).map((d: any, i) => ({
+    this.chartData = data.slice(0, 10).map((d: any, i) => ({
       ...d,
-      x: 1/d["P-value"],
+      x: 1 / d["P-value"],
       y: i,
-      r: 2.5+2.5*d["Adjusted P-value"]
+      r: 3.75 + 3.75 * d["Adjusted P-value"]
     }));
   }
 
@@ -71,12 +66,7 @@ export class ChartComponent implements OnInit {
     return this.chartData;
   }
 
-  // events
-  public chartClicked({event, active}: { event: MouseEvent, active: {}[] }): void {
-    console.log(event, active);
-  }
+  @Output("chartClick") chartClick: EventEmitter<any> = new EventEmitter();
+  @Output("chartHover") chartHover: EventEmitter<any> = new EventEmitter();
 
-  public chartHovered({event, active}: { event: MouseEvent, active: {}[] }): void {
-    console.log(event, active);
-  }
 }
