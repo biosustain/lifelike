@@ -22,11 +22,11 @@ export class SelectableEntity extends AbstractCanvasBehavior {
     return this.isRegionSelecting(event.event);
   }
 
-  click(event: MouseEvent): BehaviorResult {
+  click(event: BehaviorEvent<MouseEvent>): BehaviorResult {
     const entity = this.graphView.getEntityAtMouse();
     if (entity == null) {
       this.graphView.selection.replace([]);
-    } else if (isCtrlOrMetaPressed(event) || isShiftPressed(event)) {
+    } else if (isCtrlOrMetaPressed(event.event) || isShiftPressed(event.event)) {
       this.amendSelection(entity);
     } else {
       this.graphView.selection.replace([entity]);
