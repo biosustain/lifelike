@@ -10,7 +10,7 @@ import * as d3 from 'd3';
 import * as cola from 'webcola';
 import { InputNode, Layout } from 'webcola';
 import { Group, Link } from 'webcola/WebCola/src/layout';
-import { PlacedEdge, PlacedNode } from '../styles/styles';
+import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
@@ -118,6 +118,8 @@ export abstract class GraphView implements GraphActionReceiver {
   readonly behaviors = new BehaviorList<any>([
     'isPointIntersectingNode',
     'isPointIntersectingEdge',
+    'isBBoxEnclosingNode',
+    'isBBoxEnclosingEdge',
     'shouldDrag',
   ]);
 
@@ -429,15 +431,7 @@ export abstract class GraphView implements GraphActionReceiver {
    * @param padding padding around all the entities
    */
   getEntityBoundingBox(entities: GraphEntity[], padding = 0) {
-    return this.getGroupBoundingBox(entities.map(entity => {
-      if (entity.type === GraphEntityType.Node) {
-        return this.placeNode(entity.entity as UniversalGraphNode).getBoundingBox();
-      } else if (entity.type === GraphEntityType.Edge) {
-        return this.placeEdge(entity.entity as UniversalGraphEdge).getBoundingBox();
-      } else {
-        throw new Error('unknown entity type: ' + entity.type);
-      }
-    }), padding);
+    return this.getGroupBoundingBox(entities.map(entity => this.placeEntity(entity).getBoundingBox()), padding);
   }
 
   /**
@@ -568,6 +562,68 @@ export abstract class GraphView implements GraphActionReceiver {
   }
 
   /**
+   * Find all the nodes fully enclosed by the bounding box.
+   * @param nodes list of nodes to search through
+   * @param x0 top left
+   * @param y0 top left
+   * @param x1 bottom right
+   * @param y1 bottom right
+   */
+  getNodesWithinBBox(nodes: UniversalGraphNode[], x0: number, y0: number, x1: number, y1: number): UniversalGraphNode[] {
+    const results = [];
+    for (let i = nodes.length - 1; i >= 0; --i) {
+      const d = nodes[i];
+      const placedNode = this.placeNode(d);
+      const hookResult = this.behaviors.call('isBBoxEnclosingNode', placedNode, x0, y0, x1, y1);
+      if ((hookResult !== undefined && hookResult) || placedNode.isBBoxEnclosing(x0, y0, x1, y1)) {
+        results.push(d);
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Find all the edges fully enclosed by the bounding box.
+   * @param edges list of edges to search through
+   * @param x0 top left
+   * @param y0 top left
+   * @param x1 bottom right
+   * @param y1 bottom right
+   */
+  getEdgesWithinBBox(edges: UniversalGraphEdge[], x0: number, y0: number, x1: number, y1: number): UniversalGraphEdge[] {
+    const results = [];
+    for (let i = edges.length - 1; i >= 0; --i) {
+      const d = edges[i];
+      const placedEdge = this.placeEdge(d);
+      const hookResult = this.behaviors.call('isBBoxEnclosingEdge', placedEdge, x0, y0, x1, y1);
+      if ((hookResult !== undefined && hookResult) || placedEdge.isBBoxEnclosing(x0, y0, x1, y1)) {
+        results.push(d);
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Find all the entities fully enclosed by the bounding box.
+   * @param x0 top left
+   * @param y0 top left
+   * @param x1 bottom right
+   * @param y1 bottom right
+   */
+  getEntitiesWithinBBox(x0: number, y0: number, x1: number, y1: number): GraphEntity[] {
+    return [
+      ...this.getNodesWithinBBox(this.nodes, x0, y0, x1, y1).map(entity => ({
+        type: GraphEntityType.Node,
+        entity,
+      })),
+      ...this.getEdgesWithinBBox(this.edges, x0, y0, x1, y1).map(entity => ({
+        type: GraphEntityType.Edge,
+        entity,
+      })),
+    ];
+  }
+
+  /**
    * Get the graph entity located where the mouse is.
    * @return the entity, or nothing
    */
@@ -617,6 +673,23 @@ export abstract class GraphView implements GraphActionReceiver {
    * @param d the edge
    */
   abstract placeEdge(d: UniversalGraphEdge): PlacedEdge;
+
+  /**
+   * Place the given entity onto the canvas, which involves calculating the
+   * real size of the object as it would appear. Use the returning object
+   * to get these metrics or use the object to render the entity. The
+   * returned object has the style of the entity baked into it.
+   * @param d the edge
+   */
+  placeEntity(d: GraphEntity): PlacedObject {
+    if (d.type === GraphEntityType.Node) {
+      return this.placeNode(d.entity as UniversalGraphNode);
+    } else if (d.type === GraphEntityType.Edge) {
+      return this.placeEdge(d.entity as UniversalGraphEdge);
+    } else {
+      throw new Error('unknown type: ' + d.type);
+    }
+  }
 
   // ========================================
   // View

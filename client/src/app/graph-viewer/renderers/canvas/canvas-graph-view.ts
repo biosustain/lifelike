@@ -7,9 +7,8 @@ import {
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
-  UniversalGraphEntity,
 } from 'app/drawing-tool/services/interfaces';
-import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode } from 'app/graph-viewer/styles/styles';
+import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode, PlacedObject } from 'app/graph-viewer/styles/styles';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
 import { DragBehaviorEvent, isStopResult } from '../behaviors';
@@ -393,10 +392,15 @@ export class CanvasGraphView extends GraphView {
     this.placedEdgesCache.delete(d);
   }
 
-  getEntityAtMouse(): GraphEntity | undefined {
+  getLocationAtMouse(): [number, number] {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const x = this.transform.invertX(mouseX);
     const y = this.transform.invertY(mouseY);
+    return [x, y];
+  }
+
+  getEntityAtMouse(): GraphEntity | undefined {
+    const [x, y] = this.getLocationAtMouse();
     return this.getEntityAtPosition(x, y);
   }
 
