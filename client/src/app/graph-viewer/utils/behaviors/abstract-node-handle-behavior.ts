@@ -20,7 +20,7 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
     const graphY = transform.invertY(mouseY);
     const subject = event.entity;
 
-    if (subject.type === GraphEntityType.Node) {
+    if (subject != null && subject.type === GraphEntityType.Node) {
       this.handle = this.getHandleIntersected(this.graphView.placeNode(this.target), graphX, graphY);
       if (this.handle != null) {
         this.activeDragStart(event.event, graphX, graphY, subject);
