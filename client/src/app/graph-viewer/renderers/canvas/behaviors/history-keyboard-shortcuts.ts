@@ -1,4 +1,4 @@
-import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
 import { isCtrlOrMetaPressed } from 'app/shared/utils';
 import { MatSnackBar } from '@angular/material';
@@ -12,8 +12,8 @@ export class HistoryKeyboardShortcuts extends AbstractCanvasBehavior {
     super();
   }
 
-  keyDown(event: KeyboardEvent): BehaviorResult {
-    if (isCtrlOrMetaPressed(event) && event.code === 'KeyZ') {
+  keyDown(event: BehaviorEvent<KeyboardEvent>): BehaviorResult {
+    if (isCtrlOrMetaPressed(event.event) && event.event.code === 'KeyZ') {
       const action = this.graphView.undo();
       if (!action) {
         this.snackBar.open('Nothing left to undo.', null, {
@@ -21,7 +21,7 @@ export class HistoryKeyboardShortcuts extends AbstractCanvasBehavior {
         });
       }
       return BehaviorResult.Stop;
-    } else if (isCtrlOrMetaPressed(event) && event.code === 'KeyY') {
+    } else if (isCtrlOrMetaPressed(event.event) && event.event.code === 'KeyY') {
       const action = this.graphView.redo();
       if (!action) {
         this.snackBar.open('Nothing left to redo.', null, {

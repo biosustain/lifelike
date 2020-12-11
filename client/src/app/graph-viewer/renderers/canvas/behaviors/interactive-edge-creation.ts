@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
+import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
 import { Arrowhead } from '../../../utils/canvas/line-heads/arrow';
 import { EdgeCreation } from '../../../actions/edges';
 import { asLiteral } from '@angular/compiler/src/render3/view/util';
@@ -110,8 +110,8 @@ class ActiveEdgeCreationHelper extends AbstractCanvasBehavior {
     super();
   }
 
-  keyDown(event: KeyboardEvent): BehaviorResult {
-    if (event.key === 'Escape' || event.key === 'Delete') {
+  keyDown(event: BehaviorEvent<KeyboardEvent>): BehaviorResult {
+    if (event.event.key === 'Escape' || event.event.key === 'Delete') {
       this.graphView.requestRender();
       return BehaviorResult.RemoveAndStop;
     } else {

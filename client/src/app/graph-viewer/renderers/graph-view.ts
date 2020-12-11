@@ -19,13 +19,14 @@ import { compileFind, FindOptions } from 'app/shared/utils/find';
 
 import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
+import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
-import { BehaviorList } from './behaviors';
+// import { BehaviorList } from './behaviors';
 
 /**
  * A rendered view of a graph.
  */
-export abstract class GraphView implements GraphActionReceiver {
+export abstract class GraphView<BT extends Behavior> implements GraphActionReceiver {
   /**
    * Set to false when the component is destroyed so we can stop rendering.
    */
@@ -118,7 +119,7 @@ export abstract class GraphView implements GraphActionReceiver {
   /**
    * Holds currently active behaviors. Behaviors provide UI for the graph.
    */
-  readonly behaviors = new BehaviorList<any>([
+  readonly behaviors = new BehaviorList<BT>([
     'isPointIntersectingNode',
     'isPointIntersectingEdge',
     'isBBoxEnclosingNode',
