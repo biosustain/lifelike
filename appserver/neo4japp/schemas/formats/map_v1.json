@@ -273,7 +273,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 50,
-            "pattern": "^[A-Za-z-]+$",
+            "pattern": "^[A-Za-z- ]+$",
             "$comment": "node type is not validated"
           },
           "display_name": {
