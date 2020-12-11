@@ -15,7 +15,7 @@ import { min } from 'rxjs/operators';
 const HANDLE_BEHAVIOR_KEY = '_interactive-edge-creation/handle';
 const HELPER_BEHAVIOR_KEY = '_interactive-edge-creation/helper';
 
-export class InteractiveEdgeCreation extends AbstractCanvasBehavior {
+export class InteractiveEdgeCreationBehavior extends AbstractCanvasBehavior {
   /**
    * Subscription for when the selection changes.
    */

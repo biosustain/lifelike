@@ -11,7 +11,7 @@ import { GraphAction } from '../../../actions/actions';
 /**
  * Implements the 'delete' key.
  */
-export class DeleteKeyboardShortcut extends AbstractCanvasBehavior {
+export class DeleteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
   constructor(private readonly graphView: CanvasGraphView) {
     super();
   }
