@@ -102,8 +102,22 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
 
   @Input("data") data: any;
 
-  get cloudData() {
-    return this.data.data[0].Genes.split(';');
+  cloudData: string[] = [];
+
+  setCloudData() {
+    console.log(this.data, this.selectedRow);
+    this.cloudData = this.data.data[this.selectedRow].Genes.split(';');
+  }
+
+  selectedRow: number = 0;
+
+  // events
+  public chartClick({event, active}: { event: MouseEvent, active: {}[] }): void {
+    console.log("active", active[0]);
+    if (active[0]) {
+      this.selectedRow = (active[0] as any)._index;
+      this.setCloudData();
+    }
   }
 
   ngOnInit() {
@@ -148,6 +162,8 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
       this.matchNCBINodes(this.currentPage);
     });
     this.loadTask.update();
+
+    this.setCloudData();
   }
 
 
