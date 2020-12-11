@@ -9,7 +9,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TableHeader, TableCell, TableLink } from 'app/shared/components/table/generic-table.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { Subscription, forkJoin } from 'rxjs';
+import { Subscription, forkJoin, Subject, interval, EMPTY } from 'rxjs';
 import {
   EnrichmentTableService,
   NCBINode,
@@ -24,7 +24,10 @@ import { ModuleProperties } from 'app/shared/modules';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
 import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
-import {flatMap, map } from 'rxjs/operators';
+import {flatMap, map, debounceTime, exhaustMap, take, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs/src/internal/observable/throwError';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -32,6 +35,7 @@ import {flatMap, map } from 'rxjs/operators';
   styleUrls: ['./enrichment-table-viewer.component.scss'],
 })
 export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
+
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   // Inputs for Generic Table Component
@@ -60,13 +64,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     ['GO', [{ name: '', span: '1' }]],
     ['Biocyc', [{ name: '', span: '1' }]],
   ]);
-
-  // Pagination
-  currentPage: number;
-  pageSize: number;
-  collectionSize: number;
-  currentGenes: string[];
-  morePages: boolean;
   numDefaultHeader: number = this.tableHeader[0].length;
 
   // Enrichment Table and NCBI Matching Results
@@ -85,12 +82,17 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   duplicateGenes: string;
   columnOrder: string[] = [];
 
+  scrollTopAmount: number;
+
+  loadingData: boolean;
+
   constructor(
     private readonly worksheetViewerService: EnrichmentTableService,
     private readonly filesService: PdfFilesService,
     private route: ActivatedRoute,
     readonly snackBar: MatSnackBar,
     private readonly modalService: NgbModal,
+    private readonly errorHandler: ErrorHandler,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
     this.fileId = this.route.snapshot.params.file_id || '';
@@ -132,19 +134,21 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       }
       this.initializeHeaders();
       this.removeDuplicates(this.importGenes);
-      this.currentPage = 1;
-      this.pageSize = 10;
-      this.collectionSize = this.importGenes.length;
-      if (this.currentPage < Math.ceil(this.collectionSize / this.pageSize)) {
-        this.morePages = true;
-      }
-      this.matchNCBINodes(this.currentPage);
+      this.matchNCBINodes();
     });
     this.loadTask.update();
   }
 
   ngOnDestroy() {
     this.loadTaskSubscription.unsubscribe();
+  }
+
+  scrollTop() {
+    this.scrollTopAmount = 0;
+  }
+
+  onTableScroll(e) {
+    this.scrollTopAmount = e.target.scrollTop;
   }
 
   loadAllEntries(): Promise<TableCell[][]> {
@@ -241,23 +245,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       }
       });
     } catch (err) {
-      this.snackBar.open(`Something went wrong.`, 'Close', {
+      this.snackBar.open(`Something went wrong:` + err, 'Close', {
         duration: 5000,
       });
-    }
-  }
-
-  onTableScroll(e) {
-    const tableViewHeight = e.target.offsetHeight;
-    const tableScrollHeight = e.target.scrollHeight;
-    const scrollLocation = e.target.scrollTop;
-
-    // If the user has scrolled within 10px of the bottom, add more data
-    const buffer = 10;
-    const limit = tableScrollHeight - tableViewHeight - buffer;
-    if (scrollLocation > limit && this.currentPage < Math.ceil(this.collectionSize / this.pageSize)) {
-      this.currentPage += 1;
-      this.goToPage(this.currentPage);
     }
   }
 
@@ -310,12 +300,14 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         newRow[i] = row[i];
       }
       const newOrder = [...order];
-      newOrder.splice(newOrder.indexOf('Regulon') + 1, 0, 'Regulon 1');
-      newOrder.splice(newOrder.indexOf('Regulon') + 2, 0, 'Regulon 2');
-
       const newDomains = [...this.domains];
-      newDomains.splice(newDomains.indexOf('Regulon') + 1, 0, 'Regulon 1');
-      newDomains.splice(newDomains.indexOf('Regulon') + 2, 0, 'Regulon 2');
+
+      if (newOrder.includes('Regulon')) {
+        newOrder.splice(newOrder.indexOf('Regulon') + 1, 0, 'Regulon 1');
+        newOrder.splice(newOrder.indexOf('Regulon') + 2, 0, 'Regulon 2');
+        newDomains.splice(newDomains.indexOf('Regulon') + 1, 0, 'Regulon 1');
+        newDomains.splice(newDomains.indexOf('Regulon') + 2, 0, 'Regulon 2');
+      }
 
       newOrder.forEach(domain =>
         newRow[newOrder.indexOf(domain) + this.numDefaultHeader] =
@@ -349,6 +341,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         this.snackBar.open(`Enrichment table updated.`, 'Close', {
           duration: 5000,
         });
+        this.tableEntries = [];
         this.loadTask.update();
       });
     }, () => {});
@@ -380,19 +373,22 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     });
   }
 
-  goToPage(page: number) {
-    this.matchNCBINodes(page);
-  }
-
-  matchNCBINodes(page: number) {
-    const currentGenes = this.importGenes.slice(
-      (page - 1) * this.pageSize,
-      (page - 1) * this.pageSize + this.pageSize
-    );
+  matchNCBINodes() {
+    this.loadingData = true;
     this.worksheetViewerService
-      .matchNCBINodes(currentGenes, this.taxID)
-      .subscribe((result) => {
-        this.getDomains(result, currentGenes);
+      .matchNCBINodes(this.importGenes, this.taxID)
+      .pipe(
+        catchError((error) => {
+          this.snackBar.open(`Unable to load entries.`, 'Close', {
+            duration: 5000,
+          });
+          this.loadingData = false;
+          return error;
+      }),
+        this.errorHandler.create(),
+      )
+      .subscribe((result: NCBIWrapper[]) => {
+        this.getDomains(result, this.importGenes);
       });
   }
 
@@ -413,13 +409,23 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
 
   // Get data from enrichment domains.
   getDomains(result: NCBIWrapper[], currentGenes: string[]) {
-    const synonyms = result.map((wrapper) => wrapper.s);
+    const synonyms = result.map((wrapper) => wrapper.s.name);
     const ncbiNodes = result.map((wrapper) => wrapper.x);
     const ncbiIds = result.map((wrapper) => wrapper.neo4jID);
     const ncbiLinks = result.map((wrapper) => wrapper.link);
     this.worksheetViewerService
       .getNCBIEnrichmentDomains(ncbiIds, this.taxID)
-      .subscribe((domainResult) => {
+      .pipe(
+        catchError((error) => {
+          this.snackBar.open(`Unable to load entries.`, 'Close', {
+            duration: 5000,
+          });
+          this.loadingData = false;
+          return error;
+      }),
+      this.errorHandler.create(),
+      )
+      .subscribe((domainResult: EnrichmentWrapper[]) => {
         let newEntries = domainResult.map((wrapper) =>
           this.processEnrichmentNodeArray(wrapper, ncbiNodes, ncbiIds)
         );
@@ -432,15 +438,16 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
             },
           });
           newEntries[i].unshift({ text: ncbiNodes[i].name });
-          newEntries[i].unshift({ text: synonyms[i].name });
+          newEntries[i].unshift({ text: synonyms[i] });
         }
         newEntries = newEntries.concat(this.processUnmatchedNodes(synonyms, currentGenes));
         this.tableEntries = this.tableEntries.concat(newEntries);
+        this.loadingData = false;
       });
   }
 
-  processUnmatchedNodes(synonyms: Synonym[], currentGenes: string[]): TableCell[][] {
-    this.geneNames = synonyms.map((node) => node.name);
+  processUnmatchedNodes(synonyms: string[], currentGenes: string[]): TableCell[][] {
+    this.geneNames = synonyms;
     const unmatchedGenes = currentGenes.filter(
       (gene) => !this.geneNames.includes(gene)
     );
