@@ -26,12 +26,12 @@ export class SelectableEntity extends AbstractCanvasBehavior {
     const entity = this.graphView.getEntityAtMouse();
     if (entity == null) {
       this.graphView.selection.replace([]);
-      this.graphView.requestRender(); // TODO: Don't call unless needed
     } else if (isCtrlOrMetaPressed(event) || isShiftPressed(event)) {
       this.amendSelection(entity);
     } else {
       this.graphView.selection.replace([entity]);
     }
+    this.graphView.requestRender();
     return BehaviorResult.Continue;
   }
 
@@ -116,6 +116,7 @@ class ActiveRegionSelection extends AbstractCanvasBehavior {
     ctx.beginPath();
     ctx.fillStyle = 'rgba(12, 140, 170, 0.2)';
     ctx.strokeStyle = 'rgba(12, 140, 170, 1)';
+    ctx.lineWidth = 2 / this.graphView.transform.scale(1).k;
     ctx.rect(minX, minY, width, height);
     ctx.fill();
     ctx.stroke();
