@@ -6,7 +6,7 @@ import { MatSnackBar } from '@angular/material';
 /**
  * Implements CTRL/CMD-Z and CTRL/CMD-Y.
  */
-export class HistoryKeyboardShortcuts extends AbstractCanvasBehavior {
+export class HistoryKeyboardShortcutsBehavior extends AbstractCanvasBehavior {
   constructor(private readonly graphView: CanvasGraphView,
               private readonly snackBar: MatSnackBar) {
     super();

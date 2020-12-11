@@ -1,8 +1,13 @@
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { GraphEntity } from 'app/drawing-tool/services/interfaces';
-import { GraphClipboardData, TYPE_STRING } from './paste-keyboard-shortcut';
 import { isClipboardEventNativelyHandled } from 'app/shared/utils/clipboard';
+import { NodeCreation } from '../../../actions/nodes';
+import { isCtrlOrMetaPressed } from 'app/shared/utils';
+import { makeid } from 'app/drawing-tool/services';
+import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
+import { CompoundAction, GraphAction } from '../../../actions/actions';
+import { smartTruncate } from '../../../utils/strings';
+import { GraphClipboardData, TYPE_STRING } from './paste-keyboard-shortcut.behavior';
 
 /**
  * Implements the copy key.
@@ -21,13 +26,6 @@ export class CopyKeyboardShortcut extends AbstractCanvasBehavior {
   destroy() {
     document.removeEventListener('copy', this.boundCopy);
   }
-
-  /** // Albert's incoming change from commit d5388a675
-  keyDown(event: BehaviorEvent<KeyboardEvent>): BehaviorResult {
-    // TODO: Copy event handler might fire more reliably than this
-    if (isCtrlOrMetaPressed(event.event) && event.event.code === 'KeyC') {
-      const selection: GraphEntity[] = this.graphView.selection.get();
-  */
 
   copy(event: ClipboardEvent) {
     // We can't set the copy handler onto the canvas itself (doesn't trigger any

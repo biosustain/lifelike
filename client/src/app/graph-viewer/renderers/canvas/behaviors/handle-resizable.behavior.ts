@@ -12,7 +12,7 @@ const BEHAVIOR_KEY = '_handle-resizable/active';
 /**
  * Adds the UX to let nodes be resized via handles.
  */
-export class HandleResizable extends AbstractCanvasBehavior {
+export class HandleResizableBehavior extends AbstractCanvasBehavior {
   /**
    * Subscription for when the selection changes.
    */

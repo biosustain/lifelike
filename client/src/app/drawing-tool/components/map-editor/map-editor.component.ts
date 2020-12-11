@@ -16,6 +16,17 @@ import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/han
 import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
 import { PasteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
 import { HistoryKeyboardShortcuts } from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
+import { makeid } from '../../services';
+
+import { NodeCreation } from 'app/graph-viewer/actions/nodes';
+import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move.behavior';
+import { SelectableEntityBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity.behavior';
+import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
+import { HandleResizableBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable.behavior';
+import { DeleteKeyboardShortcutBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut.behavior';
+import { PasteKeyboardShortcutBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior';
+import { HistoryKeyboardShortcutsBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts.behavior';
+
 import { MapViewComponent } from '../map-view.component';
 import { from, Observable, of, Subscription, throwError } from 'rxjs';
 import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
@@ -30,13 +41,18 @@ import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from 'app/shared/u
 import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { LockError } from '../../../file-browser/services/filesystem.service';
+// >>>>>>> HEAD
 import { ObjectLock } from '../../../file-browser/models/object-lock';
 import { MAP_MIMETYPE } from '../../providers/map.type-provider';
 import { InfoPanel } from '../../models/info-panel';
 import { GRAPH_ENTITY_TOKEN } from '../../providers/data-transfer-data/graph-entity-data.provider';
 import { extractGraphEntityActions } from '../../utils/data';
 import { DragDropEntity } from '../../../graph-viewer/renderers/canvas/behaviors/drag-drop-entity';
+// <<<<<<< 
 
+// >>>>>>> from 979038cdc (Use .behavior.ts suffix.)
+import { DragDropEntityBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/drag-drop-entity.behavior';
+// <<<<<<< 
 @Component({
   selector: 'app-drawing-tool',
   templateUrl: './map-editor.component.html',
@@ -154,13 +170,29 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
 
   registerGraphBehaviors() {
     super.registerGraphBehaviors();
+// >>>>>>> HEAD
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('paste-keyboard-shortcut',
       new PasteKeyboardShortcut(this.graphCanvas, this.dataTransferDataService), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shortcut', new HistoryKeyboardShortcuts(this.graphCanvas, this.snackBar), -100);
+    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10); // from below
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizable(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 1);
     this.graphCanvas.behaviors.add('drag-drop-entity', new DragDropEntity(this.graphCanvas), 1);
+// <<<<<<<
+
+// >>>>>>> 979038cdc (Use .behavior.ts suffix.)
+    /**
+    this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcutBehavior(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('paste-keyboard-shortcut', new PasteKeyboardShortcutBehavior(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('history-keyboard-shortcut',
+      new HistoryKeyboardShortcutsBehavior(this.graphCanvas, this.snackBar), -100);
+    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
+    this.graphCanvas.behaviors.add('resize-handles', new HandleResizableBehavior(this.graphCanvas), 0);
+    this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreationBehavior(this.graphCanvas), 1);
+    this.graphCanvas.behaviors.add('drag-drop-entity', new DragDropEntityBehavior(this.graphCanvas), 1);
+    */
+// <<<<<<<
   }
 
   save() {

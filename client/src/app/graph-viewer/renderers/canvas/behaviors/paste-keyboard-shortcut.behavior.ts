@@ -25,7 +25,7 @@ export interface GraphClipboardData {
 /**
  * Implements the paste key.
  */
-export class PasteKeyboardShortcut extends AbstractCanvasBehavior {
+export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
   /**
    * Bound paste event handler that we need to remove later.
    */
@@ -50,6 +50,7 @@ export class PasteKeyboardShortcut extends AbstractCanvasBehavior {
     if (content) {
       const position = this.graphView.currentHoverPosition;
       if (position) {
+<<<<<<< HEAD:client/src/app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.ts
         const items = this.dataTransferDataService.extract(event.clipboardData);
         const actions = extractGraphEntityActions(items, position);
 
@@ -58,6 +59,10 @@ export class PasteKeyboardShortcut extends AbstractCanvasBehavior {
           this.graphView.focus();
           event.preventDefault();
         }
+=======
+        this.graphView.execute(PasteKeyboardShortcutBehavior.createActionFromPasteContent(content, position));
+        event.preventDefault();
+>>>>>>> 979038cdc (Use .behavior.ts suffix.):client/src/app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior.ts
       }
     }
   }
