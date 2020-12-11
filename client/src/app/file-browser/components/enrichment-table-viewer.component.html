@@ -36,6 +36,12 @@
           </button>
         <app-generic-table [header]="tableHeader" [entries]="tableEntries">
         </app-generic-table>
+        <div style="font-size: 30px; text-align: center; padding: 1em" *ngIf="loadingData">
+          <span>
+            <i class="fa fa-spinner fa-spin" style="margin-right: 2px;"></i>
+            Currently Loading Data...
+          </span>
+        </div>
         <div class="col-12 justify-content-center">
     </div>
       </div>

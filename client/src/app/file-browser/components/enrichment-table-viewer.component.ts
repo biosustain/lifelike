@@ -9,7 +9,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TableHeader, TableCell, TableLink } from 'app/shared/components/table/generic-table.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { Subscription, forkJoin, Subject, interval } from 'rxjs';
+import { Subscription, forkJoin, Subject, interval, EMPTY } from 'rxjs';
 import {
   EnrichmentTableService,
   NCBINode,
@@ -24,7 +24,10 @@ import { ModuleProperties } from 'app/shared/modules';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
 import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
-import {flatMap, map, debounceTime, exhaustMap, take } from 'rxjs/operators';
+import {flatMap, map, debounceTime, exhaustMap, take, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs/src/internal/observable/throwError';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -81,12 +84,15 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
 
   scrollTopAmount: number;
 
+  loadingData: boolean;
+
   constructor(
     private readonly worksheetViewerService: EnrichmentTableService,
     private readonly filesService: PdfFilesService,
     private route: ActivatedRoute,
     readonly snackBar: MatSnackBar,
     private readonly modalService: NgbModal,
+    private readonly errorHandler: ErrorHandler,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
     this.fileId = this.route.snapshot.params.file_id || '';
@@ -368,9 +374,20 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   matchNCBINodes() {
+    this.loadingData = true;
     this.worksheetViewerService
       .matchNCBINodes(this.importGenes, this.taxID)
-      .subscribe((result) => {
+      .pipe(
+        catchError((error) => {
+          this.snackBar.open(`Unable to load entries.`, 'Close', {
+            duration: 5000,
+          });
+          this.loadingData = false;
+          return error;
+      }),
+        this.errorHandler.create(),
+      )
+      .subscribe((result: NCBIWrapper[]) => {
         this.getDomains(result, this.importGenes);
       });
   }
@@ -398,7 +415,17 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     const ncbiLinks = result.map((wrapper) => wrapper.link);
     this.worksheetViewerService
       .getNCBIEnrichmentDomains(ncbiIds, this.taxID)
-      .subscribe((domainResult) => {
+      .pipe(
+        catchError((error) => {
+          this.snackBar.open(`Unable to load entries.`, 'Close', {
+            duration: 5000,
+          });
+          this.loadingData = false;
+          return error;
+      }),
+      this.errorHandler.create(),
+      )
+      .subscribe((domainResult: EnrichmentWrapper[]) => {
         let newEntries = domainResult.map((wrapper) =>
           this.processEnrichmentNodeArray(wrapper, ncbiNodes, ncbiIds)
         );
@@ -415,6 +442,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         }
         newEntries = newEntries.concat(this.processUnmatchedNodes(synonyms, currentGenes));
         this.tableEntries = this.tableEntries.concat(newEntries);
+        this.loadingData = false;
       });
   }
 
