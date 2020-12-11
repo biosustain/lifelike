@@ -35,6 +35,7 @@ import { MAP_MIMETYPE } from '../../providers/map.type-provider';
 import { InfoPanel } from '../../models/info-panel';
 import { GRAPH_ENTITY_TOKEN } from '../../providers/data-transfer-data/graph-entity-data.provider';
 import { extractGraphEntityActions } from '../../utils/data';
+import { DragDropEntity } from '../../../graph-viewer/renderers/canvas/behaviors/drag-drop-entity';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -159,6 +160,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     this.graphCanvas.behaviors.add('history-keyboard-shortcut', new HistoryKeyboardShortcuts(this.graphCanvas, this.snackBar), -100);
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizable(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 1);
+    this.graphCanvas.behaviors.add('drag-drop-entity', new DragDropEntity(this.graphCanvas), 1);
   }
 
   save() {
