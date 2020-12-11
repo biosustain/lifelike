@@ -1,4 +1,4 @@
-import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
 import {
   GraphEntityType,
@@ -16,8 +16,9 @@ export class DeleteKeyboardShortcut extends AbstractCanvasBehavior {
     super();
   }
 
-  keyDown(event: KeyboardEvent): BehaviorResult {
-    if (event.key === 'Delete') {
+  keyDown(event: BehaviorEvent<KeyboardEvent>): BehaviorResult {
+  // keyDown(event: KeyboardEvent): BehaviorResult {
+    if (event.event.key === 'Delete') {
       const actions0: GraphAction[] = [];
       const actions1: GraphAction[] = [];
       for (const entity of this.graphView.selection.get()) {

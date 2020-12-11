@@ -17,7 +17,7 @@ import {
 } from 'app/graph-viewer/styles/styles';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
-import { DragBehaviorEvent, isStopResult } from '../behaviors';
+import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { LineEdge } from '../../utils/canvas/graph-edges/line-edge';
 import { SolidLine } from '../../utils/canvas/lines/solid';
 import { nullCoalesce } from 'app/shared/utils/types';
@@ -31,7 +31,7 @@ export interface CanvasGraphViewOptions {
 /**
  * A graph view that uses renders into a <canvas> tag.
  */
-export class CanvasGraphView extends GraphView {
+export class CanvasGraphView extends GraphView<CanvasBehavior> {
   // Options
   // ---------------------------------
 
@@ -224,11 +224,48 @@ export class CanvasGraphView extends GraphView {
           }
           return null;
         })
+// >>>>>>> current change, renders fine, doesn't support drag-n-drop or copy-paste
         .on('start', this.canvasDragStarted.bind(this))
         .on('drag', this.canvasDragged.bind(this))
         .on('end', this.canvasDragEnded.bind(this)))
       .call(this.zoom)
       .on('dblclick.zoom', null);
+// <<<<<<< current change
+/**
+// >>>>>>> Albert's d3 code, renders empty graph
+        .on('dragover', () => {
+          canvasMouseMoveSubject.next();
+        })
+        .on('mouseleave', this.canvasMouseLeave.bind(this))
+        .on('mouseup', this.canvasMouseUp.bind(this))
+        .on('dragover', this.canvasDragOver.bind(this))
+        .on('drop', this.canvasDrop.bind(this))
+        .call(d3.drag()
+            .container(this.canvas)
+            .filter(() => !d3.event.button)
+            .subject((): CanvasSubject => {
+              if (this.behaviors.call('shouldDrag', {
+                event: d3.event.sourceEvent,
+              })) {
+                return {
+                  entity: null,
+                };
+              }
+              const entity = this.getEntityAtMouse();
+              if (entity) {
+                return {
+                  entity,
+                };
+              }
+              return null;
+            })
+            .on('start', this.canvasDragStarted.bind(this))
+            .on('drag', this.canvasDragged.bind(this))
+            .on('end', this.canvasDragEnded.bind(this)))
+        .call(this.zoom)
+        .on('dblclick.zoom', null));
+// <<<<<<< Albert's d3 code, renders empty graph
+*/
 
     this.trackedSubscriptions.push(
       canvasMouseMoveSubject
@@ -989,17 +1026,26 @@ export class CanvasGraphView extends GraphView {
   // ========================================
 
   canvasKeyDown(event) {
-    if (isStopResult(this.behaviors.apply(behavior => behavior.keyDown(event)))) {
+    const behaviorEvent = {
+      event,
+    };
+    if (isStopResult(this.behaviors.apply(behavior => behavior.keyDown(behaviorEvent)))) {
       event.preventDefault();
     }
   }
 
-  canvasClicked(event) {
-    this.behaviors.apply(behavior => behavior.click(d3.event));
+  canvasClicked() {
+    const behaviorEvent = {
+      event: d3.event,
+    };
+    this.behaviors.apply(behavior => behavior.click(behaviorEvent));
   }
 
   canvasDoubleClicked() {
-    this.behaviors.apply(behavior => behavior.doubleClick(d3.event));
+    const behaviorEvent = {
+      event: d3.event,
+    };
+    this.behaviors.apply(behavior => behavior.doubleClick(behaviorEvent));
   }
 
   canvasMouseDown() {
@@ -1014,7 +1060,10 @@ export class CanvasGraphView extends GraphView {
 
     this.hoverPosition = {x: graphX, y: graphY};
 
-    this.behaviors.apply(behavior => behavior.mouseMove());
+    const behaviorEvent = {
+      event: d3.event,
+    };
+    this.behaviors.apply(behavior => behavior.mouseMove(behaviorEvent));
 
     if (this.mouseDown) {
       this.touchPosition = {
@@ -1047,6 +1096,20 @@ export class CanvasGraphView extends GraphView {
     this.mouseDown = false;
     this.touchPosition = null;
     this.requestRender();
+  }
+
+  canvasDragOver(): void {
+    const behaviorEvent = {
+      event: d3.event,
+    };
+    this.behaviors.apply(behavior => behavior.dragOver(behaviorEvent));
+  }
+
+  canvasDrop(): void {
+    const behaviorEvent = {
+      event: d3.event,
+    };
+    this.behaviors.apply(behavior => behavior.drop(behaviorEvent));
   }
 
   canvasDragStarted(): void {

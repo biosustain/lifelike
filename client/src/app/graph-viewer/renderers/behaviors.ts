@@ -183,13 +183,15 @@ export interface Behavior {
  */
 export interface CanvasBehavior extends Behavior {
   shouldDrag(event: BehaviorEvent<MouseEvent>): boolean;
-  keyDown(event: KeyboardEvent): BehaviorResult;
-  click(event: MouseEvent): BehaviorResult;
-  doubleClick(event: MouseEvent): BehaviorResult;
-  mouseMove(event: MouseEvent): BehaviorResult;
+  keyDown(event: BehaviorEvent<KeyboardEvent>): BehaviorResult;
+  click(event: BehaviorEvent<MouseEvent>): BehaviorResult;
+  doubleClick(event: BehaviorEvent<MouseEvent>): BehaviorResult;
+  mouseMove(event: BehaviorEvent<MouseEvent>): BehaviorResult;
   dragStart(event: DragBehaviorEvent): BehaviorResult;
   drag(event: DragBehaviorEvent): BehaviorResult;
   dragEnd(event: DragBehaviorEvent): BehaviorResult;
+  dragOver(event: BehaviorEvent<DragEvent>);
+  drop(event: BehaviorEvent<DragEvent>);
   draw(ctx: CanvasRenderingContext2D, transform: any);
 }
 
@@ -207,19 +209,19 @@ export abstract class AbstractCanvasBehavior implements CanvasBehavior {
     return undefined;
   }
 
-  keyDown(event: KeyboardEvent): BehaviorResult {
+  keyDown(event: BehaviorEvent<KeyboardEvent>): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
-  click(event: MouseEvent): BehaviorResult {
+  click(event: BehaviorEvent<MouseEvent>): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
-  doubleClick(event: MouseEvent): BehaviorResult {
+  doubleClick(event: BehaviorEvent<MouseEvent>): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
-  mouseMove(event: MouseEvent): BehaviorResult {
+  mouseMove(event: BehaviorEvent<MouseEvent>): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
@@ -232,6 +234,14 @@ export abstract class AbstractCanvasBehavior implements CanvasBehavior {
   }
 
   dragEnd(event: DragBehaviorEvent): BehaviorResult {
+    return BehaviorResult.Continue;
+  }
+
+  dragOver(event: BehaviorEvent<DragEvent>): BehaviorResult {
+    return BehaviorResult.Continue;
+  }
+
+  drop(event: BehaviorEvent<DragEvent>): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
