@@ -4,7 +4,7 @@ import { NodeCreation } from '../../../actions/nodes';
 import { makeid } from '../../../../drawing-tool/services';
 import { CanvasGraphView } from '../canvas-graph-view';
 
-export class DragDropEntity extends AbstractCanvasBehavior {
+export class DragDropEntityBehavior extends AbstractCanvasBehavior {
 
   constructor(private readonly graphView: CanvasGraphView) {
     super();
@@ -20,7 +20,6 @@ export class DragDropEntity extends AbstractCanvasBehavior {
 
   drop(event: BehaviorEvent<DragEvent>): BehaviorResult {
     const dragEvent = event.event;
-    dragEvent.preventDefault();
     const data = dragEvent.dataTransfer.getData('application/***ARANGO_DB_NAME***-node');
     let node;
     try {
@@ -28,7 +27,6 @@ export class DragDropEntity extends AbstractCanvasBehavior {
     } catch (e) {
       return BehaviorResult.Continue;
     }
-    console.log('drop', node, this.graphView.hoverPosition);
 
     const hoverPosition = this.graphView.hoverPosition;
     if (hoverPosition != null) {
@@ -44,6 +42,8 @@ export class DragDropEntity extends AbstractCanvasBehavior {
         }, true,
       ));
     }
+
+    dragEvent.preventDefault();
     return BehaviorResult.Stop;
   }
 

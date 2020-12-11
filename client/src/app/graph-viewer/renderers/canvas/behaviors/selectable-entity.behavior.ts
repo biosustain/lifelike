@@ -5,7 +5,7 @@ import { GraphEntity } from 'app/drawing-tool/services/interfaces';
 
 const REGION_SELECTION_BEHAVIOR_KEY = '_selectable-entity/region';
 
-export class SelectableEntity extends AbstractCanvasBehavior {
+export class SelectableEntityBehavior extends AbstractCanvasBehavior {
   constructor(private readonly graphView: CanvasGraphView) {
     super();
   }
