@@ -192,6 +192,7 @@ export interface CanvasBehavior extends Behavior {
   dragEnd(event: DragBehaviorEvent): BehaviorResult;
   dragOver(event: BehaviorEvent<DragEvent>);
   drop(event: BehaviorEvent<DragEvent>);
+  paste(event: BehaviorEvent<ClipboardEvent>);
   draw(ctx: CanvasRenderingContext2D, transform: any);
 }
 
@@ -242,6 +243,10 @@ export abstract class AbstractCanvasBehavior implements CanvasBehavior {
   }
 
   drop(event: BehaviorEvent<DragEvent>): BehaviorResult {
+    return BehaviorResult.Continue;
+  }
+
+  paste(event: BehaviorEvent<ClipboardEvent>): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
