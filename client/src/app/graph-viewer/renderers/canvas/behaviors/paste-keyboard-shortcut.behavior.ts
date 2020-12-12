@@ -1,4 +1,4 @@
-import { AbstractCanvasBehavior } from '../../behaviors';
+import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
 import { NodeCreation } from '../../../actions/nodes';
 import {
@@ -26,11 +26,11 @@ export interface GraphClipboardData {
  * Implements the paste key.
  */
 export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
-  /**
-   * Bound paste event handler that we need to remove later.
-   */
-  boundPaste = this.paste.bind(this);
+  // constructor(private readonly graphView: CanvasGraphView) {
+  //   super();
+  // }
 
+  // TODO: fix boundPaste if not coming in next patch
   constructor(private readonly graphView: CanvasGraphView,
               protected readonly dataTransferDataService: DataTransferDataService) {
     super();
@@ -41,29 +41,72 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
     document.removeEventListener('paste', this.boundPaste);
   }
 
-  paste(event) {
-    if (isClipboardEventNativelyHandled(event)) {
-      return;
-    }
-
-    const content = event.clipboardData.getData('text/plain');
+  paste(event: BehaviorEvent<ClipboardEvent>): BehaviorResult {
+    const content = event.event.clipboardData.getData('text/plain');
     if (content) {
       const position = this.graphView.currentHoverPosition;
       if (position) {
-<<<<<<< HEAD:client/src/app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.ts
-        const items = this.dataTransferDataService.extract(event.clipboardData);
+        const items = this.dataTransferDataService.extract(event.event.clipboardData);
         const actions = extractGraphEntityActions(items, position);
-
         if (actions.length) {
           this.graphView.execute(new CompoundAction('Copy to map', actions));
           this.graphView.focus();
-          event.preventDefault();
+          event.event.preventDefault();
         }
-=======
-        this.graphView.execute(PasteKeyboardShortcutBehavior.createActionFromPasteContent(content, position));
-        event.preventDefault();
->>>>>>> 979038cdc (Use .behavior.ts suffix.):client/src/app/graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut.behavior.ts
+        this.graphView.execute(this.createActionFromPasteContent(content, position));
+        event.event.preventDefault();
+        return BehaviorResult.Stop;
       }
     }
+    return BehaviorResult.Continue;
+  }
+  /**
+   * Returns a node creation action based on the content provided.
+   * @param content the content (like from the clipboard)
+   * @param position the position of the node
+   */
+  private createActionFromPasteContent(content: string, position: { x: number, y: number }): GraphAction {
+    try {
+      const actions = [];
+      const data: GraphClipboardData = JSON.parse(content);
+
+      // First try to read the data as JSON
+      if (data.type === TYPE_STRING) {
+        for (const entry of data.selection) {
+          if (entry.type === GraphEntityType.Node) {
+            const node = entry.entity as UniversalGraphNode;
+            actions.push(new NodeCreation(
+              `Paste content from clipboard`, {
+                ...node,
+                hash: makeid(),
+                data: {
+                  ...node.data,
+                  x: position.x,
+                  y: position.y,
+                },
+              }, true,
+            ));
+          }
+        }
+        if (actions.length) {
+          return new CompoundAction('Paste content', actions);
+        }
+      }
+    } catch (e) {
+    }
+
+    return new NodeCreation(
+      `Paste content from clipboard`, {
+        display_name: 'Note',
+        hash: makeid(),
+        label: 'note',
+        sub_labels: [],
+        data: {
+          x: position.x,
+          y: position.y,
+          detail: content,
+        },
+      }, true,
+    );
   }
 }

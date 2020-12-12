@@ -288,6 +288,11 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       fromEvent(this.canvas, 'drop')
         .subscribe(this.canvasDrop.bind(this)),
     );
+
+    this.trackedSubscriptions.push(
+      fromEvent(document, 'paste')
+        .subscribe(this.documentPaste.bind(this)),
+    );
   }
 
   destroy() {
@@ -1118,6 +1123,13 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       event,
     };
     this.behaviors.apply(behavior => behavior.drop(behaviorEvent));
+  }
+
+  documentPaste(event): void {
+    const behaviorEvent = {
+      event,
+    };
+    this.behaviors.apply(behavior => behavior.paste(behaviorEvent));
   }
 
   canvasDragStarted(): void {
