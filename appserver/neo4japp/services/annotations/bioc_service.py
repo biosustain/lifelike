@@ -10,7 +10,7 @@ from bioc import (
     BioCPassage,
 )
 
-from neo4japp.data_transfer_objects import Annotation
+from neo4japp.services.annotations.data_transfer_objects import Annotation
 
 
 class BiocDocumentService:

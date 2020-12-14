@@ -18,7 +18,7 @@ from flask import (
 )
 from flask_apispec import use_kwargs
 from sqlalchemy import or_, func
-from sqlalchemy.orm import joinedload, aliased, contains_eager
+from sqlalchemy.orm import joinedload, aliased, contains_eager, raiseload
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.utils import secure_filename
 
@@ -49,7 +49,7 @@ from neo4japp.models import (
     ProjectBackup,
     AppUser,
 )
-from neo4japp.models.schema import ProjectSchema, ProjectVersionSchema
+from neo4japp.models.schema import ProjectSchema, ProjectVersionSchema, ProjectVersionListItemSchema
 from neo4japp.request_schemas.drawing_tool import ProjectBackupSchema
 from neo4japp.request_schemas.filesystem import MoveFileRequest, DirectoryDestination
 from neo4japp.schemas.formats.drawing_tool import validate_map
@@ -341,6 +341,13 @@ def update_project(hash_id: str, projects_name: str):
     if 'public' in data:
         map.public = data['public']
 
+    # sanitize null unicode
+    # these occur due to how some pdfs are created
+    # can derived from CID fonts, ligatures, etc
+    # that are not correctly parsed
+    for map_node in map.graph['nodes']:
+        map_node['data']['detail'] = map_node['data']['detail'].replace('\x00', '')
+
     # Commit to db
     db.session.add(map)
     db.session.add(project_version)
@@ -369,12 +376,13 @@ def get_versions(projects_name: str, hash_id: str):
 
     map = get_map(hash_id, g.current_user, AccessActionType.READ)
 
-    project_versions = ProjectVersion.query.with_entities(
-        ProjectVersion.id, ProjectVersion.modified_date).filter(
-        ProjectVersion.project_id == map.id
-    ).all()
+    project_versions = db.session.query(ProjectVersion)\
+        .options(raiseload('*'),
+                 joinedload(ProjectVersion.user)) \
+        .filter(ProjectVersion.project_id == map.id)\
+        .all()
 
-    version_schema = ProjectVersionSchema(many=True)
+    version_schema = ProjectVersionListItemSchema(many=True)
 
     current_app.logger.info(
         f'Map hash: {hash_id}',
