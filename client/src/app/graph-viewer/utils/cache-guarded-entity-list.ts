@@ -45,6 +45,20 @@ export class CacheGuardedEntityList {
     this.items = items;
   }
 
+  add(items: GraphEntity[]) {
+    const found = new Set<UniversalGraphEntity>();
+    const newItems: GraphEntity[] = [];
+    for (const item of this.items) {
+      found.add(item.entity);
+    }
+    for (const item of items) {
+      if (!found.has(item.entity)) {
+        newItems.push(item);
+      }
+    }
+    return this.replace([...this.items, ...newItems]);
+  }
+
   get(): GraphEntity[] {
     return this.items;
   }
