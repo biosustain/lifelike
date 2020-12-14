@@ -23,12 +23,25 @@
         </div>
       </div>
 
-      <!-- Body -->
-      <div class="module-body border-bottom">
-        <app-associated-maps></app-associated-maps>
-      </div>
-      <div class="module-body flex-fill">
-        <app-word-cloud-file-navigator></app-word-cloud-file-navigator>
+      <div class="flex-fill overflow-auto">
+        <!-- Body -->
+        <div class="module-body border-bottom">
+          <app-associated-maps></app-associated-maps>
+        </div>
+        <div class="module-body" style="height: 100%">
+          <app-word-cloud-file-navigator></app-word-cloud-file-navigator>
+        </div>
+        <div class="module-body border-top">
+          <div class="module-section">
+            <div class="module-section-header">
+              <h2 class="module-section-header-title">Annotation History</h2>
+            </div>
+
+            <div class="module-section-body">
+              <app-file-annotation-history [object]="object" [limit]="10"></app-file-annotation-history>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

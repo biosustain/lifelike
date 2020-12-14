@@ -1,3 +1,4 @@
+import enum
 from datetime import datetime, timezone
 
 from sqlalchemy import event, UniqueConstraint
@@ -7,7 +8,7 @@ from sqlalchemy.types import ARRAY, TIMESTAMP
 
 from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.database import db, get_elastic_service
-from neo4japp.models.common import RDBMSBase, TimestampMixin
+from neo4japp.models.common import RDBMSBase, TimestampMixin, HashIdMixin
 
 
 class FileContent(RDBMSBase):
@@ -89,6 +90,25 @@ def files_after_update(mapper, connection, target):
         index_id=FILE_INDEX_ID
     )
     elastic_service.index_files([target.id])
+
+
+class AnnotationChangeCause(enum.Enum):
+    USER = 'user'
+    USER_REANNOTATION = 'user_reannotation'
+    SYSTEM_REANNOTATION = 'sys_reannotation'
+
+
+class FileAnnotationsVersion(RDBMSBase, TimestampMixin, HashIdMixin):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    file_id = db.Column(db.Integer, db.ForeignKey('files.id', ondelete='CASCADE'),
+                        index=True, nullable=False)
+    file = db.relationship('Files', foreign_keys=file_id)
+    cause = db.Column(db.Enum(AnnotationChangeCause), nullable=False)
+    custom_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
+    excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
+    user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='SET NULL'),
+                        index=True, nullable=True)
+    user = db.relationship('AppUser', foreign_keys=user_id)
 
 
 class LMDBsDates(RDBMSBase):

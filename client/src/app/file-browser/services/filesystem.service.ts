@@ -4,7 +4,6 @@ import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ProjectPageService } from './project-page.service';
 import { BehaviorSubject, Observable, Subscription, throwError } from 'rxjs';
@@ -12,9 +11,12 @@ import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { catchError, map } from 'rxjs/operators';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ApiService } from '../../shared/services/api.service';
-import { ResultList } from '../../shared/schemas/common';
-import { ObjectLockData } from '../schema';
+import { PaginatedRequestOptions, ResultList } from '../../shared/schemas/common';
+import { FileAnnotationHistoryResponse, ObjectLockData } from '../schema';
 import { ObjectLock } from '../models/object-lock';
+import { FileAnnotationHistory } from '../models/file-annotation-history';
+import { serializePaginatedParams } from '../../shared/utils/params';
+import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 
 @Injectable()
 export class FilesystemService {
@@ -71,6 +73,23 @@ export class FilesystemService {
 
       return object;
     }));
+  }
+
+  /**
+   * Get the annotation history for a file.
+   * @param hashId the file hash ID
+   * @param options additional options
+   */
+  getAnnotationHistory(hashId: string, options: Partial<PaginatedRequestOptions> = {}):
+    Observable<FileAnnotationHistory> {
+    return this.http.get<FileAnnotationHistoryResponse>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotation-history`, {
+        ...this.apiService.getHttpOptions(true),
+        params: serializePaginatedParams(options, false),
+      },
+    ).pipe(
+      map(data => new FileAnnotationHistory().update(data)),
+    );
   }
 
   annotate(object: FilesystemObject): Subscription {

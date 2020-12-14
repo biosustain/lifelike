@@ -6,6 +6,7 @@ import { WordCloudModule } from 'app/word-cloud/word-cloud.module';
 
 import { FileNavigatorComponent } from './file-navigator.component';
 import { AssociatedMapsComponent } from './components/associated-maps/associated-maps.component';
+import { FileBrowserModule } from '../file-browser/file-browser.module';
 
 
 
@@ -18,6 +19,7 @@ import { AssociatedMapsComponent } from './components/associated-maps/associated
     CommonModule,
     SharedModule,
     WordCloudModule,
+    FileBrowserModule,
   ]
 })
 export class FileNavigatorModule { }
