@@ -12,7 +12,7 @@ export interface IconNodeOptions {
 /**
  * Draw a font icon and a label below it.
  */
-export class FontIconNode implements PlacedNode {
+export class FontIconNode extends PlacedNode {
   readonly resizable = false;
 
   readonly x: number;
@@ -31,6 +31,7 @@ export class FontIconNode implements PlacedNode {
   readonly bbox: { minX: number, minY: number, maxX: number, maxY: number };
 
   constructor(private ctx: CanvasRenderingContext2D, options: IconNodeOptions) {
+    super();
     Object.assign(this, options);
     this.totalHeight = this.iconTextbox.actualHeight
       + this.iconLabelSpacing

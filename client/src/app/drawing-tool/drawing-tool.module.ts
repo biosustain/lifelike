@@ -19,6 +19,7 @@ import { LinksPanelComponent } from './components/links-panel.component';
 import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
 import { GraphEntityDataProvider } from './providers/data-transfer-data/graph-entity-data.provider';
 import { LinkEditDialogComponent } from './components/map-editor/dialog/link-edit-dialog.component';
+import { MapImageProviderService } from './services/map-image-provider.service';
 
 @NgModule({
   declarations: [
@@ -57,6 +58,8 @@ import { LinkEditDialogComponent } from './components/map-editor/dialog/link-edi
       useClass: GraphEntityDataProvider,
       multi: true,
     },
+    CopyPasteMapsService,
+    MapImageProviderService,
   ],
   exports: [
     RouterModule,

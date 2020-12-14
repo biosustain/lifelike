@@ -17,7 +17,7 @@ export interface StandardEdgeOptions {
 /**
  * Draws an edge using a {@link Line}.
  */
-export class LineEdge implements PlacedEdge {
+export class LineEdge extends PlacedEdge {
   readonly source: { x: number, y: number };
   readonly target: { x: number, y: number };
   readonly textbox: TextElement | undefined;
@@ -35,6 +35,7 @@ export class LineEdge implements PlacedEdge {
   readonly boundingBox: { minX: number; minY: number; maxX: number; maxY: number };
 
   constructor(private ctx: CanvasRenderingContext2D, options: StandardEdgeOptions) {
+    super();
     Object.assign(this, options);
 
     const xBounds = [

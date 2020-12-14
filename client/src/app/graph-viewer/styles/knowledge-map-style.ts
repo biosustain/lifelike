@@ -13,7 +13,7 @@ import {
   PlacementOptions,
 } from 'app/graph-viewer/styles/styles';
 import { nullCoalesce, nullIfEmpty } from 'app/shared/utils/types';
-import { RectangleNode } from 'app/graph-viewer/utils/canvas/graph-nodes/rectangle-node';
+import { RectangleNode, RectangleNodeOptions } from 'app/graph-viewer/utils/canvas/graph-nodes/rectangle-node';
 import { TextAlignment, TextElement } from 'app/graph-viewer/utils/canvas/text-element';
 import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-icon-node';
 import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
@@ -30,6 +30,8 @@ import { LINE_HEAD_TYPES, LineHeadType } from '../../drawing-tool/services/line-
 import { Line } from '../utils/canvas/lines/lines';
 import { SolidLine } from '../utils/canvas/lines/solid';
 import { DashedLine } from '../utils/canvas/lines/dashed';
+import { ResourceManager } from '../utils/resource/resource-manager';
+import { ImageNode } from '../utils/canvas/graph-nodes/image-node';
 
 /**
  * Implements the style used on the Knowledge Graph.
@@ -46,6 +48,9 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
     ['note', '#FFF6D5'],
     ['link', '#DCF1F1'],
   ]);
+
+  constructor(protected readonly imageManager: ResourceManager<string, CanvasImageSource>) {
+  }
 
   placeNode(d: UniversalGraphNode, ctx: CanvasRenderingContext2D, placementOptions: PlacementOptions): PlacedNode {
     const styleData: UniversalNodeStyle = nullCoalesce(d.style, {});
@@ -118,10 +123,10 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         height: nullCoalesce(d.data.height, textbox.actualHeightWithInsets),
         textbox,
         stroke: this.createLine(
-            nullCoalesce(styleData.lineType, 'solid'),
-            nullCoalesce(styleData.lineWidthScale, 1) *
-            (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
-            nullCoalesce(styleData.strokeColor, this.detailTypeBackgrounds.get(d.label)),
+          nullCoalesce(styleData.lineType, 'solid'),
+          nullCoalesce(styleData.lineWidthScale, 1) *
+          (placementOptions.selected || placementOptions.highlighted ? 1.3 : 1),
+          nullCoalesce(styleData.strokeColor, this.detailTypeBackgrounds.get(d.label)),
         ),
         shapeFillColor: this.detailTypeBackgrounds.get(d.label),
         forceHighDetailLevel,
@@ -197,6 +202,20 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
         forceHighDetailLevel,
       });
 
+    } else if (d.image_id) {
+      // ---------------------------------
+      // Image nodes
+      // ---------------------------------
+
+      return new ImageNode(ctx, {
+        x: d.data.x,
+        y: d.data.y,
+        width: nullCoalesce(d.data.width, 100),
+        height: nullCoalesce(d.data.height, 100),
+        imageManager: this.imageManager,
+        imageId: d.image_id,
+      });
+
     } else {
       // ---------------------------------
       // All other nodes
@@ -237,7 +256,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
             placedTo: PlacedNode,
             ctx: CanvasRenderingContext2D,
             placementOptions: PlacementOptions): PlacedEdge {
-    const connectedToNotes = DETAIL_NODE_LABELS.has(from.label) || DETAIL_NODE_LABELS .has(to.label);
+    const connectedToNotes = DETAIL_NODE_LABELS.has(from.label) || DETAIL_NODE_LABELS.has(to.label);
     const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
     const fontSizeScale = nullCoalesce(styleData.fontSizeScale, 1);
     const strokeColor = nullCoalesce(styleData.strokeColor, '#2B7CE9');

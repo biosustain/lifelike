@@ -12,12 +12,16 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MapComponent } from './map.component';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
+<<<<<<< HEAD
 import { FilesystemObject} from '../../file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from '../../file-browser/utils/objects';
 import { cloneDeep } from 'lodash';
 import { MAP_MIMETYPE } from '../providers/map.type-provider';
 import { DataTransferDataService } from '../../shared/services/data-transfer-data.service';
+=======
+import { MapImageProviderService } from '../services/map-image-provider.service';
+>>>>>>> cc5b4e2a4 (Implement basic resource management and object render tree.)
 
 @Component({
   selector: 'app-map-view',
@@ -42,11 +46,19 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               ngZone: NgZone, route: ActivatedRoute,
               errorHandler: ErrorHandler,
               workspaceManager: WorkspaceManager,
+// <<<<<<< HEAD
               filesystemObjectActions: FilesystemObjectActions,
               dataTransferDataService: DataTransferDataService,
               protected readonly progressDialog: ProgressDialog) {
     super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
       errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService);
+// =======
+//               filesystemService: FilesystemService,
+//               mapImageProviderService: MapImageProviderService,
+//               public readonly progressDialog: ProgressDialog) {
+//     super(mapService, snackBar, modalService, messageDialog, ngZone, route, errorHandler,
+//       workspaceManager, filesystemService, mapImageProviderService);
+// >>>>>>> cc5b4e2a4 (Implement basic resource management and object render tree.)
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
