@@ -101,4 +101,8 @@ export class FileListComponent {
   getDateShown(object: DirectoryObject) {
     return nullCoalesce(object.modificationDate, object.creationDate);
   }
+
+  isEnrichment = isEnrichment;
+  isEnrichmentTable = isEnrichmentTable;
+  isEnrichmentVisualisation = isEnrichmentVisualisation;
 }

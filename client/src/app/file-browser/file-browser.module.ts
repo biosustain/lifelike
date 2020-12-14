@@ -32,6 +32,9 @@ import {EnrichmentVisualisationCreateDialogComponent} from "./components/enrichm
 import {EnrichmentVisualisationEditDialogComponent} from "./components/enrichment/visualisation/dialog/enrichment-visualisation-edit-dialog.component";
 import {EnrichmentVisualisationOrderDialogComponent} from "./components/enrichment/visualisation/dialog/enrichment-visualisation-order-dialog.component";
 import {WordCloudModule} from "./components/enrichment/visualisation/word-cloud/word-cloud.module";
+import {CommonModule} from "@angular/common";
+import {ChartsModule} from "ng2-charts";
+import {ChartModule} from "./components/enrichment/visualisation/chart/chart.module";
 
 @NgModule({
   declarations: [
@@ -64,10 +67,13 @@ import {WordCloudModule} from "./components/enrichment/visualisation/word-cloud/
     FileListComponent,
   ],
   imports: [
+    CommonModule,
     SharedModule,
     PdfViewerLibModule,
     DrawingToolModule,
     WordCloudModule,
+    ChartsModule,
+    ChartModule
   ],
   entryComponents: [
     FileEditDialogComponent,
