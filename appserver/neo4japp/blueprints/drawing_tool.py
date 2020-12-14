@@ -346,7 +346,8 @@ def update_project(hash_id: str, projects_name: str):
     # can derived from CID fonts, ligatures, etc
     # that are not correctly parsed
     for map_node in map.graph['nodes']:
-        map_node['data']['detail'] = map_node['data']['detail'].replace('\x00', '')
+        if map_node.get('data', {}).get('detail'):
+            map_node['data']['detail'] = map_node['data']['detail'].replace('\x00', '')
 
     # Commit to db
     db.session.add(map)
