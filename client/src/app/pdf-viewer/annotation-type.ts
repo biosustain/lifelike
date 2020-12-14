@@ -55,3 +55,7 @@ export interface AddedAnnotationExclusion {
   excludeGlobally: boolean;
   isCaseInsensitive: boolean;
 }
+
+export type AnnotationChangeExclusionMeta = Pick<AddedAnnotationExclusion,
+  'id' | 'idHyperlink' | 'text' | 'type' | 'reason' | 'comment' |
+  'excludeGlobally' | 'isCaseInsensitive'>;
