@@ -3,7 +3,7 @@ import pytest
 from os import path
 from typing import List, Tuple
 
-from neo4japp.database import get_annotations_pdf_parser
+from neo4japp.database import get_annotation_pdf_parser
 from neo4japp.services.annotations.data_transfer_objects import (
     Annotation,
     GeneAnnotation,
@@ -105,11 +105,11 @@ def create_mock_annotations(data):
     ],
 )
 def test_fix_conflicting_annotations_same_types(
-    get_annotations_service,
+    get_annotation_service,
     index,
     annotations
 ):
-    annotation_service = get_annotations_service
+    annotation_service = get_annotation_service
     fixed = annotation_service.fix_conflicting_annotations(
         unified_annotations=create_mock_annotations(annotations),
     )
@@ -171,11 +171,11 @@ def test_fix_conflicting_annotations_same_types(
     ],
 )
 def test_fix_conflicting_annotations_different_types(
-    get_annotations_service,
+    get_annotation_service,
     index,
     annotations
 ):
-    annotation_service = get_annotations_service
+    annotation_service = get_annotation_service
     fixed = annotation_service.fix_conflicting_annotations(
         unified_annotations=create_mock_annotations(annotations),
     )
@@ -227,12 +227,12 @@ def test_fix_conflicting_annotations_different_types(
 def test_gene_organism_escherichia_coli_pdf(
     gene_organism_escherichia_coli_pdf_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(directory, 'pdf_samples/ecoli_gene_test.pdf')
 
@@ -275,12 +275,12 @@ def test_gene_organism_escherichia_coli_pdf(
 def test_protein_organism_escherichia_coli_pdf(
     protein_organism_escherichia_coli_pdf_lmdb_setup,
     mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(directory, 'pdf_samples/ecoli_protein_test.pdf')
 
@@ -309,12 +309,12 @@ def test_protein_organism_escherichia_coli_pdf(
 def test_local_inclusion_organism_gene_crossmatch(
     default_lmdb_setup,
     mock_general_human_genes,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -373,12 +373,12 @@ def test_local_inclusion_organism_gene_crossmatch(
 
 def test_local_exclusion_organism_gene_crossmatch(
     default_lmdb_setup,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -432,12 +432,12 @@ def test_human_gene_pdf(
     human_gene_pdf_lmdb_setup,
     human_gene_pdf_gene_and_organism_network,
     mock_get_gene_to_organism_match_result_for_human_gene_pdf,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -472,12 +472,12 @@ def test_human_gene_pdf(
 
 def test_foods_pdf(
     food_lmdb_setup,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -509,12 +509,12 @@ def test_foods_pdf(
 
 def test_anatomy_pdf(
     anatomy_lmdb_setup,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -554,14 +554,14 @@ def test_anatomy_pdf(
 def test_genes_vs_proteins(
     default_lmdb_setup,
     mock_get_gene_to_organism_match_result,
-    get_annotations_service,
-    entity_service,
+    get_annotation_service,
+    get_entity_service,
     index,
     fpath
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(directory, fpath)
 
@@ -620,11 +620,11 @@ def test_genes_vs_proteins(
     ],
 )
 def test_fix_false_positive_gene_annotations(
-    get_annotations_service,
+    get_annotation_service,
     index,
     annotations
 ):
-    annotation_service = get_annotations_service
+    annotation_service = get_annotation_service
     fixed = annotation_service._get_fixed_false_positive_unified_annotations(
         annotations_list=create_mock_annotations(annotations),
     )
@@ -657,11 +657,11 @@ def test_fix_false_positive_gene_annotations(
 )
 def test_fix_false_positive_protein_annotations(
     default_lmdb_setup,
-    get_annotations_service,
+    get_annotation_service,
     index,
     annotations
 ):
-    annotation_service = get_annotations_service
+    annotation_service = get_annotation_service
     fixed = annotation_service._get_fixed_false_positive_unified_annotations(
         annotations_list=create_mock_annotations(annotations)
     )
@@ -682,12 +682,12 @@ def test_fix_false_positive_protein_annotations(
 def test_gene_annotation_crossmatch_human_fish(
     fish_gene_lmdb_setup,
     mock_gene_to_organism_crossmatch_human_fish,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -716,12 +716,12 @@ def test_gene_annotation_crossmatch_human_fish(
 def test_gene_annotation_crossmatch_human_rat(
     human_rat_gene_lmdb_setup,
     mock_gene_to_organism_crossmatch_human_rat,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -752,12 +752,12 @@ def test_gene_annotation_crossmatch_human_rat(
 def test_global_excluded_chemical_annotations(
     default_lmdb_setup,
     mock_global_chemical_exclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -785,12 +785,12 @@ def test_global_excluded_chemical_annotations(
 def test_global_excluded_compound_annotations(
     default_lmdb_setup,
     mock_compound_exclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -818,12 +818,12 @@ def test_global_excluded_compound_annotations(
 def test_global_excluded_disease_annotations(
     default_lmdb_setup,
     mock_disease_exclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -852,12 +852,12 @@ def test_global_excluded_disease_annotations(
 def test_global_excluded_gene_annotations(
     default_lmdb_setup,
     mock_gene_exclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -885,12 +885,12 @@ def test_global_excluded_gene_annotations(
 def test_global_excluded_phenotype_annotations(
     default_lmdb_setup,
     mock_phenotype_exclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -918,12 +918,12 @@ def test_global_excluded_phenotype_annotations(
 def test_global_excluded_protein_annotations(
     default_lmdb_setup,
     mock_protein_exclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -951,12 +951,12 @@ def test_global_excluded_protein_annotations(
 def test_global_excluded_species_annotations(
     default_lmdb_setup,
     mock_species_exclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -984,12 +984,12 @@ def test_global_excluded_species_annotations(
 def test_global_exclusions_does_not_interfere_with_other_entities(
     default_lmdb_setup,
     mock_global_chemical_exclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -1020,12 +1020,12 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
 def test_global_chemical_inclusion_annotation(
     default_lmdb_setup,
     mock_global_chemical_inclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -1054,12 +1054,12 @@ def test_global_chemical_inclusion_annotation(
 def test_global_compound_inclusion_annotation(
     default_lmdb_setup,
     mock_global_compound_inclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -1091,12 +1091,12 @@ def test_global_gene_inclusion_annotation(
     mock_global_gene_inclusion,
     mock_get_gene_ace2_for_global_gene_inclusion,
     mock_get_gene_to_organism_match_result_for_human_gene_pdf,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -1127,12 +1127,12 @@ def test_global_gene_inclusion_annotation(
 def test_global_disease_inclusion_annotation(
     default_lmdb_setup,
     mock_global_disease_inclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -1161,12 +1161,12 @@ def test_global_disease_inclusion_annotation(
 def test_global_phenotype_inclusion_annotation(
     default_lmdb_setup,
     mock_global_phenotype_inclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -1195,12 +1195,12 @@ def test_global_phenotype_inclusion_annotation(
 def test_global_protein_inclusion_annotation(
     default_lmdb_setup,
     mock_global_protein_inclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -1229,12 +1229,12 @@ def test_global_protein_inclusion_annotation(
 def test_global_species_inclusion_annotation(
     default_lmdb_setup,
     mock_global_species_inclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -1264,12 +1264,12 @@ def test_global_species_inclusion_annotation(
 def test_primary_organism_strain(
     bola_human_monkey_gene,
     mock_get_gene_specified_strain,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -1316,12 +1316,12 @@ def test_primary_organism_strain(
 
 def test_no_annotation_for_abbreviation(
     abbreviation_lmdb_setup,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -1350,12 +1350,12 @@ def test_no_annotation_for_abbreviation(
 def test_delta_gene_deletion_detected(
     gene_organism_escherichia_coli_pdf_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -1385,12 +1385,12 @@ def test_delta_gene_deletion_detected(
 def test_gene_primary_name(
     default_lmdb_setup,
     mock_get_gene_to_organism_match_result_for_gene_primary_name_pdf,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
@@ -1417,8 +1417,8 @@ def test_gene_primary_name(
 
 def test_user_source_database_input_priority(
     mock_global_chemical_inclusion,
-    get_annotations_service,
-    entity_service
+    get_annotation_service,
+    get_entity_service
 ):
     custom = {
         'meta': {
@@ -1431,9 +1431,9 @@ def test_user_source_database_input_priority(
         },
     }
 
-    annotation_service = get_annotations_service
-    pdf_parser = get_annotations_pdf_parser()
-    entity_service = entity_service
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
 
     pdf = path.join(
         directory,
