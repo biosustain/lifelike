@@ -1,11 +1,7 @@
-from collections import defaultdict
-from flask import Blueprint, jsonify
-from neo4japp.database import get_neo4j
+from flask import Blueprint
 from neo4japp.exceptions import DataNotAvailableException
 import os
 import redis
-import json
-import time
 
 bp = Blueprint('kg-statistics-api', __name__, url_prefix='/kg-statistics')
 

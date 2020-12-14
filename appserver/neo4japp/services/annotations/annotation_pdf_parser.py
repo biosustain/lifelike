@@ -1,4 +1,3 @@
-import attr
 import json
 import re
 
@@ -34,7 +33,7 @@ from .constants import (
 from .util import clean_char, normalize_str
 
 
-class AnnotationsPDFParser:
+class AnnotationPDFParser:
     def _get_lt_char(
         self,
         layout: Any,
