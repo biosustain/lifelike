@@ -3,27 +3,29 @@ import cProfile
 import io
 import pstats
 import os
+import attr
 
 from datetime import datetime
 
-from neo4japp.database import (
-    get_annotations_service,
-    get_annotations_pdf_parser,
-    get_bioc_document_service,
-    get_entity_recognition,
-)
 from neo4japp.constants import TIMEZONE
-from neo4japp.database import db
 from neo4japp.factory import create_app
-from neo4japp.models import Files
-
-from neo4japp.data_transfer_objects import SpecifiedOrganismStrain
-
+from neo4japp.models import FileContent
+from neo4japp.services.annotations.constants import AnnotationMethod
+from neo4japp.services.annotations.data_transfer_objects import SpecifiedOrganismStrain
 from neo4japp.services.annotations.pipeline import create_annotations
 
 
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
+
+
+@attr.s()
+class Document:
+    parsed_content = attr.ib()
+    raw_file = attr.ib()
+    custom_annotations = attr.ib()
+    excluded_annotations = attr.ib()
+    file_content_id = attr.ib()
 
 
 @contextlib.contextmanager
@@ -50,67 +52,32 @@ def cprofiled():
     # print(s.getvalue())
 
 
-def profile_annotations(
-    annotator,
-    pdf_parser,
-    bioc_service,
-    entity_service,
-    pdf
-):
+def profile_annotations(pdf):
     with cprofiled():
-        parsed = pdf_parser.parse_pdf(pdf=pdf)
-        tokens = pdf_parser.extract_tokens(parsed_chars=parsed)
-        entity_service.set_entity_inclusions(custom_annotations=[])
-        entity_service.set_entity_exclusions()
-        entity_service.identify_entities(
-            tokens=tokens.token_positions,
-            check_entities_in_lmdb=entity_service.get_entities_to_identify()
+        bioc = create_annotations(
+            AnnotationMethod.RULES.value,
+            '',
+            '',
+            Document(
+                parsed_content=None,
+                raw_file=pdf,
+                custom_annotations=[],
+                excluded_annotations=[],
+                file_content_id='1'
+            ),
+            'filename'
         )
-
-        annotations = annotator.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain('', '', '')
-        )
-
-        pdf_text = pdf_parser.combine_all_chars(parsed_chars=parsed)
-        bioc = bioc_service.read(text=pdf_text, file_uri='filename')
-        bioc_json = bioc_service.generate_bioc_json(
-            annotations=annotations, bioc=bioc)
-
-        db.session.bulk_update_mappings(Files, {
-            'id': 4,
-            'annotations': bioc_json,
-            'annotations_date': datetime.now(TIMEZONE),
-        })
-        db.session.commit()
-
-    print(bioc_json)
 
 
 def main():
     app = create_app('Functional Test Flask App', config='config.Testing')
     with app.app_context():
-        service = get_annotations_service()
-        parser = get_annotations_pdf_parser()
-        entity_service = get_entity_recognition()
-        bioc_service = get_bioc_document_service()
-
         pdf = os.path.join(
             directory,
             '../../../../tests/database/services/annotations/pdf_samples/Sepsis and Shock.pdf')  # noqa
 
         with open(pdf, 'rb') as f:
-            profile_annotations(
-                annotator=service,
-                pdf_parser=parser,
-                bioc_service=bioc_service,
-                entity_service=entity_service,
-                pdf=f,
-            )
+            profile_annotations(pdf=f.read())
 
 
 if __name__ == '__main__':

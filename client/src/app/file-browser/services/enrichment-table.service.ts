@@ -3,8 +3,8 @@ import {
     HttpClient,
     HttpHeaders,
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { AbstractService } from 'app/shared/services/abstract-service';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { Project } from './project-space.service';

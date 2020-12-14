@@ -34,11 +34,6 @@ export class ContextMenuBodyDirective {
   constructor(@Inject(forwardRef(() => ContextMenuDirective))
               readonly contextMenu: ContextMenuDirective) {
   }
-
-  @HostListener('click', ['$event'])
-  clicked(e: MouseEvent) {
-    e.stopPropagation();
-  }
 }
 
 /**
@@ -77,6 +72,7 @@ export class ContextMenuDirective implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.removeFromBody();
     this.subscriptions.unsubscribe();
     document.removeEventListener('mousemove', this.mouseMovedBound);
   }
