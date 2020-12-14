@@ -51,7 +51,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   }
 
   getValue(): Annotation {
-    const text = this.form.getRawValue().text;
+    const text = this.form.getRawValue().text.trim();
     const links = {};
     const sourceDomains = new Set(
       this.linkTemplates.filter(
