@@ -1,4 +1,3 @@
-from bisect import bisect_left
 from math import inf
 from typing import cast, Dict, List, Set, Tuple, Union
 from uuid import uuid4
@@ -6,12 +5,13 @@ from uuid import uuid4
 from flask import current_app
 from pdfminer.layout import LTAnno, LTChar
 
-from .annotation_interval_tree import (
+from neo4japp.services.annotations import (
+    AnnotationDBService,
+    AnnotationGraphService,
     AnnotationInterval,
-    AnnotationIntervalTree,
+    AnnotationIntervalTree
 )
-from .annotations_neo4j_service import AnnotationsNeo4jService
-from .constants import (
+from neo4japp.services.annotations.constants import (
     DatabaseType,
     EntityColor,
     EntityIdStr,
@@ -26,9 +26,11 @@ from .constants import (
     PDF_NEW_LINE_THRESHOLD,
     SEARCH_LINKS,
 )
-from .lmdb_dao import LMDBDao
-from .util import has_center_point, normalize_str, standardize_str
-
+from neo4japp.services.annotations.util import (
+    has_center_point,
+    normalize_str,
+    standardize_str
+)
 from neo4japp.services.annotations.data_transfer_objects import (
     Annotation,
     EntityResults,
@@ -44,12 +46,14 @@ from neo4japp.exceptions import AnnotationError
 from neo4japp.utils.logger import EventLog
 
 
-class AnnotationsService:
+class AnnotationService:
     def __init__(
         self,
-        annotation_neo4j: AnnotationsNeo4jService,
+        db: AnnotationDBService,
+        graph: AnnotationGraphService,
     ) -> None:
-        self.annotation_neo4j = annotation_neo4j
+        self.db = db
+        self.graph = graph
 
         self.organism_frequency: Dict[str, int] = {}
         self.organism_locations: Dict[str, List[Tuple[int, int]]] = {}
@@ -545,11 +549,14 @@ class AnnotationsService:
                         (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token))
 
         gene_names_list = list(gene_names)
+        organism_ids = list(self.organism_frequency.keys())
 
         gene_organism_matches = \
-            self.annotation_neo4j.get_gene_to_organism_match_result(
+            self.graph.get_gene_to_organism_match_result(
                 genes=gene_names_list,
-                matched_organism_ids=list(self.organism_frequency.keys()),
+                postgres_genes=self.db.get_genes(
+                    genes=gene_names_list, organism_ids=organism_ids),
+                matched_organism_ids=organism_ids,
             )
 
         # any genes not matched in KG fall back to specified organism
@@ -557,8 +564,10 @@ class AnnotationsService:
 
         if self.specified_organism.synonym:
             fallback_gene_organism_matches = \
-                self.annotation_neo4j.get_gene_to_organism_match_result(
+                self.graph.get_gene_to_organism_match_result(
                     genes=gene_names_list,
+                    postgres_genes=self.db.get_genes(
+                        genes=gene_names_list, organism_ids=organism_ids),
                     matched_organism_ids=[self.specified_organism.organism_id],
                 )
 
@@ -578,7 +587,7 @@ class AnnotationsService:
                     except KeyError:
                         # only take the first gene for the organism
                         # no way for us to infer which to use
-                        # logic moved from annotations_neo4j_service.py
+                        # logic moved from annotation_graph_service.py
                         for d in list(gene_organism_matches[entity_synonym].values()):
                             key = next(iter(d))
                             if key not in organisms_to_match:
@@ -600,7 +609,7 @@ class AnnotationsService:
                             except KeyError:
                                 # only take the first gene for the organism
                                 # no way for us to infer which to use
-                                # logic moved from annotations_neo4j_service.py
+                                # logic moved from annotation_graph_service.py
                                 for d in list(fallback_gene_organism_matches[entity_synonym].values()):  # noqa
                                     key = next(iter(d))
                                     if key not in fallback_organisms_to_match:
@@ -618,7 +627,7 @@ class AnnotationsService:
                     except KeyError:
                         # only take the first gene for the organism
                         # no way for us to infer which to use
-                        # logic moved from annotations_neo4j_service.py
+                        # logic moved from annotation_graph_service.py
                         for d in list(fallback_gene_organism_matches[entity_synonym].values()):
                             key = next(iter(d))
                             if key not in organisms_to_match:
@@ -735,7 +744,7 @@ class AnnotationsService:
         protein_names_list = list(protein_names)
 
         protein_organism_matches = \
-            self.annotation_neo4j.get_proteins_to_organisms(
+            self.graph.get_proteins_to_organisms(
                 proteins=protein_names_list,
                 organisms=list(self.organism_frequency.keys()),
             )
@@ -745,7 +754,7 @@ class AnnotationsService:
 
         if self.specified_organism.synonym:
             fallback_protein_organism_matches = \
-                self.annotation_neo4j.get_proteins_to_organisms(
+                self.graph.get_proteins_to_organisms(
                     proteins=protein_names_list,
                     organisms=[self.specified_organism.organism_id],
                 )
@@ -1228,12 +1237,16 @@ class AnnotationsService:
         gene_ids = set()
         protein_ids = set()
         organism_ids = set()
+        mesh_ids = set()
 
         for anno in annotations:
             if anno.meta.id_type not in anno.meta.id:
                 # update annotation id
                 anno.meta.id = f'{anno.meta.id_type}:{anno.meta.id}'
-            if anno.meta.type == EntityType.CHEMICAL.value:
+
+            if anno.meta.type == EntityType.ANATOMY.value or anno.meta.type == EntityType.FOOD.value:  # noqa
+                mesh_ids.add(anno.meta.id)
+            elif anno.meta.type == EntityType.CHEMICAL.value:
                 chemical_ids.add(anno.meta.id)
             elif anno.meta.type == EntityType.COMPOUND.value:
                 compound_ids.add(anno.meta.id)
@@ -1246,16 +1259,19 @@ class AnnotationsService:
             elif anno.meta.type == EntityType.SPECIES.value:
                 organism_ids.add(anno.meta.id)
 
-        chemical_names = self.annotation_neo4j.get_chemicals_from_chemical_ids(list(chemical_ids))  # noqa
-        compound_names = self.annotation_neo4j.get_compounds_from_compound_ids(list(compound_ids))  # noqa
-        disease_names = self.annotation_neo4j.get_diseases_from_disease_ids(list(disease_ids))  # noqa
-        gene_names = self.annotation_neo4j.get_genes_from_gene_ids(list(gene_ids))
-        protein_names = self.annotation_neo4j.get_proteins_from_protein_ids(list(protein_ids))  # noqa
-        organism_names = self.annotation_neo4j.get_organisms_from_organism_ids(list(organism_ids))  # noqa
+        chemical_names = self.graph.get_chemicals_from_chemical_ids(list(chemical_ids))  # noqa
+        compound_names = self.graph.get_compounds_from_compound_ids(list(compound_ids))  # noqa
+        disease_names = self.graph.get_diseases_from_disease_ids(list(disease_ids))  # noqa
+        gene_names = self.graph.get_genes_from_gene_ids(list(gene_ids))
+        protein_names = self.graph.get_proteins_from_protein_ids(list(protein_ids))  # noqa
+        organism_names = self.graph.get_organisms_from_organism_ids(list(organism_ids))  # noqa
+        mesh_names = self.graph.get_mesh_from_mesh_ids(list(mesh_ids))
 
         for anno in annotations:
             try:
-                if anno.meta.type == EntityType.CHEMICAL.value:
+                if anno.meta.type == EntityType.ANATOMY.value or anno.meta.type == EntityType.FOOD.value:  # noqa
+                    anno.primary_name = mesh_names[anno.meta.id]
+                elif anno.meta.type == EntityType.CHEMICAL.value:
                     anno.primary_name = chemical_names[anno.meta.id]
                 elif anno.meta.type == EntityType.COMPOUND.value:
                     anno.primary_name = compound_names[anno.meta.id]
