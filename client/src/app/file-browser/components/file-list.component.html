@@ -119,21 +119,21 @@
                   Open
                 </button>
                 <button ngbDropdownItem (click)="openEditDialog(object)"
-                        *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'">
+                        *ngIf="isEnrichment(object)">
                   Edit...
                 </button>
                 <button ngbDropdownItem
-                        *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) === '.enrichment'"
+                        *ngIf="isEnrichmentTable(object)"
                         (click)="openEnrichmentTableEditDialog(object)">
                   Edit Enrichment Params
                 </button>
                 <button ngbDropdownItem
-                        *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) === '.enrichment'"
+                        *ngIf="isEnrichmentVisualisation(object)"
                         (click)="openEnrichmentVisualisationEditDialog(object)">
                   Edit Enrichment Visualisation Params
                 </button>
                 <button ngbDropdownItem
-                        *ngIf="object.type === 'file' && object.name.slice(object.name.length - 11) !== '.enrichment'"
+                        *ngIf="!isEnrichment(object)"
                         (click)="reannotate([object])">
                   Re-annotate
                 </button>
