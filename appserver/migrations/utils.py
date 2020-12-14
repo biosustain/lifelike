@@ -100,12 +100,24 @@ def get_primary_names(annotations):
                 elif anno['meta']['type'] == EntityType.SPECIES.value:
                     anno['primaryName'] = organism_names[meta_id]
                 else:
-                    anno['primaryName'] = anno['keyword']
+                    if anno.get('keyword'):
+                        anno['primaryName'] = anno['keyword']
+                    elif anno.get('meta', {}).get('allText'):
+                        # custom annotations
+                        anno['primaryName'] = anno['meta']['allText']
+                    else:
+                        anno['primaryName'] = ''
             except KeyError:
                 # just keep what is already there or use the
                 # synonym if blank
                 if not anno.get('primaryName'):
-                    anno['primaryName'] = anno['keyword']
+                    if anno.get('keyword'):
+                        anno['primaryName'] = anno['keyword']
+                    elif anno.get('meta', {}).get('allText'):
+                        # custom annotations
+                        anno['primaryName'] = anno['meta']['allText']
+                    else:
+                        anno['primaryName'] = ''
         updated_annotations.append(anno)
     return updated_annotations
 
