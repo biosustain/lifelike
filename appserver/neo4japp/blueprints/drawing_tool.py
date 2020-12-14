@@ -341,6 +341,13 @@ def update_project(hash_id: str, projects_name: str):
     if 'public' in data:
         map.public = data['public']
 
+    # sanitize null unicode
+    # these occur due to how some pdfs are created
+    # can derived from CID fonts, ligatures, etc
+    # that are not correctly parsed
+    for map_node in map.graph['nodes']:
+        map_node['data']['detail'] = map_node['data']['detail'].replace('\x00', '')
+
     # Commit to db
     db.session.add(map)
     db.session.add(project_version)
