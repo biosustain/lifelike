@@ -52,7 +52,8 @@ import { DragDropEntity } from '../../../graph-viewer/renderers/canvas/behaviors
 
 // >>>>>>> from 979038cdc (Use .behavior.ts suffix.)
 import { DragDropEntityBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/drag-drop-entity.behavior';
-// <<<<<<< 
+import { ImageUploadBehavior } from '../../../graph-viewer/renderers/canvas/behaviors/image-upload.behavior';
+
 @Component({
   selector: 'app-drawing-tool',
   templateUrl: './map-editor.component.html',
@@ -184,6 +185,8 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
 // >>>>>>> 979038cdc (Use .behavior.ts suffix.)
     /**
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcutBehavior(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('image-upload',
+      new ImageUploadBehavior(this.graphCanvas, this.mapImageProviderService), -100);
     this.graphCanvas.behaviors.add('paste-keyboard-shortcut', new PasteKeyboardShortcutBehavior(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shortcut',
       new HistoryKeyboardShortcutsBehavior(this.graphCanvas, this.snackBar), -100);
