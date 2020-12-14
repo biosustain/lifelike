@@ -1,23 +1,29 @@
 import { Injectable } from '@angular/core';
 import { ResourceProvider } from '../../graph-viewer/utils/resource/resource-manager';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 
 @Injectable()
 export class MapImageProviderService implements ResourceProvider<string, CanvasImageSource> {
 
-  private readonly memoryImages = new Map<string, CanvasImageSource>();
+  private readonly preloadedUrls = new Map<string, string>();
 
   constructor() {
   }
 
-  setMemoryImage(id: string, image: CanvasImageSource) {
-    this.memoryImages.set(id, image);
+  setMemoryImage(id: string, url: string) {
+    this.preloadedUrls.set(id, url);
   }
 
   get(id: string): Observable<CanvasImageSource> {
-    const memoryImage = this.memoryImages.get(id);
-    if (memoryImage != null) {
-      return of(memoryImage);
+    const preloadedUrl = this.preloadedUrls.get(id);
+    if (preloadedUrl != null) {
+      const subject = new Subject<CanvasImageSource>();
+      const image = new Image();
+      image.onload = () => {
+        subject.next(image);
+      };
+      image.src = preloadedUrl;
+      return subject;
     } else {
       // TODO: Return an error to be handled
       return of(null);
