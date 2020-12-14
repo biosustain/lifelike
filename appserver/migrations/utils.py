@@ -39,6 +39,11 @@ def get_primary_names(annotations):
 
     for anno in annotations:
         if not anno.get('primaryName'):
+            # a custom annotation had a list in ['meta']['type']
+            # probably a leftover from previous change
+            if type(anno['meta']['type']) == list:
+                anno['meta']['type'] = anno['meta']['type'][0]
+
             if anno['meta']['type'] in {
                 EntityType.COMPOUND.value,
                 EntityType.GENE.value,
