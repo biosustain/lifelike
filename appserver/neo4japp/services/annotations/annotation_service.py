@@ -1240,10 +1240,6 @@ class AnnotationService:
         mesh_ids = set()
 
         for anno in annotations:
-            if anno.meta.id_type not in anno.meta.id:
-                # update annotation id
-                anno.meta.id = f'{anno.meta.id_type}:{anno.meta.id}'
-
             if anno.meta.type == EntityType.ANATOMY.value or anno.meta.type == EntityType.FOOD.value:  # noqa
                 mesh_ids.add(anno.meta.id)
             elif anno.meta.type == EntityType.CHEMICAL.value:
@@ -1290,6 +1286,10 @@ class AnnotationService:
                 # synonym if blank
                 if not anno.primary_name:
                     anno.primary_name = anno.keyword
+            finally:
+                if anno.meta.id_type not in anno.meta.id:
+                    # update annotation id
+                    anno.meta.id = f'{anno.meta.id_type}:{anno.meta.id}'
         return annotations
 
     def fix_conflicting_annotations(

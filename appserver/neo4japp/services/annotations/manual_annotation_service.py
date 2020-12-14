@@ -55,27 +55,32 @@ class ManualAnnotationService:
         # get the primary name
         primary_name = ''
         entity_id = custom_annotation['meta']['id']
-        if custom_annotation['meta']['type'] == EntityType.ANATOMY.value or custom_annotation['meta']['type'] == EntityType.FOOD.value:  # noqa
-            primary_name = self.graph.get_mesh_from_mesh_ids([entity_id])[entity_id]
-        elif custom_annotation['meta']['type'] == EntityType.CHEMICAL.value:
-            primary_name = self.graph.get_chemicals_from_chemical_id([entity_id])[entity_id]
-        elif custom_annotation['meta']['type'] == EntityType.COMPOUND.value:
-            primary_name = self.graph.get_compounds_from_compound_ids([entity_id])[entity_id]
-        elif custom_annotation['meta']['type'] == EntityType.DISEASE.value:
-            primary_name = self.graph.get_diseases_from_disease_ids([entity_id])[entity_id]
-        elif custom_annotation['meta']['type'] == EntityType.GENE.value:
-            primary_name = self.graph.get_genes_from_gene_ids([entity_id])[entity_id]
-        elif custom_annotation['meta']['type'] == EntityType.PROTEIN.value:
-            primary_name = self.graph.get_proteins_from_protein_ids([entity_id])[entity_id]
-        elif custom_annotation['meta']['type'] == EntityType.SPECIES.value:
-            primary_name = self.graph.get_organisms_from_organism_ids([entity_id])[entity_id]
+        try:
+            if custom_annotation['meta']['type'] == EntityType.ANATOMY.value or custom_annotation['meta']['type'] == EntityType.FOOD.value:  # noqa
+                primary_name = self.graph.get_mesh_from_mesh_ids([entity_id])[entity_id]
+            elif custom_annotation['meta']['type'] == EntityType.CHEMICAL.value:
+                primary_name = self.graph.get_chemicals_from_chemical_id([entity_id])[entity_id]
+            elif custom_annotation['meta']['type'] == EntityType.COMPOUND.value:
+                primary_name = self.graph.get_compounds_from_compound_ids([entity_id])[entity_id]
+            elif custom_annotation['meta']['type'] == EntityType.DISEASE.value:
+                primary_name = self.graph.get_diseases_from_disease_ids([entity_id])[entity_id]
+            elif custom_annotation['meta']['type'] == EntityType.GENE.value:
+                primary_name = self.graph.get_genes_from_gene_ids([entity_id])[entity_id]
+            elif custom_annotation['meta']['type'] == EntityType.PROTEIN.value:
+                primary_name = self.graph.get_proteins_from_protein_ids([entity_id])[entity_id]
+            elif custom_annotation['meta']['type'] == EntityType.SPECIES.value:
+                primary_name = self.graph.get_organisms_from_organism_ids([entity_id])[entity_id]
+            else:
+                primary_name = custom_annotation['meta']['allText']
+        except KeyError:
+            primary_name = custom_annotation['meta']['allText']
 
         annotation_to_add = {
             **custom_annotation,
             'inclusion_date': str(datetime.now(TIMEZONE)),
             'user_id': user_id,
             'uuid': str(uuid.uuid4()),
-            'primaryName': primary_name if primary_name else custom_annotation['meta']['allText']  # noqa
+            'primaryName': primary_name
         }
         term = custom_annotation['meta']['allText']
 
