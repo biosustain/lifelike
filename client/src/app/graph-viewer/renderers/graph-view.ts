@@ -22,6 +22,9 @@ import { GraphAction, GraphActionReceiver } from '../actions/actions';
 import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 // import { BehaviorList } from './behaviors';
+import { Subject } from 'rxjs';
+import { escapeRegExp } from 'lodash';
+import { RenderTree } from './render-tree';
 
 /**
  * A rendered view of a graph.
@@ -68,6 +71,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Marks that changes to the view were made so we need to re-render.
    */
   protected renderingRequested = false;
+
+  abstract renderTree: RenderTree;
 
   /**
    * Indicates where a mouse button is currently down.
@@ -293,7 +298,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   updateNode(node: UniversalGraphNode): void {
     this.invalidateNode(node);
-    this.requestRender();
   }
 
   /**
@@ -353,40 +357,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Invalidate the whole renderer cache.
    */
   invalidateAll(): void {
-  }
-
-  /**
-   * Invalidate any cache entries for the given node. If changes are made
-   * that might affect how the node is rendered, this method must be called.
-   * @param d the node
-   */
-  invalidateNode(d: UniversalGraphNode): void {
-    for (const edge of this.edges) {
-      if (edge.from === d.hash || edge.to === d.hash) {
-        this.invalidateEdge(edge);
-      }
-    }
-  }
-
-  /**
-   * Invalidate any cache entries for the given edge. If changes are made
-   * that might affect how the edge is rendered, this method must be called.
-   * @param d the edge
-   */
-  invalidateEdge(d: UniversalGraphEdge): void {
-  }
-
-  /**
-   * Invalidate any cache entries for the given entity. Helper method
-   * that calls the correct invalidation method.
-   * @param entity the entity
-   */
-  invalidateEntity(entity: GraphEntity): void {
-    if (entity.type === GraphEntityType.Node) {
-      this.invalidateNode(entity.entity as UniversalGraphNode);
-    } else if (entity.type === GraphEntityType.Edge) {
-      this.invalidateEdge(entity.entity as UniversalGraphEdge);
-    }
   }
 
   /**
@@ -769,7 +739,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   private colaTicked(): void {
     // TODO: Turn off caching temporarily instead or do something else
     this.invalidateAll();
-    this.requestRender();
   }
 
   /**

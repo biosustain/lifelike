@@ -28,6 +28,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
+
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBufferToJson, readBlobAsBuffer } from 'app/shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
@@ -51,6 +52,10 @@ import { DataTransferDataService } from '../../shared/services/data-transfer-dat
 // import { FilesystemService } from '../../file-browser/services/filesystem.service';
 // import { SelectableEntityBehavior } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity.behavior';
 // >>>>>>> 979038cdc (Use .behavior.ts suffix.)
+
+
+import { MapImageProviderService } from '../services/map-image-provider.service';
+import { DelegateResourceManager } from '../../graph-viewer/utils/resource/resource-manager';
 
 @Component({
   selector: 'app-map',
@@ -87,6 +92,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   entitySearchListIdx = -1;
 
   constructor(
+<<<<<<< HEAD
     readonly filesystemService: FilesystemService,
     readonly snackBar: MatSnackBar,
     readonly modalService: NgbModal,
@@ -97,6 +103,18 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly workspaceManager: WorkspaceManager,
     readonly filesystemObjectActions: FilesystemObjectActions,
     readonly dataTransferDataService: DataTransferDataService,
+=======
+      readonly mapService: MapService,
+      readonly snackBar: MatSnackBar,
+      readonly modalService: NgbModal,
+      readonly messageDialog: MessageDialog,
+      readonly ngZone: NgZone,
+      readonly route: ActivatedRoute,
+      readonly errorHandler: ErrorHandler,
+      readonly workspaceManager: WorkspaceManager,
+      readonly filesystemService: FilesystemService,
+      readonly mapImageProviderService: MapImageProviderService,
+>>>>>>> cc5b4e2a4 (Implement basic resource management and object render tree.)
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
@@ -133,12 +151,20 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   // ========================================
 
   ngAfterViewInit() {
+<<<<<<< HEAD
     Promise.resolve().then(() => {
       const style = new KnowledgeMapStyle();
       this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
         nodeRenderStyle: style,
         edgeRenderStyle: style,
       });
+=======
+    const style = new KnowledgeMapStyle(new DelegateResourceManager(this.mapImageProviderService));
+    this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
+      nodeRenderStyle: style,
+      edgeRenderStyle: style,
+    });
+>>>>>>> cc5b4e2a4 (Implement basic resource management and object render tree.)
 
       this.registerGraphBehaviors();
 

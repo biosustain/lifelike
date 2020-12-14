@@ -5,7 +5,7 @@ import {
   GraphEntityType,
   UniversalEdgeStyle,
   UniversalGraph,
-  UniversalGraphEdge,
+  UniversalGraphEdge, UniversalGraphEntity,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
 import {
@@ -20,7 +20,9 @@ import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { LineEdge } from '../../utils/canvas/graph-edges/line-edge';
 import { SolidLine } from '../../utils/canvas/lines/solid';
-import { nullCoalesce } from 'app/shared/utils/types';
+// import { nullCoalesce } from 'app/shared/utils/types';
+import { nullCoalesce } from '../../../shared/utils/types';
+import { PlacedObjectRenderTree } from './render-tree';
 
 export interface CanvasGraphViewOptions {
   nodeRenderStyle: NodeRenderStyle;
@@ -60,21 +62,13 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
    */
   animationFrameRenderTimeBudget = 33; // 33 = 30fps
 
-  // Caches
-  // ---------------------------------
-
-  /**
-   * Keeps a handle on created node renderers to improve performance.
-   */
-  private placedNodesCache: Map<UniversalGraphNode, PlacedNode> = new Map();
-
-  /**
-   * Keeps a handle on created edge renderers to improve performance.
-   */
-  private placedEdgesCache: Map<UniversalGraphEdge, PlacedEdge> = new Map();
-
   // States
   // ---------------------------------
+
+  /**
+   * Keeps a handle on created renderers to improve performance.
+   */
+  readonly renderTree = new PlacedObjectRenderTree<UniversalGraphEntity>();
 
   /**
    * The next time to check to see if assets have been loaded.
@@ -293,6 +287,12 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       fromEvent(document, 'paste')
         .subscribe(this.documentPaste.bind(this)),
     );
+
+    this.trackedSubscriptions.push(
+      this.renderTree.renderRequest$.subscribe(objects => {
+        this.requestRender();
+      })
+    );
   }
 
   destroy() {
@@ -356,16 +356,15 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
 
   setGraph(graph: UniversalGraph): void {
     super.setGraph(graph);
-    this.placedNodesCache.clear();
-    this.placedEdgesCache.clear();
+    this.renderTree.clear();
   }
 
   removeNode(node: UniversalGraphNode): { found: boolean; removedEdges: UniversalGraphEdge[] } {
     const result = super.removeNode(node);
     if (result.found) {
-      this.placedNodesCache.delete(node);
+      this.renderTree.delete(node);
       for (const edge of result.removedEdges) {
-        this.placedEdgesCache.delete(edge);
+        this.renderTree.delete(edge);
       }
     }
     return result;
@@ -374,7 +373,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   removeEdge(edge: UniversalGraphEdge): boolean {
     const found = super.removeEdge(edge);
     if (found) {
-      this.placedEdgesCache.delete(edge);
+      this.renderTree.delete(edge);
     }
     return found;
   }
@@ -422,7 +421,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   placeNode(d: UniversalGraphNode): PlacedNode {
-    let placedNode = this.placedNodesCache.get(d);
+    let placedNode = this.renderTree.get(d) as PlacedNode;
     if (placedNode) {
       return placedNode;
     } else {
@@ -433,13 +432,13 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
         highlighted: this.isAnyHighlighted(d),
       });
 
-      this.placedNodesCache.set(d, placedNode);
+      this.renderTree.set(d, placedNode);
       return placedNode;
     }
   }
 
   placeEdge(d: UniversalGraphEdge): PlacedEdge {
-    let placedEdge = this.placedEdgesCache.get(d);
+    let placedEdge = this.renderTree.get(d) as PlacedEdge;
     if (placedEdge) {
       return placedEdge;
     } else {
@@ -454,25 +453,50 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
         highlighted: this.isAnyHighlighted(d, from, to),
       });
 
-      this.placedEdgesCache.set(d, placedEdge);
+      this.renderTree.set(d, placedEdge);
 
       return placedEdge;
     }
   }
 
   invalidateAll(): void {
-    this.placedNodesCache.clear();
-    this.placedEdgesCache.clear();
+    this.renderTree.clear();
   }
 
+  /**
+   * Invalidate any cache entries for the given node. If changes are made
+   * that might affect how the node is rendered, this method must be called.
+   * @param d the node
+   */
   invalidateNode(d: UniversalGraphNode): void {
-    super.invalidateNode(d);
-    this.placedNodesCache.delete(d);
+    this.renderTree.delete(d);
+    for (const edge of this.edges) {
+      if (edge.from === d.hash || edge.to === d.hash) {
+        this.invalidateEdge(edge);
+      }
+    }
   }
 
+  /**
+   * Invalidate any cache entries for the given edge. If changes are made
+   * that might affect how the edge is rendered, this method must be called.
+   * @param d the edge
+   */
   invalidateEdge(d: UniversalGraphEdge): void {
-    super.invalidateEdge(d);
-    this.placedEdgesCache.delete(d);
+    this.renderTree.delete(d);
+  }
+
+  /**
+   * Invalidate any cache entries for the given entity. Helper method
+   * that calls the correct invalidation method.
+   * @param entity the entity
+   */
+  invalidateEntity(entity: GraphEntity): void {
+    if (entity.type === GraphEntityType.Node) {
+      this.invalidateNode(entity.entity as UniversalGraphNode);
+    } else if (entity.type === GraphEntityType.Edge) {
+      this.invalidateEdge(entity.entity as UniversalGraphEdge);
+    }
   }
 
   getLocationAtMouse(): [number, number] {
@@ -563,7 +587,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     );
 
     this.invalidateAll();
-    this.requestRender();
   }
 
   private applyPanToNode(node: UniversalGraphNode, duration: number = 1500, padding = 50) {
@@ -589,7 +612,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     );
 
     this.invalidateAll();
-    this.requestRender();
   }
 
 
@@ -622,7 +644,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     );
 
     this.invalidateAll();
-    this.requestRender();
   }
 
   // ========================================
