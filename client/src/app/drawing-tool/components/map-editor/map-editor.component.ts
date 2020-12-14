@@ -7,7 +7,6 @@ import { KnowledgeMap, UniversalGraphNode } from '../../services/interfaces';
 
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
-import { SelectableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity';
 import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
 import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
 import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
