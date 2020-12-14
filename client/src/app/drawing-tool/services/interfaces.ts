@@ -35,6 +35,7 @@ export interface UniversalGraphNode {
     size: number,
     weight: string,
   };
+  image_id?: string;
   label: string;
   sub_labels: string[];
   style?: UniversalNodeStyle;
