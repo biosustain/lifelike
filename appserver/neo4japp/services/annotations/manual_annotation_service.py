@@ -59,7 +59,7 @@ class ManualAnnotationService:
             if custom_annotation['meta']['type'] == EntityType.ANATOMY.value or custom_annotation['meta']['type'] == EntityType.FOOD.value:  # noqa
                 primary_name = self.graph.get_mesh_from_mesh_ids([entity_id])[entity_id]
             elif custom_annotation['meta']['type'] == EntityType.CHEMICAL.value:
-                primary_name = self.graph.get_chemicals_from_chemical_id([entity_id])[entity_id]
+                primary_name = self.graph.get_chemicals_from_chemical_ids([entity_id])[entity_id]
             elif custom_annotation['meta']['type'] == EntityType.COMPOUND.value:
                 primary_name = self.graph.get_compounds_from_compound_ids([entity_id])[entity_id]
             elif custom_annotation['meta']['type'] == EntityType.DISEASE.value:
