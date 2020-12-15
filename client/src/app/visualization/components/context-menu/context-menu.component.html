@@ -2,6 +2,8 @@
 <div [id]="tooltipSelector" [ngClass]="contextMenuClass">
   <div *ngIf="clusterSelected; else clusterNotSelected">
     <ng-template [ngTemplateOutlet]="getDataGroup"></ng-template>
+
+
     <div class="context-menu-group">
       <div
         [id]="'pull-out-node-from-cluster-menu-item-' + tooltipId"
@@ -24,6 +26,9 @@
     </div>
     <ng-template #singleSelectedEntity>
       <ng-template [ngTemplateOutlet]="getDataGroup"></ng-template>
+      <ng-template [ngTemplateOutlet]="getGeneGroup"></ng-template>
+      <ng-template [ngTemplateOutlet]="getChemicalGroup"></ng-template>
+      <ng-template [ngTemplateOutlet]="getDiseaseGroup"></ng-template>
       <div *ngIf="exactlyOneSelectedNode; else singleSelectedEdge">
         <div class="context-menu-group">
           <div
@@ -85,6 +90,36 @@
       (mouseenter)="hideAllSubMenus()"
       (click)="requestDataSidenav()"
     >Show Supporting Data</div>
+  </div>
+</ng-template>
+
+<ng-template #getGeneGroup>
+  <div class="context-menu-group">
+    <div
+      class="context-menu-item"
+      (mouseenter)="hideAllSubMenus()"
+      (click)="requestDataSidenav()"
+    >Show Associated Genes</div>
+  </div>
+</ng-template>
+
+<ng-template #getChemicalGroup>
+  <div class="context-menu-group">
+    <div
+      class="context-menu-item"
+      (mouseenter)="hideAllSubMenus()"
+      (click)="requestDataSidenav()"
+    >Show Associated Chemicals</div>
+  </div>
+</ng-template>
+
+<ng-template #getDiseaseGroup>
+  <div class="context-menu-group">
+    <div
+      class="context-menu-item"
+      (mouseenter)="hideAllSubMenus()"
+      (click)="requestDataSidenav()"
+    >Show Associated Diseases</div>
   </div>
 </ng-template>
 
