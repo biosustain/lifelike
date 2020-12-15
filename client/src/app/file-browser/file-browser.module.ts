@@ -35,6 +35,7 @@ import { ObjectMenuComponent } from './components/object-menu.component';
 import { ProjectActions } from './services/project-actions';
 import { ProjectMenuComponent } from './components/project-menu.component';
 import { ProjectIconComponent } from './components/project-icon.component';
+import { ProjectCollaboratorsDialogComponent } from './components/dialog/project-collaborators-dialog.component';
 
 @NgModule({
   declarations: [
@@ -68,6 +69,7 @@ import { ProjectIconComponent } from './components/project-icon.component';
     ObjectMenuComponent,
     ProjectMenuComponent,
     ProjectIconComponent,
+    ProjectCollaboratorsDialogComponent,
   ],
   imports: [
     SharedModule,
@@ -90,6 +92,7 @@ import { ProjectIconComponent } from './components/project-icon.component';
     ObjectMenuComponent,
     ProjectMenuComponent,
     ProjectIconComponent,
+    ProjectCollaboratorsDialogComponent,
   ],
   exports: [
     ObjectInfoComponent,

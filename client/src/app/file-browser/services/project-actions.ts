@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { ProjectService } from './project.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
@@ -11,8 +10,8 @@ import { ProjectCreateRequest } from '../schema';
 import { BehaviorSubject } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { finalize, map } from 'rxjs/operators';
-import { openDownloadForBlob } from '../../shared/utils/files';
+import { finalize } from 'rxjs/operators';
+import { ProjectCollaboratorsDialogComponent } from '../components/dialog/project-collaborators-dialog.component';
 
 @Injectable()
 export class ProjectActions {
@@ -63,11 +62,26 @@ export class ProjectActions {
     const dialogRef = this.modalService.open(ProjectEditDialogComponent);
     dialogRef.componentInstance.project = project;
     dialogRef.componentInstance.accept = ((value: ProjectEditDialogValue) => {
-      /*return this.projectService.create({
-        ...value.request,
-        ...(options.request || {}),
-      }).toPromise();*/
+      const progressDialogRef = this.createProgressDialog(`Saving changes to '${project.name}'...`);
+      return this.projectService.save([project.hashId], value.request, {
+        [project.hashId]: project,
+      })
+        .pipe(
+          finalize(() => progressDialogRef.close()),
+          this.errorHandler.create(),
+        )
+        .toPromise();
     });
+    return dialogRef.result;
+  }
+
+  /**
+   * Open a dialog to modify a project's collaborators.
+   * @param project the project to edit
+   */
+  openCollaboratorsDialog(project: ProjectImpl): Promise<any> {
+    const dialogRef = this.modalService.open(ProjectCollaboratorsDialogComponent);
+    dialogRef.componentInstance.project = project;
     return dialogRef.result;
   }
 

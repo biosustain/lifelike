@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Iterable
 
 from flask import (
     current_app,
@@ -11,7 +11,7 @@ from flask.views import MethodView
 from marshmallow import ValidationError
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import raiseload, joinedload, aliased
+from sqlalchemy.orm import raiseload, joinedload
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
@@ -30,7 +30,8 @@ from neo4japp.models import (
 from neo4japp.models.projects_queries import add_project_user_role_columns, ProjectCalculator
 from neo4japp.schemas.common import PaginatedRequest
 from neo4japp.schemas.filesystem import ProjectListSchema, ProjectListRequestSchema, ProjectSearchRequestSchema, \
-    ProjectCreateSchema, ProjectResponseSchema
+    ProjectCreateSchema, ProjectResponseSchema, BulkProjectRequestSchema, \
+    BulkProjectUpdateRequestSchema, MultipleProjectResponseSchema, ProjectUpdateRequestSchema
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.request import Pagination
 
@@ -96,6 +97,7 @@ class ProjectBaseView(MethodView):
         return files[0]
 
     def get_nondeleted_projects(self, filter, accessible_only=False, sort=None,
+                                require_hash_ids: List[str] = None,
                                 pagination: Optional[Pagination] = None) -> Tuple[List[Projects], int]:
         """
         Returns files that are guaranteed to be non-deleted that match the
@@ -132,6 +134,15 @@ class ProjectBaseView(MethodView):
             calculator = ProjectCalculator(row, Projects)
             calculator.calculate_privileges([current_user.id])
             projects.append(calculator.project)
+
+        # Handle helper require_hash_ids argument that check to see if all projected wanted
+        # actually appeared in the results
+        if require_hash_ids:
+            missing_hash_ids = self.get_missing_hash_ids(require_hash_ids, projects)
+
+            if len(missing_hash_ids):
+                raise RecordNotFoundException(f"The request specified one or more projects "
+                                              f"({', '.join(missing_hash_ids)}) that could not be found.")
 
         return projects, total
 
@@ -172,6 +183,54 @@ class ProjectBaseView(MethodView):
         }).dump({
             'project': return_project,
         }))
+
+    def get_bulk_project_response(self, hash_ids: List[str], user: AppUser, *,
+                                  missing_hash_ids: Iterable[str] = None):
+        projects, total = self.get_nondeleted_projects(Projects.hash_id.in_(hash_ids),
+                                                require_hash_ids=hash_ids)
+        self.check_project_permissions(projects, user, ['readable'])
+
+        returned_projects = {}
+
+        for project in projects:
+            returned_projects[project.hash_id] = project
+
+        return jsonify(MultipleProjectResponseSchema(context={
+            'user_privilege_filter': user.id,
+        }).dump(dict(
+            results=returned_projects,
+            missing=list(missing_hash_ids) or [],
+        )))
+
+    def update_projects(self, hash_ids: List[str], params: Dict, user: AppUser):
+        changed_fields = set()
+
+        projects, total = self.get_nondeleted_projects(Projects.hash_id.in_(hash_ids))
+        self.check_project_permissions(projects, user, ['readable'])
+        missing_hash_ids = self.get_missing_hash_ids(hash_ids, projects)
+
+        for project in projects:
+            for field in ('name', 'description'):
+                if field in params:
+                    if getattr(project, field) != params[field]:
+                        setattr(project, field, params[field])
+                        changed_fields.add(field)
+
+        if len(changed_fields):
+            try:
+                db.session.commit()
+            except IntegrityError as e:
+                raise ValidationError("The project name is already taken.")
+
+        return missing_hash_ids
+
+    def get_missing_hash_ids(self, expected_hash_ids: Iterable[str], files: Iterable[Projects]):
+        found_hash_ids = set(file.hash_id for file in files)
+        missing = set()
+        for hash_id in expected_hash_ids:
+            if hash_id not in found_hash_ids:
+                missing.add(hash_id)
+        return missing
 
 
 class ProjectListView(ProjectBaseView):
@@ -222,6 +281,16 @@ class ProjectListView(ProjectBaseView):
 
         return self.get_project_response(project.hash_id, current_user)
 
+    @use_args(lambda request: BulkProjectRequestSchema())
+    @use_args(lambda request: BulkProjectUpdateRequestSchema(partial=True))
+    def patch(self, targets, params):
+        """Project update endpoint."""
+
+        current_user = g.current_user
+        missing_hash_ids = self.update_projects(targets['hash_ids'], params, current_user)
+        return self.get_bulk_project_response(targets['hash_ids'], current_user,
+                                              missing_hash_ids=missing_hash_ids)
+
 
 class ProjectSearchView(ProjectBaseView):
     decorators = [auth.login_required]
@@ -249,7 +318,7 @@ class ProjectSearchView(ProjectBaseView):
         }))
 
 
-class ProjectView(ProjectBaseView):
+class ProjectDetailView(ProjectBaseView):
     decorators = [auth.login_required]
 
     def get(self, hash_id: str):
@@ -257,11 +326,38 @@ class ProjectView(ProjectBaseView):
         current_user = g.current_user
         return self.get_project_response(hash_id, current_user)
 
+    @use_args(lambda request: ProjectUpdateRequestSchema(partial=True))
+    def patch(self, params: dict, hash_id: str):
+        """Update a single project."""
+        current_user = g.current_user
+        self.update_projects([hash_id], params, current_user)
+        return self.get(hash_id)
+
+
+class ProjectCollaboratorsListView(ProjectBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(PaginatedRequest)
+    def get(self, pagination: Pagination, hash_id):
+        """Endpoint to fetch a list of collaborators for a project."""
+        current_user = g.current_user
+        project = self.get_nondeleted_project(Projects.hash_id == hash_id)
+        self.check_project_permissions([project], current_user, ['administrable'])
+
+        query = db.session.query(AppUser, AppRole.name) \
+            .join(projects_collaborator_role, AppUser.id == projects_collaborator_role.c.appuser_id) \
+            .join(AppRole, AppRole.id == projects_collaborator_role.c.app_role_id)
+
+        paginated_result = query.paginate(pagination.page, pagination.limit, False)
+
+
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
 bp.add_url_rule('/search', view_func=ProjectSearchView.as_view('project_search'))
-bp.add_url_rule('/projects/', view_func=ProjectListView.as_view('project'))
-bp.add_url_rule('/projects/<string:hash_id>', view_func=ProjectView.as_view('project_detail'))
+bp.add_url_rule('/projects', view_func=ProjectListView.as_view('project_list'))
+bp.add_url_rule('/projects/<string:hash_id>', view_func=ProjectDetailView.as_view('project_detail'))
+bp.add_url_rule('/projects/<string:hash_id>/collaborators',
+                view_func=ProjectCollaboratorsListView.as_view('project_collaborators_list'))
 
 
 @bp.route('/projects/<string:project_name>/collaborators', methods=['GET'])
