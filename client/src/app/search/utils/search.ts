@@ -23,4 +23,3 @@ export function createSearchParamsFromQuery(params): GraphSearchParameters {
     limit: VIZ_SEARCH_LIMIT,
   };
 }
-

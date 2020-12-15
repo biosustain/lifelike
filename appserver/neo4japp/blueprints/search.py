@@ -64,6 +64,11 @@ def visualizer_search_temp(query, page, limit, filter, organism):
         extra=UserEventLog(
             username=g.current_user.username, event_type='search temp').to_dict()
     )
+
+    if filter == '':
+        filter = 'ChEBI, GO, Literature, MeSH, NCBI, UniProt, ' + \
+                 'Chemicals, Diseases, Genes, Proteins, Taxonomy'
+
     results = search_dao.visualizer_search_temp(
         term=query,
         organism=organism,
@@ -195,7 +200,7 @@ def search(q, types, limit, page):
             username=g.current_user.username, event_type='search contentsearch').to_dict()
     )
     search_term = q
-    types = types.split(';')
+    types = types.split(';') if types != '' else ['map', 'pdf']
     offset = (page - 1) * limit
     search_phrases = []
 
