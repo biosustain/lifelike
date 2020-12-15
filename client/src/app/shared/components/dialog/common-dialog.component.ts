@@ -26,12 +26,18 @@ export abstract class CommonDialogComponent<T = any, V = any> {
    */
   abstract getValue(): T;
 
+  applyValue(value: V) {
+  }
+
   cancel() {
     this.modal.dismiss();
   }
 
   submit(): void {
-    this.accept(this.getValue()).then(result => this.modal.close(result), () => {
+    this.accept(this.getValue()).then(result => {
+      this.applyValue(result);
+      this.modal.close(result);
+    }, () => {
     });
   }
 }

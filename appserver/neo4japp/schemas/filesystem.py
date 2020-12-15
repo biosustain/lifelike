@@ -5,20 +5,15 @@ from marshmallow import fields, validates_schema, ValidationError
 from neo4japp.models import Files, Projects
 from neo4japp.models.files import FilePrivileges
 from neo4japp.models.projects import ProjectPrivileges
+from neo4japp.schemas.account import UserSchema
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import FileUploadField
 from neo4japp.schemas.fields import SortField
 
 
-class UserSchema(CamelCaseSchema):
-    hash_id = fields.String()
-    username = fields.String()
-    first_name = fields.String()
-    last_name = fields.String()
-
-
-ProjectPrivilegesSchema = marshmallow_dataclass.class_schema(ProjectPrivileges)
-
+# ========================================
+# Projects
+# ========================================
 
 class ProjectSchema(CamelCaseSchema):
     hash_id = fields.String()
@@ -45,6 +40,16 @@ class ProjectSchema(CamelCaseSchema):
             return None
 
 
+class FileHashIdSchema(CamelCaseSchema):
+    hash_id = fields.String()
+
+
+ProjectPrivilegesSchema = marshmallow_dataclass.class_schema(ProjectPrivileges)
+
+
+# Requests
+# ----------------------------------------
+
 class ProjectListRequestSchema(CamelCaseSchema):
     sort = SortField(columns={
         'name': Projects.name
@@ -54,10 +59,6 @@ class ProjectListRequestSchema(CamelCaseSchema):
 class ProjectListSchema(CamelCaseSchema):
     total = fields.Integer()
     results = fields.List(fields.Nested(ProjectSchema))
-
-
-class ProjectResponseSchema(CamelCaseSchema):
-    project = fields.Nested(ProjectSchema)
 
 
 class ProjectSearchRequestSchema(ProjectListRequestSchema):
@@ -73,11 +74,40 @@ class ProjectCreateSchema(CamelCaseSchema):
     description = fields.String(validate=marshmallow.validate.Length(max=1024 * 500))
 
 
+class BulkProjectRequestSchema(CamelCaseSchema):
+    hash_ids = fields.List(fields.String(validate=marshmallow.validate.Length(min=1, max=200)),
+                           required=True,
+                           validate=marshmallow.validate.Length(min=1, max=100))
+
+
+class ProjectUpdateRequestSchema(BulkProjectRequestSchema):
+    pass
+
+
+class BulkProjectUpdateRequestSchema(CamelCaseSchema):
+    name = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=200))
+    description = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
+
+
+# Response
+# ----------------------------------------
+
+class ProjectResponseSchema(CamelCaseSchema):
+    project = fields.Nested(ProjectSchema)
+
+
+class MultipleProjectResponseSchema(CamelCaseSchema):
+    results = fields.Dict(keys=fields.String(),
+                          values=fields.Nested(ProjectSchema))
+    missing = fields.List(fields.String)
+
+
+# ========================================
+# Objects
+# ========================================
+
+
 FilePrivilegesSchema = marshmallow_dataclass.class_schema(FilePrivileges)
-
-
-class FileHashIdSchema(CamelCaseSchema):
-    hash_id = fields.String()
 
 
 class FileSchema(CamelCaseSchema):
@@ -146,9 +176,8 @@ class FileSchema(CamelCaseSchema):
             return None
 
 
-class FileListSchema(CamelCaseSchema):
-    total = fields.Integer()
-    results = fields.List(fields.Nested(FileSchema))
+# Requests
+# ----------------------------------------
 
 
 class BulkFileRequestSchema(CamelCaseSchema):
@@ -156,15 +185,6 @@ class BulkFileRequestSchema(CamelCaseSchema):
                            required=True,
                            validate=marshmallow.validate.Length(min=1, max=100))
     recursive = fields.Boolean(missing=lambda: False)
-
-
-class BulkFileUpdateRequestSchema(CamelCaseSchema):
-    filename = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=200))
-    parent_hash_id = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=36))
-    description = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
-    upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
-    public = fields.Boolean(default=False)
-    content_value = fields.Field(required=False)
 
 
 class FileSearchRequestSchema(CamelCaseSchema):
@@ -188,6 +208,15 @@ class FileSearchRequestSchema(CamelCaseSchema):
         if data['type'] == 'linked':
             if data.get('linked_hash_id') is None:
                 raise ValidationError("A linkedHashId is required.", 'linked_hash_id')
+
+
+class BulkFileUpdateRequestSchema(CamelCaseSchema):
+    filename = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=200))
+    parent_hash_id = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=36))
+    description = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
+    upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
+    public = fields.Boolean(default=False)
+    content_value = fields.Field(required=False)
 
 
 class FileUpdateRequestSchema(BulkFileUpdateRequestSchema):
@@ -217,6 +246,14 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
                 raise ValidationError("More than one source of content cannot be specified.")
 
 
+class FileExportRequestSchema(CamelCaseSchema):
+    format = fields.String(required=True)
+
+
+# Response
+# ----------------------------------------
+
+
 class FileResponseSchema(CamelCaseSchema):
     result = fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',))
 
@@ -227,8 +264,25 @@ class MultipleFileResponseSchema(CamelCaseSchema):
     missing = fields.List(fields.String)
 
 
+class FileListSchema(CamelCaseSchema):
+    total = fields.Integer()
+    results = fields.List(fields.Nested(FileSchema))
+
+
+# ========================================
+# Backups
+# ========================================
+
+# Requests
+# ----------------------------------------
+
 class FileBackupCreateRequestSchema(CamelCaseSchema):
     content_value = FileUploadField(required=True)
+
+
+# ========================================
+# Versions
+# ========================================
 
 
 class FileVersionSchema(CamelCaseSchema):
@@ -238,15 +292,14 @@ class FileVersionSchema(CamelCaseSchema):
     creation_date = fields.DateTime()
 
 
-class FileVersionResponseSchema(CamelCaseSchema):
-    version = fields.Nested(FileVersionSchema)
-
-
 class FileVersionHistorySchema(CamelCaseSchema):
     object = fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',))
     total = fields.Integer()
     results = fields.List(fields.Nested(FileVersionSchema))
 
 
-class FileExportRequestSchema(CamelCaseSchema):
-    format = fields.String(required=True)
+# Responses
+# ----------------------------------------
+
+class FileVersionResponseSchema(CamelCaseSchema):
+    version = fields.Nested(FileVersionSchema)

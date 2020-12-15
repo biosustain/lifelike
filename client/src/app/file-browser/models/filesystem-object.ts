@@ -222,6 +222,15 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
   }
 
+  get mapNodeLabel() {
+    switch (this.mimeType) {
+      case MAP_MIMETYPE:
+        return 'map';
+      default:
+        return 'link';
+    }
+  }
+
   /**
    * @deprecated
    */

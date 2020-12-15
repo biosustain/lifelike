@@ -9,7 +9,6 @@ import { ProjectCreateRequest } from '../../schema';
 @Component({
   selector: 'app-project-edit-dialog',
   templateUrl: './project-edit-dialog.component.html',
-  styleUrls: ['./project-edit-dialog.component.scss'],
 })
 export class ProjectEditDialogComponent extends CommonFormDialogComponent<ProjectEditDialogValue> {
   @Input() title = 'Edit Project';
@@ -40,6 +39,10 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent<Projec
     });
   }
 
+  applyValue(value: ProjectEditDialogValue) {
+    Object.assign(this.project, value.projectChanges);
+  }
+
   getValue(): ProjectEditDialogValue {
     const value = this.form.value;
 
@@ -48,11 +51,9 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent<Projec
       description: value.description,
     };
 
-    Object.assign(this.project, projectChanges);
-
     const request: ProjectCreateRequest = {
-      name: this.project.name,
-      description: this.project.description,
+      name: value.name,
+      description: value.description,
     };
 
     return {
