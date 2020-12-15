@@ -1,12 +1,13 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Domain, EntityType } from '../../interfaces';
-import { DOMAINS, ENTITY_TYPES } from '../../shared/database';
-import { MessageType } from '../../interfaces/message-dialog.interface';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { nonEmptyList } from '../../shared/validators';
-import { GraphSearchParameters } from '../graph-search';
+
 import { OrganismAutocomplete } from 'app/interfaces';
+
+import { GraphSearchParameters } from '../graph-search';
+import { Domain, EntityType } from '../../interfaces';
+import { MessageType } from '../../interfaces/message-dialog.interface';
+import { DOMAINS, ENTITY_TYPES } from '../../shared/database';
+import { MessageDialog } from '../../shared/services/message-dialog.service';
 
 @Component({
   selector: 'app-graph-search-form',
@@ -20,16 +21,16 @@ export class GraphSearchFormComponent {
 
   form = new FormGroup({
     query: new FormControl('', Validators.required),
-    domains: new FormControl('', nonEmptyList),
-    entityTypes: new FormControl('', nonEmptyList),
+    domains: new FormControl(''),
+    entityTypes: new FormControl(''),
     organism: new FormControl(null),
   });
 
   constructor(private readonly messageDialog: MessageDialog) {
     this.form.patchValue({
       query: '',
-      domains: [...this.domainChoices],
-      entityTypes: [...this.entityTypeChoices],
+      domains: [],
+      entityTypes: [],
       organism: '',
     });
   }
@@ -40,8 +41,8 @@ export class GraphSearchFormComponent {
       this.organismChoice = params.organism;
       this.form.patchValue({
         query: params.query,
-        domains: params.domains != null ? params.domains : [...this.domainChoices],
-        entityTypes: params.entityTypes != null ? params.entityTypes : [...this.entityTypeChoices],
+        domains: params.domains != null ? params.domains : [],
+        entityTypes: params.entityTypes != null ? params.entityTypes : [],
         organism: params.organism,
       });
     }
