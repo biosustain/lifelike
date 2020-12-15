@@ -19,7 +19,7 @@ export class ProjectService {
 
   list(): Observable<ProjectList> {
     return this.http.get<ResultList<ProjectData>>(
-      `/api/projects/projects/`, this.apiService.getHttpOptions(true),
+      `/api/projects/projects`, this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => {
         const projectList = new ProjectList();
@@ -49,7 +49,7 @@ export class ProjectService {
 
   create(request: ProjectCreateRequest) {
     return this.http.post<SingleResult<ProjectData>>(
-      `/api/projects/projects/`,
+      `/api/projects/projects`,
       request,
       this.apiService.getHttpOptions(true),
     ).pipe(
@@ -70,10 +70,10 @@ export class ProjectService {
        updateWithLatest?: { [hashId: string]: ProjectImpl }):
     Observable<{ [hashId: string]: ProjectImpl }> {
     return this.http.patch<ResultMapping<ProjectData>>(
-      `/api/projects/projects`, objectToMixedFormData({
+      `/api/projects/projects`, {
         ...changes,
         hashIds,
-      }), this.apiService.getHttpOptions(true),
+      }, this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => {
         const ret: { [hashId: string]: ProjectImpl } = updateWithLatest || {};
