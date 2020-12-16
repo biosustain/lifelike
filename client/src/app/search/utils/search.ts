@@ -1,14 +1,12 @@
-import { DOMAIN_MAP, ENTITY_TYPE_MAP } from '../../shared/database';
 import { VIZ_SEARCH_LIMIT } from '../../shared/constants';
 import { GraphSearchParameters } from '../graph-search';
-import { getChoicesFromQuery } from '../../shared/utils/params';
 
 export function getQueryParams(params: GraphSearchParameters) {
   return {
     q: params.query,
     page: params.page,
-    domains: params.domains ? params.domains.map(value => value.id).join(';') : null,
-    entityTypes: params.entityTypes ? params.entityTypes.map(value => value.id).join(';') : null,
+    domains: params.domains ? params.domains.join(';') : null,
+    entities: params.entities ? params.entities.join(';') : null,
     organism: params.organism,
   };
 }
@@ -16,8 +14,8 @@ export function getQueryParams(params: GraphSearchParameters) {
 export function createSearchParamsFromQuery(params): GraphSearchParameters {
   return {
     query: params.q,
-    domains: getChoicesFromQuery(params, 'domains', DOMAIN_MAP),
-    entityTypes: getChoicesFromQuery(params, 'entityTypes', ENTITY_TYPE_MAP),
+    domains: params.domains === '' ? [] : params.domains.split(';'),
+    entities: params.entities === '' ? [] : params.entities.split(';'),
     organism: params.organism,
     page: params.page != null && params.page.length ? parseInt(params.page, 10) : 1,
     limit: VIZ_SEARCH_LIMIT,

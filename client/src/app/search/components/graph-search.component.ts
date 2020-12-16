@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
 
-import { Domain, EntityType, FTSQueryRecord, FTSResult } from 'app/interfaces';
+import { FTSQueryRecord, FTSResult } from 'app/interfaces';
 import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
@@ -29,7 +29,8 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
       params.organism,
       params.page,
       params.limit,
-      this.createFilterQuery(params.domains, params.entityTypes),
+      params.domains,
+      params.entities,
     );
   });
 
@@ -116,19 +117,5 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
       ...this.params,
       page,
     });
-  }
-
-  private createFilterQuery(domains?: Domain[], entityTypes?: EntityType[]): string {
-    const conditions: string[] = [];
-
-    if (domains && domains.length) {
-      domains.map(value => conditions.push(value.name));
-    }
-
-    if (entityTypes && entityTypes.length) {
-      entityTypes.map(value => conditions.push(value.name));
-    }
-
-    return conditions.join(', ');
   }
 }

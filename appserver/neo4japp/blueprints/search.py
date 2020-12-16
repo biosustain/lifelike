@@ -57,24 +57,28 @@ bp = Blueprint('search', __name__, url_prefix='/search')
 @bp.route('/viz-search-temp', methods=['POST'])
 @auth.login_required
 @use_kwargs(VizSearchSchema)
-def visualizer_search_temp(query, page, limit, filter, organism):
+def visualizer_search_temp(
+    query,
+    page,
+    limit,
+    domains,
+    entities,
+    organism
+):
     search_dao = get_search_service_dao()
     current_app.logger.info(
-        f'Term: {query}, Organism: {organism}, Filter: {filter}',
+        f'Term: {query}, Organism: {organism}, Entities: {entities}, Domains: {domains}',
         extra=UserEventLog(
             username=g.current_user.username, event_type='search temp').to_dict()
     )
-
-    if filter == '':
-        filter = 'ChEBI, GO, Literature, MeSH, NCBI, UniProt, ' + \
-                 'Chemicals, Diseases, Genes, Proteins, Taxonomy'
 
     results = search_dao.visualizer_search_temp(
         term=query,
         organism=organism,
         page=page,
         limit=limit,
-        filter=filter
+        domains=domains,
+        entities=entities,
     )
     return jsonify({
         'result': results.to_dict(),
@@ -355,13 +359,3 @@ def get_organisms(query, limit):
     search_dao = get_search_service_dao()
     results = search_dao.get_organisms(query, limit)
     return jsonify({'result': results})
-
-
-@bp.route('/genes_filtered_by_organism_and_others', methods=['POST'])
-@auth.login_required
-@jsonify_with_class(GeneFilteredRequest)
-def get_genes_filtering_by_organism(req: GeneFilteredRequest):
-    search_dao = get_search_service_dao()
-    results = search_dao.search_genes_filtering_by_organism_and_others(
-        req.query, req.organism_id, req.filters)
-    return SuccessResponse(result=results, status_code=200)
