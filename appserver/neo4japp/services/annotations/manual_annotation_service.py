@@ -7,8 +7,9 @@ from sqlalchemy import and_
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
-    get_annotations_service,
-    get_annotations_pdf_parser,
+    get_annotation_service,
+    get_annotation_pdf_parser,
+    get_entity_recognition
 )
 from neo4japp.exceptions import (
     AnnotationError,
@@ -20,11 +21,23 @@ from neo4japp.models import (
     FileContent,
     GlobalList,
 )
-from neo4japp.services.annotations.constants import DatabaseType, ManualAnnotationType
+from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
+from neo4japp.services.annotations.annotation_graph_service import AnnotationGraphService
+from neo4japp.services.annotations.constants import (
+    DatabaseType,
+    EntityType,
+    ManualAnnotationType
+)
 from neo4japp.services.annotations.util import has_center_point
 
 
-class ManualAnnotationsService:
+class ManualAnnotationService:
+    def __init__(
+        self,
+        graph: AnnotationGraphService,
+    ) -> None:
+        self.graph = graph
+
     def add_inclusions(self, project_id, file_id, user_id, custom_annotation, annotate_all):
         """ Adds custom annotation to a given file.
         If annotate_all is True, parses the file to find all occurrences of the annotated term.
@@ -35,14 +48,39 @@ class ManualAnnotationsService:
             file_id=file_id,
             project=project_id,
         ).one_or_none()
+
         if file is None:
             raise RecordNotFoundException('File does not exist')
+
+        # get the primary name
+        primary_name = ''
+        entity_id = custom_annotation['meta']['id']
+        try:
+            if custom_annotation['meta']['type'] == EntityType.ANATOMY.value or custom_annotation['meta']['type'] == EntityType.FOOD.value:  # noqa
+                primary_name = self.graph.get_mesh_from_mesh_ids([entity_id])[entity_id]
+            elif custom_annotation['meta']['type'] == EntityType.CHEMICAL.value:
+                primary_name = self.graph.get_chemicals_from_chemical_ids([entity_id])[entity_id]
+            elif custom_annotation['meta']['type'] == EntityType.COMPOUND.value:
+                primary_name = self.graph.get_compounds_from_compound_ids([entity_id])[entity_id]
+            elif custom_annotation['meta']['type'] == EntityType.DISEASE.value:
+                primary_name = self.graph.get_diseases_from_disease_ids([entity_id])[entity_id]
+            elif custom_annotation['meta']['type'] == EntityType.GENE.value:
+                primary_name = self.graph.get_genes_from_gene_ids([entity_id])[entity_id]
+            elif custom_annotation['meta']['type'] == EntityType.PROTEIN.value:
+                primary_name = self.graph.get_proteins_from_protein_ids([entity_id])[entity_id]
+            elif custom_annotation['meta']['type'] == EntityType.SPECIES.value:
+                primary_name = self.graph.get_organisms_from_organism_ids([entity_id])[entity_id]
+            else:
+                primary_name = custom_annotation['meta']['allText']
+        except KeyError:
+            primary_name = custom_annotation['meta']['allText']
 
         annotation_to_add = {
             **custom_annotation,
             'inclusion_date': str(datetime.now(TIMEZONE)),
             'user_id': user_id,
-            'uuid': str(uuid.uuid4())
+            'uuid': str(uuid.uuid4()),
+            'primaryName': primary_name
         }
         term = custom_annotation['meta']['allText']
 
@@ -67,11 +105,12 @@ class ManualAnnotationsService:
             # TODO: make use of ./pipeline.py to be consistent
             # and avoid code change bugs
             fp = io.BytesIO(file_content.raw_file)
-            pdf_parser = get_annotations_pdf_parser()
+            pdf_parser = get_annotation_pdf_parser()
+            recognition = get_entity_recognition()
             parsed = pdf_parser.parse_pdf(pdf=fp)
             fp.close()
-            tokens_list = pdf_parser.extract_tokens(parsed=parsed)
-            annotator = get_annotations_service()
+            tokens_list = recognition.extract_tokens(parsed=parsed)
+            annotator = get_annotation_service()
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
             matches = annotator.get_matching_manual_annotations(
                 keyword=term,
@@ -79,13 +118,14 @@ class ManualAnnotationsService:
                 tokens_list=tokens_list
             )
 
-            def add_annotation(new_annotation):
+            def add_annotation(new_annotation, primary_name=None):
                 return {
                     **annotation_to_add,
                     'pageNumber': new_annotation['pageNumber'],
                     'rects': new_annotation['rects'],
                     'keywords': new_annotation['keywords'],
-                    'uuid': str(uuid.uuid4())
+                    'uuid': str(uuid.uuid4()),
+                    'primaryName': primary_name if primary_name else annotation_to_add['meta']['allText']  # noqa
                 }
 
             inclusions = [
@@ -108,13 +148,22 @@ class ManualAnnotationsService:
                 file.content_id
             )
 
+        version = FileAnnotationsVersion()
+        version.cause = AnnotationChangeCause.USER
+        version.file = file
+        version.custom_annotations = file.custom_annotations
+        version.excluded_annotations = file.excluded_annotations
+        version.user_id = user_id
+        db.session.add(version)
+
         file.custom_annotations = [*inclusions, *file.custom_annotations]
+
         db.session.commit()
 
         return inclusions
 
-    def remove_inclusions(self, project_id, file_id, uuid, remove_all):
-        """ Removes custom annotation from a given file.
+    def remove_inclusions(self, project_id, file_id, uuid, remove_all, user_id):
+        """ Removes custom annotation from a givenf file.
         If remove_all is True, removes all custom annotations with matching term and entity type.
 
         Returns uuids of the removed inclusions.
@@ -144,9 +193,18 @@ class ManualAnnotationsService:
         else:
             removed_annotation_uuids = [uuid]
 
+        version = FileAnnotationsVersion()
+        version.cause = AnnotationChangeCause.USER
+        version.file = file
+        version.custom_annotations = file.custom_annotations
+        version.excluded_annotations = file.excluded_annotations
+        version.user_id = user_id
+        db.session.add(version)
+
         file.custom_annotations = [
             ann for ann in file.custom_annotations if ann['uuid'] not in removed_annotation_uuids
         ]
+
         db.session.commit()
 
         return removed_annotation_uuids
@@ -174,7 +232,16 @@ class ManualAnnotationsService:
                 file.content_id
             )
 
+        version = FileAnnotationsVersion()
+        version.cause = AnnotationChangeCause.USER
+        version.file = file
+        version.custom_annotations = file.custom_annotations
+        version.excluded_annotations = file.excluded_annotations
+        version.user_id = user_id
+        db.session.add(version)
+
         file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
+
         db.session.commit()
 
     def remove_exclusion(self, project_id, file_id, user_id, entity_type, term):
@@ -187,6 +254,14 @@ class ManualAnnotationsService:
         if file is None:
             raise RecordNotFoundException('File does not exist')
 
+        version = FileAnnotationsVersion()
+        version.cause = AnnotationChangeCause.USER
+        version.file = file
+        version.custom_annotations = file.custom_annotations
+        version.excluded_annotations = file.excluded_annotations
+        version.user_id = user_id
+        db.session.add(version)
+
         initial_length = len(file.excluded_annotations)
         file.excluded_annotations = [
             exclusion for exclusion in file.excluded_annotations
@@ -198,59 +273,6 @@ class ManualAnnotationsService:
             raise RecordNotFoundException('Annotation not found')
 
         db.session.commit()
-
-    def apply_custom_hyperlink_and_type(
-        self,
-        bioc: dict,
-        custom_annotations: list
-    ) -> dict:
-        """Apply custom annotations on top of existing ones.
-
-        This will update the system annotation idHyperlink and idType
-        with the ones from custom annotations.
-        """
-        if custom_annotations:
-            annotations = bioc['documents'][0]['passages'][0]['annotations']
-
-            for anno in annotations:
-                for custom in custom_annotations:
-                    if (anno.get('meta', {}).get('type') == custom.get('meta', {}).get('type') and
-                        self._terms_match(
-                            anno.get('textInDocument', 'False'),
-                            custom.get('meta', {}).get('allText', 'True'),
-                            custom.get('meta', {}).get('isCaseInsensitive'))):
-
-                        if custom.get('meta', {}).get('idHyperlink'):
-                            anno['meta']['idHyperlink'] = custom['meta']['idHyperlink']
-
-                        if custom.get('meta', {}).get('idType') and anno.get('meta', {}).get('idType'):  # noqa
-                            if custom['meta']['idType'] != anno['meta']['idType']:
-                                # prioritize custom id type since it should be
-                                # based on custom idHyperlink
-                                custom_id_type = custom['meta']['idType'].upper()
-                                anno['meta']['idType'] = custom_id_type
-
-                        if anno.get('meta', {}).get('id') and anno.get('meta', {}).get('idType'):
-                            entity_id = anno['meta']['id']
-                            entity_id_type = anno['meta']['idType']
-
-                            # prepend the prefix to entity_id to be consistent
-                            if entity_id_type == DatabaseType.CHEBI.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.CUSTOM.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.MESH.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.UNIPROT.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.NCBI.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.BIOCYC.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-                            elif entity_id_type == DatabaseType.PUBCHEM.value and entity_id_type not in entity_id:  # noqa
-                                entity_id = f'{entity_id_type}:{entity_id}'
-
-        return bioc
 
     def get_combined_annotations(self, project_id, file_id):
         """ Returns automatic annotations that were not marked for exclusion

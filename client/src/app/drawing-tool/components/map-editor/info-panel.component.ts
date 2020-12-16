@@ -45,6 +45,6 @@ export class InfoPanelComponent {
    * Bring user to original source of node information
    */
   openSource(source: string): void {
-    openPotentialInternalLink(this.workspaceManager, source);
+    openPotentialInternalLink(this.workspaceManager, source, false);
   }
 }

@@ -1,13 +1,14 @@
+import enum
 from datetime import datetime, timezone
 
-from sqlalchemy import event
+from sqlalchemy import event, UniqueConstraint
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.query import Query
 from sqlalchemy.types import ARRAY, TIMESTAMP
 
 from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.database import db, get_elastic_service
-from neo4japp.models.common import RDBMSBase, TimestampMixin
+from neo4japp.models.common import RDBMSBase, TimestampMixin, HashIdMixin
 
 
 class FileContent(RDBMSBase):
@@ -91,6 +92,25 @@ def files_after_update(mapper, connection, target):
     elastic_service.index_files([target.id])
 
 
+class AnnotationChangeCause(enum.Enum):
+    USER = 'user'
+    USER_REANNOTATION = 'user_reannotation'
+    SYSTEM_REANNOTATION = 'sys_reannotation'
+
+
+class FileAnnotationsVersion(RDBMSBase, TimestampMixin, HashIdMixin):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    file_id = db.Column(db.Integer, db.ForeignKey('files.id', ondelete='CASCADE'),
+                        index=True, nullable=False)
+    file = db.relationship('Files', foreign_keys=file_id)
+    cause = db.Column(db.Enum(AnnotationChangeCause), nullable=False)
+    custom_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
+    excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
+    user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='SET NULL'),
+                        index=True, nullable=True)
+    user = db.relationship('AppUser', foreign_keys=user_id)
+
+
 class LMDBsDates(RDBMSBase):
     __tablename__ = 'lmdbs_dates'
     name = db.Column(db.String(256), primary_key=True)
@@ -160,3 +180,12 @@ class Worksheet(RDBMSBase, TimestampMixin):  # type: ignore
                            db.ForeignKey('files_content.id', ondelete='CASCADE'),
                            index=True,
                            nullable=False)
+
+
+class FileLock(RDBMSBase, TimestampMixin):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    hash_id = db.Column(db.String(50), index=True, nullable=False, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'),
+                        index=True, nullable=False)
+    user = db.relationship('AppUser', foreign_keys=user_id)
+    acquire_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)

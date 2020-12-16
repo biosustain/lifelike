@@ -7,9 +7,9 @@ import { KnowledgeMap } from './interfaces';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { Project } from 'app/file-browser/services/project-space.service';
 import { AppUser } from 'app/interfaces';
-import { PaginatedRequestOptions, ResultList } from 'app/interfaces/shared.interface';
 import { AbstractService } from 'app/shared/services/abstract-service';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
+import { PaginatedRequestOptions, ResultList } from '../../shared/schemas/common';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',

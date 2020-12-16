@@ -6,6 +6,8 @@ import { combineLatest, Subscription } from 'rxjs';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+import { pdfFileToFilesystemObject } from '../file-browser/utils/objects';
+import { FilesystemObject } from '../file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-file-navigator',
@@ -20,6 +22,7 @@ export class FileNavigatorComponent {
   projectName: string;
   fileId: string;
   fileName: string;
+  object: FilesystemObject;
 
   constructor(
     readonly route: ActivatedRoute,
@@ -39,6 +42,7 @@ export class FileNavigatorComponent {
       value: []
     }) => {
       this.fileName = pdfFile.filename;
+      this.object = pdfFileToFilesystemObject(pdfFile);
     });
 
     this.loadTask.update([]);

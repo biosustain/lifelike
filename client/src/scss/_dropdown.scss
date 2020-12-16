@@ -5,3 +5,7 @@
 .dropdown-body {
   padding: $spacer;
 }
+
+.context-menu-body {
+  z-index: $zindex-dropdown + 50;
+}
