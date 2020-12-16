@@ -69,7 +69,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
                     this.router.navigate(['/login']);
                     return throwError(err);
                 })
-            )
+            );
         } else {
             return this.refreshTokenSubj.pipe(
                 filter(token => token != null),
@@ -102,7 +102,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
         if (headers) {
             return request.clone({
                 headers: headers.headers,
-            })
+            });
         } else {
             return request;
         }
