@@ -7,15 +7,14 @@ import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services
 
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
-import { SelectableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity';
 import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
 import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
 import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
 import { PasteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
 import { HistoryKeyboardShortcuts } from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
 import { MapViewComponent } from '../map-view.component';
-import { from, Observable, of, Subscription } from 'rxjs';
-import { auditTime, switchMap } from 'rxjs/operators';
+import { from, Observable, of, Subscription, throwError } from 'rxjs';
+import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
@@ -27,6 +26,8 @@ import {
 } from '../../../file-browser/components/dialog/object-edit-dialog.component';
 import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from '../../../file-browser/models/object-version';
+import { LockError } from '../../../file-browser/services/filesystem.service';
+import { ObjectLock } from '../../../file-browser/models/object-lock';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -40,6 +41,18 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
+
+  private readonly lockCheckTimeInterval = 1000 * 30;
+  private readonly slowLockCheckTimeInterval = 1000 * 60 * 2;
+  private readonly veryInactiveDuration = 1000 * 60 * 30;
+  private readonly inactiveDuration = 1000 * 60 * 5;
+
+  private lockIntervalId = null;
+  private lockStartIntervalId = null;
+  lockAcquired: boolean | undefined = null;
+  locks: ObjectLock[] = [];
+  private lastLockCheckTime = window.performance.now();
+  private lastActivityTime = window.performance.now();
 
   ngOnInit() {
     this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
@@ -57,11 +70,15 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
         this.drop(e);
       });
     });
+
+    this.startLockInterval();
   }
 
   ngOnDestroy() {
     super.ngOnDestroy();
     this.autoSaveSubscription.unsubscribe();
+
+    this.clearLockInterval();
   }
 
   getExtraSource(): Observable<UniversalGraph | null> {
@@ -95,6 +112,8 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
           .subscribe(); // Need to subscribe so it actually runs
       });
     }
+
+    this.acquireLock();
   }
 
   registerGraphBehaviors() {
@@ -102,8 +121,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('paste-keyboard-shortcut', new PasteKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shortcut', new HistoryKeyboardShortcuts(this.graphCanvas, this.snackBar), -100);
-    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), 0);
-    this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
+    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizable(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 1);
   }
@@ -175,6 +193,106 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
         }, true,
       ));
     }
+  }
+
+  get lockCheckingActive(): boolean {
+    return this.lockIntervalId != null || this.lockStartIntervalId != null;
+  }
+
+  acquireLock() {
+    const monotonicNow = window.performance.now();
+
+    if (monotonicNow - this.lastActivityTime > this.veryInactiveDuration) {
+      // If the user is inactive for too long, stop hitting our poor server
+      this.clearLockInterval();
+    } else if (monotonicNow - this.lastActivityTime > this.inactiveDuration) {
+      // If the user is inactive for a bit, let's slow down the checking interval
+      if (monotonicNow - this.lastLockCheckTime < this.slowLockCheckTimeInterval) {
+        return;
+      }
+    }
+
+    if (this.lockAcquired === false) {
+      this.filesystemService.getLocks(this.locator).pipe(
+        this.errorHandler.create(),
+      ).pipe(
+        finalize(() => this.lastLockCheckTime = window.performance.now()),
+      ).subscribe(locks => {
+        this.ngZone.run(() => {
+          this.locks = locks;
+        });
+      });
+    } else {
+      this.filesystemService.acquireLock(this.locator, {
+        own: true,
+      }).pipe(
+        finalize(() => this.lastLockCheckTime = window.performance.now()),
+        catchError(error => {
+          if (!(error instanceof LockError)) {
+            this.errorHandler.showError(error);
+          }
+          return throwError(error);
+        }),
+      ).subscribe(locks => {
+        this.lockAcquired = true;
+        this.ngZone.run(() => {
+          this.locks = locks;
+        });
+      }, (err: LockError) => {
+        this.lockAcquired = false;
+        this.ngZone.run(() => {
+          this.locks = err.locks;
+        });
+      });
+    }
+  }
+
+  startLockInterval() {
+    this.lockAcquired = null;
+
+    // Make the timer start near the crossing of the second hand, to make it look like the
+    // lock indication is live, even through we actually check infrequently
+    this.lockStartIntervalId = setTimeout(() => {
+      this.lockIntervalId = setInterval(this.acquireLock.bind(this), this.lockCheckTimeInterval);
+    }, (60 - new Date().getSeconds() + 1));
+
+    this.acquireLock();
+  }
+
+  clearLockInterval() {
+    if (this.lockStartIntervalId != null) {
+      clearInterval(this.lockStartIntervalId);
+      this.lockStartIntervalId = null;
+    }
+    if (this.lockIntervalId != null) {
+      clearInterval(this.lockIntervalId);
+      this.lockIntervalId = null;
+    }
+  }
+
+  reload() {
+    const doReload = () => {
+      this.clearLockInterval();
+      this.loadTask.update(this.locator);
+      this.startLockInterval();
+    };
+    if (this.unsavedChanges$.value) {
+      if (confirm('You have unsaved changes. Are you sure that you want to reload?')) {
+        doReload();
+      }
+    } else {
+      doReload();
+    }
+  }
+
+  @HostListener('window:mousemove', ['$event'])
+  mouseMove(event: MouseEvent) {
+    this.lastActivityTime = window.performance.now();
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  keyDown(event: MouseEvent) {
+    this.lastActivityTime = window.performance.now();
   }
 }
 

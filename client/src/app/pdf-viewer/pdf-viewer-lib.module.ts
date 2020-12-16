@@ -20,6 +20,7 @@ import { FileViewComponent } from './components/file-view.component';
 import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
 import { PdfTypeProvider } from './providers/pdf-type-provider';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
@@ -45,6 +46,7 @@ import { FileBrowserModule } from '../file-browser/file-browser.module';
     MatRadioModule,
     SharedModule,
     FileBrowserModule,
+    RouterModule.forRoot([]),
   ],
   entryComponents: [
     FileViewComponent,
@@ -57,6 +59,7 @@ import { FileBrowserModule } from '../file-browser/file-browser.module';
     multi: true,
   }],
   exports: [
+    PdfViewerLibComponent,
     FileViewComponent,
   ],
 })

@@ -89,7 +89,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: {
       title: 'Visualizer',
-      fontAwesomeIcon: 'search',
+      fontAwesomeIcon: 'fas fa-chart-network',
     },
   },
   {
@@ -243,7 +243,7 @@ const routes: Routes = [
     component: KgStatisticsComponent,
     canActivate: [AuthGuard],
     data: {
-      fontAwesomeIcon: 'tachometer-alt',
+      fontAwesomeIcon: 'fas fa-chart-bar',
     },
   },
   {

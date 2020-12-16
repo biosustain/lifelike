@@ -20,7 +20,7 @@ from neo4japp.models import (
     AnnotationStyle,
     FallbackOrganism
 )
-from neo4japp.services.annotations import AnnotationsNeo4jService, ManualAnnotationsService
+from neo4japp.services.annotations import AnnotationGraphService, ManualAnnotationService
 from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.elastic import ElasticService
 
@@ -50,7 +50,7 @@ def mock_get_combined_annotations_result(monkeypatch):
         ]
 
     monkeypatch.setattr(
-        ManualAnnotationsService,
+        ManualAnnotationService,
         'get_combined_annotations',
         get_combined_annotations_result,
     )
@@ -69,7 +69,7 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
         ]
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_organisms_from_gene_ids',
         get_organisms_from_gene_ids_result,
     )

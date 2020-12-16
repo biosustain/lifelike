@@ -133,6 +133,7 @@ const components = [
     ApiService,
     SharedNgrxEffects,
     SharedSearchService,
+    ApiService,
   ],
   // exported modules are visible to modules that import this one
   exports: [

@@ -4,19 +4,13 @@ import re
 from collections import defaultdict
 
 import sqlalchemy
-from flask import Blueprint, jsonify, g
+from flask import Blueprint, current_app, jsonify, g
 from flask_apispec import use_kwargs
 from sqlalchemy.orm import aliased
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import FILE_INDEX_ID
-from neo4japp.data_transfer_objects import (
-    GeneFilteredRequest,
-    OrganismRequest,
-    SearchRequest,
-    SimpleSearchRequest,
-    VizSearchRequest
-)
+from neo4japp.data_transfer_objects import GeneFilteredRequest
 from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
 from neo4japp.database import get_search_service_dao, db, get_elastic_service
 from neo4japp.models import (
@@ -31,8 +25,9 @@ from neo4japp.request_schemas.search import (
     VizSearchSchema
 )
 from neo4japp.services.annotations.constants import AnnotationMethod
-from neo4japp.services.annotations.service_helpers import create_annotations
+from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.util import jsonify_with_class, SuccessResponse
+from neo4japp.utils.logger import UserEventLog
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
@@ -65,6 +60,11 @@ bp = Blueprint('search', __name__, url_prefix='/search')
 @use_kwargs(VizSearchSchema)
 def visualizer_search_temp(query, page, limit, filter, organism):
     search_dao = get_search_service_dao()
+    current_app.logger.info(
+        f'Term: {query}, Organism: {organism}, Filter: {filter}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='search temp').to_dict()
+    )
     results = search_dao.visualizer_search_temp(
         term=query,
         organism=organism,
@@ -142,6 +142,11 @@ def hydrate_search_results(es_results):
 @auth.login_required
 @use_kwargs(ContentSearchSchema)
 def search(q, types, limit, page):
+    current_app.logger.info(
+        f'Term: {q}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='search contentsearch').to_dict()
+    )
     search_term = q
     types = types.split(';')
     offset = (page - 1) * limit
@@ -161,6 +166,7 @@ def search(q, types, limit, page):
             # default for now.
             # 'fragment_size': FRAGMENT_SIZE,
             'fragment_size': 0,
+            'order': 'score',
             'pre_tags': ['@@@@$'],
             'post_tags': ['@@@@/$'],
             'number_of_fragments': 200,

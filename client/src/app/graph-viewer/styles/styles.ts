@@ -75,6 +75,15 @@ export interface PlacedObject {
   isPointIntersecting(x: number, y: number): boolean;
 
   /**
+   * Check to see if the given bbox encloses the object.
+   * @param x0 top left
+   * @param y0 top left
+   * @param x1 bottom right
+   * @param y1 bottom right
+   */
+  isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean;
+
+  /**
    * Render the object on the canvas.
    * @param transform the zoom and pan transform
    */

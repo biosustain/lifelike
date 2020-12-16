@@ -477,6 +477,12 @@ def edit_collaborator(username: str, project_name: str):
     new_role = AppRole.query.filter(AppRole.name == project_role).one()
     proj_service.edit_collaborator(new_collaborator, new_role, projects)
 
+    current_app.logger.info(
+        f'Modified collaborator {username} for project {project_name}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='edit project collaborator').to_dict()
+    )
+
     yield jsonify({'result': 'success'}), 200
 
 
@@ -504,5 +510,10 @@ def remove_collaborator(username: str, project_name: str):
     yield user, projects
 
     proj_service.remove_collaborator(new_collaborator, projects)
+    current_app.logger.info(
+        f'Removed collaborator {username} for project {project_name}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='remove project collaborator').to_dict()
+    )
 
     yield jsonify({'result': 'success'}), 200

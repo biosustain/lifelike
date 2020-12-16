@@ -31,6 +31,7 @@ import {
 } from '../components/dialog/object-export-dialog.component';
 import { openDownloadForBlob } from '../../shared/utils/files';
 import { PdfAnnotationsService } from '../../drawing-tool/services';
+import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 
 @Injectable()
 export class FilesystemObjectActions {
@@ -362,6 +363,14 @@ export class FilesystemObjectActions {
         )
         .toPromise();
     });
+    return dialogRef.result;
+  }
+
+  openFileAnnotationHistoryDialog(object: FilesystemObject): Promise<any> {
+    const dialogRef = this.modalService.open(FileAnnotationHistoryDialogComponent, {
+      size: 'lg',
+    });
+    dialogRef.componentInstance.object = object;
     return dialogRef.result;
   }
 

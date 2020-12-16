@@ -75,9 +75,9 @@
       "$comment": "accepts #XXX and #XXXXXX as colors and nothing else"
     },
     "paletteColor": {
-      "type": "string",
+      "type": ["string", "null"],
       "pattern": "(?i)^#(d62728|ff9800|edc949|bcbd22|4caf50|17becf|0277bd|673ab7|e377c2|CCCCCC|7f7f7f|000000)$",
-      "$comment": "only one of the provided colors is acceptable in case we switch to an actual palette system later; note that casing does not matter"
+      "$comment": "only one of the provided colors is acceptable in case we switch to an actual palette system later; note that casing does not matter."
     },
     "scalingFactor": {
       "type": "number",
@@ -273,7 +273,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 50,
-            "pattern": "^[A-Za-z-]+$",
+            "pattern": "^[A-Za-z- ]+$",
             "$comment": "node type is not validated"
           },
           "display_name": {

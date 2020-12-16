@@ -14,6 +14,7 @@ import { MapComponent } from './components/map.component';
 import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
 import { MapTypeProvider } from './providers/map-type-provider';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
+import { InfoViewPanelComponent } from './components/info-view-panel.component';
 
 @NgModule({
   declarations: [
@@ -25,11 +26,13 @@ import { FileBrowserModule } from '../file-browser/file-browser.module';
     NodeFormComponent,
     EdgeFormComponent,
     MapRestoreDialogComponent,
+    InfoViewPanelComponent,
   ],
   entryComponents: [
     ConfirmDialogComponent,
     MapRestoreDialogComponent,
     MapComponent,
+    InfoViewPanelComponent,
   ],
   imports: [
     SharedModule,

@@ -18,6 +18,7 @@ import { FilesystemService } from '../../file-browser/services/filesystem.servic
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBufferToJson, readBlobAsBuffer } from '../../shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
+import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
 
 @Component({
   selector: 'app-map',
@@ -167,6 +168,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   registerGraphBehaviors() {
+    this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcut(this.graphCanvas), -100);
   }
 
