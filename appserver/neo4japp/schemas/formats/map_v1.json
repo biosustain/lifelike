@@ -106,8 +106,7 @@
         "additionalProperties": false,
         "required": [
           "url",
-          "domain",
-          "isDatabase"
+          "domain"
         ],
         "properties": {
           "url": {
