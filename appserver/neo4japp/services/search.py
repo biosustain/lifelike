@@ -78,10 +78,24 @@ class SearchService(GraphBaseDao):
         domains: List[str],
         entities: List[str],
     ):
-        domains_list = {'ChEBI': 'n:db_CHEBI', 'GO': 'n:db_GO', 'Literature': 'n:db_Literature',
-                        'MeSH': 'n:db_MESH', 'NCBI': 'n:db_NCBI', 'UniProt': 'n:db_UniProt'}
-        entities_list = {'Chemicals': 'n:Chemical', 'Diseases': 'n:Disease', 'Genes': 'n:Gene',
-                         'Proteins': 'n:Protein', 'Taxonomy': 'n:Taxonomy'}
+        domains_list = {
+            'ChEBI': 'n:db_CHEBI',
+            'GO': 'n:db_GO',
+            'Literature': 'n:db_Literature',
+            'MeSH': 'n:db_MESH',
+            'NCBI': 'n:db_NCBI',
+            'UniProt': 'n:db_UniProt'
+        }
+        entities_list = {
+            'Biological Process': 'n:BiologicalProcess',
+            'Cellular Component': 'n:CellularComponent',
+            'Chemicals': 'n:Chemical',
+            'Diseases': 'n:Disease',
+            'Genes': 'n:Gene',
+            'Molecular Function': 'n:MolecularFunction',
+            'Proteins': 'n:Protein',
+            'Taxonomy': 'n:Taxonomy'
+        }
         result_domains = []
         result_entities = []
 
