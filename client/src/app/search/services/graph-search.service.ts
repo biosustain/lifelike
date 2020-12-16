@@ -37,19 +37,12 @@ export class GraphSearchService extends AbstractService {
       organism: string = '',
       page: number = 1,
       limit: number = 10,
-      filter: string = 'labels(node)'
+      domains: string[],
+      entities: string[],
   ) {
     return this.http.post<{ result: FTSResult }>(
       `${this.searchApi}/viz-search-temp`,
-      {query, organism, page, filter, limit},
-      {...this.getHttpOptions(true)}
-    ).pipe(map(resp => resp.result));
-  }
-
-  getGenesFilteredByOrganism(query: string, organismId: string, filters: string) {
-    return this.http.post<{ result: FTSResult }>(
-      `${this.searchApi}/genes_filtered_by_organism_and_others`,
-      {query, organismId, filters},
+      {query, organism, page, domains, entities, limit},
       {...this.getHttpOptions(true)}
     ).pipe(map(resp => resp.result));
   }

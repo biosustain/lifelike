@@ -36,13 +36,13 @@
         </label>
 
         <div class="d-flex flex-column">
-          <app-select formId="entity-types" [choices]="entityTypeChoices" style="width: 200px"
-                      [values]="form.value.entityTypes" (valuesChange)="form.get('entityTypes').setValue($event)"
-                      (touch)="form.get('entityTypes').markAsDirty()"
+          <app-select formId="entity-types" [choices]="entityChoices" style="width: 200px"
+                      [values]="form.value.entities" (valuesChange)="form.get('entities').setValue($event)"
+                      (touch)="form.get('entities').markAsDirty()"
                       [choiceLabel]="choiceLabel">
           </app-select>
 
-          <app-form-input-feedback [control]="form.get('entityTypes')"></app-form-input-feedback>
+          <app-form-input-feedback [control]="form.get('entities')"></app-form-input-feedback>
         </div>
       </div>
 
