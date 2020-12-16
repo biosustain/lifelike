@@ -15,11 +15,6 @@ TYPE_BIOLOGICAL_PROCESS = 'BiologicalProcess'
 TYPE_CELLULAR_COMPONENT = 'CellularComponent'
 TYPE_MOLECULAR_FUNCTION = 'MolecularFunction'
 
-DB_BIOCYC = 'BioCyc'
-DB_NCBI = 'NCBI'
-DB_GO = 'GO'
-DB_CHEBI = 'CHEBI'
-
 PROP_CHEBI_ID = 'chebi_id'
 PROP_BIOCYC_ID = 'biocyc_id'
 PROP_COMMON_NAME = 'common_name'
@@ -32,6 +27,15 @@ DB_NCBI = 'NCBI'
 DB_CHEBI = 'CHEBI'
 DB_GO = 'GO'
 DB_EC = 'EC'
+
+DOMAIN_LABELS = [
+    'db_CHEBI',
+    'db_GO',
+    'db_Literature',
+    'db_MESH',
+    'db_NCBI',
+    'db_UniProt',
+]
 
 BIOCYC_ORG_ID_DICT = {'9606': 'HUMAN', '511145': 'ECOLI', '559292': 'YEAST'}
 
@@ -179,6 +183,23 @@ ANNOTATION_STYLES_DICT = {
     'phentotype': {
         'color': '#edc949',
         'label': 'phentotype',
+    },
+    # KG Types that are NOT annotation types
+    'biologicalprocess': {
+        'color': '#eb4034',
+        'label': 'biologicalprocess'
+    },
+    'cellularcomponent': {
+        'color': '#34ebd3',
+        'label': 'biologicalprocess'
+    },
+    'molecularfunction': {
+        'color': '#eb34dc',
+        'label': 'biologicalprocess'
+    },
+    'taxonomy': {
+        'color': '#0277bd',
+        'label': 'taxonomy',
     },
 }
 
