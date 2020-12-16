@@ -24,7 +24,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   readonly loadTask: BackgroundTask<GraphSearchParameters, FTSResult> = new BackgroundTask(params => {
-    return this.searchService.visualizerSearchTemp(
+    return this.searchService.visualizerSearch(
       params.query,
       params.organism,
       params.page,
