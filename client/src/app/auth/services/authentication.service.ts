@@ -12,15 +12,10 @@ export class AuthenticationService {
 
   constructor(private http: HttpClient) { }
 
-  getAuthHeader(): {headers: HttpHeaders} | void {
+  getAuthHeader(): string | void {
     const token = localStorage.getItem('access_jwt');
     if (token) {
-      return {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        })
-      };
+      return `Bearer ${token}`;
     }
   }
 
