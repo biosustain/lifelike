@@ -68,17 +68,16 @@ export class AuthenticationService {
    */
   public refresh() {
     const jwt = localStorage.getItem('refresh_jwt');
-
     return this.http.post<{access_jwt: string, refresh_jwt: string}>(
       this.baseUrl + '/refresh',
       { jwt },
       this.createHttpOptions()
     ).pipe(
-        map((resp: any) => {
+        map((resp: {access_jwt: string, refresh_jwt: string}) => {
           localStorage.setItem('access_jwt', resp.access_jwt);
           localStorage.setItem('refresh_jwt', resp.refresh_jwt);
           return resp;
-        })
+        }),
       );
   }
 
