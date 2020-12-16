@@ -212,34 +212,45 @@ class SearchService(GraphBaseDao):
             ))
         return formatted_results
 
-    def sanitize_filter(self, filter):
+    def sanitize_filter(
+        self,
+        domains: List[str],
+        entities: List[str],
+    ):
         domains_list = {'ChEBI': 'n:db_CHEBI', 'GO': 'n:db_GO', 'Literature': 'n:db_Literature',
                         'MeSH': 'n:db_MESH', 'NCBI': 'n:db_NCBI', 'UniProt': 'n:db_UniProt'}
         entities_list = {'Chemicals': 'n:Chemical', 'Diseases': 'n:Disease', 'Genes': 'n:Gene',
                          'Proteins': 'n:Protein', 'Taxonomy': 'n:Taxonomy'}
-        filter_list = filter.split(', ')
         result_domains = []
         result_entities = []
 
-        for x in filter_list:
-            if x in domains_list:
-                result_domains.append(domains_list[x])
-            elif x in entities_list:
-                result_entities.append(entities_list[x])
+        for domain in domains:
+            if domain in domains_list:
+                result_domains.append(domains_list[domain])
             else:
-                current_app.logger.info(f'Filter not found: {x}')
+                current_app.logger.info(f'Filter not found: {domain}')
 
-        domains = 'n:null' if len(result_domains) == 0 else ' OR '.join(result_domains)
-        entities = 'n:null' if len(result_entities) == 0 else ' OR '.join(result_entities)
-        return f'({domains}) AND ({entities})'
+        for entity in entities:
+            if entity in entities_list:
+                result_entities.append(entities_list[entity])
+            else:
+                current_app.logger.info(f'Filter not found: {entity}')
+
+        # If the domain list or entity list provided by the user is empty, then assume ALL
+        # domains/entities should be used.
+        result_domains = result_domains if len(result_domains) > 0 else [val for val in domains_list.values()]  # noqa
+        result_entities = result_entities if len(result_entities) > 0 else [val for val in entities_list.values()]  # noqa
+
+        return f'({" OR ".join(result_domains)}) AND ({" OR ".join(result_entities)})'
 
     def visualizer_search_temp(
         self,
         term: str,
         organism: str,
+        domains: List[str],
+        entities: List[str],
         page: int = 1,
         limit: int = 10,
-        filter: str = 'labels(node)'
     ) -> FTSResult:
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:
@@ -250,7 +261,7 @@ class SearchService(GraphBaseDao):
         else:
             organism_match_string = 'OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)'
 
-        result_filters = self.sanitize_filter(filter)
+        result_filters = self.sanitize_filter(domains, entities)
 
         cypher_query = f"""
             CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
@@ -347,36 +358,3 @@ class SearchService(GraphBaseDao):
             'query': query_term,
             'total': len(nodes),
         }
-
-    def search_genes_filtering_by_organism_and_others(self, term: str, organism_id: str,
-                                                      filters: str = 'labels(node)') -> FTSResult:
-        query_term = self._fulltext_query_sanitizer(term)
-        if not query_term:
-            return FTSResult(query_term, [], 0, 1, 0)
-
-        result_filters = self.sanitize_filter(filter)
-
-        cypher_query = '''
-            CALL db.index.fulltext.queryNodes('synonymIdx', $gene_term)
-            YIELD node, score
-            MATCH (node)-[]-(n:Gene)-[:HAS_TAXONOMY]-(t)-[:HAS_PARENT*0..2]-(p)
-            WHERE p.id = $taxonomy_id AND %s
-            RETURN
-                n as node,
-                score,
-                t.id AS taxonomy_id,
-                t.name AS taxonomy_name,
-                n.namespace as go_class
-        ''' % result_filters
-
-        nodes = self.graph.run(
-            cypher_query,
-            parameters={
-                'gene_term': query_term,
-                'taxonomy_id': organism_id,
-            }
-        ).data()
-
-        nodes = self._simple_fulltext_result_formatter(nodes)
-
-        return FTSResult(query_term, nodes, len(nodes), 1, 0)

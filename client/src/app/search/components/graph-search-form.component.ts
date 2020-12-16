@@ -4,9 +4,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { OrganismAutocomplete } from 'app/interfaces';
 
 import { GraphSearchParameters } from '../graph-search';
-import { Domain, EntityType } from '../../interfaces';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { DOMAINS, ENTITY_TYPES } from '../../shared/database';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 
 @Component({
@@ -14,15 +12,16 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
   templateUrl: './graph-search-form.component.html',
 })
 export class GraphSearchFormComponent {
-  domainChoices: Domain[] = DOMAINS.concat().sort((a, b) => a.name.localeCompare(b.name));
-  entityTypeChoices: EntityType[] = ENTITY_TYPES.concat().sort((a, b) => a.name.localeCompare(b.name));
   @Output() search = new EventEmitter<GraphSearchParameters>();
+
+  domainChoices: string[] = ['ChEBI', 'GO', 'Literature', 'MeSH', 'NCBI', 'UniProt'];
+  entityChoices: string[] = ['Chemicals', 'Diseases', 'Genes', 'Proteins', 'Taxonomy'];
   organismChoice: string;
 
   form = new FormGroup({
     query: new FormControl('', Validators.required),
     domains: new FormControl(''),
-    entityTypes: new FormControl(''),
+    entities: new FormControl(''),
     organism: new FormControl(null),
   });
 
@@ -30,7 +29,7 @@ export class GraphSearchFormComponent {
     this.form.patchValue({
       query: '',
       domains: [],
-      entityTypes: [],
+      entities: [],
       organism: '',
     });
   }
@@ -42,7 +41,7 @@ export class GraphSearchFormComponent {
       this.form.patchValue({
         query: params.query,
         domains: params.domains != null ? params.domains : [],
-        entityTypes: params.entityTypes != null ? params.entityTypes : [],
+        entities: params.entities != null ? params.entities : [],
         organism: params.organism,
       });
     }
@@ -74,7 +73,7 @@ export class GraphSearchFormComponent {
   }
 
   choiceLabel(choice) {
-    return choice.name;
+    return choice;
   }
 
   setOrganism(organism: OrganismAutocomplete | null) {
