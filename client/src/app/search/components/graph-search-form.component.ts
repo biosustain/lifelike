@@ -15,7 +15,16 @@ export class GraphSearchFormComponent {
   @Output() search = new EventEmitter<GraphSearchParameters>();
 
   domainChoices: string[] = ['ChEBI', 'GO', 'Literature', 'MeSH', 'NCBI', 'UniProt'];
-  entityChoices: string[] = ['Chemicals', 'Diseases', 'Genes', 'Proteins', 'Taxonomy'];
+  entityChoices: string[] = [
+    'Biological Process',
+    'Cellular Component',
+    'Chemicals',
+    'Diseases',
+    'Genes',
+    'Molecular Function',
+    'Proteins',
+    'Taxonomy',
+  ];
   organismChoice: string;
 
   form = new FormGroup({
