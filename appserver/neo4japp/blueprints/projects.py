@@ -29,7 +29,8 @@ from neo4japp.models import (
     projects_collaborator_role, )
 from neo4japp.models.projects_queries import add_project_user_role_columns, ProjectCalculator
 from neo4japp.schemas.common import PaginatedRequest
-from neo4japp.schemas.filesystem import ProjectListSchema, ProjectListRequestSchema, ProjectSearchRequestSchema, \
+from neo4japp.schemas.filesystem import ProjectListSchema, ProjectListRequestSchema, \
+    ProjectSearchRequestSchema, \
     ProjectCreateSchema, ProjectResponseSchema, BulkProjectRequestSchema, \
     BulkProjectUpdateRequestSchema, MultipleProjectResponseSchema, ProjectUpdateRequestSchema
 from neo4japp.utils.logger import UserEventLog
@@ -98,7 +99,8 @@ class ProjectBaseView(MethodView):
 
     def get_nondeleted_projects(self, filter, accessible_only=False, sort=None,
                                 require_hash_ids: List[str] = None,
-                                pagination: Optional[Pagination] = None) -> Tuple[List[Projects], int]:
+                                pagination: Optional[Pagination] = None) \
+            -> Tuple[List[Projects], int]:
         """
         Returns files that are guaranteed to be non-deleted that match the
         provided filter.
@@ -141,8 +143,9 @@ class ProjectBaseView(MethodView):
             missing_hash_ids = self.get_missing_hash_ids(require_hash_ids, projects)
 
             if len(missing_hash_ids):
-                raise RecordNotFoundException(f"The request specified one or more projects "
-                                              f"({', '.join(missing_hash_ids)}) that could not be found.")
+                raise RecordNotFoundException(
+                    f"The request specified one or more projects "
+                    f"({', '.join(missing_hash_ids)}) that could not be found.")
 
         return projects, total
 
@@ -187,7 +190,7 @@ class ProjectBaseView(MethodView):
     def get_bulk_project_response(self, hash_ids: List[str], user: AppUser, *,
                                   missing_hash_ids: Iterable[str] = None):
         projects, total = self.get_nondeleted_projects(Projects.hash_id.in_(hash_ids),
-                                                require_hash_ids=hash_ids)
+                                                       require_hash_ids=hash_ids)
         self.check_project_permissions(projects, user, ['readable'])
 
         returned_projects = {}
@@ -199,7 +202,7 @@ class ProjectBaseView(MethodView):
             'user_privilege_filter': user.id,
         }).dump(dict(
             results=returned_projects,
-            missing=list(missing_hash_ids) or [],
+            missing=list(missing_hash_ids) if missing_hash_ids else [],
         )))
 
     def update_projects(self, hash_ids: List[str], params: Dict, user: AppUser):
@@ -345,11 +348,11 @@ class ProjectCollaboratorsListView(ProjectBaseView):
         self.check_project_permissions([project], current_user, ['administrable'])
 
         query = db.session.query(AppUser, AppRole.name) \
-            .join(projects_collaborator_role, AppUser.id == projects_collaborator_role.c.appuser_id) \
+            .join(projects_collaborator_role,
+                  AppUser.id == projects_collaborator_role.c.appuser_id) \
             .join(AppRole, AppRole.id == projects_collaborator_role.c.app_role_id)
 
         paginated_result = query.paginate(pagination.page, pagination.limit, False)
-
 
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
@@ -437,7 +440,8 @@ def add_collaborator(email: str, project_name: str):
     proj_service.add_collaborator(new_collaborator, new_role, projects)
 
     current_app.logger.info(
-        f'Collaborator <{new_collaborator.email}> added to project <{projects.project_name}>.',  # noqa
+        f'Collaborator <{new_collaborator.email}> added to project <{projects.project_name}>.',
+        # noqa
         extra=UserEventLog(
             username=g.current_user.username,
             event_type='project collaborator'

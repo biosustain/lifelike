@@ -23,14 +23,12 @@ class StringIntegerField(fields.Integer):
 class SortField(fields.String):
     _deserialize_pattern = re.compile('^((?:[+-])?)(.*)$', re.S)
     value_to_column: Dict
-    column_to_value: Dict
 
     def __init__(self, *args, columns: Dict, **kwargs):
         super().__init__(*args, **kwargs)
         self.value_to_column = dict(columns)
-        self.column_to_value = dict((reversed(item) for item in self.value_to_column.items()))
 
-    def _serialize(self, value: Optional, attr, obj, **kwargs):
+    def _serialize(self, value, attr, obj, **kwargs):
         raise NotImplementedError('not implemented yet')
 
     def _deserialize(self, *args, **kwargs):
