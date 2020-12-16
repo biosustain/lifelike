@@ -1,10 +1,8 @@
-import os
-
 import sqlalchemy as sa
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from flask import (
     Blueprint,
@@ -25,12 +23,11 @@ from neo4japp.blueprints.permissions import (
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
-    get_annotation_neo4j,
     get_excel_export_service,
-    get_manual_annotations_service,
+    get_manual_annotation_service,
 )
-from neo4japp.data_transfer_objects import AnnotationRequest, GlobalAnnotationData
 from neo4japp.data_transfer_objects.common import ResultList
+from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.request_schemas.annotations import GlobalAnnotationsDeleteSchema
 from neo4japp.exceptions import (
     AnnotationError,
@@ -51,14 +48,18 @@ from neo4japp.services.annotations.constants import (
     EntityType,
     ManualAnnotationType,
 )
+from neo4japp.services.annotations.data_transfer_objects import (
+    AnnotationRequest,
+    GlobalAnnotationData
+)
 from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.util import (
-    CasePreservedDict,
     jsonify_with_class,
     SuccessResponse,
 )
-from neo4japp.utils.request import paginate_from_args
 from neo4japp.utils.logger import UserEventLog
+
+from neo4japp.services.annotations import AnnotationGraphService
 
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
@@ -66,9 +67,11 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 def annotate(
     doc: Files,
+    cause: AnnotationChangeCause,
     specified_organism: Optional[FallbackOrganism] = None,
     annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
-):
+    user_id: int = None,
+) -> Tuple[Dict, Dict]:
     annotations_json = create_annotations(
         annotation_method=annotation_method,
         specified_organism_synonym=specified_organism.organism_synonym if specified_organism else '',  # noqa
@@ -89,19 +92,33 @@ def annotate(
     if specified_organism:
         update['fallback_organism'] = specified_organism
         update['fallback_organism_id'] = specified_organism.id
-    return update
+
+    version = {
+        'file_id': doc.id,
+        'cause': cause,
+        'custom_annotations': doc.custom_annotations,
+        'excluded_annotations': doc.excluded_annotations,
+        'user_id': user_id,
+    }
+
+    return update, version
 
 
 @bp.route('/<string:project_name>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
 def get_all_annotations_from_project(project_name):
+    current_app.logger.info(
+        f'Project: {project_name}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='view entity word cloud').to_dict()
+    )
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
         raise RecordNotFoundException(f'Project {project_name} not found')
     user = g.current_user
     yield user, project
-    annotation_service = get_manual_annotations_service()
+    annotation_service = get_manual_annotation_service()
     combined_annotations = annotation_service.get_combined_annotations_in_project(project.id)
     distinct_annotations = {}
     for annotation in combined_annotations:
@@ -159,16 +176,15 @@ def annotate_file(req: AnnotationRequest, project_name: str, file_id: str):
         db.session.add(fallback)
         db.session.flush()
 
-    annotated: List[dict] = []
-    annotated.append(
-        annotate(
-            doc=doc,
-            annotation_method=req.annotation_method,
-            specified_organism=fallback
-        )
+    update, version = annotate(
+        doc=doc,
+        cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
+        annotation_method=req.annotation_method,
+        specified_organism=fallback
     )
 
-    db.session.bulk_update_mappings(Files, annotated)
+    db.session.bulk_insert_mappings(FileAnnotationsVersion, [version])
+    db.session.bulk_update_mappings(Files, [update])
     db.session.commit()
     yield SuccessResponse(
         result={
@@ -189,6 +205,10 @@ class AnnotationOutcome(Enum):
 @jsonify_with_class(AnnotationRequest)
 @requires_project_permission(AccessActionType.WRITE)
 def reannotate(req: AnnotationRequest, project_name: str):
+    current_app.logger.info(
+        f'Project: {project_name}',
+        extra=UserEventLog(username=g.current_user.username, event_type='reannotate').to_dict()
+    )
     user = g.current_user
     projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
 
@@ -207,23 +227,27 @@ def reannotate(req: AnnotationRequest, project_name: str):
         outcome[not_found] = AnnotationOutcome.NOT_FOUND.value
 
     updated_files: List[dict] = []
+    versions: List[dict] = []
 
     for f in files:
         try:
-            annotations = annotate(
+            update, version = annotate(
                 doc=f,
+                cause=AnnotationChangeCause.USER_REANNOTATION,
                 specified_organism=FallbackOrganism.query.get(f.fallback_organism_id))
         except AnnotationError as e:
             current_app.logger.error(
                 'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
             outcome[f.file_id] = AnnotationOutcome.NOT_ANNOTATED.value
         else:
-            updated_files.append(annotations)
+            updated_files.append(update)
+            versions.append(version)
             current_app.logger.debug(
                 'File successfully reannotated: %s, %s', f.file_id, f.filename)
             outcome[f.file_id] = AnnotationOutcome.ANNOTATED.value
 
     # low level fast bulk operation
+    db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
     db.session.bulk_update_mappings(Files, updated_files)
     db.session.commit()
     yield SuccessResponse(result=outcome, status_code=200)
@@ -447,8 +471,8 @@ def get_all_annotations_from_file(project_name, file_id):
     # yield to requires_project_permission
     yield user, project
 
-    manual_annotations_service = get_manual_annotations_service()
-    combined_annotations = manual_annotations_service.get_combined_annotations(project.id, file_id)
+    manual_annotation_service = get_manual_annotation_service()
+    combined_annotations = manual_annotation_service.get_combined_annotations(project.id, file_id)
 
     distinct_annotations = {}
     for annotation in combined_annotations:
@@ -498,8 +522,8 @@ def get_gene_list_from_file(project_name, file_id):
     if not file:
         raise RecordNotFoundException('File does not exist')
 
-    manual_annotations_service = get_manual_annotations_service()
-    combined_annotations = manual_annotations_service.get_combined_annotations(project.id, file_id)
+    manual_annotation_service = get_manual_annotation_service()
+    combined_annotations = manual_annotation_service.get_combined_annotations(project.id, file_id)
     gene_ids = {}
     for annotation in combined_annotations:
         if annotation['meta']['type'] == EntityType.GENE.value:
@@ -509,8 +533,8 @@ def get_gene_list_from_file(project_name, file_id):
             else:
                 gene_ids[gene_id] = 1
 
-    annotation_neo4j_service = get_annotation_neo4j()
-    gene_organism_pairs = annotation_neo4j_service.get_organisms_from_gene_ids(
+    annotation_graph_service = AnnotationGraphService()
+    gene_organism_pairs = annotation_graph_service.get_organisms_from_gene_ids(
         gene_ids=list(gene_ids.keys())
     )
     sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']], reverse=True)  # noqa

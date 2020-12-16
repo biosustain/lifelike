@@ -11,8 +11,8 @@ import { WorkspaceManager } from '../../../shared/workspace-manager';
 import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
 import { CollectionModal } from '../../../shared/utils/collection-modal';
 import { MapService } from '../../../drawing-tool/services';
-import { StandardRequestOptions } from '../../../interfaces/shared.interface';
 import { FormControl, FormGroup } from '@angular/forms';
+import { StandardRequestOptions } from '../../../shared/schemas/common';
 
 @Component({
   selector: 'app-browser-project-list',

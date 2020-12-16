@@ -1,4 +1,3 @@
-import attr
 import json
 import re
 
@@ -13,7 +12,7 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 
-from neo4japp.data_transfer_objects import (
+from neo4japp.services.annotations.data_transfer_objects import (
     PDFChar,
     PDFMeta,
     PDFWord,
@@ -34,7 +33,7 @@ from .constants import (
 from .util import clean_char, normalize_str
 
 
-class AnnotationsPDFParser:
+class AnnotationPDFParser:
     def _get_lt_char(
         self,
         layout: Any,
@@ -127,7 +126,8 @@ class AnnotationsPDFParser:
                     cropbox=cropbox,
                     page_number=page_number
                 )
-            elif isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno) and lt_obj.get_text() != '\n':  # noqa
+            elif (isinstance(lt_obj, LTChar) or isinstance(lt_obj, LTAnno)) and (
+                lt_obj.get_text() != '\n' and lt_obj.get_text() != '\x00'):  # noqa
                 is_ltchar = isinstance(lt_obj, LTChar)
                 pdf_char_obj = PDFChar(
                     x0=lt_obj.x0 if is_ltchar else 0,
