@@ -24,9 +24,9 @@ def test_user_can_get_all_annotations_from_project(
 
     assert response.status_code == 200
     assert response.get_data() == \
-        b'entity_id\ttype\ttext\tcount\n' + \
-        b'59272\tGene\tace2\t1\n' + \
-        b'9606\tSpecies\thuman\t1\n'
+        b'entity_id\ttype\ttext\tprimary_name\tcount\n' + \
+        b'59272\tGene\tace2\tACE2\t1\n' + \
+        b'9606\tSpecies\thuman\tHomo Sapiens\t1\n'
 
 
 def test_user_can_get_gene_annotations_from_pdf(
@@ -70,9 +70,9 @@ def test_user_can_get_all_annotations_from_pdf(
     )
     assert response.status_code == 200
     assert response.get_data() == \
-        b'entity_id\ttype\ttext\tcount\n' + \
-        b'59272\tGene\tace2\t1\n' + \
-        b'9606\tSpecies\thuman\t1\n'
+        b'entity_id\ttype\ttext\tprimary_name\tcount\n' + \
+        b'59272\tGene\tace2\tACE2\t1\n' + \
+        b'9606\tSpecies\thuman\tHomo Sapiens\t1\n'
 
 
 def test_user_can_get_global_inclusions(

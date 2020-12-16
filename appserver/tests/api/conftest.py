@@ -21,11 +21,8 @@ from neo4japp.models import (
     AnnotationStyle,
     FallbackOrganism
 )
-from neo4japp.services.annotations.constants import (
-    ManualAnnotationType
-)
-from neo4japp.services.annotations import AnnotationsNeo4jService, ManualAnnotationsService
-from neo4japp.services.annotations.constants import EntityType
+from neo4japp.services.annotations import AnnotationGraphService, ManualAnnotationService
+from neo4japp.services.annotations.constants import EntityType, ManualAnnotationType
 from neo4japp.services.elastic import ElasticService
 
 
@@ -133,19 +130,21 @@ def mock_get_combined_annotations_result(monkeypatch):
                     'type': EntityType.GENE.value,
                     'id': '59272',
                 },
-                'keyword': 'ace2'
+                'keyword': 'ace2',
+                'primaryName': 'ACE2',
             },
             {
                 'meta': {
                     'type': EntityType.SPECIES.value,
                     'id': '9606',
                 },
-                'keyword': 'human'
+                'keyword': 'human',
+                'primaryName': 'Homo Sapiens',
             },
         ]
 
     monkeypatch.setattr(
-        ManualAnnotationsService,
+        ManualAnnotationService,
         'get_combined_annotations',
         get_combined_annotations_result,
     )
@@ -160,19 +159,21 @@ def mock_get_combined_annotations_in_project_result(monkeypatch):
                     'type': EntityType.GENE.value,
                     'id': '59272',
                 },
-                'keyword': 'ace2'
+                'keyword': 'ace2',
+                'primaryName': 'ACE2',
             },
             {
                 'meta': {
                     'type': EntityType.SPECIES.value,
                     'id': '9606',
                 },
-                'keyword': 'human'
+                'keyword': 'human',
+                'primaryName': 'Homo Sapiens',
             },
         ]
 
     monkeypatch.setattr(
-        ManualAnnotationsService,
+        ManualAnnotationService,
         'get_combined_annotations_in_project',
         get_combined_annotations_in_project_result,
     )
@@ -191,7 +192,7 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
         ]
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_organisms_from_gene_ids',
         get_organisms_from_gene_ids_result,
     )
