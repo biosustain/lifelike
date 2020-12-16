@@ -55,12 +55,17 @@ export class AuthenticationInterceptor implements HttpInterceptor {
                 switchMap((token) => {
                     this.isRefreshingToken = false;
                     this.refreshTokenSubj.next(token.access_jwt);
-                    return next.handle(this.updateAuthHeader(request, token.access_jwt));
+                    return next.handle(this.addAuthHeader(request));
                 }),
                 catchError((err) => {
                     // Refresh token invalid or could not fetch
                     this.auth.logout();
                     this.store.dispatch(AuthActions.loginReset());
+                    this.store.dispatch(SnackbarActions.displaySnackbar({payload: {
+                        message: 'Session Expired. Please login again.',
+                        action: 'Dismiss',
+                        config: { duration: 10000 },
+                    }}));
                     this.router.navigate(['/login']);
                     return throwError(err);
                 })
@@ -69,13 +74,14 @@ export class AuthenticationInterceptor implements HttpInterceptor {
             return this.refreshTokenSubj.pipe(
                 filter(token => token != null),
                 take(1),
-                switchMap(token => next.handle(this.updateAuthHeader(request, token)))
+                switchMap(() => next.handle(this.addAuthHeader(request)))
             );
         }
     }
 
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<any> {
+        req = this.addAuthHeader(req);
         return next.handle(req).pipe(
             catchError(error => {
                 if (error instanceof HttpErrorResponse && error.status === 401 && !(req.url.endsWith('/refresh'))) {
@@ -89,14 +95,16 @@ export class AuthenticationInterceptor implements HttpInterceptor {
 
     /**
      * Allow auth header to be updated with new access jwt
-     * @param request - request with auth ehader your trying to modify
+     * @param request - request with auth header you're trying to modify
      */
-    updateAuthHeader(request: HttpRequest<any>, token: string) {
-        return request.clone({
-        setHeaders: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-        },
-        });
+    addAuthHeader(request: HttpRequest<any>) {
+        const headers = this.auth.getAuthHeader();
+        if (headers) {
+            return request.clone({
+                headers: headers.headers,
+            })
+        } else {
+            return request;
+        }
     }
 }
