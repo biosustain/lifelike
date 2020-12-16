@@ -16,7 +16,7 @@ from flask import json, jsonify, request
 
 from py2neo import Node
 
-from neo4japp.constants import DISPLAY_NAME_MAP
+from neo4japp.constants import DISPLAY_NAME_MAP, DOMAIN_LABELS
 
 
 def encode_to_str(obj):
@@ -415,6 +415,17 @@ def get_first_known_label_from_list(labels: List[str]):
             return label
 
     raise ValueError('Detected node label of an unknown type!')
+
+
+def get_known_domain_labels_from_node(node: Node):
+    labels_as_str = str(node.labels).split(':')[1:]
+    domain_labels = []
+
+    for label in labels_as_str:
+        if label in DOMAIN_LABELS:
+            domain_labels.append(label)
+
+    return domain_labels
 
 
 class AttrDict(dict):

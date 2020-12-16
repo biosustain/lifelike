@@ -71,8 +71,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
       Object.keys(legend).forEach(label => {
         // Keys of the result dict are all lowercase, need to change the first character
         // to uppercase to match Neo4j labels
-        const formattedLabel = label.slice(0, 1).toUpperCase() + label.slice(1);
-        this.legend.set(formattedLabel, legend[label].color);
+        this.legend.set(label, legend[label].color);
       });
     });
 
