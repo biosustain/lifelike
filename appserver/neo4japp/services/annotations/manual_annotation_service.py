@@ -295,6 +295,7 @@ class ManualAnnotationService:
 
     def add_to_global_list(self, annotation, annotation_type, file_id):
         """ Adds inclusion or exclusion to a global_list table
+        Checks for duplicates and discards them
         """
         if self._global_annotation_exists(annotation, annotation_type):
             return
