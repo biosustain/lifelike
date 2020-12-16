@@ -98,10 +98,12 @@ export class AuthenticationInterceptor implements HttpInterceptor {
      * @param request - request with auth header you're trying to modify
      */
     addAuthHeader(request: HttpRequest<any>) {
-        const headers = this.auth.getAuthHeader();
-        if (headers) {
+        const authHeader = this.auth.getAuthHeader();
+        if (authHeader) {
             return request.clone({
-                headers: headers.headers,
+                setHeaders: {
+                    Authorization: authHeader,
+                }
             });
         } else {
             return request;
