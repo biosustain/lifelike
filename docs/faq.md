@@ -21,76 +21,8 @@
   - [Where can I find common design patterns?](#where-can-i-find-common-design-patterns)
 
 ## How do I set up my developer environment?
-To build run the application, follow either **Automated Setup** or **Manual Setup**
 
-:warning: Before you start :warning:
-You will need access to
-1. Google Cloud
-2. Install Google Cloud SDK to use the CLI tool
-   - https://cloud.google.com/sdk
-
-### Automated setup
-In the parent directory, there's a `makefile` that will build your environment.
-
-First time users should run
-```bash
-make init
-```
-
-After, run to spin up the application
-```bash
-make docker-run
-```
-
-To clean up, run
-```bash
-make clean
-```
-
-
-### Manual setup
-__Build__
-```bash
-docker-compose build --no-cache
-```
-
-__Intermediate__
-Before running docker-compose up, a Google Service Account file must be present to be volume mounted. Some features such as uploading the user manual requires access to Google Cloud (You will need a Google Cloud account for this).
-```bash
-gsutil cp gs://kg-secrets/ansible_service_account.json ./appserver
-```
-
-__Run__
-```bash
-docker-compose up
-```
-OR the *less verbose version*
-```bash
-docker-compose up -d
-```
-
-Set up the local neo4j index through running
-
-```bash
-docker-compose exec appserver flask init-neo4j
-```
-**Note:** Do not run this command when connected to the production database.
-
-
-__(Optionals)__
-1. To setup `node_modules` folder for local development, run the following command
-```
-yarn install --frozen-lockfile
-```
-
-2. To seed the application with mock data, run the following command
-```
-docker-compose exec appserver flask seed
-```
-
-3. To work with the NLP (nlpapi) service, the script `fetch-ai-models.sh` must be ran to populate the `models` folder.
-
-
+See [the wiki for setup information](https://github.com/SBRG/kg-prototypes/wiki/Development-Environment).
 
 ## How do I add new packages to package.json?
 1. Run the following

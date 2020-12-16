@@ -25,7 +25,9 @@ lmdb:
 
 # Sets up everything you need to run the application
 # Mostly used for first time dev environment setup
-init: ansible-secrets gcp-sa lmdb
+init: ansible-secrets gcp-sa lmdb docker-build
+
+docker-build:
 	docker-compose build --no-cache
 
 docker-run: docker-stop gcp-sa
@@ -33,6 +35,9 @@ docker-run: docker-stop gcp-sa
 
 docker-stop:
 	docker-compose down
+
+docker-flask-seed:
+	docker-compose exec appserver flask seed
 
 clean-pyc:
 	find . -name '*.pyc' -delete
