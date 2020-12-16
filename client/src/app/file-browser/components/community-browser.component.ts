@@ -8,11 +8,11 @@ import { WorkspaceManager } from '../../shared/workspace-manager';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { CollectionModal } from '../../shared/utils/collection-modal';
 import { MapService } from '../../drawing-tool/services';
-import { PaginatedRequestOptions, ResultList, StandardRequestOptions } from '../../interfaces/shared.interface';
 import { PublicMap } from '../../drawing-tool/services/map.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { FormControl, FormGroup } from '@angular/forms';
+import { PaginatedRequestOptions, ResultList, StandardRequestOptions } from '../../shared/schemas/common';
 
 @Component({
   selector: 'app-community-browser',

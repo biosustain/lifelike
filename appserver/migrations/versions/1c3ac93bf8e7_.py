@@ -104,8 +104,6 @@ t_projects = sa.Table(
     sa.Column('users', sa.ARRAY(sa.Integer), nullable=False)
 )
 
-conn = op.get_bind()
-
 
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
@@ -129,7 +127,7 @@ def get_src_hash_id(source):
     return source.split('/')[3]
 
 
-def get_projects(dir_id):
+def get_projects(conn, dir_id):
     """ Return the `Projects name and id` to which
     the asset is located under """
     return conn.execute(
@@ -172,7 +170,7 @@ def map_sources_conversion(source, projects_name):
 new_pdf_copies = {}
 
 
-def pdf_source_conversion(source, projects_id, projects_name, user_id, dir_id, new_structure=False):
+def pdf_source_conversion(conn, source, projects_id, projects_name, user_id, dir_id, new_structure=False):
     """
     Old Format
     /dt/pdf/16e703d8-fdb4-483e-93cf-b63b01a65d65/1/508.72679250633314/508.9869840578061/545.4304343746924/497.523753676678
@@ -260,7 +258,7 @@ def pdf_source_conversion(source, projects_id, projects_name, user_id, dir_id, n
                 return new_source
 
 
-def convert_source(component, projects_id, projects_name, user_id, dir_id):
+def convert_source(conn, component, projects_id, projects_name, user_id, dir_id):
     """ Perform conversions if a map source is found """
     component_copy = copy.deepcopy(component)
     data = component_copy.get('data')
@@ -273,12 +271,12 @@ def convert_source(component, projects_id, projects_name, user_id, dir_id):
         if get_src_type(source) == 'map':
             data['source'] = map_source_conversion(source, projects_name)
         else:
-            pdf_source_conversion(source, projects_id, projects_name, user_id, dir_id)
+            pdf_source_conversion(conn, source, projects_id, projects_name, user_id, dir_id)
     if sources:
         data['sources'] = [
             map_sources_conversion(s, projects_name)
             if get_src_type(s['url']) == 'map'
-            else pdf_source_conversion(s, projects_id, projects_name, user_id, dir_id, True)
+            else pdf_source_conversion(conn, s, projects_id, projects_name, user_id, dir_id, True)
             for s in sources
         ]
     return component_copy
@@ -286,13 +284,14 @@ def convert_source(component, projects_id, projects_name, user_id, dir_id):
 
 def data_upgrades():
     """Add optional data upgrade migrations here"""
+    conn = op.get_bind()
     project = conn.execute(sa.select([t_project])).fetchall()
     for proj_id, _, _, _, graph, _, _, user_id, dir_id, _, _ in project:
         nodes = graph['nodes']
         edges = graph['edges']
-        projects_id, projects_name = get_projects(dir_id)
-        nodes = [convert_source(node, projects_id, projects_name, user_id, dir_id) for node in nodes]
-        edges = [convert_source(edge, projects_id, projects_name, user_id, dir_id) for edge in edges]
+        projects_id, projects_name = get_projects(conn, dir_id)
+        nodes = [convert_source(conn, node, projects_id, projects_name, user_id, dir_id) for node in nodes]
+        edges = [convert_source(conn, edge, projects_id, projects_name, user_id, dir_id) for edge in edges]
         graph['nodes'] = nodes
         graph['edges'] = edges
         query = t_project.update().where(t_project.c.id == proj_id).values(graph=graph)

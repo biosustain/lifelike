@@ -17,7 +17,7 @@ import { WorkspaceManager } from '../../shared/workspace-manager';
 import { MapComponent } from './map.component';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
-import { GraphEntity, GraphEntityType } from '../services/interfaces';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
 
 @Component({
   selector: 'app-map-view',
@@ -35,7 +35,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
   returnUrl: string;
 
-  hasEditPermission = false;
+  hasEditPermission = true;
 
   constructor(mapService: MapService,
               snackBar: MatSnackBar,
@@ -44,8 +44,9 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
               ngZone: NgZone, route: ActivatedRoute,
               errorHandler: ErrorHandler,
               workspaceManager: WorkspaceManager,
+              filesystemService: FilesystemService,
               public readonly progressDialog: ProgressDialog) {
-    super(mapService, snackBar, modalService, messageDialog, ngZone, route, errorHandler, workspaceManager);
+    super(mapService, snackBar, modalService, messageDialog, ngZone, route, errorHandler, workspaceManager, filesystemService);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;

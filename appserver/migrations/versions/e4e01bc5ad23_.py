@@ -14,7 +14,7 @@ from sqlalchemy.sql import table, column
 from sqlalchemy.dialects import postgresql
 
 from migrations.utils import (
-    mp_create_annotations,
+    update_annotations,
     update_annotations_add_primary_name
 )
 
@@ -58,8 +58,13 @@ def data_upgrades():
     results = conn.execution_options(stream_results=True).execute(sa.select([
             tableclause.c.id,
             tableclause.c.annotations
-        ]))
-    mp_create_annotations(results, session, update_annotations_add_primary_name)
+        ]).where(tableclause.c.annotations != '[]'))
+
+    try:
+        update_annotations(
+            results, session, update_annotations_add_primary_name)
+    except Exception:
+        raise Exception('Migration failed.')
 
 
 def data_downgrades():

@@ -1,58 +1,9 @@
-from sqlalchemy.orm.session import Session
-from sqlalchemy.sql.expression import and_
+from typing import Dict, List
 
-from typing import Dict, List, Set
-
-from py2neo import Graph
-
-from neo4japp.services import KgService
-from neo4japp.models import OrganismGeneMatch
+from neo4japp.database import GraphConnection
 
 
-class AnnotationsNeo4jService(KgService):
-    """KG service specific to annotations."""
-    def __init__(
-        self,
-        session: Session,
-        graph: Graph,
-    ):
-        super().__init__(session=session, graph=graph)
-
-    def get_genes(
-        self,
-        genes: List[str],
-        organism_ids: List[str]
-    ) -> Dict[str, Dict[str, Dict[str, str]]]:
-
-        result = self.session.query(
-            OrganismGeneMatch.gene_name,
-            OrganismGeneMatch.synonym,
-            OrganismGeneMatch.gene_id,
-            OrganismGeneMatch.taxonomy_id,
-        ).filter(
-            and_(
-                OrganismGeneMatch.synonym.in_(genes),
-                OrganismGeneMatch.taxonomy_id.in_(organism_ids),
-            )
-        )
-
-        gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
-        for row in result:
-            gene_name: str = row[0]
-            gene_synonym: str = row[1]
-            gene_id: str = row[2]
-            organism_id: str = row[3]
-
-            if gene_to_organism_map.get(gene_synonym, None) is not None:
-                if gene_to_organism_map[gene_synonym].get(gene_name, None):
-                    gene_to_organism_map[gene_synonym][gene_name][organism_id] = gene_id
-                else:
-                    gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
-            else:
-                gene_to_organism_map[gene_synonym] = {gene_name: {organism_id: gene_id}}
-
-        return gene_to_organism_map
-
+class AnnotationGraphService(GraphConnection):
     def get_chemicals_from_chemical_ids(self, chemical_ids: List[str]) -> Dict[str, str]:
         query = self.get_chemicals_from_chemical_ids_query()
         result = self.graph.run(query, {'chemical_ids': chemical_ids}).data()
@@ -83,14 +34,19 @@ class AnnotationsNeo4jService(KgService):
         result = self.graph.run(query, {'organism_ids': organism_ids}).data()
         return {row['organism_id']: row['organism_name'] for row in result}
 
+    def get_mesh_from_mesh_ids(self, mesh_ids: List[str]) -> Dict[str, str]:
+        query = self.get_mesh_from_mesh_ids_query()
+        result = self.graph.run(query, {'mesh_ids': mesh_ids}).data()
+        return {row['mesh_id']: row['mesh_name'] for row in result}
+
     def get_gene_to_organism_match_result(
         self,
         genes: List[str],
+        postgres_genes: Dict[str, Dict[str, Dict[str, str]]],
         matched_organism_ids: List[str],
     ) -> Dict[str, Dict[str, Dict[str, str]]]:
         """Returns a map of gene name to gene id."""
-        # First check if the gene/organism match exists in the postgres lookup table
-        postgres_result = self.get_genes(genes, matched_organism_ids)
+        postgres_result = postgres_genes
 
         # Collect all the genes that were not matched to an organism in the table, and search
         # the Neo4j database for them
@@ -203,45 +159,52 @@ class AnnotationsNeo4jService(KgService):
         """
         return query
 
+    def get_mesh_from_mesh_ids_query(self):
+        query = """
+            MATCH (n:db_MESH:TopicalDescriptor) WHERE n.id IN $mesh_ids
+            RETURN n.id AS mesh_id, n.name AS mesh_name
+        """
+        return query
+
     def get_chemicals_from_chemical_ids_query(self):
         query = """
             MATCH (c:Chemical) WHERE c.id IN $chemical_ids
-            RETURN c.id as chemical_id, c.name as chemical_name
+            RETURN c.id AS chemical_id, c.name AS chemical_name
         """
         return query
 
     def get_compounds_from_compound_ids_query(self):
         query = """
             MATCH (c:Compound) WHERE c.biocyc_id IN $compound_ids
-            RETURN c.biocyc_id as compound_id, c.name as compound_name
+            RETURN c.biocyc_id AS compound_id, c.name AS compound_name
         """
         return query
 
     def get_diseases_from_disease_ids_query(self):
         query = """
             MATCH (d:Disease) WHERE d.id IN $disease_ids
-            RETURN d.id as disease_id, d.name as disease_name
+            RETURN d.id AS disease_id, d.name AS disease_name
         """
         return query
 
     def get_genes_from_gene_ids_query(self):
         query = """
             MATCH (g:Gene) WHERE g.id IN $gene_ids
-            RETURN g.id as gene_id, g.name as gene_name
+            RETURN g.id AS gene_id, g.name AS gene_name
         """
         return query
 
     def get_proteins_from_protein_ids_query(self):
         query = """
             MATCH (p:db_UniProt) WHERE p.id IN $protein_ids
-            RETURN p.id as protein_id, p.name as protein_name
+            RETURN p.id AS protein_id, p.name AS protein_name
         """
         return query
 
     def get_organisms_from_organism_ids_query(self):
         query = """
             MATCH (t:Taxonomy) WHERE t.id IN $organism_ids
-            RETURN t.id as organism_id, t.name as organism_name
+            RETURN t.id AS organism_id, t.name AS organism_name
         """
         return query
 

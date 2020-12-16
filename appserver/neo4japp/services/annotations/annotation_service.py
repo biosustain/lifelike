@@ -1,4 +1,3 @@
-from bisect import bisect_left
 from math import inf
 from typing import cast, Dict, List, Set, Tuple, Union
 from uuid import uuid4
@@ -6,12 +5,13 @@ from uuid import uuid4
 from flask import current_app
 from pdfminer.layout import LTAnno, LTChar
 
-from .annotation_interval_tree import (
+from neo4japp.services.annotations import (
+    AnnotationDBService,
+    AnnotationGraphService,
     AnnotationInterval,
-    AnnotationIntervalTree,
+    AnnotationIntervalTree
 )
-from .annotations_neo4j_service import AnnotationsNeo4jService
-from .constants import (
+from neo4japp.services.annotations.constants import (
     DatabaseType,
     EntityColor,
     EntityIdStr,
@@ -26,10 +26,12 @@ from .constants import (
     PDF_NEW_LINE_THRESHOLD,
     SEARCH_LINKS,
 )
-from .lmdb_dao import LMDBDao
-from .util import has_center_point, normalize_str, standardize_str
-
-from neo4japp.data_transfer_objects import (
+from neo4japp.services.annotations.util import (
+    has_center_point,
+    normalize_str,
+    standardize_str
+)
+from neo4japp.services.annotations.data_transfer_objects import (
     Annotation,
     EntityResults,
     GeneAnnotation,
@@ -44,12 +46,14 @@ from neo4japp.exceptions import AnnotationError
 from neo4japp.utils.logger import EventLog
 
 
-class AnnotationsService:
+class AnnotationService:
     def __init__(
         self,
-        annotation_neo4j: AnnotationsNeo4jService,
+        db: AnnotationDBService,
+        graph: AnnotationGraphService,
     ) -> None:
-        self.annotation_neo4j = annotation_neo4j
+        self.db = db
+        self.graph = graph
 
         self.organism_frequency: Dict[str, int] = {}
         self.organism_locations: Dict[str, List[Tuple[int, int]]] = {}
@@ -244,7 +248,9 @@ class AnnotationsService:
         token_type: str,
         entity: dict,
         entity_id: str,
+        entity_id_type: str,
         entity_category: str,
+        entity_id_hyperlink: str,
         color: str,
     ) -> Annotation:
         keyword_positions: List[Annotation.TextPosition] = []
@@ -259,16 +265,24 @@ class AnnotationsService:
         keyword_starting_idx = token.meta.lo_location_offset
         keyword_ending_idx = token.meta.hi_location_offset
         link_search_term = token.keyword
-        if entity['id_type'] != DatabaseType.NCBI.value:
-            hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
-        else:
-            # type ignore, see https://github.com/python/mypy/issues/8277
-            hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
 
-        if entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value in entity_id:  # noqa
-            hyperlink += entity_id[5:]  # type: ignore
+        if not entity_id_hyperlink:
+            if entity['id_type'] != DatabaseType.NCBI.value:
+                hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
+            else:
+                # type ignore, see https://github.com/python/mypy/issues/8277
+                hyperlink = ENTITY_HYPERLINKS[entity['id_type']][token_type]  # type: ignore
+
+            if entity['id_type'] == DatabaseType.MESH.value and DatabaseType.MESH.value in entity_id:  # noqa
+                hyperlink += entity_id[5:]  # type: ignore
+            else:
+                hyperlink += entity_id  # type: ignore
         else:
-            hyperlink += entity_id  # type: ignore
+            hyperlink = entity_id_hyperlink
+
+        id_type = entity_id_type or entity['id_type']
+        synonym = entity['synonym']
+        primary_name = entity['name']
 
         if token_type == EntityType.SPECIES.value:
             organism_meta = OrganismAnnotation.OrganismMeta(
@@ -276,12 +290,12 @@ class AnnotationsService:
                 type=token_type,
                 color=color,
                 id=entity_id,
-                id_type=entity['id_type'],
+                id_type=id_type,
                 id_hyperlink=cast(str, hyperlink),
                 links=OrganismAnnotation.OrganismMeta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
-                all_text=entity['synonym'],
+                all_text=synonym,
             )
             # the `keywords` property here is to allow us to know
             # what coordinates map to what text in the PDF
@@ -291,8 +305,8 @@ class AnnotationsService:
                 page_number=token.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
-                keyword=entity['synonym'],
-                primary_name=entity['name'],
+                keyword=synonym,
+                primary_name=primary_name,
                 text_in_document=token.keyword,
                 keyword_length=len(token.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -306,19 +320,19 @@ class AnnotationsService:
                 type=token_type,
                 color=color,
                 id=entity_id,
-                id_type=entity['id_type'],
+                id_type=id_type,
                 id_hyperlink=cast(str, hyperlink),
                 links=OrganismAnnotation.OrganismMeta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
-                all_text=entity['synonym'],
+                all_text=synonym,
             )
             annotation = GeneAnnotation(
                 page_number=token.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
-                keyword=entity['synonym'],
-                primary_name=entity['name'],
+                keyword=synonym,
+                primary_name=primary_name,
                 text_in_document=token.keyword,
                 keyword_length=len(token.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -331,19 +345,19 @@ class AnnotationsService:
                 type=token_type,
                 color=color,
                 id=entity_id,
-                id_type=entity['id_type'],
+                id_type=id_type,
                 id_hyperlink=cast(str, hyperlink),
                 links=Annotation.Meta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
-                all_text=entity['synonym'],
+                all_text=synonym,
             )
             annotation = Annotation(
                 page_number=token.page_number,
                 rects=[pos.positions for pos in keyword_positions],  # type: ignore
                 keywords=[k.value for k in keyword_positions],
-                keyword=entity['synonym'],
-                primary_name=entity['name'],
+                keyword=synonym,
+                primary_name=primary_name,
                 text_in_document=token.keyword,
                 keyword_length=len(token.keyword),
                 lo_location_offset=keyword_starting_idx,
@@ -418,6 +432,8 @@ class AnnotationsService:
                             token_type=token_type,
                             entity=entity,
                             entity_id=entity[id_str],
+                            entity_id_type=lmdb_match.id_type,
+                            entity_id_hyperlink=lmdb_match.id_hyperlink,
                             entity_category=entity.get('category', ''),
                             color=color,
                         )
@@ -529,14 +545,18 @@ class AnnotationsService:
                     entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
                     gene_names.add(entity_synonym)
 
-                    entity_token_pairs.append((entity, token))
+                    entity_token_pairs.append(
+                        (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token))
 
         gene_names_list = list(gene_names)
+        organism_ids = list(self.organism_frequency.keys())
 
         gene_organism_matches = \
-            self.annotation_neo4j.get_gene_to_organism_match_result(
+            self.graph.get_gene_to_organism_match_result(
                 genes=gene_names_list,
-                matched_organism_ids=list(self.organism_frequency.keys()),
+                postgres_genes=self.db.get_genes(
+                    genes=gene_names_list, organism_ids=organism_ids),
+                matched_organism_ids=organism_ids,
             )
 
         # any genes not matched in KG fall back to specified organism
@@ -544,12 +564,14 @@ class AnnotationsService:
 
         if self.specified_organism.synonym:
             fallback_gene_organism_matches = \
-                self.annotation_neo4j.get_gene_to_organism_match_result(
+                self.graph.get_gene_to_organism_match_result(
                     genes=gene_names_list,
+                    postgres_genes=self.db.get_genes(
+                        genes=gene_names_list, organism_ids=organism_ids),
                     matched_organism_ids=[self.specified_organism.organism_id],
                 )
 
-        for entity, token in entity_token_pairs:
+        for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
             category = None
             try:
@@ -565,7 +587,7 @@ class AnnotationsService:
                     except KeyError:
                         # only take the first gene for the organism
                         # no way for us to infer which to use
-                        # logic moved from annotations_neo4j_service.py
+                        # logic moved from annotation_graph_service.py
                         for d in list(gene_organism_matches[entity_synonym].values()):
                             key = next(iter(d))
                             if key not in organisms_to_match:
@@ -587,7 +609,7 @@ class AnnotationsService:
                             except KeyError:
                                 # only take the first gene for the organism
                                 # no way for us to infer which to use
-                                # logic moved from annotations_neo4j_service.py
+                                # logic moved from annotation_graph_service.py
                                 for d in list(fallback_gene_organism_matches[entity_synonym].values()):  # noqa
                                     key = next(iter(d))
                                     if key not in fallback_organisms_to_match:
@@ -605,7 +627,7 @@ class AnnotationsService:
                     except KeyError:
                         # only take the first gene for the organism
                         # no way for us to infer which to use
-                        # logic moved from annotations_neo4j_service.py
+                        # logic moved from annotation_graph_service.py
                         for d in list(fallback_gene_organism_matches[entity_synonym].values()):
                             key = next(iter(d))
                             if key not in organisms_to_match:
@@ -622,6 +644,8 @@ class AnnotationsService:
                         token_type=EntityType.GENE.value,
                         entity=entity,
                         entity_id=gene_id,
+                        entity_id_type=entity_id_type,
+                        entity_id_hyperlink=entity_id_hyperlink,
                         entity_category=category,
                         color=EntityColor.GENE.value,
                     )
@@ -714,12 +738,13 @@ class AnnotationsService:
                 for entity in lmdb_match.entities:
                     protein_names.add(entity['synonym'])
 
-                    entity_token_pairs.append((entity, token_positions))
+                    entity_token_pairs.append(
+                        (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token_positions))
 
         protein_names_list = list(protein_names)
 
         protein_organism_matches = \
-            self.annotation_neo4j.get_proteins_to_organisms(
+            self.graph.get_proteins_to_organisms(
                 proteins=protein_names_list,
                 organisms=list(self.organism_frequency.keys()),
             )
@@ -729,12 +754,12 @@ class AnnotationsService:
 
         if self.specified_organism.synonym:
             fallback_protein_organism_matches = \
-                self.annotation_neo4j.get_proteins_to_organisms(
+                self.graph.get_proteins_to_organisms(
                     proteins=protein_names_list,
                     organisms=[self.specified_organism.organism_id],
                 )
 
-        for entity, token in entity_token_pairs:
+        for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             category = entity.get('category', '')
             try:
                 protein_id = entity[EntityIdStr.PROTEIN.value]
@@ -770,6 +795,8 @@ class AnnotationsService:
                     token_type=EntityType.PROTEIN.value,
                     entity=entity,
                     entity_id=protein_id,
+                    entity_id_type=entity_id_type,
+                    entity_id_hyperlink=entity_id_hyperlink,
                     entity_category=category,
                     color=EntityColor.PROTEIN.value
                 )
@@ -797,6 +824,8 @@ class AnnotationsService:
                             token_type=EntityType.SPECIES.value,
                             entity=entity,
                             entity_id=entity[EntityIdStr.SPECIES.value],
+                            entity_id_type=lmdb_match.id_type,
+                            entity_id_hyperlink=lmdb_match.id_hyperlink,
                             entity_category=entity.get('category', ''),
                             color=EntityColor.SPECIES.value
                         )
@@ -1198,15 +1227,22 @@ class AnnotationsService:
         return fixed_unified_annotations
 
     def add_primary_name(self, annotations: List[Annotation]) -> List[Annotation]:
+        """Apply the primary name to the annotations based on the returned data
+        from the knowledge graph. Also update the annotation id to have the source
+        database prefix.
+        """
         chemical_ids = set()
         compound_ids = set()
         disease_ids = set()
         gene_ids = set()
         protein_ids = set()
         organism_ids = set()
+        mesh_ids = set()
 
         for anno in annotations:
-            if anno.meta.type == EntityType.CHEMICAL.value:
+            if anno.meta.type == EntityType.ANATOMY.value or anno.meta.type == EntityType.FOOD.value:  # noqa
+                mesh_ids.add(anno.meta.id)
+            elif anno.meta.type == EntityType.CHEMICAL.value:
                 chemical_ids.add(anno.meta.id)
             elif anno.meta.type == EntityType.COMPOUND.value:
                 compound_ids.add(anno.meta.id)
@@ -1219,16 +1255,19 @@ class AnnotationsService:
             elif anno.meta.type == EntityType.SPECIES.value:
                 organism_ids.add(anno.meta.id)
 
-        chemical_names = self.annotation_neo4j.get_chemicals_from_chemical_ids(list(chemical_ids))  # noqa
-        compound_names = self.annotation_neo4j.get_compounds_from_compound_ids(list(compound_ids))  # noqa
-        disease_names = self.annotation_neo4j.get_diseases_from_disease_ids(list(disease_ids))  # noqa
-        gene_names = self.annotation_neo4j.get_genes_from_gene_ids(list(gene_ids))
-        protein_names = self.annotation_neo4j.get_proteins_from_protein_ids(list(protein_ids))  # noqa
-        organism_names = self.annotation_neo4j.get_organisms_from_organism_ids(list(organism_ids))  # noqa
+        chemical_names = self.graph.get_chemicals_from_chemical_ids(list(chemical_ids))  # noqa
+        compound_names = self.graph.get_compounds_from_compound_ids(list(compound_ids))  # noqa
+        disease_names = self.graph.get_diseases_from_disease_ids(list(disease_ids))  # noqa
+        gene_names = self.graph.get_genes_from_gene_ids(list(gene_ids))
+        protein_names = self.graph.get_proteins_from_protein_ids(list(protein_ids))  # noqa
+        organism_names = self.graph.get_organisms_from_organism_ids(list(organism_ids))  # noqa
+        mesh_names = self.graph.get_mesh_from_mesh_ids(list(mesh_ids))
 
         for anno in annotations:
             try:
-                if anno.meta.type == EntityType.CHEMICAL.value:
+                if anno.meta.type == EntityType.ANATOMY.value or anno.meta.type == EntityType.FOOD.value:  # noqa
+                    anno.primary_name = mesh_names[anno.meta.id]
+                elif anno.meta.type == EntityType.CHEMICAL.value:
                     anno.primary_name = chemical_names[anno.meta.id]
                 elif anno.meta.type == EntityType.COMPOUND.value:
                     anno.primary_name = compound_names[anno.meta.id]
@@ -1247,6 +1286,10 @@ class AnnotationsService:
                 # synonym if blank
                 if not anno.primary_name:
                     anno.primary_name = anno.keyword
+            finally:
+                if anno.meta.id_type not in anno.meta.id:
+                    # update annotation id
+                    anno.meta.id = f'{anno.meta.id_type}:{anno.meta.id}'
         return annotations
 
     def fix_conflicting_annotations(

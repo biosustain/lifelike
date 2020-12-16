@@ -3,7 +3,6 @@ import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserComponent } from './components/file-browser.component';
 import { FileEditDialogComponent } from './components/file-edit-dialog.component';
 import { ObjectDeleteDialogComponent } from './components/object-delete-dialog.component';
-import { ObjectUploadDialogComponent } from './components/object-upload-dialog.component';
 import { FileViewComponent } from './components/file-view.component';
 import { PdfViewerLibModule } from '../pdf-viewer/pdf-viewer-lib.module';
 import { BrowserProjectListComponent } from './components/browser/browser-project-list.component';
@@ -22,11 +21,14 @@ import { FileTypeLabelComponent } from './components/file-type-label.component';
 import { EnrichmentTableViewerComponent } from './components/enrichment-table-viewer.component';
 import { EnrichmentTableCreateDialogComponent } from './components/enrichment-table-create-dialog.component';
 import { EnrichmentTableEditDialogComponent } from './components/enrichment-table-edit-dialog.component';
-import { FileSelectionDialogComponent } from './components/dialog/file-selection-dialog.component';
 import { FilesystemService } from './services/filesystem.service';
 import { FileListComponent } from './components/file-list.component';
 import { FilesystemObjectActions } from './services/filesystem-object-actions';
 import { EnrichmentTableOrderDialogComponent } from './components/enrichment-table-order-dialog.component';
+import { FileAnnotationHistoryDialogComponent } from './components/dialog/file-annotation-history-dialog.component';
+import { FileAnnotationHistoryComponent } from './components/file-annotation-history.component';
+import { ObjectUploadDialogComponent } from './components/object-upload-dialog.component';
+import { FileSelectionDialogComponent } from './components/dialog/file-selection-dialog.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +55,8 @@ import { EnrichmentTableOrderDialogComponent } from './components/enrichment-tab
     EnrichmentTableOrderDialogComponent,
     FileSelectionDialogComponent,
     FileListComponent,
+    FileAnnotationHistoryDialogComponent,
+    FileAnnotationHistoryComponent,
   ],
   imports: [
     SharedModule,
@@ -72,12 +76,16 @@ import { EnrichmentTableOrderDialogComponent } from './components/enrichment-tab
     EnrichmentTableEditDialogComponent,
     EnrichmentTableOrderDialogComponent,
     FileSelectionDialogComponent,
+    FileAnnotationHistoryDialogComponent,
+    FileAnnotationHistoryComponent,
   ],
   exports: [
     FileInfoComponent,
     FileTypeLabelComponent,
     FileSelectionDialogComponent,
     FileListComponent,
+    FileAnnotationHistoryDialogComponent,
+    FileAnnotationHistoryComponent,
   ],
   providers: [
     FilesystemService,

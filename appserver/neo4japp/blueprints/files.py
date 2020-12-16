@@ -26,7 +26,7 @@ from neo4japp.blueprints.permissions import requires_project_permission, \
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.data_transfer_objects import FileUpload
-from neo4japp.database import db, get_manual_annotations_service, get_elastic_service
+from neo4japp.database import db, get_manual_annotation_service, get_elastic_service
 from neo4japp.exceptions import (
     DatabaseError,
     DuplicateRecord,
@@ -197,7 +197,6 @@ def add_gene_list(projects_name: str):
 @requires_project_permission(AccessActionType.WRITE)
 def edit_gene_list(projects_name: str, fileId: str):
     data = request.get_json()
-    user = g.current_user
 
     try:
         projects = Projects.query.filter(Projects.project_name == projects_name).one()
@@ -244,6 +243,12 @@ def edit_gene_list(projects_name: str, fileId: str):
         db.session.add(entry_file)
         db.session.commit()
 
+        current_app.logger.info(
+            f'Project: {projects_name}, File ID: {fileId}',
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='edit gene list').to_dict()
+        )
+
     except NoResultFound:
         raise RecordNotFoundException('Requested file not found.')
 
@@ -278,6 +283,12 @@ def get_enrichment_data(id: str, projects_name: str):
         ).one()
     except NoResultFound:
         raise RecordNotFoundException('Requested file not found.')
+
+    current_app.logger.info(
+        f'Project: {projects_name}, File ID: {id}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='open enrichment file').to_dict()
+    )
 
     yield jsonify({
         'status': 'success',
@@ -508,6 +519,7 @@ def get_file_info(id: str, project_name: str):
         'description': file.description,
         'username': file.user.username,
         'creation_date': file.creation_date,
+        'dir_id': file.dir_id,
         'modified_date': file.modified_date,
         'doi': file.doi,
         'upload_url': file.upload_url,
@@ -622,6 +634,11 @@ def get_pdf(id: str, project_name: str):
 
         try:
             file = get_file(id, user, AccessActionType.WRITE)
+            current_app.logger.info(
+                f'File ID: {id}',
+                extra=UserEventLog(
+                    username=g.current_user.username, event_type='open pdf file').to_dict()
+            )
         except RecordNotFoundException as e:
             raise RecordNotFoundException('Requested PDF file not found.')
         else:
@@ -754,7 +771,7 @@ def get_annotations(id: str, project_name: str):
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
 def add_custom_annotation(file_id, project_name, **payload):
-    manual_annotations_service = get_manual_annotations_service()
+    manual_annotation_service = get_manual_annotation_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -764,8 +781,13 @@ def add_custom_annotation(file_id, project_name, **payload):
 
     yield user, project
 
-    inclusions = manual_annotations_service.add_inclusions(
+    inclusions = manual_annotation_service.add_inclusions(
         project.id, file_id, user.id, payload['annotation'], payload['annotateAll']
+    )
+    current_app.logger.info(
+        f'Project: {project_name}, File ID: {file_id}, Term: {payload["annotation"]}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='add custom annotation').to_dict()
     )
 
     yield inclusions, 200
@@ -776,7 +798,7 @@ def add_custom_annotation(file_id, project_name, **payload):
 @use_kwargs(AnnotationRemovalSchema)
 @requires_project_permission(AccessActionType.WRITE)
 def remove_custom_annotation(file_id, uuid, removeAll, project_name):
-    manual_annotations_service = get_manual_annotations_service()
+    manual_annotation_service = get_manual_annotation_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -786,8 +808,13 @@ def remove_custom_annotation(file_id, uuid, removeAll, project_name):
 
     yield user, project
 
-    removed_annotation_uuids = manual_annotations_service.remove_inclusions(
-        project.id, file_id, uuid, removeAll
+    removed_annotation_uuids = manual_annotation_service.remove_inclusions(
+        project.id, file_id, uuid, removeAll, user_id=user.id
+    )
+    current_app.logger.info(
+        f'Project: {project_name}, File ID: {file_id}, Annotation UUID: {uuid}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='remove custom annotation').to_dict()
     )
 
     yield jsonify(removed_annotation_uuids)
@@ -869,7 +896,7 @@ def delete_files(project_name: str):
 @use_kwargs(AnnotationExclusionSchema)
 @requires_project_permission(AccessActionType.WRITE)
 def add_annotation_exclusion(project_name: str, file_id: str, **payload):
-    manual_annotations_service = get_manual_annotations_service()
+    manual_annotation_service = get_manual_annotation_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -879,7 +906,13 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
 
     yield user, project
 
-    manual_annotations_service.add_exclusion(project.id, file_id, user.id, payload)
+    manual_annotation_service.add_exclusion(project.id, file_id, user.id, payload)
+    current_app.logger.info(
+        f'File ID: {file_id}, Project: {project_name}, Added Exclusion: {payload}',
+        extra=UserEventLog(
+            username=g.current_user.username,
+            event_type='manual annotations').to_dict()
+    )
 
     yield jsonify({'status': 'success'})
 
@@ -891,7 +924,7 @@ def add_annotation_exclusion(project_name: str, file_id: str, **payload):
 @use_kwargs(AnnotationExclusionSchema(only=('type', 'text')))
 @requires_project_permission(AccessActionType.WRITE)
 def remove_annotation_exclusion(project_name, file_id, type, text):
-    manual_annotations_service = get_manual_annotations_service()
+    manual_annotation_service = get_manual_annotation_service()
 
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
@@ -901,7 +934,13 @@ def remove_annotation_exclusion(project_name, file_id, type, text):
 
     yield user, project
 
-    manual_annotations_service.remove_exclusion(project.id, file_id, user.id, type, text)
+    manual_annotation_service.remove_exclusion(project.id, file_id, user.id, type, text)
+    current_app.logger.info(
+        f'File ID: {file_id}, Project: {project_name}, Removed Exclusion: {text}',
+        extra=UserEventLog(
+            username=g.current_user.username,
+            event_type='manual annotations').to_dict()
+    )
 
     yield jsonify({'status': 'success'})
 
