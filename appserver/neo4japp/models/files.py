@@ -16,13 +16,15 @@ from sqlalchemy.types import ARRAY, TIMESTAMP
 from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.database import db, get_elastic_service
 from neo4japp.models import Projects
-from neo4japp.models.common import RDBMSBase, TimestampMixin, RecyclableMixin, FullTimestampMixin, HashIdMixin
+from neo4japp.models.common import RDBMSBase, TimestampMixin, RecyclableMixin, FullTimestampMixin, \
+    HashIdMixin
 
 file_collaborator_role = db.Table(
     'file_collaborator_role',
     db.Column('id', db.Integer, primary_key=True, autoincrement=True),
     db.Column('file_id', db.Integer(), db.ForeignKey('files.id'), nullable=False, index=True),
-    db.Column('collaborator_id', db.Integer(), db.ForeignKey('appuser.id'), nullable=True, index=True),
+    db.Column('collaborator_id', db.Integer(), db.ForeignKey('appuser.id'), nullable=True,
+              index=True),
     db.Column('collaborator_email', db.String(254), nullable=True, index=True),
     db.Column('role_id', db.Integer(), db.ForeignKey('app_role.id'), nullable=False, index=True),
     db.Column('owner_id', db.Integer(), db.ForeignKey('appuser.id'), nullable=False),
@@ -236,7 +238,8 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         file_ext_len = len(file_ext)
 
         # Remove the file extension from the filename column in the table
-        c_file_name = sqlalchemy.func.left(Files.filename, -file_ext_len) if file_ext_len else Files.filename
+        c_file_name = sqlalchemy.func.left(Files.filename,
+                                           -file_ext_len) if file_ext_len else Files.filename
 
         # Extract the N from (N) in the filename
         c_name_matches = sqlalchemy.func.regexp_matches(
@@ -248,7 +251,8 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         c_name_index = c_name_matches[1]
 
         # Search the table for all files that have {this_filename} (N){ext}
-        q_used_indices = db.session.query(sqlalchemy.cast(c_name_index, sqlalchemy.Integer).label('index')) \
+        q_used_indices = db.session.query(
+            sqlalchemy.cast(c_name_index, sqlalchemy.Integer).label('index')) \
             .select_from(Files) \
             .filter(Files.parent_id == self.parent_id,
                     Files.filename.op('~')(
@@ -258,9 +262,11 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
             .subquery()
 
         # Finally get the MAX() of all the Ns found in the subquery
-        max_index = db.session.query(sqlalchemy.func.max(q_used_indices.c.index).label('index')) \
-                        .select_from(q_used_indices) \
-                        .scalar() or 0
+        max_index = db.session.query(
+            sqlalchemy.func.max(q_used_indices.c.index).label('index')
+        ).select_from(
+            q_used_indices
+        ).scalar() or 0
 
         next_index = max_index + 1
 
@@ -298,7 +304,7 @@ def files_after_delete(mapper, connection, target):
 @event.listens_for(Files, 'after_update')
 def files_after_update(mapper, connection, target):
     "listen for the 'after_update' event"
-    return # TODO
+    return  # TODO
 
     # Update the elasticsearch document for this file
     elastic_service = get_elastic_service()
