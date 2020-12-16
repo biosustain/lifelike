@@ -156,7 +156,7 @@ def _create_annotations(
     annotation_method,
     specified_organism_synonym,
     specified_organism_tax_id,
-    document: Union[Files, str],
+    document,
     filename
 ):
     annotator = get_annotation_service()

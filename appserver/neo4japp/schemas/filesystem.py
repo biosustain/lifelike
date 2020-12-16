@@ -153,7 +153,8 @@ class FileSchema(CamelCaseSchema):
     def get_parent(self, obj: Files):
         privilege_user_id = self.get_user_privilege_filter()
         if obj.parent is not None and (privilege_user_id is None
-                                       or obj.parent.calculated_privileges[privilege_user_id].readable):
+                                       or obj.parent.calculated_privileges[
+                                           privilege_user_id].readable):
             return FileSchema(context=self.context, exclude=(
                 'project',
                 'children',
@@ -170,7 +171,7 @@ class FileSchema(CamelCaseSchema):
             ), many=True).dump([
                 child for child in obj.calculated_children
                 if privilege_user_id is None
-                   or child.calculated_privileges[privilege_user_id].readable
+                or child.calculated_privileges[privilege_user_id].readable
             ])
         else:
             return None
@@ -212,7 +213,8 @@ class FileSearchRequestSchema(CamelCaseSchema):
 
 class BulkFileUpdateRequestSchema(CamelCaseSchema):
     filename = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=200))
-    parent_hash_id = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=36))
+    parent_hash_id = fields.String(required=True,
+                                   validate=marshmallow.validate.Length(min=1, max=36))
     description = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     public = fields.Boolean(default=False)
@@ -241,7 +243,8 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
                 raise ValidationError("Directories cannot have any content.")
         else:
             if len(provided_content_sources) == 0:
-                raise ValidationError("Content must be provided from an upload, a URL, or an existing file.")
+                raise ValidationError(
+                    "Content must be provided from an upload, a URL, or an existing file.")
             elif len(provided_content_sources) > 1:
                 raise ValidationError("More than one source of content cannot be specified.")
 
