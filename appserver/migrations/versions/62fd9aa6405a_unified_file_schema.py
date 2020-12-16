@@ -22,7 +22,7 @@ from sqlalchemy.orm.exc import NoResultFound
 logger = logging.getLogger("alembic.runtime.migration." + __name__)
 
 revision = '62fd9aa6405a'
-down_revision = '600460da634d'
+down_revision = 'e58082ac34b8'
 branch_labels = None
 depends_on = None
 

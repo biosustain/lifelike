@@ -5,13 +5,7 @@ import { BehaviorSubject, combineLatest, of, Subject, Subscription } from 'rxjs'
 import { PdfAnnotationsService } from '../../drawing-tool/services';
 
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
-import {
-  AddedAnnotationExclusion,
-  Annotation,
-  Location,
-  Meta,
-  RemovedAnnotationExclusion,
-} from '../annotation-type';
+import { AddedAnnotationExclusion, Annotation, Location, Meta, RemovedAnnotationExclusion } from '../annotation-type';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
@@ -31,6 +25,17 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mergeMap } from 'rxjs/operators';
 import { readBlobAsBuffer } from '../../shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
+
+class DummyFile implements PdfFile {
+  constructor(
+    // tslint:disable-next-line
+    public file_id: string,
+    public filename: string = null,
+    // tslint:disable-next-line
+    public creation_date: string = null,
+    public username: string = null) {
+  }
+}
 
 class EntityTypeEntry {
   constructor(public type: EntityType, public annotations: Annotation[]) {
@@ -568,6 +573,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   openFileNavigatorPane() {
     const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
     this.workSpaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
+  }
+
+  openFileAnnotationHistoryDialog() {
+    this.fileObjectActions.openFileAnnotationHistoryDialog(this.object).then(() => {
+    }, () => {
+    });
   }
 
   isPendingScroll() {

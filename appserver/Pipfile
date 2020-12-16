@@ -47,6 +47,7 @@ google-cloud-storage = "*"
 fastjsonschema = "*"
 marshmallow-dataclass = "*"
 marshmallow-enum = "*"
+deepdiff = "*"
 
 [requires]
 python_version = "3.8.2"

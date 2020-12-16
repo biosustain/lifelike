@@ -96,6 +96,36 @@
           <canvas #canvas class="graph-view"></canvas>
         </div>
 
+        <ng-container *ngIf="map && (lockAcquired === false || !lockCheckingActive)">
+          <ng-container *ngIf="locks.length && lockCheckingActive; else locksReleased">
+            <div class="lock-panel alert alert-danger">
+              <div>
+                <strong>Warning:</strong> This file is being edited by another user and saving will
+                erase the other user's changes.
+              </div>
+
+              <ul class="m-0">
+                <li *ngFor="let lock of locks">
+                  {{ lock.user.firstName }} {{ lock.user.lastName }}
+                </li>
+              </ul>
+            </div>
+          </ng-container>
+          <ng-template #locksReleased>
+            <div class="lock-panel alert alert-warning">
+              <div>
+                Please reload to get the latest changes.
+              </div>
+
+              <div class="mt-2">
+                <button type="button" class="btn btn-primary" (click)="reload()">
+                  Reload
+                </button>
+              </div>
+            </div>
+          </ng-template>
+        </ng-container>
+
         <ng-container *ngIf="(graphCanvas?.selection.changeObservable | async) as selected">
           <div class="info-panel" *ngIf="selected[0].length === 1">
             <app-info-panel [selected]="selected[0][0]"

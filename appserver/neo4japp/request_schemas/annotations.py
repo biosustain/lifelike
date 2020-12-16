@@ -35,6 +35,7 @@ class AnnotationSchema(StrictSchema):
     keywords = ma.List(ma.String(required=True))
     rects = ma.List(ma.List(ma.Float(required=True)))
     meta = ma.Nested(MetaSchema, required=True)
+    primaryName = ma.String(required=False)
 
 
 class AnnotationAdditionSchema(StrictSchema):
