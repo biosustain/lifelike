@@ -12,25 +12,15 @@ export class AuthenticationService {
 
   constructor(private http: HttpClient) { }
 
-  /**
-   * Create http options with authorization
-   * header if boolean set to true
-   * @param withJwt boolean representing whether to return the options with a jwt
-   */
-  createHttpOptions(withJwt = false) {
-    if (withJwt) {
+  getAuthHeader(): {headers: HttpHeaders} | void {
+    const token = localStorage.getItem('access_jwt');
+    if (token) {
       return {
         headers: new HttpHeaders({
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
-        }),
-      };
-    } else {
-      return {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-        }),
-      };
+          Authorization: `Bearer ${token}`
+        })
+      }
     }
   }
 
@@ -41,7 +31,6 @@ export class AuthenticationService {
     return this.http.post<{user: AppUser, access_jwt: string, refresh_jwt: string}>(
       this.baseUrl + '/login',
       {email, password},
-      this.createHttpOptions(),
     ).pipe(
       map((resp: any) => {
         localStorage.setItem('auth', resp.user);
@@ -71,7 +60,6 @@ export class AuthenticationService {
     return this.http.post<{access_jwt: string, refresh_jwt: string}>(
       this.baseUrl + '/refresh',
       { jwt },
-      this.createHttpOptions()
     ).pipe(
         map((resp: {access_jwt: string, refresh_jwt: string}) => {
           localStorage.setItem('access_jwt', resp.access_jwt);
