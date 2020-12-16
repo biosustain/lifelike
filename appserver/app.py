@@ -17,6 +17,7 @@ from neo4japp.models import (
     AppUser,
     OrganismGeneMatch,
 )
+from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.utils.logger import EventLog
 
 app_config = os.environ['FLASK_APP_CONFIG']
@@ -247,6 +248,7 @@ def reannotate_all():
         Files.id,
         Files.annotations,
         Files.custom_annotations,
+        Files.excluded_annotations,
         Files.file_id,
         Files.filename,
         FileContent.raw_file,
@@ -255,13 +257,16 @@ def reannotate_all():
         FileContent.id == Files.content_id,
     ).all()
     updated_files = []
+    versions = []
     for fi in files:
         try:
-            annotations = annotate(doc=fi)
+            update, version = annotate(fi, AnnotationChangeCause.SYSTEM_REANNOTATION)
         except AnnotationError:
             logger.info('Failed to annotate: <id:{fi.id}>')
         else:
-            updated_files.append(annotations)
+            updated_files.append(update)
+            versions.append(version)
+    db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
     db.session.bulk_update_mappings(Files, updated_files)
     db.session.commit()
 
@@ -521,12 +526,16 @@ def bulk_upload_files(gcp_source, project_name, username, reannotate):
 
         if reannotate:
             annotated_files = []
+            versions = []
             for doc in docs:
                 try:
-                    annotated_files.append(annotate(doc))
+                    update, version = annotate(doc, AnnotationChangeCause.SYSTEM_REANNOTATION)
+                    annotated_files.append(update)
+                    versions.append(version)
                 except (AnnotationError, Exception):
                     app.logger.info(f'Filename {filename} failed to annotate.')
 
+            db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
             db.session.bulk_update_mappings(Files, annotated_files)
         db.session.commit()
         print('Done')

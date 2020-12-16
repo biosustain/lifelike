@@ -67,6 +67,7 @@
           APP_VERSION={{ app_version }}
           APP_BUILD_NUMBER={{ app_build_number }}
           GOOGLE_APPLICATION_CREDENTIALS="ansible_service_account.json"
+          LMDB_HOME_FOLDER={{ LMDB_HOME_FOLDER }}
         dest: "{{ deploy_dir }}/.env"
         owner: "{{ deploy_user }}"
         group: "{{ deploy_user }}"

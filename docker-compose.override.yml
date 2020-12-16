@@ -61,6 +61,7 @@ services:
             - DOMAIN=http://localhost
             # Fetch this using "gsutil cp gs://kg-secrets/ansible_service_account.json ./appserver"
             - GOOGLE_APPLICATION_CREDENTIALS=ansible_service_account.json
+            - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations
         # Allow debugging w/ IPython or pdb
         stdin_open: true
         tty: true
@@ -96,19 +97,6 @@ services:
             - ./nlp/models:/models
         networks:
             - backend
-
-    webserver:
-        container_name: webserver
-        build:
-            context: ./client
-            dockerfile: Dockerfile
-            target: webserver
-        ports:
-            - "80:80"
-        networks:
-            - frontend
-        depends_on:
-            - appserver
 
     client:
         container_name: client

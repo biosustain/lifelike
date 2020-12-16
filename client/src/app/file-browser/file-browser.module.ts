@@ -36,6 +36,8 @@ import { ProjectActions } from './services/project-actions';
 import { ProjectMenuComponent } from './components/project-menu.component';
 import { ProjectIconComponent } from './components/project-icon.component';
 import { ProjectCollaboratorsDialogComponent } from './components/dialog/project-collaborators-dialog.component';
+import { FileAnnotationHistoryDialogComponent } from './components/dialog/file-annotation-history-dialog.component';
+import { FileAnnotationHistoryComponent } from './components/file-annotation-history.component';
 
 @NgModule({
   declarations: [
@@ -70,6 +72,8 @@ import { ProjectCollaboratorsDialogComponent } from './components/dialog/project
     ProjectMenuComponent,
     ProjectIconComponent,
     ProjectCollaboratorsDialogComponent,
+    FileAnnotationHistoryDialogComponent,
+    FileAnnotationHistoryComponent,
   ],
   imports: [
     SharedModule,
@@ -93,6 +97,8 @@ import { ProjectCollaboratorsDialogComponent } from './components/dialog/project
     ProjectMenuComponent,
     ProjectIconComponent,
     ProjectCollaboratorsDialogComponent,
+    FileAnnotationHistoryDialogComponent,
+    FileAnnotationHistoryComponent,
   ],
   exports: [
     ObjectInfoComponent,
@@ -105,6 +111,8 @@ import { ProjectCollaboratorsDialogComponent } from './components/dialog/project
     ObjectPathComponent,
     ObjectMenuComponent,
     ProjectIconComponent,
+    FileAnnotationHistoryDialogComponent,
+    FileAnnotationHistoryComponent,
   ],
   providers: [
     ProjectService,
