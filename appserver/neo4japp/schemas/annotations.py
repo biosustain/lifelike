@@ -5,6 +5,7 @@ from marshmallow_enum import EnumField
 from neo4japp.models import FallbackOrganism
 from neo4japp.models.files import AnnotationChangeCause
 from neo4japp.schemas.base import CamelCaseSchema
+from neo4japp.schemas.common import ResultListSchema
 from neo4japp.services.annotations.constants import AnnotationMethod
 
 
@@ -65,13 +66,11 @@ class AnnotationSchema(Schema):  # Camel case in Python
 # Responses
 # ----------------------------------------
 
-class AnnotationListSchema(CamelCaseSchema):
-    total = fields.Integer()
+class AnnotationListSchema(ResultListSchema):
     results = fields.List(fields.Nested(AnnotationSchema))
 
 
-class AnnotationUUIDListSchema(CamelCaseSchema):
-    total = fields.Integer()
+class AnnotationUUIDListSchema(ResultListSchema):
     results = fields.List(fields.String())
 
 
@@ -200,8 +199,7 @@ class FileAnnotationChangeSchema(CamelCaseSchema):
 # Responses
 # ----------------------------------------
 
-class FileAnnotationHistoryResponseSchema(CamelCaseSchema):
-    total = fields.Integer()
+class FileAnnotationHistoryResponseSchema(ResultListSchema):
     results = fields.List(fields.Nested(FileAnnotationChangeSchema))
 
 

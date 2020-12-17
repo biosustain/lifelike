@@ -1,12 +1,12 @@
 import marshmallow.validate
-from marshmallow import fields, post_load
+from marshmallow import post_load, fields
 
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.fields import StringIntegerField
 from neo4japp.utils.request import Pagination
 
 
-class PaginatedRequest(CamelCaseSchema):
+class PaginatedRequestSchema(CamelCaseSchema):
     page = StringIntegerField(required=False,
                               missing=lambda: 1,
                               validate=marshmallow.validate.Range(min=1, max=10000))
@@ -19,6 +19,13 @@ class PaginatedRequest(CamelCaseSchema):
         return Pagination(page=params['page'], limit=params['limit'])
 
 
-class FileUploadField(fields.Field):
+class SingleResult(CamelCaseSchema):
     pass
-    # TODO: validate
+
+
+class ResultListSchema(CamelCaseSchema):
+    total = fields.Integer()
+
+
+class ResultMapping(CamelCaseSchema):
+    missing = fields.List(fields.String)

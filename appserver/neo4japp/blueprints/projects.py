@@ -28,7 +28,7 @@ from neo4japp.models import (
     Projects,
     projects_collaborator_role, )
 from neo4japp.models.projects_queries import add_project_user_role_columns, ProjectCalculator
-from neo4japp.schemas.common import PaginatedRequest
+from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.filesystem import ProjectListSchema, ProjectListRequestSchema, \
     ProjectSearchRequestSchema, \
     ProjectCreateSchema, ProjectResponseSchema, BulkProjectRequestSchema, \
@@ -184,7 +184,7 @@ class ProjectBaseView(MethodView):
         return jsonify(ProjectResponseSchema(context={
             'user_privilege_filter': g.current_user.id,
         }).dump({
-            'project': return_project,
+            'result': return_project,
         }))
 
     def get_bulk_project_response(self, hash_ids: List[str], user: AppUser, *,
@@ -240,7 +240,7 @@ class ProjectListView(ProjectBaseView):
     decorators = [auth.login_required]
 
     @use_args(ProjectListRequestSchema)
-    @use_args(PaginatedRequest)
+    @use_args(PaginatedRequestSchema)
     def get(self, params, pagination: Pagination):
         """Endpoint to fetch a list of projects accessible by the user."""
         current_user = g.current_user
@@ -299,7 +299,7 @@ class ProjectSearchView(ProjectBaseView):
     decorators = [auth.login_required]
 
     @use_args(ProjectSearchRequestSchema)
-    @use_args(PaginatedRequest)
+    @use_args(PaginatedRequestSchema)
     def post(self, params: dict, pagination: Pagination):
         """Endpoint to search for projects that match certain criteria."""
         current_user = g.current_user
@@ -340,7 +340,7 @@ class ProjectDetailView(ProjectBaseView):
 class ProjectCollaboratorsListView(ProjectBaseView):
     decorators = [auth.login_required]
 
-    @use_args(PaginatedRequest)
+    @use_args(PaginatedRequestSchema)
     def get(self, pagination: Pagination, hash_id):
         """Endpoint to fetch a list of collaborators for a project."""
         current_user = g.current_user

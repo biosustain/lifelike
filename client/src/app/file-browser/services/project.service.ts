@@ -5,9 +5,13 @@ import { map } from 'rxjs/operators';
 import { ProjectList } from '../models/project-list';
 import { Observable } from 'rxjs';
 import { ProjectImpl } from '../models/filesystem-object';
-import { BulkProjectUpdateRequest, ProjectCreateRequest, ProjectData, ProjectSearchRequest } from '../schema';
+import {
+  BulkProjectUpdateRequest,
+  ProjectCreateRequest,
+  ProjectData,
+  ProjectSearchRequest,
+} from '../schema';
 import { encode } from 'punycode';
-import { objectToMixedFormData } from '../../shared/utils/forms';
 import { ResultList, ResultMapping, SingleResult } from '../../shared/schemas/common';
 
 @Injectable()
@@ -58,11 +62,11 @@ export class ProjectService {
   }
 
   get(hashId: string): Observable<ProjectImpl> {
-    return this.http.get<ProjectData>(
+    return this.http.get<SingleResult<ProjectData>>(
       `/api/projects/projects/${encode(hashId)}`,
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map(data => new ProjectImpl().update(data)),
+      map(data => new ProjectImpl().update(data.result)),
     );
   }
 

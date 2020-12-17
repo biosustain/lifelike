@@ -32,15 +32,13 @@ from neo4japp.models.files_queries import FileHierarchy, \
     build_file_hierarchy_query, build_file_children_cte, add_file_user_role_columns
 from neo4japp.models.projects_queries import add_project_user_role_columns
 from neo4japp.schemas.annotations import FileAnnotationHistoryResponseSchema
-from neo4japp.schemas.common import PaginatedRequest
-from neo4japp.schemas.files import FileLockCreateRequest, FileLockDeleteRequest, \
-    FileLockListResponse
+from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponseSchema, \
     FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, \
     BulkFileUpdateRequestSchema, \
     FileListSchema, FileSearchRequestSchema, FileBackupCreateRequestSchema, \
     FileVersionHistorySchema, \
-    FileExportRequestSchema
+    FileExportRequestSchema, FileLockCreateRequest, FileLockDeleteRequest, FileLockListResponse
 from neo4japp.schemas.formats.drawing_tool import validate_map_data
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
@@ -750,7 +748,7 @@ class FileSearchView(FilesystemBaseView):
     decorators = [auth.login_required]
 
     @use_args(FileSearchRequestSchema)
-    @use_args(PaginatedRequest)
+    @use_args(PaginatedRequestSchema)
     def post(self, params: dict, pagination: dict):
         current_user = g.current_user
 
@@ -1099,7 +1097,7 @@ class FileVersionListView(FilesystemBaseView):
     """Endpoint to fetch the versions of a file."""
     decorators = [auth.login_required]
 
-    @use_args(PaginatedRequest)
+    @use_args(PaginatedRequestSchema)
     def get(self, pagination: dict, hash_id: str):
         current_user = g.current_user
 
@@ -1127,7 +1125,7 @@ class FileVersionContentView(FilesystemBaseView):
     """Endpoint to fetch a file version."""
     decorators = [auth.login_required]
 
-    @use_args(PaginatedRequest)
+    @use_args(PaginatedRequestSchema)
     def get(self, pagination: dict, hash_id: str):
         current_user = g.current_user
 
@@ -1242,7 +1240,7 @@ class FileAnnotationHistoryView(FilesystemBaseView):
     """Implements lookup of a file's annotation history."""
     decorators = [auth.login_required]
 
-    @use_args(PaginatedRequest)
+    @use_args(PaginatedRequestSchema)
     def get(self, pagination: Dict, hash_id: str):
         """Get the annotation of a file."""
         user = g.current_user

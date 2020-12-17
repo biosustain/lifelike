@@ -40,3 +40,8 @@ class SortField(fields.String):
                 return parse_sort(value, self.value_to_column, '')
             except ValueError as e:
                 raise ValidationError(str(e))
+
+
+class FileUploadField(fields.Field):
+    pass
+    # TODO: validate
