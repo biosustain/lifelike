@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, Input } from '@angular/core';
 
-import { uuidv4 } from 'app/drawing-tool/services';
+import { uuidv4 } from 'app/shared/utils';
 
 declare const Plotly: any;
 

@@ -19,7 +19,7 @@ from neo4japp.exceptions import (
 from neo4japp.models import (
     Files,
     FileContent,
-    GlobalList,
+    GlobalList, AppUser,
 )
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.services.annotations.annotation_graph_service import AnnotationGraphService
@@ -38,20 +38,12 @@ class ManualAnnotationService:
     ) -> None:
         self.graph = graph
 
-    def add_inclusions(self, project_id, file_id, user_id, custom_annotation, annotate_all):
+    def add_inclusions(self, file: Files, user: AppUser, custom_annotation, annotate_all):
         """ Adds custom annotation to a given file.
         If annotate_all is True, parses the file to find all occurrences of the annotated term.
 
         Returns the added inclusions.
         """
-        file = Files.query.filter_by(
-            file_id=file_id,
-            project=project_id,
-        ).one_or_none()
-
-        if file is None:
-            raise RecordNotFoundException('File does not exist')
-
         # get the primary name
         primary_name = ''
         entity_id = custom_annotation['meta']['id']
@@ -78,7 +70,7 @@ class ManualAnnotationService:
         annotation_to_add = {
             **custom_annotation,
             'inclusion_date': str(datetime.now(TIMEZONE)),
-            'user_id': user_id,
+            'user_id': user.id,
             'uuid': str(uuid.uuid4()),
             'primaryName': primary_name
         }
@@ -98,7 +90,7 @@ class ManualAnnotationService:
             return False
 
         if annotate_all:
-            file_content = FileContent.query.filter_by(id=file.content_id).one_or_none()
+            file_content = file.content
             if file_content is None:
                 raise RecordNotFoundException('Content for a given file does not exist')
 
@@ -153,7 +145,7 @@ class ManualAnnotationService:
         version.file = file
         version.custom_annotations = file.custom_annotations
         version.excluded_annotations = file.excluded_annotations
-        version.user_id = user_id
+        version.user_id = user.id
         db.session.add(version)
 
         file.custom_annotations = [*inclusions, *file.custom_annotations]
@@ -162,19 +154,12 @@ class ManualAnnotationService:
 
         return inclusions
 
-    def remove_inclusions(self, project_id, file_id, uuid, remove_all, user_id):
+    def remove_inclusions(self, file: Files, user: AppUser, uuid, remove_all):
         """ Removes custom annotation from a givenf file.
         If remove_all is True, removes all custom annotations with matching term and entity type.
 
         Returns uuids of the removed inclusions.
         """
-        file = Files.query.filter_by(
-            file_id=file_id,
-            project=project_id,
-        ).one_or_none()
-        if file is None:
-            raise RecordNotFoundException('File does not exist')
-
         annotation_to_remove = next(
             (ann for ann in file.custom_annotations if ann['uuid'] == uuid), None
         )
@@ -198,7 +183,7 @@ class ManualAnnotationService:
         version.file = file
         version.custom_annotations = file.custom_annotations
         version.excluded_annotations = file.excluded_annotations
-        version.user_id = user_id
+        version.user_id = user.id
         db.session.add(version)
 
         file.custom_annotations = [
@@ -209,19 +194,12 @@ class ManualAnnotationService:
 
         return removed_annotation_uuids
 
-    def add_exclusion(self, project_id, file_id, user_id, exclusion):
+    def add_exclusion(self, file: Files, user: AppUser, exclusion):
         """ Adds exclusion of automatic annotation to a given file.
         """
-        file = Files.query.filter_by(
-            file_id=file_id,
-            project=project_id,
-        ).one_or_none()
-        if file is None:
-            raise RecordNotFoundException('File does not exist')
-
         excluded_annotation = {
             **exclusion,
-            'user_id': user_id,
+            'user_id': user.id,
             'exclusion_date': str(datetime.now(TIMEZONE))
         }
 
@@ -237,29 +215,22 @@ class ManualAnnotationService:
         version.file = file
         version.custom_annotations = file.custom_annotations
         version.excluded_annotations = file.excluded_annotations
-        version.user_id = user_id
+        version.user_id = user.id
         db.session.add(version)
 
         file.excluded_annotations = [excluded_annotation, *file.excluded_annotations]
 
         db.session.commit()
 
-    def remove_exclusion(self, project_id, file_id, user_id, entity_type, term):
+    def remove_exclusion(self, file: Files, user: AppUser, entity_type, term):
         """ Removes exclusion of automatic annotation from a given file.
         """
-        file = Files.query.filter_by(
-            file_id=file_id,
-            project=project_id,
-        ).one_or_none()
-        if file is None:
-            raise RecordNotFoundException('File does not exist')
-
         version = FileAnnotationsVersion()
         version.cause = AnnotationChangeCause.USER
         version.file = file
         version.custom_annotations = file.custom_annotations
         version.excluded_annotations = file.excluded_annotations
-        version.user_id = user_id
+        version.user_id = user.id
         db.session.add(version)
 
         initial_length = len(file.excluded_annotations)

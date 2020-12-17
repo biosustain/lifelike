@@ -197,7 +197,7 @@ export class FilesystemService {
     }));
   }
 
-  putBackup(request: ObjectBackupCreateRequest): Observable<any> {
+  putBackup(request: ObjectBackupCreateRequest): Observable<{}> {
     return this.http.put<unknown>(
       `/api/filesystem/objects/${encodeURIComponent(request.hashId)}/backup`,
       objectToMixedFormData(request),
@@ -207,12 +207,14 @@ export class FilesystemService {
     );
   }
 
-  deleteBackup(hashId: string): Observable<any> {
+  deleteBackup(hashId: string): Observable<{}> {
     return this.http.delete<unknown>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/backup`, {
         ...this.apiService.getHttpOptions(true),
       },
-    ).pipe(map(() => ({})));
+    ).pipe(
+      map(() => ({}))
+    );
   }
 
   getVersionHistory(fileHashId: string,
@@ -321,12 +323,14 @@ export class FilesystemService {
     );
   }
 
-  deleteLock(hashId: string, options: { own: true }): Observable<any> {
+  deleteLock(hashId: string, options: { own: true }): Observable<{}> {
     return this.http.delete<unknown>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/locks?own=true`, {
         ...this.apiService.getHttpOptions(true),
       },
-    ).pipe(map(() => ({})));
+    ).pipe(
+      map(() => ({}))
+    );
   }
 }
 

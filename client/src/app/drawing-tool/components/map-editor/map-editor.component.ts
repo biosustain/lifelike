@@ -2,7 +2,6 @@ import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } fro
 
 import { cloneDeep } from 'lodash';
 
-import { makeid } from '../../services';
 import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
 
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
@@ -28,6 +27,7 @@ import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-g
 import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { LockError } from '../../../file-browser/services/filesystem.service';
 import { ObjectLock } from '../../../file-browser/models/object-lock';
+import { makeid } from '../../../shared/utils/identifiers';
 
 @Component({
   selector: 'app-drawing-tool',

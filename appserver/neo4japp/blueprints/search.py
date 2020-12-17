@@ -16,9 +16,9 @@ from neo4japp.database import get_search_service_dao, db, get_elastic_service
 from neo4japp.models import (
     Projects,
     AppRole,
-    projects_collaborator_role, AppUser, Files
+    projects_collaborator_role
 )
-from neo4japp.request_schemas.search import (
+from neo4japp.schemas.search import (
     AnnotateRequestSchema,
     ContentSearchSchema,
     OrganismSearchSchema,
