@@ -43,6 +43,7 @@ import {
     SidenavSnippetData,
     VisEdge,
     VisNode,
+    SidenavTypeEntity,
 } from 'app/interfaces';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
@@ -50,12 +51,14 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { uuidv4 } from 'app/shared/utils';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
+import { AssociatedType } from '../context-menu/context-menu.component';
 
 enum SidenavEntityType {
     EMPTY,
     NODE,
     EDGE,
     CLUSTER,
+    TYPE,
 }
 
 @Component({
@@ -232,7 +235,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     sidenavEntityTypeEnum = SidenavEntityType;
 
     sidenavOpened: boolean;
-    sidenavEntity: SidenavNodeEntity | SidenavEdgeEntity | SidenavClusterEntity;
+    sidenavEntity: SidenavNodeEntity | SidenavEdgeEntity | SidenavClusterEntity | SidenavTypeEntity;
     sidenavEntityType: SidenavEntityType;
     isNewClusterSidenavEntity: boolean;
     isNewEdgeSidenavEntity: boolean;
@@ -1037,6 +1040,19 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     selectNeighbors(node: IdType) {
         this.networkGraph.selectNodes(this.networkGraph.getConnectedNodes(node) as IdType[]);
         this.updateSelectedNodes();
+    }
+
+    openTypeSidenav(type: AssociatedType) {
+        this.openSidenav();
+        if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0 && !this.networkGraph.isCluster(this.selectedNodes[0])) {
+            const node  = this.nodes.get(this.selectedNodes[0]) as VisNode;
+            this.sidenavEntity = {
+                data: node,
+                type,
+            } as SidenavTypeEntity;
+            this.sidenavEntityType = SidenavEntityType.TYPE;
+            this.getNodeData.emit(true);
+        }
     }
 
     updateSidenavEntity() {
