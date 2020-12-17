@@ -30,14 +30,14 @@ import {
   ObjectExportDialogValue,
 } from '../components/dialog/object-export-dialog.component';
 import { openDownloadForBlob } from '../../shared/utils/files';
-import { PdfAnnotationsService } from '../../drawing-tool/services';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
+import { AnnotationsService } from './annotations.service';
 
 @Injectable()
 export class FilesystemObjectActions {
 
   constructor(protected readonly filesService: PdfFilesService,
-              protected readonly annotationsService: PdfAnnotationsService,
+              protected readonly annotationsService: AnnotationsService,
               protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,

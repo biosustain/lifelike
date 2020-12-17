@@ -38,6 +38,7 @@ import { ProjectIconComponent } from './components/project-icon.component';
 import { ProjectCollaboratorsDialogComponent } from './components/dialog/project-collaborators-dialog.component';
 import { FileAnnotationHistoryDialogComponent } from './components/dialog/file-annotation-history-dialog.component';
 import { FileAnnotationHistoryComponent } from './components/file-annotation-history.component';
+import { AnnotationsService } from './services/annotations.service';
 
 @NgModule({
   declarations: [
@@ -117,6 +118,7 @@ import { FileAnnotationHistoryComponent } from './components/file-annotation-his
   providers: [
     ProjectService,
     FilesystemService,
+    AnnotationsService,
     FilesystemObjectActions,
     ProjectActions,
     ObjectTypeService,

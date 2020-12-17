@@ -38,7 +38,6 @@ from neo4japp.models import (
     GlobalList,
     FallbackOrganism
 )
-from neo4japp.request_schemas.annotations import GlobalAnnotationsDeleteSchema
 from neo4japp.services.annotations.constants import (
     AnnotationMethod,
     EntityType,
@@ -51,9 +50,11 @@ from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.utils.logger import UserEventLog
 from .filesystem import bp as filesystem_bp
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
-from ..schemas.annotations import FileAnnotationsResponseSchema, \
+from ..schemas.annotations import AnnotationListSchema, \
     AnnotationGenerationRequestSchema, \
-    MultipleAnnotationGenerationResponseSchema
+    MultipleAnnotationGenerationResponseSchema, GlobalAnnotationsDeleteSchema, \
+    CustomAnnotationCreateSchema, CustomAnnotationDeleteSchema, AnnotationUUIDListSchema, \
+    AnnotationExclusionCreateSchema, AnnotationExclusionDeleteSchema
 from ..schemas.filesystem import BulkFileRequestSchema
 from ..services.annotations import AnnotationGraphService
 from ..utils.http import make_cacheable_file_response
@@ -95,10 +96,81 @@ class FileAnnotationsView(FilesystemBaseView):
 
         results = annotations + file.custom_annotations
 
-        return jsonify(FileAnnotationsResponseSchema().dump({
+        return jsonify(AnnotationListSchema().dump({
             'results': results,
             'total': len(results),
         }))
+
+
+class FileCustomAnnotationsListView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(CustomAnnotationCreateSchema)
+    def post(self, params, hash_id):
+        current_user = g.current_user
+        manual_annotation_service = get_manual_annotation_service()
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+
+        results = manual_annotation_service.add_inclusions(
+            file, current_user, params['annotation'], params['annotate_all']
+        )
+
+        return jsonify(AnnotationListSchema().dump({
+            'results': results,
+            'total': len(results),
+        }))
+
+
+class FileCustomAnnotationsDetailView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(CustomAnnotationDeleteSchema)
+    def delete(self, params, hash_id, uuid):
+        current_user = g.current_user
+        manual_annotation_service = get_manual_annotation_service()
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+
+        results = manual_annotation_service.remove_inclusions(
+            file, current_user, uuid, params['remove_all']
+        )
+
+        return jsonify(AnnotationUUIDListSchema().dump({
+            'results': results,
+            'total': len(results),
+        }))
+
+
+class FileAnnotationExclusionsListView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(AnnotationExclusionCreateSchema)
+    def post(self, params, hash_id):
+        current_user = g.current_user
+        manual_annotation_service = get_manual_annotation_service()
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+
+        manual_annotation_service.add_exclusion(file, current_user, params['exclusion'])
+
+        return jsonify({})
+
+    @use_args(AnnotationExclusionDeleteSchema)
+    def delete(self, params, hash_id):
+        current_user = g.current_user
+        manual_annotation_service = get_manual_annotation_service()
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+
+        manual_annotation_service.remove_exclusion(file, current_user, params['type'],
+                                                   params['text'])
+
+        return jsonify({})
 
 
 class FileAnnotationCountsView(FilesystemBaseView):
@@ -198,7 +270,8 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
         gene_organism_pairs = annotation_graph_service.get_organisms_from_gene_ids(
             gene_ids=list(gene_ids.keys())
         )
-        sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']], reverse=True)  # noqa
+        sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']],
+                              reverse=True)  # noqa
 
         for pair in sorted_pairs:
             yield [
@@ -526,7 +599,16 @@ def delete_global_annotations(pids):
 
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations',
-    view_func=FileAnnotationsView.as_view('file_annotations'))
+    view_func=FileAnnotationsView.as_view('file_annotations_list'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/custom',
+    view_func=FileCustomAnnotationsListView.as_view('file_custom_annotations_list'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/custom/<string:uuid>',
+    view_func=FileCustomAnnotationsDetailView.as_view('file_custom_annotations_detail'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/exclusions',
+    view_func=FileAnnotationExclusionsListView.as_view('file_annotation_exclusions_list'))
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/combined-annotations',
     view_func=FileAnnotationCountsView.as_view('file_annotation_counts'))
