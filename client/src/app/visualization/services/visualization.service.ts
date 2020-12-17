@@ -12,6 +12,8 @@ import {
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
     ReferenceTableDataRequest,
+    NodeAssociatedTypesRequest,
+    GetAssociatedTypeResult,
 } from 'app/interfaces';
 
 import { AuthenticationService } from 'app/auth/services/authentication.service';
@@ -77,6 +79,19 @@ export class VisualizationService extends AbstractService {
             {...this.getHttpOptions(true)}
         ).pipe(
             map(resp => resp.result),
+            catchError(error => of(error)),
+        );
+    }
+
+    getAssociatedTypesForNode(request: NodeAssociatedTypesRequest) {
+        return this.http.post<{result: GetAssociatedTypeResult}>(
+            `${this.baseUrl}/get-node-associated-types`, {
+                node_id: request.node_id,
+                to_label: request.to_label,
+            },
+            {...this.getHttpOptions(true)}
+        ).pipe(
+            map(resp => resp.result.associatedData),
             catchError(error => of(error)),
         );
     }

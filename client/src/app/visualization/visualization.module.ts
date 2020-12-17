@@ -13,12 +13,14 @@ import { VisualizationCanvasComponent } from './components/visualization-canvas/
 import { VisualizationQuickbarComponent } from './components/visualization-quickbar/visualization-quickbar.component';
 import { VisualizationSettingsComponent } from './components/visualization-settings/visualization-settings.component';
 import { VisualizationComponent } from './containers/visualization/visualization.component';
+import { SidenavTypeViewComponent } from './components/sidenav-type-view/sidenav-type-view.component';
 
 const components = [
   ContextMenuComponent,
   SidenavClusterViewComponent,
   SidenavEdgeViewComponent,
   SidenavNodeViewComponent,
+  SidenavTypeViewComponent,
   SnippetDisplayComponent,
   VisualizationComponent,
   VisualizationCanvasComponent,
