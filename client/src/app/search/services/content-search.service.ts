@@ -1,15 +1,15 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Injectable} from '@angular/core';
 
-import { Observable } from 'rxjs';
+import {Observable} from 'rxjs';
 
-import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { DirectoryObject } from 'app/interfaces/projects.interface';
-import { RankedItem, ResultList } from 'app/interfaces/shared.interface';
-import { AbstractService } from 'app/shared/services/abstract-service';
-import { serializePaginatedParams } from 'app/shared/utils/params';
+import {AuthenticationService} from 'app/auth/services/authentication.service';
+import {DirectoryObject} from 'app/interfaces/projects.interface';
+import {AbstractService} from 'app/shared/services/abstract-service';
+import {serializePaginatedParams} from 'app/shared/utils/params';
 
-import { AnnotationRequestOptions, AnnotationResponse, ContentSearchOptions } from '../content-search';
+import {AnnotationRequestOptions, AnnotationResponse, ContentSearchOptions} from '../content-search';
+import {RankedItem, ResultList} from '../../shared/schemas/common';
 
 @Injectable()
 export class ContentSearchService extends AbstractService {

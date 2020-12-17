@@ -1,0 +1,70 @@
+import {Component, Input} from '@angular/core';
+import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {CommonFormDialogComponent} from 'app/shared/components/dialog/common-form-dialog.component';
+import {MessageDialog} from 'app/shared/services/message-dialog.service';
+import {ProjectImpl} from '../../models/filesystem-object';
+import {ProjectCreateRequest} from '../../schema';
+
+@Component({
+  selector: 'app-project-edit-dialog',
+  templateUrl: './project-edit-dialog.component.html',
+  styleUrls: ['./project-edit-dialog.component.scss'],
+})
+export class ProjectEditDialogComponent extends CommonFormDialogComponent<ProjectEditDialogValue> {
+  @Input() title = 'Edit Project';
+
+  private _project: ProjectImpl;
+
+  readonly form: FormGroup = new FormGroup({
+    name: new FormControl('', [Validators.required, Validators.pattern(/^[A-Za-z0-9-]+$/)]),
+    description: new FormControl(),
+  });
+
+  constructor(modal: NgbActiveModal,
+              messageDialog: MessageDialog,
+              protected readonly modalService: NgbModal) {
+    super(modal, messageDialog);
+  }
+
+  get project() {
+    return this._project;
+  }
+
+  @Input()
+  set project(value: ProjectImpl) {
+    this._project = value;
+    this.form.patchValue({
+      name: value.name || '',
+      description: value.description || '',
+    });
+  }
+
+  getValue(): ProjectEditDialogValue {
+    const value = this.form.value;
+
+    const projectChanges = {
+      name: value.name,
+      description: value.description,
+    };
+
+    Object.assign(this.project, projectChanges);
+
+    const request: ProjectCreateRequest = {
+      name: this.project.name,
+      description: this.project.description,
+    };
+
+    return {
+      project: this.project,
+      projectChanges,
+      request,
+    };
+  }
+}
+
+export interface ProjectEditDialogValue {
+  project: ProjectImpl;
+  projectChanges: Partial<ProjectImpl>;
+  request: ProjectCreateRequest;
+}

@@ -1,5 +1,6 @@
-import { DirectoryObject } from '../../interfaces/projects.interface';
-import { escapeRegExp } from 'lodash';
+import {DirectoryObject} from '../../interfaces/projects.interface';
+import {escapeRegExp} from 'lodash';
+import {FilesystemObject} from '../models/filesystem-object';
 
 export function getObjectCommands(object: DirectoryObject) {
   switch (object.type) {
@@ -34,5 +35,17 @@ export function getObjectMatchExistingTab(object: DirectoryObject) {
       return `^/+projects/[^/]+/maps/${escapeRegExp(object.id)}/edit([?#].*)?`;
     default:
       throw new Error(`unknown directory object type: ${object.type}`);
+  }
+}
+
+export function getObjectLabel(objects: FilesystemObject[] | FilesystemObject,
+                               titleCase = false) {
+  const targets = Array.isArray(objects) ? objects : [objects];
+  if (targets.length === 0) {
+    return 'Nothing';
+  } else if (targets.length === 1) {
+    return `'${targets[0].effectiveName}'`;
+  } else {
+    return `${targets.length} ${titleCase ? 'I' : 'i'}tems`;
   }
 }

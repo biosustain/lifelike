@@ -22,29 +22,3 @@ export interface Coords2D {
   y: number;
 }
 
-export interface PaginatedRequestOptions {
-  sort?: string;
-  page?: number;
-  limit?: number;
-}
-
-export interface SearchableRequestOptions {
-  q?: string;
-}
-
-export type StandardRequestOptions = PaginatedRequestOptions & SearchableRequestOptions;
-
-export interface ResultQuery {
-  phrases: string[];
-}
-
-export interface ResultList<T> {
-  total: number;
-  results: T[];
-  query?: ResultQuery;
-}
-
-export interface RankedItem<T> {
-  item: T;
-  rank: number;
-}

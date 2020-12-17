@@ -1,21 +1,23 @@
-import { AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Output, ViewChild } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import {AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Output, ViewChild} from '@angular/core';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
-import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
-import { MapService } from '../services';
-import { GraphEntity, KnowledgeMap, UniversalGraphNode } from '../services/interfaces';
-import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
-import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
-import { ModuleProperties } from '../../shared/modules';
-import { ActivatedRoute } from '@angular/router';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { map } from 'rxjs/operators';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { tokenizeQuery } from '../../shared/utils/find';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
+import {GraphEntity, UniversalGraph, UniversalGraphNode} from '../services/interfaces';
+import {KnowledgeMapStyle} from 'app/graph-viewer/styles/knowledge-map-style';
+import {CanvasGraphView} from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import {ModuleProperties} from '../../shared/modules';
+import {ActivatedRoute} from '@angular/router';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {MessageDialog} from '../../shared/services/message-dialog.service';
+import {BackgroundTask} from '../../shared/rxjs/background-task';
+import {ErrorHandler} from '../../shared/services/error-handler.service';
+import {CopyKeyboardShortcut} from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
+import {WorkspaceManager} from '../../shared/workspace-manager';
+import {tokenizeQuery} from '../../shared/utils/find';
+import {FilesystemService} from '../../file-browser/services/filesystem.service';
+import {FilesystemObject} from '../../file-browser/models/filesystem-object';
+import {mapBufferToJson, readBlobAsBuffer} from '../../shared/utils/files';
+import {FilesystemObjectActions} from '../../file-browser/services/filesystem-object-actions';
 
 @Component({
   selector: 'app-map',
@@ -31,11 +33,11 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   @ViewChild('canvas', {static: true}) canvasChild;
 
-  loadTask: BackgroundTask<MapLocator, [KnowledgeMap, ExtraResult]>;
+  loadTask: BackgroundTask<string, [FilesystemObject, ExtraResult]>;
   loadSubscription: Subscription;
 
-  _locator: MapLocator | undefined;
-  _map: KnowledgeMap | undefined;
+  _locator: string | undefined;
+  _map: FilesystemObject | undefined;
   pendingInitialize = false;
 
   graphCanvas: CanvasGraphView;
@@ -50,22 +52,21 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   entitySearchListIdx = -1;
 
   constructor(
-      readonly mapService: MapService,
-      readonly snackBar: MatSnackBar,
-      readonly modalService: NgbModal,
-      readonly messageDialog: MessageDialog,
-      readonly ngZone: NgZone,
-      readonly route: ActivatedRoute,
-      readonly errorHandler: ErrorHandler,
-      readonly workspaceManager: WorkspaceManager,
+    readonly filesystemService: FilesystemService,
+    readonly snackBar: MatSnackBar,
+    readonly modalService: NgbModal,
+    readonly messageDialog: MessageDialog,
+    readonly ngZone: NgZone,
+    readonly route: ActivatedRoute,
+    readonly errorHandler: ErrorHandler,
+    readonly workspaceManager: WorkspaceManager,
+    readonly filesystemObjectActions: FilesystemObjectActions,
   ) {
-    this.loadTask = new BackgroundTask((locator) => {
+    this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
-        this.mapService.getMap(locator.projectName, locator.hashId).pipe(
-            // tslint:disable-next-line: no-string-literal
-            map(resp => resp['project'] as KnowledgeMap),
-            // TODO: This line is from the existing code and should be properly typed
-        ),
+        this.filesystemService.get(hashId, {
+          loadContent: true,
+        }),
         this.getExtraSource(),
       ]);
     });
@@ -116,7 +117,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   @Input()
-  set locator(value: MapLocator | undefined) {
+  set locator(value: string | undefined) {
     this._locator = value;
     if (value != null) {
       this.loadTask.update(value);
@@ -128,12 +129,12 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   @Input()
-  set map(value: KnowledgeMap | undefined) {
+  set map(value: FilesystemObject | undefined) {
     this._map = value;
     this.initializeMap();
   }
 
-  get map() {
+  get map(): FilesystemObject {
     return this._map;
   }
 
@@ -147,13 +148,22 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return;
     }
 
-    this.graphCanvas.setGraph(this.map.graph);
-    this.graphCanvas.zoomToFit(0);
-    this.emitModuleProperties();
-
     if (this.highlightTerms != null && this.highlightTerms.length) {
       this.graphCanvas.highlighting.replace(this.graphCanvas.findMatching(this.highlightTerms));
     }
+
+    this.emitModuleProperties();
+
+    readBlobAsBuffer(this.map.contentValue).pipe(
+      mapBufferToJson<UniversalGraph>(),
+      this.errorHandler.create(),
+    ).subscribe(graph => {
+      this.graphCanvas.setGraph(graph);
+      this.graphCanvas.zoomToFit(0);
+    }, e => {
+      // Data is corrupt
+      // TODO: Prevent the user from editing or something so the user doesnt lose data?
+    });
   }
 
   registerGraphBehaviors() {
@@ -200,12 +210,12 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       data: {
         references: [{
           type: 'PROJECT_OBJECT',
-          id: this.locator.hashId + '',
+          id: this.locator + '',
         }],
         sources: [{
           domain: 'File Source',
-          url: ['/projects', encodeURIComponent(this.locator.projectName),
-            'maps', encodeURIComponent(this.locator.hashId)].join('/'),
+          url: ['/projects', encodeURIComponent(this.map.project.name),
+            'maps', encodeURIComponent(this.map.hashId)].join('/'),
         }],
       },
     } as Partial<UniversalGraphNode>));
@@ -221,8 +231,8 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         tokenizeQuery(this.entitySearchTerm, {
           singleTerm: true,
         }), {
-        wholeWord: false,
-      });
+          wholeWord: false,
+        });
       this.entitySearchListIdx = -1;
 
       this.graphCanvas.searchHighlighting.replace(this.entitySearchList);
@@ -251,7 +261,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.entitySearchListIdx = 0;
     }
     this.graphCanvas.panToEntity(
-      this.entitySearchList[this.entitySearchListIdx] as GraphEntity
+      this.entitySearchList[this.entitySearchListIdx] as GraphEntity,
     );
   }
 
@@ -262,12 +272,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.entitySearchListIdx = this.entitySearchList.length - 1;
     }
     this.graphCanvas.panToEntity(
-      this.entitySearchList[this.entitySearchListIdx] as GraphEntity
+      this.entitySearchList[this.entitySearchListIdx] as GraphEntity,
     );
   }
-}
-
-export interface MapLocator {
-  projectName: string;
-  hashId: string;
 }
