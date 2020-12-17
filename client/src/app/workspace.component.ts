@@ -8,10 +8,10 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { Pane, Tab, WorkspaceManager } from './shared/workspace-manager';
-import { Observable } from 'rxjs';
-import { SplitComponent } from 'angular-split';
+import {CdkDragDrop} from '@angular/cdk/drag-drop';
+import {Pane, Tab, WorkspaceManager} from './shared/workspace-manager';
+import {Observable} from 'rxjs';
+import {SplitComponent} from 'angular-split';
 
 @Component({
   selector: 'app-workspace',
@@ -122,7 +122,9 @@ export class WorkspaceComponent implements AfterViewInit, OnChanges, AfterConten
   }
 
   calculateFontAwesomeIcon(s: string) {
-    if (s.includes(' ')) {
+    if (s == null) {
+      return 'window-maximize';
+    } else if (s.includes(' ')) {
       return s;
     } else {
       return 'fa fa-' + s;

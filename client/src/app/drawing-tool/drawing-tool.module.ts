@@ -1,62 +1,45 @@
-import { NgModule } from '@angular/core';
+import {NgModule} from '@angular/core';
+import {MapEditorComponent} from './components/map-editor/map-editor.component';
 
-import { MapCreateDialogComponent } from './components/map-create-dialog.component';
-import { MapDeleteDialogComponent } from './components/map-delete-dialog.component';
-import { MapCloneDialogComponent } from './components/map-clone-dialog.component';
-import { MapUploadDialogComponent } from './components/map-upload-dialog.component';
-import { MapEditorComponent } from './components/map-editor/map-editor.component';
-
-import { CopyPasteMapsService } from './services/copy-paste-maps.service';
-
-import { PaletteComponent } from './components/map-editor/palette.component';
-import { InfoPanelComponent } from './components/map-editor/info-panel.component';
-import { MapExportDialogComponent } from './components/map-export-dialog.component';
-import { MapViewComponent } from './components/map-view.component';
-import { SharedModule } from 'app/shared/shared.module';
-import { RouterModule } from '@angular/router';
-import { NodeFormComponent } from './components/map-editor/node-form.component';
-import { EdgeFormComponent } from './components/map-editor/edge-form.component';
-import { MapEditDialogComponent } from './components/map-edit-dialog.component';
-import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
-import { MapRestoreDialogComponent } from './components/map-restore-dialog.component';
-import { MapComponent } from './components/map.component';
-import { MapVersionDialogComponent } from './components/map-version-dialog.component';
+import {PaletteComponent} from './components/map-editor/palette.component';
+import {InfoPanelComponent} from './components/map-editor/info-panel.component';
+import {MapViewComponent} from './components/map-view.component';
+import {SharedModule} from 'app/shared/shared.module';
+import {RouterModule} from '@angular/router';
+import {NodeFormComponent} from './components/map-editor/node-form.component';
+import {EdgeFormComponent} from './components/map-editor/edge-form.component';
+import {ConfirmDialogComponent} from 'app/shared/components/dialog/confirm-dialog.component';
+import {MapRestoreDialogComponent} from './components/map-restore-dialog.component';
+import {MapComponent} from './components/map.component';
+import {TYPE_PROVIDER} from '../file-browser/services/object-type.service';
+import {MapTypeProvider} from './providers/map-type-provider';
+import {FileBrowserModule} from '../file-browser/file-browser.module';
 
 @NgModule({
   declarations: [
-    MapCreateDialogComponent,
-    MapDeleteDialogComponent,
-    MapCloneDialogComponent,
-    MapUploadDialogComponent,
-    MapVersionDialogComponent,
     MapEditorComponent,
     PaletteComponent,
     InfoPanelComponent,
     MapComponent,
     MapViewComponent,
-    MapExportDialogComponent,
     NodeFormComponent,
     EdgeFormComponent,
-    MapEditDialogComponent,
     MapRestoreDialogComponent,
   ],
   entryComponents: [
-    MapCreateDialogComponent,
-    MapDeleteDialogComponent,
-    MapCloneDialogComponent,
-    MapUploadDialogComponent,
-    MapEditDialogComponent,
-    MapVersionDialogComponent,
-    MapExportDialogComponent,
     ConfirmDialogComponent,
     MapRestoreDialogComponent,
+    MapComponent,
   ],
   imports: [
     SharedModule,
+    FileBrowserModule,
   ],
-  providers: [
-    CopyPasteMapsService,
-  ],
+  providers: [{
+    provide: TYPE_PROVIDER,
+    useClass: MapTypeProvider,
+    multi: true,
+  }],
   exports: [
     RouterModule,
     MapComponent,

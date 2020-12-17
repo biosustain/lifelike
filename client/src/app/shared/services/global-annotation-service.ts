@@ -1,11 +1,11 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpEvent } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { AbstractService } from './abstract-service';
-import { GlobalAnnotation } from 'app/interfaces/annotation';
-import { PaginatedRequestOptions, ResultList } from 'app/interfaces/shared.interface';
+import {Injectable} from '@angular/core';
+import {HttpClient, HttpEvent} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {AuthenticationService} from 'app/auth/services/authentication.service';
+import {AbstractService} from './abstract-service';
+import {GlobalAnnotation} from 'app/interfaces/annotation';
+import {PaginatedRequestOptions, ResultList} from '../schemas/common';
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class GlobalAnnotationService extends AbstractService {

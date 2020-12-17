@@ -1,44 +1,22 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
 
-import {
-  of, Observable
-} from 'rxjs';
+import {Observable, of} from 'rxjs';
 
-import { ANNOTATIONS } from './mock_data';
-import { Annotation, AddedAnnotationExclusion } from '../../pdf-viewer/annotation-type';
+import {ANNOTATIONS} from './mock_data';
+import {AddedAnnotationExclusion, Annotation} from '../../pdf-viewer/annotation-type';
+import {ApiService} from '../../shared/services/api.service';
+import {AnnotationGenerationRequest, AnnotationGenerationResultData} from '../../file-browser/schema';
+import {map} from 'rxjs/operators';
+import {ResultList, ResultMapping} from '../../shared/schemas/common';
 
 @Injectable({
-  providedIn: '***ARANGO_USERNAME***'
+  providedIn: '***ARANGO_USERNAME***',
 })
 export class PdfAnnotationsService {
 
-  baseUrl = '/api/files';
-
-  constructor(
-      private http: HttpClient,
-  ) { }
-
-  /**
-   * Create http options with authorization
-   * header if boolean set to true
-   * @param withJwt boolean representing whether to return the options with a jwt
-   */
-  createHttpOptions(withJwt = false) {
-    if (withJwt) {
-      return {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
-        }),
-      };
-    } else {
-      return {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-        }),
-      };
-    }
+  constructor(protected readonly http: HttpClient,
+              protected readonly apiService: ApiService) {
   }
 
   /**
@@ -48,15 +26,33 @@ export class PdfAnnotationsService {
     return of(ANNOTATIONS);
   }
 
-  /**
-   * Retrieves the annotations of the given file.
-   * @param fileId id of the file
-   */
-  getFileAnnotations(fileId: string, projectName: string = 'beta-project'): Observable<any> {
-    const url = `/api/projects/${projectName}/files/${fileId}/annotations`;
-    return this.http.get(
-      url,
-      this.createHttpOptions(true),
+  getAnnotations(hashId: string): Observable<Annotation[]> {
+    return this.http.get<ResultList<Annotation>>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations`,
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(data => data.results),
+    );
+  }
+
+  getCombinedAnnotations(hashId: string): Observable<string> {
+    return this.http.post(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/combined-annotations`, {}, {
+        ...this.apiService.getHttpOptions(true),
+        responseType: 'text',
+      },
+    );
+  }
+
+  generateAnnotations(hashIds: string[],
+                      request: AnnotationGenerationRequest = {}):
+    Observable<ResultMapping<AnnotationGenerationResultData>> {
+    return this.http.post<ResultMapping<AnnotationGenerationResultData>>(
+      `/api/filesystem/annotations/generate`, {
+        hashIds,
+        ...request,
+      },
+      this.apiService.getHttpOptions(true),
     );
   }
 
@@ -70,8 +66,8 @@ export class PdfAnnotationsService {
     const url = `/api/projects/${projectName}/files/${fileId}/annotations/add`;
     return this.http.patch(
       url,
-      { annotation, annotateAll },
-      this.createHttpOptions(true)
+      {annotation, annotateAll},
+      this.apiService.getHttpOptions(true),
     );
   }
 
@@ -85,8 +81,8 @@ export class PdfAnnotationsService {
     const url = `/api/projects/${projectName}/files/${fileId}/annotations/remove`;
     return this.http.patch(
       url,
-      { uuid, removeAll },
-      this.createHttpOptions(true)
+      {uuid, removeAll},
+      this.apiService.getHttpOptions(true),
     );
   }
 
@@ -95,11 +91,11 @@ export class PdfAnnotationsService {
    * @param fileId id of the file that contains the annotation
    * @param exclusionData data needed to exclude the annotation
    */
-  addAnnotationExclusion(fileId: string, exclusionData: AddedAnnotationExclusion, projectName: string): Observable<any> {
+  addAnnotationExclusion(fileId: string, exclusionData: AddedAnnotationExclusion, projectName: string = ''): Observable<any> {
     return this.http.patch(
       `/api/projects/${projectName}/files/${fileId}/annotations/add_annotation_exclusion`,
       exclusionData,
-      this.createHttpOptions(true),
+      this.apiService.getHttpOptions(true),
     );
   }
 
@@ -109,11 +105,11 @@ export class PdfAnnotationsService {
    * @param type type of the annotation
    * @param text annotated text
    */
-  removeAnnotationExclusion(fileId: string, type: string, text: string, projectName: string): Observable<any> {
+  removeAnnotationExclusion(fileId: string, type: string, text: string, projectName: string = ''): Observable<any> {
     return this.http.patch(
       `/api/projects/${projectName}/files/${fileId}/annotations/remove_annotation_exclusion`,
-      { type, text },
-      this.createHttpOptions(true)
+      {type, text},
+      this.apiService.getHttpOptions(true),
     );
   }
 
@@ -123,7 +119,7 @@ export class PdfAnnotationsService {
    */
   public searchForAnnotation(annotationId: string): Annotation {
     return (ANNOTATIONS as Annotation[]).filter(
-      (ann: Annotation) => ann.meta.id === annotationId
+      (ann: Annotation) => ann.meta.id === annotationId,
     )[0] || null;
   }
 }

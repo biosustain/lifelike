@@ -1,28 +1,18 @@
-import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import {
-  HttpInterceptor,
-  HttpHandler,
-  HttpRequest,
-  HttpErrorResponse,
-} from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {Router} from '@angular/router';
+import {HttpErrorResponse, HttpHandler, HttpInterceptor, HttpRequest,} from '@angular/common/http';
 
-import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { throwError } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import {AuthenticationService} from 'app/auth/services/authentication.service';
+import {throwError} from 'rxjs';
+import {catchError, switchMap} from 'rxjs/operators';
 
-import { Store } from '@ngrx/store';
-import { State } from 'app/***ARANGO_USERNAME***-store';
+import {Store} from '@ngrx/store';
+import {State} from 'app/***ARANGO_USERNAME***-store';
 
-import { ApiHttpError } from 'app/interfaces';
-import { AuthActions } from 'app/auth/store';
-import { SnackbarActions } from 'app/shared/store';
-import {
-  JWT_AUTH_TOKEN_EXPIRED,
-  JWT_AUTH_TOKEN_INVALID,
-  JWT_REFRESH_TOKEN_EXPIRED,
-  JWT_REFRESH_TOKEN_INVALID,
-} from 'app/shared/constants';
+import {ApiHttpError} from 'app/interfaces';
+import {AuthActions} from 'app/auth/store';
+import {SnackbarActions} from 'app/shared/store';
+import {JWT_AUTH_TOKEN_INVALID, JWT_REFRESH_TOKEN_EXPIRED, JWT_REFRESH_TOKEN_INVALID,} from 'app/shared/constants';
 
 
 /**
@@ -43,26 +33,30 @@ export class AuthenticationInterceptor implements HttpInterceptor {
         return next.handle(req).pipe(
             catchError((res: HttpErrorResponse) => {
                 const statusCode = res.status;
-                const error: ApiHttpError = res.error.apiHttpError;
-                if (statusCode === 401) {
+                if (res && res.error) {
+                  const error: ApiHttpError = res.error.apiHttpError;
+                  if (statusCode === 401) {
                     if (error.message === JWT_REFRESH_TOKEN_EXPIRED || error.message === JWT_REFRESH_TOKEN_INVALID ||
-                        error.message === JWT_AUTH_TOKEN_INVALID) {
-                        // Clear any previous login state which forces users to log out
-                        // and log in again if token has been expired or invalid
-                        this.store.dispatch(AuthActions.loginReset());
-                        this.store.dispatch(SnackbarActions.displaySnackbar({payload: {
-                            message: 'Session expired. Please login again.',
-                            action: 'Dismiss',
-                            config: { duration: 10000 },
-                        }}));
-                        this.router.navigate(['/login']);
-                        return throwError(res);
+                      error.message === JWT_AUTH_TOKEN_INVALID) {
+                      // Clear any previous login state which forces users to log out
+                      // and log in again if token has been expired or invalid
+                      this.store.dispatch(AuthActions.loginReset());
+                      this.store.dispatch(SnackbarActions.displaySnackbar({
+                        payload: {
+                          message: 'Session expired. Please login again.',
+                          action: 'Dismiss',
+                          config: {duration: 10000},
+                        }
+                      }));
+                      this.router.navigate(['/login']);
+                      return throwError(res);
                     } else {
-                        // Attempt to refresh the token
-                        return this.auth.refresh().pipe(
-                            switchMap(() => next.handle(this.updateAuthHeader(req))),
-                        );
+                      // Attempt to refresh the token
+                      return this.auth.refresh().pipe(
+                        switchMap(() => next.handle(this.updateAuthHeader(req))),
+                      );
                     }
+                  }
                 }
                 return throwError(res);
             }),

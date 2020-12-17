@@ -151,7 +151,7 @@
     <i class="fa fa-exclamation-triangle text-danger ml-2"></i>
   </div>
   <cdk-virtual-scroll-viewport itemSize="22" class="virtual-scroll-viewport w-100">
-    <div *cdkVirtualFor="let data of annotationVisibility; templateCacheSize: 0" class="virtual-scroll-item">
+    <div *cdkVirtualFor="let data of []; templateCacheSize: 0" class="virtual-scroll-item">
       <div class="d-flex align-items-center text-overflow">
         <div class="custom-control custom-checkbox">
           <input [id]="id + 'filter-' + data.identifier"

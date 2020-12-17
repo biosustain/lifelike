@@ -1,20 +1,20 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
-import { GlobalAnnotationService } from 'app/shared/services/global-annotation-service';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { GlobalAnnotation } from 'app/interfaces/annotation';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { PaginatedRequestOptions, ResultList, StandardRequestOptions } from 'app/interfaces/shared.interface';
-import { CollectionModal } from 'app/shared/utils/collection-modal';
-import { tap } from 'rxjs/operators';
-import { FormControl, FormGroup } from '@angular/forms';
-import { SelectionModel } from '@angular/cdk/collections';
-import { downloader } from 'app/shared/utils';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { HttpEventType } from '@angular/common/http';
-import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {BehaviorSubject, Subscription} from 'rxjs';
+import {ActivatedRoute} from '@angular/router';
+import {GlobalAnnotationService} from 'app/shared/services/global-annotation-service';
+import {PdfFilesService} from 'app/shared/services/pdf-files.service';
+import {GlobalAnnotation} from 'app/interfaces/annotation';
+import {BackgroundTask} from 'app/shared/rxjs/background-task';
+import {CollectionModal} from 'app/shared/utils/collection-modal';
+import {tap} from 'rxjs/operators';
+import {FormControl, FormGroup} from '@angular/forms';
+import {SelectionModel} from '@angular/cdk/collections';
+import {downloader} from 'app/shared/utils';
+import {ErrorHandler} from 'app/shared/services/error-handler.service';
+import {HttpEventType} from '@angular/common/http';
+import {Progress, ProgressMode} from 'app/interfaces/common-dialog.interface';
+import {ProgressDialog} from 'app/shared/services/progress-dialog.service';
+import {PaginatedRequestOptions, ResultList, StandardRequestOptions} from '../../shared/schemas/common';
 
 @Component({
     selector: 'app-annotations-table',
