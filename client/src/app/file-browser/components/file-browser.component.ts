@@ -11,10 +11,10 @@ import { FilesystemService } from '../services/filesystem.service';
 import { map } from 'rxjs/operators';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 
-@Component({
-  selector: 'app-file-browser',
-  templateUrl: './file-browser.component.html',
-})
+// @Component({
+//   selector: 'app-file-browser',
+//   templateUrl: './file-browser.component.html',
+// })
 export class FileBrowserComponent implements OnInit, OnDestroy {
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
@@ -59,10 +59,7 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   load(locator: PathLocator): Observable<any> {
-    const object$ = this.filesystemService.get({
-      projectName: locator.projectName,
-      directoryId: locator.directoryId,
-    }).pipe(map(object => {
+    const object$ = this.filesystemService.get("").pipe(map(object => {
       if (this.annotationSubscription) {
         this.annotationSubscription.unsubscribe();
         this.annotationSubscription = null;
@@ -79,20 +76,20 @@ export class FileBrowserComponent implements OnInit, OnDestroy {
   }
 
   goUp(object: FilesystemObject) {
-    if (object.path != null) {
-      if (object.path.length > 2) {
-        this.workspaceManager.navigate(
-            ['/projects', object.locator.projectName, 'folders',
-              object.path[object.path.length - 2].id],
-        );
-      } else if (object.path.length === 2) {
-        this.workspaceManager.navigate(
-            ['/projects', object.locator.projectName],
-        );
-      } else {
-        this.workspaceManager.navigate(['/projects']);
-      }
-    }
+    // if (object.path != null) {
+    //   if (object.path.length > 2) {
+    //     this.workspaceManager.navigate(
+    //         ['/projects', object.locator.projectName, 'folders',
+    //           object.path[object.path.length - 2].id],
+    //     );
+    //   } else if (object.path.length === 2) {
+    //     this.workspaceManager.navigate(
+    //         ['/projects', object.locator.projectName],
+    //     );
+    //   } else {
+    //     this.workspaceManager.navigate(['/projects']);
+    //   }
+    // }
   }
 
   getObjectQueryParams(object: FilesystemObject) {

@@ -1,13 +1,4 @@
-import {
-  MapService,
-} from './map.service';
-import {
-  PdfAnnotationsService,
-} from './pdf-annotations.service';
-import {
-  DragDropEventFactory,
-  ContainerModel,
-} from './event-factory';
+import {PdfAnnotationsService,} from './pdf-annotations.service';
 
 // TODO: Should consolidate this with the existing shared method at the root of the app
 /**
@@ -37,10 +28,7 @@ function makeid(length = 3) {
 }
 
 export {
-  MapService,
   PdfAnnotationsService,
   uuidv4,
   makeid,
-  DragDropEventFactory,
-  ContainerModel,
 };
