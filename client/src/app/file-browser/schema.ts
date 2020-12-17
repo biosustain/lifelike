@@ -1,4 +1,9 @@
-import { Annotation, AnnotationChangeExclusionMeta, Meta } from '../pdf-viewer/annotation-type';
+import {
+  AddedAnnotationExclusion,
+  Annotation,
+  AnnotationChangeExclusionMeta,
+  Meta,
+} from '../pdf-viewer/annotation-type';
 import { AnnotationMethod } from '../interfaces/annotation';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
 import { FilePrivileges, ProjectPrivileges } from './models/filesystem-object';
@@ -185,6 +190,38 @@ export interface AnnotationGenerationResultData {
 export interface AnnotationGenerationRequest {
   organism?: OrganismAutocomplete;
   annotationMethod?: AnnotationMethod;
+}
+
+// ========================================
+// Custom Annotations
+// ========================================
+
+// Requests
+// ----------------------------------------
+
+export interface CustomAnnotationCreateRequest {
+  annotation: Annotation;
+  annotateAll: boolean;
+}
+
+export interface CustomAnnotationDeleteRequest {
+  removeAll: boolean;
+}
+
+// ========================================
+// Annotation Exclusions
+// ========================================
+
+// Requests
+// ----------------------------------------
+
+export interface AnnotationExclusionCreateRequest {
+  exclusion: AddedAnnotationExclusion;
+}
+
+export interface AnnotationExclusionDeleteRequest {
+  type: string;
+  text: string;
 }
 
 // ========================================

@@ -165,21 +165,21 @@ class FileSchema(CamelCaseSchema):
     def get_children(self, obj: Files):
         privilege_user_id = self.get_user_privilege_filter()
         if obj.calculated_children is not None:
+            children = [
+                child for child in obj.calculated_children
+                if
+                privilege_user_id is None or child.calculated_privileges[privilege_user_id].readable
+            ]
             return FileSchema(context=self.context, exclude=(
                 'project',
                 'parent',
-            ), many=True).dump([
-                child for child in obj.calculated_children
-                if privilege_user_id is None
-                or child.calculated_privileges[privilege_user_id].readable
-            ])
+            ), many=True).dump(children)
         else:
             return None
 
 
 # Requests
 # ----------------------------------------
-
 
 class BulkFileRequestSchema(CamelCaseSchema):
     hash_ids = fields.List(fields.String(validate=marshmallow.validate.Length(min=1, max=200)),

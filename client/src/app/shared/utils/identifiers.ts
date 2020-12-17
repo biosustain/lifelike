@@ -1,8 +1,3 @@
-
-import {
-  PdfAnnotationsService,
-} from './pdf-annotations.service';
-
 // TODO: Should consolidate this with the existing shared method at the ***ARANGO_USERNAME*** of the app
 /**
  * universally unique identitifer generator
@@ -31,7 +26,6 @@ function makeid(length = 3) {
 }
 
 export {
-  PdfAnnotationsService,
   uuidv4,
   makeid,
 };

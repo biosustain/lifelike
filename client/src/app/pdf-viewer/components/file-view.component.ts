@@ -2,10 +2,14 @@ import { uniqueId } from 'lodash';
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
 import { BehaviorSubject, combineLatest, of, Subject, Subscription } from 'rxjs';
 
-import { PdfAnnotationsService } from '../../drawing-tool/services';
-
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
-import { AddedAnnotationExclusion, Annotation, Location, Meta, RemovedAnnotationExclusion } from '../annotation-type';
+import {
+  AddedAnnotationExclusion,
+  Annotation,
+  Location,
+  Meta,
+  RemovedAnnotationExclusion,
+} from '../annotation-type';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
@@ -25,6 +29,7 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mergeMap } from 'rxjs/operators';
 import { readBlobAsBuffer } from '../../shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
+import { AnnotationsService } from '../../file-browser/services/annotations.service';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -102,10 +107,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly fileObjectActions: FilesystemObjectActions,
-    protected pdfAnnService: PdfAnnotationsService,
-    protected snackBar: MatSnackBar,
+    protected readonly pdfAnnService: AnnotationsService,
+    protected readonly snackBar: MatSnackBar,
     protected readonly modalService: NgbModal,
-    protected route: ActivatedRoute,
+    protected readonly route: ActivatedRoute,
     protected readonly errorHandler: ErrorHandler,
     protected readonly progressDialog: ProgressDialog,
     protected readonly workSpaceManager: WorkspaceManager,
@@ -254,7 +259,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         })),
       });
 
-      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotation, annotateAll)
+      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, {
+        annotation,
+        annotateAll,
+      })
         .pipe(this.errorHandler.create())
         .subscribe(
           (annotations: Annotation[]) => {
@@ -279,7 +287,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const dialogRef = this.modalService.open(ConfirmDialogComponent);
     dialogRef.componentInstance.message = 'Do you want to remove all matching annotations from the file as well?';
     dialogRef.result.then((removeAll: boolean) => {
-      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll)
+      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, {
+        removeAll,
+      })
         .pipe(this.errorHandler.create())
         .subscribe(
           response => {
@@ -296,7 +306,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   annotationExclusionAdded(exclusionData: AddedAnnotationExclusion) {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
-      this.currentFileId, exclusionData,
+      this.currentFileId, {
+        exclusion: exclusionData,
+      },
     )
       .pipe(this.errorHandler.create())
       .subscribe(
@@ -311,7 +323,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   annotationExclusionRemoved({type, text}) {
-    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, type, text)
+    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, {
+      type,
+      text,
+    })
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {

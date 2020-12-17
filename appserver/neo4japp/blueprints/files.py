@@ -1,58 +1,29 @@
 import hashlib
-import io
 import json
 import os
-import re
-import urllib.request
 import uuid
 from datetime import datetime
-from enum import Enum
-from typing import Optional
-from urllib.error import URLError
 
-from flask import Blueprint, current_app, request, jsonify, g, make_response
-from flask_apispec import use_kwargs, marshal_with
-from pdfminer import high_level
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import aliased, contains_eager
+from flask import Blueprint, current_app, request, jsonify, g
 from sqlalchemy.orm.exc import NoResultFound
-from werkzeug.datastructures import FileStorage
 
-import neo4japp.models.files_queries as files_queries
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_project_permission, \
-    requires_role, check_project_permission
+from neo4japp.blueprints.permissions import requires_project_permission
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
-from neo4japp.constants import FILE_INDEX_ID
-from neo4japp.data_transfer_objects import FileUpload
-from neo4japp.database import db, get_manual_annotation_service, get_elastic_service
+from neo4japp.database import db
 from neo4japp.exceptions import (
-    DatabaseError,
-    DuplicateRecord,
     FileUploadError,
     RecordNotFoundException,
-    InvalidArgumentsException,
 )
 from neo4japp.models import (
     AccessActionType,
-    AppUser,
-    FallbackOrganism,
     Files,
     FileContent,
     Projects,
     LMDBsDates,
 )
-from neo4japp.request_schemas.annotations import (
-    AnnotationAdditionSchema,
-    AnnotationSchema,
-    AnnotationRemovalSchema,
-    AnnotationExclusionSchema,
-)
-from neo4japp.request_schemas.filesystem import MoveFileRequest, DirectoryDestination
-from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog
-from neo4japp.utils.network import read_url
 
 URL_FETCH_MAX_LENGTH = 1024 * 1024 * 30
 URL_FETCH_TIMEOUT = 10
@@ -240,117 +211,6 @@ def transform_to_bioc():
         template['documents'][0]['passages'][0]['text'] = data['text']
         template['documents'][0]['passages'][0]['annotations'] = data['annotations']
         return jsonify(template)
-
-
-@newbp.route('/<string:project_name>/files/<string:file_id>/annotations/add', methods=['PATCH'])
-@use_kwargs(AnnotationAdditionSchema(exclude=('annotation.uuid',)))
-@marshal_with(AnnotationSchema(many=True), code=200)
-@auth.login_required
-@requires_project_permission(AccessActionType.WRITE)
-def add_custom_annotation(file_id, project_name, **payload):
-    manual_annotation_service = get_manual_annotation_service()
-
-    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if project is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    user = g.current_user
-
-    yield user, project
-
-    inclusions = manual_annotation_service.add_inclusions(
-        project.id, file_id, user.id, payload['annotation'], payload['annotateAll']
-    )
-    current_app.logger.info(
-        f'Project: {project_name}, File ID: {file_id}, Term: {payload["annotation"]}',
-        extra=UserEventLog(
-            username=g.current_user.username, event_type='add custom annotation').to_dict()
-    )
-
-    yield inclusions, 200
-
-
-@newbp.route('/<string:project_name>/files/<string:file_id>/annotations/remove', methods=['PATCH'])
-@auth.login_required
-@use_kwargs(AnnotationRemovalSchema)
-@requires_project_permission(AccessActionType.WRITE)
-def remove_custom_annotation(file_id, uuid, removeAll, project_name):
-    manual_annotation_service = get_manual_annotation_service()
-
-    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if project is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    user = g.current_user
-
-    yield user, project
-
-    removed_annotation_uuids = manual_annotation_service.remove_inclusions(
-        project.id, file_id, uuid, removeAll, user_id=user.id
-    )
-    current_app.logger.info(
-        f'Project: {project_name}, File ID: {file_id}, Annotation UUID: {uuid}',
-        extra=UserEventLog(
-            username=g.current_user.username, event_type='remove custom annotation').to_dict()
-    )
-
-    yield jsonify(removed_annotation_uuids)
-
-
-@newbp.route(
-    '/<string:project_name>/files/<string:file_id>/annotations/add_annotation_exclusion',
-    methods=['PATCH'])
-@auth.login_required
-@use_kwargs(AnnotationExclusionSchema)
-@requires_project_permission(AccessActionType.WRITE)
-def add_annotation_exclusion(project_name: str, file_id: str, **payload):
-    manual_annotation_service = get_manual_annotation_service()
-
-    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if project is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    user = g.current_user
-
-    yield user, project
-
-    manual_annotation_service.add_exclusion(project.id, file_id, user.id, payload)
-    current_app.logger.info(
-        f'File ID: {file_id}, Project: {project_name}, Added Exclusion: {payload}',
-        extra=UserEventLog(
-            username=g.current_user.username,
-            event_type='manual annotations').to_dict()
-    )
-
-    yield jsonify({'status': 'success'})
-
-
-@newbp.route(
-    '/<string:project_name>/files/<string:file_id>/annotations/remove_annotation_exclusion',
-    methods=['PATCH'])
-@auth.login_required
-@use_kwargs(AnnotationExclusionSchema(only=('type', 'text')))
-@requires_project_permission(AccessActionType.WRITE)
-def remove_annotation_exclusion(project_name, file_id, type, text):
-    manual_annotation_service = get_manual_annotation_service()
-
-    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if project is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    user = g.current_user
-
-    yield user, project
-
-    manual_annotation_service.remove_exclusion(project.id, file_id, user.id, type, text)
-    current_app.logger.info(
-        f'File ID: {file_id}, Project: {project_name}, Removed Exclusion: {text}',
-        extra=UserEventLog(
-            username=g.current_user.username,
-            event_type='manual annotations').to_dict()
-    )
-
-    yield jsonify({'status': 'success'})
 
 
 @bp.route('/lmdbs_dates', methods=['GET'])

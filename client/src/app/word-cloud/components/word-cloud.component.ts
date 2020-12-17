@@ -11,7 +11,7 @@ import { LegendService } from 'app/shared/services/legend.service';
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { PdfAnnotationsService } from '../../drawing-tool/services';
+import { AnnotationsService } from '../../file-browser/services/annotations.service';
 
 @Component({
   selector: 'app-word-cloud',
@@ -38,7 +38,7 @@ export class WordCloudComponent {
 
   WORD_CLOUD_MARGIN = 10;
 
-  constructor(protected readonly pdfAnnotationService: PdfAnnotationsService,
+  constructor(protected readonly pdfAnnotationService: AnnotationsService,
               protected readonly legendService: LegendService) {
     this.initWordCloud();
   }
