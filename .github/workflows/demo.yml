@@ -2,96 +2,93 @@ name: Demo (aka Sandbox) Deployment
 
 on:
   push:
-    tags: [demo]
-
-env:
-    ELASTICSEARCH_HOSTS: ${{ secrets.ELASTICSEARCH_HOSTS }}
-    POSTGRES_HOST: ${{ secrets.DEMO_POSTGRES_HOST }}
-    POSTGRES_PORT: ${{ secrets.DEMO_POSTGRES_PORT }}
-    POSTGRES_USER: ${{ secrets.DEMO_POSTGRES_USER }}
-    POSTGRES_PASSWORD: ${{ secrets.DEMO_POSTGRES_PASSWORD }}
-    POSTGRES_DB: ${{ secrets.DEMO_POSTGRES_DB }}
-    NEO4J_HOST: ${{ secrets.STAGING_NEO4J_HOST }}
-    NEO4J_AUTH: ${{ secrets.STAGING_NEO4J_AUTH }}
-    FLASK_APP: app
-    FLASK_APP_CONFIG: Testing
-    FLASK_ENV: development
-    PROJECT_ID: ${{ secrets.GCE_PROJECT }}
-    GITHUB_HASH: ${{ github.sha }}
-    GCE_INSTANCE: kg-demo
-    GCE_INSTANCE_ZONE: us-central1-a
-    GCE_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
-    CLOUD_SQL_ALIAS: kg-demo
-    GCE_BACKUP_BUCKET: kg-***ARANGO_DB_NAME***-sql-backups
-    SENTRY_KEY: ${{ secrets.SENTRY_KEY }}
-    REDIS_HOST: ${{ secrets.REDIS_HOST }}
-    REDIS_PORT: ${{ secrets.REDIS_PORT }}
-    DOMAIN: http://demo.***ARANGO_DB_NAME***.bio
+    tags:
+      - "demo"
 
 jobs:
+  build:
+    name: Setup, Build, Publish
+    runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.timestamp.outputs.commit_timestamp }}
+      output2: ${{ steps.commitcount.outputs.build_number }}
+      output3: ${{ steps.buildversion.outputs.build_version}}
 
-    setup-build-publish-deploy:
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-        name: Setup, Build, Publish, and Deploy
-        runs-on: ubuntu-latest
+      - name: Set git commit timestamp
+        id: timestamp
+        run: echo ::set-output name=commit_timestamp::$(git log -1 --format=%cI)
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v2
+      - name: Set commit counts as build number
+        id: commitcount
+        run: echo ::set-output name=build_number::$(git rev-list --count HEAD)
 
-            # Setup gcloud CLI
-            # https://github.com/GoogleCloudPlatform/github-actions
-            - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
-              with:
-                version: '286.0.0'
-                service_account_key: ${{ secrets.GCE_SA_KEY }}
-                project_id: ${{ secrets.GCE_PROJECT }}
+        # Uses the commit tag as the version
+      - name: Set build version
+        id: buildversion
+        run: echo ::set-output name=build_version::$(echo "${GITHUB_REF#refs/*/}")
 
-            # Configure Docker to use gcloud command line tool
-            - run: |-
-                gcloud --quiet auth configure-docker
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: "286.0.0"
+          service_account_key: ${{ secrets.GCE_SA_KEY }}
+          project_id: ${{ secrets.GCE_PROJECT }}
 
-            - name: Build Appserver Image
-              uses: whoan/docker-build-with-cache-action@v5
-              with:
-                username: _json_key
-                password: ${{ secrets.GCE_SA_KEY }}
-                registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
-                image_tag: ${{ github.sha }}
-                context: ./appserver
-                dockerfile: ./Dockerfile
+      # Configure Docker to use gcloud command line tool
+      - run: |-
+          gcloud --quiet auth configure-docker
 
-            - name: Build Client and Nginx Image
-              uses: whoan/docker-build-with-cache-action@v5
-              with:
-                username: _json_key
-                password: ${{ secrets.GCE_SA_KEY }}
-                registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
-                image_tag: ${{ github.sha }}
-                context: ./client
-                dockerfile: ./Dockerfile
-                build_extra_args: "--build-arg=build_environment=staging --build-arg=nginx_conf=demo.conf"
+      - name: Build appserver image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
+          image_tag: ${{ github.sha }}
+          context: ./appserver
+          dockerfile: ./Dockerfile
 
-            - name: Build Redis
-              uses: whoan/docker-build-with-cache-action@v5
-              with:
-                username: _json_key
-                password: ${{ secrets.GCE_SA_KEY }}
-                registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
-                image_tag: ${{ github.sha }}
-                context: ./cache-invalidator
-                dockerfile: ./Dockerfile
+      - name: Build Client and Nginx Image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: _json_key
+          password: ${{ secrets.GCE_SA_KEY }}
+          registry: gcr.io
+          image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
+          image_tag: ${{ github.sha }}
+          context: ./client
+          dockerfile: ./Dockerfile
 
-            - name: Build NLP
-              uses: whoan/docker-build-with-cache-action@v5
-              with:
-                username: _json_key
-                password: ${{ secrets.GCE_SA_KEY }}
-                registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
-                image_tag: ${{ github.sha }}
-                context: ./nlp
-                dockerfile: ./Dockerfile
+  deploy:
+    name: Deploy
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy application
+        uses: ./.github/actions/ansible
+        with:
+          workspace_dir: 'deployment/ansible'
+          playbook_file_path: 'playbooks/deploy_nlp_training.yml'
+          inventory_file_path: 'inventories/hosts.yml'
+          vault_password: ${{ secrets.ANSIBLE_VAULT }}
+          ssh_key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+          options: |
+            --extra-vars webserver=demo
+            --extra-vars set_docker_img_hash=${{ github.sha }}
+            --extra-vars set_git_timestamp=${{ needs.build.outputs.output1 }}
+            --extra-vars set_app_build_number=${{ needs.build.outputs.output2 }}
+            --extra-vars set_app_version=${{ needs.build.outputs.output3 }}
+            --user ansible
+            --verbose
