@@ -3,12 +3,12 @@ import marshmallow_dataclass
 from marshmallow import fields, validates_schema, ValidationError
 
 from neo4japp.models import Files, Projects
-from neo4japp.models.files import FilePrivileges
+from neo4japp.models.files import FilePrivileges, FileLock
 from neo4japp.models.projects import ProjectPrivileges
 from neo4japp.schemas.account import UserSchema
 from neo4japp.schemas.base import CamelCaseSchema
-from neo4japp.schemas.common import FileUploadField
-from neo4japp.schemas.fields import SortField
+from neo4japp.schemas.common import ResultListSchema, ResultMapping, SingleResult
+from neo4japp.schemas.fields import SortField, FileUploadField
 
 
 # ========================================
@@ -56,8 +56,7 @@ class ProjectListRequestSchema(CamelCaseSchema):
     }, missing=lambda: [Projects.name])
 
 
-class ProjectListSchema(CamelCaseSchema):
-    total = fields.Integer()
+class ProjectListSchema(ResultListSchema):
     results = fields.List(fields.Nested(ProjectSchema))
 
 
@@ -92,14 +91,13 @@ class BulkProjectUpdateRequestSchema(CamelCaseSchema):
 # Response
 # ----------------------------------------
 
-class ProjectResponseSchema(CamelCaseSchema):
-    project = fields.Nested(ProjectSchema)
+class ProjectResponseSchema(SingleResult):
+    result = fields.Nested(ProjectSchema)
 
 
-class MultipleProjectResponseSchema(CamelCaseSchema):
+class MultipleProjectResponseSchema(ResultMapping):
     results = fields.Dict(keys=fields.String(),
                           values=fields.Nested(ProjectSchema))
-    missing = fields.List(fields.String)
 
 
 # ========================================
@@ -257,18 +255,16 @@ class FileExportRequestSchema(CamelCaseSchema):
 # ----------------------------------------
 
 
-class FileResponseSchema(CamelCaseSchema):
+class FileResponseSchema(SingleResult):
     result = fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',))
 
 
-class MultipleFileResponseSchema(CamelCaseSchema):
+class MultipleFileResponseSchema(ResultMapping):
     results = fields.Dict(keys=fields.String(),
                           values=fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',)))
-    missing = fields.List(fields.String)
 
 
-class FileListSchema(CamelCaseSchema):
-    total = fields.Integer()
+class FileListSchema(ResultListSchema):
     results = fields.List(fields.Nested(FileSchema))
 
 
@@ -295,9 +291,8 @@ class FileVersionSchema(CamelCaseSchema):
     creation_date = fields.DateTime()
 
 
-class FileVersionHistorySchema(CamelCaseSchema):
+class FileVersionHistorySchema(ResultListSchema):
     object = fields.Nested(FileSchema, exclude=('project.***ARANGO_USERNAME***',))
-    total = fields.Integer()
     results = fields.List(fields.Nested(FileVersionSchema))
 
 
@@ -306,3 +301,34 @@ class FileVersionHistorySchema(CamelCaseSchema):
 
 class FileVersionResponseSchema(CamelCaseSchema):
     version = fields.Nested(FileVersionSchema)
+
+
+# ========================================
+# File Locks
+# ========================================
+
+class FileLockSchema(CamelCaseSchema):
+    user = fields.Nested(UserSchema)
+    acquire_date = fields.DateTime()
+    own = fields.Method('get_own')
+
+    def get_own(self, obj: FileLock):
+        return self.context['current_user'].id == obj.user.id
+
+
+# Requests
+# ----------------------------------------
+
+class FileLockCreateRequest(CamelCaseSchema):
+    own = fields.Boolean(required=True, validate=marshmallow.validate.OneOf([True]))
+
+
+class FileLockDeleteRequest(CamelCaseSchema):
+    own = fields.Boolean(required=True, validate=marshmallow.validate.OneOf([True]))
+
+
+# Responses
+# ----------------------------------------
+
+class FileLockListResponse(ResultListSchema):
+    results = fields.List(fields.Nested(FileLockSchema))
