@@ -7,4 +7,4 @@
 ## Getting Started
 
 To run a local, functional, developmental version of this repository, follow the
-[instructions on the wiki](https://github.com/SBRG/kg-prototypes/wiki/Development-Environment).
+[instructions on the wiki](https://github.com/SBRG/kg-prototypes/wiki).
