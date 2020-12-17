@@ -23,6 +23,11 @@ import { TooltipComponent } from 'app/shared/components/tooltip.component';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
 
+export enum AssociatedType {
+    GENE,
+    CHEMICAL,
+    DISEASE
+}
 @Component({
     selector: 'app-context-menu',
     templateUrl: './context-menu.component.html',
@@ -41,6 +46,9 @@ export class ContextMenuComponent extends TooltipComponent implements AfterViewI
     @Output() selectNeighbors: EventEmitter<IdType> = new EventEmitter();
     @Output() pullOutNodeFromCluster: EventEmitter<IdType> = new EventEmitter();
     @Output() openDataSidebar: EventEmitter<boolean> = new EventEmitter();
+    @Output() openTypeSidebar: EventEmitter<AssociatedType> = new EventEmitter();
+
+    associatedType = AssociatedType;
 
     FADEOUT_STYLE = 'context-menu fade-out';
     DEFAULT_STYLE = 'context-menu';
@@ -244,6 +252,11 @@ export class ContextMenuComponent extends TooltipComponent implements AfterViewI
 
     requestDataSidenav() {
         this.openDataSidebar.emit(true);
+        this.hideTooltip();
+    }
+
+    requestTypeSidenav(type: AssociatedType) {
+        this.openTypeSidebar.emit(type);
         this.hideTooltip();
     }
 }

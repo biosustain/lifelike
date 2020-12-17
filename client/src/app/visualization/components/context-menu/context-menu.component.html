@@ -98,7 +98,7 @@
     <div
       class="context-menu-item"
       (mouseenter)="hideAllSubMenus()"
-      (click)="requestDataSidenav()"
+      (click)="requestTypeSidenav(associatedType.GENE)"
     >Show Associated Genes</div>
   </div>
 </ng-template>
@@ -108,7 +108,7 @@
     <div
       class="context-menu-item"
       (mouseenter)="hideAllSubMenus()"
-      (click)="requestDataSidenav()"
+      (click)="requestTypeSidenav(associatedType.CHEMICAL)"
     >Show Associated Chemicals</div>
   </div>
 </ng-template>
@@ -118,7 +118,7 @@
     <div
       class="context-menu-item"
       (mouseenter)="hideAllSubMenus()"
-      (click)="requestDataSidenav()"
+      (click)="requestTypeSidenav(associatedType.DISEASE)"
     >Show Associated Diseases</div>
   </div>
 </ng-template>

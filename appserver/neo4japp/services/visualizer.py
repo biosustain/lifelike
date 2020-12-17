@@ -12,6 +12,7 @@ from neo4japp.data_transfer_objects.visualization import (
     ReferenceTablePair,
     ReferenceTableRow,
     Snippet,
+    GetAssociatedTypesResult,
 )
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.services import KgService
@@ -216,6 +217,31 @@ class VisualizerService(KgService):
             query_data=edges,
         )
 
+    def get_associated_types_from_node(
+        self,
+        from_id: int,
+        to_label: str,
+    ):
+        sanitized_to_label = ''
+        if (to_label == 'Gene'):
+            sanitized_to_label = 'Gene'
+        elif (to_label == 'Chemical'):
+            sanitized_to_label = 'Chemical'
+        elif (to_label == 'Disease'):
+            sanitized_to_label = 'Disease'
+
+        query = self.get_associated_types_from_node_query(sanitized_to_label)
+        results = self.graph.run(
+            query,
+            {
+                'from_id': from_id,
+            }
+        ).data()
+
+        return GetAssociatedTypesResult(
+            associated_data=results
+        )
+
     def get_expand_query(self):
         query = """
                 MATCH (n)
@@ -226,6 +252,22 @@ class VisualizerService(KgService):
                     apoc.convert.toSet([n] + collect(m)) AS nodes,
                     apoc.convert.toSet(collect(l)) AS relationships
             """
+        return query
+
+    def get_associated_types_from_node_query(self, to_label: str):
+        query = """
+            MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t:{})
+            WHERE
+                ID(f) = $from_id
+            WITH
+                a AS association,
+                ID(f) as from_id,
+                ID(t) as to_id,
+                t.name as name
+            MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            RETURN name, COUNT(s) as snippet_count
+            ORDER BY snippet_count DESC
+        """.format(to_label)
         return query
 
     def get_snippets_from_edge_query(self, from_label: str, to_label: str):

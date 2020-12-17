@@ -13,6 +13,7 @@ from neo4japp.data_transfer_objects.visualization import (
     GetSnippetsForEdgeRequest,
     GetSnippetsForClusterRequest,
     ReferenceTableDataRequest,
+    NodeAssociatedTypesRequest,
 )
 from neo4japp.exceptions import (
     InvalidArgumentsException,
@@ -120,3 +121,16 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
 @jsonify_with_class()
 def get_annotation_legend():
     return SuccessResponse(result=ANNOTATION_STYLES_DICT, status_code=200)
+
+
+@bp.route('/get-node-associated-types', methods=['POST'])
+@auth.login_required
+@jsonify_with_class(NodeAssociatedTypesRequest)
+def get_node_associated_types(req: NodeAssociatedTypesRequest):
+    visualizer = get_visualizer_service()
+
+    associated_types_result = visualizer.get_associated_types_from_node(
+        from_id=req.node_id,
+        to_label=req.to_label,
+    )
+    return SuccessResponse(associated_types_result, status_code=200)

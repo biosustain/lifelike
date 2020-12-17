@@ -7,6 +7,7 @@ import {
     DuplicateVisNode,
     DuplicateVisEdge
 } from './neo4j.interface';
+import { AssociatedType } from 'app/visualization/components/context-menu/context-menu.component';
 
 // Begin Misc. Interfaces
 export interface AssociationSnippet {
@@ -14,6 +15,11 @@ export interface AssociationSnippet {
     publication: Publication;
     rawScore: number;
     normalizedScore: number;
+}
+
+export interface NodeAssociatedType {
+    name: string;
+    snippetCount: number;
 }
 
 export interface ClusterData {
@@ -116,6 +122,11 @@ export interface SidenavNodeEntity {
     edges: VisEdge[];
 }
 
+export interface SidenavTypeEntity {
+    data: VisNode;
+    type: AssociatedType;
+}
+
 export interface NodeDisplayInfo {
     primaryLabel: string;
     displayName: string;
@@ -160,6 +171,11 @@ export interface ReferenceTableDataRequest {
     nodeEdgePairs: ReferenceTablePair[];
 }
 
+export interface NodeAssociatedTypesRequest {
+    node_id: number;
+    to_label: string;
+}
+
 // End Request Interfaces
 
 // Begin Response Interfaces
@@ -192,6 +208,10 @@ export interface GetSnippetsResult {
     fromNodeId: number;
     toNodeId: number;
     association: string;
+}
+
+export interface GetAssociatedTypeResult {
+    associatedData: NodeAssociatedType[];
 }
 
 // End Response Interfaces
