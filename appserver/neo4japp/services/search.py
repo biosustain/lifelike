@@ -9,9 +9,15 @@ from neo4japp.data_transfer_objects import (
     FTSResult,
     FTSTaxonomyRecord
 )
+from neo4japp.exceptions import InvalidArgumentsException
 from neo4japp.models import GraphNode
 from neo4japp.services.common import GraphBaseDao
-from neo4japp.util import get_first_known_label_from_node, get_known_domain_labels_from_node
+from neo4japp.util import (
+    get_first_known_label_from_node,
+    get_known_domain_labels_from_node,
+    normalize_str
+)
+from neo4japp.utils.logger import EventLog
 
 
 class SearchService(GraphBaseDao):
@@ -79,43 +85,55 @@ class SearchService(GraphBaseDao):
         domains: List[str],
         entities: List[str],
     ):
-        domains_list = {
-            'ChEBI': 'n:db_CHEBI',
-            'GO': 'n:db_GO',
-            'Literature': 'n:db_Literature',
-            'MeSH': 'n:db_MESH',
-            'NCBI': 'n:db_NCBI',
-            'UniProt': 'n:db_UniProt'
+        domains_map = {
+            'chebi': 'n:db_CHEBI',
+            'go': 'n:db_GO',
+            'literature': 'n:db_Literature',
+            'mesh': 'n:db_MESH',
+            'ncbi': 'n:db_NCBI',
+            'uniprot': 'n:db_UniProt'
         }
-        entities_list = {
-            'Biological Process': 'n:BiologicalProcess',
-            'Cellular Component': 'n:CellularComponent',
-            'Chemicals': 'n:Chemical',
-            'Diseases': 'n:Disease',
-            'Genes': 'n:Gene',
-            'Molecular Function': 'n:MolecularFunction',
-            'Proteins': 'n:Protein',
-            'Taxonomy': 'n:Taxonomy'
+        entities_map = {
+            'biologicalprocess': 'n:BiologicalProcess',
+            'cellularcomponent': 'n:CellularComponent',
+            'chemical': 'n:Chemical',
+            'disease': 'n:Disease',
+            'gene': 'n:Gene',
+            'molecularfunction': 'n:MolecularFunction',
+            'protein': 'n:Protein',
+            'taxonomy': 'n:Taxonomy'
         }
         result_domains = []
         result_entities = []
 
+        # NOTE: If the user supplies an entity/domain that *isn't* in these maps,
+        # they may get unexpected results! We essentially silently ignore any
+        # unexpected values in favor of getting *some* results back.
+
         for domain in domains:
-            if domain in domains_list:
-                result_domains.append(domains_list[domain])
+            normalized_domain = normalize_str(domain)
+            if normalized_domain in domains_map:
+                result_domains.append(domains_map[normalized_domain])
             else:
-                current_app.logger.info(f'Filter not found: {domain}')
+                current_app.logger.info(
+                    f'Found an unexpected value in `domains` list: {domain}',
+                    extra=EventLog(event_type='visualizer_search').to_dict()
+                )
 
         for entity in entities:
-            if entity in entities_list:
-                result_entities.append(entities_list[entity])
+            normalized_entity = normalize_str(entity)
+            if normalized_entity in entities_map:
+                result_entities.append(entities_map[normalized_entity])
             else:
-                current_app.logger.info(f'Filter not found: {entity}')
+                current_app.logger.info(
+                    f'Found an unexpected value in `entities` list: {entity}',
+                    extra=EventLog(event_type='visualizer_search').to_dict()
+                )
 
         # If the domain list or entity list provided by the user is empty, then assume ALL
         # domains/entities should be used.
-        result_domains = result_domains if len(result_domains) > 0 else [val for val in domains_list.values()]  # noqa
-        result_entities = result_entities if len(result_entities) > 0 else [val for val in entities_list.values()]  # noqa
+        result_domains = result_domains if len(result_domains) > 0 else [val for val in domains_map.values()]  # noqa
+        result_entities = result_entities if len(result_entities) > 0 else [val for val in entities_map.values()]  # noqa
 
         return f'({" OR ".join(result_domains)}) AND ({" OR ".join(result_entities)})'
 

@@ -18,11 +18,11 @@ export class GraphSearchFormComponent {
   entityChoices: string[] = [
     'Biological Process',
     'Cellular Component',
-    'Chemicals',
-    'Diseases',
-    'Genes',
+    'Chemical',
+    'Disease',
+    'Gene',
     'Molecular Function',
-    'Proteins',
+    'Protein',
     'Taxonomy',
   ];
   organismChoice: string;
