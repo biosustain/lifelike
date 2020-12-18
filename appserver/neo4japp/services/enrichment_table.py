@@ -44,6 +44,7 @@ class EnrichmentTableService(KgService):
             result_list.append(item)
         return result_list
 
+    # Use index to maintain input order.
     def match_ncbi_genes_query(self):
         return """
         WITH $geneNames as genes
