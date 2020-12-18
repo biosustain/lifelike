@@ -15,7 +15,7 @@ import {
 } from 'rxjs';
 import {
     catchError,
-    switchMap,
+    mergeMap,
     filter,
     take,
 } from 'rxjs/operators';
@@ -52,7 +52,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
             this.isRefreshingToken = true;
             this.refreshTokenSubj.next(null);
             return this.auth.refresh().pipe(
-                switchMap((token) => {
+                mergeMap((token) => {
                     this.isRefreshingToken = false;
                     this.refreshTokenSubj.next(token.access_jwt);
                     return next.handle(this.addAuthHeader(request));
@@ -74,7 +74,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
             return this.refreshTokenSubj.pipe(
                 filter(token => token != null),
                 take(1),
-                switchMap(() => next.handle(this.addAuthHeader(request)))
+                mergeMap(() => next.handle(this.addAuthHeader(request)))
             );
         }
     }
