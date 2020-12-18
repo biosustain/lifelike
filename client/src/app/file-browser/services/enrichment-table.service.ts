@@ -126,6 +126,7 @@ export class EnrichmentTableService extends AbstractService {
     super(auth, http);
   }
 
+  // Outdated, based on previous worksheet file.
   getWorksheet(worksheetId): Observable<Worksheet> {
     return this.http.get<Worksheet>(
       `${this.worksheetAPI}/get-neo4j-worksheet/${encodeURIComponent(worksheetId)}`,
@@ -135,6 +136,7 @@ export class EnrichmentTableService extends AbstractService {
     );
   }
 
+  // Match input gene names to NCBI nodes with same name.
   matchNCBINodes(geneNames: string[], organism: string): Observable<NCBIWrapper[]> {
     return this.http.post<{result: NCBIWrapper[]}>(
       `${this.worksheetAPI}/match-ncbi-nodes`,
@@ -145,6 +147,7 @@ export class EnrichmentTableService extends AbstractService {
     );
   }
 
+  // Match NCBI node ids to enrichment domains.
   getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<EnrichmentWrapper[]> {
     return this.http.post<{result: EnrichmentWrapper[]}>(
       `${this.kgAPI}/get-ncbi-nodes/enrichment-domains`,
