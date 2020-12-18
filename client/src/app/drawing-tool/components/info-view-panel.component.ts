@@ -19,11 +19,11 @@ export class InfoViewPanelComponent {
   }
 
   goToLink(url) {
-    openPotentialInternalLink(this.workspaceManager, url);
+    openPotentialInternalLink(this.workspaceManager, url, true);
   }
 
   goToSource(url): void {
-    openPotentialInternalLink(this.workspaceManager, url);
+    openPotentialInternalLink(this.workspaceManager, url, false);
   }
 
   get name(): string {
