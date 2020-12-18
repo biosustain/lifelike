@@ -26,6 +26,9 @@ class EnrichmentTableService(KgService):
         super().__init__(graph=graph, session=session)
 
     def match_ncbi_genes(self, geneNames: List[str], organism: str):
+        """ Match list of gene names to list of NCBI gene nodes with same name and has taxonomy
+            ID of given organism. Input order is maintained in result.
+        """
         query = self.match_ncbi_genes_query()
         result = self.graph.run(
             query,
@@ -44,7 +47,6 @@ class EnrichmentTableService(KgService):
             result_list.append(item)
         return result_list
 
-    # Use index to maintain input order.
     def match_ncbi_genes_query(self):
         return """
         WITH $geneNames as genes
