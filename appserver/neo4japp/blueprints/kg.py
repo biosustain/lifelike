@@ -99,6 +99,10 @@ def get_ncbi_regulon_nodes():
 @bp.route('/get-ncbi-nodes/enrichment-domains', methods=['POST'])
 @auth.login_required
 def get_ncbi_enrichment_domains():
+    """ Find all domains matched to given node id, then return dictionary with all domains as
+        result. All domains should have matching indices e.g. regulon[1] should be data from
+        matching same node as uniprot[1].
+    """
     data = request.get_json()
     node_ids = data['nodeIds']
     taxID = data['taxID']
