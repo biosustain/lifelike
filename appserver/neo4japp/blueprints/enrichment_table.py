@@ -18,6 +18,7 @@ from neo4japp.utils.logger import UserEventLog
 bp = Blueprint('enrichment-table-api', __name__, url_prefix='/enrichment-table')
 
 
+# Outdated.
 @bp.route('/get-neo4j-worksheet/<string:worksheet_id>', methods=['GET'])
 @auth.login_required
 def get_neo4j_worksheet(worksheet_id: str):
