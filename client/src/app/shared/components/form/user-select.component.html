@@ -1,0 +1,11 @@
+<app-select-input (choiceListRequest)="processRequest($event)"
+                  [choices]="choices" [choiceToKey]="userChoiceToKey" [multiple]="multiple"
+                  [placeholder]="placeholder" [(ngModel)]="value" (ngModelChange)="onModelChange($event)"
+                  #selectInput>
+  <ng-template #inputChoiceTemplate let-choice>
+    <app-user [user]="choice"></app-user>
+  </ng-template>
+  <ng-template #dropdownChoiceTemplate let-choice let-request="request">
+    <app-user [user]="choice" [highlightTerms]="request.query.length ? [request.query] : []"></app-user>
+  </ng-template>
+</app-select-input>

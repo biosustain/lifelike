@@ -4,6 +4,7 @@ import { ObjectVersionData } from '../schema';
 import { CollectionModal } from '../../shared/utils/collection-modal';
 import { FilesystemObject } from './filesystem-object';
 import { cloneDeep } from 'lodash';
+import { ModalList } from '../../shared/models';
 
 export class ObjectVersion {
   hashId: string;
@@ -64,9 +65,5 @@ export class ObjectVersion {
   }
 }
 
-export class ObjectVersionHistory {
-  public collectionSize = 0;
-  public readonly results = new CollectionModal<ObjectVersion>([], {
-    multipleSelection: true,
-  });
+export class ObjectVersionHistory extends ModalList<ObjectVersion> {
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ProjectService } from './project.service';
+import { ProjectsService } from './projects.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
@@ -16,7 +16,7 @@ import { ProjectCollaboratorsDialogComponent } from '../components/dialog/projec
 @Injectable()
 export class ProjectActions {
 
-  constructor(protected readonly projectService: ProjectService,
+  constructor(protected readonly projectService: ProjectsService,
               protected readonly modalService: NgbModal,
               protected readonly messageDialog: MessageDialog,
               protected readonly errorHandler: ErrorHandler,

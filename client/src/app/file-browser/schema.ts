@@ -50,6 +50,15 @@ export interface BulkProjectUpdateRequest {
 }
 
 // ========================================
+// Collaborators
+// ========================================
+
+export interface CollaboratorData {
+  user: AppUser;
+  roleName: string;
+}
+
+// ========================================
 // Objects
 // ========================================
 

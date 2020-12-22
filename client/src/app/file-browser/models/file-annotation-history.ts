@@ -8,6 +8,7 @@ import {
 import { CollectionModal } from '../../shared/utils/collection-modal';
 import { AnnotationChangeExclusionMeta, Meta } from '../../pdf-viewer/annotation-type';
 import { startCase } from 'lodash';
+import { ModalList } from '../../shared/models';
 
 class AnnotationChange {
   action: 'added' | 'removed';
@@ -91,11 +92,11 @@ export class FileAnnotationChange {
  * A log of changes to annotations for a file.
  * @see FilesystemService#getAnnotationHistory
  */
-export class FileAnnotationHistory {
-  public collectionSize = 0;
-  public readonly results = new CollectionModal<FileAnnotationChange>([], {
-    multipleSelection: false,
-  });
+export class FileAnnotationHistory extends ModalList<FileAnnotationChange> {
+  constructor() {
+    super();
+    this.results.multipleSelection = false;
+  }
 
   update(data: FileAnnotationHistoryResponse): FileAnnotationHistory {
     this.collectionSize = data.total;
