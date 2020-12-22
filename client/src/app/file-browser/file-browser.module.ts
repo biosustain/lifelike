@@ -19,7 +19,7 @@ import { ObjectSelectionDialogComponent } from './components/dialog/object-selec
 import { FilesystemService } from './services/filesystem.service';
 import { ObjectListComponent } from './components/object-list.component';
 import { FilesystemObjectActions } from './services/filesystem-object-actions';
-import { ProjectService } from './services/project.service';
+import { ProjectsService } from './services/projects.service';
 import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialog.component';
 import { ObjectVersionHistoryComponent } from './components/object-version-history.component';
 import { ObjectVersionHistoryDialogComponent } from './components/dialog/object-version-history-dialog.component';
@@ -116,7 +116,7 @@ import { AnnotationsService } from './services/annotations.service';
     FileAnnotationHistoryComponent,
   ],
   providers: [
-    ProjectService,
+    ProjectsService,
     FilesystemService,
     AnnotationsService,
     FilesystemObjectActions,

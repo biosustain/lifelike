@@ -13,7 +13,7 @@ import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { getObjectLabel } from '../utils/objects';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { ProjectService } from '../services/project.service';
+import { ProjectsService } from '../services/projects.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
@@ -35,7 +35,7 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
               protected readonly errorHandler: ErrorHandler,
               protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
-              protected readonly projectService: ProjectService,
+              protected readonly projectService: ProjectsService,
               protected readonly filesystemService: FilesystemService,
               protected readonly actions: FilesystemObjectActions) {
   }

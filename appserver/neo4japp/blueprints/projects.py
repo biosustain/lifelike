@@ -12,6 +12,7 @@ from marshmallow import ValidationError
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload
+from sqlalchemy.orm.exc import NoResultFound
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
@@ -33,6 +34,8 @@ from neo4japp.schemas.filesystem import ProjectListSchema, ProjectListRequestSch
     ProjectSearchRequestSchema, \
     ProjectCreateSchema, ProjectResponseSchema, BulkProjectRequestSchema, \
     BulkProjectUpdateRequestSchema, MultipleProjectResponseSchema, ProjectUpdateRequestSchema
+from neo4japp.schemas.projects import ProjectCollaboratorListSchema, \
+    ProjectCollaboratorUpdateOrCreateRequest
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.request import Pagination
 
@@ -354,6 +357,61 @@ class ProjectCollaboratorsListView(ProjectBaseView):
 
         paginated_result = query.paginate(pagination.page, pagination.limit, False)
 
+        return jsonify(ProjectCollaboratorListSchema().dump({
+            'results': [{
+                'user': item[0],
+                'role_name': item[1],
+            } for item in paginated_result.items]
+        }))
+
+
+class ProjectCollaboratorsUserDetailView(ProjectBaseView):
+    decorators = [auth.login_required]
+
+    def _get_target_user(self, user_hash_id):
+        current_user = g.current_user
+
+        try:
+            target_user = db.session.query(AppUser) \
+                .filter(AppUser.hash_id == user_hash_id) \
+                .options(raiseload('*')) \
+                .one()
+        except NoResultFound:
+            raise ValidationError("The requested user could not be found.",
+                                  "user_hash_id")
+
+        if target_user.id == current_user.id:
+            raise ValidationError("You cannot edit yourself.",
+                                  "user_hash_id")
+
+        return target_user
+
+    @use_args(ProjectCollaboratorUpdateOrCreateRequest)
+    def put(self, params, hash_id, user_hash_id):
+        proj_service = get_projects_service()
+        current_user = g.current_user
+        project = self.get_nondeleted_project(Projects.hash_id == hash_id)
+        self.check_project_permissions([project], current_user, ['administrable'])
+
+        target_user = self._get_target_user(user_hash_id)
+        new_role = db.session.query(AppRole).filter(AppRole.name == params['role_name']).one()
+        # WARNING: Likely susceptible to race conditions
+        proj_service.edit_collaborator(target_user, new_role, project)
+
+        return jsonify({})
+
+    def delete(self, params, hash_id, user_hash_id):
+        proj_service = get_projects_service()
+        current_user = g.current_user
+        project = self.get_nondeleted_project(Projects.hash_id == hash_id)
+        self.check_project_permissions([project], current_user, ['administrable'])
+
+        target_user = self._get_target_user(user_hash_id)
+        # WARNING: Likely susceptible to race conditions
+        proj_service.remove_collaborator(target_user, project)
+
+        return jsonify({})
+
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
 bp.add_url_rule('/search', view_func=ProjectSearchView.as_view('project_search'))
@@ -361,163 +419,6 @@ bp.add_url_rule('/projects', view_func=ProjectListView.as_view('project_list'))
 bp.add_url_rule('/projects/<string:hash_id>', view_func=ProjectDetailView.as_view('project_detail'))
 bp.add_url_rule('/projects/<string:hash_id>/collaborators',
                 view_func=ProjectCollaboratorsListView.as_view('project_collaborators_list'))
-
-
-@bp.route('/projects/<string:project_name>/collaborators', methods=['GET'])
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_project_collaborators(project_name: str):
-    projects = Projects.query.filter(
-        Projects.project_name == project_name
-    ).one_or_none()
-
-    if projects is None:
-        raise RecordNotFoundException(f'No such projects: {project_name}.')
-
-    user = g.current_user
-
-    yield user, projects
-
-    collaborators = db.session.query(
-        AppUser.id,
-        AppUser.email,
-        AppUser.username,
-        AppRole.name,
-    ).join(
-        projects_collaborator_role,
-        projects_collaborator_role.c.appuser_id == AppUser.id
-    ).join(
-        Projects
-    ).filter(
-        Projects.id == projects.id
-    ).join(
-        AppRole
-    ).all()  # TODO: paginate
-
-    yield jsonify({
-        'results': [{
-            'id': id,
-            'email': email,
-            'username': username,
-            'role': role,
-        } for id, email, username, role in collaborators]
-    }), 200
-
-
-@bp.route('/projects/<string:project_name>/collaborators/<string:email>', methods=['POST'])
-@auth.login_required
-@requires_project_role('project-admin')
-def add_collaborator(email: str, project_name: str):
-    proj_service = get_projects_service()
-
-    data = request.get_json()
-
-    project_role = data['role']
-
-    projects = Projects.query.filter(
-        Projects.project_name == project_name
-    ).one_or_none()
-
-    if projects is None:
-        raise RecordNotFoundException(f'No such projects: {project_name}.')
-
-    new_collaborator = AppUser.query.filter(
-        AppUser.email == email
-    ).one_or_none()
-
-    if new_collaborator is None:
-        raise RecordNotFoundException(f'No such email {email}.')
-
-    user = g.current_user
-
-    yield user, projects
-
-    # If new collaborator and user are the same, throw error
-    if new_collaborator.id == user.id:
-        raise NotAuthorizedException(f'You\'re already admin. Why downgrade? ¯\\_(ツ)_/¯')
-
-    new_role = AppRole.query.filter(AppRole.name == project_role).one()
-    proj_service.add_collaborator(new_collaborator, new_role, projects)
-
-    current_app.logger.info(
-        f'Collaborator <{new_collaborator.email}> added to project <{projects.project_name}>.',
-        # noqa
-        extra=UserEventLog(
-            username=g.current_user.username,
-            event_type='project collaborator'
-        ).to_dict())
-
-    yield jsonify({'result': 'success'}), 200
-
-
-@bp.route('/projects/<string:project_name>/collaborators/<string:username>', methods=['PUT'])
-@auth.login_required
-@requires_project_role('project-admin')
-def edit_collaborator(username: str, project_name: str):
-    proj_service = get_projects_service()
-
-    data = request.get_json()
-
-    project_role = data['role']
-
-    projects = Projects.query.filter(
-        Projects.project_name == project_name
-    ).one_or_none()
-
-    if projects is None:
-        raise RecordNotFoundException(f'No such projects: {project_name}')
-
-    user = g.current_user
-
-    yield user, projects
-
-    new_collaborator = AppUser.query.filter(
-        AppUser.username == username
-    ).one_or_none()
-
-    if new_collaborator is None:
-        raise RecordNotFoundException(f'No such username {username}')
-
-    new_role = AppRole.query.filter(AppRole.name == project_role).one()
-    proj_service.edit_collaborator(new_collaborator, new_role, projects)
-
-    current_app.logger.info(
-        f'Modified collaborator {username} for project {project_name}',
-        extra=UserEventLog(
-            username=g.current_user.username, event_type='edit project collaborator').to_dict()
-    )
-
-    yield jsonify({'result': 'success'}), 200
-
-
-@bp.route('/projects/<string:project_name>/collaborators/<string:username>', methods=['DELETE'])
-@auth.login_required
-@requires_project_role('project-admin')
-def remove_collaborator(username: str, project_name: str):
-    proj_service = get_projects_service()
-
-    user = g.current_user
-
-    projects = Projects.query.filter(
-        Projects.project_name == project_name
-    ).one_or_none()
-
-    if projects is None:
-        raise RecordNotFoundException(f'No such projects: {project_name}')
-
-    new_collaborator = AppUser.query.filter(
-        AppUser.username == username
-    ).one_or_none()
-
-    user = g.current_user
-
-    yield user, projects
-
-    proj_service.remove_collaborator(new_collaborator, projects)
-    current_app.logger.info(
-        f'Removed collaborator {username} for project {project_name}',
-        extra=UserEventLog(
-            username=g.current_user.username, event_type='remove project collaborator').to_dict()
-    )
-
-    yield jsonify({'result': 'success'}), 200
+bp.add_url_rule('/projects/<string:hash_id>/collaborators/<string:user_hash_id>',
+                view_func=ProjectCollaboratorsUserDetailView.as_view(
+                    'project_collaborators_user_detail'))

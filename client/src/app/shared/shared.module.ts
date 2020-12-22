@@ -59,6 +59,9 @@ import { VisJsNetworkComponent } from './components/vis-js-network/vis-js-networ
 import { PlotlySankeyDiagramComponent } from './components/plotly-sankey-diagram/plotly-sankey-diagram.component';
 import { SearchControlComponent } from './components/search-control.component';
 import { UserComponent } from './components/user.component';
+import { SelectInputComponent } from './components/form/select-input.component';
+import { UserSelectComponent } from './components/form/user-select.component';
+import { AccountsService } from './services/accounts.service';
 
 const components = [
   VisJsNetworkComponent,
@@ -98,6 +101,8 @@ const components = [
   TermHighlightComponent,
   SearchControlComponent,
   UserComponent,
+  SelectInputComponent,
+  UserSelectComponent,
 ];
 
 @NgModule({
@@ -134,6 +139,7 @@ const components = [
     SharedNgrxEffects,
     SharedSearchService,
     ApiService,
+    AccountsService,
   ],
   // exported modules are visible to modules that import this one
   exports: [

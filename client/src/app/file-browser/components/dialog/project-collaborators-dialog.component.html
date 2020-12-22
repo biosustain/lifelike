@@ -1,12 +1,92 @@
-<form (ngSubmit)="submit()">
-  <app-modal-header (cancel)="cancel()">
-    Project Collaborators
-  </app-modal-header>
+<app-modal-header (cancel)="cancel()">
+  Share '{{ project?.name }}'
+</app-modal-header>
 
-  <app-modal-body>
-  </app-modal-body>
+<app-modal-body>
+  <ng-container *ngIf="(collaborators$ | addStatus | async) as result">
+    <ng-template [ngIf]="result.error">
+      <app-module-error [error]="result.error">
+      </app-module-error>
+    </ng-template>
 
-  <app-modal-footer>
-    <button type="submit" class="btn btn-primary">Close</button>
-  </app-modal-footer>
-</form>
+    <ng-template [ngIf]="result.loading">
+      Loading...
+    </ng-template>
+
+    <ng-template [ngIf]="result.value">
+      <table class="table m-0">
+        <colgroup>
+          <col>
+          <col style="width: 1%">
+        </colgroup>
+        <thead>
+        <tr>
+          <th>Name</th>
+          <th class="text-right">Permissions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let collaborator of result.value.results.view">
+          <td class="align-middle">
+            <app-user [user]="collaborator.user"></app-user>
+          </td>
+          <td class="align-middle text-nowrap">
+            <div class="d-flex align-items-center">
+              <div ngbDropdown class="d-inline-block ml-1" container="body"
+                   placement="bottom-right top-right">
+                <a href="#" (click)="$event.preventDefault()" ngbDropdownToggle
+                   class="d-inline-block my-2">
+                  {{ collaborator.roleDescription }}
+                </a>
+                <div ngbDropdownMenu>
+                  <button *ngIf="collaborator.roleName != 'project-view'"
+                          ngbDropdownItem
+                          (click)="changeCollaboratorRole(collaborator, 'project-read')">
+                    Can view
+                  </button>
+                  <button *ngIf="collaborator.roleName != 'project-write'"
+                          ngbDropdownItem
+                          (click)="changeCollaboratorRole(collaborator, 'project-write')">
+                    Can edit
+                  </button>
+                  <button *ngIf="collaborator.roleName != 'project-admin'"
+                          ngbDropdownItem
+                          (click)="changeCollaboratorRole(collaborator, 'project-admin')">
+                    Can edit and invite
+                  </button>
+                  <div class="dropdown-divider"></div>
+                  <button ngbDropdownItem (click)="removeCollaborator(collaborator)">
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </ng-template>
+
+    <fieldset class="fieldset-properties mt-4">
+      <legend>Invite Collaborators</legend>
+      <form (ngSubmit)="addCollaborator()" [formGroup]="addForm">
+        <div class="d-flex align-items-start">
+          <app-user-select [multiple]="true" placeholder="Name or email address..."
+                           formControlName="users" class="flex-fill"></app-user-select>
+          <select class="custom-select ml-2" formControlName="roleName" id="role-name" style="width: auto"
+                  [appFormInput]="addForm.get('roleName')">
+            <option value="project-read">Can read</option>
+            <option value="project-write">Can edit</option>
+            <option value="project-admin">Can edit and invite</option>
+          </select>
+          <button type="submit" class="btn btn-secondary ml-2">Invite</button>
+        </div>
+      </form>
+    </fieldset>
+
+  </ng-container>
+</app-modal-body>
+
+<app-modal-footer>
+  <button type="submit" class="btn btn-primary">Close</button>
+</app-modal-footer>
