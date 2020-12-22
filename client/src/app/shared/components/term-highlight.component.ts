@@ -1,6 +1,4 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { annotationTypesMap } from '../annotation-styles';
-import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
 import { escape, escapeRegExp } from 'lodash';
 
 @Component({
@@ -10,6 +8,7 @@ import { escape, escapeRegExp } from 'lodash';
 export class TermHighlightComponent implements OnChanges {
   @Input() text = '';
   @Input() highlightTerms: string[] = [];
+  @Input() wholeWord = true;
   highlight: string;
 
   ngOnChanges(changes: SimpleChanges) {
@@ -18,7 +17,7 @@ export class TermHighlightComponent implements OnChanges {
         const phrasePatterns = this.highlightTerms.map(
           phrase => escapeRegExp(phrase).replace(/ +/g, ' +'),
         ).join('|');
-        const pattern = `\\b(${phrasePatterns})\\b`;
+        const pattern = this.wholeWord ? `\\b(${phrasePatterns})\\b` : `(${phrasePatterns})`;
         const regex = new RegExp(pattern, 'gi');
         this.highlight = '<snippet>' + escape(this.text)
           .replace(regex, '<highlight>$1</highlight>') + '</snippet>';

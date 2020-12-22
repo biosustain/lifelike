@@ -9,7 +9,7 @@ import { WorkspaceManager } from '../../../shared/workspace-manager';
 import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
 import { CollectionModal } from '../../../shared/utils/collection-modal';
 import { FormControl, FormGroup } from '@angular/forms';
-import { ProjectService } from '../../services/project.service';
+import { ProjectsService } from '../../services/projects.service';
 import { map } from 'rxjs/operators';
 import { ProjectImpl } from '../../models/filesystem-object';
 import { ProjectActions } from '../../services/project-actions';
@@ -48,7 +48,7 @@ export class BrowserProjectListComponent implements OnInit, OnDestroy {
   private loadTaskSubscription: Subscription;
 
   constructor(protected readonly projectSpaceService: ProjectSpaceService,
-              protected readonly projectService: ProjectService,
+              protected readonly projectService: ProjectsService,
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly progressDialog: ProgressDialog,
               protected readonly ngbModal: NgbModal,

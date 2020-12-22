@@ -7,15 +7,24 @@ import { Observable } from 'rxjs';
 import { ProjectImpl } from '../models/filesystem-object';
 import {
   BulkProjectUpdateRequest,
+  CollaboratorData,
   ProjectCreateRequest,
   ProjectData,
   ProjectSearchRequest,
 } from '../schema';
 import { encode } from 'punycode';
-import { ResultList, ResultMapping, SingleResult } from '../../shared/schemas/common';
+import {
+  PaginatedRequestOptions,
+  ResultList,
+  ResultMapping,
+  SingleResult,
+} from '../../shared/schemas/common';
+import { ModalList } from '../../shared/models';
+import { Collaborator } from '../models/collaborator';
+import { serializePaginatedParams } from '../../shared/utils/params';
 
 @Injectable()
-export class ProjectService {
+export class ProjectsService {
 
   constructor(protected readonly http: HttpClient,
               protected readonly apiService: ApiService) {
@@ -88,6 +97,24 @@ export class ProjectService {
           ret[itemHashId].update(itemData);
         }
         return ret;
+      }),
+    );
+  }
+
+  getCollaborators(hashId: string, options: PaginatedRequestOptions = {}):
+    Observable<ModalList<Collaborator>> {
+    return this.http.get<ResultList<CollaboratorData>>(
+      `/api/projects/projects/${hashId}/collaborators`, {
+        ...this.apiService.getHttpOptions(true),
+        params: serializePaginatedParams(options, false),
+      },
+    ).pipe(
+      map(data => {
+        const collaboratorsList = new ModalList<Collaborator>();
+        collaboratorsList.collectionSize = data.results.length;
+        collaboratorsList.results.replace(data.results.map(
+          itemData => new Collaborator().update(itemData)));
+        return collaboratorsList;
       }),
     );
   }

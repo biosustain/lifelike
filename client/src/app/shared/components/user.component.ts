@@ -5,8 +5,16 @@ import { AppUser } from '../../interfaces';
   selector: 'app-user',
   template: `
     <ng-container *ngIf="user; else noUser">
-      <span [ngbPopover]="infoPopover" popoverTitle="User Information" triggers="hover" container="body">
-      {{ user.firstName }} {{ user.lastName }}
+      <span [ngbPopover]="infoPopover" popoverTitle="User Information" triggers="hover"
+            container="body">
+        <ng-container *ngIf="highlightTerms.length; else noHighlight">
+          <app-term-highlight [text]="user.firstName + ' ' + user.lastName"
+                              [highlightTerms]="highlightTerms"
+                              [wholeWord]="false"></app-term-highlight>
+        </ng-container>
+        <ng-template #noHighlight>
+          {{ user.firstName }} {{ user.lastName }}
+        </ng-template>
       </span>
     </ng-container>
     <ng-template #noUser>
@@ -20,5 +28,6 @@ import { AppUser } from '../../interfaces';
 export class UserComponent {
 
   @Input() user: AppUser;
+  @Input() highlightTerms: string[] = [];
 
 }

@@ -4,7 +4,7 @@ import { from, Observable, Subscription } from 'rxjs';
 import { FilesystemService } from './filesystem.service';
 import { map } from 'rxjs/operators';
 import { ProjectList } from '../models/project-list';
-import { ProjectService } from './project.service';
+import { ProjectsService } from './projects.service';
 
 @Injectable()
 export class ObjectSelectService implements OnDestroy {
@@ -19,7 +19,7 @@ export class ObjectSelectService implements OnDestroy {
 
   private annotationSubscription: Subscription;
 
-  constructor(private readonly projectService: ProjectService,
+  constructor(private readonly projectService: ProjectsService,
               private readonly filesystemService: FilesystemService) {
     this.load(null);
   }

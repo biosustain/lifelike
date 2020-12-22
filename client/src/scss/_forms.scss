@@ -17,6 +17,10 @@
   }
 }
 
+.form-padding {
+  padding: $input-padding-y $input-padding-x;
+}
+
 fieldset.fieldset-properties {
   border-top: 1px solid $gray-400;
 
