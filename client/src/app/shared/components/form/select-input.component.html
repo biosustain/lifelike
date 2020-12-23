@@ -1,5 +1,6 @@
 <div #inputContainer
-     class="input-border rounded form-padding d-flex flex-wrap select-input-container">
+     class="input-border rounded form-padding d-flex flex-wrap select-input-container"
+    (click)="onContainerClick($event)">
   <div *ngFor="let choice of selectedChoices"
        class="d-inline-block badge-pill badge-secondary mb-1 mr-1 cursor-default">
     <button type="button" (click)="deselect(choice)"

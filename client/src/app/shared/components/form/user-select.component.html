@@ -11,14 +11,16 @@
               [highlightTerms]="request.query.length ? [request.query] : []"></app-user>
   </ng-template>
   <ng-template #noResultsTemplate let-request="request">
-    <ng-container *ngIf="request.query.trim().length">
-      <div class="mb-2">
+    <ng-container *ngIf="request.query.trim().length; else noQuery">
+      <div>
         <em>No users match your search.</em>
       </div>
     </ng-container>
-    <div>
-      <i class="fa fa-info-circle"></i>
-      Search for users by their name, user, or email address.
-    </div>
+    <ng-template #noQuery>
+      <div>
+        <i class="fa fa-info-circle"></i>
+        Search for users by their name, user, or email address.
+      </div>
+    </ng-template>
   </ng-template>
 </app-select-input>
