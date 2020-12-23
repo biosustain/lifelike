@@ -1,8 +1,11 @@
 import {Injectable} from '@angular/core';
-import {ProgressDialogComponent} from '../components/dialog/progress-dialog.component';
-import {Observable} from 'rxjs';
-import {Progress} from '../../interfaces/common-dialog.interface';
+
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+
+import {Observable} from 'rxjs';
+
+import {ProgressDialogComponent} from '../components/dialog/progress-dialog.component';
+import {Progress} from '../../interfaces/common-dialog.interface';
 
 export interface ProgressDialogArguments {
   title: string;

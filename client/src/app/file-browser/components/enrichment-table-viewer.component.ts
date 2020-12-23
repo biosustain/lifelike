@@ -5,29 +5,31 @@ import {
   Output,
   EventEmitter,
 } from '@angular/core';
-
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { Subscription, forkJoin, of, from } from 'rxjs';
+import { flatMap, map, catchError, mergeMap } from 'rxjs/operators';
+
 import { TableHeader, TableCell, TableLink } from 'app/shared/components/table/generic-table.component';
+import { ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { Subscription, forkJoin, Subject, interval, EMPTY } from 'rxjs';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { DownloadService } from 'app/shared/services/download.service';
+import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+
+import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
+import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
 import {
   EnrichmentTableService,
   NCBINode,
   EnrichmentWrapper,
   GoNode,
-  Synonym,
   NCBIWrapper,
 } from '../services/enrichment-table.service';
-import { ActivatedRoute } from '@angular/router';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { ModuleProperties } from 'app/shared/modules';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
-import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
-import {flatMap, map, debounceTime, exhaustMap, take, catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs/src/internal/observable/throwError';
-import { HttpErrorResponse } from '@angular/common/http';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
+
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -48,6 +50,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       { name: 'NCBI Gene Full Name', span: '1' },
     ]
   ];
+  // Map where column name is mapped to first row of table header.
   headerMap: Map<string, TableHeader[]> = new Map([
     ['Regulon', [{ name: 'Regulon Data', span: '3' }]],
     ['UniProt', [{ name: 'Uniprot Function', span: '1' }]],
@@ -55,6 +58,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     ['GO', [{ name: 'GO Annotation', span: '1' }]],
     ['Biocyc', [{ name: 'Biocyc Pathways', span: '1' }]],
   ]);
+  // Map where column name is mapped to second row of table header.
   secondHeaderMap: Map<string, TableHeader[]> = new Map([
     ['Default', [{ name: '', span: '1' }, { name: '', span: '1' }, { name: '', span: '1' }]],
     ['Regulon', [{ name: 'Regulator Family', span: '1' }, { name: 'Activated By', span: '1' },
@@ -87,12 +91,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   loadingData: boolean;
 
   constructor(
-    private readonly worksheetViewerService: EnrichmentTableService,
-    private readonly filesService: PdfFilesService,
-    private route: ActivatedRoute,
+    readonly route: ActivatedRoute,
+    readonly worksheetViewerService: EnrichmentTableService,
+    readonly filesService: PdfFilesService,
     readonly snackBar: MatSnackBar,
-    private readonly modalService: NgbModal,
-    private readonly errorHandler: ErrorHandler,
+    readonly modalService: NgbModal,
+    readonly errorHandler: ErrorHandler,
+    readonly downloadService: DownloadService,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
     this.fileId = this.route.snapshot.params.file_id || '';
@@ -103,7 +108,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       this.filesService.getEnrichmentData(this.projectName, this.fileId)
     );
     this.loadTaskSubscription = this.loadTask.results$.subscribe((result) => {
-      // digest the file content to get gene list and organism tax id and name
+      // parse the file content to get gene list and organism tax id and name
       this.sheetname = result.result.name.slice(0, -11);
       this.emitModuleProperties();
       const resultArray = result.result.data.split('/');
@@ -117,6 +122,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         this.taxID = '559292';
       }
       this.organism = resultArray[2];
+      // parse for column order/domain input
       if (resultArray.length > 3) {
         if (resultArray[3] !== '') {
           this.domains = resultArray[3].split(',');
@@ -151,6 +157,11 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.scrollTopAmount = e.target.scrollTop;
   }
 
+  // Start of Download for CSV section.
+
+  /**
+   * Function to that returns all data without changing current table view.
+   */
   loadAllEntries(): Promise<TableCell[][]> {
     return this.worksheetViewerService
     .matchNCBINodes(this.importGenes, this.taxID)
@@ -201,8 +212,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       })
     ).toPromise();
   }
-
-  processRowCSV(row) {
+  /**
+   * Convert an array representing a row for CSV formatting.
+   * @param row array that represents a row in a table
+   * @returns string that represents row in CSV format.
+   */
+  processRowCSV(row: string | any[]): string {
     let finalVal = '';
     for (let j = 0; j < row.length; j++) {
         let innerValue = row[j] === null ? '' : row[j].toString();
@@ -221,36 +236,30 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     return finalVal + '\n';
   }
 
+  /**
+   * Load all data, convert to CSV format and provide download.
+   */
   downloadAsCSV() {
-    try {
-    this.loadAllEntries().then(entries => {
-      const stringEntries = this.convertEntriesToString(entries);
-      let csvFile = '';
-      stringEntries.forEach(entry => csvFile += this.processRowCSV(entry));
-      const blob = new Blob([csvFile], { type: 'text/csv;charset=utf-8;' });
-      if (navigator.msSaveBlob) { // IE 10+
-          navigator.msSaveBlob(blob, this.sheetname);
-      } else {
-          const link = document.createElement('a');
-          if (link.download !== undefined) { // feature detection
-              // Browsers that support HTML5 download attribute
-              const url = URL.createObjectURL(blob);
-              link.setAttribute('href', url);
-              link.setAttribute('download', this.sheetname);
-              link.style.visibility = 'hidden';
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-          }
-      }
-      });
-    } catch (err) {
-      this.snackBar.open(`Something went wrong:` + err, 'Close', {
-        duration: 5000,
-      });
-    }
+    this.downloadService.requestDownload(
+      this.sheetname,
+      () => from(this.loadAllEntries()).pipe(
+        mergeMap(entries => {
+          const stringEntries = this.convertEntriesToString(entries);
+          let csvFile = '';
+          stringEntries.forEach(entry => csvFile += this.processRowCSV(entry));
+          return of(csvFile);
+        })
+      ),
+      'application/csv',
+      '.csv',
+    );
   }
 
+  /**
+   * Convert entire table to string.
+   * @param entries table entries in TableCell format
+   * @returns 2d string array that represents table.
+   */
   convertEntriesToString(entries: TableCell[][]): string[][] {
     const result = [];
     this.tableHeader.forEach(row => {
@@ -282,6 +291,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     return result;
   }
 
+  // End of Download for CSV section.
+
+  // Start of changing enrichment params section.
+
+  /**
+   * Opens EnrichmentTableOrderDialog that gives new column order.
+   */
   openOrderDialog(): Promise<any> {
     const dialogRef = this.modalService.open(EnrichmentTableOrderDialogComponent);
     dialogRef.componentInstance.domains = [...this.domains];
@@ -292,6 +308,10 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     }, () => {});
   }
 
+  /**
+   * Change current table entries to follow new column order.
+   * @param order new column order.
+   */
   reorderEntries(order: string[]) {
     const newEntries = [];
     this.tableEntries.forEach(row => {
@@ -302,6 +322,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       const newOrder = [...order];
       const newDomains = [...this.domains];
 
+      // Regulon column has three sub columns that need to be updated.
       if (newOrder.includes('Regulon')) {
         newOrder.splice(newOrder.indexOf('Regulon') + 1, 0, 'Regulon 1');
         newOrder.splice(newOrder.indexOf('Regulon') + 2, 0, 'Regulon 2');
@@ -325,6 +346,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.initializeHeaders();
   }
 
+  /**
+   * Edit enrichment params (essentially the file content) and updates table.
+   */
   openEnrichmentTableEditDialog(): Promise<any> {
     const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
     dialogRef.componentInstance.fileId = this.fileId;
@@ -347,6 +371,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     }, () => {});
   }
 
+  // End of changing enrichment params section.
+
   emitModuleProperties() {
     this.modulePropertiesChange.emit({
       title: this.sheetname ? this.sheetname : 'Enrichment Table',
@@ -354,6 +380,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Change the table headers based on column order and domain input.
+   */
   initializeHeaders() {
     this.tableHeader = [
       [
@@ -373,6 +402,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   *  Match list of inputted gene names to NCBI nodes with name stored in Neo4j.
+   */
   matchNCBINodes() {
     this.loadingData = true;
     this.worksheetViewerService
@@ -392,7 +424,10 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Remove any duplicates from the import gene list and populate duplicate list
+  /**
+   * Remove any duplicates from the import gene list and populate duplicate list
+   * @param arr string of gene names
+   */
   removeDuplicates(arr: string[]) {
     const duplicateArray: string[] = [];
     const uniqueArray: string[] = [];
@@ -407,7 +442,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.duplicateGenes = duplicateArray.join(', ');
   }
 
-  // Get data from enrichment domains.
+  /**
+   * Using node ids of matched NCBI nodes, get data from enrichment domains and add
+   * data to table entries.
+   * @param result result from matching to NCBI nodes
+   * @param currentGenes list of gene names used to process unmatched genes.
+   */
   getDomains(result: NCBIWrapper[], currentGenes: string[]) {
     const synonyms = result.map((wrapper) => wrapper.s.name);
     const ncbiNodes = result.map((wrapper) => wrapper.x);
@@ -429,6 +469,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         let newEntries = domainResult.map((wrapper) =>
           this.processEnrichmentNodeArray(wrapper, ncbiNodes, ncbiIds)
         );
+        // Add ncbi and imported gene name columns to relevant columns (left of domains)
         for (let i = 0; i < ncbiNodes.length; i++) {
           newEntries[i].unshift({
             text: ncbiNodes[i].full_name,
@@ -446,6 +487,11 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Process matched genes to add all unmatched gene names to bottom of table.
+   * @param synonyms matched gene names
+   * @param currentGenes initial list of gene names
+   */
   processUnmatchedNodes(synonyms: string[], currentGenes: string[]): TableCell[][] {
     this.geneNames = synonyms;
     const unmatchedGenes = currentGenes.filter(
@@ -470,7 +516,17 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     return result;
   }
 
-  // Process wrapper to convert domain data into string array that represents domain columns.
+ /**
+  * Process wrapper to convert domain data into string array that represents domain columns.
+  * Uses this.domains property (domain input) to determine whether to display in table.
+  * Uses this.columnOrder to determine which column/index to place in.
+  * If certain properties of domain (result or some property on result) are not defined, add TableCell with empty string.
+  * TODO: Could make more efficient by adding domain as input to domain get request.
+  * @param wrapper data returned from get domains request
+  * @param ncbiNodes matched ncbi data
+  * @param ncbiIds matched ncbi ids
+  * @returns table entries
+  */
   processEnrichmentNodeArray(wrapper: EnrichmentWrapper, ncbiNodes: NCBINode[], ncbiIds: number[]): TableCell[] {
     const result: TableCell[] = [];
     if (this.domains.includes('Regulon')) {
