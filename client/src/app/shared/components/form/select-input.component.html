@@ -40,7 +40,7 @@
     </div>
     <div class="dropdown-item cursor-pointer" href="#" *ngFor="let choice of unselectedChoices"
          appMouseNavigableItem
-         (click)="toggle(choice); $event.preventDefault()" tabindex="0"
+         (click)="toggle(choice)" tabindex="0"
          (keypress)="onItemKeyPress($event, choice)">
       <ng-container
         *ngTemplateOutlet="dropdownChoiceTemplateRef; context: { $implicit: choice, request: request }"></ng-container>
