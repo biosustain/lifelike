@@ -29,8 +29,8 @@ export class DropdownController {
 
   openRelative(element: HTMLElement, placement: Placement) {
     const inputRect = element.getBoundingClientRect();
-    const x = inputRect.x;
-    const y = inputRect.y + element.offsetHeight;
+    const x = inputRect.left;
+    const y = inputRect.top + element.offsetHeight;
     this.open(x, y);
   }
 
@@ -61,7 +61,7 @@ export class DropdownController {
     const viewportWidth = document.documentElement.clientWidth - this.viewportSpacing;
     const viewportHeight = document.documentElement.clientHeight - this.viewportSpacing;
 
-    let {x, y} = dropdownElement.getBoundingClientRect();
+    let {left, top} = dropdownElement.getBoundingClientRect();
     let width = dropdownElement.offsetWidth;
     let height = dropdownElement.offsetHeight;
 
@@ -79,21 +79,21 @@ export class DropdownController {
         height = viewportHeight;
       }
 
-      if (x + width > viewportWidth) {
-        x += (viewportWidth - (x + width));
+      if (left + width > viewportWidth) {
+        left += (viewportWidth - (left + width));
       }
 
-      if (y + height > viewportHeight) {
-        y += (viewportHeight - (y + height));
+      if (top + height > viewportHeight) {
+        top += (viewportHeight - (top + height));
       }
     } else {
-      const maxWidth = viewportWidth - x;
+      const maxWidth = viewportWidth - left;
       if (width > maxWidth) {
         forceWidth = maxWidth;
         width = maxWidth;
       }
 
-      const maxHeight = viewportHeight - y;
+      const maxHeight = viewportHeight - top;
       if (height > maxHeight) {
         forceHeight = maxHeight;
         height = maxHeight;
