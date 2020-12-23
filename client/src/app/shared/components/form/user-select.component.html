@@ -1,11 +1,24 @@
-<app-select-input (choiceListRequest)="processRequest($event)"
+<app-select-input (choiceListRequest)="processRequest($event)" [loading]="loading"
                   [choices]="choices" [choiceToKey]="userChoiceToKey" [multiple]="multiple"
-                  [placeholder]="placeholder" [(ngModel)]="value" (ngModelChange)="onModelChange($event)"
+                  [placeholder]="placeholder" [(ngModel)]="value"
+                  (ngModelChange)="onModelChange($event)"
                   #selectInput>
   <ng-template #inputChoiceTemplate let-choice>
     <app-user [user]="choice"></app-user>
   </ng-template>
   <ng-template #dropdownChoiceTemplate let-choice let-request="request">
-    <app-user [user]="choice" [highlightTerms]="request.query.length ? [request.query] : []"></app-user>
+    <app-user [user]="choice"
+              [highlightTerms]="request.query.length ? [request.query] : []"></app-user>
+  </ng-template>
+  <ng-template #noResultsTemplate let-request="request">
+    <ng-container *ngIf="request.query.trim().length">
+      <div class="mb-2">
+        <em>No users match your search.</em>
+      </div>
+    </ng-container>
+    <div>
+      <i class="fa fa-info-circle"></i>
+      Search for users by their name, user, or email address.
+    </div>
   </ng-template>
 </app-select-input>

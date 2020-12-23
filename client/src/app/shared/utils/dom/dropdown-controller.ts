@@ -27,14 +27,14 @@ export class DropdownController {
     this.renderer.appendChild(document.body, this.dropdownElement);
   }
 
-  openRelative(element: HTMLElement, placement: Placement) {
+  openRelative(element: HTMLElement, options: RelativeOpenOptions = {}) {
     const inputRect = element.getBoundingClientRect();
     const x = inputRect.left;
     const y = inputRect.top + element.offsetHeight;
-    this.open(x, y);
+    this.open(x, y, options);
   }
 
-  open(x: number, y: number) {
+  open(x: number, y: number, options: OpenOptions = {}) {
     this.placeInBody();
 
     const dropdownElement = this.dropdownElement;
@@ -45,7 +45,7 @@ export class DropdownController {
     dropdownElement.style.left = x + 'px';
     dropdownElement.style.top = y + 'px';
 
-    this.fit();
+    this.fit(options);
 
     if (this.focusAfterOpen) {
       // Deal with the fact that we move the menu to <body>, which screws up tabbing
@@ -55,7 +55,7 @@ export class DropdownController {
     }
   }
 
-  fit() {
+  fit(options: FitOptions = {}) {
     const dropdownElement = this.dropdownElement;
 
     const viewportWidth = document.documentElement.clientWidth - this.viewportSpacing;
@@ -69,9 +69,13 @@ export class DropdownController {
     let forceHeight: number = null;
 
     if (!this.fixedAnchorPoint) {
-      if (width > viewportWidth) {
-        forceWidth = viewportWidth;
-        width = viewportWidth;
+      let maxWidth = viewportWidth;
+      if (options.maxWidth != null) {
+        maxWidth = Math.min(maxWidth, viewportWidth - left);
+      }
+      if (width > maxWidth) {
+        forceWidth = maxWidth;
+        width = maxWidth;
       }
 
       if (height > viewportHeight) {
@@ -87,7 +91,10 @@ export class DropdownController {
         top += (viewportHeight - (top + height));
       }
     } else {
-      const maxWidth = viewportWidth - left;
+      let maxWidth = viewportWidth - left;
+      if (options.maxWidth != null) {
+        maxWidth = Math.min(maxWidth, options.maxWidth);
+      }
       if (width > maxWidth) {
         forceWidth = maxWidth;
         width = maxWidth;
@@ -129,3 +136,13 @@ export interface DropdownOptions {
 }
 
 export type Placement = 'bottom-left';
+
+export interface FitOptions {
+  maxWidth?: number;
+}
+
+export type OpenOptions = FitOptions;
+
+export interface RelativeOpenOptions extends OpenOptions {
+  placement?: Placement;
+}

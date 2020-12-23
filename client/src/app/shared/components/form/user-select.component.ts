@@ -2,11 +2,10 @@ import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ChoiceListRequest, SelectInputComponent } from './select-input.component';
 import { AppUser } from '../../../interfaces';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { of, Subject, Subscription } from 'rxjs';
-import { filter, map, mergeMap, switchMap } from 'rxjs/operators';
+import { Observable, of, Subject, Subscription } from 'rxjs';
+import { debounceTime, map, switchMap, tap } from 'rxjs/operators';
 import { AccountsService } from '../../services/accounts.service';
 import { ErrorHandler } from '../../services/error-handler.service';
-import { ModalList } from '../../models';
 
 @Component({
   selector: 'app-user-select',
@@ -28,6 +27,7 @@ export class UserSelectComponent implements ControlValueAccessor, OnInit, OnDest
   value: any;
   choices: readonly AppUser[] = [];
   queries$ = new Subject<ChoiceListRequest>();
+  requestLoading: ChoiceListRequest;
   protected subscriptions = new Subscription();
 
   constructor(protected readonly accountsService: AccountsService,
@@ -36,23 +36,34 @@ export class UserSelectComponent implements ControlValueAccessor, OnInit, OnDest
 
   ngOnInit(): void {
     this.subscriptions.add(this.queries$.pipe(
-      switchMap(request => {
+      tap(request => this.requestLoading = request),
+      debounceTime(250),
+      switchMap((request): Observable<[ChoiceListRequest, readonly AppUser[]]> => {
         if (request.query.trim().length > 0) {
           return this.accountsService.search({
             query: request.query,
           }).pipe(
-            map(list => list.results.items)
+            map(list => [request, list.results.items]),
           );
         } else {
-          return of([]);
+          return of([request, []]);
+        }
+      }),
+      tap(([request, items]) => {
+        if (this.requestLoading === request) {
+          this.requestLoading = null;
         }
       }),
       this.errorHandler.create(),
-    ).subscribe(results => this.choices = results));
+    ).subscribe(([request, items]) => this.choices = items));
   }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+  }
+
+  get loading(): boolean {
+    return this.requestLoading != null;
   }
 
   processRequest(request: ChoiceListRequest) {
