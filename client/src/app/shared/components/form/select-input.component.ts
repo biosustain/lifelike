@@ -6,9 +6,9 @@ import {
   ContentChild,
   ElementRef,
   EventEmitter,
-  HostListener,
   Input,
-  OnChanges, OnDestroy,
+  OnChanges,
+  OnDestroy,
   Output,
   Renderer2,
   SimpleChanges,
@@ -19,7 +19,6 @@ import { DropdownController, FitOptions } from '../../utils/dom/dropdown-control
 import { MouseNavigableDirective } from '../../directives/mouse-navigable.directive';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { fromEvent, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-select-input',
@@ -71,6 +70,9 @@ export class SelectInputComponent<T extends { label?: string }>
               protected readonly renderer: Renderer2) {
   }
 
+  // Lifecycle
+  // ---------------------------------
+
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
   }
@@ -78,6 +80,11 @@ export class SelectInputComponent<T extends { label?: string }>
   ngOnChanges(changes: SimpleChanges): void {
     if ('choices' in changes) {
       this.updateUnselectedChoices(changes.choices.currentValue);
+    }
+    if ('placeholder' in changes) {
+      if (this.inputElement) {
+        this.updatePlaceholder();
+      }
     }
   }
 
@@ -100,6 +107,8 @@ export class SelectInputComponent<T extends { label?: string }>
     this.subscriptions.add(fromEvent(document.body, 'focusin', {
       capture: true,
     }).subscribe(this.onInteractionEvent.bind(this)));
+
+    this.updatePlaceholder();
   }
 
   ngAfterViewChecked() {
@@ -107,6 +116,9 @@ export class SelectInputComponent<T extends { label?: string }>
       this.dropdownController.fit(this.fitOptions);
     }
   }
+
+  // Events
+  // ---------------------------------
 
   onInteractionEvent(e) {
     this.closeDropdownIfNotFocused(e.target);
@@ -181,6 +193,16 @@ export class SelectInputComponent<T extends { label?: string }>
     }
   }
 
+  onItemKeyPress(event: KeyboardEvent, choice: T) {
+    if (event.code === 'Enter' || event.code === 'Space') {
+      event.preventDefault();
+      this.toggle(choice);
+    }
+  }
+
+  // Update methods
+  // ---------------------------------
+
   protected updateQuery() {
     this.request = {
       query: this.inputElement.nativeElement.textContent,
@@ -192,6 +214,16 @@ export class SelectInputComponent<T extends { label?: string }>
     this.unselectedChoices = (choices as T[])
       .filter(choice => !this.isSelected(choice));
   }
+
+  protected updatePlaceholder() {
+    const escapedPlaceholder = window.CSS && CSS.escape ? CSS.escape(this.placeholder) :
+      this.placeholder.replace(/'/g, '');
+    this.inputElement.nativeElement.style.setProperty('--placeholder-text',
+      `'${escapedPlaceholder}'`);
+  }
+
+  // Dropdown control
+  // ---------------------------------
 
   get fitOptions(): FitOptions {
     return {
@@ -210,10 +242,6 @@ export class SelectInputComponent<T extends { label?: string }>
     this.dropdownController.close();
   }
 
-  protected focusOut() {
-    this.closeDropdown();
-  }
-
   private closeDropdownIfNotFocused(target: EventTarget | null) {
     if (target != null) {
       if (target !== this.inputElement.nativeElement &&
@@ -223,10 +251,20 @@ export class SelectInputComponent<T extends { label?: string }>
     }
   }
 
+  // Input control
+  // ---------------------------------
+
+  protected focusOut() {
+    this.closeDropdown();
+  }
+
   focusInput() {
     this.inputElement.nativeElement.focus();
     this.openDropdown();
   }
+
+  // Input and selection
+  // ---------------------------------
 
   get hasInput() {
     return this.selection.size || this.inputElement.nativeElement.innerText.length;
@@ -262,6 +300,10 @@ export class SelectInputComponent<T extends { label?: string }>
     }
   }
 
+  isSelected(choice: T) {
+    return this.selection.has(this.choiceToKey(choice));
+  }
+
   protected handleSelectionChange() {
     if (this.changeCallback) {
       this.changeCallback(this.selectedChoices);
@@ -280,9 +322,8 @@ export class SelectInputComponent<T extends { label?: string }>
     }
   }
 
-  isSelected(choice: T) {
-    return this.selection.has(this.choiceToKey(choice));
-  }
+  // Forms
+  // ---------------------------------
 
   registerOnChange(fn): void {
     this.changeCallback = fn;
@@ -298,13 +339,6 @@ export class SelectInputComponent<T extends { label?: string }>
       for (const choice of obj) {
         this.selection.set(this.choiceToKey(choice), choice);
       }
-    }
-  }
-
-  onItemKeyPress(event: KeyboardEvent, choice: T) {
-    if (event.code === 'Enter' || event.code === 'Space') {
-      event.preventDefault();
-      this.toggle(choice);
     }
   }
 }
