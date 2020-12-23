@@ -3,7 +3,7 @@ import { ChoiceListRequest, SelectInputComponent } from './select-input.componen
 import { AppUser } from '../../../interfaces';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { EMPTY, Observable, of, Subject, Subscription, timer } from 'rxjs';
-import { debounce, debounceTime, map, switchMap, tap } from 'rxjs/operators';
+import { debounce, map, switchMap, tap } from 'rxjs/operators';
 import { AccountsService } from '../../services/accounts.service';
 import { ErrorHandler } from '../../services/error-handler.service';
 
