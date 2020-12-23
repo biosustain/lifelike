@@ -567,7 +567,11 @@ def upgrade():
     for backup in iter_query(session.query(t_map_version), batch_size=CONTENT_QUERY_BATCH_SIZE):
         backup = backup._asdict()
 
-        new_file_id = old_map_to_new_map_id[backup['project_id']]
+        try:
+            new_file_id = old_map_to_new_map_id[backup['project_id']]
+        except KeyError:
+            # Map was deleted
+            continue
 
         content_id = get_or_create_content_id(session,
                                               json.dumps(backup['graph']).encode('utf-8'),
@@ -625,7 +629,11 @@ def upgrade():
     for backup in iter_query(session.query(t_map_backup), batch_size=CONTENT_QUERY_BATCH_SIZE):
         backup = backup._asdict()
 
-        new_file_id = old_map_to_new_map_id[backup['project_id']]
+        try:
+            new_file_id = old_map_to_new_map_id[backup['project_id']]
+        except KeyError:
+            # Map was deleted
+            continue
 
         new_id = session.execute(t_file_backup.insert().values(
             file_id=new_file_id,
