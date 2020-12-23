@@ -1,8 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import {
-    HttpClient,
-    HttpHeaders,
-} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import {
     AppUser,
     UserCreationRequest,
@@ -21,28 +18,6 @@ export class AccountService implements OnDestroy {
 
     constructor(private http: HttpClient) {}
 
-    /**
-     * Create http options with authorization
-     * header if boolean set to true
-     * @param withJwt boolean representing whether to return the options with a jwt
-     */
-    createHttpOptions(withJwt = false) {
-        if (withJwt) {
-        return {
-            headers: new HttpHeaders({
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
-            }),
-        };
-        } else {
-        return {
-            headers: new HttpHeaders({
-            'Content-Type': 'application/json',
-            }),
-        };
-        }
-    }
-
     getUserList() {
         this.listOfUsers().subscribe((users: AppUser[]) => {
             this.userListSource.next(users);
@@ -52,7 +27,6 @@ export class AccountService implements OnDestroy {
     createUser(request: UserCreationRequest) {
         return this.http.post<{result: AppUser}>(
             `${this.accountApi}/`, request,
-            this.createHttpOptions(true),
         ).pipe(map(resp => resp.result));
     }
 
@@ -68,14 +42,12 @@ export class AccountService implements OnDestroy {
 
         return this.http.get<{result: AppUser[]}>(
             hyperlink,
-            this.createHttpOptions(true),
         ).pipe(map(resp => resp.result));
     }
 
     currentUser() {
         return this.http.get<{result: AppUser}>(
             `${this.accountApi}/user`,
-            this.createHttpOptions(true),
         ).pipe(map(resp => resp.result));
     }
 
@@ -83,7 +55,6 @@ export class AccountService implements OnDestroy {
         return this.http.put<{result: AppUser}>(
             `${this.accountApi}/user`,
             updateRequest,
-            this.createHttpOptions(true),
         ).pipe(map(resp => resp.result));
     }
 
