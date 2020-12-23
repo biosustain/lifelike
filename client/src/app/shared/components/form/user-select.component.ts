@@ -2,8 +2,8 @@ import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ChoiceListRequest, SelectInputComponent } from './select-input.component';
 import { AppUser } from '../../../interfaces';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { Observable, of, Subject, Subscription } from 'rxjs';
-import { debounceTime, map, switchMap, tap } from 'rxjs/operators';
+import { EMPTY, Observable, of, Subject, Subscription, timer } from 'rxjs';
+import { debounce, debounceTime, map, switchMap, tap } from 'rxjs/operators';
 import { AccountsService } from '../../services/accounts.service';
 import { ErrorHandler } from '../../services/error-handler.service';
 
@@ -37,7 +37,7 @@ export class UserSelectComponent implements ControlValueAccessor, OnInit, OnDest
   ngOnInit(): void {
     this.subscriptions.add(this.queries$.pipe(
       tap(request => this.requestLoading = request),
-      debounceTime(250),
+      debounce(request => request.query.trim().length ? timer(250) : EMPTY),
       switchMap((request): Observable<[ChoiceListRequest, readonly AppUser[]]> => {
         if (request.query.trim().length > 0) {
           return this.accountsService.search({

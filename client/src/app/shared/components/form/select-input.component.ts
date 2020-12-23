@@ -114,6 +114,10 @@ export class SelectInputComponent<T extends { label?: string }>
     }
   }
 
+  onContainerClick(event: MouseEvent) {
+    this.focusInput();
+  }
+
   onInputKeyDown(event: KeyboardEvent) {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
@@ -223,6 +227,7 @@ export class SelectInputComponent<T extends { label?: string }>
 
   focusInput() {
     this.inputElement.nativeElement.focus();
+    this.openDropdown();
   }
 
   get hasInput() {
