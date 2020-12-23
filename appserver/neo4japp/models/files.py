@@ -167,7 +167,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     parent_id = db.Column(db.Integer, db.ForeignKey('files.id'), nullable=True, index=True)
     parent = db.relationship('Files', foreign_keys=parent_id, uselist=False, remote_side=[id])
     mime_type = db.Column(db.String(127), nullable=False)
-    description = db.Column(db.String(2048), nullable=True)
+    description = db.Column(db.Text, nullable=True)
     content_id = db.Column(db.Integer, db.ForeignKey('files_content.id', ondelete='CASCADE'),
                            index=True, nullable=True)
     content = db.relationship('FileContent', foreign_keys=content_id)
