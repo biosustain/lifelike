@@ -229,6 +229,12 @@ def upgrade():
 
     logger.info("Applying initial column changes...")
 
+    # Map descriptions are a text field
+    op.alter_column('files', 'description',
+                    existing_type=sa.VARCHAR(length=2048),
+                    type_=sa.Text(),
+                    existing_nullable=True)
+
     # Directories have no content
     op.alter_column('files', 'content_id', existing_type=sa.Integer(), nullable=True)
 
