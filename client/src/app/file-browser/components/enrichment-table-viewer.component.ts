@@ -5,11 +5,23 @@ import {
   Output,
   EventEmitter,
 } from '@angular/core';
-
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { Subscription, forkJoin, of, from } from 'rxjs';
+import { flatMap, map, catchError, mergeMap } from 'rxjs/operators';
+
 import { TableHeader, TableCell, TableLink } from 'app/shared/components/table/generic-table.component';
+import { ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { Subscription, forkJoin } from 'rxjs';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { DownloadService } from 'app/shared/services/download.service';
+import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+
+import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
+import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
 import {
   EnrichmentTableService,
   NCBINode,
@@ -17,14 +29,7 @@ import {
   GoNode,
   NCBIWrapper,
 } from '../services/enrichment-table.service';
-import { ActivatedRoute } from '@angular/router';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { ModuleProperties } from 'app/shared/modules';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
-import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
-import {flatMap, map, catchError } from 'rxjs/operators';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
+
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -86,12 +91,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   loadingData: boolean;
 
   constructor(
-    private readonly worksheetViewerService: EnrichmentTableService,
-    private readonly filesService: PdfFilesService,
-    private route: ActivatedRoute,
+    readonly route: ActivatedRoute,
+    readonly worksheetViewerService: EnrichmentTableService,
+    readonly filesService: PdfFilesService,
     readonly snackBar: MatSnackBar,
-    private readonly modalService: NgbModal,
-    private readonly errorHandler: ErrorHandler,
+    readonly modalService: NgbModal,
+    readonly errorHandler: ErrorHandler,
+    readonly downloadService: DownloadService,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
     this.fileId = this.route.snapshot.params.file_id || '';
@@ -234,33 +240,19 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
    * Load all data, convert to CSV format and provide download.
    */
   downloadAsCSV() {
-    try {
-    this.loadAllEntries().then(entries => {
-      const stringEntries = this.convertEntriesToString(entries);
-      let csvFile = '';
-      stringEntries.forEach(entry => csvFile += this.processRowCSV(entry));
-      const blob = new Blob([csvFile], { type: 'text/csv;charset=utf-8;' });
-      if (navigator.msSaveBlob) { // IE 10+
-          navigator.msSaveBlob(blob, this.sheetname);
-      } else {
-          const link = document.createElement('a');
-          if (link.download !== undefined) { // feature detection
-              // Browsers that support HTML5 download attribute
-              const url = URL.createObjectURL(blob);
-              link.setAttribute('href', url);
-              link.setAttribute('download', this.sheetname);
-              link.style.visibility = 'hidden';
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-          }
-      }
-      });
-    } catch (err) {
-      this.snackBar.open(`Something went wrong:` + err, 'Close', {
-        duration: 5000,
-      });
-    }
+    this.downloadService.requestDownload(
+      this.sheetname,
+      () => from(this.loadAllEntries()).pipe(
+        mergeMap(entries => {
+          const stringEntries = this.convertEntriesToString(entries);
+          let csvFile = '';
+          stringEntries.forEach(entry => csvFile += this.processRowCSV(entry));
+          return of(csvFile);
+        })
+      ),
+      'application/csv',
+      '.csv',
+    );
   }
 
   /**
