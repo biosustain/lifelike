@@ -2,7 +2,8 @@
      class="input-border rounded form-padding d-flex flex-wrap select-input-container">
   <div *ngFor="let choice of selectedChoices"
        class="d-inline-block badge-pill badge-secondary mb-1 mr-1 cursor-default">
-    <button type="button" (click)="deselect(choice)" class="btn btn-link btn-sm select-input-choice-remove">
+    <button type="button" (click)="deselect(choice)"
+            class="btn btn-link btn-sm select-input-choice-remove">
       <i class="fa fa-times"></i>
     </button>
     <ng-container
@@ -19,14 +20,29 @@
      (keyup)="onDropdownKeyUpPressed($event)" appMouseNavigable
      [navigationWrap]="false" (navigationEndReached)="focusInput()"
      style="z-index: 10000">
-  <div *ngIf="!unselectedChoices.length" class="dropdown-item-text text-muted">
-    <em>{{ noResultsText }}</em>
-  </div>
-  <div class="dropdown-item cursor-pointer" href="#" *ngFor="let choice of unselectedChoices"
-       appMouseNavigableItem
-       (click)="toggle(choice); $event.preventDefault()" tabindex="0"
-       (keypress)="onItemKeyPress($event, choice)">
-    <ng-container
-      *ngTemplateOutlet="dropdownChoiceTemplateRef; context: { $implicit: choice, request: request }"></ng-container>
-  </div>
+  <ng-container *ngIf="loading; else choices">
+    <div class="dropdown-item-text">
+      <span class="placeholder-box">Loading loading</span>
+    </div>
+    <div class="dropdown-item-text">
+      <span class="placeholder-box">Load load</span>
+    </div>
+  </ng-container>
+  <ng-template #choices>
+    <div *ngIf="!unselectedChoices.length" class="dropdown-item-text text-muted">
+      <ng-container *ngIf="noResultsTemplateRef != null; else noResultsTextDisplay">
+        <ng-container *ngTemplateOutlet="noResultsTemplateRef; context: { request: request }"></ng-container>
+      </ng-container>
+      <ng-template #noResultsTextDisplay>
+        <em>{{ noResultsText }}</em>
+      </ng-template>
+    </div>
+    <div class="dropdown-item cursor-pointer" href="#" *ngFor="let choice of unselectedChoices"
+         appMouseNavigableItem
+         (click)="toggle(choice); $event.preventDefault()" tabindex="0"
+         (keypress)="onItemKeyPress($event, choice)">
+      <ng-container
+        *ngTemplateOutlet="dropdownChoiceTemplateRef; context: { $implicit: choice, request: request }"></ng-container>
+    </div>
+  </ng-template>
 </div>

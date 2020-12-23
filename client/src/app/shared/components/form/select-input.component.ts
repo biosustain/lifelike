@@ -15,7 +15,7 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import { DropdownController } from '../../utils/dom/dropdown-controller';
+import { DropdownController, FitOptions } from '../../utils/dom/dropdown-controller';
 import { MouseNavigableDirective } from '../../directives/mouse-navigable.directive';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -41,6 +41,7 @@ export class SelectInputComponent<T extends { label?: string }>
   @Input() noResultsText = 'No suggestions';
   @Input() multiple = false;
   @Input() placeholder = '';
+  @Input() loading = false;
   @Output() choiceListRequest = new EventEmitter<ChoiceListRequest>();
 
   @ViewChild('inputContainer', {static: true}) inputContainerElement: ElementRef;
@@ -52,6 +53,7 @@ export class SelectInputComponent<T extends { label?: string }>
   }) mouseNavigableDirective;
   @ContentChild('inputChoiceTemplate', {static: false}) inputChoiceTemplateRef: TemplateRef<any>;
   @ContentChild('dropdownChoiceTemplate', {static: false}) dropdownChoiceTemplateRef: TemplateRef<any>;
+  @ContentChild('noResultsTemplate', {static: false}) noResultsTemplateRef: TemplateRef<any>;
 
   protected ready = false;
   selection: Map<any, T> = new Map<any, T>();
@@ -87,7 +89,7 @@ export class SelectInputComponent<T extends { label?: string }>
 
   ngAfterViewChecked() {
     if (this.dropdownController != null) {
-      this.dropdownController.fit();
+      this.dropdownController.fit(this.fitOptions);
     }
   }
 
@@ -189,8 +191,17 @@ export class SelectInputComponent<T extends { label?: string }>
       .filter(choice => !this.isSelected(choice));
   }
 
+  get fitOptions(): FitOptions {
+    return {
+      maxWidth: 250,
+    };
+  }
+
   protected openDropdown() {
-    this.dropdownController.openRelative(this.inputElement.nativeElement, 'bottom-left');
+    this.dropdownController.openRelative(this.inputElement.nativeElement, {
+      placement: 'bottom-left',
+      ...this.fitOptions,
+    });
   }
 
   protected closeDropdown() {

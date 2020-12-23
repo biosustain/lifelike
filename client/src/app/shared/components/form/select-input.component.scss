@@ -23,6 +23,7 @@
     left: 0;
     content: var(--placeholder-text, 'Start typing...');
     color: $input-placeholder-color;
+    pointer-events: none;
   }
 
   &:focus {
@@ -39,4 +40,13 @@
   &:hover {
     color: $link-hover-color;
   }
+}
+
+.select-input-progress {
+  height: 5px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
