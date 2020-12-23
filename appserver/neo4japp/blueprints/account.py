@@ -99,14 +99,14 @@ class AccountSearchView(MethodView):
     def post(self, params: dict, pagination: Pagination):
         """Endpoint to search for users that match certain criteria."""
         query = re.sub("[%_]", "\\\\0", params['query'].strip().lower())
-        query = f"%{query}%"
+        like_query = f"%{query}%"
 
         query = db.session.query(AppUser) \
-            .filter(or_(func.lower(AppUser.first_name).like(query),
-                        func.lower(AppUser.last_name).like(query),
-                        func.lower(AppUser.username).like(query),
-                        func.lower(AppUser.email).like(query),
-                        func.lower(AppUser.hash_id).like(query)))
+            .filter(or_(func.lower(AppUser.first_name).like(like_query),
+                        func.lower(AppUser.last_name).like(like_query),
+                        func.lower(AppUser.username).like(like_query),
+                        func.lower(AppUser.email) == query,
+                        func.lower(AppUser.hash_id) == query))
 
         paginated_result = query.paginate(pagination.page, pagination.limit, False)
 
