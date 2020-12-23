@@ -93,6 +93,13 @@
       tags:
         - deploy
 
+    - name: Run database migrations
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver bin/migrate-db --upgrade --data-migrate"
+      tags:
+        - deploy
+
     - name: Create/Update LMDB database
       include_role:
         name: lmdb
