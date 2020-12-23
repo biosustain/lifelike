@@ -8,7 +8,7 @@ import {
   EventEmitter,
   HostListener,
   Input,
-  OnChanges,
+  OnChanges, OnDestroy,
   Output,
   Renderer2,
   SimpleChanges,
@@ -18,6 +18,8 @@ import {
 import { DropdownController, FitOptions } from '../../utils/dom/dropdown-controller';
 import { MouseNavigableDirective } from '../../directives/mouse-navigable.directive';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { fromEvent, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-select-input',
@@ -32,7 +34,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
   }],
 })
 export class SelectInputComponent<T extends { label?: string }>
-  implements OnChanges, AfterViewInit, AfterViewChecked, ControlValueAccessor {
+  implements OnDestroy, OnChanges, AfterViewInit, AfterViewChecked, ControlValueAccessor {
 
   // TODO: Handle wrapping
 
@@ -55,7 +57,6 @@ export class SelectInputComponent<T extends { label?: string }>
   @ContentChild('dropdownChoiceTemplate', {static: false}) dropdownChoiceTemplateRef: TemplateRef<any>;
   @ContentChild('noResultsTemplate', {static: false}) noResultsTemplateRef: TemplateRef<any>;
 
-  protected ready = false;
   selection: Map<any, T> = new Map<any, T>();
   unselectedChoices: T[] = [];
   request: ChoiceListRequest = {
@@ -64,9 +65,14 @@ export class SelectInputComponent<T extends { label?: string }>
   protected dropdownController: DropdownController;
   protected changeCallback: ((value: any) => any) | undefined;
   protected touchCallback: (() => any) | undefined;
+  protected readonly subscriptions = new Subscription();
 
   constructor(protected readonly element: ElementRef,
               protected readonly renderer: Renderer2) {
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -84,7 +90,16 @@ export class SelectInputComponent<T extends { label?: string }>
         fixedAnchorPoint: true,
       },
     );
-    this.ready = true;
+
+    this.subscriptions.add(fromEvent(document.body, 'contextmenu', {
+      capture: true,
+    }).subscribe(this.onInteractionEvent.bind(this)));
+    this.subscriptions.add(fromEvent(document.body, 'click', {
+      capture: true,
+    }).subscribe(this.onInteractionEvent.bind(this)));
+    this.subscriptions.add(fromEvent(document.body, 'focusin', {
+      capture: true,
+    }).subscribe(this.onInteractionEvent.bind(this)));
   }
 
   ngAfterViewChecked() {
@@ -93,25 +108,8 @@ export class SelectInputComponent<T extends { label?: string }>
     }
   }
 
-  @HostListener('contextmenu', ['$event'])
-  onContextMenu(e) {
-    if (this.ready) {
-      this.closeDropdownIfNotFocused(e.target);
-    }
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(e: MouseEvent) {
-    if (this.ready) {
-      this.closeDropdownIfNotFocused(e.target);
-    }
-  }
-
-  @HostListener('document:focusin', ['$event'])
-  onDocumentFocusIn(e: MouseEvent) {
-    if (this.ready) {
-      this.closeDropdownIfNotFocused(e.target);
-    }
+  onInteractionEvent(e) {
+    this.closeDropdownIfNotFocused(e.target);
   }
 
   onContainerClick(event: MouseEvent) {
@@ -185,7 +183,7 @@ export class SelectInputComponent<T extends { label?: string }>
 
   protected updateQuery() {
     this.request = {
-      query: (event.target as HTMLInputElement).textContent,
+      query: this.inputElement.nativeElement.textContent,
     };
     this.choiceListRequest.emit(this.request);
   }
