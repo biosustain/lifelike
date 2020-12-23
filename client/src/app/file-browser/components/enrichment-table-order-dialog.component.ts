@@ -1,13 +1,11 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { Component, Input, OnInit } from '@angular/core';
+import { FormGroup, FormArray } from '@angular/forms';
+
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { FormControl, FormGroup, Validators, FormArray } from '@angular/forms';
+
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { Directory } from '../services/project-space.service';
-import { OrganismAutocomplete } from 'app/interfaces/neo4j.interface';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { SharedSearchService } from 'app/shared/services/shared-search.service';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-enrichment-table-order-dialog',
@@ -40,5 +38,3 @@ export class EnrichmentTableOrderDialogComponent extends CommonFormDialogCompone
     moveItemInArray(this.domains, event.previousIndex, event.currentIndex);
   }
 }
-
-
