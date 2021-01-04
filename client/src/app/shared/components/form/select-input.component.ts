@@ -216,6 +216,7 @@ export class SelectInputComponent<T extends { label?: string }>
   }
 
   protected updatePlaceholder() {
+    // @ts-ignore
     const escapedPlaceholder = window.CSS && CSS.escape ? CSS.escape(this.placeholder) :
       this.placeholder.replace(/'/g, '');
     this.inputElement.nativeElement.style.setProperty('--placeholder-text',
