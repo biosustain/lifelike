@@ -34,6 +34,7 @@ from neo4japp.services.annotations.lmdb_util import (
     create_ner_type_disease,
     create_ner_type_food,
     create_ner_type_gene,
+    create_ner_type_phenomena,
     create_ner_type_phenotype,
     create_ner_type_protein,
     create_ner_type_species,
@@ -73,6 +74,7 @@ class EntityRecognitionService:
         self._inclusion_type_disease: Dict[str, Inclusion] = {}
         self._inclusion_type_food: Dict[str, Inclusion] = {}
         self._inclusion_type_gene: Dict[str, Inclusion] = {}
+        self._inclusion_type_phenomena: Dict[str, Inclusion] = {}
         self._inclusion_type_phenotype: Dict[str, Inclusion] = {}
         self._inclusion_type_protein: Dict[str, Inclusion] = {}
         self._inclusion_type_species: Dict[str, Inclusion] = {}
@@ -88,6 +90,7 @@ class EntityRecognitionService:
         self._exclusion_type_disease: Set[str] = set()
         self._exclusion_type_food: Set[str] = set()
         self._exclusion_type_gene: Set[str] = set()
+        self._exclusion_type_phenomena: Set[str] = set()
         self._exclusion_type_phenotype: Set[str] = set()
         self._exclusion_type_protein: Set[str] = set()
         self._exclusion_type_species: Set[str] = set()
@@ -110,6 +113,7 @@ class EntityRecognitionService:
         self._matched_type_food: Dict[str, LMDBMatch] = {}
         self._matched_type_gene: Dict[str, LMDBMatch] = {}
         self._matched_type_protein: Dict[str, LMDBMatch] = {}
+        self._matched_type_phenomena: Dict[str, LMDBMatch] = {}
         self._matched_type_phenotype: Dict[str, LMDBMatch] = {}
         self._matched_type_species: Dict[str, LMDBMatch] = {}
         self._matched_type_species_local: Dict[str, LMDBMatch] = {}
@@ -171,6 +175,10 @@ class EntityRecognitionService:
         return self._inclusion_type_gene
 
     @property
+    def inclusion_type_phenomena(self) -> Dict[str, Inclusion]:
+        return self._inclusion_type_phenomena
+
+    @property
     def inclusion_type_phenotype(self) -> Dict[str, Inclusion]:
         return self._inclusion_type_phenotype
 
@@ -211,6 +219,10 @@ class EntityRecognitionService:
         return self._exclusion_type_gene
 
     @property
+    def exclusion_type_phenomena(self) -> Set[str]:
+        return self._exclusion_type_phenomena
+
+    @property
     def exclusion_type_phenotype(self) -> Set[str]:
         return self._exclusion_type_phenotype
 
@@ -245,6 +257,10 @@ class EntityRecognitionService:
     @property
     def matched_type_gene(self) -> Dict[str, LMDBMatch]:
         return self._matched_type_gene
+
+    @property
+    def matched_type_phenomena(self) -> Dict[str, LMDBMatch]:
+        return self._matched_type_phenomena
 
     @property
     def matched_type_phenotype(self) -> Dict[str, LMDBMatch]:
@@ -300,6 +316,7 @@ class EntityRecognitionService:
         disease: bool = True,
         food: bool = True,
         gene: bool = True,
+        phenomena: bool = True,
         phenotype: bool = True,
         protein: bool = True,
         species: bool = True,
@@ -314,6 +331,7 @@ class EntityRecognitionService:
             EntityType.DISEASE.value: disease,
             EntityType.FOOD.value: food,
             EntityType.GENE.value: gene,
+            EntityType.PHENOMENA.value: phenomena,
             EntityType.PHENOTYPE.value: phenotype,
             EntityType.PROTEIN.value: protein,
             EntityType.SPECIES.value: species,
@@ -330,6 +348,7 @@ class EntityRecognitionService:
             matched_type_disease=self.matched_type_disease,
             matched_type_food=self.matched_type_food,
             matched_type_gene=self.matched_type_gene,
+            matched_type_phenomena=self.matched_type_phenomena,
             matched_type_phenotype=self.matched_type_phenotype,
             matched_type_protein=self.matched_type_protein,
             matched_type_species=self.matched_type_species,
@@ -402,6 +421,16 @@ class EntityRecognitionService:
                     continue
                 exclusion_collection.add(term)  # type: ignore
 
+    def _get_annotation_type_phenomena_to_exclude(
+        self,
+        exclusion_collection: Set[str],
+        exclusion_list: List[dict]
+    ):
+        # case insensitive NOT punctuation insensitive
+        for exclusion in exclusion_list:
+            if exclusion.get('text') and exclusion.get('type') == EntityType.PHENOMENA.value:
+                exclusion_collection.add(exclusion.get('text').lower())  # type: ignore
+
     def _get_annotation_type_phenotype_to_exclude(
         self,
         exclusion_collection: Set[str],
@@ -463,6 +492,7 @@ class EntityRecognitionService:
             (EntityType.DISEASE.value, EntityIdStr.DISEASE.value, self.inclusion_type_disease, create_ner_type_disease),  # noqa
             (EntityType.FOOD.value, EntityIdStr.FOOD.value, self.inclusion_type_food, create_ner_type_food),  # noqa
             (EntityType.GENE.value, EntityIdStr.GENE.value, self.inclusion_type_gene, create_ner_type_gene),  # noqa
+            (EntityType.PHENOMENA.value, EntityIdStr.PHENOMENA.value, self.inclusion_type_phenomena, create_ner_type_phenomena),  # noqa
             (EntityType.PHENOTYPE.value, EntityIdStr.PHENOTYPE.value, self.inclusion_type_phenotype, create_ner_type_phenotype),  # noqa
             (EntityType.PROTEIN.value, EntityIdStr.PROTEIN.value, self.inclusion_type_protein, create_ner_type_protein),  # noqa
             (EntityType.SPECIES.value, EntityIdStr.SPECIES.value, self.inclusion_type_species, create_ner_type_species),  # noqa
@@ -479,6 +509,7 @@ class EntityRecognitionService:
             (self.exclusion_type_disease, self._get_annotation_type_disease_to_exclude),
             (self.exclusion_type_food, self._get_annotation_type_food_to_exclude),
             (self.exclusion_type_gene, self._get_annotation_type_gene_to_exclude),
+            (self.exclusion_type_phenomena, self._get_annotation_type_phenomena_to_exclude),
             (self.exclusion_type_phenotype, self._get_annotation_type_phenotype_to_exclude),
             (self.exclusion_type_protein, self._get_annotation_type_protein_to_exclude),
             (self.exclusion_type_species, self._get_annotation_type_species_to_exclude),
@@ -528,6 +559,7 @@ class EntityRecognitionService:
                         EntityType.COMPOUND.value,
                         EntityType.DISEASE.value,
                         EntityType.FOOD.value,
+                        EntityType.PHENOMENA.value,
                         EntityType.PHENOTYPE.value,
                         EntityType.SPECIES.value
                     }:
@@ -1006,6 +1038,72 @@ class EntityRecognitionService:
                     )
         return gene_val
 
+    def entity_lookup_for_type_phenomena(
+        self,
+        token: PDFWord,
+        synonym: Optional[str] = None,
+    ):
+        """Do entity lookups for phenomena. First check in LMDB,
+        if nothing was found, then check in global/local inclusions.
+
+        Args:
+            token: the token with pdf text and it's positions
+            synonym: the correct spelling (if word is misspelled)
+        """
+        phenomena_val = None
+        nlp_predicted_type = None
+
+        if token.token_type:
+            nlp_predicted_type = token.token_type
+
+        if synonym:
+            lookup_key = normalize_str(synonym)
+        else:
+            lookup_key = token.normalized_keyword
+
+        if len(lookup_key) > 2:
+            lowered_word = token.keyword.lower()
+
+            if lowered_word in self.exclusion_type_phenomena:
+                current_app.logger.info(
+                    f'Found a match in phenomenas entity lookup but token "{token.keyword}" is an exclusion.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            elif lowered_word in self.exclusion_words:
+                current_app.logger.info(
+                    f'Found a match in phenomenas entity lookup but token "{token.keyword}" is a stop word.',  # noqa
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
+            else:
+                if self._is_abbrev(token):
+                    return phenomena_val
+
+                if nlp_predicted_type == EntityType.PHENOMENA.value or nlp_predicted_type is None:  # noqa
+                    phenomena_val = self.lmdb.get_lmdb_values(
+                        txn=self.lmdb.session.phenomenas_txn,
+                        key=lookup_key,
+                        token_type=EntityType.PHENOMENA.value
+                    )
+
+                id_type = ''
+                id_hyperlink = ''
+                if not phenomena_val:
+                    # didn't find in LMDB so look in global inclusion
+                    found = self.inclusion_type_phenomena.get(lookup_key, None)
+                    if found:
+                        phenomena_val = found.entities
+                        id_type = found.entity_id_type
+                        id_hyperlink = found.entity_id_hyperlink
+
+                if phenomena_val:
+                    self.matched_type_phenomena[token.keyword] = LMDBMatch(
+                        entities=phenomena_val,  # type: ignore
+                        tokens=[token],
+                        id_type=id_type,
+                        id_hyperlink=id_hyperlink
+                    )
+        return phenomena_val
+
     def entity_lookup_for_type_phenotype(
         self,
         token: PDFWord,
@@ -1400,6 +1498,12 @@ class EntityRecognitionService:
             else:
                 self._find_match_type_gene(token)
 
+        if check_entities.get(EntityType.PHENOMENA.value, False):
+            if token.keyword in self.matched_type_phenomena:
+                self.matched_type_phenomena[token.keyword].tokens.append(token)
+            else:
+                self._find_match_type_phenomena(token)
+
         if check_entities.get(EntityType.PHENOTYPE.value, False):
             if token.keyword in self.matched_type_phenotype:
                 self.matched_type_phenotype[token.keyword].tokens.append(token)
@@ -1538,6 +1642,24 @@ class EntityRecognitionService:
                         break
             else:
                 self.entity_lookup_for_type_gene(
+                    token=token
+                )
+
+    def _find_match_type_phenomena(self, token: PDFWord) -> None:
+        word = token.keyword
+        if word:
+            if word in COMMON_TYPOS:
+                for correct_spelling in COMMON_TYPOS[word]:
+                    exist = self.entity_lookup_for_type_phenomena(
+                        token=token,
+                        synonym=correct_spelling
+                    )
+
+                    # if any that means there was a match
+                    if exist is not None:
+                        break
+            else:
+                self.entity_lookup_for_type_phenomena(
                     token=token
                 )
 
