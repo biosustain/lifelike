@@ -1,30 +1,21 @@
 import {moduleMetadata, Story} from '@storybook/angular';
 import {Subject} from 'rxjs';
 import {withKnobs} from '@storybook/addon-knobs';
-import {EnrichmentVisualisationEditDialogComponent} from "../enrichment-visualisation-edit-dialog.component";
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MapCreateDialogComponent} from "../../../../../../drawing-tool/components/map-create-dialog.component";
-import {MapDeleteDialogComponent} from "../../../../../../drawing-tool/components/map-delete-dialog.component";
-import {MapCloneDialogComponent} from "../../../../../../drawing-tool/components/map-clone-dialog.component";
-import {MapUploadDialogComponent} from "../../../../../../drawing-tool/components/map-upload-dialog.component";
-import {MapVersionDialogComponent} from "../../../../../../drawing-tool/components/map-version-dialog.component";
-import {MapEditorComponent} from "../../../../../../drawing-tool/components/map-editor/map-editor.component";
-import {PaletteComponent} from "../../../../../../drawing-tool/components/map-editor/palette.component";
-import {InfoPanelComponent} from "../../../../../../drawing-tool/components/map-editor/info-panel.component";
-import {MapComponent} from "../../../../../../drawing-tool/components/map.component";
-import {MapViewComponent} from "../../../../../../drawing-tool/components/map-view.component";
-import {MapExportDialogComponent} from "../../../../../../drawing-tool/components/map-export-dialog.component";
-import {NodeFormComponent} from "../../../../../../drawing-tool/components/map-editor/node-form.component";
-import {EdgeFormComponent} from "../../../../../../drawing-tool/components/map-editor/edge-form.component";
-import {MapEditDialogComponent} from "../../../../../../drawing-tool/components/map-edit-dialog.component";
-import {MapRestoreDialogComponent} from "../../../../../../drawing-tool/components/map-restore-dialog.component";
-import {SharedModule} from "../../../../../../shared/shared.module";
-import {SharedNgrxEffects} from "../../../../../../shared/store/effects";
-import {CopyPasteMapsService} from "../../../../../../drawing-tool/services/copy-paste-maps.service";
 import {NgbActiveModal, NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {EffectsModule} from '@ngrx/effects';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {SharedNgrxEffects} from "../../../../../../shared/store/effects";
+import {MapEditorComponent} from "../../../../../../drawing-tool/components/map-editor/map-editor.component";
+import {MapRestoreDialogComponent} from "../../../../../../drawing-tool/components/map-restore-dialog.component";
+import {EnrichmentVisualisationEditDialogComponent} from "../enrichment-visualisation-edit-dialog.component";
 import {RootStoreModule} from "../../../../../../root-store";
+import {PaletteComponent} from "../../../../../../drawing-tool/components/map-editor/palette.component";
+import {SharedModule} from "../../../../../../shared/shared.module";
+import {MapViewComponent} from "../../../../../../drawing-tool/components/map-view.component";
+import {MapComponent} from "../../../../../../drawing-tool/components/map.component";
+import {NodeFormComponent} from "../../../../../../drawing-tool/components/map-editor/node-form.component";
+import {EdgeFormComponent} from "../../../../../../drawing-tool/components/map-editor/edge-form.component";
+import {InfoPanelComponent} from "../../../../../../drawing-tool/components/map-editor/info-panel.component";
 
 // This exports the Stories group for this component
 export default {
@@ -38,39 +29,29 @@ export default {
     moduleMetadata({
       declarations: [
         EnrichmentVisualisationEditDialogComponent,
-        MapCreateDialogComponent,
-        MapDeleteDialogComponent,
-        MapCloneDialogComponent,
-        MapUploadDialogComponent,
-        MapVersionDialogComponent,
         MapEditorComponent,
         PaletteComponent,
         InfoPanelComponent,
         MapComponent,
         MapViewComponent,
-        MapExportDialogComponent,
         NodeFormComponent,
         EdgeFormComponent,
-        MapEditDialogComponent,
         MapRestoreDialogComponent
       ],
       imports: [
         EffectsModule.forRoot([SharedNgrxEffects]),
-        FormsModule,
-        ReactiveFormsModule,
         RootStoreModule,
         SharedModule,
         NgbModule,
       ],
       providers: [
-        CopyPasteMapsService,
         MatSnackBar,
         SharedNgrxEffects,
         NgbActiveModal
       ]
     }),
   ]
-};// This creates a Story for the component
+}; // This creates a Story for the component
 
 const Template: Story<EnrichmentVisualisationEditDialogComponent> = (args) => ({
   component: EnrichmentVisualisationEditDialogComponent,

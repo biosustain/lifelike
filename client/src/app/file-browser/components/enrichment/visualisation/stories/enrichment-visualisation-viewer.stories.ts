@@ -2,34 +2,27 @@ import {moduleMetadata, Story} from '@storybook/angular';
 import {Observable, Subject} from 'rxjs';
 import {withKnobs} from '@storybook/addon-knobs';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MapCreateDialogComponent} from "../../../../../drawing-tool/components/map-create-dialog.component";
-import {MapDeleteDialogComponent} from "../../../../../drawing-tool/components/map-delete-dialog.component";
-import {MapCloneDialogComponent} from "../../../../../drawing-tool/components/map-clone-dialog.component";
-import {MapUploadDialogComponent} from "../../../../../drawing-tool/components/map-upload-dialog.component";
-import {MapVersionDialogComponent} from "../../../../../drawing-tool/components/map-version-dialog.component";
-import {MapEditorComponent} from "../../../../../drawing-tool/components/map-editor/map-editor.component";
-import {PaletteComponent} from "../../../../../drawing-tool/components/map-editor/palette.component";
-import {InfoPanelComponent} from "../../../../../drawing-tool/components/map-editor/info-panel.component";
-import {MapComponent} from "../../../../../drawing-tool/components/map.component";
-import {MapViewComponent} from "../../../../../drawing-tool/components/map-view.component";
-import {MapExportDialogComponent} from "../../../../../drawing-tool/components/map-export-dialog.component";
-import {NodeFormComponent} from "../../../../../drawing-tool/components/map-editor/node-form.component";
-import {EdgeFormComponent} from "../../../../../drawing-tool/components/map-editor/edge-form.component";
-import {MapEditDialogComponent} from "../../../../../drawing-tool/components/map-edit-dialog.component";
-import {MapRestoreDialogComponent} from "../../../../../drawing-tool/components/map-restore-dialog.component";
-import {SharedModule} from "../../../../../shared/shared.module";
-import {SharedNgrxEffects} from "../../../../../shared/store/effects";
-import {CopyPasteMapsService} from "../../../../../drawing-tool/services/copy-paste-maps.service";
 import {NgbActiveModal, NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {EffectsModule} from '@ngrx/effects';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {RootStoreModule} from "../../../../../root-store";
-import {EnrichmentVisualisationViewerComponent} from "../enrichment-visualisation-viewer.component";
 import {ActivatedRoute} from '@angular/router';
-import {PdfFilesService} from "../../../../../shared/services/pdf-files.service";
-import {EnrichmentVisualisationService} from "../../../../services/enrichment-visualisation.service";
-import {EnrichmentVisualisationOrderDialogComponent} from "../dialog/enrichment-visualisation-order-dialog.component";
+import {EnrichmentVisualisationViewerComponent} from '../enrichment-visualisation-viewer.component';
+import {EnrichmentVisualisationService} from '../../../../services/enrichment-visualisation.service';
+import {SharedNgrxEffects} from '../../../../../shared/store/effects';
+import {MapEditorComponent} from '../../../../../drawing-tool/components/map-editor/map-editor.component';
+import {MapRestoreDialogComponent} from '../../../../../drawing-tool/components/map-restore-dialog.component';
+import {RootStoreModule} from '../../../../../root-store';
+import {PaletteComponent} from '../../../../../drawing-tool/components/map-editor/palette.component';
+import {SharedModule} from '../../../../../shared/shared.module';
+import {MapViewComponent} from '../../../../../drawing-tool/components/map-view.component';
+import {MapComponent} from '../../../../../drawing-tool/components/map.component';
+import {NodeFormComponent} from '../../../../../drawing-tool/components/map-editor/node-form.component';
+import {EdgeFormComponent} from '../../../../../drawing-tool/components/map-editor/edge-form.component';
+import {PdfFilesService} from '../../../../../shared/services/pdf-files.service';
+import {InfoPanelComponent} from '../../../../../drawing-tool/components/map-editor/info-panel.component';
+import {EnrichmentVisualisationOrderDialogComponent} from '../dialog/enrichment-visualisation-order-dialog.component';
 import {WordCloudModule} from "../word-cloud/word-cloud.module";
+import {ObjectPathComponent} from "../../../object-path.component";
 
 // This exports the Stories group for this component
 export default {
@@ -43,22 +36,16 @@ export default {
     moduleMetadata({
       declarations: [
         EnrichmentVisualisationViewerComponent,
-        MapCreateDialogComponent,
-        MapDeleteDialogComponent,
-        MapCloneDialogComponent,
-        MapUploadDialogComponent,
-        MapVersionDialogComponent,
         MapEditorComponent,
         PaletteComponent,
         InfoPanelComponent,
         MapComponent,
         MapViewComponent,
-        MapExportDialogComponent,
         NodeFormComponent,
         EdgeFormComponent,
-        MapEditDialogComponent,
         MapRestoreDialogComponent,
-        EnrichmentVisualisationOrderDialogComponent
+        EnrichmentVisualisationOrderDialogComponent,
+        ObjectPathComponent
       ],
       entryComponents: [
         EnrichmentVisualisationOrderDialogComponent
@@ -73,7 +60,6 @@ export default {
         WordCloudModule
       ],
       providers: [
-        CopyPasteMapsService,
         MatSnackBar,
         SharedNgrxEffects,
         NgbActiveModal,
@@ -88,7 +74,7 @@ export default {
                   neo4jID: 'c',
                   link: 'd'
                 }
-              ])
+              ]);
             }),
             getNCBIEnrichmentDomains: () => new Observable(s => {
               s.next([
@@ -135,7 +121,7 @@ export default {
                     link: 'h'
                   }
                 }
-              ])
+              ]);
             }),
           }
         },
@@ -146,7 +132,7 @@ export default {
               s.next({
                 name: 'abc',
                 data: 'def/ghi'
-              })
+              });
             }),
             getFileMeta: (fileId, projectName) => {
 
@@ -166,7 +152,7 @@ export default {
       ]
     }),
   ]
-};// This creates a Story for the component
+}; // This creates a Story for the component
 
 const Template: Story<EnrichmentVisualisationViewerComponent> = (args) => ({
   component: EnrichmentVisualisationViewerComponent,
@@ -187,5 +173,5 @@ const Template: Story<EnrichmentVisualisationViewerComponent> = (args) => ({
   `,
 });
 
-export const Default = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+export const Default = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 Default.args = {};

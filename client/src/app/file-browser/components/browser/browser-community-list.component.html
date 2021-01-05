@@ -39,41 +39,15 @@
     </ng-container>
 
     <ng-container *ngIf="status.resultsShown">
-      <ng-container *ngIf="results.view.length">
+      <ng-container *ngIf="list.results.view.length">
         <div class="module-section">
           <div class="module-section-header">
             <h2 class="module-section-header-title">Community Content</h2>
           </div>
 
           <div class="module-section-body">
-            <div class="tile-deck">
-              <div *ngFor="let o of results.view" class="tile d-flex flex-column">
-                <div class="flex-fill d-flex justify-content-center align-items-center my-2">
-                  <a [appLink]="['/projects', o.project.projectName, 'maps', o.map.hash_id]" [newTab]="true"
-                     class="text-muted">
-                    <i class="fas fa-project-diagram fa-2x"></i>
-                  </a>
-                </div>
-                <div class="text-truncate text-center">
-                  <a [appLink]="['/projects', o.project.projectName, 'maps', o.map.hash_id]" [newTab]="true"
-                     class="d-block text-truncate">
-                    <strong>{{ o.map.label }}</strong>
-                  </a>
-                  <div class="text-truncate text-muted">
-                    By {{ o.user.username }}
-                  </div>
-                </div>
-              </div>
-
-              <div class="tile d-flex flex-column align-items-center justify-content-center"
-                   *ngIf="collectionSize > results.length">
-                <div class="text-truncate text-center">
-                  <a [appLink]="['/community']" class="d-block text-truncate">
-                    View {{ collectionSize - results.length }} more...
-                  </a>
-                </div>
-              </div>
-            </div>
+            <app-object-tile-deck [objects]="list.results" [newTabObject]="true" [forEditing]="false"
+                                  [showMoreButton]="true" [moreLink]="['/community']"></app-object-tile-deck>
           </div>
         </div>
       </ng-container>

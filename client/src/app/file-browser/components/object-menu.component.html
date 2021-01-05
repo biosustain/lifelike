@@ -1,0 +1,53 @@
+<button ngbDropdownItem (click)="this.objectOpen.next(object)" [disabled]="!object.isOpenable">
+  Open
+</button>
+<ng-container *ngIf="object.privileges.writable">
+  <button ngbDropdownItem (click)="openEditDialog(object)">
+    Edit details...
+  </button>
+  <button ngbDropdownItem (click)="reannotate([object])" *ngIf="object.isAnnotatable">
+    Re-annotate
+  </button>
+</ng-container>
+<button ngbDropdownItem (click)="openVersionHistoryDialog(object)" *ngIf="object.isVersioned">
+  Version history...
+</button>
+
+<ng-container>
+  <div class="dropdown-divider"></div>
+  <button ngbDropdownItem (click)="download(object)" *ngIf="object.isDownloadable">
+    Download
+  </button>
+  <button ngbDropdownItem (click)="openExportDialog(object)" *ngIf="object.exportFormats.length">
+    Export...
+  </button>
+  <button ngbDropdownItem (click)="openShareDialog(object)">
+    Share...
+  </button>
+</ng-container>
+
+<ng-container *ngIf="object.isNavigable">
+  <div class="dropdown-divider"></div>
+  <button ngbDropdownItem [appLink]="['/file-navigator', object.project.name, object.hashId]"
+          [newTab]="true" [sideBySide]="true">
+    Open in navigator
+  </button>
+</ng-container>
+
+<ng-container
+  *ngIf="object.isCloneable || object.privileges.writable && (object.isMovable || object.isDeletable)">
+  <div class="dropdown-divider"></div>
+  <button ngbDropdownItem (click)="openCloneDialog(object)" *ngIf="object.isCloneable">
+    Copy to...
+  </button>
+  <ng-container *ngIf="object.privileges.writable && forEditing">
+    <button ngbDropdownItem (click)="openMoveDialog([object])" [disabled]="!object.isMovable">
+      Move to...
+    </button>
+  </ng-container>
+  <ng-container *ngIf="object.privileges.writable">
+    <button ngbDropdownItem (click)="openDeleteDialog([object])" [disabled]="!object.isDeletable">
+      Delete...
+    </button>
+  </ng-container>
+</ng-container>

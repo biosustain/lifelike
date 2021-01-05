@@ -49,11 +49,20 @@ def snake_to_camel_dict(d, new_dict: dict) -> dict:
     return new_dict
 
 
-def snake_to_camel(s):
-    if not s:
-        return s
-    parts = s.split('_')
-    return parts[0] + ''.join(x.capitalize() or '_' for x in parts[1:])
+def snake_to_camel(v):
+    if v is None:
+        return None
+    if callable(getattr(v, 'to_dict', None)):
+        return v.to_dict()
+    elif type(v) is list:
+        return [snake_to_camel(item) for item in v]
+    elif type(v) is dict:
+        return {snake_to_camel(k): snake_to_camel(v) for k, v in v.items()}
+    elif type(v) is str:
+        parts = v.split('_')
+        return parts[0] + ''.join(x.capitalize() or '_' for x in parts[1:])
+    else:
+        return v
 
 
 def camel_to_snake(s):

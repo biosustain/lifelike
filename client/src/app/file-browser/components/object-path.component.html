@@ -1,0 +1,5 @@
+<ol class="breadcrumb">
+  <li class="breadcrumb-item" *ngFor="let item of path">
+    <a [appLink]="item.getCommands(forEditing)" [newTab]="newTab">{{ item.effectiveName }}</a>
+  </li>
+</ol>

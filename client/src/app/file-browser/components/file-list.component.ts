@@ -69,7 +69,7 @@ export class FileListComponent {
   }
 
   openMoveDialog(target: FilesystemObject) {
-    return this.actions.openMoveDialog(target).then(() => {
+    return this.actions.openMoveDialog([target]).then(() => {
       this.snackBar.open(`File moved.`, 'Close', {
         duration: 5000,
       });

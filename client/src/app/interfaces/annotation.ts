@@ -25,3 +25,5 @@ export interface GlobalAnnotation {
     annotationId: string;
     comment: string;
 }
+
+export type AnnotationMethod = 'NLP' | 'Rules Based';
