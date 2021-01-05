@@ -20,6 +20,7 @@ export class UserSelectComponent implements ControlValueAccessor, OnInit, OnDest
 
   @Input() multiple = false;
   @Input() placeholder = '';
+  @Input() excludeSelf = false;
   @ViewChild('selectInput', {static: false, read: SelectInputComponent}) selectInputComponent;
 
   protected changeCallback: ((value: any) => any) | undefined;
@@ -42,6 +43,7 @@ export class UserSelectComponent implements ControlValueAccessor, OnInit, OnDest
         if (request.query.trim().length > 0) {
           return this.accountsService.search({
             query: request.query,
+            excludeSelf: this.excludeSelf,
           }).pipe(
             map(list => [request, list.results.items]),
           );
