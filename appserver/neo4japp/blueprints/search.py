@@ -22,7 +22,7 @@ from neo4japp.database import get_search_service_dao, db, get_elastic_service
 from neo4japp.models import (
     Projects,
     AppRole,
-    projects_collaborator_role, AppUser, Directory, Project, Files
+    projects_collaborator_role, AppUser, Files
 )
 from neo4japp.request_schemas.search import (
     AnnotateRequestSchema,
@@ -35,6 +35,7 @@ from neo4japp.services.annotations.service_helpers import create_annotations
 from neo4japp.util import jsonify_with_class, SuccessResponse
 
 bp = Blueprint('search', __name__, url_prefix='/search')
+
 
 # NOTE: Commenting out as these are unused...do we need these?
 
@@ -132,56 +133,8 @@ def annotate(texts):
 
 
 def hydrate_search_results(es_results):
-    es_mapping = defaultdict(lambda: {})
-
-    for doc in es_results['hits']:
-        es_mapping[doc['_source']['type']][doc['_source']['id']] = doc
-
-    t_owner = aliased(AppUser)
-    t_directory = aliased(Directory)
-    t_project = aliased(Projects)
-
-    map_query = db.session.query(Project.hash_id.label('id'),
-                                 Project.label.label('name'),
-                                 Project.description.label('description'),
-                                 sqlalchemy.literal_column('NULL').label('annotation_date'),
-                                 Project.creation_date.label('creation_date'),
-                                 Project.modified_date.label('modification_date'),
-                                 t_owner.id.label('owner_id'),
-                                 t_owner.username.label('owner_username'),
-                                 t_owner.first_name.label('owner_first_name'),
-                                 t_owner.last_name.label('owner_last_name'),
-                                 t_project.project_name.label('project_name'),
-                                 sqlalchemy.literal_column('\'map\'').label('type')) \
-        .join(t_owner, t_owner.id == Project.user_id) \
-        .join(t_directory, t_directory.id == Project.dir_id) \
-        .join(t_project, t_project.id == t_directory.projects_id) \
-        .filter(Project.hash_id.in_(es_mapping['map'].keys()))
-
-    file_query = db.session.query(Files.file_id.label('id'),
-                                  Files.filename.label('name'),
-                                  Files.description.label('description'),
-                                  Files.annotations_date.label('annotation_date'),
-                                  Files.creation_date.label('creation_date'),
-                                  Files.modified_date.label('modification_date'),
-                                  t_owner.id.label('owner_id'),
-                                  t_owner.username.label('owner_username'),
-                                  t_owner.first_name.label('owner_first_name'),
-                                  t_owner.last_name.label('owner_last_name'),
-                                  t_project.project_name.label('project_name'),
-                                  sqlalchemy.literal_column('\'pdf\'').label('type')) \
-        .join(t_owner, t_owner.id == Files.user_id) \
-        .join(t_directory, t_directory.id == Files.dir_id) \
-        .join(t_project, t_project.id == t_directory.projects_id) \
-        .filter(Files.file_id.in_(es_mapping['pdf'].keys()))
-
-    combined_query = sqlalchemy.union_all(map_query, file_query).alias('combined_results')
-    query = db.session.query(combined_query)
-
-    for row in query.all():
-        row = row._asdict()
-        doc = es_mapping[row['type']][row['id']]
-        doc['_db'] = row
+    pass
+    # TODO
 
 
 # TODO: Probably should rename this to something else...not sure what though

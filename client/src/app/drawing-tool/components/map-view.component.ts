@@ -1,23 +1,21 @@
 import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { MapService } from '../services';
-
-import { MapExportDialogComponent } from './map-export-dialog.component';
+import { Subscription } from 'rxjs';
 import { ModuleAwareComponent } from '../../shared/modules';
 import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { tap } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { Progress } from '../../interfaces/common-dialog.interface';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { MapComponent } from './map.component';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
-import { GraphEntity, GraphEntityType } from '../services/interfaces';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { FilesystemObject, MAP_MIMETYPE } from '../../file-browser/models/filesystem-object';
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
+import { getObjectLabel } from '../../file-browser/utils/objects';
+import { cloneDeep } from 'lodash';
 
 @Component({
   selector: 'app-map-view',
@@ -27,7 +25,7 @@ import { GraphEntity, GraphEntityType } from '../services/interfaces';
   ],
 })
 export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResult>
-    implements OnDestroy, AfterViewInit, ModuleAwareComponent {
+  implements OnDestroy, AfterViewInit, ModuleAwareComponent {
   @Input() titleVisible = true;
 
   paramsSubscription: Subscription;
@@ -35,33 +33,26 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
   returnUrl: string;
 
-  hasEditPermission = false;
-
-  constructor(mapService: MapService,
+  constructor(filesystemService: FilesystemService,
               snackBar: MatSnackBar,
               modalService: NgbModal,
               messageDialog: MessageDialog,
               ngZone: NgZone, route: ActivatedRoute,
               errorHandler: ErrorHandler,
               workspaceManager: WorkspaceManager,
-              public readonly progressDialog: ProgressDialog) {
-    super(mapService, snackBar, modalService, messageDialog, ngZone, route, errorHandler, workspaceManager);
+              filesystemObjectActions: FilesystemObjectActions,
+              protected readonly progressDialog: ProgressDialog) {
+    super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
+      errorHandler, workspaceManager, filesystemObjectActions);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
     });
 
     this.paramsSubscription = this.route.params.subscribe(params => {
-      this.locator = {
-        projectName: params.project_name,
-        hashId: params.hash_id,
-      };
+      this.locator = params.hash_id;
     });
   }
-
-// ========================================
-  // Angular events
-  // ========================================
 
   ngOnDestroy() {
     super.ngOnDestroy();
@@ -73,37 +64,47 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     return this.unsavedChanges$.getValue();
   }
 
-  // ========================================
-  // States
-  // ========================================
-
   /**
    * Save the current representation of knowledge model
    */
   save() {
-    this.map.graph = this.graphCanvas.getGraph();
-    this.map.modified_date = new Date().toISOString();
+    const contentValue = new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
+      type: MAP_MIMETYPE,
+    });
 
     // Push to backend to save
-    this.mapService.updateMap(this.locator.projectName, this.map)
-        .pipe(this.errorHandler.create())
-        .subscribe(() => {
-          this.unsavedChanges$.next(false);
-          this.emitModuleProperties();
-          this.snackBar.open('Map saved.', null, {
-            duration: 2000,
-          });
+    this.filesystemService.save([this.locator], {
+      contentValue,
+    })
+      .pipe(this.errorHandler.create())
+      .subscribe(() => {
+        this.unsavedChanges$.next(false);
+        this.emitModuleProperties();
+        this.snackBar.open('Map saved.', null, {
+          duration: 2000,
         });
+      });
   }
 
-  // ========================================
-  // Download
-  // ========================================
+  openCloneDialog() {
+    const newTarget: FilesystemObject = cloneDeep(this.map);
+    newTarget.public = false;
+    return this.filesystemObjectActions.openCloneDialog(newTarget).then(clone => {
+      this.workspaceManager.navigate(clone.getCommands(), {
+        newTab: true,
+      });
+      this.snackBar.open(`Copied ${getObjectLabel(this.map)} to ${getObjectLabel(clone)}.`, 'Close', {
+        duration: 5000,
+      });
+    }, () => {
+    });
+  }
 
-  /**
-   * Asks for the format to download the map
-   */
-  download() {
+  openVersionHistoryDialog() {
+    return this.filesystemObjectActions.openVersionHistoryDialog(this.map);
+  }
+
+  openExportDialog() {
     if (this.unsavedChanges$.getValue()) {
       this.messageDialog.display({
         title: 'Save Required',
@@ -111,112 +112,13 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
         type: MessageType.Error,
       });
     } else {
-      this.modalService.open(MapExportDialogComponent).result.then(format => {
-        if (format === 'pdf') {
-          this.downloadPDF();
-        } else if (format === 'svg') {
-          this.downloadSVG();
-        } else if (format === 'png') {
-          this.downloadPNG();
-        } else {
-          throw new Error('invalid format');
-        }
-      }, () => {
-      });
+      return this.filesystemObjectActions.openExportDialog(this.map);
     }
   }
 
-  private requestDownload(project: () => Observable<any>, mimeType: string, extension: string) {
-    if (this.unsavedChanges$.getValue()) {
-      this.snackBar.open('Please save the project before exporting', null, {
-        duration: 2000,
-      });
-    } else {
-      const progressDialogRef = this.progressDialog.display({
-        title: `Export`,
-        progressObservable: new BehaviorSubject<Progress>(new Progress({
-          status: 'Generating the requested export...',
-        })),
-      });
-
-      project().pipe(
-          tap(
-              () => progressDialogRef.close(),
-              () => progressDialogRef.close()),
-          this.errorHandler.create(),
-      ).subscribe(resp => {
-        // It is necessary to create a new blob object with mime-type explicitly set
-        // otherwise only Chrome works like it should
-        const newBlob = new Blob([resp], {
-          type: mimeType,
-        });
-
-        // IE doesn't allow using a blob object directly as link href
-        // instead it is necessary to use msSaveOrOpenBlob
-        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-          window.navigator.msSaveOrOpenBlob(newBlob);
-          return;
-        }
-
-        // For other browsers:
-        // Create a link pointing to the ObjectURL containing the blob.
-        const data = window.URL.createObjectURL(newBlob);
-
-        const link = document.createElement('a');
-        link.href = data;
-        link.download = this.map.label + extension;
-        // this is necessary as link.click() does not work on the latest firefox
-        link.dispatchEvent(new MouseEvent('click', {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        }));
-
-        setTimeout(() => {
-          // For Firefox it is necessary to delay revoking the ObjectURL
-          window.URL.revokeObjectURL(data);
-          link.remove();
-        }, 100);
-      });
-    }
+  openShareDialog() {
+    return this.filesystemObjectActions.openShareDialog(this.map);
   }
-
-  /**
-   * Saves and downloads the PDF version of the current map
-   */
-  downloadPDF() {
-    this.requestDownload(
-        () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'pdf'),
-        'application/pdf',
-        '.pdf',
-    );
-  }
-
-  /**
-   * Saves and downloads the SVG version of the current map
-   */
-  downloadSVG() {
-    this.requestDownload(
-        () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'svg'),
-        'application/svg',
-        '.svg',
-    );
-  }
-
-  /**
-   * Saves and downloads the PNG version of the current map
-   */
-  downloadPNG() {
-    this.requestDownload(
-        () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'png'),
-        'application/png',
-        '.png',
-    );
-  }
-
-  // ========================================
-  // Template stuff
-  // ========================================
 
   goToReturnUrl() {
     if (this.shouldConfirmUnload()) {
@@ -226,11 +128,5 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     } else {
       this.workspaceManager.navigateByUrl(this.returnUrl);
     }
-  }
-
-  displayShareDialog() {
-    const modalRef = this.modalService.open(ShareDialogComponent);
-    modalRef.componentInstance.url = `${window.location.origin}/projects/`
-      + `${this.locator.projectName}/maps/${this.locator.hashId}?fromWorkspace`;
   }
 }

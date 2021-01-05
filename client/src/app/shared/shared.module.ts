@@ -54,11 +54,13 @@ import { GenericTableComponent } from './components/table/generic-table.componen
 import { HighlightTextComponent } from './components/highlight-text.component';
 import { AddStatusPipe } from './pipes/add-status.pipe';
 import { TermHighlightComponent } from './components/term-highlight.component';
+import { ApiService } from './services/api.service';
 import { VisJsNetworkComponent } from './components/vis-js-network/vis-js-network.component';
 import { PlotlySankeyDiagramComponent } from './components/plotly-sankey-diagram/plotly-sankey-diagram.component';
 import { SearchControlComponent } from './components/search-control.component';
 import {FilterComponent} from './components/filter/filter.component';
 import {WordCloudFilterComponent} from "./components/word-cloud-filter/word-cloud-filter.component";
+import { UserComponent } from './components/user.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -99,6 +101,7 @@ const components = [
   HighlightTextComponent,
   TermHighlightComponent,
   SearchControlComponent,
+  UserComponent,
 ];
 
 @NgModule({
@@ -131,6 +134,7 @@ const components = [
     AddStatusPipe,
   ],
   providers: [
+    ApiService,
     SharedNgrxEffects,
     SharedSearchService,
   ],
