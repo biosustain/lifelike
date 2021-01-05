@@ -1,5 +1,5 @@
-import { CollectionModal } from '../../shared/utils/collection-modal';
-import { ProjectImpl } from './filesystem-object';
+import {CollectionModal} from '../../shared/utils/collection-modal';
+import {ProjectImpl} from './filesystem-object';
 
 export class ProjectList {
   public collectionSize = 0;

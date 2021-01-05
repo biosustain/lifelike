@@ -1,10 +1,10 @@
-import { Component, Input } from '@angular/core';
-import { FilesystemObject } from '../../models/filesystem-object';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../../shared/services/message-dialog.service';
-import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { ObjectVersion } from '../../models/object-version';
+import {Component, Input} from '@angular/core';
+import {FilesystemObject} from '../../models/filesystem-object';
+import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
+import {MessageDialog} from '../../../shared/services/message-dialog.service';
+import {CommonFormDialogComponent} from '../../../shared/components/dialog/common-form-dialog.component';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {ObjectVersion} from '../../models/object-version';
 
 @Component({
   selector: 'app-object-version-history-dialog',

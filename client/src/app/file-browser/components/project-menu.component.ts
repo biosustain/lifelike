@@ -1,6 +1,6 @@
-import { Component, Input } from '@angular/core';
-import { ProjectImpl } from '../models/filesystem-object';
-import { ProjectActions } from '../services/project-actions';
+import {Component, Input} from '@angular/core';
+import {ProjectImpl} from '../models/filesystem-object';
+import {ProjectActions} from '../services/project-actions';
 
 @Component({
   selector: 'app-project-menu',
@@ -9,6 +9,8 @@ import { ProjectActions } from '../services/project-actions';
 export class ProjectMenuComponent {
 
   @Input() project: ProjectImpl;
+  @Input() nameEntity = false;
+  @Input() showTools = true;
 
   constructor(protected readonly projectActions: ProjectActions) {
   }

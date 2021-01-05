@@ -1,36 +1,30 @@
-import { uniqueId } from 'lodash';
-import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, of, Subject, Subscription } from 'rxjs';
+import {uniqueId} from 'lodash';
+import {Component, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
+import {BehaviorSubject, combineLatest, of, Subject, Subscription} from 'rxjs';
 
-import { PdfAnnotationsService } from '../../drawing-tool/services';
+import {PdfAnnotationsService} from '../../drawing-tool/services';
 
-import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
-import {
-  AddedAnnotationExclusion,
-  Annotation,
-  Location,
-  Meta,
-  RemovedAnnotationExclusion,
-} from '../annotation-type';
+import {UniversalGraphNode} from '../../drawing-tool/services/interfaces';
+import {AddedAnnotationExclusion, Annotation, Location, Meta, RemovedAnnotationExclusion,} from '../annotation-type';
 
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { PdfViewerLibComponent } from '../pdf-viewer-lib.component';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
-import { ActivatedRoute } from '@angular/router';
-import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
-import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
-import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { mergeMap } from 'rxjs/operators';
-import { readBlobAsBuffer } from '../../shared/utils/files';
-import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {PdfFile} from '../../interfaces/pdf-files.interface';
+import {BackgroundTask} from '../../shared/rxjs/background-task';
+import {PdfViewerLibComponent} from '../pdf-viewer-lib.component';
+import {ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType} from 'app/shared/annotation-types';
+import {ActivatedRoute} from '@angular/router';
+import {ModuleAwareComponent, ModuleProperties} from '../../shared/modules';
+import {ConfirmDialogComponent} from '../../shared/components/dialog/confirm-dialog.component';
+import {NgbDropdown, NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {ErrorHandler} from '../../shared/services/error-handler.service';
+import {ProgressDialog} from 'app/shared/services/progress-dialog.service';
+import {Progress} from 'app/interfaces/common-dialog.interface';
+import {WorkspaceManager} from '../../shared/workspace-manager';
+import {FilesystemService} from '../../file-browser/services/filesystem.service';
+import {FilesystemObject} from '../../file-browser/models/filesystem-object';
+import {mergeMap} from 'rxjs/operators';
+import {readBlobAsBuffer} from '../../shared/utils/files';
+import {FilesystemObjectActions} from '../../file-browser/services/filesystem-object-actions';
 
 class EntityTypeEntry {
   constructor(public type: EntityType, public annotations: Annotation[]) {
@@ -138,15 +132,28 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       }, 10);
     });
 
+    this.loadFromUrl();
+  }
+
+  loadFromUrl() {
     // Check if the component was loaded with a url to parse fileId
     // from
     if (this.route.snapshot.params.file_id) {
+      this.object = null;
+      this.currentFileId = null;
+
       const linkedFileId = this.route.snapshot.params.file_id;
       const fragment = this.route.snapshot.fragment || '';
       // TODO: Do proper query string parsing
       this.openPdf(linkedFileId,
         this.parseLocationFromUrl(fragment),
         this.parseHighlightFromUrl(fragment));
+    }
+  }
+
+  requestRefresh() {
+    if (confirm('There have been some changes. Would you like to refresh this open document?')) {
+      this.loadFromUrl();
     }
   }
 
@@ -515,10 +522,6 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  displayEditDialog() {
-    return this.fileObjectActions.openEditDialog(this.object);
-  }
-
   emitModuleProperties() {
     this.modulePropertiesChange.next({
       title: this.object.filename,
@@ -594,4 +597,5 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       },
     } as Partial<UniversalGraphNode>));
   }
+
 }

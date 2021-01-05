@@ -91,8 +91,11 @@ class FileAnnotationsView(FilesystemBaseView):
         else:
             annotations = []
 
+        results = annotations + file.custom_annotations
+
         return jsonify(FileAnnotationsResponseSchema().dump({
-            'annotations': annotations + file.custom_annotations,
+            'results': results,
+            'total': len(results),
         }))
 
 

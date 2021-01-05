@@ -23,10 +23,10 @@ import { MapViewComponent } from './drawing-tool/components/map-view.component';
 import { CommunityBrowserComponent } from './file-browser/components/community-browser.component';
 import { BrowserComponent } from './file-browser/components/browser/browser.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
-import { EnrichmentTableViewerComponent } from './file-browser/components/enrichment/table/enrichment-table-viewer.component';
+import {EnrichmentVisualisationViewerComponent} from './file-browser/components/enrichment/visualisation/enrichment-visualisation-viewer.component';
+import {ObjectNavigatorComponent} from './file-navigator/components/object-navigator.component';
 import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
-import {EnrichmentVisualisationViewerComponent} from "./file-browser/components/enrichment/visualisation/enrichment-visualisation-viewer.component";
-import {ObjectNavigatorComponent} from "./file-navigator/components/object-navigator.component";
+import {EnrichmentTableViewerComponent} from "./file-browser/components/enrichment/table/enrichment-table-viewer.component";
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -176,7 +176,7 @@ const routes: Routes = [
     component: BrowserComponent,
     canActivate: [AuthGuard],
     data: {
-      title: 'Browser',
+      title: 'File Browser',
       fontAwesomeIcon: 'layer-group',
     },
   },

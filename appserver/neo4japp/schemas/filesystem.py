@@ -1,5 +1,3 @@
-from dataclasses import dataclass, field
-
 import marshmallow.validate
 import marshmallow_dataclass
 from marshmallow import fields, validates_schema, ValidationError
@@ -219,19 +217,12 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
                 raise ValidationError("More than one source of content cannot be specified.")
 
 
-@dataclass
-class FileResponse:
-    object: Files = field(metadata={
-        'marshmallow_field': fields.Nested(FileSchema),
-    })
-
-
 class FileResponseSchema(CamelCaseSchema):
-    object = fields.Nested(FileSchema, exclude=('project.root',))
+    result = fields.Nested(FileSchema, exclude=('project.root',))
 
 
 class MultipleFileResponseSchema(CamelCaseSchema):
-    objects = fields.Dict(keys=fields.String(),
+    results = fields.Dict(keys=fields.String(),
                           values=fields.Nested(FileSchema, exclude=('project.root',)))
     missing = fields.List(fields.String)
 

@@ -1,7 +1,4 @@
-
-import {
-  PdfAnnotationsService,
-} from './pdf-annotations.service';
+import {PdfAnnotationsService,} from './pdf-annotations.service';
 
 // TODO: Should consolidate this with the existing shared method at the root of the app
 /**

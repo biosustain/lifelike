@@ -1,13 +1,14 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FilesystemObject } from '../models/filesystem-object';
-import { getObjectLabel } from '../utils/objects';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { FilesystemObjectActions } from '../services/filesystem-object-actions';
-import { cloneDeep } from 'lodash';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {FilesystemObject} from '../models/filesystem-object';
+import {getObjectLabel} from '../utils/objects';
+import {ActivatedRoute, Router} from '@angular/router';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {ErrorHandler} from '../../shared/services/error-handler.service';
+import {WorkspaceManager} from '../../shared/workspace-manager';
+import {FilesystemObjectActions} from '../services/filesystem-object-actions';
+import {cloneDeep} from 'lodash';
+import {ObjectVersion} from '../models/object-version';
 
 @Component({
   selector: 'app-object-menu',
@@ -17,8 +18,15 @@ export class ObjectMenuComponent {
 
   @Input() object: FilesystemObject;
   @Input() forEditing = true;
+  @Input() nameEntity = false;
+  @Input() showOpen = true;
+  @Input() showRestore = false;
+  @Input() showDelete = false;
+  @Input() showTools = true;
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
+  @Output() objectRefresh = new EventEmitter<FilesystemObject>();
+  @Output() objectRestore = new EventEmitter<ObjectVersion>();
 
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
@@ -78,6 +86,7 @@ export class ObjectMenuComponent {
         duration: 5000,
       });
       this.refreshRequest.next();
+      this.objectRefresh.next();
     }, () => {
     });
   }
@@ -86,11 +95,9 @@ export class ObjectMenuComponent {
     return this.actions.openVersionHistoryDialog(target);
   }
 
-  download(target: FilesystemObject) {
-    return this.actions.openDownloadDialog(target).then(() => {
-      this.snackBar.open(`File download of ${getObjectLabel(target)} opened.`, 'Close', {
-        duration: 5000,
-      });
+  openVersionRestoreDialog(target: FilesystemObject) {
+    return this.actions.openVersionRestoreDialog(target).then(version => {
+      this.objectRestore.next(version);
     }, () => {
     });
   }

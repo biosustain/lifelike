@@ -1,17 +1,14 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
 
-import { Observable, of } from 'rxjs';
+import {Observable, of} from 'rxjs';
 
-import { ANNOTATIONS } from './mock_data';
-import { AddedAnnotationExclusion, Annotation } from '../../pdf-viewer/annotation-type';
-import { ApiService } from '../../shared/services/api.service';
-import {
-  AnnotationGenerationRequest,
-  ObjectAnnotationsDataResponse,
-  MultipleAnnotationGenerationResponse,
-} from '../../file-browser/schema';
-import { map } from 'rxjs/operators';
+import {ANNOTATIONS} from './mock_data';
+import {AddedAnnotationExclusion, Annotation} from '../../pdf-viewer/annotation-type';
+import {ApiService} from '../../shared/services/api.service';
+import {AnnotationGenerationRequest, AnnotationGenerationResultData} from '../../file-browser/schema';
+import {map} from 'rxjs/operators';
+import {ResultList, ResultMapping} from '../../shared/schemas/common';
 
 @Injectable({
   providedIn: 'root',
@@ -30,11 +27,11 @@ export class PdfAnnotationsService {
   }
 
   getAnnotations(hashId: string): Observable<Annotation[]> {
-    return this.http.get<ObjectAnnotationsDataResponse>(
+    return this.http.get<ResultList<Annotation>>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations`,
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map(data => data.annotations),
+      map(data => data.results),
     );
   }
 
@@ -49,8 +46,8 @@ export class PdfAnnotationsService {
 
   generateAnnotations(hashIds: string[],
                       request: AnnotationGenerationRequest = {}):
-    Observable<MultipleAnnotationGenerationResponse> {
-    return this.http.post<MultipleAnnotationGenerationResponse>(
+    Observable<ResultMapping<AnnotationGenerationResultData>> {
+    return this.http.post<ResultMapping<AnnotationGenerationResultData>>(
       `/api/filesystem/annotations/generate`, {
         hashIds,
         ...request,

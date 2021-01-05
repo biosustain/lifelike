@@ -1,6 +1,6 @@
-import { ComponentRef, Injectable, InjectionToken, Injector } from '@angular/core';
-import { FilesystemObject } from '../models/filesystem-object';
-import { Observable, of } from 'rxjs';
+import {ComponentRef, Injectable, InjectionToken, Injector} from '@angular/core';
+import {FilesystemObject} from '../models/filesystem-object';
+import {Observable, of} from 'rxjs';
 
 export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>('objectTypeProvider');
 

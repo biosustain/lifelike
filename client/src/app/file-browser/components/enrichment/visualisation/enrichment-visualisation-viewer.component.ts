@@ -1,4 +1,4 @@
-import {Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 
 import {TableCell, TableHeader, TableLink} from 'app/shared/components/table/generic-table.component';
 import {BackgroundTask} from 'app/shared/rxjs/background-task';
@@ -100,6 +100,26 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
     this.fileId = this.route.snapshot.params.file_id || '';
   }
 
+  @Input("data") data: any;
+
+  cloudData: string[] = [];
+
+  setCloudData() {
+    console.log(this.data, this.selectedRow);
+    this.cloudData = this.data.data[this.selectedRow].Genes.split(';');
+  }
+
+  selectedRow: number = 0;
+
+  // events
+  public chartClick({event, active}: { event: MouseEvent, active: {}[] }): void {
+    console.log("active", active[0]);
+    if (active[0]) {
+      this.selectedRow = (active[0] as any)._index;
+      this.setCloudData();
+    }
+  }
+
   ngOnInit() {
     this.loadTask = new BackgroundTask(() =>
       this.filesService.getEnrichmentData(this.projectName, this.fileId)
@@ -142,6 +162,8 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
       this.matchNCBINodes(this.currentPage);
     });
     this.loadTask.update();
+
+    this.setCloudData();
   }
 
 

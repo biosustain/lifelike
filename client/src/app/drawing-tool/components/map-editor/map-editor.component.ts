@@ -1,31 +1,28 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
 
-import { cloneDeep } from 'lodash';
+import {cloneDeep} from 'lodash';
 
-import { makeid } from '../../services';
-import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
+import {makeid} from '../../services';
+import {KnowledgeMap, UniversalGraph, UniversalGraphNode} from '../../services/interfaces';
 
-import { NodeCreation } from 'app/graph-viewer/actions/nodes';
-import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
-import { SelectableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity';
-import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
-import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
-import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
-import { PasteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
-import { HistoryKeyboardShortcuts } from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
-import { MapViewComponent } from '../map-view.component';
-import { from, Observable, of, Subscription } from 'rxjs';
-import { auditTime, switchMap } from 'rxjs/operators';
-import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
-import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
-import { mergeDeep } from '../../../graph-viewer/utils/objects';
-import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../../shared/utils/files';
-import { MAP_MIMETYPE } from '../../../file-browser/models/filesystem-object';
-import {
-  ObjectEditDialogComponent,
-  ObjectEditDialogValue,
-} from '../../../file-browser/components/dialog/object-edit-dialog.component';
-import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
+import {NodeCreation} from 'app/graph-viewer/actions/nodes';
+import {MovableNode} from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
+import {SelectableEntity} from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity';
+import {InteractiveEdgeCreation} from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
+import {HandleResizable} from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
+import {DeleteKeyboardShortcut} from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
+import {PasteKeyboardShortcut} from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
+import {HistoryKeyboardShortcuts} from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
+import {MapViewComponent} from '../map-view.component';
+import {from, Observable, of, Subscription} from 'rxjs';
+import {auditTime, switchMap} from 'rxjs/operators';
+import {MapRestoreDialogComponent} from '../map-restore-dialog.component';
+import {GraphAction, GraphActionReceiver} from '../../../graph-viewer/actions/actions';
+import {mergeDeep} from '../../../graph-viewer/utils/objects';
+import {mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer} from '../../../shared/utils/files';
+import {MAP_MIMETYPE} from '../../../file-browser/models/filesystem-object';
+import {CanvasGraphView} from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
+import {ObjectVersion} from '../../../file-browser/models/object-version';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -126,41 +123,20 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     }
   }
 
-  openEditDialog() {
-    const target = cloneDeep(this.map);
-    const dialogRef = this.modalService.open(ObjectEditDialogComponent);
-    dialogRef.componentInstance.object = target;
-    dialogRef.componentInstance.accept = ((changes: ObjectEditDialogValue) => {
-      this.graphCanvas.execute(new KnowledgeMapUpdate(
-        'Update map properties',
-        this.map, changes.objectChanges, Object.keys(changes.objectChanges).reduce((obj, key) => {
-          obj[key] = this.map[key];
-          return obj;
-        }, {}),
+  restore(version: ObjectVersion) {
+    readBlobAsBuffer(version.contentValue).pipe(
+      mapBufferToJson<UniversalGraph>(),
+      this.errorHandler.create(),
+    ).subscribe(graph => {
+      this.graphCanvas.execute(new KnowledgeMapRestore(
+        `Restore map to '${version.hashId}'`,
+        this.graphCanvas,
+        graph,
+        cloneDeep(this.graphCanvas.getGraph()),
       ));
-      this.unsavedChanges$.next(true);
-      return Promise.resolve();
-    });
-    return dialogRef.result;
-  }
-
-  openVersionRestoreDialog() {
-    return this.filesystemObjectActions.openVersionRestoreDialog(this.map).then(version => {
-      readBlobAsBuffer(version.contentValue).pipe(
-        mapBufferToJson<UniversalGraph>(),
-        this.errorHandler.create(),
-      ).subscribe(graph => {
-        this.graphCanvas.execute(new KnowledgeMapRestore(
-          `Restore map to '${version.hashId}'`,
-          this.graphCanvas,
-          graph,
-          cloneDeep(this.graphCanvas.getGraph()),
-        ));
-      }, e => {
-        // Data is corrupt
-        // TODO: Prevent the user from editing or something so the user doesnt lose data?
-      });
-    }, () => {
+    }, e => {
+      // Data is corrupt
+      // TODO: Prevent the user from editing or something so the user doesnt lose data?
     });
   }
 

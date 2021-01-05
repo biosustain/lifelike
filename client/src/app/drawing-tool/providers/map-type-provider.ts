@@ -1,8 +1,8 @@
-import { ObjectTypeProvider } from '../../file-browser/services/object-type.service';
-import { FilesystemObject, MAP_MIMETYPE } from '../../file-browser/models/filesystem-object';
-import { ComponentFactory, ComponentFactoryResolver, ComponentRef, Injectable, Injector } from '@angular/core';
-import { MapComponent } from '../components/map.component';
-import { of } from 'rxjs';
+import {ObjectTypeProvider} from '../../file-browser/services/object-type.service';
+import {FilesystemObject, MAP_MIMETYPE} from '../../file-browser/models/filesystem-object';
+import {ComponentFactory, ComponentFactoryResolver, Injectable, Injector} from '@angular/core';
+import {MapComponent} from '../components/map.component';
+import {of} from 'rxjs';
 
 @Injectable()
 export class MapTypeProvider implements ObjectTypeProvider {

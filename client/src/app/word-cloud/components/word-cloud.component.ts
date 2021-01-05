@@ -1,17 +1,17 @@
-import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import {Component, EventEmitter, Input, Output, ViewEncapsulation} from '@angular/core';
 
-import { uniqueId } from 'lodash';
+import {uniqueId} from 'lodash';
 
-import { combineLatest, Subscription } from 'rxjs';
+import {combineLatest, Subscription} from 'rxjs';
 
-import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { LegendService } from 'app/shared/services/legend.service';
+import {WordCloudAnnotationFilterEntity} from 'app/interfaces/annotation-filter.interface';
+import {BackgroundTask} from 'app/shared/rxjs/background-task';
+import {LegendService} from 'app/shared/services/legend.service';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { PdfAnnotationsService } from '../../drawing-tool/services';
+import {FilesystemObject} from '../../file-browser/models/filesystem-object';
+import {PdfAnnotationsService} from '../../drawing-tool/services';
 
 @Component({
   selector: 'app-word-cloud',

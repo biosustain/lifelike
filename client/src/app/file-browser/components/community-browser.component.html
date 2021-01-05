@@ -7,41 +7,8 @@
     <div class="module" appContainerBreakpoints>
       <!-- Header -->
       <div class="module-header">
-        <!-- Breadcrumbs -->
-        <div class="module-breadcrumb-bar mb-1">
-          <ol class="breadcrumb mb-3" *ngIf="status.resultsShown">
-            <li class="breadcrumb-item">
-              <a appLink="/projects">File Browser</a>
-            </li>
-            <ng-container *ngIf="locator.q; else noQuery">
-              <li class="breadcrumb-item">
-                <a appLink="/community">Community Content</a>
-              </li>
-              <li class="breadcrumb-item">
-              </li>
-            </ng-container>
-            <ng-template #noQuery>
-              <li class="breadcrumb-item">
-              </li>
-            </ng-template>
-          </ol>
-
-          <ol class="breadcrumb mb-3" *ngIf="status.placeholdersShown">
-            <li class="breadcrumb-item">
-              <a appLink="/projects">File Browser</a>
-            </li>
-            <li class="breadcrumb-item">
-              <span class="placeholder-box">Loading</span>
-            </li>
-          </ol>
-        </div>
-
         <!-- Title bar -->
         <div class="module-title-bar">
-          <button type="button" class="module-title-bar-back mr-2" appLink="/projects">
-            <i class="fa fa-fw fa-arrow-left"></i>
-          </button>
-
           <div class="module-title">
             <ng-container *ngIf="locator.q; else noQuery">
               Results for "{{ locator.q }}"
