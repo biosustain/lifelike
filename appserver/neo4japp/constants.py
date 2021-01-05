@@ -90,7 +90,7 @@ ANNOTATION_STYLES_DICT = {
         'label': 'mutation',
     },
     'species': {
-        'color': '#0277bd',
+        'color': '#3177b8',
         'label': 'species',
     },
     'company': {
@@ -109,6 +109,10 @@ ANNOTATION_STYLES_DICT = {
         'color': '#e377c2',
         'label': 'pathway',
     },
+    'phenomena': {
+        'color': '#edc949',
+        'label': 'phenomena',
+    },
     'phenotype': {
         'color': '#edc949',
         'label': 'phenotype',
@@ -122,8 +126,8 @@ ANNOTATION_STYLES_DICT = {
         'label': 'anatomy',
     },
     'entity': {
-        'label': 'ENTITY',
-        'color': '#7f7f7f'
+        'color': '#7f7f7f',
+        'label': 'ENTITY'
     },
     'lab strain': {
         'color': '#f71698',
@@ -165,10 +169,6 @@ ANNOTATION_STYLES_DICT = {
     'association': {
         'label': 'association',
         'color': '#d7d9f8'
-    },
-    'species': {
-        'color': '#0277bd',
-        'label': 'species',
     },
     'phentotype': {
         'color': '#edc949',

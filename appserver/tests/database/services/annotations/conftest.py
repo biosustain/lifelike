@@ -26,7 +26,8 @@ from neo4japp.services.annotations.constants import (
     DISEASES_MESH_LMDB,
     FOODS_MESH_LMDB,
     GENES_NCBI_LMDB,
-    PHENOTYPES_MESH_LMDB,
+    PHENOMENAS_MESH_LMDB,
+    PHENOTYPES_CUSTOM_LMDB,
     PROTEINS_UNIPROT_LMDB,
     CHEMICALS_PUBCHEM_LMDB,
     SPECIES_NCBI_LMDB,
@@ -120,7 +121,8 @@ def lmdb_service():
         (GENES_NCBI_LMDB, 'genes'),
         (DISEASES_MESH_LMDB, 'diseases'),
         (PROTEINS_UNIPROT_LMDB, 'proteins'),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes'),
+        (PHENOMENAS_MESH_LMDB, 'phenomenas'),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes'),
         (SPECIES_NCBI_LMDB, 'species'),
     ]:
         create_empty_lmdb(f'lmdb/{entity}', db_name)
@@ -131,6 +133,7 @@ def lmdb_service():
     diseases_lmdb_path = path.join(directory, 'lmdb/diseases')
     foods_lmdb_path = path.join(directory, 'lmdb/foods')
     genes_lmdb_path = path.join(directory, 'lmdb/genes')
+    phenomenas_lmdb_path = path.join(directory, 'lmdb/phenomenas')
     phenotypes_lmdb_path = path.join(directory, 'lmdb/phenotypes')
     proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
     species_lmdb_path = path.join(directory, 'lmdb/species')
@@ -143,6 +146,7 @@ def lmdb_service():
         proteins_lmdb_path=proteins_lmdb_path,
         species_lmdb_path=species_lmdb_path,
         diseases_lmdb_path=diseases_lmdb_path,
+        phenomenas_lmdb_path=phenomenas_lmdb_path,
         phenotypes_lmdb_path=phenotypes_lmdb_path,
         foods_lmdb_path=foods_lmdb_path
     )
@@ -244,6 +248,20 @@ def lmdb_gene_factory(
         'name': name,
         'synonym': synonym,
         'category': category,
+    }
+
+
+def lmdb_phenomena_factory(
+    phenomena_id: str,
+    id_type: str,
+    name: str,
+    synonym: str,
+):
+    return {
+        'phenomena_id': name,
+        'id_type': id_type,
+        'name': name,
+        'synonym': synonym,
     }
 
 
@@ -358,7 +376,7 @@ def default_lmdb_setup(app, request):
     # Create phenotype data
     whey_protein = lmdb_phenotype_factory(
         phenotype_id='MESH:D000067816',
-        id_type=DatabaseType.MESH.value,
+        id_type=DatabaseType.CUSTOM.value,
         name='Whey Proteins',
         synonym='Whey Proteins',
     )
@@ -489,7 +507,7 @@ def default_lmdb_setup(app, request):
         (DISEASES_MESH_LMDB, 'diseases', [cold_sore]),
         (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [ampk, bola3, hyp27_gene, serpina1_gene, serpina1_gene2]),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes', [whey_protein]),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', [whey_protein]),
         (PROTEINS_UNIPROT_LMDB, 'proteins', [hyp27_protein, serpina1_protein, wasabi, ns2a, NS2A]),
         (SPECIES_NCBI_LMDB, 'species', [homosapiens, human, moniliophthora_roreri, rat]),
     ]
@@ -528,7 +546,7 @@ def abbreviation_lmdb_setup(app, request):
         (DISEASES_MESH_LMDB, 'diseases', []),
         (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', []),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes', [pathway]),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', [pathway]),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
         (SPECIES_NCBI_LMDB, 'species', []),
     ]
@@ -567,7 +585,7 @@ def food_lmdb_setup(app, request):
         (DISEASES_MESH_LMDB, 'diseases', []),
         (FOODS_MESH_LMDB, 'foods', [bacon, sweetener]),
         (GENES_NCBI_LMDB, 'genes', []),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
         (SPECIES_NCBI_LMDB, 'species', []),
     ]
@@ -606,7 +624,7 @@ def anatomy_lmdb_setup(app, request):
         (DISEASES_MESH_LMDB, 'diseases', []),
         (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', []),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
         (SPECIES_NCBI_LMDB, 'species', []),
     ]
@@ -665,7 +683,7 @@ def bola_human_monkey_gene(app, request):
         (DISEASES_MESH_LMDB, 'diseases', []),
         (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [bola3, bola3_monkey]),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
         (SPECIES_NCBI_LMDB, 'species', [human, monkey]),
     ]
@@ -716,7 +734,7 @@ def human_gene_pdf_lmdb_setup(app, request):
         (DISEASES_MESH_LMDB, 'diseases', [covid_19]),
         (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [ace2]),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
         (SPECIES_NCBI_LMDB, 'species', [mers_cov]),
     ]
@@ -791,7 +809,7 @@ def gene_organism_escherichia_coli_pdf_lmdb_setup(app, request):
         (DISEASES_MESH_LMDB, 'diseases', []),
         (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [purA, purB, purC, purD, purF]),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
         (SPECIES_NCBI_LMDB, 'species', [e_coli]),
     ]
@@ -839,7 +857,7 @@ def protein_organism_escherichia_coli_pdf_lmdb_setup(app, request):
         (DISEASES_MESH_LMDB, 'diseases', []),
         (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', []),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', [ydhb, ydhc]),
         (SPECIES_NCBI_LMDB, 'species', [e_coli]),
     ]
@@ -898,7 +916,7 @@ def human_rat_gene_lmdb_setup(app, request):
         (DISEASES_MESH_LMDB, 'diseases', []),
         (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [edem3, edem3_caps]),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
         (SPECIES_NCBI_LMDB, 'species', [human, rat]),
     ]
@@ -957,7 +975,7 @@ def fish_gene_lmdb_setup(app, request):
         (DISEASES_MESH_LMDB, 'diseases', []),
         (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [IL7, il7]),
-        (PHENOTYPES_MESH_LMDB, 'phenotypes', []),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
         (SPECIES_NCBI_LMDB, 'species', [coelacanth, tetraodon]),
     ]
@@ -1316,10 +1334,38 @@ def mock_global_disease_inclusion(session):
 
 
 @pytest.fixture(scope='function')
+def mock_global_phenomena_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'Fake',
+            'type': EntityType.PHENOMENA.value,
+            'allText': 'fake-phenomena',
+            'idType': '',
+            'idHyperlink': ''
+        }
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.INCLUSION.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
 def mock_global_phenotype_inclusion(session):
     annotation = {
         'meta': {
-            'id': 'Ncbi:Fake',
+            'id': 'Fake',
             'type': EntityType.PHENOTYPE.value,
             'allText': 'phenotype-(12345)',
             'idType': '',
