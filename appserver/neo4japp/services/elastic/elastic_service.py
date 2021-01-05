@@ -17,9 +17,7 @@ from typing import (
 from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.database import db
 from neo4japp.models import (
-    Directory,
     Files,
-    Project
 )
 from neo4japp.services.elastic import (
     ATTACHMENT_PIPELINE_ID,
@@ -177,7 +175,7 @@ class ElasticService():
         ).options(
             joinedload(Files.content),
             joinedload(Files.user),
-            joinedload(Files.dir).joinedload(Directory.project)
+            # TODO
         ).enable_eagerloads(False)
 
         if file_ids:
@@ -211,6 +209,8 @@ class ElasticService():
         } for file in files]
 
     def index_files(self, file_ids: List[int] = None, batch_size: int = 100):
+        return
+        # TODO
         """Adds the files with the given ids to Elastic. If no ids are given, adds all files."""
         self.index_documents(
             self.get_file_results,
@@ -219,98 +219,45 @@ class ElasticService():
             batch_size,
         )
 
-    def get_map_results(self, map_ids: List[int] = None, batch_size: int = 100):
-        query = db.session.query(
-            Project
-        ).options(
-            joinedload(Project.user),
-            joinedload(Project.dir).joinedload(Directory.project)
-        ).enable_eagerloads(False)
-
-        if map_ids:
-            query = query.filter(Project.id.in_(map_ids))
-
-        return iter(query.yield_per(batch_size))
-
-    def get_elastic_map_objs(self, maps: List[Project]):
-        map_documents = []  # type:ignore
-        for map in maps:
-            if isinstance(map.graph, dict):
-                map_data: Dict[str, List[Dict[str, str]]] = {'nodes': [], 'edges': []}
-                for node in map.graph.get('nodes', []):
-                    try:
-                        map_data['nodes'].append(
-                            {
-                                'label': node.get('label', ''),
-                                'display_name': node.get('display_name', ''),
-                                'detail': node.get('detail', ''),
-                            }
-                        )
-                    except KeyError as e:
-                        current_app.logger.error(
-                            f'Error while parsing node for elastic indexing: {node}',
-                            exc_info=e,
-                            extra=EventLog(event_type='elastic').to_dict()
-                        )
-                        # Continue parsing through remaining nodes
-                for edge in map.graph.get('edges', []):
-                    try:
-                        edge_data = edge.get('data', '')
-                        map_data['edges'].append(
-                            {
-                                'label': edge.get('label', ''),
-                                'detail': edge_data.get('detail', '') if edge_data else '',
-                            }
-                        )
-                    except KeyError as e:
-                        current_app.logger.error(
-                            f'Error while parsing edge for elastic indexing: {edge}',
-                            exc_info=e,
-                            extra=EventLog(event_type='elastic').to_dict()
-                        )
-                        # Continue parsing through remaining edges
-
-                map_data_bstr = json.dumps(map_data).encode('utf-8')
-                map_documents.append({
-                    '_index': FILE_INDEX_ID,
-                    'pipeline': ATTACHMENT_PIPELINE_ID,
-                    '_id': map.hash_id,
-                    '_source': {
-                        'filename': map.label,
-                        'description': map.description,
-                        'uploaded_date': map.creation_date,
-                        'data': base64.b64encode(map_data_bstr).decode('utf-8'),
-                        'user_id': map.user_id,
-                        'username': map.user.username,
-                        'project_id': map.dir.projects_id,
-                        'project_name': map.dir.project.project_name,
-                        'doi': None,
-                        'public': map.public,
-                        'id': map.hash_id,
-                        'type': 'map'
+    def get_indexable_map_data(self, graph: Dict):
+        map_data: Dict[str, List[Dict[str, str]]] = {'nodes': [], 'edges': []}
+        for node in graph.get('nodes', []):
+            try:
+                map_data['nodes'].append(
+                    {
+                        'label': node.get('label', ''),
+                        'display_name': node.get('display_name', ''),
+                        'detail': node.get('detail', ''),
                     }
-                })
-            else:
-                current_app.logger.warning(
-                    f'Attempted to add a map with id {map.id} to ElasticSearch ' +
-                    f'with graph of unexpected type {type(map.graph)}, expected ' +
-                    f'{type(dict())}',
+                )
+            except KeyError as e:
+                current_app.logger.error(
+                    f'Error while parsing node for elastic indexing: {node}',
+                    exc_info=e,
                     extra=EventLog(event_type='elastic').to_dict()
                 )
-        return map_documents
+                # Continue parsing through remaining nodes
+        for edge in graph.get('edges', []):
+            try:
+                edge_data = edge.get('data', '')
+                map_data['edges'].append(
+                    {
+                        'label': edge.get('label', ''),
+                        'detail': edge_data.get('detail', '') if edge_data else '',
+                    }
+                )
+            except KeyError as e:
+                current_app.logger.error(
+                    f'Error while parsing edge for elastic indexing: {edge}',
+                    exc_info=e,
+                    extra=EventLog(event_type='elastic').to_dict()
+                )
+                # Continue parsing through remaining edges
 
-    def index_maps(self, map_ids: List[int] = None, batch_size: int = 100):
-        """Adds the maps with the given ids to Elastic. If no ids are given, adds all maps."""
-        self.index_documents(
-            self.get_map_results,
-            self.get_elastic_map_objs,
-            map_ids,
-            batch_size,
-        )
+        return map_data
 
     def reindex_all_documents(self):
         self.index_files()
-        self.index_maps()
 
     # End indexing methods
 

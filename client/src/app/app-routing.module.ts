@@ -5,14 +5,14 @@ import { AdminPanelComponent } from 'app/admin/components/admin-panel.component'
 import { UserFileImportComponent } from 'app/user-file-import/components/user-file-import.component';
 import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
 import { GraphSearchComponent } from 'app/search/components/graph-search.component';
-import { FileBrowserComponent } from 'app/file-browser/components/file-browser.component';
+import { ObjectBrowserComponent } from 'app/file-browser/components/object-browser.component';
 import { LoginComponent } from 'app/auth/components/login.component';
 import { DashboardComponent } from 'app/dashboard.component';
 
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { AuthGuard } from 'app/auth/guards/auth-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
-import { FileViewComponent } from 'app/file-browser/components/file-view.component';
+import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
 import { KgStatisticsComponent } from './kg-statistics.component';
 import { TermsOfServiceComponent } from './users/components/terms-of-service.component';
@@ -22,14 +22,11 @@ import { MapEditorComponent } from './drawing-tool/components/map-editor/map-edi
 import { MapViewComponent } from './drawing-tool/components/map-view.component';
 import { CommunityBrowserComponent } from './file-browser/components/community-browser.component';
 import { BrowserComponent } from './file-browser/components/browser/browser.component';
-// import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
-// import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
 import { EnrichmentTableViewerComponent } from './file-browser/components/enrichment/table/enrichment-table-viewer.component';
-import { EnrichmentVisualisationViewerComponent } from './file-browser/components/enrichment/visualisation/enrichment-visualisation-viewer.component';
-import { FileNavigatorComponent } from './file-navigator/file-navigator.component';
-import { WordCloudProjectComponent } from './word-cloud/word-cloud-project.component';
 import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
+import {EnrichmentVisualisationViewerComponent} from "./file-browser/components/enrichment/visualisation/enrichment-visualisation-viewer.component";
+import {ObjectNavigatorComponent} from "./file-navigator/components/object-navigator.component";
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -185,7 +182,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name',
-    component: FileBrowserComponent,
+    component: ObjectBrowserComponent,
     canActivate: [AuthGuard],
     data: {
       title: 'Projects',
@@ -199,7 +196,12 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/folders/:dir_id',
-    component: FileBrowserComponent,
+    redirectTo: 'folders/:dir_id',
+    pathMatch: 'full',
+  },
+  {
+    path: 'folders/:dir_id',
+    component: ObjectBrowserComponent,
     canActivate: [AuthGuard],
     data: {
       title: 'Projects',
@@ -254,21 +256,12 @@ const routes: Routes = [
   },
   {
     path: 'file-navigator/:project_name/:file_id',
-    component: FileNavigatorComponent,
+    component: ObjectNavigatorComponent,
     canActivate: [AuthGuard],
     data: {
       title: 'File Navigator',
       fontAwesomeIcon: 'fas fa-compass',
     },
-  },
-  {
-    path: 'entity-cloud/:project_name',
-    component: WordCloudProjectComponent,
-    canActivate: [AuthGuard],
-    data: {
-      title: 'Project Entity Cloud',
-      fontAwesomeIcon: 'fas fa-compass',
-    }
   },
   // Old links
   {path: 'file-browser', redirectTo: 'projects', pathMatch: 'full'},

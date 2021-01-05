@@ -3,16 +3,17 @@ import { Project, ProjectSpaceService } from '../../services/project-space.servi
 
 // @ts-ignore
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ProjectCreateDialogComponent } from '../project-create-dialog.component';
-import { ProjectEditDialogComponent } from '../project-edit-dialog.component';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
 import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
 import { CollectionModal } from '../../../shared/utils/collection-modal';
-import { MapService } from '../../../drawing-tool/services';
 import { StandardRequestOptions } from '../../../interfaces/shared.interface';
 import { FormControl, FormGroup } from '@angular/forms';
+import { ProjectService } from '../../services/project.service';
+import { map } from 'rxjs/operators';
+import { ProjectImpl } from '../../models/filesystem-object';
+import { ProjectActions } from '../../services/project-actions';
 
 @Component({
   selector: 'app-browser-project-list',
@@ -24,8 +25,10 @@ export class BrowserProjectListComponent implements OnInit, OnDestroy {
     page: 1,
     sort: '+name',
   };
-  public readonly loadTask: BackgroundTask<void, Project[]> = new BackgroundTask(
-    () => this.projectSpaceService.getProject(),
+  public readonly loadTask: BackgroundTask<void, ProjectImpl[]> = new BackgroundTask(
+    () => this.projectService.list().pipe(map(projectList => {
+      return [...projectList.results.items];
+    })),
   );
 
   public locator: StandardRequestOptions = {
@@ -38,17 +41,18 @@ export class BrowserProjectListComponent implements OnInit, OnDestroy {
   });
 
   public collectionSize = 0;
-  public readonly results = new CollectionModal<Project>([], {
+  public readonly results = new CollectionModal<ProjectImpl>([], {
     multipleSelection: true,
   });
 
   private loadTaskSubscription: Subscription;
 
-  constructor(private readonly projectSpaceService: ProjectSpaceService,
-              private readonly mapService: MapService,
-              private readonly workspaceManager: WorkspaceManager,
-              private readonly progressDialog: ProgressDialog,
-              private readonly ngbModal: NgbModal) {
+  constructor(protected readonly projectSpaceService: ProjectSpaceService,
+              protected readonly projectService: ProjectService,
+              protected readonly workspaceManager: WorkspaceManager,
+              protected readonly progressDialog: ProgressDialog,
+              protected readonly ngbModal: NgbModal,
+              protected readonly projectActions: ProjectActions) {
   }
 
   ngOnInit() {
@@ -85,22 +89,11 @@ export class BrowserProjectListComponent implements OnInit, OnDestroy {
     } : null;
   }
 
-  displayCreateDialog() {
-    const dialogRef = this.ngbModal.open(ProjectCreateDialogComponent);
-
-    dialogRef.result.then(
-      newProject => {
-        this.results.push(newProject);
-        this.goToProject(newProject);
-      },
-      () => {
-      },
-    );
-  }
-
-  displayShareDialog(project: Project) {
-    const dialogRef = this.ngbModal.open(ProjectEditDialogComponent);
-    dialogRef.componentInstance.project = project;
+  openCreateDialog() {
+    this.projectActions.openCreateDialog().then(project => {
+      this.workspaceManager.navigate(project.getCommands());
+    }, () => {
+    });
   }
 
   goToProject(p: Project) {

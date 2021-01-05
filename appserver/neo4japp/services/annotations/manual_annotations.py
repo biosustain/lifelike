@@ -204,20 +204,7 @@ class ManualAnnotationsService:
 
         db.session.commit()
 
-    def get_combined_annotations(self, project_id, file_id):
-        """ Returns automatic annotations that were not marked for exclusion
-        combined with custom annotations.
-        """
-        file = Files.query.filter_by(
-            file_id=file_id,
-            project=project_id,
-        ).one_or_none()
-        if file is None:
-            raise RecordNotFoundException('File does not exist')
-
-        return self._get_file_annotations(file)
-
-    def _get_file_annotations(self, file):
+    def get_file_annotations(self, file):
         def isExcluded(exclusions, annotation):
             for exclusion in exclusions:
                 if (exclusion.get('type') == annotation['meta']['type'] and
@@ -235,17 +222,6 @@ class ManualAnnotationsService:
             if not isExcluded(file.excluded_annotations, annotation)
         ]
         return filtered_annotations + file.custom_annotations
-
-    def get_combined_annotations_in_project(self, project_id):
-        files = Files.query.filter(
-            and_(
-                Files.project == project_id,
-                Files.annotations != []
-            )).all()
-        annotations = []
-        for fi in files:
-            annotations.extend(self._get_file_annotations(fi))
-        return annotations
 
     def add_to_global_list(self, annotation, type, file_id):
         """ Adds inclusion or exclusion to a global_list table

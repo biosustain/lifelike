@@ -14,6 +14,11 @@
   <div class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
     <div class="module">
       <div class="module-header">
+        <!-- Breadcrumbs -->
+        <div class="module-breadcrumb-bar mb-1">
+          <app-object-path [object]="map.parent"></app-object-path>
+        </div>
+
         <div class="module-title-bar">
           <button type="button" class="module-title-bar-back mr-2" (click)="goToReturnUrl()" *ngIf="returnUrl">
             <i class="fa fa-fw fa-arrow-left"></i>
@@ -27,45 +32,75 @@
         </div>
 
         <div class="module-toolbar d-flex align-items-center mt-2">
-          <div class="btn-group mr-2" *ngIf="hasEditPermission">
-            <button type="button" class="btn btn-secondary"
-                    [appLink]="['/projects', this.locator.projectName, 'maps', this.locator.hashId, 'edit']">
+          <div class="btn-group mr-2">
+            <button *ngIf="map?.privileges.writable"
+                    type="button" class="btn btn-secondary"
+                    [appLink]="['/projects', map?.project.name, 'maps', map?.hashId, 'edit']">
               <i class="fa fa-fw fa-pencil-alt"></i> Edit
+            </button>
+            <button
+              type="button" class="btn btn-secondary" (click)="openCloneDialog()">
+              <i class="fa fa-fw fa-clone" *ngIf="!map?.privileges.writable"></i> Make Copy
             </button>
           </div>
 
           <div class="btn-group mr-2">
-            <button type="button" class="btn btn-secondary" container="body"
-                    ngbTooltip="Fit Map to Window" placement="bottom"
-                    (click)="zoomToFit()">
-              <i class="fas fa-expand-arrows-alt"></i>
-            </button>
-          </div>
-
-          <div class="btn-group">
             <button type="button" class="btn btn-secondary"
-                    (click)="displayShareDialog()">
-              <i class="fa fa-fw fa-share-square"></i> Share
+                    ngbTooltip="Download map as an image or PDF" placement="bottom" container="body"
+                    (click)="openExportDialog()">
+              <i class="fa fa-fw fa-file-export"></i> Export
             </button>
           </div>
-        </div>
 
-        <div class="input-group ml-2" style="width: 300px;">
-          <input [(ngModel)]='entitySearchTerm' (change)='search()' type="text" class="form-control" placeholder="Search" aria-label="Graph search" aria-describedby="graph-search">
-          <div *ngIf='entitySearchList.length' class="input-group-append">
-            <span class="input-group-text" id="increment-btn">
-              {{entitySearchListIdx+1}} of {{entitySearchList.length}}
-            </span>
+          <div class="btn-group mr-2">
+            <button type="button" class="btn btn-secondary"
+                    (click)="openVersionHistoryDialog()">
+              Version History
+            </button>
           </div>
-          <div class="input-group-append" id="decrement-btn">
-            <button class="btn btn-secondary" type="button" (click)="previous()"
-                    [disabled]="entitySearchList.length == 0">
-              <i class="fa fa-fw fa-chevron-up"></i>
-            </button>
-            <button class="btn btn-secondary" type="button" (click)="next()"
-                    [disabled]="entitySearchList.length == 0">
-              <i class="fa fa-fw fa-chevron-down"></i>
-            </button>
+
+          <div class="ml-auto d-flex">
+            <div class="btn-group mr-2">
+              <button type="button" class="btn btn-secondary" container="body"
+                      ngbTooltip="Fit Map to Window" placement="bottom"
+                      (click)="zoomToFit()">
+                <i class="fas fa-expand-arrows-alt"></i>
+              </button>
+            </div>
+
+            <div class="btn-group mr-2">
+              <button type="button" class="btn btn-secondary" container="body"
+                      [appLink]="['/file-navigator', map.project.name, map.hashId]" [newTab]="true"
+                      [sideBySide]="true"
+                      ngbTooltip="File Navigator" placement="bottom">
+                <i class="fas fa-fw fa-compass"></i>
+              </button>
+              <button type="button" class="btn btn-secondary" container="body"
+                      ngbTooltip="Share" placement="bottom"
+                      (click)="openShareDialog()">
+                <i class="fa fa-share-square"></i>
+              </button>
+            </div>
+
+            <div class="input-group" style="width: 300px;">
+              <input [(ngModel)]='entitySearchTerm' (change)='search()' type="text" class="form-control"
+                     placeholder="Search" aria-label="Graph search" aria-describedby="graph-search">
+              <div *ngIf='entitySearchList.length' class="input-group-append">
+            <span class="input-group-text" id="increment-btn">
+              {{entitySearchListIdx + 1}} of {{entitySearchList.length}}
+            </span>
+              </div>
+              <div class="input-group-append" id="decrement-btn">
+                <button class="btn btn-secondary" type="button" (click)="previous()"
+                        [disabled]="entitySearchList.length == 0">
+                  <i class="fa fa-fw fa-chevron-up"></i>
+                </button>
+                <button class="btn btn-secondary" type="button" (click)="next()"
+                        [disabled]="entitySearchList.length == 0">
+                  <i class="fa fa-fw fa-chevron-down"></i>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -80,10 +115,10 @@
               <div class="window-body">
                 <div class="detail-overlay-properties text-muted">
                   <div class="text-truncate">
-                    By {{map?.author}}
+                    By {{map?.user.firstName}}
                   </div>
                   <div class="text-truncate">
-                    Modified {{map?.modified_date | friendlyDateStr}}
+                    Modified {{map?.modificationDate | friendlyDateStr}}
                   </div>
                 </div>
                 <div class="detail-overlay-description mt-2">

@@ -1,4 +1,4 @@
-import { FileViewComponent } from '../../file-browser/components/file-view.component';
+import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
 import { WorkspaceManager } from '../workspace-manager';
 import { escapeRegExp } from 'lodash';
 
