@@ -27,7 +27,7 @@ from neo4japp.models.files_queries import FileHierarchy, \
     build_file_hierarchy_query, build_file_children_cte, add_file_user_role_columns
 from neo4japp.models.projects_queries import add_project_user_role_columns
 from neo4japp.schemas.common import PaginatedRequest
-from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponse, FileResponseSchema, \
+from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponseSchema, \
     FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, BulkFileUpdateRequestSchema, \
     FileListSchema, FileSearchRequestSchema, FileBackupCreateRequestSchema, FileVersionHistorySchema, \
     FileExportRequestSchema
@@ -50,7 +50,7 @@ class FilesystemBaseView(MethodView):
     from hash IDs, checking permissions, and validating input.
     """
 
-    file_max_size = 1024 * 1024 * 30
+    file_max_size = 1024 * 1024 * 100
     url_fetch_timeout = 10
     url_fetch_user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
                            'Chrome/51.0.2704.103 Safari/537.36 Lifelike'
@@ -410,10 +410,10 @@ class FilesystemBaseView(MethodView):
         return jsonify(FileResponseSchema(context={
             'user_privilege_filter': g.current_user.id,
         }, exclude=(
-            'object.children.children',  # We aren't loading sub-children
-        )).dump(FileResponse(
-            object=return_file,
-        )))
+            'result.children.children',  # We aren't loading sub-children
+        )).dump({
+            'result': return_file,
+        }))
 
     def get_bulk_file_response(self, hash_ids: List[str], user: AppUser, *,
                                missing_hash_ids: Iterable[str] = None):
@@ -439,9 +439,9 @@ class FilesystemBaseView(MethodView):
         return jsonify(MultipleFileResponseSchema(context={
             'user_privilege_filter': user.id,
         }, exclude=(
-            'objects.children',
+            'results.children',
         )).dump(dict(
-            objects=returned_files,
+            results=returned_files,
             missing=list(missing_hash_ids) or [],
         )))
 

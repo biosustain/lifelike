@@ -1,21 +1,20 @@
-import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import {Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
 
-import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
-import { DirectoryObject } from 'app/interfaces/projects.interface';
-import { PDFResult, PDFSnippets } from 'app/interfaces';
-import { RankedItem } from 'app/interfaces/shared.interface';
-import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
-import { ModuleProperties } from 'app/shared/modules';
-import { CollectionModal } from 'app/shared/utils/collection-modal';
-import { deserializePaginatedParams, getChoicesFromQuery, serializePaginatedParams } from 'app/shared/utils/params';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import {getObjectCommands, getObjectMatchExistingTab} from 'app/file-browser/utils/objects';
+import {DirectoryObject} from 'app/interfaces/projects.interface';
+import {PDFResult, PDFSnippets} from 'app/interfaces';
+import {PaginatedResultListComponent} from 'app/shared/components/base/paginated-result-list.component';
+import {ModuleProperties} from 'app/shared/modules';
+import {CollectionModal} from 'app/shared/utils/collection-modal';
+import {deserializePaginatedParams, getChoicesFromQuery, serializePaginatedParams} from 'app/shared/utils/params';
+import {WorkspaceManager} from 'app/shared/workspace-manager';
 
-import { ContentSearchOptions, TYPES, TYPES_MAP } from '../content-search';
-import { ContentSearchService } from '../services/content-search.service';
-import { HighlightDisplayLimitChange } from '../../file-browser/components/object-info.component';
-import { escapeRegExp } from 'lodash';
-import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
+import {ContentSearchOptions, TYPES, TYPES_MAP} from '../content-search';
+import {ContentSearchService} from '../services/content-search.service';
+import {HighlightDisplayLimitChange} from '../../file-browser/components/object-info.component';
+import {FileViewComponent} from '../../pdf-viewer/components/file-view.component';
+import {RankedItem} from '../../shared/schemas/common';
 
 @Component({
   selector: 'app-content-search',

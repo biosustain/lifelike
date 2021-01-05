@@ -1,12 +1,12 @@
-import { Directory, Project } from '../services/project-space.service';
-import { CollectionModal } from '../../shared/utils/collection-modal';
-import { nullCoalesce, RecursivePartial } from '../../shared/utils/types';
+import {Directory, Project} from '../services/project-space.service';
+import {CollectionModal} from '../../shared/utils/collection-modal';
+import {nullCoalesce, RecursivePartial} from '../../shared/utils/types';
 import moment from 'moment';
-import { DirectoryObject } from '../../interfaces/projects.interface';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
-import { AppUser, User } from '../../interfaces';
-import { FilesystemObjectData, ProjectData } from '../schema';
+import {DirectoryObject} from '../../interfaces/projects.interface';
+import {PdfFile} from '../../interfaces/pdf-files.interface';
+import {KnowledgeMap, UniversalGraph, UniversalGraphNode} from '../../drawing-tool/services/interfaces';
+import {AppUser, User} from '../../interfaces';
+import {FilesystemObjectData, ProjectData} from '../schema';
 
 export const DIRECTORY_MIMETYPE = 'vnd.lifelike.filesystem/directory';
 export const MAP_MIMETYPE = 'vnd.lifelike.document/map';
@@ -65,6 +65,15 @@ export class ProjectImpl implements Project {
       return encodeURIComponent(item.replace(/^\//, ''));
     }).join('/');
   }
+
+  get colorHue(): number {
+    let hash = 3242;
+    for (let i = 0; i < this.hashId.length; i++) {
+      // tslint:disable-next-line:no-bitwise
+      hash = ((hash << 3) + hash) + this.hashId.codePointAt(i);
+    }
+    return hash % 100 / 100;
+  }
 }
 
 export interface FilePrivileges {
@@ -120,12 +129,16 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return true;
   }
 
+  get isEditable() {
+    return !(this.isDirectory && !this.parent);
+  }
+
   get isAnnotatable() {
     return this.mimeType === 'application/pdf';
   }
 
   get isMovable() {
-    return true;
+    return !(this.isDirectory && !this.parent);
   }
 
   get isCloneable() {
@@ -138,10 +151,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isVersioned() {
     return this.mimeType === MAP_MIMETYPE;
-  }
-
-  get isDownloadable() {
-    return this.isFile;
   }
 
   get isNavigable() {
@@ -244,14 +253,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   get effectiveName(): string {
     if (this.isDirectory && this.parent == null && this.project != null) {
       return this.project.name;
-    } else {
-      return this.filename;
-    }
-  }
-
-  get downloadFilename(): string {
-    if (this.mimeType === MAP_MIMETYPE) {
-      return `${this.filename}.llmap.json`;
     } else {
       return this.filename;
     }
@@ -480,9 +481,21 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get exportFormats(): string[] {
     if (this.mimeType === MAP_MIMETYPE) {
-      return ['pdf', 'png', 'svg'];
+      return ['pdf', 'png', 'svg', 'llmap.json'];
+    } else if (this.mimeType === PDF_MIMETYPE) {
+      return ['pdf'];
     } else {
       return [];
+    }
+  }
+
+  get originalFormat(): string | undefined {
+    if (this.mimeType === MAP_MIMETYPE) {
+      return 'llmap.json';
+    } else if (this.mimeType === PDF_MIMETYPE) {
+      return 'pdf';
+    } else {
+      return null;
     }
   }
 

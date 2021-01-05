@@ -1,6 +1,6 @@
-import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
-import { WorkspaceManager } from '../workspace-manager';
-import { escapeRegExp } from 'lodash';
+import {FileViewComponent} from '../../pdf-viewer/components/file-view.component';
+import {WorkspaceManager} from '../workspace-manager';
+import {escapeRegExp} from 'lodash';
 
 /**
  * Open a link given by the URL. Handles mailto: and poorly formatted URLs.

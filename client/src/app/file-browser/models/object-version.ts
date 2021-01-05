@@ -1,9 +1,9 @@
-import { AppUser } from '../../interfaces';
-import { RecursivePartial } from '../../shared/utils/types';
-import { ObjectVersionData } from '../schema';
-import { CollectionModal } from '../../shared/utils/collection-modal';
-import { FilesystemObject } from './filesystem-object';
-import { cloneDeep } from 'lodash';
+import {AppUser} from '../../interfaces';
+import {RecursivePartial} from '../../shared/utils/types';
+import {ObjectVersionData} from '../schema';
+import {CollectionModal} from '../../shared/utils/collection-modal';
+import {FilesystemObject} from './filesystem-object';
+import {cloneDeep} from 'lodash';
 
 export class ObjectVersion {
   hashId: string;

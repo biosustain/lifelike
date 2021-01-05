@@ -8,10 +8,10 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { Pane, Tab, WorkspaceManager } from './shared/workspace-manager';
-import { Observable } from 'rxjs';
-import { SplitComponent } from 'angular-split';
+import {CdkDragDrop} from '@angular/cdk/drag-drop';
+import {Pane, Tab, WorkspaceManager} from './shared/workspace-manager';
+import {Observable} from 'rxjs';
+import {SplitComponent} from 'angular-split';
 
 @Component({
   selector: 'app-workspace',

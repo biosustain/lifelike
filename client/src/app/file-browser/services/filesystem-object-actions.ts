@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { EnrichmentTableCreateDialogComponent } from '../components/enrichment/table/enrichment-table-create-dialog.component';
-import { EnrichmentTableEditDialogComponent } from '../components/enrichment/table/enrichment-table-edit-dialog.component';
+import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -28,17 +27,19 @@ import {
   ObjectExportDialogComponent,
   ObjectExportDialogValue,
 } from '../components/dialog/object-export-dialog.component';
-import { openDownloadForBlob } from '../../shared/utils/files';
-import { PdfAnnotationsService } from '../../drawing-tool/services';
 import {EnrichmentVisualisationCreateDialogComponent} from '../components/enrichment/visualisation/dialog/enrichment-visualisation-create-dialog.component';
 import {EnrichmentVisualisationEditDialogComponent} from '../components/enrichment/visualisation/dialog/enrichment-visualisation-edit-dialog.component';
-import {ObjectDeleteDialogComponent} from '../components/dialog/object-delete-dialog.component';
+import { openDownloadForBlob } from '../../shared/utils/files';
+import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
+import { AnnotationsService } from './annotations.service';
+import {EnrichmentTableCreateDialogComponent} from "../components/enrichment/table/enrichment-table-create-dialog.component";
+import {EnrichmentTableEditDialogComponent} from "../components/enrichment/table/enrichment-table-edit-dialog.component";
 
 @Injectable()
 export class FilesystemObjectActions {
 
   constructor(protected readonly filesService: PdfFilesService,
-              protected readonly annotationsService: PdfAnnotationsService,
+              protected readonly annotationsService: AnnotationsService,
               protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
@@ -61,22 +62,6 @@ export class FilesystemObjectActions {
   }
 
   /**
-   * Create a download dialog for the provided object.
-   * @param target the object to download
-   */
-  openDownloadDialog(target: FilesystemObject): Promise<boolean> {
-    const progressDialogRef = this.createProgressDialog('Downloading file...');
-    return this.filesystemService.getContent(target.hashId).pipe(
-      finalize(() => progressDialogRef.close()),
-      map(blob => {
-        openDownloadForBlob(blob, target.downloadFilename);
-        return true;
-      }),
-      this.errorHandler.create(),
-    ).toPromise();
-  }
-
-  /**
    * Open the dialog to export an object.
    * @param target the object to export
    */
@@ -86,10 +71,23 @@ export class FilesystemObjectActions {
       dialogRef.componentInstance.object = target;
       dialogRef.componentInstance.accept = (value: ObjectExportDialogValue) => {
         const progressDialogRef = this.createProgressDialog('Generating export...');
-        return this.filesystemService.generateExport(value.object.hashId, value.request).pipe(
+        let content$: Observable<Blob>;
+        let filename = target.filename;
+        if (!filename.endsWith(value.extension)) {
+          filename += value.extension;
+        }
+
+        // If the user is getting the original format, then we'll just use the existing endpoint
+        if (value.request.format === target.originalFormat) {
+          content$ = this.filesystemService.getContent(target.hashId);
+        } else {
+          content$ = this.filesystemService.generateExport(value.object.hashId, value.request);
+        }
+
+        return content$.pipe(
           finalize(() => progressDialogRef.close()),
           map(blob => {
-            openDownloadForBlob(blob, `${target.downloadFilename}${value.extension}`);
+            openDownloadForBlob(blob, filename);
             return true;
           }),
           this.errorHandler.create(),
@@ -128,11 +126,18 @@ export class FilesystemObjectActions {
         tap(event => {
           // First we show progress for the upload itself
           if (event.type === HttpEventType.UploadProgress) {
-            progressObservable.next(new Progress({
-              mode: ProgressMode.Determinate,
-              status: 'Uploading file...',
-              value: event.loaded / event.total,
-            }));
+            if (event.loaded === event.total && event.total) {
+              progressObservable.next(new Progress({
+                mode: ProgressMode.Indeterminate,
+                status: 'File transmitted; saving...',
+              }));
+            } else {
+              progressObservable.next(new Progress({
+                mode: ProgressMode.Determinate,
+                status: 'Transmitting file...',
+                value: event.loaded / event.total,
+              }));
+            }
           }
         }),
         filter(event => event.bodyValue != null),
@@ -142,7 +147,7 @@ export class FilesystemObjectActions {
           // we can't actually show a progress percentage)
           progressObservable.next(new Progress({
             mode: ProgressMode.Indeterminate,
-            status: 'Generating annotations...',
+            status: 'Saved; identifying annotations...',
           }));
           return this.annotationsService.generateAnnotations(
             [object.hashId], annotationOptions,
@@ -280,11 +285,11 @@ export class FilesystemObjectActions {
 
       const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
       return this.filesService.addGeneList(parent.locator.projectName, parent.directory.id, enrichmentData, result.description, result.name)
-          .pipe(
-              this.errorHandler.create(),
-              finalize(() => progressDialogRef.close()),
-          )
-          .toPromise();
+        .pipe(
+          this.errorHandler.create(),
+          finalize(() => progressDialogRef.close()),
+        )
+        .toPromise();
     });
   }
 
@@ -303,17 +308,17 @@ export class FilesystemObjectActions {
 
       const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
       return this.filesService.editGeneList(
-          target.locator.projectName,
-          target.id,
-          enrichmentData,
-          result.name,
-          result.description,
+        target.locator.projectName,
+        target.id,
+        enrichmentData,
+        result.name,
+        result.description,
       )
-          .pipe(
-              this.errorHandler.create(),
-              finalize(() => progressDialogRef.close()),
-          )
-          .toPromise();
+        .pipe(
+          this.errorHandler.create(),
+          finalize(() => progressDialogRef.close()),
+        )
+        .toPromise();
     });
   }
 
@@ -407,6 +412,14 @@ export class FilesystemObjectActions {
     return dialogRef.result;
   }
 
+  openFileAnnotationHistoryDialog(object: FilesystemObject): Promise<any> {
+    const dialogRef = this.modalService.open(FileAnnotationHistoryDialogComponent, {
+      size: 'lg',
+    });
+    dialogRef.componentInstance.object = object;
+    return dialogRef.result;
+  }
+
   openVersionRestoreDialog(target: FilesystemObject): Promise<ObjectVersion> {
     const dialogRef = this.modalService.open(ObjectVersionHistoryDialogComponent, {
       size: 'xl',
@@ -416,7 +429,7 @@ export class FilesystemObjectActions {
     return dialogRef.result;
   }
 
-  openVersionHistoryDialog(target: FilesystemObject): Promise<ObjectVersion> {
+  openVersionHistoryDialog(target: FilesystemObject): Promise<any> {
     const dialogRef = this.modalService.open(ObjectVersionHistoryDialogComponent, {
       size: 'xl',
     });
@@ -424,23 +437,14 @@ export class FilesystemObjectActions {
     return dialogRef.result;
   }
 
-  // openShareDialog(object: FilesystemObject, forEditing = false): Promise<any> {
-  //   const modalRef = this.modalService.open(ShareDialogComponent);
-  //   modalRef.componentInstance.url = `${window.location.origin}/${object.getURL(forEditing)}`;
-  //   return modalRef.result;
-  // }
-
-  openShareDialog(object: FilesystemObject): Promise<any> {
+  openShareDialog(object: FilesystemObject, forEditing = false): Promise<any> {
     const modalRef = this.modalService.open(ShareDialogComponent);
-    modalRef.componentInstance.url = `${window.location.origin}/projects/`
-        + `${object.locator.projectName}` + (object.locator.directoryId ?
-            `/folders/${object.locator.directoryId}` : '')
-        + '?fromWorkspace';
+    modalRef.componentInstance.url = `${window.location.origin}/${object.getURL(forEditing)}`;
     return modalRef.result;
   }
 
   reannotate(targets: FilesystemObject[]): Promise<any> {
-    const progressDialogRef = this.createProgressDialog('Generating annotations...');
+    const progressDialogRef = this.createProgressDialog('Identifying annotations...');
     return this.annotationsService.generateAnnotations(targets.map(object => object.hashId))
       .pipe(
         finalize(() => progressDialogRef.close()),

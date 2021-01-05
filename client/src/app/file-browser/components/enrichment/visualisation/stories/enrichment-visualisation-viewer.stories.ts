@@ -24,6 +24,11 @@ import {EnrichmentVisualisationOrderDialogComponent} from '../dialog/enrichment-
 import {WordCloudModule} from "../word-cloud/word-cloud.module";
 import {ObjectPathComponent} from "../../../object-path.component";
 
+import mockedData from "./assets/mocked_data.json";
+import {ChartModule} from "../chart/chart.module";
+import {ChartsModule} from "ng2-charts";
+import {ObjectMenuComponent} from "../../../object-menu.component";
+import {ProjectIconComponent} from "../../../project-icon.component";
 // This exports the Stories group for this component
 export default {
   // The title defines the name and where in the structure of
@@ -45,7 +50,9 @@ export default {
         EdgeFormComponent,
         MapRestoreDialogComponent,
         EnrichmentVisualisationOrderDialogComponent,
-        ObjectPathComponent
+        ObjectMenuComponent,
+        ObjectPathComponent,
+        ProjectIconComponent
       ],
       entryComponents: [
         EnrichmentVisualisationOrderDialogComponent
@@ -57,7 +64,9 @@ export default {
         RootStoreModule,
         SharedModule,
         NgbModule,
-        WordCloudModule
+        WordCloudModule,
+        ChartModule,
+        ChartsModule
       ],
       providers: [
         MatSnackBar,
@@ -168,10 +177,13 @@ const Template: Story<EnrichmentVisualisationViewerComponent> = (args) => ({
   template: `
     <app-enrichment-visualisation-viewer
         style='display:block;height:100vh;'
+        [data]="data"
     >
     </app-enrichment-visualisation-viewer>
   `,
 });
 
 export const Default = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
-Default.args = {};
+Default.args = {
+  data: mockedData
+};

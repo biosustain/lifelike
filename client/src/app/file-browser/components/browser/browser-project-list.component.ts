@@ -1,19 +1,19 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Project, ProjectSpaceService } from '../../services/project-space.service';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Project, ProjectSpaceService} from '../../services/project-space.service';
 
 // @ts-ignore
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { Subscription } from 'rxjs';
-import { WorkspaceManager } from '../../../shared/workspace-manager';
-import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
-import { CollectionModal } from '../../../shared/utils/collection-modal';
-import { StandardRequestOptions } from '../../../interfaces/shared.interface';
-import { FormControl, FormGroup } from '@angular/forms';
-import { ProjectService } from '../../services/project.service';
-import { map } from 'rxjs/operators';
-import { ProjectImpl } from '../../models/filesystem-object';
-import { ProjectActions } from '../../services/project-actions';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {BackgroundTask} from 'app/shared/rxjs/background-task';
+import {Subscription} from 'rxjs';
+import {WorkspaceManager} from '../../../shared/workspace-manager';
+import {ProgressDialog} from '../../../shared/services/progress-dialog.service';
+import {CollectionModal} from '../../../shared/utils/collection-modal';
+import {FormControl, FormGroup} from '@angular/forms';
+import {ProjectService} from '../../services/project.service';
+import {map} from 'rxjs/operators';
+import {ProjectImpl} from '../../models/filesystem-object';
+import {ProjectActions} from '../../services/project-actions';
+import {StandardRequestOptions} from '../../../shared/schemas/common';
 
 @Component({
   selector: 'app-browser-project-list',

@@ -1,9 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { Subscription } from 'rxjs';
-import { MAP_MIMETYPE } from '../../models/filesystem-object';
-import { FilesystemObjectList } from '../../models/filesystem-object-list';
-import { FilesystemService } from '../../services/filesystem.service';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {BackgroundTask} from 'app/shared/rxjs/background-task';
+import {Subscription} from 'rxjs';
+import {MAP_MIMETYPE} from '../../models/filesystem-object';
+import {FilesystemObjectList} from '../../models/filesystem-object-list';
+import {FilesystemService} from '../../services/filesystem.service';
 
 @Component({
   selector: 'app-browser-community-list',

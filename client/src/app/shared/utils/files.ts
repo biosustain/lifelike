@@ -1,5 +1,5 @@
-import { from, Observable, of, OperatorFunction, Subject } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import {from, Observable, OperatorFunction, Subject} from 'rxjs';
+import {map, mergeMap} from 'rxjs/operators';
 
 export function mapBlobToBuffer(): OperatorFunction<Blob, ArrayBuffer> {
   return mergeMap(blob => {

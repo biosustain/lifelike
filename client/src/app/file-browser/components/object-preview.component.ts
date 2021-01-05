@@ -1,10 +1,10 @@
-import { AfterViewInit, Component, ComponentRef, Input, NgZone, ViewChild, ViewContainerRef } from '@angular/core';
-import { FilesystemObject } from '../models/filesystem-object';
-import { FilesystemService } from '../services/filesystem.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { ObjectTypeService } from '../services/object-type.service';
-import { BehaviorSubject, of } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import {AfterViewInit, Component, ComponentRef, Input, NgZone, ViewChild, ViewContainerRef} from '@angular/core';
+import {FilesystemObject} from '../models/filesystem-object';
+import {FilesystemService} from '../services/filesystem.service';
+import {ErrorHandler} from '../../shared/services/error-handler.service';
+import {ObjectTypeService} from '../services/object-type.service';
+import {BehaviorSubject, of} from 'rxjs';
+import {mergeMap} from 'rxjs/operators';
 
 @Component({
   selector: 'app-object-preview',

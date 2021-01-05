@@ -112,7 +112,7 @@ class ProjectBaseView(MethodView):
         query = self.get_nondeleted_project_query(current_user, accessible_only=accessible_only) \
             .order_by(*sort or [])
 
-        if filter:
+        if filter is not None:
             query = query.filter(filter)
 
         if pagination:
@@ -209,12 +209,16 @@ class ProjectListView(ProjectBaseView):
         project.description = params['description']
         project.creator = current_user
 
-        project_service.create_project_uncommitted(current_user, project)
-
         try:
+            db.session.begin_nested()
+            project_service.create_project_uncommitted(current_user, project)
             db.session.commit()
+            db.session.flush()
         except IntegrityError:
+            db.session.rollback()
             raise ValidationError('The project name already is already taken.', 'name')
+
+        db.session.commit()
 
         return self.get_project_response(project.hash_id, current_user)
 

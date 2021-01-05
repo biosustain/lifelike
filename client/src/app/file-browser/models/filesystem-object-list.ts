@@ -1,5 +1,5 @@
-import { CollectionModal } from '../../shared/utils/collection-modal';
-import { FilesystemObject } from './filesystem-object';
+import {CollectionModal} from '../../shared/utils/collection-modal';
+import {FilesystemObject} from './filesystem-object';
 
 export class FilesystemObjectList {
   public collectionSize = 0;

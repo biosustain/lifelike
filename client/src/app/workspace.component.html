@@ -18,7 +18,8 @@
                       <span class="d-block text-truncate">
                         <i class="fas fa-spinner fa-pulse fa-fw" *ngIf="tab.loading; else notLoading"></i>
                         <ng-template #notLoading>
-                          <i [class]="'fa-fw ' + (calculateFontAwesomeIcon(tab.fontAwesomeIcon) || 'fa window-maximize')"></i>
+                          <i
+                            [class]="'fa-fw ' + (calculateFontAwesomeIcon(tab.fontAwesomeIcon) || 'fa window-maximize')"></i>
                         </ng-template>
                         {{tab.title}}
                       </span>
@@ -35,9 +36,15 @@
                     </a>
                   </div>
                 </div>
-                <div class="ml-2 mt-1">
+                <div class="ml-2 mt-1 d-flex align-items-start">
+                  <button type="button" class="btn btn-secondary btn-sm mr-1"
+                          (click)="addTab(pane, '/projects')" ngbTooltip="Open File..."
+                          container="body">
+                    <i class="fa fa-folder-open"></i>
+                  </button>
                   <div ngbDropdown container="body">
-                    <button type="button" class="btn btn-secondary btn-sm" ngbDropdownToggle ngbTooltip="New Tab"
+                    <button type="button" class="btn btn-secondary btn-sm dropdown-no-arrow"
+                            ngbDropdownToggle ngbTooltip="New Tab"
                             container="body">
                       <i class="fa fa-fw fa-plus"></i>
                     </button>
