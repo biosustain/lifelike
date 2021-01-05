@@ -67,6 +67,7 @@ class AnnotationService:
         disease: bool = True,
         food: bool = True,
         gene: bool = True,
+        phenomena: bool = True,
         phenotype: bool = True,
         protein: bool = True,
         species: bool = True,
@@ -94,6 +95,10 @@ class AnnotationService:
         if food:
             entity_type_and_id_pairs.append(
                 (EntityType.FOOD.value, EntityIdStr.FOOD.value))
+
+        if phenomena:
+            entity_type_and_id_pairs.append(
+                (EntityType.PHENOMENA.value, EntityIdStr.PHENOMENA.value))
 
         if phenotype:
             entity_type_and_id_pairs.append(
@@ -718,6 +723,17 @@ class AnnotationService:
             id_str=entity_id_str
         )
 
+    def _annotate_type_phenomena(
+        self,
+        entity_id_str: str
+    ) -> List[Annotation]:
+        return self._get_annotation(
+            tokens=self.matched_type_phenomena,
+            token_type=EntityType.PHENOMENA.value,
+            color=EntityColor.PHENOMENA.value,
+            id_str=entity_id_str
+        )
+
     def _annotate_type_protein(
         self,
         entity_id_str: str
@@ -951,6 +967,7 @@ class AnnotationService:
             EntityType.COMPOUND.value: self._annotate_type_compound,
             EntityType.DISEASE.value: self._annotate_type_disease,
             EntityType.FOOD.value: self._annotate_type_food,
+            EntityType.PHENOMENA.value: self._annotate_type_phenomena,
             EntityType.PHENOTYPE.value: self._annotate_type_phenotype,
             EntityType.SPECIES.value: self._annotate_type_species,
             EntityType.PROTEIN.value: self._annotate_type_protein,
@@ -1142,6 +1159,7 @@ class AnnotationService:
         self.matched_type_disease = entity_results.matched_type_disease
         self.matched_type_food = entity_results.matched_type_food
         self.matched_type_gene = entity_results.matched_type_gene
+        self.matched_type_phenomena = entity_results.matched_type_phenomena
         self.matched_type_phenotype = entity_results.matched_type_phenotype
         self.matched_type_protein = entity_results.matched_type_protein
         self.matched_type_species = entity_results.matched_type_species
@@ -1320,6 +1338,9 @@ class AnnotationService:
                 else:
                     annotation_interval_dict[interval_pair] = [unified]
 
+        # it's faster to create an interval tree with just
+        # intervals, rather than a tree with intervals and data
+        # because the data are viewed as unique, so the tree is bigger
         tree = AnnotationIntervalTree([
             AnnotationInterval(
                 begin=lo,
@@ -1379,17 +1400,6 @@ class AnnotationService:
     ) -> Annotation:
         key1 = ENTITY_TYPE_PRECEDENCE[anno1.meta.type]
         key2 = ENTITY_TYPE_PRECEDENCE[anno2.meta.type]
-
-        # if custom phenotype and MESH phenotype
-        # then choose MESH
-        if ((anno1.meta.type == EntityType.PHENOTYPE.value and
-                anno2.meta.type == EntityType.PHENOTYPE.value) and
-            (anno1.lo_location_offset == anno2.lo_location_offset and
-                anno1.hi_location_offset == anno2.hi_location_offset)):  # noqa
-            if anno1.meta.id_type == DatabaseType.MESH.value:
-                return anno1
-            elif anno2.meta.id_type == DatabaseType.MESH.value:
-                return anno2
 
         # only do special gene vs protein comparison if they have
         # exact intervals
