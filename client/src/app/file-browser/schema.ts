@@ -58,6 +58,19 @@ export interface CollaboratorData {
   roleName: string;
 }
 
+// Requests
+// ----------------------------------------
+
+export interface CollaboratorUpdateData {
+  userHashId: string;
+  roleName: string;
+}
+
+export interface MultiCollaboratorUpdateRequest {
+  updateOrCreate?: CollaboratorUpdateData[];
+  removeUserHashIds?: string[];
+}
+
 // ========================================
 // Objects
 // ========================================

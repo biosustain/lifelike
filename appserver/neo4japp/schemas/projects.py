@@ -28,8 +28,16 @@ class ProjectCollaboratorListSchema(ResultListSchema):
 # Requests
 # ----------------------------------------
 
-class ProjectCollaboratorUpdateOrCreateRequest(CamelCaseSchema):
+class ProjectCollaboratorUpdateSchema(CamelCaseSchema):
     user_hash_id = fields.String(required=True)
     role_name = fields.String(required=True, validate=marshmallow.validate.OneOf(
         accepted_role_names
     ))
+
+
+class ProjectMultiCollaboratorUpdateRequest(CamelCaseSchema):
+    update_or_create = fields.List(fields.Nested(ProjectCollaboratorUpdateSchema),
+                                   missing=lambda: [],
+                                   validate=marshmallow.validate.Length(max=5))
+    remove_user_hash_ids = fields.List(fields.String(), missing=lambda: [],
+                                       validate=marshmallow.validate.Length(max=5))

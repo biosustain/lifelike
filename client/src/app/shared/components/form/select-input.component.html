@@ -1,20 +1,23 @@
 <div #inputContainer
-     class="input-border rounded form-padding d-flex flex-wrap select-input-container"
-    (click)="onContainerClick($event)">
-  <div *ngFor="let choice of selectedChoices"
-       class="d-inline-block badge-pill badge-secondary mb-1 mr-1 cursor-default">
-    <button type="button" (click)="deselect(choice)"
-            class="btn btn-link btn-sm select-input-choice-remove">
-      <i class="fa fa-times"></i>
-    </button>
-    <ng-container
-      *ngTemplateOutlet="inputChoiceTemplateRef; context: { $implicit: choice }"></ng-container>
-  </div>
-  <div class="d-inline-block flex-fill text-wrap text-break overflow-hidden select-input-input"
-       [class.placeholder-show]="!hasInput"
-       contenteditable="true" [style]="'--placeholder-text: \'' + placeholder + '\''"
-       (keydown)="onInputKeyDown($event)" (keyup)="onInputKeyUp($event)"
-       (focus)="onInputFocus($event)" (paste)="onInputPaste($event)" #input>
+     class="input-border rounded form-padding select-input-container"
+     (click)="onContainerClick($event)">
+  <div class="select-input-inner-container d-flex flex-wrap">
+    <div *ngFor="let choice of selectedChoices"
+         class="d-inline-block badge-pill badge-secondary mb-1 mr-1 cursor-default">
+      <button type="button" (click)="deselect(choice)"
+              class="btn btn-link btn-sm select-input-choice-remove">
+        <i class="fa fa-times"></i>
+      </button>
+      <ng-container
+        *ngTemplateOutlet="inputChoiceTemplateRef; context: { $implicit: choice }"></ng-container>
+    </div>
+    <div
+      class="d-inline-block flex-fill text-wrap text-break select-input-input mb-1"
+      [class.placeholder-show]="!hasInput"
+      contenteditable="true" [style]="'--placeholder-text: \'' + placeholder + '\''"
+      (keydown)="onInputKeyDown($event)" (keyup)="onInputKeyUp($event)"
+      (focus)="onInputFocus($event)" (paste)="onInputPaste($event)" #input>
+    </div>
   </div>
 </div>
 <div class="dropdown-menu overflow-auto position-fixed" #dropdown
@@ -32,7 +35,8 @@
   <ng-template #choices>
     <div *ngIf="!unselectedChoices.length" class="dropdown-item-text text-muted">
       <ng-container *ngIf="noResultsTemplateRef != null; else noResultsTextDisplay">
-        <ng-container *ngTemplateOutlet="noResultsTemplateRef; context: { request: request }"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="noResultsTemplateRef; context: { request: request }"></ng-container>
       </ng-container>
       <ng-template #noResultsTextDisplay>
         <em>{{ noResultsText }}</em>

@@ -98,6 +98,7 @@ class AccountSearchView(MethodView):
     @use_args(PaginatedRequestSchema)
     def post(self, params: dict, pagination: Pagination):
         """Endpoint to search for users that match certain criteria."""
+        current_user = g.current_user
         query = re.sub("[%_]", "\\\\0", params['query'].strip().lower())
         like_query = f"%{query}%"
 
@@ -107,6 +108,9 @@ class AccountSearchView(MethodView):
                         func.lower(AppUser.username).like(like_query),
                         func.lower(AppUser.email) == query,
                         func.lower(AppUser.hash_id) == query))
+
+        if params['exclude_self']:
+            query = query.filter(AppUser.id != current_user.id)
 
         paginated_result = query.paginate(pagination.page, pagination.limit, False)
 
