@@ -1,28 +1,18 @@
-import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import {
-  HttpInterceptor,
-  HttpHandler,
-  HttpRequest,
-  HttpErrorResponse,
-} from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {Router} from '@angular/router';
+import {HttpErrorResponse, HttpHandler, HttpInterceptor, HttpRequest,} from '@angular/common/http';
 
-import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { throwError } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import {AuthenticationService} from 'app/auth/services/authentication.service';
+import {throwError} from 'rxjs';
+import {catchError, switchMap} from 'rxjs/operators';
 
-import { Store } from '@ngrx/store';
-import { State } from 'app/***ARANGO_USERNAME***-store';
+import {Store} from '@ngrx/store';
+import {State} from 'app/***ARANGO_USERNAME***-store';
 
-import { ApiHttpError } from 'app/interfaces';
-import { AuthActions } from 'app/auth/store';
-import { SnackbarActions } from 'app/shared/store';
-import {
-  JWT_AUTH_TOKEN_EXPIRED,
-  JWT_AUTH_TOKEN_INVALID,
-  JWT_REFRESH_TOKEN_EXPIRED,
-  JWT_REFRESH_TOKEN_INVALID,
-} from 'app/shared/constants';
+import {ApiHttpError} from 'app/interfaces';
+import {AuthActions} from 'app/auth/store';
+import {SnackbarActions} from 'app/shared/store';
+import {JWT_AUTH_TOKEN_INVALID, JWT_REFRESH_TOKEN_EXPIRED, JWT_REFRESH_TOKEN_INVALID,} from 'app/shared/constants';
 
 
 /**

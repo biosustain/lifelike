@@ -1,20 +1,20 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { from, Observable, Subscription, throwError } from 'rxjs';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { ModuleProperties } from '../../shared/modules';
-import { FilesystemObject } from '../models/filesystem-object';
-import { FilesystemService } from '../services/filesystem.service';
-import { map } from 'rxjs/operators';
-import { FilesystemObjectActions } from '../services/filesystem-object-actions';
-import { getObjectLabel } from '../utils/objects';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { MessageType } from '../../interfaces/message-dialog.interface';
-import { ProjectService } from '../services/project.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {from, Observable, Subscription, throwError} from 'rxjs';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {ErrorHandler} from '../../shared/services/error-handler.service';
+import {WorkspaceManager} from '../../shared/workspace-manager';
+import {ModuleProperties} from '../../shared/modules';
+import { FilesystemObject, PathLocator } from '../models/filesystem-object';
+import {FilesystemService} from '../services/filesystem.service';
+import {map} from 'rxjs/operators';
+import {FilesystemObjectActions} from '../services/filesystem-object-actions';
+import {getObjectLabel} from '../utils/objects';
+import {MessageDialog} from '../../shared/services/message-dialog.service';
+import {MessageType} from '../../interfaces/message-dialog.interface';
+import {ProjectService} from '../services/project.service';
+import {HttpErrorResponse} from '@angular/common/http';
 
 @Component({
   selector: 'app-object-browser',
@@ -79,7 +79,8 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
       this.annotationSubscription = this.filesystemService.annotate(object);
       this.subscriptions.add(this.annotationSubscription);
       this.modulePropertiesChange.emit({
-        title: object.effectiveName,
+        title: object.isDirectory && !object.parent ? object.project.name
+          : `${object.project.name} - ${object.filename}`,
         fontAwesomeIcon: 'folder',
       });
       return object;
@@ -157,6 +158,16 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
   openEnrichmentTableCreateDialog(parent: FilesystemObject) {
     return this.actions.openEnrichmentTableCreateDialog(parent).then(object => {
       this.snackBar.open(`Enrichment table ${getObjectLabel(object)} created.`, 'Close', {
+        duration: 5000,
+      });
+      this.load(this.hashId);
+    }, () => {
+    });
+  }
+
+  openEnrichmentVisualisationCreateDialog(parent: FilesystemObject) {
+    return this.actions.openEnrichmentVisualisationCreateDialog(parent).then(object => {
+      this.snackBar.open(`Enrichment visualisation ${getObjectLabel(object)} created.`, 'Close', {
         duration: 5000,
       });
       this.load(this.hashId);

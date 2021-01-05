@@ -1,18 +1,16 @@
-import { Injectable } from '@angular/core';
-import { ProjectService } from './project.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { ProjectImpl } from '../models/filesystem-object';
-import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
-import { ProjectEditDialogComponent, ProjectEditDialogValue } from '../components/dialog/project-edit-dialog.component';
-import { ProjectCreateRequest } from '../schema';
-import { BehaviorSubject } from 'rxjs';
-import { Progress } from '../../interfaces/common-dialog.interface';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { finalize, map } from 'rxjs/operators';
-import { openDownloadForBlob } from '../../shared/utils/files';
+import {Injectable} from '@angular/core';
+import {ProjectService} from './project.service';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {MessageDialog} from '../../shared/services/message-dialog.service';
+import {ErrorHandler} from '../../shared/services/error-handler.service';
+import {ProjectImpl} from '../models/filesystem-object';
+import {ShareDialogComponent} from '../../shared/components/dialog/share-dialog.component';
+import {ProjectEditDialogComponent, ProjectEditDialogValue} from '../components/dialog/project-edit-dialog.component';
+import {ProjectCreateRequest} from '../schema';
+import {BehaviorSubject} from 'rxjs';
+import {Progress} from '../../interfaces/common-dialog.interface';
+import {ProgressDialog} from '../../shared/services/progress-dialog.service';
+import {finalize} from 'rxjs/operators';
 
 @Injectable()
 export class ProjectActions {

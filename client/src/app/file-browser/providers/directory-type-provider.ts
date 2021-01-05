@@ -1,9 +1,9 @@
-import { ObjectTypeProvider } from '../services/object-type.service';
-import { DIRECTORY_MIMETYPE, FilesystemObject } from '../models/filesystem-object';
-import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
-import { FilesystemService } from '../services/filesystem.service';
-import { map } from 'rxjs/operators';
-import { DirectoryPreviewComponent } from '../components/directory-preview.component';
+import {ObjectTypeProvider} from '../services/object-type.service';
+import {DIRECTORY_MIMETYPE, FilesystemObject} from '../models/filesystem-object';
+import {ComponentFactory, ComponentFactoryResolver, Injectable, Injector} from '@angular/core';
+import {FilesystemService} from '../services/filesystem.service';
+import {map} from 'rxjs/operators';
+import {DirectoryPreviewComponent} from '../components/directory-preview.component';
 
 @Injectable()
 export class DirectoryTypeProvider implements ObjectTypeProvider {

@@ -1,12 +1,17 @@
-import { PaginatedRequestOptions, ResultList } from '../interfaces/shared.interface';
-import { Annotation } from '../pdf-viewer/annotation-type';
+import {
+  AddedAnnotationExclusion,
+  Annotation,
+  AnnotationChangeExclusionMeta,
+  Meta,
+} from '../pdf-viewer/annotation-type';
 import { AnnotationMethod } from '../interfaces/annotation';
-import { OrganismAutocomplete } from '../interfaces';
+import { AppUser, OrganismAutocomplete } from '../interfaces';
 import { FilePrivileges, ProjectPrivileges } from './models/filesystem-object';
+import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
 
-export interface ProjectSearchRequest extends PaginatedRequestOptions {
-  name: string;
-}
+// ========================================
+// Projects
+// ========================================
 
 export interface ProjectData {
   hashId: string;
@@ -18,14 +23,44 @@ export interface ProjectData {
   privileges: ProjectPrivileges;
 }
 
-export interface ProjectDataResponse {
-  project: ProjectData;
+// Requests
+// ----------------------------------------
+
+/**
+ * Search request.
+ */
+export interface ProjectSearchRequest extends PaginatedRequestOptions {
+  name: string;
 }
 
+/**
+ * Create request.
+ */
 export interface ProjectCreateRequest {
   name: string;
   description: string;
 }
+
+/**
+ * Bulk update request.
+ */
+export interface BulkProjectUpdateRequest {
+  name?: string;
+  description?: string;
+}
+
+// ========================================
+// Collaborators
+// ========================================
+
+export interface CollaboratorData {
+  user: AppUser;
+  roleName: string;
+}
+
+// ========================================
+// Objects
+// ========================================
 
 export interface FilesystemObjectData {
   hashId: string;
@@ -58,6 +93,12 @@ export type ObjectContentSource = { contentHashId: string }
   | { contentUrl: string }
   | ObjectContentValueRequest;
 
+// Requests
+// ----------------------------------------
+
+/**
+ * Search request.
+ */
 export type ObjectSearchRequest = ({
   type: 'public';
   mimeTypes: string[];
@@ -67,6 +108,9 @@ export type ObjectSearchRequest = ({
   mimeTypes: ['vnd.***ARANGO_DB_NAME***.document/map'];
 };
 
+/**
+ * Bulk update request.
+ */
 export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueRequest> {
   filename?: string;
   parentHashId?: string;
@@ -74,6 +118,10 @@ export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueReque
   uploadUrl?: string;
   public?: boolean;
 }
+
+/**
+ * Update request.
+ */
 
 // tslint:disable-next-line:no-empty-interface
 export interface ObjectUpdateRequest extends BulkObjectUpdateRequest {
@@ -84,22 +132,34 @@ type RequiredObjectCreateRequestFields = 'filename' | 'parentHashId';
 type BaseObjectCreateRequest = Required<Pick<BulkObjectUpdateRequest, RequiredObjectCreateRequestFields>>
   & Omit<ObjectUpdateRequest, RequiredObjectCreateRequestFields>;
 
+/**
+ * Create request.
+ */
 export type ObjectCreateRequest = BaseObjectCreateRequest & Partial<ObjectContentSource> & {
   mimeType?: string;
 };
 
-export interface ObjectDataResponse {
-  object: FilesystemObjectData;
+/**
+ * Export request.
+ */
+export interface ObjectExportRequest {
+  format: string;
 }
 
-export interface MultipleObjectDataResponse {
-  objects: { [hashId: string]: FilesystemObjectData };
-  missing: string[];
-}
+// ========================================
+// Backups
+// ========================================
+
+// Requests
+// ----------------------------------------
 
 export interface ObjectBackupCreateRequest extends ObjectContentValueRequest {
   hashId: string;
 }
+
+// ========================================
+// Versions
+// ========================================
 
 export interface ObjectVersionData {
   hashId: string;
@@ -108,29 +168,93 @@ export interface ObjectVersionData {
   creationDate: string;
 }
 
+// Responses
+// ----------------------------------------
+
 export interface ObjectVersionHistoryResponse extends ResultList<ObjectVersionData> {
   object: FilesystemObjectData;
 }
 
-export interface ObjectExportRequest {
-  format: string;
+// ========================================
+// Locks
+// ========================================
+
+export interface ObjectLockData {
+  user: AppUser;
+  acquireDate: string;
 }
 
-export interface ObjectAnnotationsDataResponse {
-  annotations: Annotation[];
-}
-
-export interface AnnotationGenerationRequest {
-  organism?: OrganismAutocomplete;
-  annotationMethod?: AnnotationMethod;
-}
+// ========================================
+// Annotations
+// ========================================
 
 export interface AnnotationGenerationResultData {
   attempted: boolean;
   success: boolean;
 }
 
-export interface MultipleAnnotationGenerationResponse {
-  results: { [hashId: string]: AnnotationGenerationResultData };
-  missing: string[];
+// Requests
+// ----------------------------------------
+
+export interface AnnotationGenerationRequest {
+  organism?: OrganismAutocomplete;
+  annotationMethod?: AnnotationMethod;
+}
+
+// ========================================
+// Custom Annotations
+// ========================================
+
+// Requests
+// ----------------------------------------
+
+export interface CustomAnnotationCreateRequest {
+  annotation: Annotation;
+  annotateAll: boolean;
+}
+
+export interface CustomAnnotationDeleteRequest {
+  removeAll: boolean;
+}
+
+// ========================================
+// Annotation Exclusions
+// ========================================
+
+// Requests
+// ----------------------------------------
+
+export interface AnnotationExclusionCreateRequest {
+  exclusion: AddedAnnotationExclusion;
+}
+
+export interface AnnotationExclusionDeleteRequest {
+  type: string;
+  text: string;
+}
+
+// ========================================
+// Annotation history
+// ========================================
+
+export interface AnnotationChangeData {
+  action: 'added' | 'removed';
+}
+
+export interface AnnotationInclusionChangeData extends AnnotationChangeData {
+  meta: Meta;
+}
+
+export interface AnnotationExclusionChangeData extends AnnotationChangeData {
+  meta: AnnotationChangeExclusionMeta;
+}
+
+export interface FileAnnotationChangeData {
+  date: string;
+  cause: 'user' | 'user_reannotation' | 'sys_reannotation';
+  inclusionChanges: AnnotationInclusionChangeData[];
+  exclusionChanges: AnnotationExclusionChangeData[];
+}
+
+export interface FileAnnotationHistoryResponse extends ResultList<FileAnnotationChangeData> {
 }

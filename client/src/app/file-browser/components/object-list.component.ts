@@ -1,15 +1,15 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FilesystemObject } from '../models/filesystem-object';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { FilesystemObjectActions } from '../services/filesystem-object-actions';
-import { DirectoryObject } from '../../interfaces/projects.interface';
-import { nullCoalesce } from '../../shared/utils/types';
-import { uniqueId } from 'lodash';
-import { CollectionModal } from '../../shared/utils/collection-modal';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {FilesystemObject} from '../models/filesystem-object';
+import {ActivatedRoute, Router} from '@angular/router';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {ErrorHandler} from '../../shared/services/error-handler.service';
+import {WorkspaceManager} from '../../shared/workspace-manager';
+import {FilesystemObjectActions} from '../services/filesystem-object-actions';
+import {DirectoryObject} from '../../interfaces/projects.interface';
+import {nullCoalesce} from '../../shared/utils/types';
+import {uniqueId} from 'lodash';
+import {CollectionModal} from '../../shared/utils/collection-modal';
 
 @Component({
   selector: 'app-object-list',

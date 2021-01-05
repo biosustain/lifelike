@@ -1,23 +1,23 @@
-import { AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Output, ViewChild } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import {AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Output, ViewChild} from '@angular/core';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
-import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
-import { GraphEntity, UniversalGraph, UniversalGraphNode } from '../services/interfaces';
-import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
-import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
-import { ModuleProperties } from '../../shared/modules';
-import { ActivatedRoute } from '@angular/router';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { tokenizeQuery } from '../../shared/utils/find';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { mapBufferToJson, readBlobAsBuffer } from '../../shared/utils/files';
-import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
+import {GraphEntity, UniversalGraph, UniversalGraphNode} from '../services/interfaces';
+import {KnowledgeMapStyle} from 'app/graph-viewer/styles/knowledge-map-style';
+import {CanvasGraphView} from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import {ModuleProperties} from '../../shared/modules';
+import {ActivatedRoute} from '@angular/router';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {MessageDialog} from '../../shared/services/message-dialog.service';
+import {BackgroundTask} from '../../shared/rxjs/background-task';
+import {ErrorHandler} from '../../shared/services/error-handler.service';
+import {CopyKeyboardShortcut} from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
+import {WorkspaceManager} from '../../shared/workspace-manager';
+import {tokenizeQuery} from '../../shared/utils/find';
+import {FilesystemService} from '../../file-browser/services/filesystem.service';
+import {FilesystemObject} from '../../file-browser/models/filesystem-object';
+import {mapBufferToJson, readBlobAsBuffer} from '../../shared/utils/files';
+import {FilesystemObjectActions} from '../../file-browser/services/filesystem-object-actions';
 
 @Component({
   selector: 'app-map',

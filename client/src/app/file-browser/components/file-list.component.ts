@@ -1,19 +1,19 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FilesystemObject, PathLocator } from '../models/filesystem-object';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { FilesystemObjectActions } from '../services/filesystem-object-actions';
-import { DirectoryObject } from '../../interfaces/projects.interface';
-import { nullCoalesce } from '../../shared/utils/types';
-import { uniqueId } from 'lodash';
+import {EventEmitter, Input, Output} from '@angular/core';
+import {FilesystemObject, PathLocator} from '../models/filesystem-object';
+import {ActivatedRoute, Router} from '@angular/router';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {ErrorHandler} from '../../shared/services/error-handler.service';
+import {WorkspaceManager} from '../../shared/workspace-manager';
+import {FilesystemObjectActions} from '../services/filesystem-object-actions';
+import {DirectoryObject} from '../../interfaces/projects.interface';
+import {nullCoalesce} from '../../shared/utils/types';
+import {uniqueId} from 'lodash';
 
-@Component({
-  selector: 'app-file-list',
-  templateUrl: './file-list.component.html',
-})
+// @Component({
+//   selector: 'app-file-list',
+//   templateUrl: './file-list.component.html',
+// })
 export class FileListComponent {
   id = uniqueId('FileListComponent-');
 
@@ -101,4 +101,8 @@ export class FileListComponent {
   getDateShown(object: DirectoryObject) {
     return nullCoalesce(object.modificationDate, object.creationDate);
   }
+
+  isEnrichment = isEnrichment;
+  isEnrichmentTable = isEnrichmentTable;
+  isEnrichmentVisualisation = isEnrichmentVisualisation;
 }

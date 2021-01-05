@@ -1,7 +1,7 @@
-import { AbstractService, ServiceCallOptions } from './abstract-service';
-import { Injectable } from '@angular/core';
-import { AuthenticationService } from '../../auth/services/authentication.service';
-import { HttpClient } from '@angular/common/http';
+import {AbstractService, ServiceCallOptions} from './abstract-service';
+import {Injectable} from '@angular/core';
+import {AuthenticationService} from '../../auth/services/authentication.service';
+import {HttpClient} from '@angular/common/http';
 
 @Injectable()
 export class ApiService extends AbstractService {
