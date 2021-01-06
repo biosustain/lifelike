@@ -281,38 +281,11 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
 
 # Files table ORM event listeners
 @event.listens_for(Files, 'after_insert')
-def files_after_insert(mapper, connection, target):
-    "listen for the 'after_insert' event"
-
-    # Add this file as an elasticsearch document
-    elastic_service = get_elastic_service()
-    elastic_service.index_files([target.id])
-
-
 @event.listens_for(Files, 'after_delete')
-def files_after_delete(mapper, connection, target):
-    "listen for the 'after_delete' event"
-
-    # Delete this file from elasticsearch
-    elastic_service = get_elastic_service()
-    elastic_service.delete_documents_with_index(
-        file_ids=[target.file_id],
-        index_id=FILE_INDEX_ID
-    )
-
-
 @event.listens_for(Files, 'after_update')
-def files_after_update(mapper, connection, target):
-    "listen for the 'after_update' event"
-    return  # TODO
-
-    # Update the elasticsearch document for this file
+def file_change(mapper, connection, target: Files):
     elastic_service = get_elastic_service()
-    elastic_service.delete_documents_with_index(
-        file_ids=[target.file_id],
-        index_id=FILE_INDEX_ID
-    )
-    elastic_service.index_files([target.id])
+    elastic_service.index_or_delete_files([target.hash_id])
 
 
 class AnnotationChangeCause(enum.Enum):

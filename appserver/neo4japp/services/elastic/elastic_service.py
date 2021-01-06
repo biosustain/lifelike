@@ -1,24 +1,23 @@
 import base64
 import itertools
 import json
-import os
-import re
 import string
-
-from elasticsearch.helpers import parallel_bulk, BulkIndexError
-from flask import current_app
-from sqlalchemy.orm import joinedload
 from typing import (
     Dict,
     List,
-    Optional,
 )
+
+from elasticsearch.helpers import parallel_bulk
+from flask import current_app
+from sqlalchemy import and_
+from sqlalchemy.orm import joinedload, raiseload, lazyload
 
 from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.database import db
 from neo4japp.models import (
-    Files,
+    Files, Projects,
 )
+from neo4japp.models.files_queries import build_file_hierarchy_query
 from neo4japp.services.elastic import (
     ATTACHMENT_PIPELINE_ID,
     ELASTIC_INDEX_SEED_PAIRS,
@@ -132,140 +131,160 @@ class ElasticService():
                     extra=EventLog(event_type='elastic').to_dict()
                 )
 
-    def delete_documents_with_index(self, file_ids: List[str], index_id: str):
+    def delete_documents(self, document_ids: List[str], index_id: str):
         """
-        Deletes all documents with the given ids from Elastic.
-
-        NOTE: These ids are NOT the ids of the postgres rows! They are typically the id the
-        user has visibility on, e.g. `file_id` or `hash_id`.
+        Deletes all documents with the given file hash IDs from Elastic.
         """
-        self.parallel_bulk_documents((
-            {
-                '_op_type': 'delete',
-                '_index': index_id,
-                '_id': f_id
-            } for f_id in file_ids)
-        )
+        self.parallel_bulk_documents(({
+            '_op_type': 'delete',
+            '_index': index_id,
+            '_id': document_id
+        } for document_id in document_ids))
         self.elastic_client.indices.refresh(index_id)
 
-    # TODO: Eventually `index_files` and `index_maps` will be the same service.
-    # We could also eventually implement a generic "reindex_thing" service, but
-    # this might be difficult because to _get_ the data we want to index we
-    # typically have to do joins across multiple tables.
+    def index_or_delete_files(self, hash_ids: List[str]):
+        self._delete_files(hash_ids)
+        self._index_files(hash_ids)
 
-    def index_documents(
-        self,
-        get_document_results,
-        get_elastic_document_objs,
-        document_ids: Optional[List[int]],
-        batch_size: int = 100
-    ):
-        results = get_document_results(document_ids, batch_size)
+    def _delete_files(self, hash_ids: List[str]):
+        self.delete_documents(hash_ids, FILE_INDEX_ID)
+
+    def _index_files(self, hash_ids: List[str] = None, batch_size: int = 100):
+        """
+        Adds the files with the given ids to Elastic. If no IDs are given,
+        all non-deleted files will be indexed.
+        :param ids: a list of file table IDs (integers)
+        :param batch_size: number of documents to index per batch
+        """
+        filters = [
+            Files.deletion_date.is_(None),
+            Files.recycling_date.is_(None),
+        ]
+
+        if hash_ids is not None:
+            filters.append(Files.hash_id.in_(hash_ids))
+
+        query = self._get_file_hierarchy_query(and_(*filters))
+        results = iter(query.yield_per(batch_size))
 
         while True:
             batch = list(itertools.islice(results, batch_size))
+
             if not batch:
                 break
 
-            self.parallel_bulk_documents(get_elastic_document_objs(batch))
+            self.parallel_bulk_documents([
+                self._get_elastic_document(file, project, FILE_INDEX_ID) for
+                file, initial_id, level, project, *_ in batch
+            ])
 
-    def get_file_results(self, file_ids: List[int] = None, batch_size: int = 100):
-        query = db.session.query(
-            Files
-        ).options(
-            joinedload(Files.content),
-            joinedload(Files.user),
-            # TODO
-        ).enable_eagerloads(False)
+    def _get_file_hierarchy_query(self, filter):
+        """
+        Generate the query to get files that will be indexed.
+        :param filter: SQL Alchemy filter
+        :return: the query
+        """
+        return build_file_hierarchy_query(filter, Projects, Files) \
+            .options(raiseload('*'),
+                     joinedload(Files.user),
+                     joinedload(Files.content))
 
-        if file_ids:
-            query = query.filter(Files.id.in_(file_ids))
+    def _get_elastic_document(self, file: Files, project: Projects, index_id) -> dict:
+        """
+        Generate the Elastic document sent to Elastic for the given file.
+        :param file: the file
+        :param project: the project that file is within
+        :param index_id: the index
+        :return: a document
+        """
+        try:
+            indexable_data = self._transform_data_for_indexing(file)
+            data_ok = True
+        except Exception as e:
+            # We should still index the file even if we can't transform it for
+            # indexing because the file won't ever appear otherwise and it will be
+            # harder to track down the bug
+            indexable_data = b''
+            data_ok = False
 
-        return iter(query.yield_per(batch_size))
+            current_app.logger.error(
+                f'Failed to generate indexable data for file '
+                f'#{file.id} (hash={file.hash_id}, mime type={file.mime_type})',
+                exc_info=e,
+                extra=EventLog(event_type='elastic').to_dict()
+            )
 
-    def get_elastic_file_objs(self, files: List[Files]):
-        return [{
-            '_index': FILE_INDEX_ID,
+        return {
+            '_index': index_id,
             'pipeline': ATTACHMENT_PIPELINE_ID,
-            # TODO Might be able to make this the postgres ID once maps/files are combined.
-            # We can't right now because this has to be a unique value, and the postgres
-            # IDs aren't (i.e. we might have a map with ID 1 and a file with ID 1).
-            # Important note: IDs are not unique across indices.
-            '_id': file.file_id,
+            '_id': file.hash_id,
             '_source': {
                 'filename': file.filename,
                 'description': file.description,
                 'uploaded_date': file.creation_date,
-                'data': base64.b64encode(file.content.raw_file).decode('utf-8'),
+                'data': base64.b64encode(indexable_data).decode('utf-8'),
                 'user_id': file.user_id,
                 'username': file.user.username,
-                'project_id': file.project,
-                'project_name': file.project_.project_name,
+                'project_id': project.id,
+                'project_hash_id': project.hash_id,
+                'project_name': project.name,
                 'doi': file.doi,
-                'public': False,  # TODO: Change this once we can know if a file is public
-                'id': file.file_id,
-                'type': 'pdf'
+                'public': file.public,
+                'id': file.id,
+                'hash_id': file.hash_id,
+                'mime_type': file.mime_type,
+                'data_ok': data_ok,
             }
-        } for file in files]
+        }
 
-    def index_files(self, file_ids: List[int] = None, batch_size: int = 100):
-        return
-        # TODO
-        """Adds the files with the given ids to Elastic. If no ids are given, adds all files."""
-        self.index_documents(
-            self.get_file_results,
-            self.get_elastic_file_objs,
-            file_ids,
-            batch_size,
-        )
+    def _transform_data_for_indexing(self, file: Files) -> bytes:
+        """
+        Get the file's contents in a format that can be indexed by Elastic, or is
+        better indexed by Elatic.
+        :param file: the file
+        :return: the bytes to send to Elastic
+        """
+        if not file.content:
+            return b''
 
-    def get_indexable_map_data(self, graph: Dict):
-        map_data: Dict[str, List[Dict[str, str]]] = {'nodes': [], 'edges': []}
-        for node in graph.get('nodes', []):
-            try:
-                map_data['nodes'].append(
-                    {
-                        'label': node.get('label', ''),
-                        'display_name': node.get('display_name', ''),
-                        'detail': node.get('detail', ''),
-                    }
-                )
-            except KeyError as e:
-                current_app.logger.error(
-                    f'Error while parsing node for elastic indexing: {node}',
-                    exc_info=e,
-                    extra=EventLog(event_type='elastic').to_dict()
-                )
-                # Continue parsing through remaining nodes
-        for edge in graph.get('edges', []):
-            try:
-                edge_data = edge.get('data', '')
-                map_data['edges'].append(
-                    {
-                        'label': edge.get('label', ''),
-                        'detail': edge_data.get('detail', '') if edge_data else '',
-                    }
-                )
-            except KeyError as e:
-                current_app.logger.error(
-                    f'Error while parsing edge for elastic indexing: {edge}',
-                    exc_info=e,
-                    extra=EventLog(event_type='elastic').to_dict()
-                )
-                # Continue parsing through remaining edges
+        content = file.content.raw_file
 
-        return map_data
+        if file.mime_type == 'vnd.lifelike.document/map':
+            content_json = json.loads(content)
+
+            map_data: Dict[str, List[Dict[str, str]]] = {
+                'nodes': [],
+                'edges': []
+            }
+
+            for node in content_json.get('nodes', []):
+                map_data['nodes'].append({
+                    'label': node.get('label', ''),
+                    'display_name': node.get('display_name', ''),
+                    'detail': node.get('detail', ''),
+                })
+
+            for edge in content_json.get('edges', []):
+                edge_data = edge.get('data', {})
+                map_data['edges'].append({
+                    'label': edge.get('label', ''),
+                    'detail': edge_data.get('detail', '') if edge_data else '',
+                })
+
+            return json.dumps(map_data).encode('utf-8')
+        else:
+            return content
 
     def reindex_all_documents(self):
-        self.index_files()
+        self._index_files()
 
     # End indexing methods
 
     # Begin search methods
 
     def get_words_and_phrases_from_search_term(
-        self,
-        search_term: str,
+            self,
+            search_term: str,
     ):
         term = ''
         parsing_phrase = False
@@ -299,10 +318,10 @@ class ElasticService():
         return word_stack, phrase_stack
 
     def get_text_match_objs(
-        self,
-        fields: List[str],
-        boost_fields: Dict[str, int],
-        word: str
+            self,
+            fields: List[str],
+            boost_fields: Dict[str, int],
+            word: str
     ):
         multi_match_obj = {
             'multi_match': {
@@ -326,11 +345,11 @@ class ElasticService():
         return [multi_match_obj] + term_objs  # type:ignore
 
     def get_text_match_queries(
-        self,
-        words: List[str],
-        phrases: List[str],
-        text_fields: List[str],
-        text_field_boosts: Dict[str, int]
+            self,
+            words: List[str],
+            phrases: List[str],
+            text_fields: List[str],
+            text_field_boosts: Dict[str, int]
     ):
         word_operands = []
         for word in words:
@@ -368,10 +387,10 @@ class ElasticService():
         }
 
     def get_keyword_match_queries(
-        self,
-        search_term: str,
-        keyword_fields: List[str],
-        keyword_field_boosts: Dict[str, int]
+            self,
+            search_term: str,
+            keyword_fields: List[str],
+            keyword_field_boosts: Dict[str, int]
     ):
         return {
             'bool': {
@@ -389,14 +408,14 @@ class ElasticService():
         }
 
     def _build_query_clause(
-        self,
-        search_term: str,
-        text_fields: List[str],
-        text_field_boosts: Dict[str, int],
-        keyword_fields: List[str],
-        keyword_field_boosts: Dict[str, int],
-        query_filter,
-        highlight,
+            self,
+            search_term: str,
+            text_fields: List[str],
+            text_field_boosts: Dict[str, int],
+            keyword_fields: List[str],
+            keyword_field_boosts: Dict[str, int],
+            query_filter,
+            highlight,
     ):
         search_term = search_term.strip()
         words, phrases = self.get_words_and_phrases_from_search_term(search_term)
@@ -422,34 +441,34 @@ class ElasticService():
             )
 
         return {
-            'query': {
-                'bool': {
-                    'must': [
-                        {
-                            'bool': {
-                                'should': search_queries,
+                   'query': {
+                       'bool': {
+                           'must': [
+                               {
+                                   'bool': {
+                                       'should': search_queries,
 
-                            }
-                        },
-                        query_filter,
-                    ],
-                }
-            },
-            'highlight': highlight
-        }, phrases + words
+                                   }
+                               },
+                               query_filter,
+                           ],
+                       }
+                   },
+                   'highlight': highlight
+               }, phrases + words
 
     def search(
-        self,
-        index_id: str,
-        search_term: str,
-        text_fields: List[str],
-        text_field_boosts: Dict[str, int],
-        keyword_fields: List[str],
-        keyword_field_boosts: Dict[str, int],
-        offset: int = 0,
-        limit: int = 10,
-        query_filter=None,
-        highlight=None
+            self,
+            index_id: str,
+            search_term: str,
+            text_fields: List[str],
+            text_field_boosts: Dict[str, int],
+            keyword_fields: List[str],
+            keyword_field_boosts: Dict[str, int],
+            offset: int = 0,
+            limit: int = 10,
+            query_filter=None,
+            highlight=None
     ):
         es_query, search_phrases = self._build_query_clause(
             search_term=search_term,
