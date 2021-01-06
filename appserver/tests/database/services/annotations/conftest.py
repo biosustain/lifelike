@@ -31,7 +31,7 @@ from neo4japp.services.annotations.constants import (
     CHEMICALS_PUBCHEM_LMDB,
     SPECIES_NCBI_LMDB,
 )
-from neo4japp.services.annotations.util import normalize_str
+from neo4japp.util import normalize_str
 
 
 # reference to this directory

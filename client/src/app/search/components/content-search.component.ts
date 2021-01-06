@@ -7,13 +7,16 @@ import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
 import { CollectionModal } from 'app/shared/utils/collection-modal';
-import { deserializePaginatedParams, getChoicesFromQuery, serializePaginatedParams } from 'app/shared/utils/params';
+import {
+  deserializePaginatedParams,
+  getChoicesFromQuery,
+  serializePaginatedParams,
+} from 'app/shared/utils/params';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
-import { ContentSearchOptions, TYPES, TYPES_MAP } from '../content-search';
+import { ContentSearchOptions, TYPES_MAP } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { HighlightDisplayLimitChange } from '../../file-browser/components/object-info.component';
-import { escapeRegExp } from 'lodash';
 import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
 import { RankedItem } from '../../shared/schemas/common';
 
@@ -59,7 +62,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       limit: this.defaultLimit,
       page: 1,
       sort: '+name',
-      types: [...TYPES],
+      types: [],
       q: '',
     };
   }
@@ -68,7 +71,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     return {
       ...deserializePaginatedParams(params, this.defaultLimit),
       q: params.hasOwnProperty('q') ? params.q : '',
-      types: params.hasOwnProperty('types') ? getChoicesFromQuery(params, 'types', TYPES_MAP) : [...TYPES],
+      types: params.hasOwnProperty('types') ? getChoicesFromQuery(params, 'types', TYPES_MAP) : [],
     };
   }
 
