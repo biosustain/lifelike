@@ -7,7 +7,8 @@ from neo4japp.models.files import FilePrivileges, FileLock
 from neo4japp.models.projects import ProjectPrivileges
 from neo4japp.schemas.account import UserSchema
 from neo4japp.schemas.base import CamelCaseSchema
-from neo4japp.schemas.common import ResultListSchema, ResultMappingSchema, SingleResultSchema, RankedItemSchema
+from neo4japp.schemas.common import ResultListSchema, ResultMappingSchema, SingleResultSchema, \
+    RankedItemSchema
 from neo4japp.schemas.fields import SortField, FileUploadField
 
 
@@ -96,7 +97,7 @@ class ProjectResponseSchema(SingleResultSchema):
 
 
 class MultipleProjectResponseSchema(ResultMappingSchema):
-    results = fields.Dict(keys=fields.String(),
+    mapping = fields.Dict(keys=fields.String(),
                           values=fields.Nested(ProjectSchema))
 
 
@@ -268,7 +269,7 @@ class FileResponseSchema(SingleResultSchema):
 
 
 class MultipleFileResponseSchema(ResultMappingSchema):
-    results = fields.Dict(keys=fields.String(),
+    mapping = fields.Dict(keys=fields.String(),
                           values=fields.Nested(FileSchema, exclude=('project.root',)))
 
 

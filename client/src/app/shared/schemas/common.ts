@@ -24,7 +24,7 @@ export interface SingleResult<T> {
 }
 
 export interface ResultMapping<T> {
-  results: { [key: string]: T };
+  mapping: { [key: string]: T };
   missing: string[];
 }
 
