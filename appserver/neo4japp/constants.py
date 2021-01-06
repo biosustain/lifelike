@@ -62,12 +62,16 @@ TYPE_TRANSCRIPTION_UNIT = 'TranscriptionUnit'
 DISPLAY_NAME_MAP = {
     TYPE_ASSOCIATION: 'description',
     TYPE_ASSOCIATION_TYPE: 'name',
+    TYPE_BIOLOGICAL_PROCESS: 'name',
+    TYPE_CELLULAR_COMPONENT: 'name',
     TYPE_CHEMICAL: 'name',
     TYPE_COMPOUND: 'name',
     TYPE_DISEASE: 'name',
     TYPE_GENE: 'name',
     TYPE_GENE_PRODUCT: 'name',
+    TYPE_MOLECULAR_FUNCTION: 'name',
     TYPE_OPERON: 'name',
+    TYPE_PATHWAY: 'name',
     TYPE_PROMOTER: 'name',
     TYPE_PROTEIN: 'name',
     TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client  # noqa
