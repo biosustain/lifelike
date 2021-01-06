@@ -3,7 +3,7 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ProjectImpl } from '../../models/filesystem-object';
-import { ModalList } from '../../../shared/models';
+import { ModelList } from '../../../shared/models';
 import { Collaborator } from '../../models/collaborator';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { ProjectsService } from '../../services/projects.service';
@@ -26,7 +26,7 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
   id = uniqueId('ProjectCollaboratorsDialogComponent-');
 
   private _project: ProjectImpl;
-  collaborators$: Observable<ModalList<Collaborator>> = of(new ModalList<Collaborator>());
+  collaborators$: Observable<ModelList<Collaborator>> = of(new ModelList<Collaborator>());
   readonly addForm: FormGroup = new FormGroup({
     roleName: new FormControl('project-read', Validators.required),
     users: new FormControl([], nonEmptyList),

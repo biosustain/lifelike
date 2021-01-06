@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 
-export class CollectionModal<T> {
+export class CollectionModel<T> {
   multipleSelection = false;
   _filter: (item: T) => boolean;
   _sort: (a: T, b: T) => number;
@@ -256,7 +256,7 @@ export class CollectionModal<T> {
 }
 
 export interface CollectionChange<T> {
-  source: CollectionModal<T>;
+  source: CollectionModel<T>;
   added: Set<T>;
   removed: Set<T>;
 }

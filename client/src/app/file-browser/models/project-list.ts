@@ -1,5 +1,5 @@
 import { ProjectImpl } from './filesystem-object';
-import { ModalList } from '../../shared/models';
+import { ModelList } from '../../shared/models';
 
-export class ProjectList extends ModalList<ProjectImpl> {
+export class ProjectList extends ModelList<ProjectImpl> {
 }

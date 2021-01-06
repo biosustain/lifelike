@@ -20,7 +20,7 @@ import {
   ResultMapping,
   SingleResult,
 } from '../../shared/schemas/common';
-import { ModalList } from '../../shared/models';
+import { ModelList } from '../../shared/models';
 import { Collaborator } from '../models/collaborator';
 import { serializePaginatedParams } from '../../shared/utils/params';
 
@@ -103,7 +103,7 @@ export class ProjectsService {
   }
 
   getCollaborators(hashId: string, options: PaginatedRequestOptions = {}):
-    Observable<ModalList<Collaborator>> {
+    Observable<ModelList<Collaborator>> {
     return this.http.get<ResultList<CollaboratorData>>(
       `/api/projects/projects/${hashId}/collaborators`, {
         ...this.apiService.getHttpOptions(true),
@@ -111,7 +111,7 @@ export class ProjectsService {
       },
     ).pipe(
       map(data => {
-        const collaboratorsList = new ModalList<Collaborator>();
+        const collaboratorsList = new ModelList<Collaborator>();
         collaboratorsList.collectionSize = data.results.length;
         collaboratorsList.results.replace(data.results.map(
           itemData => new Collaborator().update(itemData)));
@@ -121,14 +121,14 @@ export class ProjectsService {
   }
 
   saveCollaborators(hashId: string, request: MultiCollaboratorUpdateRequest):
-    Observable<ModalList<Collaborator>> {
+    Observable<ModelList<Collaborator>> {
     return this.http.post<ResultList<CollaboratorData>>(
       `/api/projects/projects/${hashId}/collaborators`,
       request,
       this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => {
-        const collaboratorsList = new ModalList<Collaborator>();
+        const collaboratorsList = new ModelList<Collaborator>();
         collaboratorsList.collectionSize = data.results.length;
         collaboratorsList.results.replace(data.results.map(
           itemData => new Collaborator().update(itemData)));

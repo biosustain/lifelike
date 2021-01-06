@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
-import { CollectionModal } from '../../shared/utils/collection-modal';
+import { CollectionModel } from '../../shared/utils/collection-model';
 
 @Component({
   selector: 'app-directory-preview',
@@ -8,6 +8,6 @@ import { CollectionModal } from '../../shared/utils/collection-modal';
 })
 export class DirectoryPreviewComponent {
 
-  @Input() objects: CollectionModal<FilesystemObject> | undefined;
+  @Input() objects: CollectionModel<FilesystemObject> | undefined;
 
 }

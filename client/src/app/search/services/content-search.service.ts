@@ -7,7 +7,7 @@ import { AnnotationRequestOptions, AnnotationResponse } from '../content-search'
 import { RankedItem, ResultList, ResultQuery } from '../../shared/schemas/common';
 import { ApiService } from '../../shared/services/api.service';
 import { ContentSearchRequest } from '../schema';
-import { ModalList } from '../../shared/models';
+import { ModelList } from '../../shared/models';
 import { map } from 'rxjs/operators';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { FilesystemObjectData } from '../../file-browser/schema';
@@ -26,14 +26,14 @@ export class ContentSearchService {
     );
   }
 
-  search(request: ContentSearchRequest): Observable<ModalList<RankedItem<FilesystemObject>>> {
+  search(request: ContentSearchRequest): Observable<ModelList<RankedItem<FilesystemObject>>> {
     return this.http.post<ResultList<RankedItem<FilesystemObjectData>>>(
       `/api/search/content`,
       request,
       this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => {
-        const resultList: ModalList<RankedItem<FilesystemObject>> = new ModalList();
+        const resultList: ModelList<RankedItem<FilesystemObject>> = new ModelList();
         resultList.collectionSize = data.results.length;
         resultList.results.replace(data.results.map(
           itemData => ({
