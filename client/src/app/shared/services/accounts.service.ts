@@ -4,7 +4,7 @@ import { ApiService } from './api.service';
 import { Observable } from 'rxjs';
 import { ResultList } from '../schemas/common';
 import { map } from 'rxjs/operators';
-import { ModalList } from '../models';
+import { ModelList } from '../models';
 import { AppUser } from '../../interfaces';
 import { AccountSearchRequest } from '../schema/accounts';
 
@@ -14,14 +14,14 @@ export class AccountsService {
               protected readonly apiService: ApiService) {
   }
 
-  search(options: AccountSearchRequest): Observable<ModalList<AppUser>> {
+  search(options: AccountSearchRequest): Observable<ModelList<AppUser>> {
     return this.http.post<ResultList<AppUser>>(
       `/api/accounts/search`,
       options,
       this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => {
-        const list = new ModalList<AppUser>();
+        const list = new ModelList<AppUser>();
         list.results.replace(data.results);
         return list;
       }),

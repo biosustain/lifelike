@@ -7,7 +7,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
 import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
-import { CollectionModal } from '../../../shared/utils/collection-modal';
+import { CollectionModel } from '../../../shared/utils/collection-model';
 import { FormControl, FormGroup } from '@angular/forms';
 import { ProjectsService } from '../../services/projects.service';
 import { map } from 'rxjs/operators';
@@ -41,7 +41,7 @@ export class BrowserProjectListComponent implements OnInit, OnDestroy {
   });
 
   public collectionSize = 0;
-  public readonly results = new CollectionModal<ProjectImpl>([], {
+  public readonly results = new CollectionModel<ProjectImpl>([], {
     multipleSelection: true,
   });
 

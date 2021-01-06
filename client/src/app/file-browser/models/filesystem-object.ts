@@ -1,5 +1,5 @@
 import { Directory, Project } from '../services/project-space.service';
-import { CollectionModal } from '../../shared/utils/collection-modal';
+import { CollectionModel } from '../../shared/utils/collection-model';
 import { nullCoalesce, RecursivePartial } from '../../shared/utils/types';
 import moment from 'moment';
 import { DirectoryObject } from '../../interfaces/projects.interface';
@@ -103,7 +103,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   recyclingDate: string;
   project: ProjectImpl;
   parent: FilesystemObject;
-  readonly children = new CollectionModal<FilesystemObject>([], {
+  readonly children = new CollectionModel<FilesystemObject>([], {
     multipleSelection: true,
     sort: this.defaultSort,
   });

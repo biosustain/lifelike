@@ -5,7 +5,7 @@ import { GlobalAnnotationService } from 'app/shared/services/global-annotation-s
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { GlobalAnnotation } from 'app/interfaces/annotation';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { CollectionModal } from 'app/shared/utils/collection-modal';
+import { CollectionModel } from 'app/shared/utils/collection-model';
 import { tap } from 'rxjs/operators';
 import { FormControl, FormGroup } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
@@ -46,7 +46,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         ...this.defaultLocator,
     };
 
-    readonly results = new CollectionModal<GlobalAnnotation>([], {
+    readonly results = new CollectionModel<GlobalAnnotation>([], {
         multipleSelection: true,
     });
 

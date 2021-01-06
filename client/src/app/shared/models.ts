@@ -1,9 +1,9 @@
-import { CollectionModal } from './utils/collection-modal';
+import { CollectionModel } from './utils/collection-model';
 import { ResultQuery } from './schemas/common';
 
-export class ModalList<T> {
+export class ModelList<T> {
   public collectionSize = 0;
-  public readonly results = new CollectionModal<T>([], {
+  public readonly results = new CollectionModel<T>([], {
     multipleSelection: true,
   });
   public query: ResultQuery | undefined;

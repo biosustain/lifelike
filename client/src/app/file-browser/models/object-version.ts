@@ -1,10 +1,10 @@
 import { AppUser } from '../../interfaces';
 import { RecursivePartial } from '../../shared/utils/types';
 import { ObjectVersionData } from '../schema';
-import { CollectionModal } from '../../shared/utils/collection-modal';
+import { CollectionModel } from '../../shared/utils/collection-model';
 import { FilesystemObject } from './filesystem-object';
 import { cloneDeep } from 'lodash';
-import { ModalList } from '../../shared/models';
+import { ModelList } from '../../shared/models';
 
 export class ObjectVersion {
   hashId: string;
@@ -65,5 +65,5 @@ export class ObjectVersion {
   }
 }
 
-export class ObjectVersionHistory extends ModalList<ObjectVersion> {
+export class ObjectVersionHistory extends ModelList<ObjectVersion> {
 }
