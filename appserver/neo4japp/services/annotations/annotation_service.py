@@ -26,11 +26,7 @@ from neo4japp.services.annotations.constants import (
     PDF_NEW_LINE_THRESHOLD,
     SEARCH_LINKS,
 )
-from neo4japp.services.annotations.util import (
-    has_center_point,
-    normalize_str,
-    standardize_str
-)
+from neo4japp.services.annotations.util import has_center_point
 from neo4japp.services.annotations.data_transfer_objects import (
     Annotation,
     EntityResults,
@@ -43,6 +39,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     SpecifiedOrganismStrain
 )
 from neo4japp.exceptions import AnnotationError
+from neo4japp.util import normalize_str, standardize_str
 from neo4japp.utils.logger import EventLog
 
 

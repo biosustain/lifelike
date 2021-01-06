@@ -1,9 +1,7 @@
-import { Domain, EntityType } from '../interfaces';
-
 export interface GraphSearchParameters {
   query: string;
-  domains?: Domain[];
-  entityTypes?: EntityType[];
+  domains?: string[];
+  entities?: string[];
   organism?: string | null;
   page: number;
   limit: number;

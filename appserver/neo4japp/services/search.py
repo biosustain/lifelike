@@ -9,9 +9,15 @@ from neo4japp.data_transfer_objects import (
     FTSResult,
     FTSTaxonomyRecord
 )
+from neo4japp.exceptions import InvalidArgumentsException
 from neo4japp.models import GraphNode
 from neo4japp.services.common import GraphBaseDao
-from neo4japp.util import get_first_known_label_from_node
+from neo4japp.util import (
+    get_first_known_label_from_node,
+    get_known_domain_labels_from_node,
+    normalize_str
+)
+from neo4japp.utils.logger import EventLog
 
 
 class SearchService(GraphBaseDao):
@@ -43,151 +49,12 @@ class SearchService(GraphBaseDao):
         # words from being searched as two individual words.
         return '{q}'.format(q=cypher.cypher_escape(query))
 
-    def _fulltext_result_formatter(self, results) -> List[FTSQueryRecord]:
-        formatted_results: List[FTSQueryRecord] = []
-        for result in results:
-            node = result['node']
-            score = result['score']
-            # Assume the first label is the primary type
-            node_type = [l for l in node.labels].pop(0)
-            if node_type == 'Snippet':
-                graph_node = GraphNode.from_py2neo(
-                    node, display_fn=lambda x: x.get('sentence'))
-                chem_node = result.get('chemical', None)
-                if chem_node is not None:
-                    chem_node = GraphNode.from_py2neo(
-                        result['chemical'], display_fn=lambda x: x.get('name'))
-                disease_node = result.get('disease', None)
-                if disease_node is not None:
-                    disease_node = GraphNode.from_py2neo(
-                        result['disease'], display_fn=lambda x: x.get('name'))
-                publication = result['publication']
-                try:
-                    # See TODO about potential missing data; this needs to be
-                    # refactored once we have a better understanding of the
-                    # data source.
-                    pub_title = publication.get('journal', 'No publication found.')
-                    pub_year = publication.get('pub_year', '')
-                    pub_id = publication.get('pmid', '')
-                    relationship = result.get('association', None)
-                    if relationship is not None:
-                        relationship = result['association']['description']
-
-                    formatted_results.append(FTSReferenceRecord(
-                        node=graph_node,
-                        score=score,
-                        publication_title=pub_title,
-                        publication_year=pub_year,
-                        publication_id=pub_id,
-                        relationship=relationship,
-                        chemical=chem_node,
-                        disease=disease_node,
-                    ))
-                except KeyError as err:
-                    # TODO: Fix this data structure or data source.
-                    # Because we're using a prototype dataset, we
-                    # have the potential to have missing data, so
-                    # we can't assume the attributes listed above
-                    # always exist.
-                    print('Data is missing from record', result)
-                    raise
-            else:
-                graph_node = GraphNode.from_py2neo(
-                    node, display_fn=lambda x: x.get('name'))
-                formatted_results.append(FTSQueryRecord(graph_node, score))
-        return formatted_results
-
-    def _simple_fulltext_result_formatter(self, results) -> List[FTSQueryRecord]:
-        formatted_results: List[FTSQueryRecord] = []
-        for result in results:
-            node = result['node']
-            score = result['score']
-            taxonomy_id = result.get('taxonomy_id', '')
-            taxonomy_name = result.get('taxonomy_name', '')
-            go_class = result.get('go_class', '')
-            graph_node = GraphNode.from_py2neo(
-                node, display_fn=lambda x: x.get('name'))
-            formatted_results.append(FTSTaxonomyRecord(
-                node=graph_node,
-                score=score,
-                taxonomy_id=taxonomy_id if taxonomy_id is not None
-                else 'N/A',
-                taxonomy_name=taxonomy_name if taxonomy_name is not None
-                else 'N/A',
-                go_class=go_class if go_class is not None
-                else 'N/A'
-            ))
-        return formatted_results
-
-    def fulltext_search(self, term: str, page: int = 1, limit: int = 10) -> FTSResult:
-        query_term = self._fulltext_query_sanitizer(term)
-        if not query_term:
-            return FTSResult(query_term, [], 0, page, limit)
-        cypher_query = """
-            CALL db.index.fulltext.queryNodes("namesEvidenceAndId", $search_term)
-            YIELD node, score
-            OPTIONAL MATCH (publication:Publication)<-[:IN_PUB]-(node:Snippet)
-            WITH node, publication, score
-            OPTIONAL MATCH (node:Snippet)-[:PREDICTS]->(association:Association)
-            WITH node, publication, association, score
-            OPTIONAL MATCH (chemical:Chemical)-[:HAS_ASSOCIATION]->(association:Association)
-            OPTIONAL MATCH (association:Association)-[:HAS_ASSOCIATION]->(disease:Disease)
-            RETURN node, association, publication, chemical, disease, score
-            SKIP $amount
-            LIMIT $limit
-        """
-
-        results = self.graph.run(
-            cypher_query,
-            parameters={'amount': (page - 1) * limit,
-                        'limit': limit,
-                        'search_term': query_term,
-                        }).data()
-
-        records = self._fulltext_result_formatter(results)
-
-        total_query = """
-            CALL db.index.fulltext.queryNodes("namesEvidenceAndId", $search_term)
-            YIELD node
-            RETURN COUNT(node) as total
-        """
-        total_results = self.graph.run(
-            total_query, parameters={'search_term': query_term}).evaluate()
-        return FTSResult(term, records, total_results, page, limit)
-
-    def simple_text_search(self, term: str, page: int = 1,
-                           limit: int = 100, filter: str = 'labels(node)') -> FTSResult:
-        query_term = self._fulltext_query_sanitizer(term)
-        if not query_term:
-            return FTSResult(query_term, [], 0, page, limit)
-        result_filters = self.sanitize_filter(filter)
-        cypher_query = 'CALL db.index.fulltext.queryNodes("synonymIdx", $search_term) ' \
-                       'YIELD node, score WITH node, score MATCH (node)-[]-(n) ' \
-                       'WHERE %s' \
-                       'WITH node, score, n optional MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy) ' \
-                       'RETURN DISTINCT n as node, score, t.id AS taxonomy_id,' \
-                       ' t.name AS taxonomy_name, n.namespace as go_class ' \
-                       'LIMIT $limit' % result_filters
-
-        results = self.graph.run(
-            cypher_query,
-            parameters={'limit': limit,
-                        'search_term': query_term,
-                        }).data()
-
-        records = self._simple_fulltext_result_formatter(results)
-
-        return FTSResult(term, records, limit, page, limit)
-
     def predictive_search(self, term: str, limit: int = 5):
         """ Performs a predictive search; not necessarily a prefix based autocomplete.
         # TODO: FIX the search algorithm to perform a proper prefix based autocomplete"""
         raise NotImplementedError
 
-    # TODO: Added as part of LL-1067, the following functions are a TEMP solution until we
-    # design a search service consistent with both the visualizer and the drawing tool
-    # This will need tests if we decide to maintain it as a standalone service.
-    def _visualizer_search_temp_result_formatter(self, results) -> List[FTSQueryRecord]:
+    def _visualizer_search_result_formatter(self, results) -> List[FTSQueryRecord]:
         formatted_results: List[FTSQueryRecord] = []
         for result in results:
             node = result['node']
@@ -198,7 +65,8 @@ class SearchService(GraphBaseDao):
             graph_node = GraphNode.from_py2neo(
                 node,
                 display_fn=lambda x: x.get('name'),
-                primary_label_fn=get_first_known_label_from_node
+                primary_label_fn=get_first_known_label_from_node,
+                domain_labels_fn=get_known_domain_labels_from_node,
             )
             formatted_results.append(FTSTaxonomyRecord(
                 node=graph_node,
@@ -212,34 +80,71 @@ class SearchService(GraphBaseDao):
             ))
         return formatted_results
 
-    def sanitize_filter(self, filter):
-        domains_list = {'ChEBI': 'n:db_CHEBI', 'GO': 'n:db_GO', 'Literature': 'n:db_Literature',
-                        'MeSH': 'n:db_MESH', 'NCBI': 'n:db_NCBI', 'UniProt': 'n:db_UniProt'}
-        entities_list = {'Chemicals': 'n:Chemical', 'Diseases': 'n:Disease', 'Genes': 'n:Gene',
-                         'Proteins': 'n:Protein', 'Taxonomy': 'n:Taxonomy'}
-        filter_list = filter.split(', ')
+    def sanitize_filter(
+        self,
+        domains: List[str],
+        entities: List[str],
+    ):
+        domains_map = {
+            'chebi': 'n:db_CHEBI',
+            'go': 'n:db_GO',
+            'literature': 'n:db_Literature',
+            'mesh': 'n:db_MESH',
+            'ncbi': 'n:db_NCBI',
+            'uniprot': 'n:db_UniProt'
+        }
+        entities_map = {
+            'biologicalprocess': 'n:BiologicalProcess',
+            'cellularcomponent': 'n:CellularComponent',
+            'chemical': 'n:Chemical',
+            'disease': 'n:Disease',
+            'gene': 'n:Gene',
+            'molecularfunction': 'n:MolecularFunction',
+            'protein': 'n:Protein',
+            'taxonomy': 'n:Taxonomy'
+        }
         result_domains = []
         result_entities = []
 
-        for x in filter_list:
-            if x in domains_list:
-                result_domains.append(domains_list[x])
-            elif x in entities_list:
-                result_entities.append(entities_list[x])
+        # NOTE: If the user supplies an entity/domain that *isn't* in these maps,
+        # they may get unexpected results! We essentially silently ignore any
+        # unexpected values in favor of getting *some* results back.
+
+        for domain in domains:
+            normalized_domain = normalize_str(domain)
+            if normalized_domain in domains_map:
+                result_domains.append(domains_map[normalized_domain])
             else:
-                current_app.logger.info(f'Filter not found: {x}')
+                current_app.logger.info(
+                    f'Found an unexpected value in `domains` list: {domain}',
+                    extra=EventLog(event_type='visualizer_search').to_dict()
+                )
 
-        domains = 'n:null' if len(result_domains) == 0 else ' OR '.join(result_domains)
-        entities = 'n:null' if len(result_entities) == 0 else ' OR '.join(result_entities)
-        return f'({domains}) AND ({entities})'
+        for entity in entities:
+            normalized_entity = normalize_str(entity)
+            if normalized_entity in entities_map:
+                result_entities.append(entities_map[normalized_entity])
+            else:
+                current_app.logger.info(
+                    f'Found an unexpected value in `entities` list: {entity}',
+                    extra=EventLog(event_type='visualizer_search').to_dict()
+                )
 
-    def visualizer_search_temp(
+        # If the domain list or entity list provided by the user is empty, then assume ALL
+        # domains/entities should be used.
+        result_domains = result_domains if len(result_domains) > 0 else [val for val in domains_map.values()]  # noqa
+        result_entities = result_entities if len(result_entities) > 0 else [val for val in entities_map.values()]  # noqa
+
+        return f'({" OR ".join(result_domains)}) AND ({" OR ".join(result_entities)})'
+
+    def visualizer_search(
         self,
         term: str,
         organism: str,
+        domains: List[str],
+        entities: List[str],
         page: int = 1,
         limit: int = 10,
-        filter: str = 'labels(node)'
     ) -> FTSResult:
         query_term = self._fulltext_query_sanitizer(term)
         if not query_term:
@@ -250,7 +155,7 @@ class SearchService(GraphBaseDao):
         else:
             organism_match_string = 'OPTIONAL MATCH (n)-[:HAS_TAXONOMY]-(t:Taxonomy)'
 
-        result_filters = self.sanitize_filter(filter)
+        result_filters = self.sanitize_filter(domains, entities)
 
         cypher_query = f"""
             CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
@@ -275,7 +180,7 @@ class SearchService(GraphBaseDao):
             }
         ).data()
 
-        records = self._visualizer_search_temp_result_formatter(results)
+        records = self._visualizer_search_result_formatter(results)
 
         total_query = f"""
             CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
@@ -347,36 +252,3 @@ class SearchService(GraphBaseDao):
             'query': query_term,
             'total': len(nodes),
         }
-
-    def search_genes_filtering_by_organism_and_others(self, term: str, organism_id: str,
-                                                      filters: str = 'labels(node)') -> FTSResult:
-        query_term = self._fulltext_query_sanitizer(term)
-        if not query_term:
-            return FTSResult(query_term, [], 0, 1, 0)
-
-        result_filters = self.sanitize_filter(filter)
-
-        cypher_query = '''
-            CALL db.index.fulltext.queryNodes('synonymIdx', $gene_term)
-            YIELD node, score
-            MATCH (node)-[]-(n:Gene)-[:HAS_TAXONOMY]-(t)-[:HAS_PARENT*0..2]-(p)
-            WHERE p.id = $taxonomy_id AND %s
-            RETURN
-                n as node,
-                score,
-                t.id AS taxonomy_id,
-                t.name AS taxonomy_name,
-                n.namespace as go_class
-        ''' % result_filters
-
-        nodes = self.graph.run(
-            cypher_query,
-            parameters={
-                'gene_term': query_term,
-                'taxonomy_id': organism_id,
-            }
-        ).data()
-
-        nodes = self._simple_fulltext_result_formatter(nodes)
-
-        return FTSResult(query_term, nodes, len(nodes), 1, 0)
