@@ -198,7 +198,7 @@ class ProjectBaseView(MethodView):
         return jsonify(MultipleProjectResponseSchema(context={
             'user_privilege_filter': user.id,
         }).dump(dict(
-            results=returned_projects,
+            mapping=returned_projects,
             missing=list(missing_hash_ids) if missing_hash_ids else [],
         )))
 
