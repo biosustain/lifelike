@@ -6,7 +6,7 @@ import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
-import { CollectionModal } from 'app/shared/utils/collection-modal';
+import { CollectionModel } from 'app/shared/utils/collection-model';
 import {
   deserializePaginatedParams,
   getChoicesFromQuery,
@@ -34,7 +34,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   private readonly defaultLimit = 20;
-  public results = new CollectionModal<RankedItem<FilesystemObject>>([], {
+  public results = new CollectionModel<RankedItem<FilesystemObject>>([], {
     multipleSelection: false,
   });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};

@@ -9,7 +9,7 @@ import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { nullCoalesce } from '../../shared/utils/types';
 import { uniqueId } from 'lodash';
-import { CollectionModal } from '../../shared/utils/collection-modal';
+import { CollectionModel } from '../../shared/utils/collection-model';
 
 @Component({
   selector: 'app-object-list',
@@ -20,7 +20,7 @@ export class ObjectListComponent {
 
   @Input() appLinks = false;
   @Input() forEditing = true;
-  @Input() objects: CollectionModal<FilesystemObject> | undefined;
+  @Input() objects: CollectionModel<FilesystemObject> | undefined;
   @Input() objectControls = true;
   @Input() emptyDirectoryMessage = 'There are no items in this folder.';
   @Output() refreshRequest = new EventEmitter<string>();
