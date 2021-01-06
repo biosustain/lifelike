@@ -105,10 +105,13 @@ def _build_file_cte(direction: Union[Literal['children'], Literal['parents']],
             projects_table.id.label('project_id'),
             t_parent.c.initial_id,
             (t_parent.c.level + 1).label("level")
-        ) \
-            .outerjoin(projects_table, projects_table.root_id == t_children.id) \
-            .filter(relationship,
-                    t_parent.c.level < max_depth))  # len(results) will max at (max_depth + 1)
+        ).outerjoin(
+            projects_table,
+            projects_table.root_id == t_children.id
+        ).filter(
+            relationship,
+            t_parent.c.level < max_depth
+        ))  # len(results) will max at (max_depth + 1)
 
     # The returned hierarchy doesn't provide any permissions or project information --
     # it only provides a sequence of file IDs (and related hierarchy information)
@@ -314,7 +317,8 @@ class FileHierarchy:
                 file_readable = row[f'has_file-read_{user_id}']
                 file_writable = row[f'has_file-write_{user_id}']
                 file_commentable = row[f'has_file-comment_{user_id}']
-                parent_privileges = parent_file.calculated_privileges[user_id] if parent_file else None
+                parent_privileges = parent_file.calculated_privileges[
+                    user_id] if parent_file else None
 
                 commentable = any([
                     project_manageable,

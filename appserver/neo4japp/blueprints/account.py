@@ -1,12 +1,21 @@
+import re
+
 from flask import Blueprint, g, jsonify, request
+from flask.views import MethodView
+from sqlalchemy import or_, func
 from sqlalchemy.orm.exc import NoResultFound
-from neo4japp.exceptions import NotAuthorizedException
-from neo4japp.database import get_account_service, get_projects_service
-from neo4japp.models import AppRole, AppUser, Projects
-from neo4japp.data_transfer_objects import UserRequest, UserUpdateRequest
+from webargs.flaskparser import use_args
+
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
+from neo4japp.data_transfer_objects import UserRequest, UserUpdateRequest
+from neo4japp.database import get_account_service, get_projects_service, db
+from neo4japp.exceptions import NotAuthorizedException
+from neo4japp.models import AppRole, AppUser, Projects
+from neo4japp.schemas.account import UserListSchema, UserSearchSchema
+from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.util import jsonify_with_class, SuccessResponse
+from neo4japp.utils.request import Pagination
 
 bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
@@ -32,7 +41,7 @@ def create_user(req: UserRequest):
 
     # TODO: Deprecate this once we have a GUI for adding users to projects
     # Currently will add any new user to a global project with WRITE permission
-    default_projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
+    default_projects = Projects.query.filter(Projects.name == 'beta-project').one()
     write_role = AppRole.query.filter(AppRole.name == 'project-write').one()
     proj_service.add_collaborator(new_user, write_role, default_projects)
 
@@ -80,3 +89,31 @@ def update_user(req: UserUpdateRequest):
     except NoResultFound:
         raise NotAuthorizedException('user does not exist')
     return SuccessResponse(result=updated_user.to_dict(), status_code=200)
+
+
+class AccountSearchView(MethodView):
+    decorators = [auth.login_required]
+
+    @use_args(UserSearchSchema)
+    @use_args(PaginatedRequestSchema)
+    def post(self, params: dict, pagination: Pagination):
+        """Endpoint to search for users that match certain criteria."""
+        query = re.sub("[%_]", "\\\\0", params['query'].strip().lower())
+        like_query = f"%{query}%"
+
+        query = db.session.query(AppUser) \
+            .filter(or_(func.lower(AppUser.first_name).like(like_query),
+                        func.lower(AppUser.last_name).like(like_query),
+                        func.lower(AppUser.username).like(like_query),
+                        func.lower(AppUser.email) == query,
+                        func.lower(AppUser.hash_id) == query))
+
+        paginated_result = query.paginate(pagination.page, pagination.limit, False)
+
+        return jsonify(UserListSchema().dump({
+            'total': paginated_result.total,
+            'results': paginated_result.items,
+        }))
+
+
+bp.add_url_rule('/search', view_func=AccountSearchView.as_view('account_search'))

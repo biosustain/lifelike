@@ -9,10 +9,10 @@ import {ObjectDeletionResultDialogComponent} from './components/dialog/object-de
 import {CommunityBrowserComponent} from './components/community-browser.component';
 import {BrowserComponent} from './components/browser/browser.component';
 import {BrowserCommunityListComponent} from './components/browser/browser-community-list.component';
-import { BrowserContextComponent } from './components/browser/browser-context.component';
+import {BrowserContextComponent} from './components/browser/browser-context.component';
 import {ObjectInfoComponent} from './components/object-info.component';
-import { ObjectTypeLabelComponent } from './components/object-type-label.component';
-import { ObjectSelectionDialogComponent } from './components/dialog/object-selection-dialog.component';
+import {ObjectTypeLabelComponent} from './components/object-type-label.component';
+import {ObjectSelectionDialogComponent} from './components/dialog/object-selection-dialog.component';
 import {FilesystemService} from './services/filesystem.service';
 import {ObjectListComponent} from './components/object-list.component';
 import {FilesystemObjectActions} from './services/filesystem-object-actions';
@@ -20,11 +20,11 @@ import {WordCloudModule} from './components/enrichment/visualisation/word-cloud/
 import {CommonModule} from '@angular/common';
 import {ChartsModule} from 'ng2-charts';
 import {ChartModule} from './components/enrichment/visualisation/chart/chart.module';
-import {ProjectService} from './services/project.service';
+import {ProjectsService} from './services/projects.service';
 import {ObjectEditDialogComponent} from './components/dialog/object-edit-dialog.component';
 import {ObjectVersionHistoryComponent} from './components/object-version-history.component';
 import {ObjectVersionHistoryDialogComponent} from './components/dialog/object-version-history-dialog.component';
-import { ObjectPreviewComponent, ObjectPreviewOutletComponent } from './components/object-preview.component';
+import {ObjectPreviewComponent, ObjectPreviewOutletComponent} from './components/object-preview.component';
 import {ObjectExportDialogComponent} from './components/dialog/object-export-dialog.component';
 import {ObjectTileDeckComponent} from './components/object-tile-deck.component';
 import {ObjectPathComponent} from './components/object-path.component';
@@ -43,6 +43,7 @@ import {EnrichmentVisualisationViewerComponent} from './components/enrichment/vi
 import {EnrichmentVisualisationCreateDialogComponent} from './components/enrichment/visualisation/dialog/enrichment-visualisation-create-dialog.component';
 import {EnrichmentVisualisationOrderDialogComponent} from './components/enrichment/visualisation/dialog/enrichment-visualisation-order-dialog.component';
 import {EnrichmentVisualisationEditDialogComponent} from './components/enrichment/visualisation/dialog/enrichment-visualisation-edit-dialog.component';
+import {AnnotationsService} from "./services/annotations.service";
 
 @NgModule({
   declarations: [
@@ -95,9 +96,9 @@ import {EnrichmentVisualisationEditDialogComponent} from './components/enrichmen
     EnrichmentTableCreateDialogComponent,
     EnrichmentTableEditDialogComponent,
     EnrichmentTableOrderDialogComponent,
-   EnrichmentVisualisationEditDialogComponent,
+    EnrichmentVisualisationEditDialogComponent,
     EnrichmentVisualisationOrderDialogComponent,
-     ObjectSelectionDialogComponent,
+    ObjectSelectionDialogComponent,
     ObjectEditDialogComponent,
     ObjectVersionHistoryDialogComponent,
     ObjectPreviewComponent,
@@ -125,7 +126,7 @@ import {EnrichmentVisualisationEditDialogComponent} from './components/enrichmen
     ProjectIconComponent,
   ],
   providers: [
-    ProjectService,
+    ProjectsService,
     FilesystemService,
     FilesystemObjectActions,
     ProjectActions,
@@ -135,6 +136,7 @@ import {EnrichmentVisualisationEditDialogComponent} from './components/enrichmen
       useClass: DirectoryTypeProvider,
       multi: true,
     },
+    AnnotationsService
   ],
 })
 export class FileBrowserModule {
