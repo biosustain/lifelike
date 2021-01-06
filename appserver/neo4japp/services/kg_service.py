@@ -403,11 +403,13 @@ class KgService(HybridDBDao):
                             node_label = get_first_known_label_from_node(node)
                             node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
                         except ValueError:
+                            node_label = 'Unknown'
                             node_color = '#000000'
 
                         node_data = {
                             'id': node.identity,
                             'label': node_display_name,
+                            'databaseLabel': node_label,
                             'font': {
                                 'color': node_color,
                             },
@@ -457,6 +459,15 @@ class KgService(HybridDBDao):
             # 6: 'Glycolisis Regulon',
             7: 'Serine SP Pathway',
             8: 'Serine to malZp',
+            9: 'Acetate (ALE Mutation Data)',
+            10: 'Glycerol (ALE Mutation Data)',
+            11: 'Hexanoic (ALE Mutation Data)',
+            12: 'Isobutyric (ALE Mutation Data)',
+            13: 'Putrescine (ALE Mutation Data)',
+            14: 'Serine (ALE Mutation Data)',
+            15: 'tpiA (ALE Mutation Data)',
+            16: 'Xylose (ALE Mutation Data)',
+            17: '42C Temperature (ALE Mutation Data)',
         }
 
     def get_query_id_to_func_map(self):
@@ -473,6 +484,16 @@ class KgService(HybridDBDao):
             # 6: [self.get_data_from_query, self.get_glycolisis_regulon_query],
             7: [self.get_data_from_file, 'serine.json'],
             8: [self.get_data_from_file, 'serine-to-malZp.json'],
+            9: [self.get_data_from_file, 'ale_mutation_data/acetate.json'],
+            10: [self.get_data_from_file, 'ale_mutation_data/glycerol.json'],
+            11: [self.get_data_from_file, 'ale_mutation_data/hexanoic.json'],
+            12: [self.get_data_from_file, 'ale_mutation_data/isobutyric.json'],
+            13: [self.get_data_from_file, 'ale_mutation_data/putrescine.json'],
+            14: [self.get_data_from_file, 'ale_mutation_data/serine.json'],
+            15: [self.get_data_from_file, 'ale_mutation_data/tpiA.json'],
+            16: [self.get_data_from_file, 'ale_mutation_data/xylose.json'],
+            17: [self.get_data_from_file, 'ale_mutation_data/42C.json'],
+
         }
 
     def get_shortest_path_data(self, query_id):
