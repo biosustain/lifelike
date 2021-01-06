@@ -33,11 +33,12 @@ const DISEASE = '#ff9800';
 const CHEMICAL = '#4caf50';
 const COMPOUND = '#4caf50';
 const MUTATION = '#5d4037';
-const SPECIES = '#0277bd';
+const SPECIES = '#3177b8';
 const COMPANY = '#d62728';
 const STUDY = '#17becf';
 const PROTEIN = '#bcbd22';
 const PATHWAY = '#e377c2';
+const PHENOMENA = '#edc949';
 const PHENOTYPE = '#edc949';
 const FOOD = '#8eff69';
 const ANATOMY = '#0202bd';
@@ -107,6 +108,10 @@ const annotationTypes: AnnotationStyle[] = [
   {
     label: 'pathway',
     color: PATHWAY,
+  },
+  {
+    label: 'phenomena',
+    color: PHENOMENA,
   },
   {
     label: 'phenotype',
