@@ -14,7 +14,6 @@ from flask import (
     jsonify,
 )
 from flask_apispec import use_kwargs
-from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
 from webargs.flaskparser import use_args
 
@@ -24,13 +23,10 @@ from neo4japp.blueprints.permissions import (
     requires_role
 )
 from neo4japp.constants import TIMEZONE
-from neo4japp.data_transfer_objects import GlobalAnnotationData
 from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.database import (
     db,
-    get_annotation_neo4j,
-    get_excel_export_service,
-    get_manual_annotations_service,
+    get_excel_export_service, get_manual_annotation_service,
 )
 from neo4japp.exceptions import (
     AnnotationError
@@ -42,18 +38,25 @@ from neo4japp.models import (
     GlobalList,
     FallbackOrganism
 )
-from neo4japp.request_schemas.annotations import GlobalAnnotationsDeleteSchema
 from neo4japp.services.annotations.constants import (
     AnnotationMethod,
     EntityType,
     ManualAnnotationType,
 )
-from neo4japp.services.annotations.service_helpers import create_annotations
+from neo4japp.services.annotations.data_transfer_objects import (
+    GlobalAnnotationData
+)
+from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.utils.logger import UserEventLog
 from .filesystem import bp as filesystem_bp
-from ..schemas.annotations import FileAnnotationsResponseSchema, AnnotationGenerationRequestSchema, \
-    MultipleAnnotationGenerationResponseSchema
+from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
+from ..schemas.annotations import AnnotationListSchema, \
+    AnnotationGenerationRequestSchema, \
+    MultipleAnnotationGenerationResponseSchema, GlobalAnnotationsDeleteSchema, \
+    CustomAnnotationCreateSchema, CustomAnnotationDeleteSchema, AnnotationUUIDListSchema, \
+    AnnotationExclusionCreateSchema, AnnotationExclusionDeleteSchema
 from ..schemas.filesystem import BulkFileRequestSchema
+from ..services.annotations import AnnotationGraphService
 from ..utils.http import make_cacheable_file_response
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
@@ -93,17 +96,88 @@ class FileAnnotationsView(FilesystemBaseView):
 
         results = annotations + file.custom_annotations
 
-        return jsonify(FileAnnotationsResponseSchema().dump({
+        return jsonify(AnnotationListSchema().dump({
             'results': results,
             'total': len(results),
         }))
+
+
+class FileCustomAnnotationsListView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(CustomAnnotationCreateSchema)
+    def post(self, params, hash_id):
+        current_user = g.current_user
+        manual_annotation_service = get_manual_annotation_service()
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+
+        results = manual_annotation_service.add_inclusions(
+            file, current_user, params['annotation'], params['annotate_all']
+        )
+
+        return jsonify(AnnotationListSchema().dump({
+            'results': results,
+            'total': len(results),
+        }))
+
+
+class FileCustomAnnotationsDetailView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(CustomAnnotationDeleteSchema)
+    def delete(self, params, hash_id, uuid):
+        current_user = g.current_user
+        manual_annotation_service = get_manual_annotation_service()
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+
+        results = manual_annotation_service.remove_inclusions(
+            file, current_user, uuid, params['remove_all']
+        )
+
+        return jsonify(AnnotationUUIDListSchema().dump({
+            'results': results,
+            'total': len(results),
+        }))
+
+
+class FileAnnotationExclusionsListView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(AnnotationExclusionCreateSchema)
+    def post(self, params, hash_id):
+        current_user = g.current_user
+        manual_annotation_service = get_manual_annotation_service()
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+
+        manual_annotation_service.add_exclusion(file, current_user, params['exclusion'])
+
+        return jsonify({})
+
+    @use_args(AnnotationExclusionDeleteSchema)
+    def delete(self, params, hash_id):
+        current_user = g.current_user
+        manual_annotation_service = get_manual_annotation_service()
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+
+        manual_annotation_service.remove_exclusion(file, current_user, params['type'],
+                                                   params['text'])
+
+        return jsonify({})
 
 
 class FileAnnotationCountsView(FilesystemBaseView):
     decorators = [auth.login_required]
 
     def get_rows(self, files):
-        manual_annotations_service = get_manual_annotations_service()
+        manual_annotations_service = get_manual_annotation_service()
 
         yield [
             'entity_id',
@@ -146,9 +220,11 @@ class FileAnnotationCountsView(FilesystemBaseView):
 
         file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
-        files = self.get_nondeleted_recycled_children(Files.id == file.id,
-                                                      children_filter=Files.mime_type == 'application/pdf',
-                                                      lazy_load_content=True)
+        files = self.get_nondeleted_recycled_children(
+            Files.id == file.id,
+            children_filter=Files.mime_type == 'application/pdf',
+            lazy_load_content=True
+        )
 
         buffer = io.StringIO()
         writer = csv.writer(buffer, delimiter="\t", quotechar='"')
@@ -168,8 +244,8 @@ class FileAnnotationCountsView(FilesystemBaseView):
 
 class FileAnnotationGeneCountsView(FileAnnotationCountsView):
     def get_rows(self, files):
-        manual_annotations_service = get_manual_annotations_service()
-        annotation_neo4j_service = get_annotation_neo4j()
+        manual_annotations_service = get_manual_annotation_service()
+        annotation_graph_service = AnnotationGraphService()
 
         yield [
             'gene_id',
@@ -191,10 +267,11 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
                     else:
                         gene_ids[gene_id] = 1
 
-        gene_organism_pairs = annotation_neo4j_service.get_organisms_from_gene_ids(
+        gene_organism_pairs = annotation_graph_service.get_organisms_from_gene_ids(
             gene_ids=list(gene_ids.keys())
         )
-        sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']], reverse=True)  # noqa
+        sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']],
+                              reverse=True)  # noqa
 
         for pair in sorted_pairs:
             yield [
@@ -235,16 +312,19 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             db.session.flush()
 
         updated_files = []
+        versions = []
         results = {}
         missing = self.get_missing_hash_ids(targets['hash_ids'], files)
 
         for file in files:
             if file.mime_type == 'application/pdf':
                 try:
-                    annotations = self._annotate(
+                    annotations, version = self._annotate(
                         file=file,
+                        cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
                         method=method,
-                        organism=organism or file.fallback_organism
+                        organism=organism or file.fallback_organism,
+                        user_id=current_user.id,
                     )
                 except AnnotationError as e:
                     current_app.logger.error(
@@ -257,6 +337,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     current_app.logger.debug(
                         'File successfully re-annotated: %s, %s', file.hash_id, file.filename)
                     updated_files.append(annotations)
+                    versions.append(version)
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': True,
@@ -267,6 +348,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     'success': False,
                 }
 
+        db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
         db.session.bulk_update_mappings(Files, updated_files)
         db.session.commit()
 
@@ -275,8 +357,11 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             'missing': missing,
         }))
 
-    def _annotate(self, file: Files, organism: Optional[FallbackOrganism] = None,
-                  method: AnnotationMethod = AnnotationMethod.RULES):
+    def _annotate(self, file: Files,
+                  cause: AnnotationChangeCause,
+                  organism: Optional[FallbackOrganism] = None,
+                  method: AnnotationMethod = AnnotationMethod.RULES,
+                  user_id: int = None):
         annotations_json = create_annotations(
             annotation_method=method.value,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
@@ -297,7 +382,15 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             update['fallback_organism'] = organism
             update['fallback_organism_id'] = organism.id
 
-        return update
+        version = {
+            'file_id': file.id,
+            'cause': cause,
+            'custom_annotations': file.custom_annotations,
+            'excluded_annotations': file.excluded_annotations,
+            'user_id': user_id,
+        }
+
+        return update, version
 
 
 @bp.route('/global-list/inclusions')
@@ -504,9 +597,21 @@ def delete_global_annotations(pids):
     yield jsonify(dict(result='success'))
 
 
-filesystem_bp.add_url_rule('objects/<string:hash_id>/annotations',
-                           view_func=FileAnnotationsView.as_view('file_annotations'))
-filesystem_bp.add_url_rule('objects/<string:hash_id>/combined-annotations',
-                           view_func=FileAnnotationCountsView.as_view('file_annotation_counts'))
-filesystem_bp.add_url_rule('annotations/generate',
-                           view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations',
+    view_func=FileAnnotationsView.as_view('file_annotations_list'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/custom',
+    view_func=FileCustomAnnotationsListView.as_view('file_custom_annotations_list'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/custom/<string:uuid>',
+    view_func=FileCustomAnnotationsDetailView.as_view('file_custom_annotations_detail'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/exclusions',
+    view_func=FileAnnotationExclusionsListView.as_view('file_annotation_exclusions_list'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/combined-annotations',
+    view_func=FileAnnotationCountsView.as_view('file_annotation_counts'))
+filesystem_bp.add_url_rule(
+    'annotations/generate',
+    view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'))

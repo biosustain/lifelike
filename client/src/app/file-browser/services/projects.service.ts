@@ -1,17 +1,30 @@
-import {Injectable} from '@angular/core';
-import {ApiService} from '../../shared/services/api.service';
-import {HttpClient} from '@angular/common/http';
-import {map} from 'rxjs/operators';
-import {ProjectList} from '../models/project-list';
-import {Observable} from 'rxjs';
-import {ProjectImpl} from '../models/filesystem-object';
-import {BulkProjectUpdateRequest, ProjectCreateRequest, ProjectData, ProjectSearchRequest} from '../schema';
-import {encode} from 'punycode';
-import {objectToMixedFormData} from '../../shared/utils/forms';
-import {ResultList, ResultMapping, SingleResult} from '../../shared/schemas/common';
+import { Injectable } from '@angular/core';
+import { ApiService } from '../../shared/services/api.service';
+import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
+import { ProjectList } from '../models/project-list';
+import { Observable } from 'rxjs';
+import { ProjectImpl } from '../models/filesystem-object';
+import {
+  BulkProjectUpdateRequest,
+  CollaboratorData,
+  ProjectCreateRequest,
+  ProjectData,
+  ProjectSearchRequest,
+} from '../schema';
+import { encode } from 'punycode';
+import {
+  PaginatedRequestOptions,
+  ResultList,
+  ResultMapping,
+  SingleResult,
+} from '../../shared/schemas/common';
+import { ModalList } from '../../shared/models';
+import { Collaborator } from '../models/collaborator';
+import { serializePaginatedParams } from '../../shared/utils/params';
 
 @Injectable()
-export class ProjectService {
+export class ProjectsService {
 
   constructor(protected readonly http: HttpClient,
               protected readonly apiService: ApiService) {
@@ -19,7 +32,7 @@ export class ProjectService {
 
   list(): Observable<ProjectList> {
     return this.http.get<ResultList<ProjectData>>(
-      `/api/projects/projects/`, this.apiService.getHttpOptions(true),
+      `/api/projects/projects`, this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => {
         const projectList = new ProjectList();
@@ -49,7 +62,7 @@ export class ProjectService {
 
   create(request: ProjectCreateRequest) {
     return this.http.post<SingleResult<ProjectData>>(
-      `/api/projects/projects/`,
+      `/api/projects/projects`,
       request,
       this.apiService.getHttpOptions(true),
     ).pipe(
@@ -58,11 +71,11 @@ export class ProjectService {
   }
 
   get(hashId: string): Observable<ProjectImpl> {
-    return this.http.get<ProjectData>(
+    return this.http.get<SingleResult<ProjectData>>(
       `/api/projects/projects/${encode(hashId)}`,
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map(data => new ProjectImpl().update(data)),
+      map(data => new ProjectImpl().update(data.result)),
     );
   }
 
@@ -70,10 +83,10 @@ export class ProjectService {
        updateWithLatest?: { [hashId: string]: ProjectImpl }):
     Observable<{ [hashId: string]: ProjectImpl }> {
     return this.http.patch<ResultMapping<ProjectData>>(
-      `/api/projects/projects`, objectToMixedFormData({
+      `/api/projects/projects`, {
         ...changes,
         hashIds,
-      }), this.apiService.getHttpOptions(true),
+      }, this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => {
         const ret: { [hashId: string]: ProjectImpl } = updateWithLatest || {};
@@ -84,6 +97,24 @@ export class ProjectService {
           ret[itemHashId].update(itemData);
         }
         return ret;
+      }),
+    );
+  }
+
+  getCollaborators(hashId: string, options: PaginatedRequestOptions = {}):
+    Observable<ModalList<Collaborator>> {
+    return this.http.get<ResultList<CollaboratorData>>(
+      `/api/projects/projects/${hashId}/collaborators`, {
+        ...this.apiService.getHttpOptions(true),
+        params: serializePaginatedParams(options, false),
+      },
+    ).pipe(
+      map(data => {
+        const collaboratorsList = new ModalList<Collaborator>();
+        collaboratorsList.collectionSize = data.results.length;
+        collaboratorsList.results.replace(data.results.map(
+          itemData => new Collaborator().update(itemData)));
+        return collaboratorsList;
       }),
     );
   }

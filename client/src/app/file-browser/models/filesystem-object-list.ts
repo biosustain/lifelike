@@ -1,9 +1,5 @@
-import {CollectionModal} from '../../shared/utils/collection-modal';
-import {FilesystemObject} from './filesystem-object';
+import { FilesystemObject } from './filesystem-object';
+import { ModalList } from '../../shared/models';
 
-export class FilesystemObjectList {
-  public collectionSize = 0;
-  public readonly results = new CollectionModal<FilesystemObject>([], {
-    multipleSelection: true,
-  });
+export class FilesystemObjectList extends ModalList<FilesystemObject> {
 }

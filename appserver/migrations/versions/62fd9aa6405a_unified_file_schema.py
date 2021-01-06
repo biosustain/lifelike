@@ -22,7 +22,7 @@ from sqlalchemy.orm.exc import NoResultFound
 logger = logging.getLogger("alembic.runtime.migration." + __name__)
 
 revision = '62fd9aa6405a'
-down_revision = '600460da634d'
+down_revision = 'e58082ac34b8'
 branch_labels = None
 depends_on = None
 
@@ -228,6 +228,12 @@ def upgrade():
     # ========================================
 
     logger.info("Applying initial column changes...")
+
+    # Map descriptions are a text field
+    op.alter_column('files', 'description',
+                    existing_type=sa.VARCHAR(length=2048),
+                    type_=sa.Text(),
+                    existing_nullable=True)
 
     # Directories have no content
     op.alter_column('files', 'content_id', existing_type=sa.Integer(), nullable=True)
@@ -561,7 +567,11 @@ def upgrade():
     for backup in iter_query(session.query(t_map_version), batch_size=CONTENT_QUERY_BATCH_SIZE):
         backup = backup._asdict()
 
-        new_file_id = old_map_to_new_map_id[backup['project_id']]
+        try:
+            new_file_id = old_map_to_new_map_id[backup['project_id']]
+        except KeyError:
+            # Map was deleted
+            continue
 
         content_id = get_or_create_content_id(session,
                                               json.dumps(backup['graph']).encode('utf-8'),
@@ -619,7 +629,11 @@ def upgrade():
     for backup in iter_query(session.query(t_map_backup), batch_size=CONTENT_QUERY_BATCH_SIZE):
         backup = backup._asdict()
 
-        new_file_id = old_map_to_new_map_id[backup['project_id']]
+        try:
+            new_file_id = old_map_to_new_map_id[backup['project_id']]
+        except KeyError:
+            # Map was deleted
+            continue
 
         new_id = session.execute(t_file_backup.insert().values(
             file_id=new_file_id,

@@ -1,12 +1,12 @@
-import {Directory, Project} from '../services/project-space.service';
-import {CollectionModal} from '../../shared/utils/collection-modal';
-import {nullCoalesce, RecursivePartial} from '../../shared/utils/types';
+import { Directory, Project } from '../services/project-space.service';
+import { CollectionModal } from '../../shared/utils/collection-modal';
+import { nullCoalesce, RecursivePartial } from '../../shared/utils/types';
 import moment from 'moment';
-import {DirectoryObject} from '../../interfaces/projects.interface';
-import {PdfFile} from '../../interfaces/pdf-files.interface';
-import {KnowledgeMap, UniversalGraph, UniversalGraphNode} from '../../drawing-tool/services/interfaces';
-import {AppUser, User} from '../../interfaces';
-import {FilesystemObjectData, ProjectData} from '../schema';
+import { DirectoryObject } from '../../interfaces/projects.interface';
+import { PdfFile } from '../../interfaces/pdf-files.interface';
+import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import { AppUser, User } from '../../interfaces';
+import { FilesystemObjectData, ProjectData } from '../schema';
 
 export const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
 export const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
@@ -219,6 +219,15 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return 'fa fa-file';
       default:
         return 'fa fa-file';
+    }
+  }
+
+  get mapNodeLabel() {
+    switch (this.mimeType) {
+      case MAP_MIMETYPE:
+        return 'map';
+      default:
+        return 'link';
     }
   }
 

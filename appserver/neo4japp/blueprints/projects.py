@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Iterable
 
 from flask import (
     current_app,
@@ -11,7 +11,8 @@ from flask.views import MethodView
 from marshmallow import ValidationError
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import raiseload, joinedload, aliased
+from sqlalchemy.orm import raiseload, joinedload
+from sqlalchemy.orm.exc import NoResultFound
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
@@ -28,9 +29,13 @@ from neo4japp.models import (
     Projects,
     projects_collaborator_role, )
 from neo4japp.models.projects_queries import add_project_user_role_columns, ProjectCalculator
-from neo4japp.schemas.common import PaginatedRequest
-from neo4japp.schemas.filesystem import ProjectListSchema, ProjectListRequestSchema, ProjectSearchRequestSchema, \
-    ProjectCreateSchema, ProjectResponseSchema
+from neo4japp.schemas.common import PaginatedRequestSchema
+from neo4japp.schemas.filesystem import ProjectListSchema, ProjectListRequestSchema, \
+    ProjectSearchRequestSchema, \
+    ProjectCreateSchema, ProjectResponseSchema, BulkProjectRequestSchema, \
+    BulkProjectUpdateRequestSchema, MultipleProjectResponseSchema, ProjectUpdateRequestSchema
+from neo4japp.schemas.projects import ProjectCollaboratorListSchema, \
+    ProjectCollaboratorUpdateOrCreateRequest
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.request import Pagination
 
@@ -96,7 +101,9 @@ class ProjectBaseView(MethodView):
         return files[0]
 
     def get_nondeleted_projects(self, filter, accessible_only=False, sort=None,
-                                pagination: Optional[Pagination] = None) -> Tuple[List[Projects], int]:
+                                require_hash_ids: List[str] = None,
+                                pagination: Optional[Pagination] = None) \
+            -> Tuple[List[Projects], int]:
         """
         Returns files that are guaranteed to be non-deleted that match the
         provided filter.
@@ -132,6 +139,16 @@ class ProjectBaseView(MethodView):
             calculator = ProjectCalculator(row, Projects)
             calculator.calculate_privileges([current_user.id])
             projects.append(calculator.project)
+
+        # Handle helper require_hash_ids argument that check to see if all projected wanted
+        # actually appeared in the results
+        if require_hash_ids:
+            missing_hash_ids = self.get_missing_hash_ids(require_hash_ids, projects)
+
+            if len(missing_hash_ids):
+                raise RecordNotFoundException(
+                    f"The request specified one or more projects "
+                    f"({', '.join(missing_hash_ids)}) that could not be found.")
 
         return projects, total
 
@@ -170,15 +187,63 @@ class ProjectBaseView(MethodView):
         return jsonify(ProjectResponseSchema(context={
             'user_privilege_filter': g.current_user.id,
         }).dump({
-            'project': return_project,
+            'result': return_project,
         }))
+
+    def get_bulk_project_response(self, hash_ids: List[str], user: AppUser, *,
+                                  missing_hash_ids: Iterable[str] = None):
+        projects, total = self.get_nondeleted_projects(Projects.hash_id.in_(hash_ids),
+                                                       require_hash_ids=hash_ids)
+        self.check_project_permissions(projects, user, ['readable'])
+
+        returned_projects = {}
+
+        for project in projects:
+            returned_projects[project.hash_id] = project
+
+        return jsonify(MultipleProjectResponseSchema(context={
+            'user_privilege_filter': user.id,
+        }).dump(dict(
+            results=returned_projects,
+            missing=list(missing_hash_ids) if missing_hash_ids else [],
+        )))
+
+    def update_projects(self, hash_ids: List[str], params: Dict, user: AppUser):
+        changed_fields = set()
+
+        projects, total = self.get_nondeleted_projects(Projects.hash_id.in_(hash_ids))
+        self.check_project_permissions(projects, user, ['readable'])
+        missing_hash_ids = self.get_missing_hash_ids(hash_ids, projects)
+
+        for project in projects:
+            for field in ('name', 'description'):
+                if field in params:
+                    if getattr(project, field) != params[field]:
+                        setattr(project, field, params[field])
+                        changed_fields.add(field)
+
+        if len(changed_fields):
+            try:
+                db.session.commit()
+            except IntegrityError as e:
+                raise ValidationError("The project name is already taken.")
+
+        return missing_hash_ids
+
+    def get_missing_hash_ids(self, expected_hash_ids: Iterable[str], files: Iterable[Projects]):
+        found_hash_ids = set(file.hash_id for file in files)
+        missing = set()
+        for hash_id in expected_hash_ids:
+            if hash_id not in found_hash_ids:
+                missing.add(hash_id)
+        return missing
 
 
 class ProjectListView(ProjectBaseView):
     decorators = [auth.login_required]
 
     @use_args(ProjectListRequestSchema)
-    @use_args(PaginatedRequest)
+    @use_args(PaginatedRequestSchema)
     def get(self, params, pagination: Pagination):
         """Endpoint to fetch a list of projects accessible by the user."""
         current_user = g.current_user
@@ -222,12 +287,22 @@ class ProjectListView(ProjectBaseView):
 
         return self.get_project_response(project.hash_id, current_user)
 
+    @use_args(lambda request: BulkProjectRequestSchema())
+    @use_args(lambda request: BulkProjectUpdateRequestSchema(partial=True))
+    def patch(self, targets, params):
+        """Project update endpoint."""
+
+        current_user = g.current_user
+        missing_hash_ids = self.update_projects(targets['hash_ids'], params, current_user)
+        return self.get_bulk_project_response(targets['hash_ids'], current_user,
+                                              missing_hash_ids=missing_hash_ids)
+
 
 class ProjectSearchView(ProjectBaseView):
     decorators = [auth.login_required]
 
     @use_args(ProjectSearchRequestSchema)
-    @use_args(PaginatedRequest)
+    @use_args(PaginatedRequestSchema)
     def post(self, params: dict, pagination: Pagination):
         """Endpoint to search for projects that match certain criteria."""
         current_user = g.current_user
@@ -249,7 +324,7 @@ class ProjectSearchView(ProjectBaseView):
         }))
 
 
-class ProjectView(ProjectBaseView):
+class ProjectDetailView(ProjectBaseView):
     decorators = [auth.login_required]
 
     def get(self, hash_id: str):
@@ -257,156 +332,93 @@ class ProjectView(ProjectBaseView):
         current_user = g.current_user
         return self.get_project_response(hash_id, current_user)
 
+    @use_args(lambda request: ProjectUpdateRequestSchema(partial=True))
+    def patch(self, params: dict, hash_id: str):
+        """Update a single project."""
+        current_user = g.current_user
+        self.update_projects([hash_id], params, current_user)
+        return self.get(hash_id)
+
+
+class ProjectCollaboratorsListView(ProjectBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(PaginatedRequestSchema)
+    def get(self, pagination: Pagination, hash_id):
+        """Endpoint to fetch a list of collaborators for a project."""
+        current_user = g.current_user
+        project = self.get_nondeleted_project(Projects.hash_id == hash_id)
+        self.check_project_permissions([project], current_user, ['administrable'])
+
+        query = db.session.query(AppUser, AppRole.name) \
+            .join(projects_collaborator_role,
+                  AppUser.id == projects_collaborator_role.c.appuser_id) \
+            .join(AppRole, AppRole.id == projects_collaborator_role.c.app_role_id)
+
+        paginated_result = query.paginate(pagination.page, pagination.limit, False)
+
+        return jsonify(ProjectCollaboratorListSchema().dump({
+            'results': [{
+                'user': item[0],
+                'role_name': item[1],
+            } for item in paginated_result.items]
+        }))
+
+
+class ProjectCollaboratorsUserDetailView(ProjectBaseView):
+    decorators = [auth.login_required]
+
+    def _get_target_user(self, user_hash_id):
+        current_user = g.current_user
+
+        try:
+            target_user = db.session.query(AppUser) \
+                .filter(AppUser.hash_id == user_hash_id) \
+                .options(raiseload('*')) \
+                .one()
+        except NoResultFound:
+            raise ValidationError("The requested user could not be found.",
+                                  "user_hash_id")
+
+        if target_user.id == current_user.id:
+            raise ValidationError("You cannot edit yourself.",
+                                  "user_hash_id")
+
+        return target_user
+
+    @use_args(ProjectCollaboratorUpdateOrCreateRequest)
+    def put(self, params, hash_id, user_hash_id):
+        proj_service = get_projects_service()
+        current_user = g.current_user
+        project = self.get_nondeleted_project(Projects.hash_id == hash_id)
+        self.check_project_permissions([project], current_user, ['administrable'])
+
+        target_user = self._get_target_user(user_hash_id)
+        new_role = db.session.query(AppRole).filter(AppRole.name == params['role_name']).one()
+        # WARNING: Likely susceptible to race conditions
+        proj_service.edit_collaborator(target_user, new_role, project)
+
+        return jsonify({})
+
+    def delete(self, params, hash_id, user_hash_id):
+        proj_service = get_projects_service()
+        current_user = g.current_user
+        project = self.get_nondeleted_project(Projects.hash_id == hash_id)
+        self.check_project_permissions([project], current_user, ['administrable'])
+
+        target_user = self._get_target_user(user_hash_id)
+        # WARNING: Likely susceptible to race conditions
+        proj_service.remove_collaborator(target_user, project)
+
+        return jsonify({})
+
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
 bp.add_url_rule('/search', view_func=ProjectSearchView.as_view('project_search'))
-bp.add_url_rule('/projects/', view_func=ProjectListView.as_view('project'))
-bp.add_url_rule('/projects/<string:hash_id>', view_func=ProjectView.as_view('project_detail'))
-
-
-@bp.route('/projects/<string:project_name>/collaborators', methods=['GET'])
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_project_collaborators(project_name: str):
-    projects = Projects.query.filter(
-        Projects.project_name == project_name
-    ).one_or_none()
-
-    if projects is None:
-        raise RecordNotFoundException(f'No such projects: {project_name}.')
-
-    user = g.current_user
-
-    yield user, projects
-
-    collaborators = db.session.query(
-        AppUser.id,
-        AppUser.email,
-        AppUser.username,
-        AppRole.name,
-    ).join(
-        projects_collaborator_role,
-        projects_collaborator_role.c.appuser_id == AppUser.id
-    ).join(
-        Projects
-    ).filter(
-        Projects.id == projects.id
-    ).join(
-        AppRole
-    ).all()  # TODO: paginate
-
-    yield jsonify({
-        'results': [{
-            'id': id,
-            'email': email,
-            'username': username,
-            'role': role,
-        } for id, email, username, role in collaborators]
-    }), 200
-
-
-@bp.route('/projects/<string:project_name>/collaborators/<string:email>', methods=['POST'])
-@auth.login_required
-@requires_project_role('project-admin')
-def add_collaborator(email: str, project_name: str):
-    proj_service = get_projects_service()
-
-    data = request.get_json()
-
-    project_role = data['role']
-
-    projects = Projects.query.filter(
-        Projects.project_name == project_name
-    ).one_or_none()
-
-    if projects is None:
-        raise RecordNotFoundException(f'No such projects: {project_name}.')
-
-    new_collaborator = AppUser.query.filter(
-        AppUser.email == email
-    ).one_or_none()
-
-    if new_collaborator is None:
-        raise RecordNotFoundException(f'No such email {email}.')
-
-    user = g.current_user
-
-    yield user, projects
-
-    # If new collaborator and user are the same, throw error
-    if new_collaborator.id == user.id:
-        raise NotAuthorizedException(f'You\'re already admin. Why downgrade? ¯\\_(ツ)_/¯')
-
-    new_role = AppRole.query.filter(AppRole.name == project_role).one()
-    proj_service.add_collaborator(new_collaborator, new_role, projects)
-
-    current_app.logger.info(
-        f'Collaborator <{new_collaborator.email}> added to project <{projects.project_name}>.',  # noqa
-        extra=UserEventLog(
-            username=g.current_user.username,
-            event_type='project collaborator'
-        ).to_dict())
-
-    yield jsonify({'result': 'success'}), 200
-
-
-@bp.route('/projects/<string:project_name>/collaborators/<string:username>', methods=['PUT'])
-@auth.login_required
-@requires_project_role('project-admin')
-def edit_collaborator(username: str, project_name: str):
-    proj_service = get_projects_service()
-
-    data = request.get_json()
-
-    project_role = data['role']
-
-    projects = Projects.query.filter(
-        Projects.project_name == project_name
-    ).one_or_none()
-
-    if projects is None:
-        raise RecordNotFoundException(f'No such projects: {project_name}')
-
-    user = g.current_user
-
-    yield user, projects
-
-    new_collaborator = AppUser.query.filter(
-        AppUser.username == username
-    ).one_or_none()
-
-    if new_collaborator is None:
-        raise RecordNotFoundException(f'No such username {username}')
-
-    new_role = AppRole.query.filter(AppRole.name == project_role).one()
-    proj_service.edit_collaborator(new_collaborator, new_role, projects)
-
-    yield jsonify({'result': 'success'}), 200
-
-
-@bp.route('/projects/<string:project_name>/collaborators/<string:username>', methods=['DELETE'])
-@auth.login_required
-@requires_project_role('project-admin')
-def remove_collaborator(username: str, project_name: str):
-    proj_service = get_projects_service()
-
-    user = g.current_user
-
-    projects = Projects.query.filter(
-        Projects.project_name == project_name
-    ).one_or_none()
-
-    if projects is None:
-        raise RecordNotFoundException(f'No such projects: {project_name}')
-
-    new_collaborator = AppUser.query.filter(
-        AppUser.username == username
-    ).one_or_none()
-
-    user = g.current_user
-
-    yield user, projects
-
-    proj_service.remove_collaborator(new_collaborator, projects)
-
-    yield jsonify({'result': 'success'}), 200
+bp.add_url_rule('/projects', view_func=ProjectListView.as_view('project_list'))
+bp.add_url_rule('/projects/<string:hash_id>', view_func=ProjectDetailView.as_view('project_detail'))
+bp.add_url_rule('/projects/<string:hash_id>/collaborators',
+                view_func=ProjectCollaboratorsListView.as_view('project_collaborators_list'))
+bp.add_url_rule('/projects/<string:hash_id>/collaborators/<string:user_hash_id>',
+                view_func=ProjectCollaboratorsUserDetailView.as_view(
+                    'project_collaborators_user_detail'))

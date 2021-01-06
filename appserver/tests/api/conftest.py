@@ -10,8 +10,6 @@ from datetime import date, datetime
 from neo4japp.models import (
     AppRole,
     AppUser,
-    Directory,
-    Project,
     Projects,
     projects_collaborator_role,
     FileContent,
@@ -20,7 +18,7 @@ from neo4japp.models import (
     AnnotationStyle,
     FallbackOrganism
 )
-from neo4japp.services.annotations import AnnotationsNeo4jService, ManualAnnotationsService
+from neo4japp.services.annotations import AnnotationGraphService, ManualAnnotationService
 from neo4japp.services.annotations.constants import EntityType
 from neo4japp.services.elastic import ElasticService
 
@@ -50,7 +48,7 @@ def mock_get_combined_annotations_result(monkeypatch):
         ]
 
     monkeypatch.setattr(
-        ManualAnnotationsService,
+        ManualAnnotationService,
         'get_combined_annotations',
         get_combined_annotations_result,
     )
@@ -69,7 +67,7 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
         ]
 
     monkeypatch.setattr(
-        AnnotationsNeo4jService,
+        AnnotationGraphService,
         'get_organisms_from_gene_ids',
         get_organisms_from_gene_ids_result,
     )
@@ -226,90 +224,6 @@ def fix_project(test_user, session):
         }]
     )
     session.flush()
-    return project
-
-
-@pytest.fixture(scope='function')
-def fix_directory(fix_project, test_user, session):
-    directory = Directory(
-        name='/',
-        directory_parent_id=None,
-        projects_id=fix_project.id,
-        user_id=test_user.id,
-    )
-    session.add(directory)
-    session.flush()
-    return directory
-
-
-@pytest.fixture(scope='function')
-def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
-    example_data = {
-        "edges": [],
-        "nodes": [
-            {
-                "data": {
-                    "x": -251,
-                    "y": -323,
-                    "hyperlink": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=511145",  # noqa
-                    "detail": "dddd",
-                    "source": "/dt/pdf/0df1c8e0-50a4-4770-9942-621bc1f1cb28/1/98.064/706.8/121.47984/717.8399999999999",  # noqa
-                    "search": [
-                        {
-                            "domain": "google",
-                            "url": "https://www.google.com/search?q=E. coli"
-                        },
-                        {
-                            "domain": "ncbi",
-                            "url": "https://www.ncbi.nlm.nih.gov/gene/?query=E. coli"
-                        },
-                        {
-                            "domain": "mesh",
-                            "url": "https://www.ncbi.nlm.nih.gov/mesh/?term=E. coli"
-                        },
-                        {
-                            "domain": "chebi",
-                            "url": "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=E. coli"  # noqa
-                        },
-                        {
-                            "domain": "pubchem",
-                            "url": "https://pubchem.ncbi.nlm.nih.gov/#query=E. coli"
-                        },
-                        {
-                            "domain": "uniprot",
-                            "url": "https://www.uniprot.org/uniprot/?sort=score&query=E. coli"
-                        },
-                        {
-                            "domain": "wikipedia",
-                            "url": "https://www.google.com/search?q=site:+wikipedia.org+E. coli"
-                        }
-                    ]
-                },
-                "display_name": "E. coli",
-                "hash": "dae84a2f-17ef-444e-b875-13b732a71794",
-                "shape": "box",
-                "label": "species",
-                "sub_labels": []
-            }
-        ]
-    }
-
-    project = Project(
-        id=100,
-        label='Project1',
-        description='a test project',
-        author='Jim Melancholy',
-        graph=example_data,
-        user_id=fix_api_owner.id,
-        dir_id=fix_directory.id,
-    )
-    session.add(project)
-    session.flush()
-
-    project.set_hash_id()
-
-    session.flush()
-
     return project
 
 
