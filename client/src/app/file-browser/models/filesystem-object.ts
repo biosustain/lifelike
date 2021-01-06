@@ -207,6 +207,21 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
   }
 
+  get mimeTypeLabel() {
+    switch (this.mimeType) {
+      case DIRECTORY_MIMETYPE:
+        return 'Folder';
+      case MAP_MIMETYPE:
+        return 'Map';
+      case ENRICHMENT_TABLE_MIMETYPE:
+        return 'Enrichment Table';
+      case 'application/pdf':
+        return 'Document';
+      default:
+        return 'File';
+    }
+  }
+
   get fontAwesomeIcon() {
     switch (this.mimeType) {
       case DIRECTORY_MIMETYPE:
@@ -449,7 +464,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
     for (const key of [
       'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
-      'annotationsDate', 'uploadUrl',
+      'annotationsDate', 'uploadUrl', 'highlight',
       'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
       'effectivelyRecycled']) {
       if (key in data) {

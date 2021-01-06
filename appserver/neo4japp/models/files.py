@@ -205,6 +205,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     calculated_children: Optional[List['Files']] = None
     calculated_parent_deleted: Optional[bool] = None
     calculated_parent_recycled: Optional[bool] = None
+    calculated_highlight: Optional[str] = None
 
     @property
     def parent_deleted(self):

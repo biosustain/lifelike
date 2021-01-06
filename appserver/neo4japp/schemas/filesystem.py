@@ -7,7 +7,7 @@ from neo4japp.models.files import FilePrivileges, FileLock
 from neo4japp.models.projects import ProjectPrivileges
 from neo4japp.schemas.account import UserSchema
 from neo4japp.schemas.base import CamelCaseSchema
-from neo4japp.schemas.common import ResultListSchema, ResultMapping, SingleResult
+from neo4japp.schemas.common import ResultListSchema, ResultMapping, SingleResult, RankedItemSchema
 from neo4japp.schemas.fields import SortField, FileUploadField
 
 
@@ -125,6 +125,7 @@ class FileSchema(CamelCaseSchema):
     children = fields.Method('get_children')
     project = fields.Method('get_project', exclude='root')
     privileges = fields.Method('get_privileges')
+    highlight = fields.Method('get_highlight')
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
 
@@ -142,6 +143,9 @@ class FileSchema(CamelCaseSchema):
                 .dump(obj.calculated_privileges[privilege_user_id])
         else:
             return None
+
+    def get_highlight(self, obj: Files):
+        return obj.calculated_highlight
 
     def get_project(self, obj: Files):
         return ProjectSchema(context=self.context, exclude=(
@@ -174,6 +178,10 @@ class FileSchema(CamelCaseSchema):
             ), many=True).dump(children)
         else:
             return None
+
+
+class RankedFileSchema(RankedItemSchema):
+    item = fields.Nested(FileSchema)
 
 
 # Requests
