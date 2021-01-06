@@ -10,7 +10,8 @@ from neo4japp.services.annotations.constants import (
     DISEASES_MESH_LMDB,
     FOODS_MESH_LMDB,
     GENES_NCBI_LMDB,
-    PHENOTYPES_MESH_LMDB,
+    PHENOMENAS_MESH_LMDB,
+    PHENOTYPES_CUSTOM_LMDB,
     PROTEINS_UNIPROT_LMDB,
     # CHEMICALS_PUBCHEM_LMDB,
     SPECIES_NCBI_LMDB,
@@ -29,6 +30,7 @@ class LMDB:
         diseases_lmdb_path: str = 'lmdb/diseases',
         foods_lmdb_path: str = 'lmdb/foods',
         genes_lmdb_path: str = 'lmdb/genes',
+        phenomenas_lmdb_path: str = 'lmdb/phenomenas',
         phenotypes_lmdb_path: str = 'lmdb/phenotypes',
         proteins_lmdb_path: str = 'lmdb/proteins',
         species_lmdb_path: str = 'lmdb/species',
@@ -39,6 +41,7 @@ class LMDB:
         self.diseases_lmdb_path = diseases_lmdb_path
         self.foods_lmdb_path = foods_lmdb_path
         self.genes_lmdb_path = genes_lmdb_path
+        self.phenomenas_lmdb_path = phenomenas_lmdb_path
         self.phenotypes_lmdb_path = phenotypes_lmdb_path
         self.proteins_lmdb_path = proteins_lmdb_path
         self.species_lmdb_path = species_lmdb_path
@@ -49,6 +52,7 @@ class LMDB:
         self.diseases_env = None
         self.foods_env = None
         self.genes_env = None
+        self.phenomenas_env = None
         self.phenotypes_env = None
         self.proteins_env = None
         self.species_env = None
@@ -59,6 +63,7 @@ class LMDB:
         self.diseases_txn = None
         self.foods_txn = None
         self.genes_txn = None
+        self.phenomenas_txn = None
         self.phenotypes_txn = None
         self.proteins_txn = None
         self.species_txn = None
@@ -92,6 +97,11 @@ class LMDB:
             )
             self.genes_env = lmdb.open(
                 path=path.join(directory, self.genes_lmdb_path),
+                readonly=True,
+                max_dbs=2,
+            )
+            self.phenomenas_env = lmdb.open(
+                path=path.join(directory, self.phenomenas_lmdb_path),
                 readonly=True,
                 max_dbs=2,
             )
@@ -130,7 +140,8 @@ class LMDB:
             diseases_db = self.diseases_env.open_db(DISEASES_MESH_LMDB.encode('utf-8'), dupsort=True)  # noqa
             foods_db = self.foods_env.open_db(FOODS_MESH_LMDB.encode('utf-8'), dupsort=True)
             genes_db = self.genes_env.open_db(GENES_NCBI_LMDB.encode('utf-8'), dupsort=True)
-            phenotypes_db = self.phenotypes_env.open_db(PHENOTYPES_MESH_LMDB.encode('utf-8'), dupsort=True)  # noqa
+            phenomenas_db = self.phenomenas_env.open_db(PHENOMENAS_MESH_LMDB.encode('utf-8'), dupsort=True)  # noqa
+            phenotypes_db = self.phenotypes_env.open_db(PHENOTYPES_CUSTOM_LMDB.encode('utf-8'), dupsort=True)  # noqa
             proteins_db = self.proteins_env.open_db(PROTEINS_UNIPROT_LMDB.encode('utf-8'), dupsort=True)  # noqa
             species_db = self.species_env.open_db(SPECIES_NCBI_LMDB.encode('utf-8'), dupsort=True)
 
@@ -142,6 +153,7 @@ class LMDB:
             self.diseases_txn = self.diseases_env.begin(db=diseases_db)
             self.foods_txn = self.foods_env.begin(db=foods_db)
             self.genes_txn = self.genes_env.begin(db=genes_db)
+            self.phenomenas_txn = self.phenomenas_env.begin(db=phenomenas_db)
             self.phenotypes_txn = self.phenotypes_env.begin(db=phenotypes_db)
             self.proteins_txn = self.proteins_env.begin(db=proteins_db)
             self.species_txn = self.species_env.begin(db=species_db)
@@ -155,6 +167,7 @@ class LMDB:
                 self.diseases_env,
                 self.foods_env,
                 self.genes_env,
+                self.phenomenas_env,
                 self.phenotypes_env,
                 self.proteins_env,
                 self.species_env
@@ -176,6 +189,7 @@ class LMDB:
                 self.diseases_txn,
                 self.foods_txn,
                 self.genes_txn,
+                self.phenomenas_txn,
                 self.phenotypes_txn,
                 self.proteins_txn,
                 self.species_txn

@@ -16,6 +16,7 @@ lmdb:
 	gsutil cp -r gs://lmdb_database/compounds $(LMDB_PATH)
 	gsutil cp -r gs://lmdb_database/diseases $(LMDB_PATH)
 	gsutil cp -r gs://lmdb_database/genes $(LMDB_PATH)
+	gsutil cp -r gs://lmdb_database/phenomenas $(LMDB_PATH)
 	gsutil cp -r gs://lmdb_database/phenotypes $(LMDB_PATH)
 	gsutil cp -r gs://lmdb_database/proteins $(LMDB_PATH)
 	gsutil cp -r gs://lmdb_database/species $(LMDB_PATH)
