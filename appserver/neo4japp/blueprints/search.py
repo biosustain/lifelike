@@ -32,45 +32,31 @@ from neo4japp.utils.logger import UserEventLog
 bp = Blueprint('search', __name__, url_prefix='/search')
 
 
-# NOTE: Commenting out as these are unused...do we need these?
-
-# @bp.route('/search', methods=['POST'])
-# @auth.login_required
-# @jsonify_with_class(SearchRequest)
-# def fulltext_search(req: SearchRequest):
-#     search_dao = get_search_service_dao()
-#     results = search_dao.fulltext_search(req.query, req.page, req.limit)
-#     return SuccessResponse(result=results, status_code=200)
-
-
-# @bp.route('/simple-search', methods=['POST'])
-# @auth.login_required
-# @jsonify_with_class(SimpleSearchRequest)
-# def simple_full_text_search(req: SimpleSearchRequest):
-#     search_dao = get_search_service_dao()
-#     results = search_dao.simple_text_search(req.query, req.page, req.limit, req.filter)
-#     return SuccessResponse(result=results, status_code=200)
-
-
-# TODO: Added as part of LL-1067, this is a TEMP solution until we design a
-# search service consistent with both the visualizer and the drawing tool.
-# This will need tests if we decide to maintain it as a standalone service.
-@bp.route('/viz-search-temp', methods=['POST'])
+@bp.route('/viz-search', methods=['POST'])
 @auth.login_required
 @use_kwargs(VizSearchSchema)
-def visualizer_search_temp(query, page, limit, filter, organism):
+def visualizer_search(
+    query,
+    page,
+    limit,
+    domains,
+    entities,
+    organism
+):
     search_dao = get_search_service_dao()
     current_app.logger.info(
-        f'Term: {query}, Organism: {organism}, Filter: {filter}',
+        f'Term: {query}, Organism: {organism}, Entities: {entities}, Domains: {domains}',
         extra=UserEventLog(
             username=g.current_user.username, event_type='search temp').to_dict()
     )
-    results = search_dao.visualizer_search_temp(
+
+    results = search_dao.visualizer_search(
         term=query,
         organism=organism,
         page=page,
         limit=limit,
-        filter=filter
+        domains=domains,
+        entities=entities,
     )
     return jsonify({
         'result': results.to_dict(),
@@ -148,7 +134,7 @@ def search(q, types, limit, page):
             username=g.current_user.username, event_type='search contentsearch').to_dict()
     )
     search_term = q
-    types = types.split(';')
+    types = types.split(';') if types != '' else ['map', 'pdf']
     offset = (page - 1) * limit
     search_phrases = []
 
@@ -303,13 +289,3 @@ def get_organisms(query, limit):
     search_dao = get_search_service_dao()
     results = search_dao.get_organisms(query, limit)
     return jsonify({'result': results})
-
-
-@bp.route('/genes_filtered_by_organism_and_others', methods=['POST'])
-@auth.login_required
-@jsonify_with_class(GeneFilteredRequest)
-def get_genes_filtering_by_organism(req: GeneFilteredRequest):
-    search_dao = get_search_service_dao()
-    results = search_dao.search_genes_filtering_by_organism_and_others(
-        req.query, req.organism_id, req.filters)
-    return SuccessResponse(result=results, status_code=200)

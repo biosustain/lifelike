@@ -10,13 +10,32 @@ from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
 from json import JSONDecodeError
+from string import punctuation, whitespace
 from typing import Any, List, Optional, Type, Iterator, Dict
+from unidecode import unidecode
 
 from flask import json, jsonify, request
 
 from py2neo import Node
 
-from neo4japp.constants import DISPLAY_NAME_MAP
+from neo4japp.constants import DISPLAY_NAME_MAP, DOMAIN_LABELS
+
+
+def clean_char(c) -> str:
+    # pdfminer does not correctly convert
+    # convert all unicode characters to nearest ascii
+    return unidecode(c)
+
+
+def normalize_str(s) -> str:
+    normalized = s.lower()
+    normalized = normalized.translate(str.maketrans('', '', punctuation))
+    return normalized.translate(str.maketrans('', '', whitespace))
+
+
+def standardize_str(s) -> str:
+    standardized = s.translate(str.maketrans('', '', punctuation))
+    return " ".join(standardized.split())
 
 
 def encode_to_str(obj):
@@ -424,6 +443,17 @@ def get_first_known_label_from_list(labels: List[str]):
             return label
 
     raise ValueError('Detected node label of an unknown type!')
+
+
+def get_known_domain_labels_from_node(node: Node):
+    labels_as_str = str(node.labels).split(':')[1:]
+    domain_labels = []
+
+    for label in labels_as_str:
+        if label in DOMAIN_LABELS:
+            domain_labels.append(label)
+
+    return domain_labels
 
 
 class AttrDict(dict):

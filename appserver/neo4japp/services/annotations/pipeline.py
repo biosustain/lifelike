@@ -27,7 +27,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     PDFTokensList,
     SpecifiedOrganismStrain
 )
-from neo4japp.services.annotations.util import normalize_str
+from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
 
 
