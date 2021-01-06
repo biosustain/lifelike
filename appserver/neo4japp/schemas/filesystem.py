@@ -7,7 +7,7 @@ from neo4japp.models.files import FilePrivileges, FileLock
 from neo4japp.models.projects import ProjectPrivileges
 from neo4japp.schemas.account import UserSchema
 from neo4japp.schemas.base import CamelCaseSchema
-from neo4japp.schemas.common import ResultListSchema, ResultMapping, SingleResult, RankedItemSchema
+from neo4japp.schemas.common import ResultListSchema, ResultMappingSchema, SingleResultSchema, RankedItemSchema
 from neo4japp.schemas.fields import SortField, FileUploadField
 
 
@@ -91,11 +91,11 @@ class BulkProjectUpdateRequestSchema(CamelCaseSchema):
 # Response
 # ----------------------------------------
 
-class ProjectResponseSchema(SingleResult):
+class ProjectResponseSchema(SingleResultSchema):
     result = fields.Nested(ProjectSchema)
 
 
-class MultipleProjectResponseSchema(ResultMapping):
+class MultipleProjectResponseSchema(ResultMappingSchema):
     results = fields.Dict(keys=fields.String(),
                           values=fields.Nested(ProjectSchema))
 
@@ -263,11 +263,11 @@ class FileExportRequestSchema(CamelCaseSchema):
 # ----------------------------------------
 
 
-class FileResponseSchema(SingleResult):
+class FileResponseSchema(SingleResultSchema):
     result = fields.Nested(FileSchema, exclude=('project.root',))
 
 
-class MultipleFileResponseSchema(ResultMapping):
+class MultipleFileResponseSchema(ResultMappingSchema):
     results = fields.Dict(keys=fields.String(),
                           values=fields.Nested(FileSchema, exclude=('project.root',)))
 
