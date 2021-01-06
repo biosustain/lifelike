@@ -11,6 +11,7 @@ export class ObjectInfoComponent implements OnInit {
   @Input() highlightTerms: string[] | undefined;
   @Input() objectControls = true;
   @Input() forEditing = true;
+  @Input() showDelete = false;
   @Output() objectEdit = new EventEmitter<FilesystemObject>();
   @Output() highlightClick = new EventEmitter<string>();
   @Output() highlightDisplayLimitChange = new EventEmitter<HighlightDisplayLimitChange>();
