@@ -3,41 +3,46 @@ import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
-import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { DirectoryObject } from 'app/interfaces/projects.interface';
-import { AbstractService } from 'app/shared/services/abstract-service';
-import { serializePaginatedParams } from 'app/shared/utils/params';
-
-import { AnnotationRequestOptions, AnnotationResponse, ContentSearchOptions } from '../content-search';
-import { RankedItem, ResultList } from '../../shared/schemas/common';
+import { AnnotationRequestOptions, AnnotationResponse } from '../content-search';
+import { RankedItem, ResultList, ResultQuery } from '../../shared/schemas/common';
+import { ApiService } from '../../shared/services/api.service';
+import { ContentSearchRequest } from '../schema';
+import { ModalList } from '../../shared/models';
+import { map } from 'rxjs/operators';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
+import { FilesystemObjectData } from '../../file-browser/schema';
 
 @Injectable()
-export class ContentSearchService extends AbstractService {
-  protected readonly SEARCH_BASE_URL = '/api/search';
-
-  constructor(auth: AuthenticationService, http: HttpClient) {
-    super(auth, http);
+export class ContentSearchService {
+  constructor(protected readonly http: HttpClient,
+              protected readonly apiService: ApiService) {
   }
 
   annotate(params: AnnotationRequestOptions): Observable<AnnotationResponse> {
     return this.http.post<AnnotationResponse>(
-      `${this.SEARCH_BASE_URL}/annotate`,
-      params, {
-        ...this.getHttpOptions(true),
-      },
+      `/api/search/annotate`,
+      params,
+      this.apiService.getHttpOptions(true),
     );
   }
 
-  search(params: ContentSearchOptions): Observable<ResultList<RankedItem<DirectoryObject>>> {
-    return this.http.get<ResultList<RankedItem<DirectoryObject>>>(
-      `${this.SEARCH_BASE_URL}/content`, {
-        ...this.getHttpOptions(true),
-        params: {
-          ...serializePaginatedParams(params, false),
-          q: params.q,
-          types: params.types.map(value => value.id).join(';'),
-        } as Record<keyof ContentSearchOptions, string>,
-      },
+  search(request: ContentSearchRequest): Observable<ModalList<RankedItem<FilesystemObject>>> {
+    return this.http.post<ResultList<RankedItem<FilesystemObjectData>>>(
+      `/api/search/content`,
+      request,
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(data => {
+        const resultList: ModalList<RankedItem<FilesystemObject>> = new ModalList();
+        resultList.collectionSize = data.results.length;
+        resultList.results.replace(data.results.map(
+          itemData => ({
+            rank: itemData.rank,
+            item: new FilesystemObject().update(itemData.item),
+          })));
+        resultList.query = data.query;
+        return resultList;
+      }),
     );
   }
 }

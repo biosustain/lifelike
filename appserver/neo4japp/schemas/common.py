@@ -19,12 +19,21 @@ class PaginatedRequestSchema(CamelCaseSchema):
         return Pagination(page=params['page'], limit=params['limit'])
 
 
+class RankedItemSchema(CamelCaseSchema):
+    rank = fields.Number()
+
+
 class SingleResult(CamelCaseSchema):
     pass
 
 
+class ResultQuerySchema(CamelCaseSchema):
+    phrases = fields.List(fields.String)
+
+
 class ResultListSchema(CamelCaseSchema):
     total = fields.Integer()
+    query = fields.Nested(ResultQuerySchema)
 
 
 class ResultMapping(CamelCaseSchema):
