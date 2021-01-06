@@ -47,19 +47,12 @@ export class RouteDisplayComponent {
     this.networkConfig = {
       interaction: {
         hover: true,
-        navigationButtons: true,
         multiselect: true,
         selectConnectedEdges: false,
       },
       physics: {
-        enabled: false,
-        barnesHut: {
-          avoidOverlap: 0.2,
-          centralGravity: 0.1,
-          damping: 0.9,
-          gravitationalConstant: -10000,
-          springLength: 250,
-        },
+        enabled: true,
+        solver: 'barnesHut',
       },
       edges: {
         font: {
