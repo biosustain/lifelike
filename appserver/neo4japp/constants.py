@@ -49,23 +49,34 @@ TYPE_ASSOCIATION_TYPE = 'AssociationType'
 TYPE_CHEMICAL = 'Chemical'
 TYPE_DISEASE = 'Disease'
 TYPE_GENE = 'Gene'
+TYPE_GENE_PRODUCT = 'GeneProduct'
 TYPE_PUBLICATION = 'Publication'
 TYPE_SNIPPET = 'Snippet'
 TYPE_TAXONOMY = 'Taxonomy'
+TYPE_OPERON = 'Operon'
+TYPE_PROMOTER = 'Promoter'
+TYPE_PROTEIN = 'Protein'
+TYPE_TRANSCRIPTION_FACTOR = 'TranscriptionFactor'
+TYPE_TRANSCRIPTION_UNIT = 'TranscriptionUnit'
 
 DISPLAY_NAME_MAP = {
     TYPE_ASSOCIATION: 'description',
     TYPE_ASSOCIATION_TYPE: 'name',
-    TYPE_BIOLOGICAL_PROCESS: 'name',
-    TYPE_CELLULAR_COMPONENT: 'name',
     TYPE_CHEMICAL: 'name',
+    TYPE_COMPOUND: 'name',
     TYPE_DISEASE: 'name',
     TYPE_GENE: 'name',
-    TYPE_MOLECULAR_FUNCTION: 'name',
+    TYPE_GENE_PRODUCT: 'name',
+    TYPE_OPERON: 'name',
+    TYPE_PROMOTER: 'name',
+    TYPE_PROTEIN: 'name',
     TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client  # noqa
+    TYPE_ENZREACTION: 'name',
+    TYPE_REACTION: 'name',
     TYPE_SNIPPET: 'sentence',  # NOTE: Same here
     TYPE_TAXONOMY: 'name',
-    TYPE_PROTEIN: 'name',
+    TYPE_TRANSCRIPTION_FACTOR: 'name',
+    TYPE_TRANSCRIPTION_UNIT: 'displayName',
 }
 
 # Start Text Mining Dataset
@@ -158,6 +169,34 @@ ANNOTATION_STYLES_DICT = {
     'note': {
         'label': 'note',
         'color': '#EDC949'
+    },
+    'reaction': {
+        'label': 'reaction',
+        'color': '#ebb434'
+    },
+    'enzreaction': {
+        'label': 'enzreaction',
+        'color': '#3b2bb3'
+    },
+    'geneproduct': {
+        'label': 'geneproduct',
+        'color': '#eb333d'
+    },
+    'operon': {
+        'label': 'operon',
+        'color': '#439641'
+    },
+    'promoter': {
+        'label': 'promoter',
+        'color': '#5bc9ca'
+    },
+    'transcriptionfactor': {
+        'label': 'transcriptionfactor',
+        'color': '#ea3cf7'
+    },
+    'transcriptionunit': {
+        'label': 'transcriptionunit',
+        'color': '#cccdfb'
     },
     # Non - Entity Types
     'correlation': {
