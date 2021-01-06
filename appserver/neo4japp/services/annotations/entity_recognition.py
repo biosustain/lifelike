@@ -40,7 +40,6 @@ from neo4japp.services.annotations.lmdb_util import (
     create_ner_type_company,
     create_ner_type_entity
 )
-from neo4japp.services.annotations.util import normalize_str
 from neo4japp.services.annotations.data_transfer_objects import (
     EntityResults,
     Inclusion,
@@ -51,6 +50,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     PDFTokensList
 )
 from neo4japp.models import AnnotationStopWords, GlobalList
+from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
 
 
