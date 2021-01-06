@@ -1,16 +1,15 @@
 @import '~bootstrap/scss/functions';
 @import '~bootstrap/scss/variables';
 
-#legend {
+.legend {
   position: absolute;
   margin: $spacer 0 0 $spacer;
-  width: 10rem;;
   padding: 1rem;
   z-index: 1;
   background: $white;
 }
 
-#legend-header {
+.legend-header {
   text-align: center;
 }
 
