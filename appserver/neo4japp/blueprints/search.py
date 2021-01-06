@@ -2,32 +2,36 @@ import html
 import json
 import re
 from collections import defaultdict
+from typing import Optional
 
 import sqlalchemy
 from flask import Blueprint, current_app, jsonify, g
 from flask_apispec import use_kwargs
 from sqlalchemy.orm import aliased
+from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.constants import FILE_INDEX_ID
-from neo4japp.data_transfer_objects import GeneFilteredRequest
 from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
 from neo4japp.database import get_search_service_dao, db, get_elastic_service
 from neo4japp.models import (
     Projects,
     AppRole,
-    projects_collaborator_role
+    projects_collaborator_role, Files
 )
+from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.search import (
     AnnotateRequestSchema,
     ContentSearchSchema,
     OrganismSearchSchema,
-    VizSearchSchema
+    VizSearchSchema, ContentSearchResponseSchema
 )
 from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog
+from neo4japp.utils.request import Pagination
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
@@ -36,12 +40,12 @@ bp = Blueprint('search', __name__, url_prefix='/search')
 @auth.login_required
 @use_kwargs(VizSearchSchema)
 def visualizer_search(
-    query,
-    page,
-    limit,
-    domains,
-    entities,
-    organism
+        query,
+        page,
+        limit,
+        domains,
+        entities,
+        organism
 ):
     search_dao = get_search_service_dao()
     current_app.logger.info(
@@ -118,31 +122,28 @@ def annotate(texts):
     })
 
 
-def hydrate_search_results(es_results):
-    pass
-    # TODO
+class ContentSearchView(FilesystemBaseView):
+    decorators = [auth.login_required]
 
+    @use_args(ContentSearchSchema)
+    @use_args(PaginatedRequestSchema)
+    def post(self, params: dict, pagination: Pagination):
+        current_user = g.current_user
 
-# TODO: Probably should rename this to something else...not sure what though
-@bp.route('/content', methods=['GET'])
-@auth.login_required
-@use_kwargs(ContentSearchSchema)
-def search(q, types, limit, page):
-    current_app.logger.info(
-        f'Term: {q}',
-        extra=UserEventLog(
-            username=g.current_user.username, event_type='search contentsearch').to_dict()
-    )
-    search_term = q
-    types = types.split(';') if types != '' else ['map', 'pdf']
-    offset = (page - 1) * limit
-    search_phrases = []
+        search_term = params['q']
+        mime_types = params['mime_types']
 
-    if search_term:
+        current_app.logger.info(
+            f'Term: {search_term}',
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='search contentsearch').to_dict()
+        )
+
+        offset = (pagination.page - 1) * pagination.limit
+        search_phrases = []
+
         text_fields = ['description', 'data.content', 'filename']
         text_field_boosts = {'description': 1, 'data.content': 1, 'filename': 3}
-        keyword_fields = []
-        keyword_field_boosts = {}
         highlight = {
             'fields': {
                 'data.content': {},
@@ -185,11 +186,12 @@ def search(q, types, limit, page):
         )
 
         accessible_project_ids = [project_id for project_id, in query]
+
         query_filter = {
             'bool': {
                 'must': [
                     # The document must have the specified type
-                    {'terms': {'type': types}},
+                    {'terms': {'mime_type': mime_types}},
                     # And...
                     {
                         'bool': {
@@ -206,71 +208,59 @@ def search(q, types, limit, page):
         }
 
         elastic_service = get_elastic_service()
-        res, search_phrases = elastic_service.search(
+        elastic_result, search_phrases = elastic_service.search(
             index_id=FILE_INDEX_ID,
             search_term=search_term,
             offset=offset,
-            limit=limit,
+            limit=pagination.limit,
             text_fields=text_fields,
             text_field_boosts=text_field_boosts,
-            keyword_fields=keyword_fields,
-            keyword_field_boosts=keyword_field_boosts,
+            keyword_fields=[],
+            keyword_field_boosts={},
             query_filter=query_filter,
             highlight=highlight
         )
-        res = res['hits']
 
-        hydrate_search_results(res)
-    else:
-        res = {'hits': [], 'max_score': None, 'total': 0}
+        elastic_result = elastic_result['hits']
 
-    highlight_tag_re = re.compile('@@@@(/?)\\$')
+        highlight_tag_re = re.compile('@@@@(/?)\\$')
 
-    results = []
-    for doc in res['hits']:
-        snippets = None
+        # Load the files for this result page from the database
+        file_ids = [doc['_source']['id'] for doc in elastic_result['hits']]
+        file_map = {file.id: file for file in
+                    self.get_nondeleted_recycled_files(Files.id.in_(file_ids))}
 
-        db_data = doc.get('_db', defaultdict(lambda: None))
+        results = []
+        for document in elastic_result['hits']:
+            file_id = document['_source']['id']
+            file: Optional[Files] = file_map.get(file_id)
 
-        if doc.get('highlight', None) is not None:
-            if doc['highlight'].get('data.content', None) is not None:
-                snippets = doc['highlight']['data.content']
+            if file and file.calculated_privileges[current_user.id].readable:
+                if file.mime_type != 'vnd.***ARANGO_DB_NAME***.document/map' and \
+                        document.get('highlight') is not None:
+                    if document['highlight'].get('data.content') is not None:
+                        snippets = document['highlight']['data.content']
+                        for i, snippet in enumerate(snippets):
+                            snippet = html.escape(snippet)
+                            snippet = highlight_tag_re.sub('<\\1highlight>', snippet)
+                            snippets[i] = f"<snippet>{snippet}</snippet>"
+                        file.calculated_highlight = snippets
 
-        if snippets:
-            for i, snippet in enumerate(snippets):
-                snippet = html.escape(snippet)
-                snippet = highlight_tag_re.sub('<\\1highlight>', snippet)
-                snippets[i] = f"<snippet>{snippet}</snippet>"
+                results.append({
+                    'item': file,
+                    'rank': document['_score'],
+                })
 
-        results.append({
-            'item': {
-                # TODO LL-1723: Need to add complete file path here
-                'type': 'file' if doc['_source']['type'] == 'pdf' else 'map',
-                'id': doc['_source']['id'],
-                'name': db_data['name'] or doc['_source']['filename'],
-                'description': db_data['description'] or doc['_source']['description'],
-                'highlight': snippets,
-                'doi': doc['_source']['doi'],
-                'creation_date': db_data['creation_date'] or doc['_source']['uploaded_date'],
-                'modification_date': db_data['modification_date'],
-                'annotation_date': db_data['annotation_date'],
-                'project': {
-                    'project_name': db_data['project_name'] or doc['_source']['project_name'],
-                },
-                'creator': {
-                    'username': db_data['owner_username'] or doc['_source']['username'],
-                },
-            },
-            'rank': doc['_score'],
-        })
+        return jsonify(ContentSearchResponseSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }).dump({
+            'total': elastic_result['total'],
+            'query': ResultQuery(phrases=search_phrases),
+            'results': results,
+        }))
 
-    response = ResultList(
-        total=res['total'],
-        results=results,
-        query=ResultQuery(phrases=search_phrases),
-    )
 
-    return jsonify(response.to_dict())
+bp.add_url_rule('content', view_func=ContentSearchView.as_view('content_search'))
 
 
 @bp.route('/organism/<string:organism_tax_id>', methods=['GET'])

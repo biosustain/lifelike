@@ -93,6 +93,7 @@ export interface FilesystemObjectData {
   privileges: FilePrivileges;
   recycled: boolean;
   effectivelyRecycled: boolean;
+  highlight?: string[];
 }
 
 interface ObjectContentValueRequest {
