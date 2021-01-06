@@ -5,7 +5,8 @@ from neo4japp.models import Projects, AppRole, AppUser, projects_collaborator_ro
 from neo4japp.models.projects import ProjectPrivileges
 
 
-def add_project_user_role_columns(query, project_table, user_id, role_names=None, column_format=None):
+def add_project_user_role_columns(query, project_table, user_id, role_names=None,
+                                  column_format=None):
     """
     Add columns to a query for fetching the value of the provided roles for the
     provided user ID for projects in the provided project table.
@@ -49,7 +50,8 @@ class ProjectCalculator:
         self.project_table = project_table
         # TODO: The following line probably is hacky because I can't figure out the SQLAlchemy API
         # with its terrible docs
-        self.project_key = inspect(self.project_table).name if project_table != Projects else 'Projects'
+        self.project_key = inspect(
+            self.project_table).name if project_table != Projects else 'Projects'
 
     @property
     def project(self) -> Projects:

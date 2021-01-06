@@ -5,8 +5,7 @@ from neo4japp.models import (
     AppUser,
     AppRole,
     Projects,
-    projects_collaborator_role,
-    Directory
+    projects_collaborator_role
 )
 
 
