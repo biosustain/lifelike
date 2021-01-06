@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
 
-import { Domain, EntityType, FTSQueryRecord, FTSResult } from 'app/interfaces';
+import { FTSQueryRecord, FTSResult } from 'app/interfaces';
 import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
@@ -24,12 +24,13 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   readonly loadTask: BackgroundTask<GraphSearchParameters, FTSResult> = new BackgroundTask(params => {
-    return this.searchService.visualizerSearchTemp(
+    return this.searchService.visualizerSearch(
       params.query,
       params.organism,
       params.page,
       params.limit,
-      this.createFilterQuery(params.domains, params.entityTypes),
+      params.domains,
+      params.entities,
     );
   });
 
@@ -70,8 +71,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
       Object.keys(legend).forEach(label => {
         // Keys of the result dict are all lowercase, need to change the first character
         // to uppercase to match Neo4j labels
-        const formattedLabel = label.slice(0, 1).toUpperCase() + label.slice(1);
-        this.legend.set(formattedLabel, legend[label].color);
+        this.legend.set(label, legend[label].color);
       });
     });
 
@@ -116,19 +116,5 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
       ...this.params,
       page,
     });
-  }
-
-  private createFilterQuery(domains?: Domain[], entityTypes?: EntityType[]): string {
-    const conditions: string[] = [];
-
-    if (domains && domains.length) {
-      domains.map(value => conditions.push(value.name));
-    }
-
-    if (entityTypes && entityTypes.length) {
-      entityTypes.map(value => conditions.push(value.name));
-    }
-
-    return conditions.join(', ');
   }
 }

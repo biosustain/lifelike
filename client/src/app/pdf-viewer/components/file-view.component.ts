@@ -1,8 +1,18 @@
-import { uniqueId } from 'lodash';
 import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+
+import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { uniqueId } from 'lodash';
+
 import { BehaviorSubject, combineLatest, of, Subject, Subscription } from 'rxjs';
 
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
   AddedAnnotationExclusion,
   Annotation,
@@ -10,20 +20,12 @@ import {
   Meta,
   RemovedAnnotationExclusion,
 } from '../annotation-type';
-
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { PdfViewerLibComponent } from '../pdf-viewer-lib.component';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
-import { ActivatedRoute } from '@angular/router';
-import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
-import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
+import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { PdfViewerLibComponent } from '../pdf-viewer-lib.component';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mergeMap } from 'rxjs/operators';

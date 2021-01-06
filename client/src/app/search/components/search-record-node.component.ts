@@ -15,6 +15,7 @@ export class SearchRecordNodeComponent {
 
   private currentNode: FTSQueryRecord;
   nodeURL: string;
+  normalizedNodeLabel: string;
 
   @Input() params: GraphSearchParameters;
 
@@ -23,6 +24,7 @@ export class SearchRecordNodeComponent {
   @Input()
   set node(value: FTSQueryRecord) {
     this.currentNode = value;
+    this.normalizedNodeLabel = value.node.label.toLowerCase();
     this.nodeURL = stringToHex(value.node.id.toString());
   }
 
