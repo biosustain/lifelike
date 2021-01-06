@@ -3,1393 +3,1467 @@
         {
             "id": "35",
             "label": "THF-GLU-N",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "61",
             "label": "D-glucopyranose-6-phosphate",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "74",
             "label": "RIBOSE-5P",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "76",
             "label": "1-4-alpha-D-Glucan",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "84",
             "label": "Ubiquinols",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "86",
             "label": "Ubiquinones",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "90",
             "label": "D-GLUCOSAMINE-6-P",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "235",
             "label": "PYRUVFORMLY-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "330",
             "label": "RXN66-526",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "336",
             "label": "RXN0-7352",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "384",
             "label": "GLYCOGENSYN-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "387",
             "label": "3-CH3-2-OXOBUTANOATE-OH-CH3-XFER-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "388",
             "label": "GLUTATHIONE-SYN-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "423",
             "label": "MALTODEXGLUCOSID-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "456",
             "label": "RXN0-313",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "471",
             "label": "RXN-17745",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "574",
             "label": "PANTOTHENATE-KIN-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "652",
             "label": "RXN0-6256",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "828",
             "label": "GLYOHMETRANS-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "839",
             "label": "RXN-21080",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "995",
             "label": "L-GLN-FRUCT-6-P-AMINOTRANS-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1150",
             "label": "RXN-11496",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1163",
             "label": "GLUTCYSLIG-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1232",
             "label": "GART-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1245",
             "label": "M004",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "1262",
             "label": "EG10562",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "1379",
             "label": "EG10528",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "1402",
             "label": "RXN0-1382",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1405",
             "label": "RXN0-1741",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1426",
             "label": "PEPDEPHOS-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1431",
             "label": "RXN0-7347",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1463",
             "label": "6PFRUCTPHOS-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1493",
             "label": "RXN0-6373",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1494",
             "label": "TRANS-RXN-76",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1519",
             "label": "2PGADEHYDRAT-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1616",
             "label": "RXN0-5268",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1673",
             "label": "RXN0-5260",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1680",
             "label": "ASPDECARBOX-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1698",
             "label": "TRANS-RXN-157",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "1834",
             "label": "PD00353",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "1942",
             "label": "GLUTCYSLIG-MONOMER",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "1945",
             "label": "PKI-MONOMER",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "2003",
             "label": "2.7.3.9-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2125",
             "label": "AMYLOMALT-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2204",
             "label": "TRANS-RXN-62B",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2297",
             "label": "RXN0-7169",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2313",
             "label": "Hpr-pi-phospho-L-histidines",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "2399",
             "label": "P-PANTOCYSLIG-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2437",
             "label": "PYRUVDEH-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2554",
             "label": "RXN0-6372",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2604",
             "label": "PEPSYNTH-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2633",
             "label": "RIBULP3EPIM-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2655",
             "label": "2TRANSKETO-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2674",
             "label": "RXN0-6566",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2704",
             "label": "RXN0-7166",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2709",
             "label": "PEPCARBOX-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2747",
             "label": "TRYPTOPHAN-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2750",
             "label": "GLUCOKIN-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2757",
             "label": "GLUC1PADENYLTRANS-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2771",
             "label": "GLYRIBONUCSYN-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2806",
             "label": "PANTOATE-BETA-ALANINE-LIG-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2809",
             "label": "BETAGALACTOSID-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2827",
             "label": "PHOSPHOGLUCMUT-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2834",
             "label": "DNA-DIRECTED-RNA-POLYMERASE-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2858",
             "label": "3.1.27.5-RXN",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "2961",
             "label": "REG0-13204",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "3057",
             "label": "GLY",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "3159",
             "label": "PYRUVATE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "3205",
             "label": "TRP",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "3214",
             "label": "CMP",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "3261",
             "label": "ACETYL-COA",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "3284",
             "label": "PANTOTHENATE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "3299",
             "label": "CYCA-MONOMER",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "3301",
             "label": "ALKAPHOSPHA-CPLX",
+            "databaseLabel": "Protein",
             "font": {
                 "color": "#bcbd22"
             },
@@ -1409,44 +1483,47 @@
         {
             "id": "3339",
             "label": "PHOSPHO-ENOL-PYRUVATE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "3343",
             "label": "DIHYDROXYACETONE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "3461",
             "label": "MONOMER0-158",
+            "databaseLabel": "Protein",
             "font": {
                 "color": "#bcbd22"
             },
@@ -1466,6 +1543,7 @@
         {
             "id": "3752",
             "label": "ENOLASE-CPLX",
+            "databaseLabel": "Protein",
             "font": {
                 "color": "#bcbd22"
             },
@@ -1485,6 +1563,7 @@
         {
             "id": "3786",
             "label": "PKI-COMPLEX",
+            "databaseLabel": "Protein",
             "font": {
                 "color": "#bcbd22"
             },
@@ -1504,63 +1583,67 @@
         {
             "id": "3824",
             "label": "EG12504",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "3874",
             "label": "ADP-D-GLUCOSE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "3875",
             "label": "EG10804",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "4138",
             "label": "CPLX0-1142",
+            "databaseLabel": "Protein",
             "font": {
                 "color": "#bcbd22"
             },
@@ -1580,253 +1663,267 @@
         {
             "id": "4290",
             "label": "ASPDECARBOX-MONOMER",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "4349",
             "label": "REG0-8196",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "4375",
             "label": "REG0-7973",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "4492",
             "label": "REG0-11446",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "4630",
             "label": "REG0-10661",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "4634",
             "label": "REG0-8342",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "4639",
             "label": "REG0-7277",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "4757",
             "label": "B-ALANINE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "4762",
             "label": "MALTOTRIOSE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "4792",
             "label": "FRUCTOSE-6P",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "4814",
             "label": "XYLULOSE-5-PHOSPHATE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "4819",
             "label": "GAP",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "4827",
             "label": "2-MERCAPTOETHANOL",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "4911",
-            "label": "RNA polymerase",
+            "label": "APORNAP-CPLX",
+            "databaseLabel": "Protein",
             "font": {
                 "color": "#bcbd22"
             },
@@ -1846,63 +1943,67 @@
         {
             "id": "4922",
             "label": "EG10528-MONOMER",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "4956",
-            "label": "&beta;-D-fructose 1",
+            "label": "FRUCTOSE-16-DIPHOSPHATE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "4995",
             "label": "ALKAPHOSPHA-MONOMER",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "5080",
             "label": "CPLX0-7655",
+            "databaseLabel": "Protein",
             "font": {
                 "color": "#bcbd22"
             },
@@ -1922,25 +2023,27 @@
         {
             "id": "5183",
             "label": "4-P-PANTOTHENATE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "5184",
             "label": "CPLX0-2901",
+            "databaseLabel": "Protein",
             "font": {
                 "color": "#bcbd22"
             },
@@ -1960,918 +2063,967 @@
         {
             "id": "5189",
             "label": "5-PHOSPHO-RIBOSYL-GLYCINEAMIDE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "5191",
             "label": "GMP",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "5323",
             "label": "G7237-MONOMER",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "5331",
             "label": "RPOB-MONOMER",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "5350",
             "label": "PTSH-PHOSPHORYLATED",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "5955",
             "label": "GLUTATHIONE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "6117",
             "label": "L-GAMMA-GLUTAMYLCYSTEINE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "6146",
             "label": "EG10084",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "6180",
             "label": "REG0-8401",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "6808",
             "label": "FORMATE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "6825",
-            "label": "D-glucono-1",
+            "label": "GLC-D-LACTONE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "6911",
             "label": "MONOMER0-1842",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "6948",
             "label": "TRANS-ENZRXN-56B",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "6976",
             "label": "GLUCOKIN-ENZRXN",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "7028",
             "label": "PHOSPHOGLUCMUT-ENZRXN",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "7260",
             "label": "REG0-11973",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "7739",
             "label": "EG10547",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "7829",
             "label": "GCVB-RNA",
+            "databaseLabel": "RNA",
             "font": {
-                "color": "#000000"
+                "color": "#5c98d1"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#5c98d1",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#5c98d1"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#5c98d1"
                 }
             }
         },
         {
             "id": "8041",
             "label": "ENZRXN0-6216",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "8049",
             "label": "GLUC1PADENYLTRANS-ENZRXN",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "8150",
             "label": "BETAGALACTOSID-ENZRXN",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "8160",
             "label": "ENZRXN0-6416",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "8380",
             "label": "RXN-21817",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "8685",
             "label": "REG0-12560",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "8687",
             "label": "GLYRIBONUCSYN-ENZRXN",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "8940",
             "label": "TRANS-ENZRXN-62B",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "9160",
             "label": "ENZRXN0-8089",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "9259",
             "label": "3-METHYL-2-OXOBUT-OHCH3XFER-ENZRXN",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "9277",
             "label": "GLUTCYSLIG-ENZRXN",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "9436",
             "label": "ENZRXN0-4281",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "9608",
             "label": "REG0-6159",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "9709",
             "label": "2PGADEHYDRAT-ENZRXN",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "10029",
             "label": "REG0-8914",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "10484",
             "label": "EG10418",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "10515",
             "label": "REG0-15526",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "10670",
             "label": "EG11747",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "11105",
             "label": "RIBULP3EPIM-ENZRXN",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "11153",
             "label": "PEPDEPHOSII-ENZRXN",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "11194",
             "label": "REG0-7410",
+            "databaseLabel": "Regulation",
             "font": {
-                "color": "#000000"
+                "color": "#bf5858"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bf5858",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bf5858"
                 }
             }
         },
         {
             "id": "11219",
             "label": "PEPDEPHOSI-ENZRXN",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "11292",
             "label": "ENZRXN0-1702",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "12100",
             "label": "ENZRXN0-6501",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "12138",
             "label": "PEPCARBOX-ENZRXN",
+            "databaseLabel": "EnzReaction",
             "font": {
-                "color": "#000000"
+                "color": "#b32b7f"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#b32b7f",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#b32b7f"
                 }
             }
         },
         {
             "id": "14469",
             "label": "PM0-5642",
+            "databaseLabel": "Promoter",
             "font": {
-                "color": "#000000"
+                "color": "#5bc9ca"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#5bc9ca",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#5bc9ca"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#5bc9ca"
                 }
             }
         },
         {
             "id": "14540",
             "label": "EG10727",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "14566",
             "label": "EG10258",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "14647",
             "label": "Glucopyranose",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "14693",
             "label": "MALTOSE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "14731",
             "label": "RNA-Holder",
+            "databaseLabel": "Unknown",
             "font": {
                 "color": "#000000"
             },
@@ -2891,25 +3043,27 @@
         {
             "id": "14836",
             "label": "RXN-17330",
+            "databaseLabel": "Reaction",
             "font": {
-                "color": "#000000"
+                "color": "#ebb434"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#ebb434",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#ebb434"
                 }
             }
         },
         {
             "id": "14924",
             "label": "5Prime-OH-Terminated-RNAs",
+            "databaseLabel": "Unknown",
             "font": {
                 "color": "#000000"
             },
@@ -2929,171 +3083,180 @@
         {
             "id": "14938",
             "label": "G7237",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "14939",
             "label": "EG10894",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "15013",
             "label": "Hpr-Histidine",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "15025",
             "label": "G0-8867",
+            "databaseLabel": "Gene",
             "font": {
-                "color": "#000000"
+                "color": "#673ab7"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#673ab7",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#673ab7"
                 }
             }
         },
         {
             "id": "15097",
             "label": "AROP-MONOMER",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "15114",
             "label": "ENOLASE-MONOMER",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "15122",
             "label": "RIBULP3EPIM-MONOMER",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         },
         {
             "id": "15166",
             "label": "GLUCOSAMINE",
+            "databaseLabel": "Compound",
             "font": {
-                "color": "#000000"
+                "color": "#4caf50"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#4caf50",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#4caf50"
                 }
             }
         },
         {
             "id": "15187",
             "label": "PD00237",
+            "databaseLabel": "Protein",
             "font": {
-                "color": "#000000"
+                "color": "#bcbd22"
             },
             "color": {
                 "background": "#FFFFFF",
-                "border": "#000000",
+                "border": "#bcbd22",
                 "hover": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 },
                 "highlight": {
                     "background": "#FFFFFF",
-                    "border": "#000000"
+                    "border": "#bcbd22"
                 }
             }
         }
