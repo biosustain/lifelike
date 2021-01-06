@@ -9,6 +9,8 @@ TYPE_PATHWAY = 'Pathway'
 TYPE_PROTEIN = 'Protein'
 TYPE_ENZREACTION = 'EnzReaction'
 TYPE_REACTION = 'Reaction'
+TYPE_REGULATION = 'Regulation'
+TYPE_RNA = 'RNA'
 TYPE_CHEMICAL = 'Chemical'
 TYPE_COMPOUND = 'Compound'
 TYPE_BIOLOGICAL_PROCESS = 'BiologicalProcess'
@@ -77,6 +79,8 @@ DISPLAY_NAME_MAP = {
     TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client  # noqa
     TYPE_ENZREACTION: 'name',
     TYPE_REACTION: 'name',
+    TYPE_REGULATION: 'displayName',
+    TYPE_RNA: 'displayName',
     TYPE_SNIPPET: 'sentence',  # NOTE: Same here
     TYPE_TAXONOMY: 'name',
     TYPE_TRANSCRIPTION_FACTOR: 'name',
@@ -180,7 +184,7 @@ ANNOTATION_STYLES_DICT = {
     },
     'enzreaction': {
         'label': 'enzreaction',
-        'color': '#3b2bb3'
+        'color': '#b32b7f'
     },
     'geneproduct': {
         'label': 'geneproduct',
@@ -193,6 +197,14 @@ ANNOTATION_STYLES_DICT = {
     'promoter': {
         'label': 'promoter',
         'color': '#5bc9ca'
+    },
+    'regulation': {
+        'label': 'regulation',
+        'color': '#bf5858'
+    },
+    'rna': {
+        'label': 'rna',
+        'color': '#5c98d1'
     },
     'transcriptionfactor': {
         'label': 'transcriptionfactor',
