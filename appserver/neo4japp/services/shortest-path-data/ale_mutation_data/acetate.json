@@ -1,0 +1,4186 @@
+{
+    "nodes": [
+        {
+            "id": 90350688,
+            "label": "CRP",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90356833,
+            "label": "rplJL-rpoBC",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90351201,
+            "label": "GcvA",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90353766,
+            "label": "mutY-yggX-mltC-nupG",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90356837,
+            "label": "rplNXE-rpsNH-rplFR-rpsE-rpmD-rplO-secY-rpmJ",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90287979,
+            "label": "ybcK",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90372467,
+            "label": "yobF-cspC",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90360179,
+            "label": "rirA-waaQGPSBOJYZU",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90360182,
+            "label": "waaQGPSBOJYZU",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90353786,
+            "label": "mutY-yggX",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90286716,
+            "label": "yobF-cspC",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90286718,
+            "label": "proQ-prc",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90351229,
+            "label": "DeoR",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90084990,
+            "label": "rng",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90072186,
+            "label": "secY",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90352197,
+            "label": "Fur",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90073203,
+            "label": "rpoC",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90069870,
+            "label": "icd",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90257232,
+            "label": "cysteine/<i>O</i>-acetylserine exporter EamA",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90109804,
+            "label": "ptsP",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90073197,
+            "label": "rpoB",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90138731,
+            "label": "ybcK",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90293844,
+            "label": "rphp1",
+            "databaseLabel": "Promoter",
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 90357076,
+            "label": "icd",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90353748,
+            "label": "mutY-yggX-mltC-nupG",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90350687,
+            "label": "FNR",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90356831,
+            "label": "rph-pyrE",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90351199,
+            "label": "CytR",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90369826,
+            "label": "rlmA",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90310691,
+            "label": "yiaYp7",
+            "databaseLabel": "Promoter",
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 90258976,
+            "label": "putative lipid binding hydrolase",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90356771,
+            "label": "nlpD-rpoS",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90369831,
+            "label": "yobF-cspC",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90070043,
+            "label": "rpoS",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90351652,
+            "label": "NsrR",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90091801,
+            "label": "eamA",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90137366,
+            "label": "mhpT",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90260781,
+            "label": "stress protein, member of the CspA family",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90246700,
+            "label": "adenine DNA glycosylase",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90260783,
+            "label": "23S rRNA m<sup>1</sup>G745 methyltransferase",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90286895,
+            "label": "rhsE-ydcD",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90311468,
+            "label": "yihVp3",
+            "databaseLabel": "Promoter",
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 90369837,
+            "label": "proQ-prc",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90099471,
+            "label": "yiiX",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90253371,
+            "label": "RNA polymerase subunit &beta;'",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90253370,
+            "label": "RNA polymerase subunit &beta;",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90255930,
+            "label": "RNase G",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90175295,
+            "label": "yobF",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90253312,
+            "label": "truncated RNase PH",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90265091,
+            "label": "3-hydroxyphenylpropionate/3-hydroxycinnamate:H<sup>+</sup> symporter",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90372358,
+            "label": "rph",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90265861,
+            "label": "DLP12 prophage; putative recombinase",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90083131,
+            "label": "yicC",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90085947,
+            "label": "waaO",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90351108,
+            "label": "UxuR",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90351371,
+            "label": "Cra",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 60645110,
+            "label": "rhsE",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90310671,
+            "label": "yiaYp4",
+            "databaseLabel": "Promoter",
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 90279692,
+            "label": "rhoL-rho",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90279695,
+            "label": "rplKAJL-rpoBC",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90365458,
+            "label": "ybcK",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90288400,
+            "label": "mhpT",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90252304,
+            "label": "Sec translocon subunit SecY",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90260752,
+            "label": "phosphoenolpyruvate-protein phosphotransferase PtsP",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90280467,
+            "label": "eamA",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90281237,
+            "label": "yjgN",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90277396,
+            "label": "gcvTHP",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90290452,
+            "label": "rppH-ptsP",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90216726,
+            "label": "RhsE protein in rhs element",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90310683,
+            "label": "yiaYp6",
+            "databaseLabel": "Promoter",
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 90351129,
+            "label": "UidR",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90351903,
+            "label": "MqsA",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90306079,
+            "label": "cspCp8",
+            "databaseLabel": "Promoter",
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 90261217,
+            "label": "putrescine ABC exporter ATP binding protein SapD",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90357216,
+            "label": "nlpD-rpoS",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90071005,
+            "label": "mutY",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90359782,
+            "label": "rplKAJL-rpoBC",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90350826,
+            "label": "MarA",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90357230,
+            "label": "rpoS",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90369263,
+            "label": "rhsE-ydcD",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90203117,
+            "label": "yjgN",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90277877,
+            "label": "mutY-yggX-mltC-nupG",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90354423,
+            "label": "rpoBC",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90080454,
+            "label": "uidA",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90087110,
+            "label": "gcvT",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90350843,
+            "label": "GadX",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90371064,
+            "label": "yicC",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90276604,
+            "label": "rph-pyrE",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90276607,
+            "label": "rplNXE-rpsNH-rplFR-rpsE-rpmD-rplO-secY-rpmJ",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90136318,
+            "label": "sapA",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90283458,
+            "label": "yicC",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90264770,
+            "label": "putative periplasmic binding protein SapA",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90136311,
+            "label": "sapB",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90245832,
+            "label": "RNA polymerase, sigma S (sigma 38) factor",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90356169,
+            "label": "gcvTHP",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90370511,
+            "label": "rppH-ptsP",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90072816,
+            "label": "rho",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90350797,
+            "label": "Lrp",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90255312,
+            "label": "UPF0701 family protein YicC",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90109932,
+            "label": "rlmA",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90277335,
+            "label": "nlpD-rpoS",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90281433,
+            "label": "uidABC",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90128103,
+            "label": "sapD",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90299609,
+            "label": "yicCp",
+            "databaseLabel": "Promoter",
+            "font": {
+                "color": "#5bc9ca"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#5bc9ca",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#5bc9ca"
+                }
+            }
+        },
+        {
+            "id": 90368219,
+            "label": "sapABCDF",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90109924,
+            "label": "cspC",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90256092,
+            "label": "UDP-D-glucose:(glucosyl)LPS &alpha;-1,3-glucosyltransferase",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90279331,
+            "label": "icd",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90269607,
+            "label": "DUF2527 domain-containing protein YobF",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90359717,
+            "label": "rhoL-rho",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90351279,
+            "label": "PurR",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90372271,
+            "label": "rpoS",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90353836,
+            "label": "mutY-yggX",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90256304,
+            "label": "aminomethyltransferase",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90350771,
+            "label": "ArcA",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90253747,
+            "label": "&beta;-glucuronidase",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90236850,
+            "label": "isocitrate dehydrogenase",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90355376,
+            "label": "icd",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90290871,
+            "label": "rlmA",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90372277,
+            "label": "rpoS",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90072967,
+            "label": "rph",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90372283,
+            "label": "rpoS",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90372280,
+            "label": "rpoS",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90363070,
+            "label": "yjgN",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90353852,
+            "label": "mutY-yggX-mltC",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90264766,
+            "label": "putrescine ABC exporter membrane subunit SapB",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90253246,
+            "label": "transcription termination factor Rho",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90282626,
+            "label": "yiiX",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90350726,
+            "label": "SoxS",
+            "databaseLabel": "TranscriptionFactor",
+            "font": {
+                "color": "#ea3cf7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#ea3cf7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#ea3cf7"
+                }
+            }
+        },
+        {
+            "id": 90273156,
+            "label": "conserved inner membrane protein YjgN",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90353797,
+            "label": "mutY-yggX-mltC",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90353546,
+            "label": "uidABC",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90372234,
+            "label": "pykF",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90365321,
+            "label": "mhpT",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90252938,
+            "label": "pyruvate kinase I",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90262925,
+            "label": "RNA chaperone ProQ",
+            "databaseLabel": "GeneProduct",
+            "font": {
+                "color": "#eb333d"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#eb333d",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#eb333d"
+                }
+            }
+        },
+        {
+            "id": 90363278,
+            "label": "eamA",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90281614,
+            "label": "sapABCDF",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90372237,
+            "label": "pykF",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90291344,
+            "label": "rirA-waaQGPSBOJYZU",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        },
+        {
+            "id": 90129837,
+            "label": "proQ",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90072486,
+            "label": "pykF",
+            "databaseLabel": "Gene",
+            "font": {
+                "color": "#673ab7"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#673ab7",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#673ab7"
+                }
+            }
+        },
+        {
+            "id": 90372507,
+            "label": "pykF",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90358424,
+            "label": "pykF",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90371225,
+            "label": "yiiX",
+            "databaseLabel": "TranscriptionUnit",
+            "font": {
+                "color": "#cccdfb"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#cccdfb",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#cccdfb"
+                }
+            }
+        },
+        {
+            "id": 90276255,
+            "label": "pykF",
+            "databaseLabel": "Operon",
+            "font": {
+                "color": "#439641"
+            },
+            "color": {
+                "background": "#FFFFFF",
+                "border": "#439641",
+                "hover": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                },
+                "highlight": {
+                    "background": "#FFFFFF",
+                    "border": "#439641"
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": 177521044,
+            "label": "REGULATES",
+            "from": 90277877,
+            "to": 90350688,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177517461,
+            "label": "ENCODES",
+            "from": 90137366,
+            "to": 90265091,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177514391,
+            "label": "ELEMENT_OF",
+            "from": 90372277,
+            "to": 90277335,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177513873,
+            "label": "ELEMENT_OF",
+            "from": 90371064,
+            "to": 90283458,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177515167,
+            "label": "ENCODES",
+            "from": 90069870,
+            "to": 90236850,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177531800,
+            "label": "ELEMENT_OF",
+            "from": 90137366,
+            "to": 90365321,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177511298,
+            "label": "ELEMENT_OF",
+            "from": 90353748,
+            "to": 90277877,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177511564,
+            "label": "ELEMENT_OF",
+            "from": 90356169,
+            "to": 90277396,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177523855,
+            "label": "REGULATES",
+            "from": 90279331,
+            "to": 90351371,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177513352,
+            "label": "ELEMENT_OF",
+            "from": 90369826,
+            "to": 90290871,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177509514,
+            "label": "ELEMENT_OF",
+            "from": 90293844,
+            "to": 90356831,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177513355,
+            "label": "ELEMENT_OF",
+            "from": 90369837,
+            "to": 90286718,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177532341,
+            "label": "ELEMENT_OF",
+            "from": 60645110,
+            "to": 90369263,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177512631,
+            "label": "ELEMENT_OF",
+            "from": 90363278,
+            "to": 90280467,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177515441,
+            "label": "ENCODES",
+            "from": 90072186,
+            "to": 90252304,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177515955,
+            "label": "ENCODES",
+            "from": 90084990,
+            "to": 90255930,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177530291,
+            "label": "ELEMENT_OF",
+            "from": 90072486,
+            "to": 90358424,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177515187,
+            "label": "ENCODES",
+            "from": 90070043,
+            "to": 90245832,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177530808,
+            "label": "ELEMENT_OF",
+            "from": 90073197,
+            "to": 90359782,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177530809,
+            "label": "ELEMENT_OF",
+            "from": 90073203,
+            "to": 90359782,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177524391,
+            "label": "REGULATES",
+            "from": 90288400,
+            "to": 90351652,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177513644,
+            "label": "ELEMENT_OF",
+            "from": 90370511,
+            "to": 90290452,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177512879,
+            "label": "ELEMENT_OF",
+            "from": 90365321,
+            "to": 90288400,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177530799,
+            "label": "ELEMENT_OF",
+            "from": 90072816,
+            "to": 90359717,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177521064,
+            "label": "REGULATES",
+            "from": 90281433,
+            "to": 90350688,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177533355,
+            "label": "ELEMENT_OF",
+            "from": 90083131,
+            "to": 90371064,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177515479,
+            "label": "ENCODES",
+            "from": 90072486,
+            "to": 90252938,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177516759,
+            "label": "ENCODES",
+            "from": 90109804,
+            "to": 90260752,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177515728,
+            "label": "ENCODES",
+            "from": 90080454,
+            "to": 90253747,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177522385,
+            "label": "REGULATES",
+            "from": 90277335,
+            "to": 90350843,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177512157,
+            "label": "ELEMENT_OF",
+            "from": 90359717,
+            "to": 90279692,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177513949,
+            "label": "ELEMENT_OF",
+            "from": 90371225,
+            "to": 90282626,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177511901,
+            "label": "ELEMENT_OF",
+            "from": 90358424,
+            "to": 90276255,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177529821,
+            "label": "ELEMENT_OF",
+            "from": 90070043,
+            "to": 90356771,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177534424,
+            "label": "ELEMENT_OF",
+            "from": 90175295,
+            "to": 90372467,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177524696,
+            "label": "REGULATES",
+            "from": 90277335,
+            "to": 90351903,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177534425,
+            "label": "ELEMENT_OF",
+            "from": 90109924,
+            "to": 90372467,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177510596,
+            "label": "ELEMENT_OF",
+            "from": 90299609,
+            "to": 90371064,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177529281,
+            "label": "ELEMENT_OF",
+            "from": 90069870,
+            "to": 90355376,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177513153,
+            "label": "ELEMENT_OF",
+            "from": 90368219,
+            "to": 90281614,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177514691,
+            "label": "ENCODES",
+            "from": 60645110,
+            "to": 90216726,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177523917,
+            "label": "REGULATES",
+            "from": 90276255,
+            "to": 90351371,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177516495,
+            "label": "ENCODES",
+            "from": 90099471,
+            "to": 90258976,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177510900,
+            "label": "ELEMENT_OF",
+            "from": 90293844,
+            "to": 90372358,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177530871,
+            "label": "ELEMENT_OF",
+            "from": 90085947,
+            "to": 90360179,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177534463,
+            "label": "ELEMENT_OF",
+            "from": 90072486,
+            "to": 90372507,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177531897,
+            "label": "ELEMENT_OF",
+            "from": 90138731,
+            "to": 90365458,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177530105,
+            "label": "ELEMENT_OF",
+            "from": 90070043,
+            "to": 90357216,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177528826,
+            "label": "ELEMENT_OF",
+            "from": 90080454,
+            "to": 90353546,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177530107,
+            "label": "ELEMENT_OF",
+            "from": 90070043,
+            "to": 90357230,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177516004,
+            "label": "ENCODES",
+            "from": 90085947,
+            "to": 90256092,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177530085,
+            "label": "ELEMENT_OF",
+            "from": 90069870,
+            "to": 90357076,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177514470,
+            "label": "ELEMENT_OF",
+            "from": 90372467,
+            "to": 90286716,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177517542,
+            "label": "ENCODES",
+            "from": 90138731,
+            "to": 90265861,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177516774,
+            "label": "ENCODES",
+            "from": 90109924,
+            "to": 90260781,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177529056,
+            "label": "ELEMENT_OF",
+            "from": 90073203,
+            "to": 90354423,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177529057,
+            "label": "ELEMENT_OF",
+            "from": 90073197,
+            "to": 90354423,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177516268,
+            "label": "ENCODES",
+            "from": 90091801,
+            "to": 90257232,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177522158,
+            "label": "REGULATES",
+            "from": 90277396,
+            "to": 90350797,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177512942,
+            "label": "ELEMENT_OF",
+            "from": 90365458,
+            "to": 90287979,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177516776,
+            "label": "ENCODES",
+            "from": 90109932,
+            "to": 90260783,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177525480,
+            "label": "REGULATES",
+            "from": 90277335,
+            "to": 90352197,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177512212,
+            "label": "ELEMENT_OF",
+            "from": 90360179,
+            "to": 90291344,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177515538,
+            "label": "ENCODES",
+            "from": 90072967,
+            "to": 90253312,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177521438,
+            "label": "REGULATES",
+            "from": 90291344,
+            "to": 90350726,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177534232,
+            "label": "ELEMENT_OF",
+            "from": 90072486,
+            "to": 90372234,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177523737,
+            "label": "REGULATES",
+            "from": 90277396,
+            "to": 90351279,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177534233,
+            "label": "ELEMENT_OF",
+            "from": 90072486,
+            "to": 90372237,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177513216,
+            "label": "ELEMENT_OF",
+            "from": 90369263,
+            "to": 90286895,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177531392,
+            "label": "ELEMENT_OF",
+            "from": 90203117,
+            "to": 90363070,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177515520,
+            "label": "ENCODES",
+            "from": 90072816,
+            "to": 90253246,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177517324,
+            "label": "ENCODES",
+            "from": 90136311,
+            "to": 90264766,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177523468,
+            "label": "REGULATES",
+            "from": 90277877,
+            "to": 90351199,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177517325,
+            "label": "ENCODES",
+            "from": 90136318,
+            "to": 90264770,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177530888,
+            "label": "ELEMENT_OF",
+            "from": 90085947,
+            "to": 90360182,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177520180,
+            "label": "REGULATES",
+            "from": 90277396,
+            "to": 90350687,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177528885,
+            "label": "ELEMENT_OF",
+            "from": 90071005,
+            "to": 90353748,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177534256,
+            "label": "ELEMENT_OF",
+            "from": 90070043,
+            "to": 90372277,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177515569,
+            "label": "ENCODES",
+            "from": 90073197,
+            "to": 90253370,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177534257,
+            "label": "ELEMENT_OF",
+            "from": 90070043,
+            "to": 90372280,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177515570,
+            "label": "ENCODES",
+            "from": 90073203,
+            "to": 90253371,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177534258,
+            "label": "ELEMENT_OF",
+            "from": 90070043,
+            "to": 90372283,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177528892,
+            "label": "ELEMENT_OF",
+            "from": 90071005,
+            "to": 90353766,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177520957,
+            "label": "REGULATES",
+            "from": 90277396,
+            "to": 90350688,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177516089,
+            "label": "ENCODES",
+            "from": 90087110,
+            "to": 90256304,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177529892,
+            "label": "ELEMENT_OF",
+            "from": 90073203,
+            "to": 90356833,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177523238,
+            "label": "REGULATES",
+            "from": 90281433,
+            "to": 90351129,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177523232,
+            "label": "REGULATES",
+            "from": 90281433,
+            "to": 90351108,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177529889,
+            "label": "ELEMENT_OF",
+            "from": 90072967,
+            "to": 90356831,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177521954,
+            "label": "REGULATES",
+            "from": 90279331,
+            "to": 90350771,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177529891,
+            "label": "ELEMENT_OF",
+            "from": 90073197,
+            "to": 90356833,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177523491,
+            "label": "REGULATES",
+            "from": 90277396,
+            "to": 90351201,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177517091,
+            "label": "ENCODES",
+            "from": 90129837,
+            "to": 90262925,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177534255,
+            "label": "ELEMENT_OF",
+            "from": 90070043,
+            "to": 90372271,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177511720,
+            "label": "ELEMENT_OF",
+            "from": 90356831,
+            "to": 90276604,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177515304,
+            "label": "ENCODES",
+            "from": 90071005,
+            "to": 90246700,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177511721,
+            "label": "ELEMENT_OF",
+            "from": 90356833,
+            "to": 90279695,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177533481,
+            "label": "ELEMENT_OF",
+            "from": 90099471,
+            "to": 90371225,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177529898,
+            "label": "ELEMENT_OF",
+            "from": 90072186,
+            "to": 90356837,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177511723,
+            "label": "ELEMENT_OF",
+            "from": 90356837,
+            "to": 90276607,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177515857,
+            "label": "ENCODES",
+            "from": 90083131,
+            "to": 90255312,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177528913,
+            "label": "ELEMENT_OF",
+            "from": 90071005,
+            "to": 90353836,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177528914,
+            "label": "ELEMENT_OF",
+            "from": 90071005,
+            "to": 90353852,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177522014,
+            "label": "REGULATES",
+            "from": 90277335,
+            "to": 90350771,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177523551,
+            "label": "REGULATES",
+            "from": 90277877,
+            "to": 90351229,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177532228,
+            "label": "ELEMENT_OF",
+            "from": 90128103,
+            "to": 90368219,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177528900,
+            "label": "ELEMENT_OF",
+            "from": 90071005,
+            "to": 90353797,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177532230,
+            "label": "ELEMENT_OF",
+            "from": 90136311,
+            "to": 90368219,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177532231,
+            "label": "ELEMENT_OF",
+            "from": 90136318,
+            "to": 90368219,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177516865,
+            "label": "ENCODES",
+            "from": 90128103,
+            "to": 90261217,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177528897,
+            "label": "ELEMENT_OF",
+            "from": 90071005,
+            "to": 90353786,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177529422,
+            "label": "ELEMENT_OF",
+            "from": 90087110,
+            "to": 90356169,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177531471,
+            "label": "ELEMENT_OF",
+            "from": 90091801,
+            "to": 90363278,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177533003,
+            "label": "ELEMENT_OF",
+            "from": 90109804,
+            "to": 90370511,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177534324,
+            "label": "ELEMENT_OF",
+            "from": 90072967,
+            "to": 90372358,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177518967,
+            "label": "ENCODES",
+            "from": 90203117,
+            "to": 90273156,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177532528,
+            "label": "ELEMENT_OF",
+            "from": 90175295,
+            "to": 90369831,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177532529,
+            "label": "ELEMENT_OF",
+            "from": 90109924,
+            "to": 90369831,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177532531,
+            "label": "ELEMENT_OF",
+            "from": 90129837,
+            "to": 90369837,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177511804,
+            "label": "ELEMENT_OF",
+            "from": 90357076,
+            "to": 90279331,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177518206,
+            "label": "ENCODES",
+            "from": 90175295,
+            "to": 90269607,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177520992,
+            "label": "REGULATES",
+            "from": 90277335,
+            "to": 90350688,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177522275,
+            "label": "REGULATES",
+            "from": 90291344,
+            "to": 90350826,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177511276,
+            "label": "ELEMENT_OF",
+            "from": 90353546,
+            "to": 90281433,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177532527,
+            "label": "ELEMENT_OF",
+            "from": 90109932,
+            "to": 90369826,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        },
+        {
+            "id": 177512553,
+            "label": "ELEMENT_OF",
+            "from": 90363070,
+            "to": 90281237,
+            "color": {
+                "color": "#3797DB"
+            },
+            "arrows": "to"
+        }
+    ]
+}
