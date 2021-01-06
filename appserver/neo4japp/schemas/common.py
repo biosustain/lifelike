@@ -23,7 +23,7 @@ class RankedItemSchema(CamelCaseSchema):
     rank = fields.Number()
 
 
-class SingleResult(CamelCaseSchema):
+class SingleResultSchema(CamelCaseSchema):
     pass
 
 
@@ -36,5 +36,5 @@ class ResultListSchema(CamelCaseSchema):
     query = fields.Nested(ResultQuerySchema)
 
 
-class ResultMapping(CamelCaseSchema):
+class ResultMappingSchema(CamelCaseSchema):
     missing = fields.List(fields.String)
