@@ -185,7 +185,7 @@
   </div>
 
   <div class="d-none d-cbp-lg-block module-body-split-sidebar">
-    <app-object-info [object]="objects.lastSelection" [forEditing]="forEditing"
+    <app-object-info [object]="objects.lastSelection" [forEditing]="forEditing" [showDelete]="true"
                      (objectOpen)="this.objectOpen.next($event)"
                      (refreshRequest)="this.refreshRequest.next($event)"
                      *ngIf="objects != null && objects.selection.length"></app-object-info>
