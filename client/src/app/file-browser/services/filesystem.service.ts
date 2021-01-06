@@ -136,7 +136,7 @@ export class FilesystemService {
     ).pipe(
       map(data => {
         const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
-        for (const [itemHashId, itemData] of Object.entries(data.results)) {
+        for (const [itemHashId, itemData] of Object.entries(data.mapping)) {
           if (!(itemHashId in ret)) {
             ret[itemHashId] = new FilesystemObject();
           }
@@ -164,7 +164,7 @@ export class FilesystemService {
     ).pipe(
       map(data => {
         const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
-        for (const [itemHashId, itemData] of Object.entries(data.results)) {
+        for (const [itemHashId, itemData] of Object.entries(data.mapping)) {
           if (!(itemHashId in ret)) {
             ret[itemHashId] = new FilesystemObject();
           }
