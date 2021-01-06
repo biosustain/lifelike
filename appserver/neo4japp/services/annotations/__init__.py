@@ -8,4 +8,3 @@ from .entity_recognition import EntityRecognitionService
 from .lmdb import LMDB
 from .lmdb_service import LMDBService
 from .manual_annotation_service import ManualAnnotationService
-from .util import normalize_str
