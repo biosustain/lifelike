@@ -16,7 +16,8 @@ from neo4japp.services.annotations.constants import (
     COMPOUNDS_BIOCYC_LMDB,
     DISEASES_MESH_LMDB,
     GENES_NCBI_LMDB,
-    PHENOTYPES_MESH_LMDB,
+    PHENOMENAS_MESH_LMDB,
+    PHENOTYPES_CUSTOM_LMDB,
     PROTEINS_UNIPROT_LMDB,
     CHEMICALS_PUBCHEM_LMDB,
     SPECIES_NCBI_LMDB,
@@ -31,6 +32,7 @@ from neo4japp.services.annotations.lmdb_util import (
     create_ner_type_disease,
     create_ner_type_food,
     create_ner_type_gene,
+    create_ner_type_phenomena,
     create_ner_type_phenotype,
     create_ner_type_protein,
     create_ner_type_species,
@@ -281,11 +283,45 @@ def prepare_lmdb_diseases_database(filename: str):
                     continue
 
 
-def prepare_lmdb_phenotypes_database(filename: str, custom: bool = False):
+def prepare_lmdb_phenomenas_database(filename: str):
+    with open(path.join(directory, filename), 'r') as f:
+        map_size = 1099511627776
+        env = lmdb.open(path.join(directory, 'lmdb/phenomenas'), map_size=map_size, max_dbs=2)
+        db = env.open_db(PHENOMENAS_MESH_LMDB.encode('utf-8'), dupsort=True)
+
+        with env.begin(db=db, write=True) as transaction:
+            reader = csv.reader(f, delimiter='\t', quotechar='"')
+            # skip headers
+            # mesh_id,name,synonym
+            headers = next(reader)
+            for line in reader:
+                phenomena_id = line[0]
+                phenomena_name = line[1]
+                synonym = line[2]
+
+                phenomena = create_ner_type_phenomena(
+                    id_=phenomena_id,
+                    name=phenomena_name,
+                    synonym=synonym
+                )
+
+                try:
+                    transaction.put(
+                        normalize_str(synonym).encode('utf-8'),
+                        json.dumps(phenomena).encode('utf-8'),
+                    )
+                except lmdb.BadValsizeError:
+                    # ignore any keys that are too large
+                    # LMDB has max key size 512 bytes
+                    # can change but larger keys mean performance issues
+                    continue
+
+
+def prepare_lmdb_phenotypes_database(filename: str):
     with open(path.join(directory, filename), 'r') as f:
         map_size = 1099511627776
         env = lmdb.open(path.join(directory, 'lmdb/phenotypes'), map_size=map_size, max_dbs=2)
-        db = env.open_db(PHENOTYPES_MESH_LMDB.encode('utf-8'), dupsort=True)
+        db = env.open_db(PHENOTYPES_CUSTOM_LMDB.encode('utf-8'), dupsort=True)
 
         with env.begin(db=db, write=True) as transaction:
             reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -300,8 +336,7 @@ def prepare_lmdb_phenotypes_database(filename: str, custom: bool = False):
                 phenotype = create_ner_type_phenotype(
                     id_=phenotype_id,
                     name=phenotype_name,
-                    synonym=synonym,
-                    custom=custom,
+                    synonym=synonym
                 )
 
                 try:
@@ -423,10 +458,11 @@ if __name__ == '__main__':
     # food
     prepare_lmdb_foods_database(filename='datasets/food.tsv')
 
+    # phenomena
+    prepare_lmdb_phenomenas_database(filename='datasets/phenomena.tsv')
+
     # phenotype
     prepare_lmdb_phenotypes_database(filename='datasets/phenotype.tsv')
-    prepare_lmdb_phenotypes_database(
-        filename='datasets/microbial_phenotype.tsv', custom=True)
 
     # protein
     prepare_lmdb_proteins_database(filename='datasets/proteins.tsv')
