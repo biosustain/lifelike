@@ -43,6 +43,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     public: new FormControl(false),
     annotationMethod: new FormControl(this.annotationMethodChoices[1], [Validators.required]),
     organism: new FormControl(null),
+    mimeType: new FormControl(null),
   }, (group: FormGroup): ValidationErrors | null => {
     if (this.promptUpload) {
       const contentValueControl = group.get('contentValue');
@@ -97,6 +98,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       filename: value.filename || '',
       description: value.description || '',
       public: value.public || false,
+      mimeType: value.mimeType,
     });
     if (!value.parent) {
       this.promptParent = true;
@@ -138,6 +140,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       filename: value.filename,
       description: value.description,
       public: value.public,
+      mimeType: value.mimeType,
     };
 
     const request: ObjectCreateRequest = {
