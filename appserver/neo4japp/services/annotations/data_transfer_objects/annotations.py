@@ -174,6 +174,7 @@ class EntityResults():
     matched_type_disease: Dict[str, LMDBMatch] = attr.ib()
     matched_type_food: Dict[str, LMDBMatch] = attr.ib()
     matched_type_gene: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_phenomena: Dict[str, LMDBMatch] = attr.ib()
     matched_type_phenotype: Dict[str, LMDBMatch] = attr.ib()
     matched_type_protein: Dict[str, LMDBMatch] = attr.ib()
     matched_type_species: Dict[str, LMDBMatch] = attr.ib()
