@@ -165,7 +165,7 @@
                 <i class="fas fa-cog fa-fw"></i>
               </button>
               <div ngbDropdownMenu>
-                <app-object-menu [object]="object" [forEditing]="forEditing"
+                <app-object-menu [object]="object" [forEditing]="forEditing" [showDelete]="true"
                                  (objectOpen)="this.objectOpen.next($event)"
                                  (refreshRequest)="this.refreshRequest.next($event)">
                 </app-object-menu>
