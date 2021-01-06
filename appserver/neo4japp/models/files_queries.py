@@ -203,7 +203,7 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
     t_parent_files = aliased(files_table)
 
     # Main query
-    query = db.session.query(files_table,
+    query = db.session.query(files_table,  # Warning: Do not change this order, but you can add
                              q_hierarchy.c.initial_id,
                              q_hierarchy.c.level,
                              projects_table) \

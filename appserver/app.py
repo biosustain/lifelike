@@ -221,8 +221,6 @@ def seed_organism_gene_match_table():
 def seed_elasticsearch():
     """Seeds Elastic with all pipelines and indices. Typically should be used when a new Elastic DB
     is first created, but will also update/re-index the entire database if run later."""
-    return
-    # TODO
     elastic_service = get_elastic_service()
     elastic_service.recreate_indices_and_pipelines()
 
