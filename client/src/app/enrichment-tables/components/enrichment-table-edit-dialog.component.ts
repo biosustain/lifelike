@@ -3,7 +3,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormControl, FormGroup, Validators, FormArray } from '@angular/forms';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { Directory } from '../services/project-space.service';
+import { Directory } from '../../file-browser/services/project-space.service';
 import { OrganismAutocomplete } from 'app/interfaces/neo4j.interface';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';

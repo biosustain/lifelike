@@ -25,7 +25,7 @@ import { BrowserComponent } from './file-browser/components/browser/browser.comp
 // import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
 // import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
-import { EnrichmentTableViewerComponent } from './file-browser/components/enrichment-table-viewer.component';
+import { EnrichmentTableViewerComponent } from './enrichment-tables/components/enrichment-table-viewer.component';
 import { ObjectNavigatorComponent } from './file-navigator/components/object-navigator.component';
 import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
 
