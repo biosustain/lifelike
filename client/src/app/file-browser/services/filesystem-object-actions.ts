@@ -13,7 +13,12 @@ import { filter, finalize, map, mergeMap, tap } from 'rxjs/operators';
 import { HttpEventType } from '@angular/common/http';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
-import { DIRECTORY_MIMETYPE, FilesystemObject, MAP_MIMETYPE } from '../models/filesystem-object';
+import {
+  DIRECTORY_MIMETYPE,
+  ENRICHMENT_TABLE_MIMETYPE,
+  FilesystemObject,
+  MAP_MIMETYPE,
+} from '../models/filesystem-object';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ObjectSelectionDialogComponent } from '../components/dialog/object-selection-dialog.component';
@@ -253,26 +258,22 @@ export class FilesystemObjectActions {
         contentValue: new Blob([JSON.stringify({
           edges: [],
           nodes: [],
-        })], {
-          type: MAP_MIMETYPE,
-        }),
+        })]),
       },
       ...(options.createDialog || {}),
     });
   }
 
-  openEnrichmentTableCreateDialog(parent: FilesystemObject): Promise<any> {
-    const dialogRef = this.modalService.open(EnrichmentTableCreateDialogComponent);
-    return dialogRef.result.then((result) => {
-      const progressDialogRef = this.createProgressDialog('Creating map...');
-
-      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
-      return this.filesService.addGeneList(parent.locator.projectName, parent.directory.id, enrichmentData, result.description, result.name)
-        .pipe(
-          this.errorHandler.create(),
-          finalize(() => progressDialogRef.close()),
-        )
-        .toPromise();
+  openEnrichmentTableCreateDialog(parent?: FilesystemObject): Promise<any> {
+    const object = new FilesystemObject();
+    object.filename = 'Untitled Enrichment Table';
+    object.mimeType = ENRICHMENT_TABLE_MIMETYPE;
+    object.parent = parent;
+    return this.openCreateDialog(object, {
+      title: 'New Enrichment Table',
+      request: {
+        contentValue: new Blob([JSON.stringify({})]),
+      },
     });
   }
 
