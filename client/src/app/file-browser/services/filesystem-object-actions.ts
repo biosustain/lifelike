@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { EnrichmentTableCreateDialogComponent } from '../components/enrichment-table-create-dialog.component';
+import { EnrichmentTableCreateDialogComponent } from '../../enrichment-tables/components/enrichment-table-create-dialog.component';
 import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,7 +29,7 @@ import { AnnotationGenerationRequest, ObjectCreateRequest } from '../schema';
 import { clone } from 'lodash';
 import { ObjectVersionHistoryDialogComponent } from '../components/dialog/object-version-history-dialog.component';
 import { ObjectVersion } from '../models/object-version';
-import { EnrichmentTableEditDialogComponent } from '../components/enrichment-table-edit-dialog.component';
+import { EnrichmentTableEditDialogComponent } from '../../enrichment-tables/components/enrichment-table-edit-dialog.component';
 import {
   ObjectExportDialogComponent,
   ObjectExportDialogValue,
