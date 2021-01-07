@@ -2,6 +2,8 @@ import { Component, Input } from '@angular/core';
 
 import { DataSet } from 'vis-network';
 
+import { isNullOrUndefined } from 'util';
+
 import { Neo4jGraphConfig } from 'app/interfaces';
 
 import { GraphData } from '../containers/shortest-path.component';
@@ -27,6 +29,9 @@ export class RouteDisplayComponent {
 
     // Update sankey data
     this.generateSankeyData(graphData.nodes, graphData.edges);
+
+    // Update legend
+    this.setupLegend(graphData.nodes);
   }
 
   currentDisplay: string;
@@ -37,9 +42,12 @@ export class RouteDisplayComponent {
   sankeyConfig: any;
   sankeyData: any;
 
+  legend: Map<string, string[]>;
+
   constructor() {
     this.initVisJsSettings();
     this.initPlotlySankeySettings();
+    this.legend = new Map<string, string[]>();
   }
 
   initVisJsSettings() {
@@ -165,4 +173,20 @@ export class RouteDisplayComponent {
       }
     };
   }
+
+  /**
+   * Given a list of input nodes, generates a Map object representing a node legend. Keys are the label of the nodes, and values are a list
+   * of colors representing the border and background of the node.
+   * @param nodes list of node objects
+   */
+  setupLegend(nodes: any) {
+    nodes.forEach((node) => {
+      if (!isNullOrUndefined(node.databaseLabel)) {
+        if (!this.legend.has(node.databaseLabel)) {
+          this.legend.set(node.databaseLabel, [node.color.border, node.color.background]);
+        }
+      }
+    });
+  }
+
 }

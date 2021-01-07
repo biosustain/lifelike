@@ -39,11 +39,11 @@ export class VisJsNetworkComponent implements AfterViewInit {
   }
   @Input() set data(data: any) {
     this.networkData = data;
-    this.setupLegend(this.networkData.nodes);
     if (!isNullOrUndefined(this.networkGraph)) {
       this.setNetworkData();
     }
   }
+  @Input() legend: Map<string, string[]>;
 
   SCALE_MODIFIER = 0.11;
 
@@ -59,10 +59,6 @@ export class VisJsNetworkComponent implements AfterViewInit {
   solverMap: Map<string, string>;
 
   cursorStyle: string;
-
-  legend: Map<string, string[]>;
-
-  // TODO: Need to have a legend! This will also mean that the backend data will need to be changed to include labels...
 
   constructor() {
     this.networkContainerId = uuidv4();
@@ -88,22 +84,6 @@ export class VisJsNetworkComponent implements AfterViewInit {
     // Disabling this for now, as it seems to require additional configuration that we cannot assume will be present.
     // this.solverMap.set(networkSolvers.HIERARCHICHAL_REPULSION, 'Hierarchical Repulsion');
     this.solverMap.set(networkSolvers.REPULSION, 'Repulsion');
-  }
-
-
-  /**
-   * Given a list of input nodes, generates a Map object representing a node legend. Keys are the label of the nodes, and values are a list
-   * of colors representing the border and background of the node.
-   * @param nodes list of node objects
-   */
-  setupLegend(nodes: any) {
-    nodes.forEach((node) => {
-      if (!isNullOrUndefined(node.databaseLabel)) {
-        if (!this.legend.has(node.databaseLabel)) {
-          this.legend.set(node.databaseLabel, [node.color.border, node.color.background]);
-        }
-      }
-    });
   }
 
   setNetworkData() {

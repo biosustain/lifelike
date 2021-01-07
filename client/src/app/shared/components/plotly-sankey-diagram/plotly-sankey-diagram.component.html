@@ -1,4 +1,9 @@
-<div *ngIf="!stabilized" class="h-100 w-100 d-flex justify-content-center align-items-center">
+<div *ngIf="!stabilized; else stable" class="h-100 w-100 d-flex justify-content-center align-items-center">
   <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
 </div>
+<ng-template #stable>
+  <div>
+    <app-legend [legend]="legend"></app-legend>
+  </div>
+</ng-template>
 <div [id]="sankeyContainerId" class="h-100 w-100" [ngStyle]="{'display': stabilized ? 'block' : 'hidden'}"></div>
