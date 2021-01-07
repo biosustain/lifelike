@@ -36,6 +36,7 @@ describe('SidenavNodeViewComponent', () => {
                 id: 1,
                 label: 'Mock Node',
                 subLabels: ['MockNode'],
+                domainLabels: [],
                 expanded: false,
                 primaryLabel: 'MockNode',
                 color: null,
