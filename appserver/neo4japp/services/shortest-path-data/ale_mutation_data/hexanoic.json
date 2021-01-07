@@ -4,6 +4,7 @@
             "id": 90361442,
             "label": "barA",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -24,6 +25,7 @@
             "id": 90234977,
             "label": "DNA-binding transcriptional repressor GlpR",
             "databaseLabel": "GeneProduct",
+            "value": 7,
             "font": {
                 "color": "#eb333d"
             },
@@ -44,6 +46,7 @@
             "id": 90350688,
             "label": "CRP",
             "databaseLabel": "TranscriptionFactor",
+            "value": 38,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -64,6 +67,7 @@
             "id": 90356833,
             "label": "rplJL-rpoBC",
             "databaseLabel": "TranscriptionUnit",
+            "value": 4,
             "font": {
                 "color": "#cccdfb"
             },
@@ -84,6 +88,7 @@
             "id": 90365537,
             "label": "rsfS-rlmH-mrdAB-rlpA",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -104,6 +109,7 @@
             "id": 90370406,
             "label": "abpAB",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -124,6 +130,7 @@
             "id": 90372455,
             "label": "flhDC",
             "databaseLabel": "TranscriptionUnit",
+            "value": 7,
             "font": {
                 "color": "#cccdfb"
             },
@@ -144,6 +151,7 @@
             "id": 90351973,
             "label": "HypT",
             "databaseLabel": "TranscriptionFactor",
+            "value": 3,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -164,6 +172,7 @@
             "id": 90350954,
             "label": "EnvY",
             "databaseLabel": "TranscriptionFactor",
+            "value": 8,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -184,6 +193,7 @@
             "id": 90350959,
             "label": "SdiA",
             "databaseLabel": "TranscriptionFactor",
+            "value": 1,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -204,6 +214,7 @@
             "id": 90372211,
             "label": "ybbY-glxK",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -224,6 +235,7 @@
             "id": 90351223,
             "label": "BirA",
             "databaseLabel": "TranscriptionFactor",
+            "value": 1,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -244,6 +256,7 @@
             "id": 90274680,
             "label": "InsAB' transposase",
             "databaseLabel": "GeneProduct",
+            "value": 7,
             "font": {
                 "color": "#eb333d"
             },
@@ -264,6 +277,7 @@
             "id": 90071364,
             "label": "ompR",
             "databaseLabel": "Gene",
+            "value": 2,
             "font": {
                 "color": "#673ab7"
             },
@@ -284,6 +298,7 @@
             "id": 90356857,
             "label": "rpsMKD-rpoA-rplQ",
             "databaseLabel": "TranscriptionUnit",
+            "value": 11,
             "font": {
                 "color": "#cccdfb"
             },
@@ -304,6 +319,7 @@
             "id": 90350718,
             "label": "H-NS",
             "databaseLabel": "TranscriptionFactor",
+            "value": 25,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -324,6 +340,7 @@
             "id": 90371966,
             "label": "ftsLI-murEF-mraY-murD-ftsW-murGC-ddlB-ftsQAZ-lpxC",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -344,6 +361,7 @@
             "id": 90371964,
             "label": "rsmH-ftsLI-murEF-mraY-murD-ftsW-murGC-ddlB-ftsQAZ-lpxC",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -364,6 +382,7 @@
             "id": 90354301,
             "label": "ptrA",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -384,6 +403,7 @@
             "id": 90286718,
             "label": "proQ-prc",
             "databaseLabel": "Operon",
+            "value": 2,
             "font": {
                 "color": "#439641"
             },
@@ -404,6 +424,7 @@
             "id": 90185280,
             "label": "abpA",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -424,6 +445,7 @@
             "id": 90292289,
             "label": "ompCp1",
             "databaseLabel": "Promoter",
+            "value": 2,
             "font": {
                 "color": "#5bc9ca"
             },
@@ -444,6 +466,7 @@
             "id": 90069626,
             "label": "hns",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -464,6 +487,7 @@
             "id": 90350663,
             "label": "CpxR",
             "databaseLabel": "TranscriptionFactor",
+            "value": 8,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -484,6 +508,7 @@
             "id": 90275399,
             "label": "ompC",
             "databaseLabel": "Operon",
+            "value": 8,
             "font": {
                 "color": "#439641"
             },
@@ -504,6 +529,7 @@
             "id": 90352197,
             "label": "Fur",
             "databaseLabel": "TranscriptionFactor",
+            "value": 21,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -524,6 +550,7 @@
             "id": 90276425,
             "label": "glpEGR",
             "databaseLabel": "Operon",
+            "value": 7,
             "font": {
                 "color": "#439641"
             },
@@ -544,6 +571,7 @@
             "id": 90369870,
             "label": "insA-5AB-5B-5",
             "databaseLabel": "TranscriptionUnit",
+            "value": 28,
             "font": {
                 "color": "#cccdfb"
             },
@@ -564,6 +592,7 @@
             "id": 90176627,
             "label": "rhmD",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -584,6 +613,7 @@
             "id": 90073203,
             "label": "rpoC",
             "databaseLabel": "Gene",
+            "value": 3,
             "font": {
                 "color": "#673ab7"
             },
@@ -604,6 +634,7 @@
             "id": 90354509,
             "label": "mraZ-rsmH-ftsLI-murEF-mraY-murD-ftsW-murGC-ddlB-ftsQAZ-lpxC",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -624,6 +655,7 @@
             "id": 90128752,
             "label": "mdtK",
             "databaseLabel": "Gene",
+            "value": 4,
             "font": {
                 "color": "#673ab7"
             },
@@ -644,6 +676,7 @@
             "id": 90130032,
             "label": "emrY",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -664,6 +697,7 @@
             "id": 90073197,
             "label": "rpoB",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -684,6 +718,7 @@
             "id": 90294871,
             "label": "cydAp2",
             "databaseLabel": "Promoter",
+            "value": 1,
             "font": {
                 "color": "#5bc9ca"
             },
@@ -704,6 +739,7 @@
             "id": 90350933,
             "label": "EvgA",
             "databaseLabel": "TranscriptionFactor",
+            "value": 1,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -724,6 +760,7 @@
             "id": 90073191,
             "label": "rpoA",
             "databaseLabel": "Gene",
+            "value": 11,
             "font": {
                 "color": "#673ab7"
             },
@@ -744,6 +781,7 @@
             "id": 90350687,
             "label": "FNR",
             "databaseLabel": "TranscriptionFactor",
+            "value": 4,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -764,6 +802,7 @@
             "id": 90169698,
             "label": "dosP",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -784,6 +823,7 @@
             "id": 90262560,
             "label": "galactitol-specific PTS enzyme IIC component",
             "databaseLabel": "GeneProduct",
+            "value": 7,
             "font": {
                 "color": "#eb333d"
             },
@@ -804,6 +844,7 @@
             "id": 90175517,
             "label": "insA-5",
             "databaseLabel": "Gene",
+            "value": 7,
             "font": {
                 "color": "#673ab7"
             },
@@ -824,6 +865,7 @@
             "id": 90357536,
             "label": "ompC",
             "databaseLabel": "TranscriptionUnit",
+            "value": 4,
             "font": {
                 "color": "#cccdfb"
             },
@@ -844,6 +886,7 @@
             "id": 90072349,
             "label": "ptrA",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -864,6 +907,7 @@
             "id": 90274596,
             "label": "OppA5'",
             "databaseLabel": "GeneProduct",
+            "value": 3,
             "font": {
                 "color": "#eb333d"
             },
@@ -884,6 +928,7 @@
             "id": 90351143,
             "label": "PdhR",
             "databaseLabel": "TranscriptionFactor",
+            "value": 1,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -904,6 +949,7 @@
             "id": 90175512,
             "label": "insB-5",
             "databaseLabel": "Gene",
+            "value": 7,
             "font": {
                 "color": "#673ab7"
             },
@@ -924,6 +970,7 @@
             "id": 90081305,
             "label": "crl",
             "databaseLabel": "Gene",
+            "value": 7,
             "font": {
                 "color": "#673ab7"
             },
@@ -944,6 +991,7 @@
             "id": 90252838,
             "label": "protease 3",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -964,6 +1012,7 @@
             "id": 90279974,
             "label": "dsrA",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -984,6 +1033,7 @@
             "id": 90351146,
             "label": "HdfR",
             "databaseLabel": "TranscriptionFactor",
+            "value": 21,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -1004,6 +1054,7 @@
             "id": 90352171,
             "label": "IHF",
             "databaseLabel": "TranscriptionFactor",
+            "value": 31,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -1024,6 +1075,7 @@
             "id": 90361641,
             "label": "dosCP",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -1044,6 +1096,7 @@
             "id": 90351406,
             "label": "LeuO",
             "databaseLabel": "TranscriptionFactor",
+            "value": 1,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -1064,6 +1117,7 @@
             "id": 90255662,
             "label": "ribosomal silencing factor RsfS",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -1084,6 +1138,7 @@
             "id": 90369837,
             "label": "proQ-prc",
             "databaseLabel": "TranscriptionUnit",
+            "value": 2,
             "font": {
                 "color": "#cccdfb"
             },
@@ -1104,6 +1159,7 @@
             "id": 90258993,
             "label": "osmoregulated periplasmic glucans (OPGs) biosynthesis protein H",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -1124,6 +1180,7 @@
             "id": 90363441,
             "label": "dsrA",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -1144,6 +1201,7 @@
             "id": 90253366,
             "label": "RNA polymerase subunit &alpha;",
             "databaseLabel": "GeneProduct",
+            "value": 11,
             "font": {
                 "color": "#eb333d"
             },
@@ -1164,6 +1222,7 @@
             "id": 90370101,
             "label": "yfaX-rhmD",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -1184,6 +1243,7 @@
             "id": 90350645,
             "label": "Fis",
             "databaseLabel": "TranscriptionFactor",
+            "value": 1,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -1204,6 +1264,7 @@
             "id": 90295097,
             "label": "bioAp",
             "databaseLabel": "Promoter",
+            "value": 1,
             "font": {
                 "color": "#5bc9ca"
             },
@@ -1224,6 +1285,7 @@
             "id": 90351162,
             "label": "QseB",
             "databaseLabel": "TranscriptionFactor",
+            "value": 21,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -1244,6 +1306,7 @@
             "id": 90253371,
             "label": "RNA polymerase subunit &beta;'",
             "databaseLabel": "GeneProduct",
+            "value": 3,
             "font": {
                 "color": "#eb333d"
             },
@@ -1264,6 +1327,7 @@
             "id": 90253370,
             "label": "RNA polymerase subunit &beta;",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -1284,6 +1348,7 @@
             "id": 90359552,
             "label": "prpBCDE",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -1304,6 +1369,7 @@
             "id": 90299141,
             "label": "insA-5p",
             "databaseLabel": "Promoter",
+            "value": 7,
             "font": {
                 "color": "#5bc9ca"
             },
@@ -1324,6 +1390,7 @@
             "id": 90356742,
             "label": "opgGH",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -1344,6 +1411,7 @@
             "id": 90071355,
             "label": "ompC",
             "databaseLabel": "Gene",
+            "value": 2,
             "font": {
                 "color": "#673ab7"
             },
@@ -1364,6 +1432,7 @@
             "id": 90351371,
             "label": "Cra",
             "databaseLabel": "TranscriptionFactor",
+            "value": 5,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -1384,6 +1453,7 @@
             "id": 90279695,
             "label": "rplKAJL-rpoBC",
             "databaseLabel": "Operon",
+            "value": 4,
             "font": {
                 "color": "#439641"
             },
@@ -1404,6 +1474,7 @@
             "id": 90294543,
             "label": "ompCp3",
             "databaseLabel": "Promoter",
+            "value": 2,
             "font": {
                 "color": "#5bc9ca"
             },
@@ -1424,6 +1495,7 @@
             "id": 90256142,
             "label": "sensory histidine kinase BarA",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -1444,6 +1516,7 @@
             "id": 90352914,
             "label": "cydAB",
             "databaseLabel": "TranscriptionUnit",
+            "value": 2,
             "font": {
                 "color": "#cccdfb"
             },
@@ -1464,6 +1537,7 @@
             "id": 90277905,
             "label": "flhDC",
             "databaseLabel": "Operon",
+            "value": 21,
             "font": {
                 "color": "#439641"
             },
@@ -1484,6 +1558,7 @@
             "id": 90084655,
             "label": "rsfS",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -1504,6 +1579,7 @@
             "id": 90294544,
             "label": "ompCp2",
             "databaseLabel": "Promoter",
+            "value": 2,
             "font": {
                 "color": "#5bc9ca"
             },
@@ -1524,6 +1600,7 @@
             "id": 90351633,
             "label": "AcrR",
             "databaseLabel": "TranscriptionFactor",
+            "value": 21,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -1544,6 +1621,7 @@
             "id": 90099498,
             "label": "opgH",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -1564,6 +1642,7 @@
             "id": 90275097,
             "label": "cydAB",
             "databaseLabel": "Operon",
+            "value": 3,
             "font": {
                 "color": "#439641"
             },
@@ -1584,6 +1663,7 @@
             "id": 90277915,
             "label": "hns",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -1604,6 +1684,7 @@
             "id": 90357529,
             "label": "ompC",
             "databaseLabel": "TranscriptionUnit",
+            "value": 4,
             "font": {
                 "color": "#cccdfb"
             },
@@ -1624,6 +1705,7 @@
             "id": 90246685,
             "label": "N-acetylglucosaminyl transferase",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -1644,6 +1726,7 @@
             "id": 90351390,
             "label": "GatR",
             "databaseLabel": "TranscriptionFactor",
+            "value": 7,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -1664,6 +1747,7 @@
             "id": 90276638,
             "label": "rpsMKD-rpoA-rplQ",
             "databaseLabel": "Operon",
+            "value": 11,
             "font": {
                 "color": "#439641"
             },
@@ -1684,6 +1768,7 @@
             "id": 90279649,
             "label": "emrKY",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -1704,6 +1789,7 @@
             "id": 90281697,
             "label": "ptrA-recBD",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -1724,6 +1810,7 @@
             "id": 90291170,
             "label": "abpAB",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -1744,6 +1831,7 @@
             "id": 90269922,
             "label": "DsrA",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -1764,6 +1852,7 @@
             "id": 90359782,
             "label": "rplKAJL-rpoBC",
             "databaseLabel": "TranscriptionUnit",
+            "value": 4,
             "font": {
                 "color": "#cccdfb"
             },
@@ -1784,6 +1873,7 @@
             "id": 90128858,
             "label": "gatC",
             "databaseLabel": "Gene",
+            "value": 7,
             "font": {
                 "color": "#673ab7"
             },
@@ -1804,6 +1894,7 @@
             "id": 90290919,
             "label": "rsfS-rlmH-mrdAB-rlpA",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -1824,6 +1915,7 @@
             "id": 90354661,
             "label": "bioA",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -1844,6 +1936,7 @@
             "id": 90290662,
             "label": "mraZ-rsmH-ftsLI-murEF-mraY-murD-ftsW-murGC-ddlB-ftsQAZ-lpxC",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -1864,6 +1957,7 @@
             "id": 90352101,
             "label": "MraZ",
             "databaseLabel": "TranscriptionFactor",
+            "value": 1,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -1884,6 +1978,7 @@
             "id": 90351597,
             "label": "AllR",
             "databaseLabel": "TranscriptionFactor",
+            "value": 1,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -1904,6 +1999,7 @@
             "id": 90249198,
             "label": "outer membrane porin C",
             "databaseLabel": "GeneProduct",
+            "value": 2,
             "font": {
                 "color": "#eb333d"
             },
@@ -1924,6 +2020,7 @@
             "id": 90175692,
             "label": "dsrA",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -1944,6 +2041,7 @@
             "id": 90354423,
             "label": "rpoBC",
             "databaseLabel": "TranscriptionUnit",
+            "value": 4,
             "font": {
                 "color": "#cccdfb"
             },
@@ -1964,6 +2062,7 @@
             "id": 90070985,
             "label": "murG",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -1984,6 +2083,7 @@
             "id": 90356469,
             "label": "ompR-envZ",
             "databaseLabel": "TranscriptionUnit",
+            "value": 2,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2004,6 +2104,7 @@
             "id": 90350843,
             "label": "GadX",
             "databaseLabel": "TranscriptionFactor",
+            "value": 1,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -2024,6 +2125,7 @@
             "id": 90351355,
             "label": "CspA",
             "databaseLabel": "TranscriptionFactor",
+            "value": 1,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -2044,6 +2146,7 @@
             "id": 90372350,
             "label": "yfaX-rhmD-yfaVU",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2064,6 +2167,7 @@
             "id": 90249212,
             "label": "DNA-binding transcriptional dual regulator OmpR",
             "databaseLabel": "GeneProduct",
+            "value": 2,
             "font": {
                 "color": "#eb333d"
             },
@@ -2084,6 +2188,7 @@
             "id": 90352124,
             "label": "YjjQ",
             "databaseLabel": "TranscriptionFactor",
+            "value": 29,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -2104,6 +2209,7 @@
             "id": 90265087,
             "label": "propionyl-CoA synthetase",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -2124,6 +2230,7 @@
             "id": 90277630,
             "label": "bioA",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -2144,6 +2251,7 @@
             "id": 90236608,
             "label": "DNA-binding transcriptional dual regulator H-NS",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -2164,6 +2272,7 @@
             "id": 90137342,
             "label": "prpE",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -2184,6 +2293,7 @@
             "id": 90136318,
             "label": "sapA",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -2204,6 +2314,7 @@
             "id": 90212034,
             "label": "oppA5'",
             "databaseLabel": "Gene",
+            "value": 3,
             "font": {
                 "color": "#673ab7"
             },
@@ -2224,6 +2335,7 @@
             "id": 90280131,
             "label": "mdtK",
             "databaseLabel": "Operon",
+            "value": 4,
             "font": {
                 "color": "#439641"
             },
@@ -2244,6 +2356,7 @@
             "id": 90264770,
             "label": "putative periplasmic binding protein SapA",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -2264,6 +2377,7 @@
             "id": 90359233,
             "label": "glpR",
             "databaseLabel": "TranscriptionUnit",
+            "value": 7,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2284,6 +2398,7 @@
             "id": 90372293,
             "label": "rpsMKD-rpoA-rplQ",
             "databaseLabel": "TranscriptionUnit",
+            "value": 11,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2304,6 +2419,7 @@
             "id": 90136311,
             "label": "sapB",
             "databaseLabel": "Gene",
+            "value": 3,
             "font": {
                 "color": "#673ab7"
             },
@@ -2324,6 +2440,7 @@
             "id": 90351562,
             "label": "PrpR",
             "databaseLabel": "TranscriptionFactor",
+            "value": 1,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -2344,6 +2461,7 @@
             "id": 90358474,
             "label": "ompR-envZ",
             "databaseLabel": "TranscriptionUnit",
+            "value": 2,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2364,6 +2482,7 @@
             "id": 90370507,
             "label": "ptrA-recBD",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2384,6 +2503,7 @@
             "id": 90276296,
             "label": "ompR-envZ",
             "databaseLabel": "Operon",
+            "value": 2,
             "font": {
                 "color": "#439641"
             },
@@ -2404,6 +2524,7 @@
             "id": 90355657,
             "label": "flhDC",
             "databaseLabel": "TranscriptionUnit",
+            "value": 14,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2424,6 +2545,7 @@
             "id": 90262988,
             "label": "multidrug efflux pump membrane subunit EmrY",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -2444,6 +2566,7 @@
             "id": 90279375,
             "label": "gatYZABCD",
             "databaseLabel": "Operon",
+            "value": 7,
             "font": {
                 "color": "#439641"
             },
@@ -2464,6 +2587,7 @@
             "id": 90350797,
             "label": "Lrp",
             "databaseLabel": "TranscriptionFactor",
+            "value": 8,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -2484,6 +2608,7 @@
             "id": 90355666,
             "label": "hns",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2504,6 +2629,7 @@
             "id": 90261973,
             "label": "multidrug efflux pump MdtK",
             "databaseLabel": "GeneProduct",
+            "value": 4,
             "font": {
                 "color": "#eb333d"
             },
@@ -2524,6 +2650,7 @@
             "id": 90279637,
             "label": "barA",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -2544,6 +2671,7 @@
             "id": 90358487,
             "label": "ompR-envZ",
             "databaseLabel": "TranscriptionUnit",
+            "value": 2,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2564,6 +2692,7 @@
             "id": 90372052,
             "label": "glxK",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2584,6 +2713,7 @@
             "id": 90274775,
             "label": "IS1 transposase B",
             "databaseLabel": "GeneProduct",
+            "value": 7,
             "font": {
                 "color": "#eb333d"
             },
@@ -2604,6 +2734,7 @@
             "id": 90359508,
             "label": "emrKY",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2624,6 +2755,7 @@
             "id": 90290646,
             "label": "dosCP",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -2644,6 +2776,7 @@
             "id": 90368219,
             "label": "sapABCDF",
             "databaseLabel": "TranscriptionUnit",
+            "value": 4,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2664,6 +2797,7 @@
             "id": 90274781,
             "label": "IS5 transposase and trans-activator",
             "databaseLabel": "GeneProduct",
+            "value": 3,
             "font": {
                 "color": "#eb333d"
             },
@@ -2684,6 +2818,7 @@
             "id": 90358494,
             "label": "ompR-envZ",
             "databaseLabel": "TranscriptionUnit",
+            "value": 2,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2704,6 +2839,7 @@
             "id": 90274780,
             "label": "IS1 repressor TnpA",
             "databaseLabel": "GeneProduct",
+            "value": 7,
             "font": {
                 "color": "#eb333d"
             },
@@ -2724,6 +2860,7 @@
             "id": 90270881,
             "label": "L-rhamnonate dehydratase",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -2744,6 +2881,7 @@
             "id": 90350752,
             "label": "RcsB",
             "databaseLabel": "TranscriptionFactor",
+            "value": 1,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -2764,6 +2902,7 @@
             "id": 90274722,
             "label": "IS1 protein InsA",
             "databaseLabel": "GeneProduct",
+            "value": 7,
             "font": {
                 "color": "#eb333d"
             },
@@ -2784,6 +2923,7 @@
             "id": 90265253,
             "label": "glycerate 2-kinase 2",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -2804,6 +2944,7 @@
             "id": 90359205,
             "label": "cydAB",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2824,6 +2965,7 @@
             "id": 90215083,
             "label": "insB9",
             "databaseLabel": "Gene",
+            "value": 7,
             "font": {
                 "color": "#673ab7"
             },
@@ -2844,6 +2986,7 @@
             "id": 90215084,
             "label": "insA9",
             "databaseLabel": "Gene",
+            "value": 7,
             "font": {
                 "color": "#673ab7"
             },
@@ -2864,6 +3007,7 @@
             "id": 90350767,
             "label": "LrhA",
             "databaseLabel": "TranscriptionFactor",
+            "value": 21,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -2884,6 +3028,7 @@
             "id": 90350771,
             "label": "ArcA",
             "databaseLabel": "TranscriptionFactor",
+            "value": 10,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -2904,6 +3049,7 @@
             "id": 90215089,
             "label": "insH21",
             "databaseLabel": "Gene",
+            "value": 3,
             "font": {
                 "color": "#673ab7"
             },
@@ -2924,6 +3070,7 @@
             "id": 90353072,
             "label": "opgGH",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2944,6 +3091,7 @@
             "id": 90354864,
             "label": "ompC",
             "databaseLabel": "TranscriptionUnit",
+            "value": 4,
             "font": {
                 "color": "#cccdfb"
             },
@@ -2964,6 +3112,7 @@
             "id": 90290613,
             "label": "insAB-5A-5B-5",
             "databaseLabel": "Operon",
+            "value": 28,
             "font": {
                 "color": "#439641"
             },
@@ -2984,6 +3133,7 @@
             "id": 90359222,
             "label": "glpEGR",
             "databaseLabel": "TranscriptionUnit",
+            "value": 7,
             "font": {
                 "color": "#cccdfb"
             },
@@ -3004,6 +3154,7 @@
             "id": 90269108,
             "label": "oxygen-sensing c-di-GMP phosphodiesterase DosP",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -3024,6 +3175,7 @@
             "id": 90271671,
             "label": "CP4-57 prophage; anti-bacteriophage protein",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -3044,6 +3196,7 @@
             "id": 90068104,
             "label": "glpR",
             "databaseLabel": "Gene",
+            "value": 7,
             "font": {
                 "color": "#673ab7"
             },
@@ -3064,6 +3217,7 @@
             "id": 90355899,
             "label": "gatYZABCD",
             "databaseLabel": "TranscriptionUnit",
+            "value": 7,
             "font": {
                 "color": "#cccdfb"
             },
@@ -3084,6 +3238,7 @@
             "id": 90209211,
             "label": "insAB-5",
             "databaseLabel": "Gene",
+            "value": 7,
             "font": {
                 "color": "#673ab7"
             },
@@ -3104,6 +3259,7 @@
             "id": 90359225,
             "label": "glpGR",
             "databaseLabel": "TranscriptionUnit",
+            "value": 7,
             "font": {
                 "color": "#cccdfb"
             },
@@ -3124,6 +3280,7 @@
             "id": 90086018,
             "label": "barA",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -3144,6 +3301,7 @@
             "id": 90359230,
             "label": "glpR",
             "databaseLabel": "TranscriptionUnit",
+            "value": 7,
             "font": {
                 "color": "#cccdfb"
             },
@@ -3164,6 +3322,7 @@
             "id": 90264766,
             "label": "putrescine ABC exporter membrane subunit SapB",
             "databaseLabel": "GeneProduct",
+            "value": 3,
             "font": {
                 "color": "#eb333d"
             },
@@ -3184,6 +3343,7 @@
             "id": 90371970,
             "label": "ftsLI-murEF-mraY-murD-ftsW-murGC-ddlB-ftsQAZ-lpxC",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -3204,6 +3364,7 @@
             "id": 90352006,
             "label": "MatA",
             "databaseLabel": "TranscriptionFactor",
+            "value": 21,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -3224,6 +3385,7 @@
             "id": 90291333,
             "label": "yfaX-rhmD-yfaVU",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -3244,6 +3406,7 @@
             "id": 90363530,
             "label": "mdtK",
             "databaseLabel": "TranscriptionUnit",
+            "value": 4,
             "font": {
                 "color": "#cccdfb"
             },
@@ -3264,6 +3427,7 @@
             "id": 90372234,
             "label": "pykF",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -3284,6 +3448,7 @@
             "id": 90352264,
             "label": "RcsAB",
             "databaseLabel": "TranscriptionFactor",
+            "value": 21,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -3304,6 +3469,7 @@
             "id": 90352009,
             "label": "FliZ",
             "databaseLabel": "TranscriptionFactor",
+            "value": 21,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -3324,6 +3490,7 @@
             "id": 90252938,
             "label": "pyruvate kinase I",
             "databaseLabel": "GeneProduct",
+            "value": 1,
             "font": {
                 "color": "#eb333d"
             },
@@ -3344,6 +3511,7 @@
             "id": 90360974,
             "label": "gcl-hyi-glxR-ybbW-allB-ybbY-glxK",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -3364,6 +3532,7 @@
             "id": 90262925,
             "label": "RNA chaperone ProQ",
             "databaseLabel": "GeneProduct",
+            "value": 2,
             "font": {
                 "color": "#eb333d"
             },
@@ -3384,6 +3553,7 @@
             "id": 90281614,
             "label": "sapABCDF",
             "databaseLabel": "Operon",
+            "value": 4,
             "font": {
                 "color": "#439641"
             },
@@ -3404,6 +3574,7 @@
             "id": 90372237,
             "label": "pykF",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -3424,6 +3595,7 @@
             "id": 90290833,
             "label": "gcl-hyi-glxR-ybbW-allB-ybbY-glxK",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -3444,6 +3616,7 @@
             "id": 90129837,
             "label": "proQ",
             "databaseLabel": "Gene",
+            "value": 2,
             "font": {
                 "color": "#673ab7"
             },
@@ -3464,6 +3637,7 @@
             "id": 90352273,
             "label": "OmpR",
             "databaseLabel": "TranscriptionFactor",
+            "value": 29,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -3484,6 +3658,7 @@
             "id": 90138026,
             "label": "glxK",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -3504,6 +3679,7 @@
             "id": 90072486,
             "label": "pykF",
             "databaseLabel": "Gene",
+            "value": 1,
             "font": {
                 "color": "#673ab7"
             },
@@ -3524,6 +3700,7 @@
             "id": 90351259,
             "label": "LexA",
             "databaseLabel": "TranscriptionFactor",
+            "value": 2,
             "font": {
                 "color": "#ea3cf7"
             },
@@ -3544,6 +3721,7 @@
             "id": 90300824,
             "label": "flhDp2",
             "databaseLabel": "Promoter",
+            "value": 7,
             "font": {
                 "color": "#5bc9ca"
             },
@@ -3564,6 +3742,7 @@
             "id": 90372507,
             "label": "pykF",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -3584,6 +3763,7 @@
             "id": 90291099,
             "label": "opgGH",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -3604,6 +3784,7 @@
             "id": 90358424,
             "label": "pykF",
             "databaseLabel": "TranscriptionUnit",
+            "value": 1,
             "font": {
                 "color": "#cccdfb"
             },
@@ -3624,6 +3805,7 @@
             "id": 90372249,
             "label": "gatZABCD",
             "databaseLabel": "TranscriptionUnit",
+            "value": 7,
             "font": {
                 "color": "#cccdfb"
             },
@@ -3644,6 +3826,7 @@
             "id": 90253978,
             "label": "RNA polymerase holoenzyme assembly factor Crl",
             "databaseLabel": "GeneProduct",
+            "value": 7,
             "font": {
                 "color": "#eb333d"
             },
@@ -3664,6 +3847,7 @@
             "id": 90279580,
             "label": "prpBCDE",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
@@ -3684,6 +3868,7 @@
             "id": 90276255,
             "label": "pykF",
             "databaseLabel": "Operon",
+            "value": 1,
             "font": {
                 "color": "#439641"
             },
