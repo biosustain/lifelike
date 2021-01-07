@@ -73,6 +73,7 @@ describe('VisualizationComponent', () => {
             data: {},
             subLabels: ['Mock Node'],
             displayName: 'Mock Node 1',
+            domainLabels: [],
             entityUrl: null,
         };
         mockGraphRelationship = {
