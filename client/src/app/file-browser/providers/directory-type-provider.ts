@@ -3,13 +3,15 @@ import {
   CreateActionOptions,
   CreateDialogAction,
 } from '../services/object-type.service';
-import { DIRECTORY_MIMETYPE, FilesystemObject } from '../models/filesystem-object';
+import { FilesystemObject } from '../models/filesystem-object';
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 import { FilesystemService } from '../services/filesystem.service';
 import { map } from 'rxjs/operators';
 import { DirectoryPreviewComponent } from '../components/directory-preview.component';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../services/object-creation.service';
+
+export const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
 
 @Injectable()
 export class DirectoryTypeProvider extends AbstractObjectTypeProvider {

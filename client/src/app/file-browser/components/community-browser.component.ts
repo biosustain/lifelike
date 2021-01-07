@@ -9,10 +9,11 @@ import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { FormControl, FormGroup } from '@angular/forms';
-import { FilesystemObject, MAP_MIMETYPE } from '../models/filesystem-object';
+import { FilesystemObject} from '../models/filesystem-object';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
 import { FilesystemService } from '../services/filesystem.service';
 import { PaginatedRequestOptions, StandardRequestOptions } from '../../shared/schemas/common';
+import { MAP_MIMETYPE } from '../../drawing-tool/providers/map-type-provider';
 
 @Component({
   selector: 'app-community-browser',

@@ -3,13 +3,12 @@ import {
   CreateActionOptions,
   CreateDialogAction,
 } from '../../file-browser/services/object-type.service';
-import {
-  ENRICHMENT_TABLE_MIMETYPE,
-  FilesystemObject,
-} from '../../file-browser/models/filesystem-object';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { Injectable } from '@angular/core';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
+
+export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 
 @Injectable()
 export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {

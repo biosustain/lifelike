@@ -6,13 +6,14 @@ import { FilesystemObjectActions } from '../../file-browser/services/filesystem-
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObjectList } from '../../file-browser/models/filesystem-object-list';
-import { FilesystemObject, MAP_MIMETYPE } from '../../file-browser/models/filesystem-object';
+import { FilesystemObject} from '../../file-browser/models/filesystem-object';
 import {
   CreateActionOptions,
   ObjectTypeService,
 } from '../../file-browser/services/object-type.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { map, tap } from 'rxjs/operators';
+import { MAP_MIMETYPE } from '../../drawing-tool/providers/map-type-provider';
 
 @Component({
   selector: 'app-associated-maps',

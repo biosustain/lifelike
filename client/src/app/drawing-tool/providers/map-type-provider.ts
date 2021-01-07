@@ -3,12 +3,14 @@ import {
   CreateActionOptions,
   CreateDialogAction,
 } from '../../file-browser/services/object-type.service';
-import { FilesystemObject, MAP_MIMETYPE } from '../../file-browser/models/filesystem-object';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 import { MapComponent } from '../components/map.component';
 import { of } from 'rxjs';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
+
+export const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
 
 @Injectable()
 export class MapTypeProvider extends AbstractObjectTypeProvider {
