@@ -14,7 +14,7 @@ from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
-from neo4japp.database import get_search_service_dao, db, get_elastic_service
+from neo4japp.database import get_search_service_dao, db, get_elastic_service, get_file_type_service
 from neo4japp.models import (
     Projects,
     AppRole,
@@ -130,6 +130,8 @@ class ContentSearchView(FilesystemBaseView):
     def post(self, params: dict, pagination: Pagination):
         current_user = g.current_user
 
+        file_type_service = get_file_type_service()
+
         search_term = params['q']
         mime_types = params['mime_types']
 
@@ -140,7 +142,6 @@ class ContentSearchView(FilesystemBaseView):
         )
 
         offset = (pagination.page - 1) * pagination.limit
-        search_phrases = []
 
         text_fields = ['description', 'data.content', 'filename']
         text_field_boosts = {'description': 1, 'data.content': 1, 'filename': 3}
@@ -236,7 +237,8 @@ class ContentSearchView(FilesystemBaseView):
             file: Optional[Files] = file_map.get(file_id)
 
             if file and file.calculated_privileges[current_user.id].readable:
-                if file.mime_type != 'vnd.lifelike.document/map' and \
+                file_type = file_type_service.get(file)
+                if file_type.should_highlight_content_text_matches() and \
                         document.get('highlight') is not None:
                     if document['highlight'].get('data.content') is not None:
                         snippets = document['highlight']['data.content']
