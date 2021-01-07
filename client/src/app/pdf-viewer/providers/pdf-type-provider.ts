@@ -17,3 +17,5 @@ export class PdfTypeProvider extends AbstractObjectTypeProvider {
   }
 
 }
+
+export const PDF_MIMETYPE = 'application/pdf';

@@ -18,7 +18,6 @@ import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
 import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../../shared/utils/files';
-import { MAP_MIMETYPE } from '../../../file-browser/models/filesystem-object';
 import {
   ObjectEditDialogComponent,
   ObjectEditDialogValue,
@@ -28,6 +27,7 @@ import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { LockError } from '../../../file-browser/services/filesystem.service';
 import { ObjectLock } from '../../../file-browser/models/object-lock';
 import { makeid } from '../../../shared/utils/identifiers';
+import { MAP_MIMETYPE } from '../../providers/map-type-provider';
 
 @Component({
   selector: 'app-drawing-tool',

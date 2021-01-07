@@ -4,14 +4,20 @@ import { nullCoalesce, RecursivePartial } from '../../shared/utils/types';
 import moment from 'moment';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import {
+  KnowledgeMap,
+  UniversalGraph,
+  UniversalGraphNode,
+} from '../../drawing-tool/services/interfaces';
 import { AppUser, User } from '../../interfaces';
 import { FilesystemObjectData, ProjectData } from '../schema';
 
-export const DIRECTORY_MIMETYPE = 'vnd.lifelike.filesystem/directory';
-export const MAP_MIMETYPE = 'vnd.lifelike.document/map';
-export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
-export const PDF_MIMETYPE = 'application/pdf';
+// These are legacy mime type definitions that have to exist in this file until
+// all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
+const DIRECTORY_MIMETYPE = 'vnd.lifelike.filesystem/directory';
+const MAP_MIMETYPE = 'vnd.lifelike.document/map';
+const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
+const PDF_MIMETYPE = 'application/pdf';
 
 export interface ProjectPrivileges {
   readable: boolean;

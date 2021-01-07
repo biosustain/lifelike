@@ -14,10 +14,8 @@ import { HttpEventType } from '@angular/common/http';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import {
-  DIRECTORY_MIMETYPE,
-  ENRICHMENT_TABLE_MIMETYPE,
   FilesystemObject,
-  MAP_MIMETYPE,
+
 } from '../models/filesystem-object';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
@@ -38,6 +36,9 @@ import { openDownloadForBlob } from '../../shared/utils/files';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
 import { ObjectCreationService } from './object-creation.service';
+import { ENRICHMENT_TABLE_MIMETYPE } from '../../enrichment-tables/providers/enrichment-table-type-provider';
+import { MAP_MIMETYPE } from '../../drawing-tool/providers/map-type-provider';
+import { DIRECTORY_MIMETYPE } from '../providers/directory-type-provider';
 
 @Injectable()
 export class FilesystemObjectActions {
