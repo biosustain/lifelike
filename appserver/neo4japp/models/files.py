@@ -146,7 +146,6 @@ class FilePrivileges:
 
 
 class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # type: ignore
-    DIRECTORY_MIME_TYPE = 'vnd.lifelike.filesystem/directory'
     MAX_DEPTH = 50
     API_FIELDS = [
         'hash_id',

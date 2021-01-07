@@ -2,6 +2,7 @@ import base64
 import itertools
 import json
 import string
+from io import BytesIO
 from typing import (
     Dict,
     List,
@@ -13,7 +14,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import joinedload, raiseload, lazyload
 
 from neo4japp.constants import FILE_INDEX_ID
-from neo4japp.database import db
+from neo4japp.database import db, get_file_type_service
 from neo4japp.models import (
     Files, Projects,
 )
@@ -23,6 +24,7 @@ from neo4japp.services.elastic import (
     ELASTIC_INDEX_SEED_PAIRS,
     ELASTIC_PIPELINE_SEED_PAIRS,
 )
+from neo4japp.services.file_types.providers import MapTypeProvider
 from neo4japp.utils import EventLog
 
 
@@ -198,13 +200,13 @@ class ElasticService():
         :return: a document
         """
         try:
-            indexable_data = self._transform_data_for_indexing(file)
+            indexable_content = self._transform_data_for_indexing(file).getvalue()
             data_ok = True
         except Exception as e:
             # We should still index the file even if we can't transform it for
             # indexing because the file won't ever appear otherwise and it will be
             # harder to track down the bug
-            indexable_data = b''
+            indexable_content = b''
             data_ok = False
 
             current_app.logger.error(
@@ -222,7 +224,7 @@ class ElasticService():
                 'filename': file.filename,
                 'description': file.description,
                 'uploaded_date': file.creation_date,
-                'data': base64.b64encode(indexable_data).decode('utf-8'),
+                'data': base64.b64encode(indexable_content).decode('utf-8'),
                 'user_id': file.user_id,
                 'username': file.user.username,
                 'project_id': project.id,
@@ -237,43 +239,19 @@ class ElasticService():
             }
         }
 
-    def _transform_data_for_indexing(self, file: Files) -> bytes:
+    def _transform_data_for_indexing(self, file: Files) -> BytesIO:
         """
         Get the file's contents in a format that can be indexed by Elastic, or is
         better indexed by Elatic.
         :param file: the file
         :return: the bytes to send to Elastic
         """
-        if not file.content:
-            return b''
-
-        content = file.content.raw_file
-
-        if file.mime_type == 'vnd.lifelike.document/map':
-            content_json = json.loads(content)
-
-            map_data: Dict[str, List[Dict[str, str]]] = {
-                'nodes': [],
-                'edges': []
-            }
-
-            for node in content_json.get('nodes', []):
-                map_data['nodes'].append({
-                    'label': node.get('label', ''),
-                    'display_name': node.get('display_name', ''),
-                    'detail': node.get('detail', ''),
-                })
-
-            for edge in content_json.get('edges', []):
-                edge_data = edge.get('data', {})
-                map_data['edges'].append({
-                    'label': edge.get('label', ''),
-                    'detail': edge_data.get('detail', '') if edge_data else '',
-                })
-
-            return json.dumps(map_data).encode('utf-8')
+        if file.content:
+            content = file.content.raw_file
+            file_type_service = get_file_type_service()
+            return file_type_service.get(file).to_indexable_content(BytesIO(content))
         else:
-            return content
+            return BytesIO()
 
     def reindex_all_documents(self):
         self._index_files()
