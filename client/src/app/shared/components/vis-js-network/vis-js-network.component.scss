@@ -11,6 +11,13 @@
     z-index: 1;
 }
 
+.physics-shadow-on {
+    box-shadow: 0 0 0 0.2rem rgba(12, 140, 170, 0.25);
+}
+.physics-shadow-off {
+    box-shadow: none;
+}
+
 .zoom-in-btn {
     border-radius: 0.25rem 0.25rem 0 0;
 }

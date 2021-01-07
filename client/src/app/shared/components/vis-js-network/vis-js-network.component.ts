@@ -26,8 +26,10 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
     if (!isNullOrUndefined(config.physics)) {
       this.currentSolver = this.solverMap.get(config.physics.solver || networkSolvers.BARNES_HUT);
+      this.physicsEnabled = config.physics.enabled || true;
     } else {
       this.currentSolver = this.solverMap.get(networkSolvers.BARNES_HUT);
+      this.physicsEnabled = true;
     }
 
     if (!isNullOrUndefined(this.networkGraph)) {
@@ -51,6 +53,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
   networkContainerId: string;
 
   stabilized: boolean;
+  physicsEnabled: boolean;
 
   currentSolver: string;
   solverMap: Map<string, string>;
@@ -66,6 +69,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
     this.stabilized = false;
     this.setupSolverMap();
     this.currentSolver = this.solverMap.get(networkSolvers.BARNES_HUT);
+    this.physicsEnabled = true;
     this.cursorStyle = 'default';
     this.legend = new Map<string, string[]>();
   }
@@ -139,15 +143,26 @@ export class VisJsNetworkComponent implements AfterViewInit {
     });
   }
 
+  togglePhysics() {
+    this.physicsEnabled = !this.physicsEnabled;
+    this.networkGraph.setOptions({
+      physics: {
+        ...this.networkConfig.physics,
+        enabled: this.physicsEnabled
+      },
+    });
+  }
+
   /**
    * Udates the Vis.js to use the provided layout solver. Also updates the currently selected solver, which is reflected in the UI.
    * @param layoutType string representing the newly selected layout solver, expected to be one of networkSolvers
    */
   updateNetworkLayout(layoutType: string) {
+    this.physicsEnabled = true;
     this.networkConfig = {
       ...this.networkConfig,
       physics: {
-        enabled: true,
+        enabled: this.physicsEnabled,
         solver: layoutType,
       }
     };
@@ -161,7 +176,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
    */
   setupEventBinds() {
     this.networkGraph.on('stabilizationIterationsDone', (params) => {
-      this.stabilized  = true;
+      this.stabilized = true;
       this.networkGraph.fit();
     });
 

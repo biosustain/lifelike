@@ -7,6 +7,15 @@
   </div>
   <div class="network-utilities-container">
     <div class="mb-1">
+      <button [class]="'btn bg-white ' + (physicsEnabled ? 'border-primary physics-shadow-on' : 'border-secondary physics-shadow-off')"
+              (click)="togglePhysics()"
+              ngbTooltip="Toggle Physics"
+              container="body"
+              placement="right bottom top left">
+        <i [class]="'fa fa-fw fa-power-off ' + (physicsEnabled ? 'text-primary' : 'text-secondary')"></i>
+      </button>
+    </div>
+    <div class="mb-1">
       <button class="btn btn-secondary border-white"
               (click)="fitToNetwork()"
               ngbTooltip="Fit Canvas"
