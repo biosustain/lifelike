@@ -15,6 +15,12 @@ import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ProjectsService } from '../services/projects.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import {
+  CreateActionOptions,
+  CreateDialogAction,
+  ObjectTypeService,
+} from '../services/object-type.service';
+import { RankedItem } from '../../shared/schemas/common';
 
 @Component({
   selector: 'app-object-browser',
@@ -27,6 +33,7 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
   protected subscriptions = new Subscription();
   protected annotationSubscription: Subscription;
   object$: Observable<FilesystemObject> = from([]);
+  createActions$: Observable<CreateDialogAction[]> = from([]);
 
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
@@ -37,7 +44,17 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly projectService: ProjectsService,
               protected readonly filesystemService: FilesystemService,
-              protected readonly actions: FilesystemObjectActions) {
+              protected readonly actions: FilesystemObjectActions,
+              protected readonly objectTypeService: ObjectTypeService) {
+    this.createActions$ = this.objectTypeService.all().pipe(
+      map(providers => {
+        const createActions: RankedItem<CreateDialogAction>[] = [].concat(
+          ...providers.map(provider => provider.getCreateDialogOptions()),
+        );
+        createActions.sort((a, b) => a.rank > b.rank ? -1 : (a.rank < b.rank ? 1 : 0));
+        return createActions.map(item => item.item);
+      }),
+    );
   }
 
   ngOnInit() {
@@ -133,38 +150,6 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  openDirectoryCreateDialog(parent: FilesystemObject) {
-    return this.actions.openDirectoryCreateDialog(parent).then(object => {
-      this.snackBar.open(`Directory ${getObjectLabel(object)} created.`, 'Close', {
-        duration: 5000,
-      });
-      this.load(this.hashId);
-    }, () => {
-    });
-  }
-
-  openMapCreateDialog(parent: FilesystemObject) {
-    return this.actions.openMapCreateDialog({
-      parent,
-    }).then(object => {
-      this.snackBar.open(`Map ${getObjectLabel(object)} created.`, 'Close', {
-        duration: 5000,
-      });
-      this.load(this.hashId);
-    }, () => {
-    });
-  }
-
-  openEnrichmentTableCreateDialog(parent: FilesystemObject) {
-    return this.actions.openEnrichmentTableCreateDialog(parent).then(object => {
-      this.snackBar.open(`Enrichment table ${getObjectLabel(object)} created.`, 'Close', {
-        duration: 5000,
-      });
-      this.load(this.hashId);
-    }, () => {
-    });
-  }
-
   openUploadDialog(parent: FilesystemObject) {
     return this.actions.openUploadDialog(parent).then(object => {
       this.snackBar.open(`${getObjectLabel(object)} successfully uploaded.`, 'Close', {
@@ -219,6 +204,21 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
     this.workspaceManager.navigate(target.getCommands(), {
       queryParams: this.getObjectQueryParams(target),
       newTab: target.type !== 'dir',
+    });
+  }
+
+  runCreateAction(action: CreateDialogAction, options: CreateActionOptions) {
+    return action.create(options).then(object => {
+      this.snackBar.open(`${getObjectLabel(object)} created.`, 'Close', {
+        duration: 5000,
+      });
+      this.load(this.hashId);
+      if (action.openSuggested) {
+        this.workspaceManager.navigate(object.getCommands(), {
+          newTab: true,
+        });
+      }
+    }, () => {
     });
   }
 

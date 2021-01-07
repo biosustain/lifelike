@@ -38,6 +38,7 @@ import { ProjectCollaboratorsDialogComponent } from './components/dialog/project
 import { FileAnnotationHistoryDialogComponent } from './components/dialog/file-annotation-history-dialog.component';
 import { FileAnnotationHistoryComponent } from './components/file-annotation-history.component';
 import { AnnotationsService } from './services/annotations.service';
+import { ObjectCreationService } from './services/object-creation.service';
 
 @NgModule({
   declarations: [
@@ -113,6 +114,7 @@ import { AnnotationsService } from './services/annotations.service';
     AnnotationsService,
     FilesystemObjectActions,
     ProjectActions,
+    ObjectCreationService,
     ObjectTypeService,
     {
       provide: TYPE_PROVIDER,
