@@ -12,9 +12,6 @@ import { BrowserCommunityListComponent } from './components/browser/browser-comm
 import { BrowserContextComponent } from './components/browser/browser-context.component';
 import { ObjectInfoComponent } from './components/object-info.component';
 import { ObjectTypeLabelComponent } from './components/object-type-label.component';
-import { EnrichmentTableViewerComponent } from './components/enrichment-table-viewer.component';
-import { EnrichmentTableCreateDialogComponent } from './components/enrichment-table-create-dialog.component';
-import { EnrichmentTableEditDialogComponent } from './components/enrichment-table-edit-dialog.component';
 import { ObjectSelectionDialogComponent } from './components/dialog/object-selection-dialog.component';
 import { FilesystemService } from './services/filesystem.service';
 import { ObjectListComponent } from './components/object-list.component';
@@ -23,8 +20,10 @@ import { ProjectsService } from './services/projects.service';
 import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialog.component';
 import { ObjectVersionHistoryComponent } from './components/object-version-history.component';
 import { ObjectVersionHistoryDialogComponent } from './components/dialog/object-version-history-dialog.component';
-import { ObjectPreviewComponent, ObjectPreviewOutletComponent } from './components/object-preview.component';
-import { EnrichmentTableOrderDialogComponent } from './components/enrichment-table-order-dialog.component';
+import {
+  ObjectPreviewComponent,
+  ObjectPreviewOutletComponent,
+} from './components/object-preview.component';
 import { ObjectExportDialogComponent } from './components/dialog/object-export-dialog.component';
 import { ObjectTileDeckComponent } from './components/object-tile-deck.component';
 import { ObjectPathComponent } from './components/object-path.component';
@@ -54,10 +53,6 @@ import { AnnotationsService } from './services/annotations.service';
     CommunityBrowserComponent,
     ObjectInfoComponent,
     ObjectTypeLabelComponent,
-    EnrichmentTableViewerComponent,
-    EnrichmentTableCreateDialogComponent,
-    EnrichmentTableEditDialogComponent,
-    EnrichmentTableOrderDialogComponent,
     ObjectSelectionDialogComponent,
     ObjectListComponent,
     ObjectTileDeckComponent,
@@ -83,9 +78,6 @@ import { AnnotationsService } from './services/annotations.service';
     ObjectDeleteDialogComponent,
     ProjectEditDialogComponent,
     ObjectDeletionResultDialogComponent,
-    EnrichmentTableCreateDialogComponent,
-    EnrichmentTableEditDialogComponent,
-    EnrichmentTableOrderDialogComponent,
     ObjectSelectionDialogComponent,
     ObjectEditDialogComponent,
     ObjectVersionHistoryDialogComponent,

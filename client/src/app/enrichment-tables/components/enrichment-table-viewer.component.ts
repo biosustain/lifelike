@@ -28,7 +28,7 @@ import {
   EnrichmentWrapper,
   GoNode,
   NCBIWrapper,
-} from '../services/enrichment-table.service';
+} from '../../file-browser/services/enrichment-table.service';
 
 
 @Component({
