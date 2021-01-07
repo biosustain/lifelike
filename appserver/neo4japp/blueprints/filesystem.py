@@ -860,18 +860,20 @@ class FileContentView(FilesystemBaseView):
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
 
         # Lazy loaded
-        content = file.content
-
-        if content:
-            return make_cacheable_file_response(
-                request,
-                content.raw_file,
-                etag=content.checksum_sha256.hex(),
-                filename=file.filename,
-                mime_type=file.mime_type
-            )
+        if file.content:
+            content = file.content.raw_file
+            etag = file.content.checksum_sha256.hex()
         else:
-            raise RecordNotFoundException('Requested object has no content')
+            content = b''
+            etag = hashlib.sha256(content).digest()
+
+        return make_cacheable_file_response(
+            request,
+            content,
+            etag=etag,
+            filename=file.filename,
+            mime_type=file.mime_type
+        )
 
 
 class FileExportView(FilesystemBaseView):
