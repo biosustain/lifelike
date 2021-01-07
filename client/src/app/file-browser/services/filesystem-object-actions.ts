@@ -37,6 +37,7 @@ import {
 import { openDownloadForBlob } from '../../shared/utils/files';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
+import { ObjectCreationService } from './object-creation.service';
 
 @Injectable()
 export class FilesystemObjectActions {
@@ -51,7 +52,8 @@ export class FilesystemObjectActions {
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly messageDialog: MessageDialog,
               protected readonly errorHandler: ErrorHandler,
-              protected readonly filesystemService: FilesystemService) {
+              protected readonly filesystemService: FilesystemService,
+              protected readonly objectCreationService: ObjectCreationService) {
   }
 
   protected createProgressDialog(message: string, title = 'Working...') {
@@ -108,102 +110,13 @@ export class FilesystemObjectActions {
   }
 
   /**
-   * Handles the filesystem PUT request with a progress dialog.
-   * @param request the request data
-   * @param annotationOptions options for the annotation process
-   * @return the created object
-   */
-  protected executePutWithProgressDialog(request: ObjectCreateRequest,
-                                         annotationOptions: AnnotationGenerationRequest = {}):
-    Observable<FilesystemObject> {
-    const progressObservable = new BehaviorSubject<Progress>(new Progress({
-      status: 'Preparing...',
-    }));
-    const progressDialogRef = this.progressDialog.display({
-      title: `Creating '${request.filename}'`,
-      progressObservable,
-    });
-
-    return this.filesystemService.create(request)
-      .pipe(
-        tap(event => {
-          // First we show progress for the upload itself
-          if (event.type === HttpEventType.UploadProgress) {
-            if (event.loaded === event.total && event.total) {
-              progressObservable.next(new Progress({
-                mode: ProgressMode.Indeterminate,
-                status: 'File transmitted; saving...',
-              }));
-            } else {
-              progressObservable.next(new Progress({
-                mode: ProgressMode.Determinate,
-                status: 'Transmitting file...',
-                value: event.loaded / event.total,
-              }));
-            }
-          }
-        }),
-        filter(event => event.bodyValue != null),
-        map((event): FilesystemObject => event.bodyValue),
-        mergeMap((object: FilesystemObject) => {
-          // Then we show progress for the annotation generation (although
-          // we can't actually show a progress percentage)
-          progressObservable.next(new Progress({
-            mode: ProgressMode.Indeterminate,
-            status: 'Saved; identifying annotations...',
-          }));
-          return this.annotationsService.generateAnnotations(
-            [object.hashId], annotationOptions,
-          ).pipe(
-            map(() => object), // This method returns the object
-          );
-        }),
-        finalize(() => progressDialogRef.close()),
-        this.errorHandler.create(),
-      );
-  }
-
-  /**
-   * Open a dialog to create a new file or folder.
-   * @param target the base object to start from
-   * @param options options for the dialog
-   */
-  openCreateDialog(target: FilesystemObject,
-                   options: CreateDialogOptions = {}): Promise<FilesystemObject> {
-    const dialogRef = this.modalService.open(ObjectEditDialogComponent);
-    dialogRef.componentInstance.title = options.title || 'New File';
-    dialogRef.componentInstance.object = target;
-    const keys: Array<keyof CreateDialogOptions> = [
-      'promptUpload',
-      'promptAnnotationOptions',
-      'promptParent',
-      'parentLabel',
-    ];
-    for (const key of keys) {
-      if (key in options) {
-        dialogRef.componentInstance[key] = options[key];
-      }
-    }
-    dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
-      return this.executePutWithProgressDialog({
-        ...value.request,
-        ...(options.request || {}),
-      }, {
-        annotationMethod: value.annotationMethod,
-        organism: value.organism,
-      }).toPromise();
-    });
-    return dialogRef.result;
-  }
-
-  /**
    * Open a dialog to upload a file.
    * @param parent the folder to put the new file in
    */
   openUploadDialog(parent: FilesystemObject): Promise<any> {
     const object = new FilesystemObject();
     object.parent = parent;
-    return this.openCreateDialog(object, {
+    return this.objectCreationService.openCreateDialog(object, {
       title: 'Upload File',
       promptUpload: true,
       promptAnnotationOptions: true,
@@ -217,7 +130,7 @@ export class FilesystemObjectActions {
   openCloneDialog(target: FilesystemObject): Promise<FilesystemObject> {
     const object = clone(target);
     object.filename = object.filename.replace(/^(.+?)(\.[^.]+)?$/, '$1 (Copy)$2');
-    return this.openCreateDialog(object, {
+    return this.objectCreationService.openCreateDialog(object, {
       title: `Make Copy of ${getObjectLabel(target)}`,
       promptParent: true,
       parentLabel: 'Copy To',
@@ -225,54 +138,6 @@ export class FilesystemObjectActions {
         contentHashId: target.hashId,
         contentUrl: null,
         contentValue: null,
-      },
-    });
-  }
-
-  /**
-   * Open a dialog to create a new folder in another folder.
-   * @param parent the folder to put the new folder in
-   */
-  openDirectoryCreateDialog(parent?: FilesystemObject): Promise<FilesystemObject> {
-    const object = new FilesystemObject();
-    object.filename = 'New Folder';
-    object.mimeType = DIRECTORY_MIMETYPE;
-    object.parent = parent;
-    return this.openCreateDialog(object, {
-      title: 'New Folder',
-    });
-  }
-
-  /**
-   * Open a dialog to create a new map in another folder.
-   * @param options options for the dialog
-   */
-  openMapCreateDialog(options: MapCreateDialogOptions = {}): Promise<FilesystemObject> {
-    const object = new FilesystemObject();
-    object.filename = 'Untitled Map';
-    object.mimeType = MAP_MIMETYPE;
-    object.parent = options.parent;
-    return this.openCreateDialog(object, {
-      title: 'New Map',
-      request: {
-        contentValue: new Blob([JSON.stringify({
-          edges: [],
-          nodes: [],
-        })]),
-      },
-      ...(options.createDialog || {}),
-    });
-  }
-
-  openEnrichmentTableCreateDialog(parent?: FilesystemObject): Promise<any> {
-    const object = new FilesystemObject();
-    object.filename = 'Untitled Enrichment Table';
-    object.mimeType = ENRICHMENT_TABLE_MIMETYPE;
-    object.parent = parent;
-    return this.openCreateDialog(object, {
-      title: 'New Enrichment Table',
-      request: {
-        contentValue: new Blob([JSON.stringify({})]),
       },
     });
   }
@@ -407,18 +272,4 @@ export class FilesystemObjectActions {
       )
       .toPromise();
   }
-}
-
-export class MapCreateDialogOptions {
-  parent?: FilesystemObject;
-  createDialog?: Omit<CreateDialogOptions, 'request'>;
-}
-
-export class CreateDialogOptions {
-  title?: string;
-  promptUpload?: boolean;
-  promptAnnotationOptions?: boolean;
-  promptParent?: boolean;
-  parentLabel?: string;
-  request?: Partial<ObjectCreateRequest>;
 }

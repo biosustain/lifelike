@@ -60,7 +60,8 @@
                    style="table-layout: fixed">
               <colgroup>
                 <col>
-                <col style="width: 15%; max-width: 140px" class="d-none d-cbp-sm-table-column"> <!-- Annotated -->
+                <col style="width: 15%; max-width: 140px" class="d-none d-cbp-sm-table-column">
+                <!-- Annotated -->
                 <col style="width: 90px" class="d-none d-cbp-md-table-column"> <!-- Created -->
                 <col style="width: 120px"> <!-- Author -->
                 <col style="width: 80px"> <!-- Dropdown -->
@@ -158,7 +159,8 @@
           </h1>
 
           <div ngbDropdown class="d-inline-block ml-1" container="body">
-            <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
+            <a href="#" class="dropdown-no-arrow" ngbDropdownToggle
+               (click)="$event.preventDefault()">
               <i class="fas fa-chevron-down fa-fw text-icon"></i>
             </a>
             <div ngbDropdownMenu>
@@ -173,8 +175,10 @@
                 </app-object-menu>
                 <div class="dropdown-section-divider"></div>
               </ng-container>
-              <h6 class="dropdown-header d-flex align-items-center text-truncate" style="max-width: 200px">
-                <app-project-icon [project]="result.value.project" size="16" class="mr-1"></app-project-icon>
+              <h6 class="dropdown-header d-flex align-items-center text-truncate"
+                  style="max-width: 200px">
+                <app-project-icon [project]="result.value.project" size="16"
+                                  class="mr-1"></app-project-icon>
                 {{ result.value.project.name }}
               </h6>
               <app-project-menu [project]="result.value.project"
@@ -193,13 +197,14 @@
                   New
                 </button>
                 <div ngbDropdownMenu>
-                  <button ngbDropdownItem (click)="openMapCreateDialog(result.value)">New Map...</button>
-                  <button ngbDropdownItem (click)="openDirectoryCreateDialog(result.value)">New Folder...</button>
-                  <button ngbDropdownItem (click)="openEnrichmentTableCreateDialog(result.value)">New Enrichment
-                    Table...
+                  <ng-container *ngIf="createActions$ | async as createActions">
+                    <button ngbDropdownItem *ngFor="let action of createActions"
+                            (click)="runCreateAction(action, {parent: result.value})">New {{ action.label }}...
+                    </button>
+                    <div class="dropdown-divider"></div>
+                  </ng-container>
+                  <button ngbDropdownItem (click)="openUploadDialog(result.value)">Upload File...
                   </button>
-                  <div class="dropdown-divider"></div>
-                  <button ngbDropdownItem (click)="openUploadDialog(result.value)">Upload File...</button>
                 </div>
               </div>
 
@@ -214,14 +219,21 @@
                   Actions
                 </button>
                 <div ngbDropdownMenu>
-                  <button ngbDropdownItem (click)="reannotate(result.value.children.selection)">Re-annotate</button>
+                  <button ngbDropdownItem (click)="reannotate(result.value.children.selection)">
+                    Re-annotate
+                  </button>
                   <div class="dropdown-divider"></div>
-                  <button ngbDropdownItem (click)="openMoveDialog(result.value.children.selection)">Move to...</button>
-                  <button ngbDropdownItem (click)="openDeleteDialog(result.value.children.selection)">Delete...</button>
+                  <button ngbDropdownItem (click)="openMoveDialog(result.value.children.selection)">
+                    Move to...
+                  </button>
+                  <button ngbDropdownItem
+                          (click)="openDeleteDialog(result.value.children.selection)">Delete...
+                  </button>
                 </div>
               </div>
 
-              <div ngbDropdown class="d-inline-block ml-2" container="body" ngbTooltip="Entity Cloud">
+              <div ngbDropdown class="d-inline-block ml-2" container="body"
+                   ngbTooltip="Entity Cloud">
                 <button class="btn btn-secondary" ngbDropdownToggle>
                   <i class="fa fa-fw fa-cloud"></i>
                 </button>
@@ -232,7 +244,8 @@
                   </button>
                   <button ngbDropdownItem
                           [appLink]="['/file-navigator', result.value.project.name, result.value.hashId]"
-                          [newTab]="true" [sideBySide]="true" *ngIf="result.value !== result.value.***ARANGO_USERNAME***">For this
+                          [newTab]="true" [sideBySide]="true"
+                          *ngIf="result.value !== result.value.***ARANGO_USERNAME***">For this
                     folder...
                   </button>
                 </div>

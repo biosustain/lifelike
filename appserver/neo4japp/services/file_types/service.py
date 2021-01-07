@@ -14,7 +14,7 @@ class BaseFileTypeProvider:
 
     def handles(self, file: Files) -> bool:
         """
-        Test whether this provider os for the given type of file.
+        Test whether this provider is for the given type of file.
         :param file: the file
         :return: whether this provide should be used
         """

@@ -1,5 +1,4 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -7,7 +6,13 @@ import { FilesystemObjectActions } from '../../file-browser/services/filesystem-
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObjectList } from '../../file-browser/models/filesystem-object-list';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
+import { FilesystemObject, MAP_MIMETYPE } from '../../file-browser/models/filesystem-object';
+import {
+  CreateActionOptions,
+  ObjectTypeService,
+} from '../../file-browser/services/object-type.service';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { map, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-associated-maps',
@@ -31,7 +36,9 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
 
   constructor(protected readonly filesystemService: FilesystemService,
               protected readonly filesystemObjectActions: FilesystemObjectActions,
-              protected readonly workspaceManager: WorkspaceManager) {
+              protected readonly workspaceManager: WorkspaceManager,
+              protected readonly objectTypeService: ObjectTypeService,
+              protected readonly errorHandler: ErrorHandler) {
   }
 
   ngOnInit() {
@@ -51,11 +58,24 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
   }
 
   openMapCreateDialog() {
-    return this.filesystemObjectActions.openMapCreateDialog({
+    const options: CreateActionOptions = {
       parent: this.object.parent,
       createDialog: {
         promptParent: true,
       },
-    });
+    };
+
+    const testMap = new FilesystemObject();
+    testMap.mimeType = MAP_MIMETYPE;
+    this.objectTypeService.get(testMap).pipe(
+      tap(provider => provider.getCreateDialogOptions()[0].item.create(options).then(
+        object => this.workspaceManager.navigate(object.getCommands(), {
+          newTab: true,
+        }),
+        () => {
+        },
+      )),
+      this.errorHandler.create(),
+    ).subscribe();
   }
 }

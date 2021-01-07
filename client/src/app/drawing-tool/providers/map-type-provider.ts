@@ -1,14 +1,22 @@
-import { ObjectTypeProvider } from '../../file-browser/services/object-type.service';
+import {
+  AbstractObjectTypeProvider,
+  CreateActionOptions,
+  CreateDialogAction,
+} from '../../file-browser/services/object-type.service';
 import { FilesystemObject, MAP_MIMETYPE } from '../../file-browser/models/filesystem-object';
-import { ComponentFactory, ComponentFactoryResolver, ComponentRef, Injectable, Injector } from '@angular/core';
+import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 import { MapComponent } from '../components/map.component';
 import { of } from 'rxjs';
+import { RankedItem } from '../../shared/schemas/common';
+import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
 
 @Injectable()
-export class MapTypeProvider implements ObjectTypeProvider {
+export class MapTypeProvider extends AbstractObjectTypeProvider {
 
   constructor(protected readonly componentFactoryResolver: ComponentFactoryResolver,
-              protected readonly injector: Injector) {
+              protected readonly injector: Injector,
+              protected readonly objectCreationService: ObjectCreationService) {
+    super();
   }
 
   handles(object: FilesystemObject): boolean {
@@ -22,6 +30,32 @@ export class MapTypeProvider implements ObjectTypeProvider {
     const instance: MapComponent = componentRef.instance;
     instance.locator = object.hashId;
     return of(componentRef);
+  }
+
+  getCreateDialogOptions(): RankedItem<CreateDialogAction>[] {
+    return [{
+      rank: 100,
+      item: {
+        label: 'Map',
+        openSuggested: true,
+        create: (options?: CreateActionOptions) => {
+          const object = new FilesystemObject();
+          object.filename = 'Untitled Map';
+          object.mimeType = MAP_MIMETYPE;
+          object.parent = options.parent;
+          return this.objectCreationService.openCreateDialog(object, {
+            title: 'New Map',
+            request: {
+              contentValue: new Blob([JSON.stringify({
+                edges: [],
+                nodes: [],
+              })]),
+            },
+            ...(options.createDialog || {}),
+          });
+        },
+      },
+    }];
   }
 
 }
