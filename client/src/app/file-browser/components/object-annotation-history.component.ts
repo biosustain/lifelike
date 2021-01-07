@@ -6,10 +6,10 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { FilesystemObject } from '../models/filesystem-object';
 
 @Component({
-  selector: 'app-file-annotation-history',
-  templateUrl: './file-annotation-history.component.html',
+  selector: 'app-object-annotation-history',
+  templateUrl: './object-annotation-history.component.html',
 })
-export class FileAnnotationHistoryComponent {
+export class ObjectAnnotationHistoryComponent {
 
   _object: FilesystemObject;
   page = 1;
