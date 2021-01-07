@@ -126,38 +126,47 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get isOpenable() {
+    // TODO: Move this method to ObjectTypeProvider
     return true;
   }
 
   get isEditable() {
+    // TODO: Move this method to ObjectTypeProvider
     return !(this.isDirectory && !this.parent);
   }
 
   get isAnnotatable() {
+    // TODO: Move this method to ObjectTypeProvider
     return this.mimeType === 'application/pdf';
   }
 
   get isMovable() {
+    // TODO: Move this method to ObjectTypeProvider
     return !(this.isDirectory && !this.parent);
   }
 
   get isCloneable() {
+    // TODO: Move this method to ObjectTypeProvider
     return this.isFile;
   }
 
   get isDeletable() {
+    // TODO: Move this method to ObjectTypeProvider
     return true;
   }
 
   get isVersioned() {
+    // TODO: Move this method to ObjectTypeProvider
     return this.mimeType === MAP_MIMETYPE;
   }
 
   get isNavigable() {
+    // TODO: Move this method to ObjectTypeProvider
     return this.isDirectory || this.mimeType === PDF_MIMETYPE || this.mimeType === MAP_MIMETYPE;
   }
 
   get hasWordCloud() {
+    // TODO: Move this method to ObjectTypeProvider
     return this.isDirectory || this.mimeType === PDF_MIMETYPE;
   }
 
@@ -208,6 +217,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get mimeTypeLabel() {
+    // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
       case DIRECTORY_MIMETYPE:
         return 'Folder';
@@ -223,6 +233,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get fontAwesomeIcon() {
+    // TODO: Move this method to ObjectTypeProvider
     switch (this.mimeType) {
       case DIRECTORY_MIMETYPE:
         return 'fa fa-folder';
@@ -367,6 +378,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   getCommands(forEditing = true): any[] {
+    // TODO: Move this method to ObjectTypeProvider
     const projectName = this.project ? this.project.name : 'default';
     switch (this.mimeType) {
       case DIRECTORY_MIMETYPE:
@@ -385,6 +397,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   getURL(forEditing = true): string {
+    // TODO: Move this method to ObjectTypeProvider
     return this.getCommands(forEditing).map(item => {
       return encodeURIComponent(item.replace(/^\//, ''));
     }).join('/');
@@ -504,6 +517,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get exportFormats(): string[] {
+    // TODO: Move this method to ObjectTypeProvider
     if (this.mimeType === MAP_MIMETYPE) {
       return ['pdf', 'png', 'svg', 'llmap.json'];
     } else if (this.mimeType === PDF_MIMETYPE) {
@@ -514,6 +528,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   get originalFormat(): string | undefined {
+    // TODO: Move this method to ObjectTypeProvider
     if (this.mimeType === MAP_MIMETYPE) {
       return 'llmap.json';
     } else if (this.mimeType === PDF_MIMETYPE) {
