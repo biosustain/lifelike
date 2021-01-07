@@ -18,8 +18,7 @@ class ContentSearchSchema(CamelCaseSchema):
     q = fields.String(required=True)
     mime_types = fields.List(fields.String(), min=0, max=100,
                              missing=lambda: ['vnd.***ARANGO_DB_NAME***.document/map',
-                                              'application/pdf',
-                                              'vnd.***ARANGO_DB_NAME***.document/directory'])
+                                              'application/pdf'])
 
 
 # Response

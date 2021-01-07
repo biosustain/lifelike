@@ -1,20 +1,17 @@
 import hashlib
 import io
 import itertools
-import json
 import re
 import urllib.request
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Iterable, Union, Literal
+from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from urllib.error import URLError
 
-import graphviz
 from deepdiff import DeepDiff
 from flask import Blueprint, jsonify, g, request, make_response
 from flask.views import MethodView
 from marshmallow import ValidationError
-from pdfminer import high_level
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
@@ -22,8 +19,7 @@ from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_ea
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.constants import ANNOTATION_STYLES_DICT
-from neo4japp.database import db
+from neo4japp.database import db, get_file_type_service
 from neo4japp.exceptions import RecordNotFoundException, AccessRequestRequiredError
 from neo4japp.models import Projects, Files, FileContent, AppUser, \
     FileVersion, FileBackup
@@ -39,7 +35,8 @@ from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponseSch
     FileListSchema, FileSearchRequestSchema, FileBackupCreateRequestSchema, \
     FileVersionHistorySchema, \
     FileExportRequestSchema, FileLockCreateRequest, FileLockDeleteRequest, FileLockListResponse
-from neo4japp.schemas.formats.drawing_tool import validate_map_data
+from neo4japp.services.file_types.exports import ExportFormatError
+from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.collections import window
 from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.utils.network import read_url
@@ -63,25 +60,6 @@ class FilesystemBaseView(MethodView):
     url_fetch_timeout = 10
     url_fetch_user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' \
                            '(KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36 Lifelike'
-    accepted_mime_types = {
-        'applicatiom/pdf',
-        'vnd.***ARANGO_DB_NAME***.document/map',
-        'vnd.***ARANGO_DB_NAME***.filesystem/directory'
-    }
-    extension_mime_types = {
-        '.pdf': 'application/pdf',
-        '.llmap': 'vnd.***ARANGO_DB_NAME***.document/map',
-        '.svg': 'image/svg+xml',
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        # TODO: Use a mime type library?
-    }
-    content_validators = {
-        'application/pdf': lambda buffer: True,
-        'vnd.***ARANGO_DB_NAME***.document/map': validate_map_data,
-        'vnd.***ARANGO_DB_NAME***.filesystem/directory': lambda buffer: buffer is None,
-    }
 
     def get_nondeleted_recycled_file(self, filter, lazy_load_content=False) -> Files:
         """
@@ -261,6 +239,8 @@ class FilesystemBaseView(MethodView):
         :param user: the user that is making the change
         :param recursive: apply settings to children of folders
         """
+        file_type_service = get_file_type_service()
+
         changed_fields = set()
 
         # Collect everything that we need to query
@@ -303,7 +283,7 @@ class FilesystemBaseView(MethodView):
             parent_file = next(filter(lambda file: file.hash_id == parent_hash_id, files), None)
             assert parent_file is not None
 
-            if parent_file.mime_type != Files.DIRECTORY_MIME_TYPE:
+            if parent_file.mime_type != DirectoryTypeProvider.MIME_TYPE:
                 raise ValidationError(f"The specified parent ({parent_hash_id}) is "
                                       f"not a folder. It is a file, and you cannot make files "
                                       f"become a child of another file.", "parent_hash_id")
@@ -361,6 +341,8 @@ class FilesystemBaseView(MethodView):
 
                 if 'content_value' in params:
                     buffer = params['content_value']
+
+                    # Get file size
                     buffer.seek(0, io.SEEK_END)
                     size = buffer.tell()
                     buffer.seek(0)
@@ -370,15 +352,19 @@ class FilesystemBaseView(MethodView):
                             'Your file could not be processed because it is too large.',
                             "content_value")
 
+                    # Get the provider
+                    provider = file_type_service.get(file)
+
                     try:
-                        self.validate_content(file.mime_type, buffer)
+                        provider.validate_content(buffer)
+                        buffer.seek(0)  # Must rewind
                     except ValueError:
                         raise ValidationError(f"The provided file may be corrupt for files of type "
                                               f"'{file.mime_type}' (which '{file.hash_id}' is of).",
                                               "content_value")
 
                     new_content_id = FileContent.get_or_create(buffer)
-                    buffer.seek(0)
+                    buffer.seek(0)  # Must rewind
 
                     # Only make a file version if the content actually changed
                     if file.content_id != new_content_id:
@@ -461,56 +447,6 @@ class FilesystemBaseView(MethodView):
             missing=list(missing_hash_ids) if missing_hash_ids is not None else [],
         )))
 
-    def detect_mime_type(self, buffer):
-        try:
-            json.load(buffer)
-            return 'vnd.***ARANGO_DB_NAME***.document/map'
-        except ValueError:
-            return 'application/pdf'
-        finally:
-            buffer.seek(0)
-
-    def validate_content(self, mime_type, buffer):
-        validator = self.content_validators[mime_type]
-        if not validator(buffer):
-            raise ValueError()
-
-    def extract_doi(self, mime_type, buffer):
-        if mime_type == 'application/pdf':
-            data = buffer.read()
-            buffer.seek(0)
-
-            # Attempt 1: search through the first N bytes (most probably containing only metadata)
-            chunk = data[:2 ** 17]
-            doi = self._search_doi_in_pdf(chunk)
-            if doi is not None:
-                return doi
-
-            # Attempt 2: search through the first two pages of text (no metadata)
-            fp = io.BytesIO(data)
-            text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
-            doi = self._search_doi_in_pdf(bytes(text, encoding='utf8'))
-            if doi is not None:
-                return doi
-
-        return None
-
-    def _search_doi_in_pdf(self, content: bytes) -> Optional[str]:
-        # ref: https://stackoverflow.com/a/10324802
-        # Has a good breakdown of the DOI specifications,
-        # in case need to play around with the regex in the future
-        doi_re = rb'(?i)(?:doi:\s*|https?:\/\/doi\.org\/)(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b'  # noqa
-        match = re.search(doi_re, content)
-
-        if match is None:
-            return None
-        doi = match.group(1).decode('utf-8').replace('%2F', '/')
-        # Make sure that the match does not contain undesired characters at the end.
-        # E.g. when the match is at the end of a line, and there is a full stop.
-        while doi and doi[-1] in './%':
-            doi = doi[:-1]
-        return doi if doi.startswith('http') else f'https://doi.org/{doi}'
-
     def get_missing_hash_ids(self, expected_hash_ids: Iterable[str], files: Iterable[Files]):
         found_hash_ids = set(file.hash_id for file in files)
         missing = set()
@@ -528,6 +464,7 @@ class FileListView(FilesystemBaseView):
         """Endpoint to create a new file or to clone a file into a new one."""
 
         current_user = g.current_user
+        file_type_service = get_file_type_service()
 
         file = Files()
         file.filename = params['filename']
@@ -549,7 +486,7 @@ class FileListView(FilesystemBaseView):
             raise ValidationError("The requested parent object could not be found.",
                                   "parent_hash_id")
 
-        if parent.mime_type != Files.DIRECTORY_MIME_TYPE:
+        if parent.mime_type != DirectoryTypeProvider.MIME_TYPE:
             raise ValidationError(f"The specified parent ({params['parent_hash_id']}) is "
                                   f"not a folder. It is a file, and you cannot make files "
                                   f"become a child of another file.", "parent_hash_id")
@@ -577,7 +514,7 @@ class FileListView(FilesystemBaseView):
                                       f"({source_hash_id}) could not be found.",
                                       "content_hash_id")
 
-            if existing_file.mime_type == Files.DIRECTORY_MIME_TYPE:
+            if existing_file.mime_type == DirectoryTypeProvider.MIME_TYPE:
                 raise ValidationError(f"The specified clone source ({source_hash_id}) "
                                       f"is a folder and that is not supported.", "mime_type")
 
@@ -595,39 +532,51 @@ class FileListView(FilesystemBaseView):
 
         # Create operation
         else:
-            content_field, buffer, url = self._get_content_from_params(params)
+            buffer, url = self._get_content_from_params(params)
 
-            if content_field:
-                buffer.seek(0, io.SEEK_END)
-                size = buffer.tell()
-                buffer.seek(0)
+            # Figure out file size
+            buffer.seek(0, io.SEEK_END)
+            size = buffer.tell()
+            buffer.seek(0)
 
-                if size == 0:
-                    raise ValidationError('The file is blank.', content_field)
+            # Check max file size
+            if size > self.file_max_size:
+                raise ValidationError(
+                    'Your file could not be processed because it is too large.')
 
-                if size > self.file_max_size:
-                    raise ValidationError(
-                        'Your file could not be processed because it is too large.', content_field)
+            # Save the URL
+            file.url = url
 
-                if params.get('mime_type'):
-                    file.mime_type = params['mime_type']
-                else:
-                    try:
-                        file.mime_type = self.detect_mime_type(buffer)
-                    except ValueError as e:
-                        raise ValidationError("The type of file could not be detected.",
-                                              content_field)
-
-                file.doi = self.extract_doi(file.mime_type, buffer)
-                file.content_id = FileContent.get_or_create(buffer)
-                file.url = url
-            else:
+            # Detect mime type
+            if params.get('mime_type'):
                 file.mime_type = params['mime_type']
+            else:
+                provider = file_type_service.detect_type(buffer)
+                buffer.seek(0)  # Must rewind
+                file.mime_type = provider.mime_types[0]
 
+            # Get the provider based on what we know now
+            provider = file_type_service.get(file)
+
+            # Check if the user can even upload this type of file
+            if not provider.can_create():
+                raise ValidationError(f"The provided file type is not accepted.")
+
+            # Validate the content
             try:
-                self.validate_content(file.mime_type, buffer)
+                provider.validate_content(buffer)
+                buffer.seek(0)  # Must rewind
             except ValueError as e:
-                raise ValidationError(f"The provided file may be corrupt: {str(e)}", content_field)
+                raise ValidationError(f"The provided file may be corrupt: {str(e)}")
+
+            # Get the DOI
+            file.doi = provider.extract_doi(buffer)
+            buffer.seek(0)  # Must rewind
+
+            # Save the file content if there's any
+            if size:
+                file.content_id = FileContent.get_or_create(buffer)
+                buffer.seek(0)  # Must rewind
 
         # ========================================
         # Commit and filename conflict resolution
@@ -720,7 +669,7 @@ class FileListView(FilesystemBaseView):
         return self.get_bulk_file_response(hash_ids, current_user,
                                            missing_hash_ids=missing_hash_ids)
 
-    def _get_content_from_params(self, params: dict):
+    def _get_content_from_params(self, params: dict) -> Tuple[io.BytesIO, Optional[str]]:
         url = params.get('content_url')
         buffer = params.get('content_value')
 
@@ -735,13 +684,13 @@ class FileListView(FilesystemBaseView):
                                       'inaccessible or another problem occurred. Please double '
                                       'check the spelling of the URL.', "content_url")
 
-            return 'content_url', buffer, url
+            return buffer, url
 
         # Fetch from upload
         elif buffer is not None:
-            return 'content_value', buffer, None
+            return buffer, None
         else:
-            return None, None, None
+            return io.BytesIO(), None
 
 
 class FileSearchView(FilesystemBaseView):
@@ -936,85 +885,24 @@ class FileExportView(FilesystemBaseView):
         file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
 
-        if file.mime_type == 'vnd.***ARANGO_DB_NAME***.document/map':
-            format = params['format']
-            if format in ['png', 'svg', 'pdf']:
-                content = file.content  # Lazy loaded
-                exported_file = self._export_map(file, format)
-                ext = f".{format}"  # TODO: Fix this extension assumption
+        file_type_service = get_file_type_service()
+        file_type = file_type_service.get(file)
 
-                return make_cacheable_file_response(
-                    request,
-                    exported_file,
-                    etag=content.checksum_sha256.hex(),
-                    filename=f"{file.filename}{ext}",
-                    mime_type=self.extension_mime_types[ext],
-                )
+        try:
+            export = file_type.generate_export(file, params['format'])
+            export_content = export.content.getvalue()
+            checksum_sha256 = hashlib.sha256(export_content).digest()
 
-        raise ValidationError("Unknown or invalid export format for the requested file.",
-                              "format")
-
-    def _export_map(self, file: Files, format: str):
-        json_graph = json.loads(file.content.raw_file)
-        graph_attr = [('margin', '3')]
-
-        if format == 'png':
-            graph_attr.append(('dpi', '300'))
-
-        graph = graphviz.Digraph(
-            file.filename,
-            comment=file.description,
-            engine='neato',
-            graph_attr=graph_attr,
-            format=format)
-
-        for node in json_graph['nodes']:
-            params = {
-                'name': node['hash'],
-                'label': node['display_name'],
-                'pos': f"{node['data']['x'] / 55},{-node['data']['y'] / 55}!",
-                'shape': 'box',
-                'style': 'rounded',
-                'color': '#2B7CE9',
-                'fontcolor': ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})['color'],
-                'fontname': 'sans-serif',
-                'margin': "0.2,0.0"
-            }
-
-            if node['label'] in ['map', 'link', 'note']:
-                label = node['label']
-                params['image'] = f'/home/n4j/assets/{label}.png'
-                params['labelloc'] = 'b'
-                params['forcelabels'] = "true"
-                params['imagescale'] = "both"
-                params['color'] = '#ffffff00'
-
-            if node['label'] in ['association', 'correlation', 'cause', 'effect', 'observation']:
-                params['color'] = ANNOTATION_STYLES_DICT.get(
-                    node['label'],
-                    {'color': 'black'})['color']
-                params['fillcolor'] = ANNOTATION_STYLES_DICT.get(
-                    node['label'],
-                    {'color': 'black'})['color']
-                params['fontcolor'] = 'black'
-                params['style'] = 'rounded,filled'
-
-            if 'hyperlink' in node['data'] and node['data']['hyperlink']:
-                params['href'] = node['data']['hyperlink']
-            if 'source' in node['data'] and node['data']['source']:
-                params['href'] = node['data']['source']
-
-            graph.node(**params)
-
-        for edge in json_graph['edges']:
-            graph.edge(
-                edge['from'],
-                edge['to'],
-                edge['label'],
-                color='#2B7CE9'
+            return make_cacheable_file_response(
+                request,
+                export_content,
+                etag=checksum_sha256.hex(),
+                filename=export.filename,
+                mime_type=export.mime_type,
             )
-
-        return graph.pipe()
+        except ExportFormatError:
+            raise ValidationError("Unknown or invalid export format for the requested file.",
+                                  "format")
 
 
 class FileBackupView(FilesystemBaseView):

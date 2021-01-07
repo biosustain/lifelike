@@ -16,6 +16,7 @@ from neo4japp.models import (
     projects_collaborator_role, Files,
 )
 from neo4japp.services.common import RDBMSBaseDao
+from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.util import AttrDict
 
 
@@ -56,7 +57,7 @@ class ProjectsService(RDBMSBaseDao):
         db.session.add(projects)
 
         ***ARANGO_USERNAME*** = Files()
-        ***ARANGO_USERNAME***.mime_type = Files.DIRECTORY_MIME_TYPE
+        ***ARANGO_USERNAME***.mime_type = DirectoryTypeProvider.MIME_TYPE
         ***ARANGO_USERNAME***.filename = '/'
         ***ARANGO_USERNAME***.user = user
         ***ARANGO_USERNAME***.creator = user

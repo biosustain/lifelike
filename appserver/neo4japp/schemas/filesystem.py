@@ -10,11 +10,13 @@ from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import ResultListSchema, ResultMappingSchema, SingleResultSchema, \
     RankedItemSchema
 from neo4japp.schemas.fields import SortField, FileUploadField
+from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
 
 # ========================================
 # Projects
 # ========================================
+
 
 class ProjectSchema(CamelCaseSchema):
     hash_id = fields.String()
@@ -201,10 +203,8 @@ class FileSearchRequestSchema(CamelCaseSchema):
         'linked',
     ]))
     linked_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
-    mime_types = fields.List(fields.String(validate=marshmallow.validate.OneOf([
-        'vnd.***ARANGO_DB_NAME***.document/map',
-        'application/pdf',
-    ])), required=True, validate=marshmallow.validate.Length(min=1))
+    mime_types = fields.List(fields.String(), required=True,
+                             validate=marshmallow.validate.Length(min=1))
     sort = SortField(columns={
         'filename': Files.filename,
         'creationDate': Files.creation_date,
@@ -245,7 +245,7 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
         for key in ['content_hash_id', 'content_url', 'content_value']:
             if data.get(key) is not None:
                 provided_content_sources.append(key)
-        if mime_type == Files.DIRECTORY_MIME_TYPE:
+        if mime_type == DirectoryTypeProvider.MIME_TYPE:
             if len(provided_content_sources) != 0:
                 raise ValidationError("Directories cannot have any content.")
         else:
