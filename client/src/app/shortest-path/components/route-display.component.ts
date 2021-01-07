@@ -58,14 +58,24 @@ export class RouteDisplayComponent {
         font: {
           size: 12,
         },
+        length: 250,
         widthConstraint: {
           maximum: 90,
         },
       },
       nodes: {
-        size: 25,
+        scaling: {
+          min: 25,
+          max: 50,
+          label: {
+            enabled: true,
+            min: 12,
+            max: 72,
+            maxVisible: 72,
+            drawThreshold: 5,
+          },
+        },
         shape: 'box',
-        // TODO: Investigate the 'scaling' property for dynamic resizing of 'box' shape nodes
       },
     };
 
