@@ -36,7 +36,7 @@ import { ProjectMenuComponent } from './components/project-menu.component';
 import { ProjectIconComponent } from './components/project-icon.component';
 import { ProjectCollaboratorsDialogComponent } from './components/dialog/project-collaborators-dialog.component';
 import { FileAnnotationHistoryDialogComponent } from './components/dialog/file-annotation-history-dialog.component';
-import { FileAnnotationHistoryComponent } from './components/file-annotation-history.component';
+import { ObjectAnnotationHistoryComponent } from './components/object-annotation-history.component';
 import { AnnotationsService } from './services/annotations.service';
 import { ObjectCreationService } from './services/object-creation.service';
 
@@ -70,7 +70,7 @@ import { ObjectCreationService } from './services/object-creation.service';
     ProjectIconComponent,
     ProjectCollaboratorsDialogComponent,
     FileAnnotationHistoryDialogComponent,
-    FileAnnotationHistoryComponent,
+    ObjectAnnotationHistoryComponent,
   ],
   imports: [
     SharedModule,
@@ -92,7 +92,7 @@ import { ObjectCreationService } from './services/object-creation.service';
     ProjectIconComponent,
     ProjectCollaboratorsDialogComponent,
     FileAnnotationHistoryDialogComponent,
-    FileAnnotationHistoryComponent,
+    ObjectAnnotationHistoryComponent,
   ],
   exports: [
     ObjectInfoComponent,
@@ -106,7 +106,7 @@ import { ObjectCreationService } from './services/object-creation.service';
     ObjectMenuComponent,
     ProjectIconComponent,
     FileAnnotationHistoryDialogComponent,
-    FileAnnotationHistoryComponent,
+    ObjectAnnotationHistoryComponent,
   ],
   providers: [
     ProjectsService,
