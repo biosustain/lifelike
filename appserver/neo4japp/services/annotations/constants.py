@@ -1,7 +1,5 @@
 from enum import Enum
 
-from neo4japp.constants import ANNOTATION_STYLES_DICT
-
 
 # lmdb database names
 ANATOMY_MESH_LMDB = 'anatomy_mesh'
@@ -127,23 +125,6 @@ class OrganismCategory(Enum):
     EUKARYOTA = 'Eukaryota'
     VIRUSES = 'Viruses'
     UNCATEGORIZED = 'Uncategorized'
-
-
-class EntityColor(Enum):
-    ANATOMY = ANNOTATION_STYLES_DICT['anatomy']['color']
-    CHEMICAL = ANNOTATION_STYLES_DICT['chemical']['color']
-    COMPOUND = ANNOTATION_STYLES_DICT['compound']['color']
-    DISEASE = ANNOTATION_STYLES_DICT['disease']['color']
-    FOOD = ANNOTATION_STYLES_DICT['food']['color']
-    GENE = ANNOTATION_STYLES_DICT['gene']['color']
-    PHENOMENA = ANNOTATION_STYLES_DICT['phenomena']['color']
-    PHENOTYPE = ANNOTATION_STYLES_DICT['phenotype']['color']
-    PROTEIN = ANNOTATION_STYLES_DICT['protein']['color']
-    SPECIES = ANNOTATION_STYLES_DICT['species']['color']
-
-    # non LMDB entity types
-    COMPANY = ANNOTATION_STYLES_DICT['company']['color']
-    ENTITY = ANNOTATION_STYLES_DICT['entity']['color']
 
 
 class EntityIdStr(Enum):
