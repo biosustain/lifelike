@@ -13,7 +13,6 @@ export interface Links {
 
 export interface Meta {
   type: string;
-  color: string;
   id?: string;
   idType?: string;
   idHyperlink?: string;
