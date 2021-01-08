@@ -1,5 +1,7 @@
-from io import BytesIO
+from io import BufferedIOBase, BytesIO
 from typing import List, Optional, Tuple
+
+import typing
 
 from neo4japp.models import Files
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
@@ -28,7 +30,7 @@ class BaseFileTypeProvider:
         """
         return file.mime_type.lower() in self.mime_types
 
-    def detect_content_confidence(self, buffer: BytesIO) -> Optional[float]:
+    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
         """
         Given the byte buffer, return a confidence level indicating
         whether the file could possibly be of this file type. Larger numbers
@@ -59,7 +61,7 @@ class BaseFileTypeProvider:
         """
         return False
 
-    def validate_content(self, buffer: BytesIO):
+    def validate_content(self, buffer: BufferedIOBase):
         """
         Validate the contents of the given buffer to see if it is correct for
         this given file type.
@@ -74,7 +76,7 @@ class BaseFileTypeProvider:
         # See the map and enrichment table formats for examples
         raise ValueError('format cannot be validated')
 
-    def extract_doi(self, buffer: BytesIO) -> Optional[str]:
+    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
         """
         Attempt to extract a DOI from the file.
 
@@ -85,7 +87,7 @@ class BaseFileTypeProvider:
         # contents to look for the DOI
         return None
 
-    def to_indexable_content(self, buffer: BytesIO):
+    def to_indexable_content(self, buffer: BufferedIOBase) -> BufferedIOBase:
         """
         Return a new buffer that is suited for indexing by Elasticsearch. For
         some file formats, this operation may return a whole different type of file
@@ -98,7 +100,7 @@ class BaseFileTypeProvider:
         # Files of this file type cannot be indexed until you override this method
         # You can actually just return a blob of text (encoded in UTF-8)
         # with all the relevant keywords
-        return BytesIO()
+        return typing.cast(BufferedIOBase, BytesIO())
 
     def should_highlight_content_text_matches(self) -> bool:
         """
@@ -167,7 +169,7 @@ class FileTypeService:
                 return provider
         return self.default_provider
 
-    def detect_type(self, buffer: BytesIO) -> BaseFileTypeProvider:
+    def detect_type(self, buffer: BufferedIOBase) -> BaseFileTypeProvider:
         """
         Detect the file type based on the file's contents. A provider
         will be returned regardless, although it may be the default one.
