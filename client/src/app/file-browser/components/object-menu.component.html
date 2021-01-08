@@ -9,6 +9,9 @@
     <button ngbDropdownItem (click)="reannotate([object])" *ngIf="object.isAnnotatable">
       Re-annotate
     </button>
+    <button ngbDropdownItem (click)="openAnnotationDialog([object])" *ngIf="object.isAnnotatable">
+      Re-annotate with...
+    </button>
   </ng-container>
   <ng-container *ngIf="object.isVersioned">
     <button ngbDropdownItem (click)="openVersionHistoryDialog(object)" *ngIf="!showRestore">

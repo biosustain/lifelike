@@ -31,6 +31,10 @@ import { openDownloadForBlob } from '../../shared/utils/files';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
 import { ObjectCreationService } from './object-creation.service';
+import {
+  ObjectAnnotateDialogComponent,
+  ObjectAnnotateDialogValue,
+} from '../components/dialog/object-annotate-dialog.component';
 
 @Injectable()
 export class FilesystemObjectActions {
@@ -192,6 +196,27 @@ export class FilesystemObjectActions {
     dialogRef.componentInstance.accept = (() => {
       const progressDialogRef = this.createProgressDialog(`Deleting ${getObjectLabel(targets)}...`);
       return this.filesystemService.delete(targets.map(target => target.hashId))
+        .pipe(
+          finalize(() => progressDialogRef.close()),
+          this.errorHandler.create(),
+        )
+        .toPromise();
+    });
+    return dialogRef.result;
+  }
+
+  /**
+   * Open a dialog to annotate a file.
+   * @param targets the files to annotate
+   */
+  openAnnotationDialog(targets: FilesystemObject[]): Promise<any> {
+    const dialogRef = this.modalService.open(ObjectAnnotateDialogComponent);
+    dialogRef.componentInstance.objects = targets;
+    dialogRef.componentInstance.accept = ((changes: ObjectAnnotateDialogValue) => {
+      const progressDialogRef = this.createProgressDialog(`Annotating ${getObjectLabel(targets)}...`);
+      return this.annotationsService.generateAnnotations(
+        targets.map(target => target.hashId), changes.request,
+      )
         .pipe(
           finalize(() => progressDialogRef.close()),
           this.errorHandler.create(),
