@@ -9,7 +9,6 @@ import {
   ObjectEditDialogValue,
 } from '../components/dialog/object-edit-dialog.component';
 import { Injectable } from '@angular/core';
-import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { AnnotationsService } from './annotations.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -22,8 +21,7 @@ import { FilesystemService } from './filesystem.service';
 @Injectable()
 export class ObjectCreationService {
 
-  constructor(protected readonly filesService: PdfFilesService,
-              protected readonly annotationsService: AnnotationsService,
+  constructor(protected readonly annotationsService: AnnotationsService,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
               protected readonly progressDialog: ProgressDialog,
