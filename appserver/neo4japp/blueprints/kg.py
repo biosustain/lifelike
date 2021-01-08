@@ -6,7 +6,6 @@ from typing import List
 from sqlalchemy.orm.exc import NoResultFound
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import get_kg_service
 from neo4japp.models import (
     Worksheet
