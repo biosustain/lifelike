@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Project, ProjectSpaceService } from '../../services/project-space.service';
+import { Project } from '../../services/project-space.service';
 
 // @ts-ignore
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -47,8 +47,7 @@ export class BrowserProjectListComponent implements OnInit, OnDestroy {
 
   private loadTaskSubscription: Subscription;
 
-  constructor(protected readonly projectSpaceService: ProjectSpaceService,
-              protected readonly projectService: ProjectsService,
+  constructor(protected readonly projectService: ProjectsService,
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly progressDialog: ProgressDialog,
               protected readonly ngbModal: NgbModal,

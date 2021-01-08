@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
-import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -11,11 +10,13 @@ import { catchError, map, mergeMap } from 'rxjs/operators';
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 import { ApiService } from '../../shared/services/api.service';
 import {
-  BulkObjectUpdateRequest, FileAnnotationHistoryResponse,
+  BulkObjectUpdateRequest,
+  FileAnnotationHistoryResponse,
   FilesystemObjectData,
   ObjectBackupCreateRequest,
   ObjectCreateRequest,
-  ObjectExportRequest, ObjectLockData,
+  ObjectExportRequest,
+  ObjectLockData,
   ObjectSearchRequest,
   ObjectVersionHistoryResponse,
 } from '../schema';
@@ -23,7 +24,12 @@ import { objectToFormData, objectToMixedFormData } from '../../shared/utils/form
 import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
 import { serializePaginatedParams } from '../../shared/utils/params';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
-import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult } from '../../shared/schemas/common';
+import {
+  PaginatedRequestOptions,
+  ResultList,
+  ResultMapping,
+  SingleResult,
+} from '../../shared/schemas/common';
 import { FileAnnotationHistory } from '../models/file-annotation-history';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { ObjectLock } from '../models/object-lock';
@@ -35,8 +41,7 @@ import { ObjectLock } from '../models/object-lock';
 export class FilesystemService {
   protected lmdbsDates = new BehaviorSubject<object>({});
 
-  constructor(protected readonly filesService: PdfFilesService,
-              protected readonly router: Router,
+  constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
               protected readonly progressDialog: ProgressDialog,
@@ -44,9 +49,17 @@ export class FilesystemService {
               protected readonly route: ActivatedRoute,
               protected readonly http: HttpClient,
               protected readonly apiService: ApiService) {
-    this.filesService.getLMDBsDates().subscribe(lmdbsDates => {
+    this.getLMDBsDates().subscribe(lmdbsDates => {
       this.lmdbsDates.next(lmdbsDates);
     });
+  }
+
+  private getLMDBsDates(): Observable<object> {
+    // TODO: Type this method
+    return this.http.get<object>(
+      `/api/files/lmdbs_dates`,
+      this.apiService.getHttpOptions(true),
+    );
   }
 
   search(options: ObjectSearchRequest): Observable<FilesystemObjectList> {
@@ -213,7 +226,7 @@ export class FilesystemService {
         ...this.apiService.getHttpOptions(true),
       },
     ).pipe(
-      map(() => ({}))
+      map(() => ({})),
     );
   }
 
@@ -329,7 +342,7 @@ export class FilesystemService {
         ...this.apiService.getHttpOptions(true),
       },
     ).pipe(
-      map(() => ({}))
+      map(() => ({})),
     );
   }
 }

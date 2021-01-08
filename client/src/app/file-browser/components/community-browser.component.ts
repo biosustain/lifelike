@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ProjectSpaceService } from '../services/project-space.service';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -9,7 +8,7 @@ import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { FormControl, FormGroup } from '@angular/forms';
-import { FilesystemObject} from '../models/filesystem-object';
+import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
 import { FilesystemService } from '../services/filesystem.service';
 import { PaginatedRequestOptions, StandardRequestOptions } from '../../shared/schemas/common';
@@ -48,8 +47,7 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
   private routerParamSubscription: Subscription;
   private loadTaskSubscription: Subscription;
 
-  constructor(private readonly projectSpaceService: ProjectSpaceService,
-              private readonly workspaceManager: WorkspaceManager,
+  constructor(private readonly workspaceManager: WorkspaceManager,
               private readonly filesystemService: FilesystemService,
               private readonly progressDialog: ProgressDialog,
               private readonly ngbModal: NgbModal,

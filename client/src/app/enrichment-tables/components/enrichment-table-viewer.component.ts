@@ -16,7 +16,6 @@ import { ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { DownloadService } from 'app/shared/services/download.service';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
 import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
 import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
@@ -97,7 +96,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
 
   constructor(protected readonly route: ActivatedRoute,
               protected readonly worksheetViewerService: EnrichmentTableService,
-              protected readonly filesService: PdfFilesService,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
               protected readonly errorHandler: ErrorHandler,
