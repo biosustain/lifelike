@@ -1,13 +1,46 @@
 import { Injectable } from '@angular/core';
-import {
-    HttpClient,
-    HttpHeaders,
-} from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
-import { AbstractService } from 'app/shared/services/abstract-service';
-import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { Project } from './project-space.service';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { ApiService } from '../../shared/services/api.service';
+
+@Injectable()
+export class EnrichmentTableService {
+  constructor(protected readonly http: HttpClient,
+              protected readonly apiService: ApiService) {
+  }
+
+  /**
+   * Match gene names to NCBI nodes with same name and has given taxonomy ID.
+   * @param geneNames list of input gene names to match to
+   * @param organism tax id of organism
+   */
+  matchNCBINodes(geneNames: string[], organism: string): Observable<NCBIWrapper[]> {
+    return this.http.post<{ result: NCBIWrapper[] }>(
+      `/api/enrichment-table/match-ncbi-nodes`,
+      {geneNames, organism},
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map((resp: any) => resp.result),
+    );
+  }
+
+  /**
+   * Match enrichment domains to given node ids.
+   * @param nodeIds list of node ids to match to enrichment domains
+   * @param taxID tax id of organism
+   */
+  getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<EnrichmentWrapper[]> {
+    return this.http.post<{ result: EnrichmentWrapper[] }>(
+      `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
+      {nodeIds, taxID},
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map((resp: any) => resp.result),
+    );
+  }
+}
+
 
 export interface Worksheet {
   id: number;
@@ -113,46 +146,4 @@ export interface EnrichmentWrapper {
   string: StringWrapper;
   uniprot: UniprotWrapper;
   node_id: number;
-}
-
-@Injectable({
-  providedIn: 'root'
-})
-export class EnrichmentTableService extends AbstractService {
-  readonly worksheetAPI = '/api/enrichment-table';
-  readonly kgAPI = '/api/knowledge-graph';
-
-  constructor(auth: AuthenticationService, http: HttpClient) {
-    super(auth, http);
-  }
-
-  /**
-   * Match gene names to NCBI nodes with same name and has given taxonomy ID.
-   * @param geneNames list of input gene names to match to
-   * @param organism tax id of organism
-   */
-  matchNCBINodes(geneNames: string[], organism: string): Observable<NCBIWrapper[]> {
-    return this.http.post<{result: NCBIWrapper[]}>(
-      `${this.worksheetAPI}/match-ncbi-nodes`,
-      {geneNames, organism},
-      this.getHttpOptions(true),
-    ).pipe(
-      map((resp: any) => resp.result),
-    );
-  }
-
-  /**
-   * Match enrichment domains to given node ids.
-   * @param nodeIds list of node ids to match to enrichment domains
-   * @param taxID tax id of organism
-   */
-  getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<EnrichmentWrapper[]> {
-    return this.http.post<{result: EnrichmentWrapper[]}>(
-      `${this.kgAPI}/get-ncbi-nodes/enrichment-domains`,
-      {nodeIds, taxID},
-      this.getHttpOptions(true),
-    ).pipe(
-      map((resp: any) => resp.result),
-    );
-  }
 }

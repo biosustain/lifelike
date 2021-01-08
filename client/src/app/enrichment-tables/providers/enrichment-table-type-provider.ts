@@ -7,6 +7,7 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { Injectable } from '@angular/core';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
+import { EnrichmentData } from '../components/enrichment-table-viewer.component';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 
@@ -35,7 +36,9 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
           return this.objectCreationService.openCreateDialog(object, {
             title: 'New Enrichment Table',
             request: {
-              contentValue: new Blob([JSON.stringify({})]),
+              contentValue: new Blob([JSON.stringify({
+                data: '',
+              } as EnrichmentData)]),
             },
             ...(options.createDialog || {}),
           });
