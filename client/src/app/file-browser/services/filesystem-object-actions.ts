@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { EnrichmentTableCreateDialogComponent } from '../../enrichment-tables/components/enrichment-table-create-dialog.component';
 import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,26 +7,23 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Progress, ProgressMode } from '../../interfaces/common-dialog.interface';
-import { filter, finalize, map, mergeMap, tap } from 'rxjs/operators';
-import { HttpEventType } from '@angular/common/http';
+import { Progress } from '../../interfaces/common-dialog.interface';
+import { finalize, map } from 'rxjs/operators';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
-import {
-  FilesystemObject,
-
-} from '../models/filesystem-object';
+import { FilesystemObject } from '../models/filesystem-object';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ObjectSelectionDialogComponent } from '../components/dialog/object-selection-dialog.component';
 import { FilesystemService } from './filesystem.service';
-import { ObjectEditDialogComponent, ObjectEditDialogValue } from '../components/dialog/object-edit-dialog.component';
+import {
+  ObjectEditDialogComponent,
+  ObjectEditDialogValue,
+} from '../components/dialog/object-edit-dialog.component';
 import { getObjectLabel } from '../utils/objects';
-import { AnnotationGenerationRequest, ObjectCreateRequest } from '../schema';
 import { clone } from 'lodash';
 import { ObjectVersionHistoryDialogComponent } from '../components/dialog/object-version-history-dialog.component';
 import { ObjectVersion } from '../models/object-version';
-import { EnrichmentTableEditDialogComponent } from '../../enrichment-tables/components/enrichment-table-edit-dialog.component';
 import {
   ObjectExportDialogComponent,
   ObjectExportDialogValue,
@@ -36,9 +32,6 @@ import { openDownloadForBlob } from '../../shared/utils/files';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
 import { ObjectCreationService } from './object-creation.service';
-import { ENRICHMENT_TABLE_MIMETYPE } from '../../enrichment-tables/providers/enrichment-table-type-provider';
-import { MAP_MIMETYPE } from '../../drawing-tool/providers/map-type-provider';
-import { DIRECTORY_MIMETYPE } from '../providers/directory-type-provider';
 
 @Injectable()
 export class FilesystemObjectActions {
@@ -140,29 +133,6 @@ export class FilesystemObjectActions {
         contentUrl: null,
         contentValue: null,
       },
-    });
-  }
-
-  openEnrichmentTableEditDialog(target: FilesystemObject): Promise<any> {
-    const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
-    dialogRef.componentInstance.fileId = target.id;
-    dialogRef.componentInstance.projectName = target.locator.projectName;
-    return dialogRef.result.then((result) => {
-      const progressDialogRef = this.createProgressDialog('Saving changes...');
-
-      const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
-      return this.filesService.editGeneList(
-        target.locator.projectName,
-        target.id,
-        enrichmentData,
-        result.name,
-        result.description,
-      )
-        .pipe(
-          this.errorHandler.create(),
-          finalize(() => progressDialogRef.close()),
-        )
-        .toPromise();
     });
   }
 

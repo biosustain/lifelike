@@ -1,29 +1,32 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { FormControl, FormGroup, Validators, FormArray } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { Directory } from '../../file-browser/services/project-space.service';
 import { OrganismAutocomplete } from 'app/interfaces/neo4j.interface';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
+import { EnrichmentData } from './enrichment-table-viewer.component';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { BehaviorSubject } from 'rxjs';
+import { Progress } from '../../interfaces/common-dialog.interface';
+import { finalize, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-enrichment-table-edit-dialog',
   templateUrl: './enrichment-table-edit-dialog.component.html',
 })
-export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponent implements OnInit {
-  @Input() fileId: string;
-  @Input() projectName: string;
+export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponent<EnrichmentData> {
+  @Input() object: FilesystemObject;
+  private _data: EnrichmentData;
 
   form: FormGroup = new FormGroup({
-    name: new FormControl('', Validators.required),
-    description: new FormControl(''),
     organism: new FormControl('', Validators.required),
     entitiesList: new FormControl('', Validators.required),
     domainsList: new FormArray([]),
   });
-  filename: string;
+
   organismTaxId: string;
   domains: string[] = [];
 
@@ -32,48 +35,70 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
     'UniProt',
     'String',
     'GO',
-    'Biocyc'
+    'Biocyc',
   ];
 
-  constructor(
-    modal: NgbActiveModal,
-    messageDialog: MessageDialog,
-    private readonly filesService: PdfFilesService,
-    private search: SharedSearchService,
-  ) {
+  constructor(modal: NgbActiveModal,
+              messageDialog: MessageDialog,
+              protected readonly search: SharedSearchService,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly progressDialog: ProgressDialog) {
     super(modal, messageDialog);
   }
 
-  ngOnInit() {
-    this.filesService.getEnrichmentData(this.projectName, this.fileId).subscribe((result) => {
-      this.filename = result.name;
-      const description = result.description;
-      const resultArray = result.data.split('/');
-      const importGenes: string = resultArray[0].split(',').filter(gene => gene !== '').join('\n');
-      this.organismTaxId = resultArray[1];
-      if (resultArray.length > 3) {
-        if (resultArray[3] !== '') {
-          this.domains = resultArray[3].split(',');
-        }
+  get data() {
+    return this._data;
+  }
+
+  @Input()
+  set data(value: EnrichmentData) {
+    this._data = value;
+
+    const resultArray = value.data.split('/');
+    const importGenes: string = resultArray[0].split(',').filter(gene => gene !== '').join('\n');
+    this.organismTaxId = resultArray[1];
+    if (resultArray.length > 3) {
+      if (resultArray[3] !== '') {
+        this.domains = resultArray[3].split(',');
       }
-      this.search.getOrganismFromTaxId(this.organismTaxId).subscribe((searchResult) => {
-        this.form.get('name').setValue(this.filename || '');
-        this.form.get('description').setValue(description || '');
+    }
+
+    const progressDialogRef = this.progressDialog.display({
+      title: `Loading Parameters`,
+      progressObservable: new BehaviorSubject<Progress>(new Progress({
+        status: 'Loading parameters...',
+      })),
+    });
+
+    this.search.getOrganismFromTaxId(this.organismTaxId).pipe(
+      finalize(() => progressDialogRef.close()),
+      map(searchResult => {
         this.form.get('entitiesList').setValue(importGenes || '');
         this.setOrganism(searchResult);
         this.setDomains();
-      });
+        return searchResult;
+      }),
+      this.errorHandler.create(),
+    ).subscribe(() => {
+    }, () => {
+      // If an error happened, we need to close the dialog because it is totally broken now
+      this.cancel();
     });
   }
 
-  setDomains() {
+  private setDomains() {
     const formArray: FormArray = this.form.get('domainsList') as FormArray;
     this.domains.forEach((domain) => formArray.push(new FormControl(domain)));
   }
 
-  getValue() {
+  setOrganism(organism: OrganismAutocomplete | null) {
+    this.form.get('organism').setValue(organism ? organism.tax_id + '/' + organism.organism_name : null);
+  }
+
+  getValue(): EnrichmentData {
+    const value = this.form.value;
     return {
-      ...this.form.value,
+      data: value.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + value.organism + '/' + value.domainsList.join(','),
     };
   }
 
@@ -98,10 +123,6 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
         i++;
       });
     }
-  }
-
-  setOrganism(organism: OrganismAutocomplete | null) {
-    this.form.get('organism').setValue(organism ? organism.tax_id + '/' + organism.organism_name : null);
   }
 }
 

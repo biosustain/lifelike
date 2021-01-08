@@ -9,6 +9,7 @@ import { MapComponent } from '../components/map.component';
 import { of } from 'rxjs';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
+import { UniversalGraph } from '../services/interfaces';
 
 export const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
 
@@ -51,7 +52,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
               contentValue: new Blob([JSON.stringify({
                 edges: [],
                 nodes: [],
-              })]),
+              } as UniversalGraph)]),
             },
             ...(options.createDialog || {}),
           });

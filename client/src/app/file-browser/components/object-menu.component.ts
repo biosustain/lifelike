@@ -28,6 +28,7 @@ export class ObjectMenuComponent {
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
   @Output() objectRefresh = new EventEmitter<FilesystemObject>();
   @Output() objectRestore = new EventEmitter<ObjectVersion>();
+  @Output() objectUpdate = new EventEmitter<FilesystemObject>();
 
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
@@ -43,6 +44,7 @@ export class ObjectMenuComponent {
       this.snackBar.open(`Saved changes to ${getObjectLabel(target)}.`, 'Close', {
         duration: 5000,
       });
+      this.objectUpdate.emit(target);
     }, () => {
     });
   }

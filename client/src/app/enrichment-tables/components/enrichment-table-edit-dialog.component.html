@@ -1,28 +1,22 @@
 <form [formGroup]="form" (ngSubmit)="submit()">
   <div>
-    <app-modal-header *ngIf="filename" (cancel)="cancel()">
-      Change Enrichment Params for {{ filename }}
+    <app-modal-header (cancel)="cancel()">
+      Change Enrichment Parameters for {{ object?.filename }}
     </app-modal-header>
 
     <app-modal-body>
-      <app-form-row for="name" label="Name" [control]="form.get('name')">
-        <input type="text" formControlName="name" id="username" [appFormInput]="form.get('name')" appAutoFocus>
-      </app-form-row>
-      <app-form-row for="description" label="Description" [control]="form.get('description')">
-        <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
-                rows="5" maxlength="2048"></textarea>
-      </app-form-row>
       <app-form-row for="entitiesList" label="List of Gene Names" [control]="form.get('entitiesList')">
         <textarea formControlName="entitiesList" id="entitiesList" [appFormInput]="form.get('entitiesList')"
                 rows="5" placeholder="* New line for each gene name"></textarea>
       </app-form-row>
-      <app-form-row *ngIf='organismTaxId' for="organism" label="Organism" [control]="form.get('organism')">
+      <app-form-row for="organism" label="Organism" [control]="form.get('organism')">
         <app-organism-autocomplete
           formId="organism"
           [organismTaxId]="organismTaxId"
           (organismPicked)="setOrganism($event)"
         ></app-organism-autocomplete>
     </app-form-row>
+
     <app-form-row for="domainsList" label="Domains to Show" [control]="form.get('domainsList')">
       <div *ngFor="let choice of checks; let i=index">
         <label>

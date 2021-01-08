@@ -204,23 +204,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
-    dataTransfer.setData('text/plain', this.map.label);
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
-      display_name: this.map.label,
-      label: 'map',
-      sub_labels: [],
-      data: {
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.locator + '',
-        }],
-        sources: [{
-          domain: 'File Source',
-          url: ['/projects', encodeURIComponent(this.map.project.name),
-            'maps', encodeURIComponent(this.map.hashId)].join('/'),
-        }],
-      },
-    } as Partial<UniversalGraphNode>));
+    this.map.addDataTransferData(dataTransfer);
   }
 
   // ========================================
