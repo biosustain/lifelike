@@ -44,7 +44,7 @@
                         (wordOpen)="openWord($event)"></app-word-cloud>
       </div>
 
-      <div class="module-body border-top">
+      <div class="module-body border-top" *ngIf="object.isAnnotatable">
         <div class="module-section">
           <div class="module-section-header">
             <h2 class="module-section-header-title">Annotation History</h2>
