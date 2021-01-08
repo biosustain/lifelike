@@ -282,6 +282,7 @@
       <!-- Body -->
       <div class="flex-fill overflow-auto">
         <app-object-list [objects]="result.value.children" [appLinks]="true"
+                         [parent]="result.value" [showDescription]="true"
                          (refreshRequest)="load(result.value.hashId)"
                          (objectOpen)="openObject($event)"></app-object-list>
       </div>

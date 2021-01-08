@@ -1,10 +1,23 @@
 <div class="module-body-split module-body-browser-split">
   <div class="module-body-split-main">
+    <ng-container *ngIf="showDescription && parent && parent.description && parent.description.trim().length">
+      <div class="border-bottom p-4 text-muted d-flex align-items-start">
+        <div class="flex-fill">
+          <span style="white-space: pre-line">{{ parent.description }}</span>
+          <a href="#" ngbTooltip="Edit Folder Description"
+             container="body" (click)="openParentEditDialog(); $event.preventDefault()">
+            (edit)
+          </a>
+        </div>
+      </div>
+    </ng-container>
+
     <table class="table module-body-table table-selectable"
            style="table-layout: fixed">
       <colgroup>
         <col>
-        <col style="width: 15%; max-width: 140px" class="d-none d-cbp-sm-table-column"> <!-- Annotated -->
+        <col style="width: 15%; max-width: 140px" class="d-none d-cbp-sm-table-column">
+        <!-- Annotated -->
         <col style="width: 90px" class="d-none d-cbp-md-table-column"> <!-- Created -->
         <col style="width: 120px"> <!-- Author -->
         <col style="width: 80px"> <!-- Dropdown -->
@@ -12,7 +25,8 @@
       <thead>
       <tr>
         <th class="text-truncate">
-          <ng-container *ngIf="objects != null && objects.multipleSelection; else singleSelectionSelectAll">
+          <ng-container
+            *ngIf="objects != null && objects.multipleSelection; else singleSelectionSelectAll">
             <div class="custom-control custom-checkbox">
               <input type="checkbox" class="custom-control-input" id="{{ id }}-select-all"
                      [checked]="objects.isAllSelected()"
@@ -83,7 +97,8 @@
         <td class="align-middle text-nowrap text-truncate"
             (click)="objects.toggle(object)">
           <div class="custom-control custom-checkbox text-truncate">
-            <input type="checkbox" class="custom-control-input" id="{{ id }}-object-{{ objectIndex }}"
+            <input type="checkbox" class="custom-control-input"
+                   id="{{ id }}-object-{{ objectIndex }}"
                    (change)="objects.toggle(object)"
                    [checked]="objects.isSelected(object)">
             <label class="custom-control-label d-block" for="{{ id }}-object-{{ objectIndex }}">
@@ -114,13 +129,15 @@
                   <i class="fa fa-fw text-icon fa-globe"></i>
                 </div>
 
-                <div class="d-inline-block ml-1" *ngIf="!object.privileges.writable && !object.privileges.commentable"
+                <div class="d-inline-block ml-1"
+                     *ngIf="!object.privileges.writable && !object.privileges.commentable"
                      ngbTooltip="You do not have permission to edit this item."
                      container="body">
                   <i class="fa fa-fw text-icon fa-lock"></i>
                 </div>
 
-                <div class="d-inline-block ml-1" *ngIf="!object.privileges.writable && object.privileges.commentable"
+                <div class="d-inline-block ml-1"
+                     *ngIf="!object.privileges.writable && object.privileges.commentable"
                      ngbTooltip="You can make comments on this item, but you cannot edit it."
                      container="body">
                   <i class="fa fa-fw text-icon fa-comment"></i>
