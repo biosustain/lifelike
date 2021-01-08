@@ -111,7 +111,6 @@ class Annotation(CamelDictMixin):
             google: str = attr.ib(default='')
 
         type: str = attr.ib()
-        color: str = attr.ib()
         links: Links = attr.ib()
         id: str = attr.ib()
         id_type: str = attr.ib()

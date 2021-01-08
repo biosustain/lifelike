@@ -43,7 +43,6 @@ def create_mock_entity_annotations(data: List[Tuple[str, str, int, int, str]]):
         rects=[[1, 2]],
         meta=Annotation.Meta(
             type=kwtype,
-            color='',
             id='',
             id_type='',
             id_hyperlink='',
@@ -66,7 +65,6 @@ def create_mock_gene_annotations(data: List[Tuple[str, str, int, int, str]]):
         rects=[[1, 2]],
         meta=GeneAnnotation.GeneMeta(
             type=EntityType.GENE.value,
-            color='',
             id='',
             id_type='',
             id_hyperlink='',
@@ -324,7 +322,6 @@ def test_local_inclusion_organism_gene_crossmatch(
         'meta': {
             'id': '9606',
             'type': 'Species',
-            'color': '#0277bd',
             'links': {
                 'ncbi': 'https://www.ncbi.nlm.nih.gov/gene/?query=hooman',
                 'mesh': 'https://www.ncbi.nlm.nih.gov/mesh/?term=hooman',

@@ -30,6 +30,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { escape, uniqueId } from 'lodash';
 import { SEARCH_LINKS } from 'app/shared/links';
 
+import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+
 declare var jQuery: any;
 
 @Component({
@@ -364,7 +366,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   normalizeBackgroundColor(an: Annotation): string {
-    return an.meta.color;
+    return ENTITY_TYPE_MAP[an.meta.type].color;
   }
 
   prepareTooltipContent(an: Annotation): string {
@@ -666,7 +668,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       const meta: Meta = {
         allText: that.allText,
         type: 'link',
-        color: 'not-defined',
       };
       const location: Location = {
         pageNumber: that.currentPage,
