@@ -335,7 +335,11 @@ class FilesystemBaseView(MethodView):
                     changed_fields.add('filename')
 
                 if 'public' in params:
-                    if file.public != params['public']:
+                    # Directories can't be public because it doesn't work right in all
+                    # places yet (namely not all API endpoints that query for public files will
+                    # pick up files within a public directory)
+                    if file.mime_type != DirectoryTypeProvider.MIME_TYPE and \
+                            file.public != params['public']:
                         file.public = params['public']
                         changed_fields.add('public')
 

@@ -66,7 +66,7 @@
                 rows="10"></textarea>
     </app-form-row>
 
-    <app-form-row [control]="form.get('description')">
+    <app-form-row [control]="form.get('public')" *ngIf="!object.isDirectory">
       <div class="custom-control custom-checkbox">
         <input type="checkbox" class="custom-control-input" id="public" formControlName="public">
         <label class="custom-control-label" for="public">Publicly share with the community</label>
