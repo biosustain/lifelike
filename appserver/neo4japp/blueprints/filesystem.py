@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from urllib.error import URLError
 
+import typing
 from deepdiff import DeepDiff
 from flask import Blueprint, jsonify, g, request, make_response
 from flask.views import MethodView
@@ -673,7 +674,7 @@ class FileListView(FilesystemBaseView):
         return self.get_bulk_file_response(hash_ids, current_user,
                                            missing_hash_ids=missing_hash_ids)
 
-    def _get_content_from_params(self, params: dict) -> Tuple[io.BytesIO, Optional[str]]:
+    def _get_content_from_params(self, params: dict) -> Tuple[io.BufferedIOBase, Optional[str]]:
         url = params.get('content_url')
         buffer = params.get('content_value')
 
@@ -694,7 +695,7 @@ class FileListView(FilesystemBaseView):
         elif buffer is not None:
             return buffer, None
         else:
-            return io.BytesIO(), None
+            return typing.cast(io.BufferedIOBase, io.BytesIO()), None
 
 
 class FileSearchView(FilesystemBaseView):
