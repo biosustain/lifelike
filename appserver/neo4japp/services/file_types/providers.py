@@ -1,10 +1,11 @@
 import io
 import json
 import re
-from io import BytesIO
+from io import BufferedIOBase
 from typing import Optional, List, Dict
 
 import graphviz
+import typing
 from pdfminer import high_level
 
 from neo4japp.constants import ANNOTATION_STYLES_DICT
@@ -32,7 +33,7 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BytesIO):
+    def validate_content(self, buffer: BufferedIOBase):
         # Figure out file size
         buffer.seek(0, io.SEEK_END)
         size = buffer.tell()
@@ -45,17 +46,17 @@ class PDFTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'application/pdf'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BytesIO) -> Optional[float]:
+    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
         return -1
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BytesIO):
+    def validate_content(self, buffer: BufferedIOBase):
         # TODO: Actually validate PDF content
         pass
 
-    def extract_doi(self, buffer: BytesIO) -> Optional[str]:
+    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
         data = buffer.read()
         buffer.seek(0)
 
@@ -88,7 +89,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
             doi = doi[:-1]
         return doi if doi.startswith('http') else f'https://doi.org/{doi}'
 
-    def to_indexable_content(self, buffer: BytesIO):
+    def to_indexable_content(self, buffer: BufferedIOBase):
         return buffer  # Elasticsearch can index PDF files directly
 
     def should_highlight_content_text_matches(self) -> bool:
@@ -99,7 +100,7 @@ class MapTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.***ARANGO_DB_NAME***.document/map'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BytesIO) -> Optional[float]:
+    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
         try:
             self.validate_content(buffer)
             return 0
@@ -111,11 +112,11 @@ class MapTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BytesIO):
-        graph = json.loads(buffer.getvalue())
+    def validate_content(self, buffer: BufferedIOBase):
+        graph = json.loads(buffer.read())
         validate_map(graph)
 
-    def to_indexable_content(self, buffer: BytesIO):
+    def to_indexable_content(self, buffer: BufferedIOBase):
         content_json = json.load(buffer)
 
         map_data: Dict[str, List[Dict[str, str]]] = {
@@ -137,7 +138,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 'detail': edge_data.get('detail', '') if edge_data else '',
             })
 
-        return BytesIO(json.dumps(map_data).encode('utf-8'))
+        return typing.cast(BufferedIOBase, io.BytesIO(json.dumps(map_data).encode('utf-8')))
 
     def generate_export(self, file: Files, format: str) -> FileExport:
         if format not in ('png', 'svg', 'pdf'):
@@ -205,7 +206,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         ext = f".{format}"
 
         return FileExport(
-            content=BytesIO(graph.pipe()),
+            content=io.BytesIO(graph.pipe()),
             mime_type=extension_mime_types[ext],
             filename=f"{file.filename}{ext}"
         )
@@ -215,7 +216,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table'
     mime_types = (MIME_TYPE,)
 
-    def detect_content_confidence(self, buffer: BytesIO) -> Optional[float]:
+    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
         try:
             self.validate_content(buffer)
             return 0
@@ -227,6 +228,6 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer):
-        data = json.loads(buffer.getvalue())
+    def validate_content(self, buffer: BufferedIOBase):
+        data = json.loads(buffer.read())
         validate_enrichment_table(data)
