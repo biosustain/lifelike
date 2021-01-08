@@ -94,6 +94,16 @@ export class ObjectMenuComponent {
     });
   }
 
+  openAnnotationDialog(targets: FilesystemObject[]) {
+    return this.actions.openAnnotationDialog(targets).then(() => {
+      this.snackBar.open(`Annotated ${getObjectLabel(targets)}.`, 'Close', {
+        duration: 5000,
+      });
+      this.refreshRequest.next();
+    }, () => {
+    });
+  }
+
   openVersionHistoryDialog(target: FilesystemObject) {
     return this.actions.openVersionHistoryDialog(target);
   }
