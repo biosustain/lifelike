@@ -36,7 +36,8 @@
               <div ngbDropdownMenu>
                 <app-object-menu [object]="map" [forEditing]="true"
                                  [showOpen]="false" [showDelete]="false"
-                                 [showRestore]="true" (objectRestore)="restore($event)">
+                                 [showRestore]="true" (objectRestore)="restore($event)"
+                                 (objectUpdate)="emitModuleProperties()">
                 </app-object-menu>
               </div>
             </div>
