@@ -507,7 +507,7 @@ class KgService(HybridDBDao):
 
     def get_data_from_file(self, filename):
         directory = os.path.realpath(os.path.dirname(__file__))
-        with open(os.path.join(directory, f'./shortest-path-data/{filename}'), 'r') as data_file:
+        with open(os.path.join(directory, f'./shortest_path_data/{filename}'), 'r') as data_file:
             return json.load(data_file)
 
     def get_uniprot_genes_query(self):
