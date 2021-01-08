@@ -222,6 +222,9 @@
                   <button ngbDropdownItem (click)="reannotate(result.value.children.selection)">
                     Re-annotate
                   </button>
+                  <button ngbDropdownItem (click)="openAnnotationDialog(result.value.children.selection)">
+                    Re-annotate with...
+                  </button>
                   <div class="dropdown-divider"></div>
                   <button ngbDropdownItem (click)="openMoveDialog(result.value.children.selection)">
                     Move to...

@@ -170,6 +170,16 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
+  openAnnotationDialog(targets: FilesystemObject[]) {
+    return this.actions.openAnnotationDialog(targets).then(() => {
+      this.snackBar.open(`Annotated ${getObjectLabel(targets)}.`, 'Close', {
+        duration: 5000,
+      });
+      this.load(this.hashId);
+    }, () => {
+    });
+  }
+
   openMoveDialog(targets: FilesystemObject[]) {
     if (!this.selectionExists(targets)) {
       return;

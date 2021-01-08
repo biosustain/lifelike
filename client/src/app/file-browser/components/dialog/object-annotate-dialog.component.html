@@ -1,0 +1,42 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">
+    {{ title }}
+  </app-modal-header>
+
+  <app-modal-body>
+    <app-form-row
+      label="Organism"
+      ngbTooltip="If you know the specific organism strain related to the paper, you may optionally search for it by name here."
+    >
+      <app-organism-autocomplete
+        formId="organism"
+        [organismTaxId]="form.get('organism').value"
+        (organismPicked)="organismChanged($event)"
+      ></app-organism-autocomplete>
+    </app-form-row>
+
+    <ng-container *ngIf="(userRoles$ | async)?.includes('admin')">
+      <app-form-row class="mt-2" for="annotationMethod" label="Annotations"
+                    [control]="form.get('annotationMethod')">
+        <div *ngFor="let method of annotationMethodChoices">
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input"
+                   id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
+                   (change)="onAnnotationMethodPick(method, $event.target.checked)"
+                   [checked]="form.get('annotationMethod').value === method"
+                   [disabled]="method === 'NLP'">
+            <label class="custom-control-label d-flex align-items-center"
+                   for="annotation-type-{{method.replace(' ', '-') | lowercase}}">
+              {{ method }}
+            </label>
+          </div>
+        </div>
+      </app-form-row>
+    </ng-container>
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Annotate</button>
+  </app-modal-footer>
+</form>
