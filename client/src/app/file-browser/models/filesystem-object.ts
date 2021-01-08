@@ -25,6 +25,7 @@ export interface ProjectPrivileges {
   administrable: boolean;
 }
 
+// TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {
   /**
    * Legacy ID field that needs to go away.

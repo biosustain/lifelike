@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
-import { PdfFilesService } from '../../shared/services/pdf-files.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -36,8 +35,7 @@ import { ObjectCreationService } from './object-creation.service';
 @Injectable()
 export class FilesystemObjectActions {
 
-  constructor(protected readonly filesService: PdfFilesService,
-              protected readonly annotationsService: AnnotationsService,
+  constructor(protected readonly annotationsService: AnnotationsService,
               protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
