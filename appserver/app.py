@@ -13,6 +13,7 @@ from sqlalchemy.sql.expression import text
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import db, get_account_service, get_elastic_service
 from neo4japp.factory import create_app
+from neo4japp.lmdb_manager import LMDBManager, GCPStorageProvider
 from neo4japp.models import (
     AppUser,
     OrganismGeneMatch,
@@ -701,3 +702,11 @@ def global2gcp(bucket_name, users_filter):
         ), 'application/json')
     app.logger.info(f'Finish loading files to bucket: {bucket_name}')
 
+
+@app.cli.command('load-lmdb')
+def load_lmdb():
+    """ Downloads LMDB files from Cloud to Local for application """
+    manager = LMDBManager(GCPStorageProvider(), 'lmdb_database')
+    lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
+    manager.download_all(lmdb_dir_path)
+    manager.update_all_dates()
