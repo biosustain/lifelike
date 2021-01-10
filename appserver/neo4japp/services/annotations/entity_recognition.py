@@ -18,7 +18,7 @@ from neo4japp.services.annotations.constants import (
     ABBREVIATION_WORD_LENGTH,
     COMMON_TYPOS,
     COMMON_WORDS,
-    SPACE_COORDINATE_FLOAT,
+    PDF_NEW_LINE_THRESHOLD,
     SPECIES_EXCLUSION,
     EntityType,
     EntityIdStr,
@@ -45,9 +45,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     EntityResults,
     Inclusion,
     LMDBMatch,
-    PDFMeta,
     PDFWord,
-    PDFParsedContent,
     PDFTokensList
 )
 from neo4japp.models import AnnotationStopWords, GlobalList
@@ -678,8 +676,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                if self._is_abbrev(token):
-                    return anatomy_val
+                # if self._is_abbrev(token):
+                #     return anatomy_val
 
                 if nlp_predicted_type == EntityType.ANATOMY.value or nlp_predicted_type is None:  # noqa
                     anatomy_val = self.lmdb.get_lmdb_values(
@@ -744,8 +742,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                if self._is_abbrev(token):
-                    return chem_val
+                # if self._is_abbrev(token):
+                #     return chem_val
 
                 if nlp_predicted_type == EntityType.CHEMICAL.value or nlp_predicted_type is None:  # noqa
                     chem_val = self.lmdb.get_lmdb_values(
@@ -810,8 +808,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                if self._is_abbrev(token):
-                    return comp_val
+                # if self._is_abbrev(token):
+                #     return comp_val
 
                 if nlp_predicted_type == EntityType.COMPOUND.value or nlp_predicted_type is None:  # noqa
                     comp_val = self.lmdb.get_lmdb_values(
@@ -876,8 +874,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                if self._is_abbrev(token):
-                    return diseases_val
+                # if self._is_abbrev(token):
+                #     return diseases_val
 
                 if nlp_predicted_type == EntityType.DISEASE.value or nlp_predicted_type is None:  # noqa
                     diseases_val = self.lmdb.get_lmdb_values(
@@ -942,8 +940,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                if self._is_abbrev(token):
-                    return food_val
+                # if self._is_abbrev(token):
+                #     return food_val
 
                 if nlp_predicted_type == EntityType.FOOD.value or nlp_predicted_type is None:  # noqa
                     food_val = self.lmdb.get_lmdb_values(
@@ -1009,8 +1007,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                if self._is_abbrev(token):
-                    return gene_val
+                # if self._is_abbrev(token):
+                #     return gene_val
 
                 if nlp_predicted_type == EntityType.GENE.value or nlp_predicted_type is None:  # noqa
                     gene_val = self.lmdb.get_lmdb_values(
@@ -1075,8 +1073,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                if self._is_abbrev(token):
-                    return phenomena_val
+                # if self._is_abbrev(token):
+                #     return phenomena_val
 
                 if nlp_predicted_type == EntityType.PHENOMENA.value or nlp_predicted_type is None:  # noqa
                     phenomena_val = self.lmdb.get_lmdb_values(
@@ -1141,8 +1139,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                if self._is_abbrev(token):
-                    return phenotype_val
+                # if self._is_abbrev(token):
+                #     return phenotype_val
 
                 if nlp_predicted_type == EntityType.PHENOTYPE.value or nlp_predicted_type is None:  # noqa
                     phenotype_val = self.lmdb.get_lmdb_values(
@@ -1208,8 +1206,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                if self._is_abbrev(token):
-                    return protein_val
+                # if self._is_abbrev(token):
+                #     return protein_val
 
                 if nlp_predicted_type == EntityType.PROTEIN.value or nlp_predicted_type is None:  # noqa
                     protein_val = self.lmdb.get_lmdb_values(
@@ -1279,8 +1277,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                if self._is_abbrev(token):
-                    return species_val
+                # if self._is_abbrev(token):
+                #     return species_val
 
                 # check species
                 # TODO: Bacteria because for now NLP has that instead of
@@ -1364,8 +1362,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                if self._is_abbrev(token):
-                    return company_val
+                # if self._is_abbrev(token):
+                #     return company_val
 
                 found = self.inclusion_type_company.get(lookup_key, None)
                 if found:
@@ -1415,8 +1413,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                if self._is_abbrev(token):
-                    return entity_val
+                # if self._is_abbrev(token):
+                #     return entity_val
 
                 found = self.inclusion_type_entity.get(lookup_key, None)
                 if found:
@@ -1438,29 +1436,30 @@ class EntityRecognitionService:
         token: PDFWord,
         check_entities: Dict[str, bool],
     ) -> None:
-        if token.keyword.startswith(self.greek_symbols):
-            meta = token.meta
-            counter = 0
-            for c in token.keyword:
-                if c in self.greek_symbols:
-                    counter += 1
-                else:
-                    break
-            for i in range(0, counter):
-                meta.coordinates.pop(i)
-                meta.heights.pop(i)
-                meta.widths.pop(i)
+        # TODO: fix, PDFWord no longer has meta
+        # if token.keyword.startswith(self.greek_symbols):
+        #     meta = token.meta
+        #     counter = 0
+        #     for c in token.keyword:
+        #         if c in self.greek_symbols:
+        #             counter += 1
+        #         else:
+        #             break
+        #     for i in range(0, counter):
+        #         meta.coordinates.pop(i)
+        #         meta.heights.pop(i)
+        #         meta.widths.pop(i)
 
-            new_token_keyword = token.keyword[counter:]
-            token = PDFWord(
-                keyword=new_token_keyword,
-                normalized_keyword=normalize_str(new_token_keyword),
-                page_number=token.page_number,
-                cropbox=token.cropbox,
-                meta=meta,
-                previous_words=token.previous_words,
-                token_type=token.token_type
-            )
+        #     new_token_keyword = token.keyword[counter:]
+        #     token = PDFWord(
+        #         keyword=new_token_keyword,
+        #         normalized_keyword=normalize_str(new_token_keyword),
+        #         page_number=token.page_number,
+        #         cropbox=token.cropbox,
+        #         meta=meta,
+        #         previous_words=token.previous_words,
+        #         token_type=token.token_type
+        #     )
 
         if check_entities.get(EntityType.ANATOMY.value, False):
             if token.keyword in self.matched_type_anatomy:
@@ -1854,28 +1853,63 @@ class EntityRecognitionService:
         for i, _ in enumerate(words):
             while curr_max_words <= max_word_length and end_idx <= max_length:  # noqa
                 words_subset = words[i:end_idx]
-                curr_keyword = ''
+                curr_keyword = ' '.join([word.keyword for word in words_subset])
                 coordinates = []
                 heights = []
                 widths = []
 
+                start_lower_x = 0.0
+                start_lower_y = 0.0
+                end_upper_x = 0.0
+                end_upper_y = 0.0
+                prev_height = 0.0
                 for word in words_subset:
-                    curr_keyword += word.keyword
-                    coordinates += word.meta.coordinates
-                    heights += word.meta.heights
-                    widths += word.meta.widths
+                    # when combining sequential words
+                    # need to merge their coordinates together
+                    # while also keeping in mind words on new lines
+                    for j, coords in enumerate(word.coordinates):
+                        lower_x, lower_y, upper_x, upper_y = coords
 
-                    # space
-                    curr_keyword += ' '
-                    coordinates += [SPACE_COORDINATE_FLOAT]
-                    heights += [SPACE_COORDINATE_FLOAT]
-                    widths += [SPACE_COORDINATE_FLOAT]
+                        if (start_lower_x == 0.0 and
+                                start_lower_y == 0.0 and
+                                end_upper_x == 0.0 and
+                                end_upper_y == 0.0):
+                            start_lower_x = lower_x
+                            start_lower_y = lower_y
+                            end_upper_x = upper_x
+                            end_upper_y = upper_y
+                            prev_height = word.heights[j]
+                        else:
+                            if lower_y != start_lower_y:
+                                diff = abs(lower_y - start_lower_y)
 
-                # remove trailing space
-                curr_keyword = curr_keyword[:-1]
-                coordinates = coordinates[:-1]
-                heights = heights[:-1]
-                widths = widths[:-1]
+                                # if diff is greater than height ratio
+                                # then part of keyword is on a new line
+                                if diff > prev_height * PDF_NEW_LINE_THRESHOLD:
+                                    coordinates.append(
+                                        [start_lower_x, start_lower_y, end_upper_x, end_upper_y])
+
+                                    start_lower_x = lower_x
+                                    start_lower_y = lower_y
+                                    end_upper_x = upper_x
+                                    end_upper_y = upper_y
+                                    prev_height = word.heights[j]
+                                else:
+                                    if upper_y > end_upper_y:
+                                        end_upper_y = upper_y
+
+                                    if upper_x > end_upper_x:
+                                        end_upper_x = upper_x
+                            else:
+                                if upper_y > end_upper_y:
+                                    end_upper_y = upper_y
+
+                                if upper_x > end_upper_x:
+                                    end_upper_x = upper_x
+
+                    heights += word.heights
+                    widths += word.widths
+                coordinates.append([start_lower_x, start_lower_y, end_upper_x, end_upper_y])
 
                 if (curr_keyword.lower() not in COMMON_WORDS and
                     not compiled_regex.match(curr_keyword) and
@@ -1890,13 +1924,11 @@ class EntityRecognitionService:
                         # of page of first word
                         page_number=words_subset[0].page_number,
                         cropbox=words_subset[0].cropbox,
-                        meta=PDFMeta(
-                            lo_location_offset=words_subset[0].meta.lo_location_offset,
-                            hi_location_offset=words_subset[-1].meta.hi_location_offset,
-                            coordinates=coordinates,
-                            heights=heights,
-                            widths=widths
-                        ),
+                        lo_location_offset=words_subset[0].lo_location_offset,
+                        hi_location_offset=words_subset[-1].hi_location_offset,
+                        coordinates=coordinates,
+                        heights=heights,
+                        widths=widths,
                         previous_words=words_subset[0].previous_words
                     )
                     yield token
@@ -1906,7 +1938,7 @@ class EntityRecognitionService:
             curr_max_words = 1
             end_idx = i + 2
 
-    def extract_tokens(self, parsed: PDFParsedContent) -> PDFTokensList:
+    def extract_tokens(self, parsed: List[PDFWord]) -> PDFTokensList:
         """Extract word tokens from the parsed characters.
 
         Returns a token list of sequentially concatentated.
@@ -1916,7 +1948,7 @@ class EntityRecognitionService:
 
         return PDFTokensList(
             tokens=self._combine_sequential_words(
-                words=parsed.words,
+                words=parsed,
                 compiled_regex=compiled_regex,
             )
         )

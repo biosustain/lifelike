@@ -225,11 +225,6 @@ def get_manual_annotation_service():
     )
 
 
-def get_annotation_pdf_parser():
-    from neo4japp.services.annotations import AnnotationPDFParser
-    return AnnotationPDFParser()
-
-
 def get_bioc_document_service():
     from neo4japp.services.annotations import BiocDocumentService
     return BiocDocumentService()

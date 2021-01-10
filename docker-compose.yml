@@ -16,3 +16,6 @@ services:
 
     nlpapi:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-nlpapi:${GITHUB_HASH:-latest}
+
+    pdfparser:
+        image: pdfparser:latest  # TODO: change to use REGISTRY once that workflow is set up
