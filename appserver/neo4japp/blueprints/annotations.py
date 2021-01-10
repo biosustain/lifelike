@@ -68,6 +68,7 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 def annotate(
     doc: Files,
     cause: AnnotationChangeCause,
+    project_id: int,
     specified_organism: Optional[FallbackOrganism] = None,
     annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
     user_id: int = None,
@@ -77,7 +78,8 @@ def annotate(
         specified_organism_synonym=specified_organism.organism_synonym if specified_organism else '',  # noqa
         specified_organism_tax_id=specified_organism.organism_taxonomy_id if specified_organism else '',  # noqa
         document=doc,
-        filename=doc.filename
+        filename=doc.filename,
+        project_id=project_id
     )
 
     current_app.logger.debug(
@@ -102,6 +104,26 @@ def annotate(
     }
 
     return update, version
+
+
+@bp.route('/<int:project_id>/<string:file_id>', methods=['GET'])
+def get_pdf_to_annotate(project_id, file_id):
+    """This endpoint is sent by the annotation pipeline to the
+    pdfparse service, and acts as a resource pull. No need to check for
+    project permission or authentication as the pipeline already
+    queried that to get `project_id` and `file_id`.
+    """
+
+    doc = files_queries.get_all_files_and_content_by_id(
+        file_ids=set([file_id]), project_id=project_id).one_or_none()
+
+    if not doc:
+        raise RecordNotFoundException(f'File with file id {file_id} not found.')
+
+    res = make_response(doc.raw_file)
+    res.headers['Content-Type'] = 'application/pdf'
+    res.headers['Content-Disposition'] = f'attachment;filename={doc.filename}.pdf'
+    return res
 
 
 @bp.route('/<string:project_name>', methods=['GET'])
@@ -176,7 +198,8 @@ def annotate_file(req: AnnotationRequest, project_name: str, file_id: str):
         doc=doc,
         cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
         annotation_method=req.annotation_method,
-        specified_organism=fallback
+        specified_organism=fallback,
+        project_id=project.id
     )
 
     db.session.bulk_insert_mappings(FileAnnotationsVersion, [version])
@@ -230,7 +253,9 @@ def reannotate(req: AnnotationRequest, project_name: str):
             update, version = annotate(
                 doc=f,
                 cause=AnnotationChangeCause.USER_REANNOTATION,
-                specified_organism=FallbackOrganism.query.get(f.fallback_organism_id))
+                specified_organism=FallbackOrganism.query.get(f.fallback_organism_id),
+                project_id=projects.id
+            )
         except AnnotationError as e:
             current_app.logger.error(
                 'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
