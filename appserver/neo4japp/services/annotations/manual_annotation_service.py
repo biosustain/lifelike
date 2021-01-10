@@ -8,7 +8,6 @@ from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
     get_annotation_service,
-    get_annotation_pdf_parser,
     get_entity_recognition
 )
 from neo4japp.exceptions import (
@@ -29,6 +28,7 @@ from neo4japp.services.annotations.constants import (
     ManualAnnotationType
 )
 from neo4japp.services.annotations.util import has_center_point
+from neo4japp.services.annotations.pipeline import parse_pdf
 
 
 class ManualAnnotationService:
@@ -98,17 +98,8 @@ class ManualAnnotationService:
             return False
 
         if annotate_all:
-            file_content = FileContent.query.filter_by(id=file.content_id).one_or_none()
-            if file_content is None:
-                raise RecordNotFoundException('Content for a given file does not exist')
-
-            # TODO: make use of ./pipeline.py to be consistent
-            # and avoid code change bugs
-            fp = io.BytesIO(file_content.raw_file)
-            pdf_parser = get_annotation_pdf_parser()
             recognition = get_entity_recognition()
-            parsed = pdf_parser.parse_pdf(pdf=fp)
-            fp.close()
+            _, parsed = parse_pdf(project_id, file.file_id)
             tokens_list = recognition.extract_tokens(parsed=parsed)
             annotator = get_annotation_service()
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']

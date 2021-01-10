@@ -16,13 +16,10 @@ from neo4japp.services.annotations.constants import (
     EntityIdStr,
     EntityType,
     OrganismCategory,
-    SPACE_COORDINATE_FLOAT,
-    ABBREVIATION_WORD_LENGTH,
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
     HOMO_SAPIENS_TAX_ID,
     ORGANISM_DISTANCE_THRESHOLD,
-    PDF_NEW_LINE_THRESHOLD,
     SEARCH_LINKS,
 )
 from neo4japp.services.annotations.util import has_center_point
@@ -32,7 +29,6 @@ from neo4japp.services.annotations.data_transfer_objects import (
     GeneAnnotation,
     LMDBMatch,
     OrganismAnnotation,
-    PDFChar,
     PDFWord,
     PDFTokensList,
     SpecifiedOrganismStrain
@@ -124,125 +120,6 @@ class AnnotationService:
 
         return entity_type_and_id_pairs
 
-    def _create_keyword_objects(
-        self,
-        token: PDFWord,
-        keyword_positions: List[Annotation.TextPosition] = []
-    ) -> None:
-        """Creates the keyword objects with the keyword
-        text, along with their coordinate positions and
-        page number.
-
-        Determines whether a part of the keyword is on a
-        new line or not. If it is on a new line, then
-        create a new coordinate object for that part of the keyword.
-
-        E.g
-            E. \nColi -> [
-                {keyword: 'E.', x: ..., ...}, keyword: 'Coli', x: ..., ...}
-            ]
-
-            E. Coli -> [{keyword: 'E. Coli', x: ..., ...}]
-        """
-        start_lower_x = 0.0
-        start_lower_y = 0.0
-        end_upper_x = 0.0
-        end_upper_y = 0.0
-        prev_height = 0.0
-
-        keyword = ''
-        cropbox = token.cropbox
-
-        for i, coordinates in enumerate(token.meta.coordinates):
-            try:
-                if coordinates == SPACE_COORDINATE_FLOAT:
-                    keyword += ' '
-                    continue
-
-                lower_x, lower_y, upper_x, upper_y = coordinates
-
-                if (start_lower_x == 0.0 and
-                        start_lower_y == 0.0 and
-                        end_upper_x == 0.0 and
-                        end_upper_y == 0.0):
-                    start_lower_x = lower_x
-                    start_lower_y = lower_y
-                    end_upper_x = upper_x
-                    end_upper_y = upper_y
-
-                    keyword += token.keyword[i]
-                    # set prev height to current height
-                    prev_height = token.meta.heights[i]
-                else:
-                    if lower_y != start_lower_y:
-                        diff = abs(lower_y - start_lower_y)
-
-                        # if diff is greater than height ratio
-                        # then part of keyword is on a new line
-                        if diff > prev_height * PDF_NEW_LINE_THRESHOLD:
-                            start_lower_x += cropbox[0]  # type: ignore
-                            end_upper_x += cropbox[0]  # type: ignore
-                            start_lower_y += cropbox[1]  # type: ignore
-                            end_upper_y += cropbox[1]  # type: ignore
-
-                            keyword_positions.append(
-                                Annotation.TextPosition(
-                                    value=keyword,
-                                    positions=[
-                                        start_lower_x,
-                                        start_lower_y,
-                                        end_upper_x,
-                                        end_upper_y
-                                    ],
-                                )
-                            )
-
-                            start_lower_x = lower_x
-                            start_lower_y = lower_y
-                            end_upper_x = upper_x
-                            end_upper_y = upper_y
-                            prev_height = token.meta.heights[i]
-                            keyword = token.keyword[i]
-                        else:
-                            if upper_y > end_upper_y:
-                                end_upper_y = upper_y
-
-                            if upper_x > end_upper_x:
-                                end_upper_x = upper_x
-
-                            keyword += token.keyword[i]
-                    else:
-                        if upper_y > end_upper_y:
-                            end_upper_y = upper_y
-
-                        if upper_x > end_upper_x:
-                            end_upper_x = upper_x
-
-                        keyword += token.keyword[i]
-            except IndexError:
-                raise AnnotationError(
-                    'An indexing error occurred when creating annotation keyword objects.')
-            except Exception:
-                raise AnnotationError(
-                    'Unexpected error when creating annotation keyword objects')
-
-        start_lower_x += cropbox[0]  # type: ignore
-        end_upper_x += cropbox[0]  # type: ignore
-        start_lower_y += cropbox[1]  # type: ignore
-        end_upper_y += cropbox[1]  # type: ignore
-
-        keyword_positions.append(
-            Annotation.TextPosition(
-                value=keyword,
-                positions=[
-                    start_lower_x,
-                    start_lower_y,
-                    end_upper_x,
-                    end_upper_y
-                ],
-            )
-        )
-
     def _create_annotation_object(
         self,
         token: PDFWord,
@@ -253,19 +130,12 @@ class AnnotationService:
         entity_category: str,
         entity_id_hyperlink: str
     ) -> Annotation:
-        keyword_positions: List[Annotation.TextPosition] = []
-
-        self._create_keyword_objects(
-            keyword_positions=keyword_positions,
-            token=token
-        )
+        keyword_starting_idx = token.lo_location_offset
+        keyword_ending_idx = token.hi_location_offset
+        link_search_term = token.keyword
 
         # entity here is data structure from LMDB
         # see services/annotations/util.py for definition
-        keyword_starting_idx = token.meta.lo_location_offset
-        keyword_ending_idx = token.meta.hi_location_offset
-        link_search_term = token.keyword
-
         if not entity_id_hyperlink:
             if entity['id_type'] != DatabaseType.NCBI.value:
                 hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
@@ -302,8 +172,8 @@ class AnnotationService:
             # for the `keyword` property
             annotation = OrganismAnnotation(
                 page_number=token.page_number,
-                rects=[pos.positions for pos in keyword_positions],  # type: ignore
-                keywords=[k.value for k in keyword_positions],
+                rects=token.coordinates,
+                keywords=[token.keyword],
                 keyword=synonym,
                 primary_name=primary_name,
                 text_in_document=token.keyword,
@@ -320,15 +190,15 @@ class AnnotationService:
                 id=entity_id,
                 id_type=id_type,
                 id_hyperlink=cast(str, hyperlink),
-                links=OrganismAnnotation.OrganismMeta.Links(
+                links=GeneAnnotation.GeneMeta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
                 all_text=synonym,
             )
             annotation = GeneAnnotation(
                 page_number=token.page_number,
-                rects=[pos.positions for pos in keyword_positions],  # type: ignore
-                keywords=[k.value for k in keyword_positions],
+                rects=token.coordinates,
+                keywords=[token.keyword],
                 keyword=synonym,
                 primary_name=primary_name,
                 text_in_document=token.keyword,
@@ -337,7 +207,7 @@ class AnnotationService:
                 hi_location_offset=keyword_ending_idx,
                 meta=gene_meta,
                 uuid=str(uuid4()),
-            )
+            )  # type: ignore
         else:
             meta = Annotation.Meta(
                 type=token_type,
@@ -351,8 +221,8 @@ class AnnotationService:
             )
             annotation = Annotation(
                 page_number=token.page_number,
-                rects=[pos.positions for pos in keyword_positions],  # type: ignore
-                keywords=[k.value for k in keyword_positions],
+                rects=token.coordinates,
+                keywords=[token.keyword],
                 keyword=synonym,
                 primary_name=primary_name,
                 text_in_document=token.keyword,
@@ -361,7 +231,7 @@ class AnnotationService:
                 hi_location_offset=keyword_ending_idx,
                 meta=meta,
                 uuid=str(uuid4()),
-            )
+            )  # type: ignore
         return annotation
 
     def _get_annotation(
@@ -456,8 +326,8 @@ class AnnotationService:
 
         Currently used for proteins and genes.
         """
-        entity_location_lo = entity.meta.lo_location_offset
-        entity_location_hi = entity.meta.hi_location_offset
+        entity_location_lo = entity.lo_location_offset
+        entity_location_hi = entity.hi_location_offset
 
         closest_dist = inf
         curr_closest_organism = None
@@ -1466,13 +1336,8 @@ class AnnotationService:
                     continue
             elif standardize_str(token.keyword).lower() != standardize_str(keyword).lower():
                 continue
-            keyword_positions: List[Annotation.TextPosition] = []
-            self._create_keyword_objects(
-                token=token,
-                keyword_positions=keyword_positions
-            )
-            rects = [pos.positions for pos in keyword_positions]
-            keywords = [pos.value for pos in keyword_positions]
+            rects = token.coordinates
+            keywords = [token.keyword]
             matches.append({
                 'pageNumber': token.page_number,
                 'rects': rects,
