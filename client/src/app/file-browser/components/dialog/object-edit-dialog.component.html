@@ -4,6 +4,8 @@
   </app-modal-header>
 
   <app-modal-body>
+    <app-form-input-feedback [control]="form" [formLevel]="true"></app-form-input-feedback>
+
     <ng-container *ngIf="promptUpload">
       <ul ngbNav #nav="ngbNav" class="nav-tabs" [activeId]="form.get('contentSource').value"
           (activeIdChange)="activeTabChanged($event)">

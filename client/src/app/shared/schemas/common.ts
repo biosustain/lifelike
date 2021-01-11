@@ -33,3 +33,16 @@ export interface ResultList<T> {
   results: T[];
   query?: ResultQuery;
 }
+
+export interface ErrorResponse {
+  message: string;
+  detail?: string;
+  code?: 'validation';
+  apiHttpError?: {
+    name: string;
+    message: string;
+  };
+  version?: string;
+  transactionId?: string;
+  fields?: { [key: string]: string[] };
+}

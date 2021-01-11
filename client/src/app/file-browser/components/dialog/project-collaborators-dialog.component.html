@@ -70,6 +70,8 @@
     <fieldset class="fieldset-properties mt-4">
       <legend>Invite Collaborators</legend>
       <form (ngSubmit)="addCollaborator()" [formGroup]="addForm">
+        <app-form-input-feedback [control]="addForm" [formLevel]="true"></app-form-input-feedback>
+
         <div class="d-flex align-items-start">
           <div class="d-flex flex-column flex-fill">
             <app-user-select [multiple]="true" placeholder="Enter name or email address..."
