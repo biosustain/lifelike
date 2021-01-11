@@ -1,0 +1,6 @@
+name = "StatisticalEnrichment"
+uuid = "b4cd1eb8-1e24-11e8-3319-93036a3eb9f3"
+version = "0.0.1"
+
+[deps]
+JuliaWebAPI = "*"

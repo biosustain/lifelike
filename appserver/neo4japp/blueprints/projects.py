@@ -1,8 +1,6 @@
 from typing import List, Optional, Tuple, Dict, Iterable
 
 from flask import (
-    current_app,
-    request,
     jsonify,
     Blueprint,
     g,
@@ -12,18 +10,15 @@ from marshmallow import ValidationError
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload
-from sqlalchemy.orm.exc import NoResultFound
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_project_role, requires_project_permission
 from neo4japp.database import db, get_projects_service
 from neo4japp.exceptions import (
     RecordNotFoundException,
-    NotAuthorizedException, AccessRequestRequiredError,
+    AccessRequestRequiredError,
 )
 from neo4japp.models import (
-    AccessActionType,
     AppRole,
     AppUser,
     Projects,
@@ -35,8 +30,7 @@ from neo4japp.schemas.filesystem import ProjectListSchema, ProjectListRequestSch
     ProjectCreateSchema, ProjectResponseSchema, BulkProjectRequestSchema, \
     BulkProjectUpdateRequestSchema, MultipleProjectResponseSchema, ProjectUpdateRequestSchema
 from neo4japp.schemas.projects import ProjectCollaboratorListSchema, \
-    ProjectCollaboratorUpdateOrCreateRequest
-from neo4japp.utils.logger import UserEventLog
+    ProjectMultiCollaboratorUpdateRequest
 from neo4japp.utils.request import Pagination
 
 
@@ -343,9 +337,7 @@ class ProjectDetailView(ProjectBaseView):
 class ProjectCollaboratorsListView(ProjectBaseView):
     decorators = [auth.login_required]
 
-    @use_args(PaginatedRequestSchema)
-    def get(self, pagination: Pagination, hash_id):
-        """Endpoint to fetch a list of collaborators for a project."""
+    def get_bulk_collaborator_response(self, hash_id, pagination: Pagination):
         current_user = g.current_user
         project = self.get_nondeleted_project(Projects.hash_id == hash_id)
         self.check_project_permissions([project], current_user, ['administrable'])
@@ -364,53 +356,59 @@ class ProjectCollaboratorsListView(ProjectBaseView):
             } for item in paginated_result.items]
         }))
 
+    @use_args(PaginatedRequestSchema)
+    def get(self, pagination: Pagination, hash_id):
+        """Endpoint to fetch a list of collaborators for a project."""
+        return self.get_bulk_collaborator_response(hash_id, pagination)
 
-class ProjectCollaboratorsUserDetailView(ProjectBaseView):
-    decorators = [auth.login_required]
-
-    def _get_target_user(self, user_hash_id):
-        current_user = g.current_user
-
-        try:
-            target_user = db.session.query(AppUser) \
-                .filter(AppUser.hash_id == user_hash_id) \
-                .options(raiseload('*')) \
-                .one()
-        except NoResultFound:
-            raise ValidationError("The requested user could not be found.",
-                                  "user_hash_id")
-
-        if target_user.id == current_user.id:
-            raise ValidationError("You cannot edit yourself.",
-                                  "user_hash_id")
-
-        return target_user
-
-    @use_args(ProjectCollaboratorUpdateOrCreateRequest)
-    def put(self, params, hash_id, user_hash_id):
+    @use_args(ProjectMultiCollaboratorUpdateRequest)
+    def post(self, params, hash_id):
         proj_service = get_projects_service()
         current_user = g.current_user
         project = self.get_nondeleted_project(Projects.hash_id == hash_id)
         self.check_project_permissions([project], current_user, ['administrable'])
 
-        target_user = self._get_target_user(user_hash_id)
-        new_role = db.session.query(AppRole).filter(AppRole.name == params['role_name']).one()
-        # WARNING: Likely susceptible to race conditions
-        proj_service.edit_collaborator(target_user, new_role, project)
+        user_hash_ids = set([item['user_hash_id'] for item in params['update_or_create']] +
+                            params['remove_user_hash_ids'])
+        role_names = set([item['role_name'] for item in params['update_or_create']])
 
-        return jsonify({})
+        target_users = db.session.query(AppUser) \
+            .filter(AppUser.hash_id.in_(user_hash_ids)) \
+            .options(raiseload('*')) \
+            .all()
 
-    def delete(self, params, hash_id, user_hash_id):
-        proj_service = get_projects_service()
-        current_user = g.current_user
-        project = self.get_nondeleted_project(Projects.hash_id == hash_id)
-        self.check_project_permissions([project], current_user, ['administrable'])
+        roles = db.session.query(AppRole) \
+            .filter(AppRole.name.in_(role_names)) \
+            .options(raiseload('*')) \
+            .all()
 
-        target_user = self._get_target_user(user_hash_id)
-        # WARNING: Likely susceptible to race conditions
-        proj_service.remove_collaborator(target_user, project)
+        if len(target_users) != len(user_hash_ids):
+            raise ValidationError(f"One or more specified users does not exist.")
 
-        return jsonify({})
+        if len(roles) != len(role_names):
+            raise ValidationError(f"One or more specified roles does not exist.")
+
+        user_map = {}
+        for user in target_users:
+            user_map[user.hash_id] = user
+
+        role_map = {}
+        for role in roles:
+            role_map[role.name] = role
+
+        for user in target_users:
+            if user.id == current_user.id:
+                raise ValidationError(f"You cannot edit yourself.")
+
+        for entry in params['update_or_create']:
+            proj_service.edit_collaborator(user_map[entry['user_hash_id']],
+                                           role_map[entry['role_name']],
+                                           project)
+
+        for user_hash_id in params['remove_user_hash_ids']:
+            proj_service.remove_collaborator(user_map[user_hash_id], project)
+
+        return self.get_bulk_collaborator_response(hash_id, Pagination(1, 100))
 
 
 bp = Blueprint('projects', __name__, url_prefix='/projects')
@@ -419,6 +417,3 @@ bp.add_url_rule('/projects', view_func=ProjectListView.as_view('project_list'))
 bp.add_url_rule('/projects/<string:hash_id>', view_func=ProjectDetailView.as_view('project_detail'))
 bp.add_url_rule('/projects/<string:hash_id>/collaborators',
                 view_func=ProjectCollaboratorsListView.as_view('project_collaborators_list'))
-bp.add_url_rule('/projects/<string:hash_id>/collaborators/<string:user_hash_id>',
-                view_func=ProjectCollaboratorsUserDetailView.as_view(
-                    'project_collaborators_user_detail'))

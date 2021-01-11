@@ -8,6 +8,7 @@ from neo4japp.schemas.common import ResultListSchema
 # ========================================
 # Users
 # ========================================
+
 class UserSchema(CamelCaseSchema):
     hash_id = fields.String()
     username = fields.String()
@@ -23,6 +24,7 @@ class UserSearchSchema(CamelCaseSchema):
         marshmallow.validate.Length(min=1, max=100),
         marshmallow.validate.Regexp('[^\\s]+')
     ])
+    exclude_self = fields.Boolean(missing=lambda: False)
 
 
 # Responses

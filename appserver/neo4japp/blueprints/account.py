@@ -41,7 +41,7 @@ def create_user(req: UserRequest):
 
     # TODO: Deprecate this once we have a GUI for adding users to projects
     # Currently will add any new user to a global project with WRITE permission
-    default_projects = Projects.query.filter(Projects.name == 'beta-project').one()
+    default_projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
     write_role = AppRole.query.filter(AppRole.name == 'project-write').one()
     proj_service.add_collaborator(new_user, write_role, default_projects)
 
@@ -98,6 +98,7 @@ class AccountSearchView(MethodView):
     @use_args(PaginatedRequestSchema)
     def post(self, params: dict, pagination: Pagination):
         """Endpoint to search for users that match certain criteria."""
+        current_user = g.current_user
         query = re.sub("[%_]", "\\\\0", params['query'].strip().lower())
         like_query = f"%{query}%"
 
@@ -107,6 +108,9 @@ class AccountSearchView(MethodView):
                         func.lower(AppUser.username).like(like_query),
                         func.lower(AppUser.email) == query,
                         func.lower(AppUser.hash_id) == query))
+
+        if params['exclude_self']:
+            query = query.filter(AppUser.id != current_user.id)
 
         paginated_result = query.paginate(pagination.page, pagination.limit, False)
 

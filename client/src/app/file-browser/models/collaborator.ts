@@ -11,7 +11,7 @@ export class Collaborator {
         return 'Can edit and invite';
       case 'project-write':
         return 'Can edit';
-      case 'project-view':
+      case 'project-read':
         return 'Can view';
       default:
         return this.roleName;

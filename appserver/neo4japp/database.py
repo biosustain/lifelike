@@ -143,6 +143,16 @@ def get_enrichment_table_service():
         )
     return g.enrichment_table_service
 
+def get_enrichment_visualisation_service():
+    if 'enrichment_visualisation_service' not in g:
+        from neo4japp.services import EnrichmentVisualisationService
+        graph = connect_to_neo4j()
+        g.enrichment_visualisation_service = EnrichmentVisualisationService(
+            graph=graph,
+            session=db.session,
+        )
+    return g.enrichment_visualisation_service
+
 
 def get_user_file_import_service():
     if 'user_file_import_service' not in g:
