@@ -18,7 +18,6 @@ import { Actions, ofType, createEffect } from '@ngrx/effects';
 import * as AuthActions from './actions';
 import * as AuthSelectors from './selectors';
 import { State } from './state';
-import { ApiHttpError } from 'app/interfaces';
 
 import * as SnackbarActions from 'app/shared/store/snackbar-actions';
 import { MatSnackBar } from '@angular/material';
