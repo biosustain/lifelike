@@ -14,7 +14,7 @@ import { nonEmptyList } from '../../../shared/validators';
 import { AppUser } from '../../../interfaces';
 import { Progress } from '../../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
-import { finalize } from 'rxjs/operators';
+import { finalize, tap } from 'rxjs/operators';
 import { ErrorHandler } from '../../../shared/services/error-handler.service';
 import { MultiCollaboratorUpdateRequest } from '../../schema';
 
@@ -71,7 +71,9 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
         })),
       };
 
-      this.saveCollaborators(request);
+      this.saveCollaborators(request).pipe(
+        this.errorHandler.createFormErrorHandler(this.addForm),
+      ).subscribe();
     } else {
       this.addForm.markAsDirty();
       this.messageDialog.display({
@@ -87,7 +89,7 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
       removeUserHashIds: [
         collaborator.user.hashId,
       ],
-    });
+    }).subscribe();
   }
 
   changeCollaboratorRole(collaborator: Collaborator, roleName: string) {
@@ -96,10 +98,10 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
         userHashId: collaborator.user.hashId,
         roleName,
       }],
-    });
+    }).subscribe();
   }
 
-  private saveCollaborators(request: MultiCollaboratorUpdateRequest) {
+  private saveCollaborators(request: MultiCollaboratorUpdateRequest): Observable<any> {
     const progressDialogRef = this.progressDialog.display({
       title: 'Updating Collaborators',
       progressObservable: new BehaviorSubject<Progress>(new Progress({
@@ -108,14 +110,15 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
     });
 
     return this.projectsService.saveCollaborators(this.project.hashId, request).pipe(
+      tap(collaborators => {
+        this.addForm.patchValue({
+          users: [],
+        });
+        this.addForm.markAsPristine();
+        this.collaborators$ = of(collaborators);
+      }),
       finalize(() => progressDialogRef.close()),
       this.errorHandler.create(),
-    ).subscribe(collaborators => {
-      this.addForm.patchValue({
-        users: [],
-      });
-      this.addForm.markAsPristine();
-      this.collaborators$ = of(collaborators);
-    });
+    );
   }
 }

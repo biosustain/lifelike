@@ -159,6 +159,7 @@ export class FilesystemObjectActions {
       }, Object.assign({}, ...targets.map(target => ({[target.hashId]: target}))))
         .pipe(
           finalize(() => progressDialogRef.close()),
+          this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
           this.errorHandler.create(),
         )
         .toPromise()
@@ -183,6 +184,7 @@ export class FilesystemObjectActions {
       })
         .pipe(
           finalize(() => progressDialogRef.close()),
+          this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
           this.errorHandler.create(),
         )
         .toPromise();
@@ -198,6 +200,7 @@ export class FilesystemObjectActions {
       return this.filesystemService.delete(targets.map(target => target.hashId))
         .pipe(
           finalize(() => progressDialogRef.close()),
+          this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
           this.errorHandler.create(),
         )
         .toPromise();
@@ -219,6 +222,7 @@ export class FilesystemObjectActions {
       )
         .pipe(
           finalize(() => progressDialogRef.close()),
+          this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
           this.errorHandler.create(),
         )
         .toPromise();

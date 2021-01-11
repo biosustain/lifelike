@@ -3,6 +3,7 @@ import logging
 import os
 import traceback
 from functools import partial
+from typing import Optional, Union, Literal, List, Dict
 
 import sentry_sdk
 from flask import (
@@ -39,6 +40,7 @@ from neo4japp.exceptions import (
     RecordNotFoundException,
     DataNotAvailableException, AccessRequestRequiredError
 )
+from neo4japp.schemas.common import ErrorResponseSchema
 from neo4japp.utils.logger import ErrorLog
 
 # Set the following modules to have a minimum of log level 'WARNING'
@@ -63,6 +65,33 @@ BLUEPRINT_OBJNAME = 'bp'
 
 cors = CORS()
 cache = Cache()
+
+
+class ErrorResponse:
+    def __init__(self,
+                 code: Optional[Union[Literal['validation']]],
+                 message: str,
+                 *,
+                 detail: Optional[str] = None,
+                 api_http_error: str = None,
+                 version: str = None,
+                 transaction_id: str = None,
+                 fields: Optional[Dict[str, List[str]]] = None,
+                 debug_exception: Exception = None):
+        assert debug_exception is None or detail is None
+
+        self.message = message
+        self.detail = detail if detail else None
+        self.code = code
+        self.api_http_error = api_http_error
+        self.version = version or GITHUB_HASH
+        self.transaction_id = transaction_id or request.headers.get('X-Transaction-Id', '')
+        self.fields = fields or {}
+
+        if current_app.debug and debug_exception:
+            self.detail = "".join(traceback.format_exception(
+                etype=type(debug_exception), value=debug_exception,
+                tb=debug_exception.__traceback__))
 
 
 @parser.location_handler("mixed_form_json")
@@ -272,20 +301,12 @@ def handle_validation_error(code, error: ValidationError, messages=None):
     else:
         message = 'An error occurred with the provided input.'
 
-    reterr = {
-        'message': message,
-        'code': 'validation',
-        'fields': fields,
-        'apiHttpError': 'An error occurred with the provided input.',
-        'version': GITHUB_HASH,
-        'transactionId': request.headers.get('X-Transaction-Id', ''),
-    }
-
-    if current_app.debug:
-        reterr['detail'] = "".join(traceback.format_exception(
-            etype=type(error), value=error, tb=error.__traceback__))
-
-    return jsonify(reterr), code
+    return jsonify(ErrorResponseSchema().dump(ErrorResponse(
+        'validation',
+        message,
+        fields=fields,
+        api_http_error='An error occurred with the provided input.',
+    ))), code
 
 
 # Ensure that response includes all error messages produced from the parser
