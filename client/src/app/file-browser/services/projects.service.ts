@@ -8,6 +8,7 @@ import { ProjectImpl } from '../models/filesystem-object';
 import {
   BulkProjectUpdateRequest,
   CollaboratorData,
+  MultiCollaboratorUpdateRequest,
   ProjectCreateRequest,
   ProjectData,
   ProjectSearchRequest,
@@ -108,6 +109,23 @@ export class ProjectsService {
         ...this.apiService.getHttpOptions(true),
         params: serializePaginatedParams(options, false),
       },
+    ).pipe(
+      map(data => {
+        const collaboratorsList = new ModalList<Collaborator>();
+        collaboratorsList.collectionSize = data.results.length;
+        collaboratorsList.results.replace(data.results.map(
+          itemData => new Collaborator().update(itemData)));
+        return collaboratorsList;
+      }),
+    );
+  }
+
+  saveCollaborators(hashId: string, request: MultiCollaboratorUpdateRequest):
+    Observable<ModalList<Collaborator>> {
+    return this.http.post<ResultList<CollaboratorData>>(
+      `/api/projects/projects/${hashId}/collaborators`,
+      request,
+      this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => {
         const collaboratorsList = new ModalList<Collaborator>();

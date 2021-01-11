@@ -197,6 +197,173 @@ def get_enrichment_data(id: str, projects_name: str):
         'description': entry.description}), 200
 
 
+@newbp.route('/<string:projects_name>/enrichment-visualisation', methods=['POST'])
+@auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
+def add_gene_list(projects_name: str):
+    data = request.get_json()
+    user = g.current_user
+
+    try:
+        projects = Projects.query.filter(Projects.name == projects_name).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Project could not be found.')
+    yield g.current_user, projects
+
+    dir_id = data['directoryId']
+    enrichment_data = data['enrichmentData'].encode('utf-8')
+
+    try:
+        checksum_sha256 = hashlib.sha256(enrichment_data).digest()
+
+        try:
+            # First look for an existing copy of this file
+            file_content = db.session.query(FileContent.id) \
+                .filter(FileContent.checksum_sha256 == checksum_sha256) \
+                .one()
+        except NoResultFound:
+            # Otherwise, let's add the file content to the database
+            file_content = FileContent(
+                raw_file=enrichment_data,
+                checksum_sha256=checksum_sha256
+            )
+            db.session.add(file_content)
+            db.session.flush()
+
+        file_id = str(uuid.uuid4())
+        filename = data['filename']
+
+        file = Files(
+            file_id=file_id,
+            filename=filename + ENRICHMENT_VISUALISATION_EXTENSION,
+            description=data['description'],
+            content_id=file_content.id,
+            user_id=user.id,
+            project=projects.id,
+            dir_id=dir_id,
+        )
+
+        db.session.add(file)
+        db.session.commit()
+
+        current_app.logger.info(
+            f'User uploaded file: <{filename}>',
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='file upload').to_dict())
+    except Exception:
+        raise FileUploadError('Your file could not be saved. Please try creating again.')
+
+    yield jsonify({'status': 'success', 'filename': filename + '.enrichment'}), 200
+
+ENRICHMENT_VISUALISATION_EXTENSION = ENRICHMENT_VISUALISATION_EXTENSION;
+@newbp.route('/<string:projects_name>/enrichment-visualisation/<string:fileId>', methods=['PATCH'])
+@auth.login_required
+@requires_project_permission(AccessActionType.WRITE)
+def edit_gene_list(projects_name: str, fileId: str):
+    data = request.get_json()
+
+    try:
+        projects = Projects.query.filter(Projects.name == projects_name).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Project could not be found.')
+    yield g.current_user, projects
+
+    enrichment_data = data['enrichmentData'].encode('utf-8')
+    checksum_sha256 = hashlib.sha256(enrichment_data).digest()
+    file_name = data['name']
+
+    try:
+        entry_file = Files.query.filter(
+            Files.file_id == fileId,
+            Files.project == projects.id
+        ).one()
+
+        _filename, file_extension = os.path.splitext(file_name)
+        _filename, entry_file_extension = os.path.splitext(entry_file)
+        # If file type enrichment table add .enrichment to new name if it doesn't have .enrichment.
+        if file_extension != ENRICHMENT_VISUALISATION_EXTENSION and entry_file_extension == ENRICHMENT_VISUALISATION_EXTENSION:
+            file_name = file_name + ENRICHMENT_VISUALISATION_EXTENSION
+            file_extension = ENRICHMENT_VISUALISATION_EXTENSION
+
+        # If file type enrichment table remove .enrichment from new name if it has .enrichment.
+        if file_extension == ENRICHMENT_VISUALISATION_EXTENSION and entry_file_extension != ENRICHMENT_VISUALISATION_EXTENSION:
+            file_name, file_extension = os.path.splitext(file_name)
+
+        try:
+            # First look for an existing copy of this file
+            file_content = db.session.query(FileContent.id) \
+                .filter(FileContent.checksum_sha256 == checksum_sha256) \
+                .one()
+        except NoResultFound:
+            # Otherwise, let's add the file content to the database
+            file_content = FileContent(
+                raw_file=enrichment_data,
+                checksum_sha256=checksum_sha256
+            )
+            db.session.add(file_content)
+            db.session.flush()
+
+        entry_file.filename = file_name
+        entry_file.description = data['description']
+        entry_file.content_id = file_content.id
+
+        db.session.add(entry_file)
+        db.session.commit()
+
+        current_app.logger.info(
+            f'Project: {projects_name}, File ID: {fileId}',
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='edit gene list').to_dict()
+        )
+
+    except NoResultFound:
+        raise RecordNotFoundException('Requested file not found.')
+
+    yield jsonify({'status': 'success'}), 200
+
+
+@newbp.route('/<string:projects_name>/enrichment-visualisation/<string:id>', methods=['GET'])
+@auth.login_required
+@requires_project_permission(AccessActionType.READ)
+def get_enrichment_data(id: str, projects_name: str):
+    user = g.current_user
+
+    try:
+        projects = Projects.query.filter(Projects.name == projects_name).one()
+    except NoResultFound:
+        raise RecordNotFoundException(f'Project {projects_name} not found')
+
+    yield user, projects
+
+    try:
+        entry = db.session.query(
+            Files.id,
+            Files.filename,
+            Files.description,
+            FileContent.raw_file
+        ).join(
+            FileContent,
+            FileContent.id == Files.content_id
+        ).filter(
+            Files.file_id == id,
+            Files.project == projects.id
+        ).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Requested file not found.')
+
+    current_app.logger.info(
+        f'Project: {projects_name}, File ID: {id}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='open enrichment file').to_dict()
+    )
+
+    yield jsonify({
+        'status': 'success',
+        'data': entry.raw_file.decode('utf-8'),
+        'name': entry.filename,
+        'description': entry.description}), 200
+
+
 # TODO: Convert this? Where is this getting used
 @bp.route('/bioc', methods=['GET'])
 @auth.login_required
