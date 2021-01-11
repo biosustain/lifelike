@@ -20,6 +20,7 @@ from neo4japp.exceptions import AnnotationError
 from neo4japp.models import FileContent
 from neo4japp.services.annotations.constants import (
     AnnotationMethod,
+    GREEK_SYMBOLS,
     NLP_ENDPOINT,
     MAX_ABBREVIATION_WORD_LENGTH
 )
@@ -167,6 +168,20 @@ def parse_pdf(project_id: int, file_id: str) -> Tuple[str, List[PDFWord]]:
         for token in page['tokens']:
             if len(prev_words) > MAX_ABBREVIATION_WORD_LENGTH:
                 prev_words = []
+
+            greek_symbols = tuple([chr(g) for g in GREEK_SYMBOLS])
+
+            if token['text'].startswith(greek_symbols):
+                counter = 0
+                for c in token['text']:
+                    if c in greek_symbols:
+                        counter += 1
+                        token['pgIdx'] += 1
+                        token['rects'].pop(0)
+                    else:
+                        break
+
+                token['text'] = token['text'][counter:]
 
             parsed.append(
                 PDFWord(

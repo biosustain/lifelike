@@ -22,7 +22,6 @@ from neo4japp.services.annotations.constants import (
     SPECIES_EXCLUSION,
     EntityType,
     EntityIdStr,
-    GREEK_SYMBOLS,
     ManualAnnotationType
 )
 from neo4japp.services.annotations.lmdb_service import LMDBService
@@ -63,7 +62,6 @@ class EntityRecognitionService:
         self.lmdb = lmdb
         self.graph = graph
         self.db = db
-        self.greek_symbols = tuple([chr(g) for g in GREEK_SYMBOLS])
 
         # for inclusions, structured the same as LMDB
         self._inclusion_type_anatomy: Dict[str, Inclusion] = {}
@@ -1436,31 +1434,6 @@ class EntityRecognitionService:
         token: PDFWord,
         check_entities: Dict[str, bool],
     ) -> None:
-        # TODO: fix, PDFWord no longer has meta
-        # if token.keyword.startswith(self.greek_symbols):
-        #     meta = token.meta
-        #     counter = 0
-        #     for c in token.keyword:
-        #         if c in self.greek_symbols:
-        #             counter += 1
-        #         else:
-        #             break
-        #     for i in range(0, counter):
-        #         meta.coordinates.pop(i)
-        #         meta.heights.pop(i)
-        #         meta.widths.pop(i)
-
-        #     new_token_keyword = token.keyword[counter:]
-        #     token = PDFWord(
-        #         keyword=new_token_keyword,
-        #         normalized_keyword=normalize_str(new_token_keyword),
-        #         page_number=token.page_number,
-        #         cropbox=token.cropbox,
-        #         meta=meta,
-        #         previous_words=token.previous_words,
-        #         token_type=token.token_type
-        #     )
-
         if check_entities.get(EntityType.ANATOMY.value, False):
             if token.keyword in self.matched_type_anatomy:
                 self.matched_type_anatomy[token.keyword].tokens.append(token)
