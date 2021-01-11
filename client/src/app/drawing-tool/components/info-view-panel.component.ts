@@ -38,4 +38,17 @@ export class InfoViewPanelComponent {
     }
   }
 
+  searchMapNodeInVisualizer(node: UniversalGraphNode) {
+    this.workspaceManager.navigate(['/search'], {
+      queryParams: {
+        q: node.display_name,
+        page: 1,
+        entities: node.label,
+        domains: '',
+        organism: ''
+      },
+      sideBySide: true,
+      newTab: true,
+    });
+  }
 }
