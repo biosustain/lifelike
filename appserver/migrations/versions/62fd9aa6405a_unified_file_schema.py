@@ -14,6 +14,7 @@ import random
 from datetime import datetime
 
 import sqlalchemy as sa
+import timeflake
 from alembic import op
 # revision identifiers, used by Alembic.
 from sqlalchemy.orm import Session
@@ -171,13 +172,7 @@ t_app_role = sa.Table(
 
 
 def create_hash_id():
-    """
-    Create hash IDs for files.
-    """
-    # TODO: base it on ID
-    length = 36
-    letters = 'abcdefghkmnoprstwxzABCDEFGHJKLMNPQRTWXY34689'
-    return ''.join(random.choice(letters) for i in range(length))
+    return timeflake.random().base62
 
 
 def iter_query(query, *, batch_size):

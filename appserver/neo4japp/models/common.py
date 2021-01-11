@@ -1,22 +1,20 @@
-import random
-
-import sqlalchemy as sa
 from decimal import Decimal
 
+import sqlalchemy as sa
+import timeflake
+from marshmallow import fields
+from marshmallow_sqlalchemy.convert import ModelConverter as BaseModelConverter
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.types import TIMESTAMP
+from sqlalchemy_utils.types import TSVectorType
 
 from neo4japp.database import db
 from neo4japp.util import snake_to_camel, camel_to_snake
-from marshmallow import fields
-from marshmallow_sqlalchemy.convert import ModelConverter as BaseModelConverter
-from sqlalchemy_utils.types import TSVectorType
-from sqlalchemy.types import TIMESTAMP
 
 
 def generate_hash_id():
-    length = 36
-    letters = 'abcdefghkmnoprstwxzABCDEFGHJKLMNPQRTWXY34689'
-    return ''.join(random.choice(letters) for i in range(length))
+    # Roughly-ordered identifier with an extremely low chance of collision
+    return timeflake.random().base62
 
 
 class NEO4JBase():
