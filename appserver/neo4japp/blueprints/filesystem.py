@@ -389,8 +389,8 @@ class FilesystemBaseView(MethodView):
             try:
                 db.session.commit()
             except IntegrityError as e:
-                raise ValidationError("The requested changes would result in a duplicate filename "
-                                      "within the same folder.")
+                raise ValidationError("No two items (folder or file) can share the same name.",
+                                      "filename")
 
         return missing_hash_ids
 

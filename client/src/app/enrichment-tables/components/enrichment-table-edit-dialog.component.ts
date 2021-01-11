@@ -78,6 +78,7 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
         this.setDomains();
         return searchResult;
       }),
+      this.errorHandler.createFormErrorHandler(this.form),
       this.errorHandler.create(),
     ).subscribe(() => {
     }, () => {
