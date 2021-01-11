@@ -6,3 +6,4 @@ from .account import AccountService
 from .projects import ProjectsService
 from .visualizer import VisualizerService
 from .enrichment_table import EnrichmentTableService
+from .enrichment_visualisation import EnrichmentVisualisationService
