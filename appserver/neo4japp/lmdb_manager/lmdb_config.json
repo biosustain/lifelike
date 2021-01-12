@@ -7,5 +7,6 @@
     "genes": "v1",
     "phenomenas": "v1",
     "proteins": "v1",
-    "species": "v1"
+    "species": "v1",
+    "phenotypes": "v1"
 }
