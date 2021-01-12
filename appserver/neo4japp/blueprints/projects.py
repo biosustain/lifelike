@@ -345,7 +345,8 @@ class ProjectCollaboratorsListView(ProjectBaseView):
         query = db.session.query(AppUser, AppRole.name) \
             .join(projects_collaborator_role,
                   AppUser.id == projects_collaborator_role.c.appuser_id) \
-            .join(AppRole, AppRole.id == projects_collaborator_role.c.app_role_id)
+            .join(AppRole, AppRole.id == projects_collaborator_role.c.app_role_id) \
+            .filter(projects_collaborator_role.c.projects_id == project.id)
 
         paginated_result = query.paginate(pagination.page, pagination.limit, False)
 
