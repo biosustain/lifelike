@@ -47,7 +47,7 @@
     Export...
   </button>
   <button ngbDropdownItem (click)="openShareDialog(object)">
-    Copy{{ nameEntity && object.isDirectory ? ' folder' : ''}} link
+    Copy{{ nameEntity && object.isDirectory ? ' folder' : ''}} link...
   </button>
   <ng-container *ngIf="object.isNavigable">
     <button ngbDropdownItem [appLink]="['/file-navigator', object.project.name, object.hashId]"
