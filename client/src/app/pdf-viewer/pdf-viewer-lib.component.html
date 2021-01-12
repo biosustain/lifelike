@@ -1,9 +1,4 @@
 <div class="pdf-viewer-container" [class.debugmode]="debugMode" (mouseup)="mouseUp($event)">
-  <ng-container *ngIf="currentHighlightAnnotationId != null">
-    <div class="search-status-box floating-toolbar">
-      <a class="btn btn-secondary btn-sm py-0" (click)="clearResults(); $event.preventDefault()" href="#">Clear Results</a>
-    </div>
-  </ng-container>
   <div *ngIf="!isLoadCompleted" class="pdf-loading-box floating-toolbar">
     Loading<span *ngIf="allPages"> page {{currentRenderedPage}} of {{allPages}}</span>...
   </div>

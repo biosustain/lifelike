@@ -48,12 +48,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
   @Input() annotations: Annotation[];
   @Input() goToPosition: Subject<Location>;
-  @Input() highlightAnnotations: Subject<string>;
+  @Input() highlightAnnotations: Observable<string>;
   @Input() debugMode: boolean;
   @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
   @Input() filterChanges: Observable<void>;
   renderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
   currentHighlightAnnotationId: string | undefined;
+  foundHighlightAnnotations: Annotation[] = [];
+  currentHighlightAnnotationsIndex = 0;
   private filterChangeSubscription: Subscription;
 
   @Input()
@@ -113,6 +115,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Output('annotation-exclusion-added') annotationExclusionAdded = new EventEmitter();
   @Output('annotation-exclusion-removed') annotationExclusionRemoved = new EventEmitter();
   @Output() searchChange = new EventEmitter<string>();
+  @Output() annotationHighlightChange = new EventEmitter<AnnotationHighlightResult>();
 
   /**
    * Stores a mapping of annotations to the HTML elements that are used to show it.
@@ -896,14 +899,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
 
     this.currentHighlightAnnotationId = id;
+    const foundHighlightAnnotations = [];
 
-    let found = 0;
     let firstPageNumber = null;
     let firstAnnotation: Annotation = null;
 
     for (const annotation of this.annotations) {
       if (annotation.meta.id === id) {
-        found++;
+        foundHighlightAnnotations.push(annotation);
         if (!firstAnnotation) {
           firstAnnotation = annotation;
           firstPageNumber = annotation.pageNumber;
@@ -922,14 +925,26 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         }
       }
     }
+
+    this.foundHighlightAnnotations = foundHighlightAnnotations;
+    this.currentHighlightAnnotationsIndex = 0;
+    this.annotationHighlightChange.emit(id != null ? {
+      id,
+      firstAnnotation,
+      firstPageNumber,
+      found: foundHighlightAnnotations.length,
+    } : null);
+
     if (id != null) {
+      this.nullifyMatchesCount();
       this.searchQueryChanged({
         keyword: '',
         findPrevious: true,
       });
 
-      if (found) {
-        this.snackBar.open(`Highlighted ${found} instance${found === 1 ? '' : 's'}  `
+      if (foundHighlightAnnotations.length) {
+        this.snackBar.open(
+          `Highlighted ${foundHighlightAnnotations.length} instance${foundHighlightAnnotations.length === 1 ? '' : 's'}  `
             + (firstAnnotation != null ? `of '${firstAnnotation.meta.allText}' ` : '')
             + `in the document, starting on page ${firstPageNumber}.`,
             'Close', {duration: 5000});
@@ -939,6 +954,30 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         this.snackBar.open(`The annotation could not be found in the document.`,
             'Close', {duration: 5000});
       }
+    }
+  }
+
+  previousAnnotationHighlight() {
+    if (this.currentHighlightAnnotationsIndex != null && this.foundHighlightAnnotations.length) {
+      let previousIndex = this.currentHighlightAnnotationsIndex - 1;
+      if (previousIndex < 0) {
+        previousIndex = this.foundHighlightAnnotations.length - 1;
+      }
+      this.currentHighlightAnnotationsIndex = previousIndex;
+      const annotation = this.foundHighlightAnnotations[previousIndex];
+      this.addHighlightItem(annotation.pageNumber, annotation.rects[0]);
+    }
+  }
+
+  nextAnnotationHighlight() {
+    if (this.currentHighlightAnnotationsIndex != null && this.foundHighlightAnnotations.length) {
+      let nextIndex = this.currentHighlightAnnotationsIndex + 1;
+      if (nextIndex >= this.foundHighlightAnnotations.length) {
+        nextIndex = 0;
+      }
+      this.currentHighlightAnnotationsIndex = nextIndex;
+      const annotation = this.foundHighlightAnnotations[nextIndex];
+      this.addHighlightItem(annotation.pageNumber, annotation.rects[0]);
     }
   }
 
@@ -1120,4 +1159,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }, [Number.MAX_VALUE, Number.MIN_VALUE, Number.MIN_VALUE, Number.MAX_VALUE]);
   }
 
+}
+
+export interface AnnotationHighlightResult {
+  id: string;
+  firstAnnotation: Annotation;
+  firstPageNumber: number;
+  found: number;
 }
