@@ -4,7 +4,7 @@ set -o errexit                  # exit on command failure; use <cmd> || true to 
 set -o nounset                  # exit when script tries to use undeclared variables
 
 if [ "${FLASK_ENV}" = "development" ]; then
-    echo "Starting up development environment"
+    echo "### Starting up development environment ###"
     __dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     # wait for postgres
     ${__dir__}/wait-for-postgres
@@ -20,7 +20,6 @@ if [ "${FLASK_ENV}" = "development" ]; then
     touch .READY
     flask run --host 0.0.0.0
 elif [ "${FLASK_ENV}" = "production" ]; then
-    echo "Setting up production environment"
     gunicorn -b 0.0.0.0:5000 -w 4 app:app --timeout 1200
 else
     echo "No environment setup for ${FLASK_ENV}"
