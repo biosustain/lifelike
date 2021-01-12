@@ -121,7 +121,7 @@
       file:
         path: "{{ deploy_dir }}/lmdb"
         state: directory
-        mode: "744"
+        mode: "774"
         owner: "{{ deploy_user }}"
         group: "1000" # We do this because of group permissions 1000 in Docker
 
