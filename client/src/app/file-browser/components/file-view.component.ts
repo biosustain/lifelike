@@ -6,7 +6,7 @@ import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { cloneDeep, uniqueId } from 'lodash';
 
-import { BehaviorSubject, combineLatest, Subject, Subscription } from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
@@ -26,13 +26,14 @@ import {
   Meta,
   RemovedAnnotationExclusion,
 } from '../../pdf-viewer/annotation-type';
-import { PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component';
+import { AnnotationHighlightResult, PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component';
 import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { map } from 'rxjs/operators';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -79,8 +80,15 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
   searchQuery = '';
+  annotationHighlight: AnnotationHighlightResult;
   goToPosition: Subject<Location> = new Subject<Location>();
-  highlightAnnotations: Subject<string> = new Subject<string>();
+  highlightAnnotations = new BehaviorSubject<{
+    id: string;
+    text: string;
+  }>(null);
+  highlightAnnotationIds: Observable<string> = this.highlightAnnotations.pipe(
+    map((value) => value ? value.id : null)
+  );
   loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]>;
   pendingScroll: Location;
   pendingAnnotationHighlightId: string;
@@ -106,7 +114,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   removedAnnotationExclusion: RemovedAnnotationExclusion;
   projectName: string;
 
-  @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
+  @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib: PdfViewerLibComponent;
 
   constructor(
     private readonly filesService: PdfFilesService,
@@ -478,16 +486,21 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       this.pendingAnnotationHighlightId = annotationId;
       return;
     }
+    let text = annotationId;
     if (annotationId != null) {
       for (const annotation of this.annotations) {
         if (annotation.meta.id === annotationId) {
+          text = annotation.meta.allText || text;
           this.entityTypeVisibilityMap.set(annotation.meta.type, true);
           this.invalidateEntityTypeVisibility();
           break;
         }
       }
     }
-    this.highlightAnnotations.next(annotationId);
+    this.highlightAnnotations.next({
+      id: annotationId,
+      text,
+    });
   }
 
   loadCompleted(status) {
@@ -520,6 +533,22 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   searchQueryChangedFromViewer(keyword: string) {
     this.searchQuery = keyword;
+  }
+
+  annotationHighlightChangedFromViewer(result: AnnotationHighlightResult | undefined) {
+    this.annotationHighlight = result;
+  }
+
+  annotationHighlightNext() {
+    if (this.pdfViewerLib) {
+      this.pdfViewerLib.nextAnnotationHighlight();
+    }
+  }
+
+  annotationHighlightPrevious() {
+    if (this.pdfViewerLib) {
+      this.pdfViewerLib.previousAnnotationHighlight();
+    }
   }
 
   findNext() {
@@ -647,5 +676,13 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         }],
       },
     } as Partial<UniversalGraphNode>));
+  }
+
+  getAnnotationBackground(an: Annotation | undefined) {
+    if (an != null) {
+      return ENTITY_TYPE_MAP[an.meta.type].color;
+    } else {
+      return null;
+    }
   }
 }
