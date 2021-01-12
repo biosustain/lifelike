@@ -4,15 +4,12 @@
   </button>
 </ng-container>
 <button ngbDropdownItem (click)="openCollaboratorsDialog(project)">
-  Share{{ nameEntity ? ' project' : '' }}...
+  Edit collaborators...
 </button>
 <ng-container *ngIf="showTools">
   <div class="dropdown-divider"></div>
   <button ngbDropdownItem (click)="openShareDialog(project)">
     Copy{{ nameEntity ? ' project' : '' }} link
-  </button>
-  <button ngbDropdownItem (click)="copyAsMapNode(project)">
-    Copy map node
   </button>
   <ng-container *ngIf="project.***ARANGO_USERNAME***">
     <div class="dropdown-divider"></div>
