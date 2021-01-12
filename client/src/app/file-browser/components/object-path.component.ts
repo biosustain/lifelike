@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
+import { WorkspaceManager } from '../../shared/workspace-manager';
 
 @Component({
   selector: 'app-object-path',
@@ -12,6 +13,9 @@ export class ObjectPathComponent {
   _object: FilesystemObject | undefined;
   path: FilesystemObject[] = [];
   @Input() newTab = false;
+
+  constructor(protected readonly workspaceManager: WorkspaceManager) {
+  }
 
   @Input()
   set object(object: FilesystemObject | undefined) {
@@ -27,6 +31,12 @@ export class ObjectPathComponent {
       current = current.parent;
     }
     return path.reverse();
+  }
+
+  openObject(target: FilesystemObject) {
+    this.workspaceManager.navigate(target.getCommands(false), {
+      newTab: true,
+    });
   }
 
 }

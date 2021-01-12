@@ -2,13 +2,13 @@ import {
   AfterViewInit,
   ContentChild,
   Directive,
-  ElementRef,
+  ElementRef, EventEmitter,
   forwardRef,
   HostBinding,
   HostListener,
   Inject,
   NgZone,
-  OnDestroy,
+  OnDestroy, Output,
   Renderer2,
 } from '@angular/core';
 import { fromEvent, Subscription } from 'rxjs';
@@ -46,6 +46,8 @@ export class ContextMenuBodyDirective {
 export class ContextMenuDirective implements AfterViewInit, OnDestroy {
   @ContentChild(ContextMenuBodyDirective, {static: false, read: ElementRef})
   private bodyDirective: ElementRef;
+
+  @Output() contextMenuOpened = new EventEmitter<any>();
 
   private _open = false;
   protected readonly subscriptions = new Subscription();
@@ -139,6 +141,7 @@ export class ContextMenuDirective implements AfterViewInit, OnDestroy {
     const x = this.mousePosition[0];
     const y = this.mousePosition[1];
     this.dropdownController.open(x, y);
+    this.contextMenuOpened.emit();
   }
 
   /**

@@ -4,19 +4,21 @@ export class DropdownController {
   fixedAnchorPoint = false;
   viewportSpacing = 5;
   focusAfterOpen = false;
+  parentNode: Node | undefined;
 
   constructor(protected readonly renderer: Renderer2,
               protected readonly containerElement: HTMLElement,
               protected readonly dropdownElement: HTMLElement,
               options: DropdownOptions = {}) {
     Object.assign(this, options);
+    this.parentNode = dropdownElement.parentNode;
   }
 
   /**
    * Move the menu back to the original container.
    */
   private removeFromBody() {
-    this.renderer.appendChild(this.containerElement, this.dropdownElement);
+    this.renderer.appendChild(this.parentNode, this.dropdownElement);
   }
 
   /**
