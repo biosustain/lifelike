@@ -224,7 +224,7 @@ export class NodeFormComponent implements AfterViewInit {
     }
   }
 
-  searchMapNodeInVisualizer(node: UniversalGraphNode) {
+  searchMapNodeInVisualizer(node) {
     // TODO: This is a temp fix to make searching compoounds/species easier. Sometime in the future it's expected that these types will be
     // squashed down into a single type.
     let entityType = node.label;
