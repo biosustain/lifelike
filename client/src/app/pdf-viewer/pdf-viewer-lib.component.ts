@@ -188,6 +188,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       removeCustomAnnotation: (uuid) => this.zone.run(() => this.removeCustomAnnotation(uuid)),
       openExclusionPanel: (annExclusion) => this.zone.run(() => this.openExclusionPanel(annExclusion)),
       removeAnnotationExclusion: (annExclusion) => this.zone.run(() => this.removeAnnotationExclusion(annExclusion)),
+      highlightAllAnnotations: (id) => this.zone.run(() => this.highlightAllAnnotations(id)),
     };
 
     this.goToPosition.subscribe((sub) => {
@@ -373,7 +374,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   prepareTooltipContent(an: Annotation): string {
-    const base = [`Type: ${an.meta.type}`];
+    let base = [`Type: ${an.meta.type}`];
     if (an.meta.id) {
       if (an.meta.idHyperlink) {
         base.push(`Id: <a href=${escape(an.meta.idHyperlink)} target="_blank">${escape(an.meta.id)}</a>`);
@@ -404,6 +405,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       </div>
     `;
     base.push(collapseHtml);
+    base = [base.join('<br/>')];
 
     if (an.meta.isCustom) {
       base.push(`
@@ -433,6 +435,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         </div>
       `)
     }
+    base.push(`
+        <div class="mt-1">
+          <button type="button" class="btn btn-secondary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].highlightAllAnnotations(${escape(JSON.stringify(an.meta.id))});jQuery('.system-annotation').qtip('hide')">
+            <i class="fas fa-fw fa-search"></i>
+            <span>Find Occurrences</span>
+          </button>
+        </div>
+      `);
     if (an.meta.isExcluded) {
       const annExclusion = {
         text: an.textInDocument,
@@ -453,7 +463,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
           </div>
         </div>`);
     }
-    return base.join('<br/>');
+    return base.join('');
   }
 
   processAnnotations(pageNum: number, pdfPageView: any) {
