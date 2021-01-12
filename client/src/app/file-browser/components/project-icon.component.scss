@@ -1,15 +1,5 @@
 @import 'src/scss/variables';
 
 .project-icon {
-  width: 5rem;
-  height: 5rem;
-  display: inline-flex;
-  background: $gray-200;
-  border-radius: $border-radius;
-  font-weight: bold;
-  font-size: $font-size-base * 1.7;
-}
-
-.project-icon-text {
-  fill: $gray-700;
+  fill: $gray-600;
 }
