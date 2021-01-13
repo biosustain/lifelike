@@ -46,7 +46,7 @@ export class ErrorHandler {
       const errorResponse: ErrorResponse | undefined = this.getErrorResponse(error);
 
       // Detect if we got an error response object
-      if (errorResponse) {
+      if (errorResponse && errorResponse.message) {
         message = errorResponse.message;
         detail = errorResponse.detail;
         transactionId = errorResponse.transactionId;
