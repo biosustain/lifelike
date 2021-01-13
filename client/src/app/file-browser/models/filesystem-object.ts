@@ -399,7 +399,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return ['/projects', projectName, 'files', this.hashId];
       case MAP_MIMETYPE:
         return ['/projects', projectName, 'maps', this.hashId,
-          ...(forEditing ? ['edit'] : [])];
+          ...(forEditing && this.privileges.writable ? ['edit'] : [])];
       default:
         throw new Error(`unknown directory object type: ${this.mimeType}`);
     }

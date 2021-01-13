@@ -1,4 +1,4 @@
-<ng-container *ngIf="showOpen || object.isEditable || object.isAnnotatable || object.isVersioned">
+<ng-container *ngIf="showOpen || (object.privileges.writable && (object.isEditable || object.isAnnotatable)) || object.isVersioned">
   <button ngbDropdownItem (click)="this.objectOpen.next(object)" [disabled]="!object.isOpenable" *ngIf="showOpen">
     Open
   </button>

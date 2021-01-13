@@ -184,7 +184,8 @@
           <div class="d-flex align-items-center flex-spaced-wrap">
             <div class="flex-fill text-nowrap overflow-x-hidden">
               <div ngbDropdown class="d-inline-block" container="body">
-                <button class="btn btn-primary" ngbDropdownToggle>
+                <button class="btn btn-primary" ngbDropdownToggle
+                        [disabled]="!result.value.privileges.writable">
                   <i class="fa fa-fw fa-plus-circle"></i>
                   New
                 </button>
@@ -202,12 +203,13 @@
               </div>
 
               <button class="btn btn-primary ml-2"
-                      (click)="openUploadDialog(result.value)">
+                      (click)="openUploadDialog(result.value)"
+                      [disabled]="!result.value.privileges.writable">
                 <i class="fa fa-fw fa-upload"></i> Upload
               </button>
 
               <div ngbDropdown class="d-inline-block ml-2" container="body"
-                   *ngIf="result.value.children.selection.length">
+                   *ngIf="result.value.children.selection.length && result.value.privileges.writable">
                 <button class="btn btn-secondary" ngbDropdownToggle>
                   Actions
                 </button>
