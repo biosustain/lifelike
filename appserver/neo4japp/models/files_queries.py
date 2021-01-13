@@ -4,7 +4,7 @@ For now, it's just a file with query functions to help DRY.
 from typing import Set, Optional, Union, Literal
 
 from flask_sqlalchemy import BaseQuery
-from sqlalchemy import and_, inspect
+from sqlalchemy import and_, inspect, literal
 from sqlalchemy.orm import contains_eager, aliased, Query
 
 from neo4japp.database import db
@@ -221,7 +221,8 @@ def build_file_hierarchy_query(condition, projects_table, files_table,
 
 
 # noinspection DuplicatedCode
-def add_file_user_role_columns(query, file_table, user_id, role_names=None, column_format=None):
+def add_file_user_role_columns(query, file_table, user_id, role_names=None, column_format=None,
+                               access_override=False):
     """
     Add columns to a query for fetching the value of the provided roles for the
     provided user ID for files in the provided fi;e table.
@@ -231,6 +232,7 @@ def add_file_user_role_columns(query, file_table, user_id, role_names=None, colu
     :param role_names: a list of roles to check
     :param user_id: the user ID to check for
     :param column_format: the format for the name of the column, where {} is the role name
+    :parameter access_override: if true, give full access
     :return: the new query
     """
 
@@ -242,19 +244,22 @@ def add_file_user_role_columns(query, file_table, user_id, role_names=None, colu
     column_format = column_format if column_format is not None else f'has_{{}}_{user_id}'
 
     for role_name in role_names:
-        t_role = db.aliased(AppRole)
-        t_user = db.aliased(AppUser)
+        if access_override:
+            query = query.add_column(literal(True).label(column_format.format(role_name)))
+        else:
+            t_role = db.aliased(AppRole)
+            t_user = db.aliased(AppUser)
 
-        file_role_sq = db.session.query(file_collaborator_role, t_role.name) \
-            .join(t_role, t_role.id == file_collaborator_role.c.role_id) \
-            .join(t_user, t_user.id == file_collaborator_role.c.collaborator_id) \
-            .subquery()
+            file_role_sq = db.session.query(file_collaborator_role, t_role.name) \
+                .join(t_role, t_role.id == file_collaborator_role.c.role_id) \
+                .join(t_user, t_user.id == file_collaborator_role.c.collaborator_id) \
+                .subquery()
 
-        query = query \
-            .outerjoin(file_role_sq, and_(file_role_sq.c.file_id == file_table.id,
-                                          file_role_sq.c.collaborator_id == user_id,
-                                          file_role_sq.c.name == role_name)) \
-            .add_column(file_role_sq.c.name.isnot(None).label(column_format.format(role_name)))
+            query = query \
+                .outerjoin(file_role_sq, and_(file_role_sq.c.file_id == file_table.id,
+                                              file_role_sq.c.collaborator_id == user_id,
+                                              file_role_sq.c.name == role_name)) \
+                .add_column(file_role_sq.c.name.isnot(None).label(column_format.format(role_name)))
 
     return query
 
