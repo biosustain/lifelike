@@ -29,7 +29,7 @@ import { PdfViewerLibComponent } from '../pdf-viewer-lib.component';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mergeMap } from 'rxjs/operators';
-import { readBlobAsBuffer } from '../../shared/utils/files';
+import { mapBlobToBuffer, readBlobAsBuffer } from '../../shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
 
@@ -123,7 +123,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           loadContent: true,
         }).pipe(mergeMap(object => combineLatest(
           of(object),
-          readBlobAsBuffer(object.contentValue),
+          object.contentValue$.pipe(mapBlobToBuffer()),
         ))),
         this.pdfAnnService.getAnnotations(hashId));
     });
