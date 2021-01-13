@@ -110,6 +110,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.loadTask = new BackgroundTask(() => this.filesystemService.get(this.fileId, {
       loadContent: true,
     }).pipe(
+      this.errorHandler.create(),
       mergeMap((object: FilesystemObject) => {
         return object.contentValue$.pipe(
           mapBlobToBuffer(),
