@@ -2,12 +2,12 @@
   <button ngbDropdownItem (click)="openEditDialog(project)">
     Edit project...
   </button>
+  <button ngbDropdownItem (click)="openCollaboratorsDialog(project)">
+    Edit collaborators...
+  </button>
 </ng-container>
-<button ngbDropdownItem (click)="openCollaboratorsDialog(project)">
-  Edit collaborators...
-</button>
 <ng-container *ngIf="showTools">
-  <div class="dropdown-divider"></div>
+  <div class="dropdown-divider" *ngIf="project.privileges.administrable"></div>
   <button ngbDropdownItem (click)="openShareDialog(project)">
     Copy{{ nameEntity ? ' project' : '' }} link...
   </button>
