@@ -61,61 +61,52 @@ log - Log transform p-values, if they are very small.
 optim - Optimize performance by filtering out annotation that will definitely not be enriched, which is the case if zero ids-of-interest has that annotation.
             action = :store_true
 """
-function calculateMannWhitney(annotation_file; annotation, value, id, header=true, group, BH, bonf, zeros, log, optim)
-    group ∈ [nothing, ""] || error("Not implemented yet.")
-    @info "Reading."
-    ids = header ? CSV.read(stdin, DataFrame)[:, id] : CSV.read(stdin, DataFrame, header=false)[:, 1]
-    
-    df = CSV.read(annotation_file, DataFrame)
-    # using compressed categorical columns speeds up e.g. marking of ids-of-interest
-    categorical!(df, annotation, compress=true)
-    categorical!(df, id, compress=true)
-    n_tests = df[!, annotation] |> unique |> length
-    
+function calculateMannWhitney(df, ids; annotation, value, id, header=true, group, BH, bonf, zeros, log, optim)
+
     @info "Mark ids-of-interest."
     df.X = df[!, id] .∈ Ref(Set(ids))
     # A Mann-Whitney U test requires two samples to compare.
     all(df.X) && error("All annotations belong to the ids from the infile.")
     !any(df.X) && error("No annotations belong to the ids from the infile.")
-    
-    
+
+
     if optim
         potential = DataFrame(annotation=>unique(df[df.X, annotation]))
         @info "Reduce set of potential annotation from $(length(unique(df[!, annotation]))) to $(nrow(potential))"
         df = innerjoin(potential, df, on=annotation)
     end
-    
+
     if zeros
         @info "Introduce zero counts."
         df = coalesce.(unstack(df, [id, "X"], annotation, value), 0)
         # has to be done in two steps, it gives a wrong result if line of code above and below are combined.
         df = stack(df, 3:size(df,2); variable_name=annotation, value_name=value)
     end
-    
+
     # log settings
     getp, getpadj, p_name, q_name, bonf_name = log ? (logpvalue, logadjust, "logp", "logq", "logp_bonf") : (pvalue, adjust, "p", "q", "p_bonf")
-    
+
     @info "Group by test."
     gdf = groupby(df, annotation)
     @info "Run Mann-Whitney U Tests and keep the p-values."
     results = DataFrames.combine(gdf, [value, "X"] => ((v, X) -> getp(MannWhitneyUTest(v[X], v[.!X]), tail=:right)) => p_name)
     BH === nothing || (results[!, q_name] = getpadj(results[!, p_name], n_tests, BenjaminiHochberg()))
     bonf === nothing || (results[!, bonf_name] = getpadj(results[!, p_name], n_tests, Bonferroni()))
-    
+
     # filter
-    
+
     if BH !== nothing && BH < 1.
         if log BH = log(BH) end
         @info "filtering results with significance threshold $q_name<=$(BH)."
         results = results[results[!, q_name] .<= BH, :]
     end
-    
+
     if bonf !== nothing && bonf < 1.
         if log bonf = log(bonf) end
         @info "filtering results with significance threshold $bonf_name<=$(bonf)."
         results = results[results[!, bonf_name] .<= bonf, :]
     end
-    
+
     @info "Sort."
     DataFrames.sort!(results, filter(n->n ∈ names(results), [bonf_name, q_name, p_name]))
     return results
