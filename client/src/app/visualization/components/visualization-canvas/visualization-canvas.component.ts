@@ -17,19 +17,24 @@ import { isNullOrUndefined } from 'util';
 import { Network, DataSet, IdType } from 'vis-network';
 
 import {
+  DuplicateVisEdge,
+  DuplicateVisNode,
+  Neo4jGraphConfig,
+  VisEdge,
+  VisNode,
+} from 'app/interfaces/neo4j.interface';
+import {
+    AssociatedType,
     ClusterData,
     DuplicateNodeEdgePair,
     Direction,
     DuplicateEdgeConnectionData,
-    DuplicateVisEdge,
-    DuplicateVisNode,
     EdgeConnectionData,
     ExpandNodeResult,
     ExpandNodeRequest,
     GetClusterSnippetsResult,
     GetEdgeSnippetsResult,
     GroupRequest,
-    Neo4jGraphConfig,
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
     NodeDisplayInfo,
@@ -37,29 +42,20 @@ import {
     ReferenceTablePair,
     ReferenceTableRow,
     SettingsFormValues,
+    SidenavEntityType,
     SidenavClusterEntity,
     SidenavEdgeEntity,
     SidenavNodeEntity,
     SidenavSnippetData,
-    VisEdge,
-    VisNode,
     SidenavTypeEntity,
-} from 'app/interfaces';
+} from 'app/interfaces/visualization.interface';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { uuidv4 } from 'app/shared/utils';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
-import { AssociatedType } from '../context-menu/context-menu.component';
 
-enum SidenavEntityType {
-    EMPTY,
-    NODE,
-    EDGE,
-    CLUSTER,
-    TYPE,
-}
 
 @Component({
     selector: 'app-visualization-canvas',

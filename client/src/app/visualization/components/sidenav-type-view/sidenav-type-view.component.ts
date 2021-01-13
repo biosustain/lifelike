@@ -1,41 +1,45 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { VisNode } from 'app/interfaces';
 
-import { SidenavTypeEntity, NodeAssociatedTypesRequest } from 'app/interfaces';
+import {
+  AssociatedType,
+  AssociatedTypeEntry,
+  NodeAssociatedTypesRequest,
+  SidenavTypeEntity,
+} from 'app/interfaces/visualization.interface';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
-import { AssociatedType } from '../context-menu/context-menu.component';
+
 
 @Component({
     selector: 'app-sidenav-type-view',
     templateUrl: './sidenav-type-view.component.html',
     styleUrls: ['./sidenav-type-view.component.scss']
 })
-export class SidenavTypeViewComponent implements OnInit, OnDestroy {
+export class SidenavTypeViewComponent {
   @Input() legend: Map<string, string[]>;
-  @Input() nodeEntity: SidenavTypeEntity;
+  @Input() set nodeEntity(entity: SidenavTypeEntity) {
+    console.log(entity);
+    this.updateNodeEntity(entity);
+  }
+
+  node: VisNode;
   type: string;
   associatedType = AssociatedType;
   typeEntries: AssociatedTypeEntry[];
   color: string;
 
+  loading = true;
+
   constructor(private visualizationService: VisualizationService) {}
 
-  ngOnInit() {
-    switch (this.nodeEntity.type) {
-      case (this.associatedType.CHEMICAL): {
-        this.type = 'Chemical';
-        break;
-      }
-      case (this.associatedType.GENE): {
-        this.type = 'Gene';
-        break;
-      }
-      case (this.associatedType.DISEASE): {
-        this.type = 'Disease';
-        break;
-      }
-    }
+  updateNodeEntity(nodeEntity: SidenavTypeEntity) {
+    this.loading = true;
+    this.node = nodeEntity.data;
+    this.type = AssociatedType[nodeEntity.type];
+
     const request: NodeAssociatedTypesRequest = {
-      node_id: this.nodeEntity.data.id,
+      node_id: this.node.id,
+      // TODO: Should consider calling this just 'label', if the query doesn't care about direction
       to_label: this.type,
     };
     this.color = this.legend.get(this.type)[0];
@@ -50,16 +54,7 @@ export class SidenavTypeViewComponent implements OnInit, OnDestroy {
         };
         this.typeEntries.push(entry);
       });
+      this.loading = false;
     });
   }
-
-  ngOnDestroy() {
-
-  }
-}
-
-interface AssociatedTypeEntry {
-  name: string;
-  count: number;
-  percentage: number;
 }
