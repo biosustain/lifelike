@@ -20,3 +20,8 @@ th {
 th, td {
     padding: 1px 5px 1px 5px
 }
+
+.hoverable-row:hover {
+    cursor: pointer;
+    background-color: rgba($color: $primary, $alpha: 0.25);
+}

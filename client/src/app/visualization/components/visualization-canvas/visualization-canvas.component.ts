@@ -1041,9 +1041,29 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     openTypeSidenav(type: AssociatedType) {
         this.openSidenav();
         if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0 && !this.networkGraph.isCluster(this.selectedNodes[0])) {
-            const node  = this.nodes.get(this.selectedNodes[0]) as VisNode;
+            const sourceNode  = this.nodes.get(this.selectedNodes[0]) as VisNode;
+            const connectedNodeIds = new Set<number>();
+            const connectedNodes = [];
+
+            this.networkGraph.getConnectedNodes(sourceNode.id).forEach(connectedNodeId => {
+              if (!this.networkGraph.isCluster(connectedNodeId)) {
+                const connectedNode: any = this.nodes.get(connectedNodeId);
+                const knowledgeGraphId = connectedNode.duplicateOf || connectedNode.id;
+
+                if (connectedNode.primaryLabel === AssociatedType[type] && !connectedNodeIds.has(knowledgeGraphId)) {
+                  connectedNodeIds.add(knowledgeGraphId);
+                  if (!isNullOrUndefined(connectedNode.duplicateOf)) {
+                    connectedNodes.push(this.createOriginalNodeFromDuplicate(connectedNode));
+                  } else {
+                    connectedNodes.push(connectedNode);
+                  }
+                }
+              }
+            });
+
             this.sidenavEntity = {
-                data: node,
+                sourceNode,
+                connectedNodes,
                 type,
             } as SidenavTypeEntity;
             this.sidenavEntityType = SidenavEntityType.TYPE;

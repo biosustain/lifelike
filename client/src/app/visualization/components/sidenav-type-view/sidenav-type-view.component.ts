@@ -4,9 +4,13 @@ import { VisNode } from 'app/interfaces';
 import {
   AssociatedType,
   AssociatedTypeEntry,
+  NewNodePairSnippetsPageRequest,
   NodeAssociatedTypesRequest,
+  NodeDisplayInfo,
+  SidenavSnippetData,
   SidenavTypeEntity,
 } from 'app/interfaces/visualization.interface';
+import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
 
 
@@ -18,25 +22,37 @@ import { VisualizationService } from 'app/visualization/services/visualization.s
 export class SidenavTypeViewComponent {
   @Input() legend: Map<string, string[]>;
   @Input() set nodeEntity(entity: SidenavTypeEntity) {
-    console.log(entity);
     this.updateNodeEntity(entity);
   }
 
   node: VisNode;
+  connectedNodes: VisNode[];
   type: string;
   associatedType = AssociatedType;
   typeEntries: AssociatedTypeEntry[];
   color: string;
 
+  selectedRowSnippetTotal: number;
+  selectedRowSnippetData: SidenavSnippetData[];
+  queryData: any;
+
   loading = true;
+  showingEntityTable = true;
+  newSnippetDisplayEntity = true;
 
   constructor(private visualizationService: VisualizationService) {}
 
+  returnToEntityList() {
+    this.showingEntityTable = true;
+  }
+
   updateNodeEntity(nodeEntity: SidenavTypeEntity) {
     this.loading = true;
-    this.node = nodeEntity.data;
+    this.node = nodeEntity.sourceNode;
+    this.connectedNodes = nodeEntity.connectedNodes;
     this.type = AssociatedType[nodeEntity.type];
 
+    // TODO: Need to refactor this so that it *only* gets the nodes currently in the network
     const request: NodeAssociatedTypesRequest = {
       node_id: this.node.id,
       // TODO: Should consider calling this just 'label', if the query doesn't care about direction
@@ -48,6 +64,7 @@ export class SidenavTypeViewComponent {
       const max = associatedTypes.length > 0 ? associatedTypes[0].snippetCount : 0;
       associatedTypes.forEach(associatedType => {
         const entry: AssociatedTypeEntry = {
+          id: associatedType.nodeId,
           name: associatedType.name,
           count: associatedType.snippetCount,
           percentage: (associatedType.snippetCount / max) * 100,
@@ -56,5 +73,63 @@ export class SidenavTypeViewComponent {
       });
       this.loading = false;
     });
+  }
+
+  getSnippetsForNewEntity(entry: AssociatedTypeEntry) {
+    this.showingEntityTable = false;
+    this.loading = true;
+    this.newSnippetDisplayEntity = true;
+
+    this.getSnippets(this.node.id, entry.id, SNIPPET_PAGE_LIMIT, 1);
+  }
+
+  getNewPageOfSnippets(newPageRequest: NewNodePairSnippetsPageRequest) {
+    this.newSnippetDisplayEntity = false;
+    this.getSnippets(
+      newPageRequest.queryData.fromNodeId,
+      newPageRequest.queryData.toNodeId,
+      newPageRequest.limit,
+      newPageRequest.page
+    );
+  }
+
+  getSnippets(fromNodeId: number, toNodeId: number, limit: number, page: number) {
+    this.visualizationService.getSnippetsForNodePair(
+      fromNodeId,
+      toNodeId,
+      page,
+      limit
+    ).subscribe((result) => {
+      this.queryData = result.queryData;
+      this.selectedRowSnippetTotal = result.totalResults;
+      this.selectedRowSnippetData = result.snippetData.map(row => {
+        let fromNode: VisNode;
+        let toNode: VisNode;
+        if (row.fromNodeId === this.node.id) {
+          fromNode = this.node;
+          toNode = this.connectedNodes.find(node => node.id === row.toNodeId);
+        } else {
+          fromNode = this.connectedNodes.find(node => node.id === row.fromNodeId);
+          toNode = this.node;
+        }
+
+        return {
+          from: {
+            primaryLabel: fromNode.primaryLabel,
+            displayName: fromNode.displayName,
+            url: fromNode.entityUrl,
+          } as NodeDisplayInfo,
+          to: {
+            primaryLabel: toNode.primaryLabel,
+            displayName: toNode.displayName,
+            url: toNode.entityUrl,
+          } as NodeDisplayInfo,
+          association: row.association,
+          snippets: row.snippets,
+        } as SidenavSnippetData;
+      });
+      this.loading = false;
+    });
+
   }
 }

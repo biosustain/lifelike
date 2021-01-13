@@ -14,6 +14,7 @@ import {
     ReferenceTableDataRequest,
     NodeAssociatedTypesRequest,
     GetAssociatedTypeResult,
+    GetNodePairSnippetsResult,
 } from 'app/interfaces';
 
 import { AuthenticationService } from 'app/auth/services/authentication.service';
@@ -94,5 +95,17 @@ export class VisualizationService extends AbstractService {
             map(resp => resp.result.associatedData),
             catchError(error => of(error)),
         );
+    }
+
+    getSnippetsForNodePair(fromId: number, toId: number, page: number, limit: number) {
+      return this.http.post<{result: GetNodePairSnippetsResult}>(
+        `${this.baseUrl}/get-snippets-for-node-pair`, {
+          page,
+          limit,
+          from_id: fromId,
+          to_id: toId,
+        },
+        {...this.getHttpOptions(true)}
+      ).pipe(map(resp => resp.result));
     }
 }

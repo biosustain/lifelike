@@ -16,6 +16,7 @@ from neo4japp.data_transfer_objects.visualization import (
     ReferenceTableDataRequest,
 )
 from neo4japp.request_schemas.visualizer import (
+    GetSnippetsForNodePairRequest,
     NodeAssociatedTypesRequest,
 )
 from neo4japp.exceptions import (
@@ -138,4 +139,22 @@ def get_node_associated_types(node_id, to_label):
     )
     return jsonify({
         'result': associated_types_result.to_dict(),
+    })
+
+
+@bp.route('/get-snippets-for-node-pair', methods=['POST'])
+@auth.login_required
+@use_kwargs(GetSnippetsForNodePairRequest)
+def get_snippets_for_node_pair(from_id, to_id, page, limit):
+    visualizer = get_visualizer_service()
+
+    node_pair_snippet_result = visualizer.get_snippets_for_node_pair(
+        from_id,
+        to_id,
+        page,
+        limit
+    )
+
+    return jsonify({
+        'result': node_pair_snippet_result.to_dict()
     })
