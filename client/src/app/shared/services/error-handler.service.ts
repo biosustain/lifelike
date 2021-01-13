@@ -62,6 +62,8 @@ export class ErrorHandler {
         message = 'The server could not process your upload because it was too large.';
       } else if (httpErrorResponse.status === 400) {
         title = 'Invalid Input';
+      } else if (httpErrorResponse.status === 403) {
+        title = 'Insufficient Permission';
       }
     } else if (error instanceof UserError) {
       const userError = error as UserError;
