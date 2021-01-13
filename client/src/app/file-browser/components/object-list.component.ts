@@ -47,7 +47,7 @@ export class ObjectListComponent {
               protected readonly progressDialog: ProgressDialog) {
   }
 
-  dragStarted(event: DragEvent, object: FilesystemObject) {
+  objectDragStart(event: DragEvent, object: FilesystemObject) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     object.addDataTransferData(dataTransfer);
 
