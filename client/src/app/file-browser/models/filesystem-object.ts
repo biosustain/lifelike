@@ -11,6 +11,7 @@ import {
 } from '../../drawing-tool/services/interfaces';
 import { AppUser, User } from '../../interfaces';
 import { FilesystemObjectData, ProjectData } from '../schema';
+import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
 
 // These are legacy mime type definitions that have to exist in this file until
 // all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
@@ -411,7 +412,11 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   addDataTransferData(dataTransfer: DataTransfer) {
+    dataTransfer.effectAllowed = 'all';
     dataTransfer.setData('text/plain', this.name);
+    dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify({
+      hashId: this.hashId,
+    } as FilesystemObjectTransferData));
     dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
       display_name: this.name,
       label: this.type === 'map' ? 'map' : 'link',

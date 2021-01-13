@@ -171,6 +171,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
 
   dragOver(event: DragEvent) {
     if (event.dataTransfer.types.includes('application/***ARANGO_DB_NAME***-node')) {
+      event.dataTransfer.dropEffect = 'link';
       event.preventDefault();
     }
   }
