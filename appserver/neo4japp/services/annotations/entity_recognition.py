@@ -600,40 +600,28 @@ class EntityRecognitionService:
             return False
 
         if token.keyword not in self.abbreviations:
-            if all([c.isupper() for c in token.keyword]) and len(token.keyword) in ABBREVIATION_WORD_LENGTH:  # noqa
-                previous_words = token.previous_words.split(' ')
-                abbrev = ''
-                for word in reversed(previous_words):
-                    if '-' in word or '/' in word:
-                        word_split = []
-                        if '-' in word:
-                            word_split = word.split('-')
-                        elif '/' in word:
-                            word_split = word.split('/')
-
-                        for split in reversed(word_split):
-                            if len(abbrev) == len(token.keyword):
-                                break
-                            else:
-                                if split:
-                                    abbrev = split[0] + abbrev
-                        if len(abbrev) == len(token.keyword):
-                            break
-                    else:
-                        if word:
-                            abbrev = word[0] + abbrev
-
-                    if len(abbrev) == len(token.keyword):
-                        break
-
-                if abbrev.lower() != token.keyword.lower():
-                    return False
+            abbrev = ''
+            len_of_word = len(token.keyword)
+            previous_words = token.previous_words.split(' ')
+            for w in previous_words:
+                if '-' in w:
+                    split = w.split('-')
+                    for w2 in split:
+                        if w2:
+                            abbrev += w2[0].upper()
+                elif '/' in w:
+                    split = w.split('/')
+                    for w2 in split:
+                        if w2:
+                            abbrev += w2[0].upper()
                 else:
-                    # is an abbreviation so mark it as so
-                    self.abbreviations.add(token.keyword)
-                    return True
-            else:
-                return False
+                    abbrev += w[0].upper()
+            abbrev = abbrev[-len_of_word:]
+
+            if abbrev == token.keyword:
+                self.abbreviations.add(token.keyword)
+
+            return True if abbrev == token.keyword else False
         else:
             return True
 
@@ -674,8 +662,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                # if self._is_abbrev(token):
-                #     return anatomy_val
+                if self._is_abbrev(token):
+                    return anatomy_val
 
                 if nlp_predicted_type == EntityType.ANATOMY.value or nlp_predicted_type is None:  # noqa
                     anatomy_val = self.lmdb.get_lmdb_values(
@@ -740,8 +728,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                # if self._is_abbrev(token):
-                #     return chem_val
+                if self._is_abbrev(token):
+                    return chem_val
 
                 if nlp_predicted_type == EntityType.CHEMICAL.value or nlp_predicted_type is None:  # noqa
                     chem_val = self.lmdb.get_lmdb_values(
@@ -806,8 +794,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                # if self._is_abbrev(token):
-                #     return comp_val
+                if self._is_abbrev(token):
+                    return comp_val
 
                 if nlp_predicted_type == EntityType.COMPOUND.value or nlp_predicted_type is None:  # noqa
                     comp_val = self.lmdb.get_lmdb_values(
@@ -872,8 +860,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                # if self._is_abbrev(token):
-                #     return diseases_val
+                if self._is_abbrev(token):
+                    return diseases_val
 
                 if nlp_predicted_type == EntityType.DISEASE.value or nlp_predicted_type is None:  # noqa
                     diseases_val = self.lmdb.get_lmdb_values(
@@ -938,8 +926,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                # if self._is_abbrev(token):
-                #     return food_val
+                if self._is_abbrev(token):
+                    return food_val
 
                 if nlp_predicted_type == EntityType.FOOD.value or nlp_predicted_type is None:  # noqa
                     food_val = self.lmdb.get_lmdb_values(
@@ -1005,8 +993,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                # if self._is_abbrev(token):
-                #     return gene_val
+                if self._is_abbrev(token):
+                    return gene_val
 
                 if nlp_predicted_type == EntityType.GENE.value or nlp_predicted_type is None:  # noqa
                     gene_val = self.lmdb.get_lmdb_values(
@@ -1071,8 +1059,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                # if self._is_abbrev(token):
-                #     return phenomena_val
+                if self._is_abbrev(token):
+                    return phenomena_val
 
                 if nlp_predicted_type == EntityType.PHENOMENA.value or nlp_predicted_type is None:  # noqa
                     phenomena_val = self.lmdb.get_lmdb_values(
@@ -1137,8 +1125,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                # if self._is_abbrev(token):
-                #     return phenotype_val
+                if self._is_abbrev(token):
+                    return phenotype_val
 
                 if nlp_predicted_type == EntityType.PHENOTYPE.value or nlp_predicted_type is None:  # noqa
                     phenotype_val = self.lmdb.get_lmdb_values(
@@ -1204,8 +1192,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                # if self._is_abbrev(token):
-                #     return protein_val
+                if self._is_abbrev(token):
+                    return protein_val
 
                 if nlp_predicted_type == EntityType.PROTEIN.value or nlp_predicted_type is None:  # noqa
                     protein_val = self.lmdb.get_lmdb_values(
@@ -1275,8 +1263,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                # if self._is_abbrev(token):
-                #     return species_val
+                if self._is_abbrev(token):
+                    return species_val
 
                 # check species
                 # TODO: Bacteria because for now NLP has that instead of
@@ -1360,8 +1348,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                # if self._is_abbrev(token):
-                #     return company_val
+                if self._is_abbrev(token):
+                    return company_val
 
                 found = self.inclusion_type_company.get(lookup_key, None)
                 if found:
@@ -1411,8 +1399,8 @@ class EntityRecognitionService:
                     extra=EventLog(event_type='annotations').to_dict()
                 )
             else:
-                # if self._is_abbrev(token):
-                #     return entity_val
+                if self._is_abbrev(token):
+                    return entity_val
 
                 found = self.inclusion_type_entity.get(lookup_key, None)
                 if found:
