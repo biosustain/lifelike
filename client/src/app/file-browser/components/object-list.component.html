@@ -93,7 +93,7 @@
       <tbody *ngIf="objects != null">
       <tr *ngFor="let object of objects.view; index as objectIndex" tabindex="0"
           [class.active]="this.objects.isSelected(object)" draggable="true"
-          (dragstart)="dragStarted($event, object)" appContextMenu
+          (dragstart)="objectDragStart($event, object)" appContextMenu
           (contextMenuOpened)="objects.selectOnly(object)" [attr.data-accepts-fs-drop]="object.isDirectory ? '1' : '0'"
           [attr.data-fs-hash-id]="object.hashId">
         <td class="align-middle text-nowrap text-truncate"
