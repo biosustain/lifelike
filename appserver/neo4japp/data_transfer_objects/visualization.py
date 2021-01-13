@@ -206,6 +206,13 @@ class GetClusterSnippetsResult(CamelDictMixin):
 
 
 @attr.s(frozen=True)
+class GetNodePairSnippetsResult(CamelDictMixin):
+    snippet_data: List[GetSnippetsFromEdgeResult] = attr.ib()
+    total_results: int = attr.ib()
+    query_data: dict = attr.ib()
+
+
+@attr.s(frozen=True)
 class GetReferenceTableDataResult(CamelDictMixin):
     direction: str = attr.ib()
     reference_table_rows: List[ReferenceTableRow] = attr.ib()
@@ -214,6 +221,7 @@ class GetReferenceTableDataResult(CamelDictMixin):
 @attr.s(frozen=True)
 class AssociatedTypesResult(CamelDictMixin):
     name: str = attr.ib()
+    node_id: int = attr.ib()
     snippet_count: int = attr.ib()
 
 

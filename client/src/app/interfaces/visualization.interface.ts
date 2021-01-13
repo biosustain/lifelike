@@ -23,6 +23,7 @@ export enum AssociatedType {
 }
 
 export interface AssociatedTypeEntry {
+  id: number;
   name: string;
   count: number;
   percentage: number;
@@ -52,6 +53,11 @@ export interface DuplicateEdgeConnectionData {
     fromLabel: string;
     toLabel: string;
     label: string;
+}
+
+export interface NodePair {
+  fromNodeId: number;
+  toNodeId: number;
 }
 
 export interface DuplicateNodeEdgePair {
@@ -142,7 +148,8 @@ export interface SidenavNodeEntity {
 }
 
 export interface SidenavTypeEntity {
-    data: VisNode;
+    sourceNode: VisNode;
+    connectedNodes: VisNode[];
     type: AssociatedType;
 }
 
@@ -186,6 +193,12 @@ export interface NewEdgeSnippetsPageRequest {
     limit: number;
 }
 
+export interface NewNodePairSnippetsPageRequest {
+  queryData: NodePair;
+  page: number;
+  limit: number;
+}
+
 export interface ReferenceTableDataRequest {
     nodeEdgePairs: ReferenceTablePair[];
 }
@@ -215,6 +228,12 @@ export interface GetClusterSnippetsResult {
     queryData: DuplicateEdgeConnectionData[];
     snippetData: GetSnippetsResult[];
     totalResults: number;
+}
+
+export interface GetNodePairSnippetsResult {
+  queryData: NodePair;
+  snippetData: GetSnippetsResult[];
+  totalResults: number;
 }
 
 export interface GetReferenceTableDataResult {
