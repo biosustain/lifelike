@@ -1,9 +1,17 @@
-import { AfterViewInit, Component, ComponentRef, Input, NgZone, ViewChild, ViewContainerRef } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ComponentRef,
+  Input,
+  NgZone,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ObjectTypeService } from '../services/object-type.service';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
 
 @Component({
@@ -15,15 +23,25 @@ export class ObjectPreviewComponent {
   @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
 
   private readonly object$ = new BehaviorSubject<FilesystemObject>(null);
-  readonly previewComponent$ = this.object$.pipe(mergeMap(object => {
-    if (object) {
-      return this.objectTypeService.get(object).pipe(mergeMap(typeProvider => {
-        return typeProvider.createPreviewComponent(object);
-      }));
-    } else {
-      return of(null);
-    }
-  }));
+  private readonly objectWithContent$: Observable<FilesystemObject> = this.object$.pipe(
+    map(object => {
+      if (!object.contentValue$) {
+        object.contentValue$ = this.filesystemService.getContent(object.hashId);
+      }
+      return object;
+    }),
+  );
+  readonly previewComponent$ = this.objectWithContent$.pipe(
+    mergeMap(object => {
+      if (object) {
+        return this.objectTypeService.get(object).pipe(mergeMap(typeProvider => {
+          return typeProvider.createPreviewComponent(object);
+        }));
+      } else {
+        return of(null);
+      }
+    }),
+  );
 
   constructor(protected readonly filesystemService: FilesystemService,
               protected readonly errorHandler: ErrorHandler,

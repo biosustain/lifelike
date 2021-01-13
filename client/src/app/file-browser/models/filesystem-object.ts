@@ -12,6 +12,7 @@ import {
 import { AppUser, User } from '../../interfaces';
 import { FilesystemObjectData, ProjectData } from '../schema';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
+import { Observable } from 'rxjs';
 
 // These are legacy mime type definitions that have to exist in this file until
 // all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
@@ -103,7 +104,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   mimeType: string;
   doi: string;
   public: boolean;
-  contentValue?: Blob;
+  contentValue$: Observable<Blob> | undefined;
   uploadUrl: string;
   annotationsDate: string;
   creationDate: string;

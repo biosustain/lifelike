@@ -16,7 +16,7 @@ import { WorkspaceManager } from '../../shared/workspace-manager';
 import { tokenizeQuery } from '../../shared/utils/find';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { mapBufferToJson, readBlobAsBuffer } from '../../shared/utils/files';
+import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
 
@@ -45,6 +45,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   historyChangesSubscription: Subscription;
   unsavedChangesSubscription: Subscription;
+  protected readonly subscriptions = new Subscription();
 
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
 
@@ -155,7 +156,8 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
     this.emitModuleProperties();
 
-    readBlobAsBuffer(this.map.contentValue).pipe(
+    this.subscriptions.add(this.map.contentValue$.pipe(
+      mapBlobToBuffer(),
       mapBufferToJson<UniversalGraph>(),
       this.errorHandler.create(),
     ).subscribe(graph => {
@@ -164,7 +166,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     }, e => {
       // Data is corrupt
       // TODO: Prevent the user from editing or something so the user doesnt lose data?
-    });
+    }));
   }
 
   registerGraphBehaviors() {
@@ -176,6 +178,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.historyChangesSubscription.unsubscribe();
     this.unsavedChangesSubscription.unsubscribe();
     this.graphCanvas.destroy();
+    this.subscriptions.unsubscribe();
   }
 
   emitModuleProperties() {
