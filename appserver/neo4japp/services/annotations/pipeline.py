@@ -166,9 +166,6 @@ def parse_pdf(project_id: int, file_id: str) -> Tuple[str, List[PDFWord]]:
         prev_words: List[str] = []
         pdf_text += page['pageText']
         for token in page['tokens']:
-            if len(prev_words) > MAX_ABBREVIATION_WORD_LENGTH:
-                prev_words = []
-
             parsed.append(
                 PDFWord(
                     keyword=token['text'],
@@ -187,11 +184,13 @@ def parse_pdf(project_id: int, file_id: str) -> Tuple[str, List[PDFWord]]:
                             rect['lowerLeftPt']['y'] + rect['height']
                         ] for rect in token['rects']
                     ],
-                    previous_words=' '.join(prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]),
+                    previous_words=' '.join(prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]) if token['possibleAbbrev'] else '',  # noqa
                     token_type='',
                 )
             )
             prev_words.append(token['text'])
+            if len(prev_words) > MAX_ABBREVIATION_WORD_LENGTH:
+                prev_words = prev_words[1:]
     return pdf_text, parsed
 
 
