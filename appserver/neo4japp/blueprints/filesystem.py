@@ -20,7 +20,7 @@ from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_ea
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.database import db, get_file_type_service
+from neo4japp.database import db, get_file_type_service, get_authorization_service
 from neo4japp.exceptions import RecordNotFoundException, AccessRequestRequiredError
 from neo4japp.models import Projects, Files, FileContent, AppUser, \
     FileVersion, FileBackup
@@ -125,8 +125,13 @@ class FilesystemBaseView(MethodView):
         # determine a permission -- you also have to read all parent folders and the project!
         # Thankfully, we just loaded all parent folders and the project above, and so we'll use
         # the handy FileHierarchy class later to calculate this permission information.
-        query = add_project_user_role_columns(query, t_project, current_user.id)
-        query = add_file_user_role_columns(query, t_file, current_user.id)
+        private_data_access = get_authorization_service().has_role(
+            current_user, 'private-data-access'
+        )
+        query = add_project_user_role_columns(query, t_project, current_user.id,
+                                              access_override=private_data_access)
+        query = add_file_user_role_columns(query, t_file, current_user.id,
+                                           access_override=private_data_access)
 
         if lazy_load_content:
             query = query.options(lazyload(t_file.content))
