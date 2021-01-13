@@ -28,7 +28,7 @@ import {
 } from '../services/enrichment-table.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { mapBufferToJson, readBlobAsBuffer } from '../../shared/utils/files';
+import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../shared/utils/files';
 import { ENRICHMENT_TABLE_MIMETYPE } from '../providers/enrichment-table-type-provider';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
@@ -111,7 +111,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       loadContent: true,
     }).pipe(
       mergeMap((object: FilesystemObject) => {
-        return readBlobAsBuffer(object.contentValue).pipe(
+        return object.contentValue$.pipe(
+          mapBlobToBuffer(),
           mapBufferToJson<EnrichmentData>(),
           map((data: EnrichmentData) => [object, data] as [FilesystemObject, EnrichmentData]),
         );

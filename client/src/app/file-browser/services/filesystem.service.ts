@@ -6,7 +6,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { BehaviorSubject, Observable, of, Subscription, throwError } from 'rxjs';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { catchError, map, mergeMap } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 import { ApiService } from '../../shared/services/api.service';
 import {
@@ -106,15 +106,16 @@ export class FilesystemService {
       map(data => new FilesystemObject().update(data.result)),
     );
 
-    // Load content via a separate endpoint if requested
-    if (options.loadContent) {
-      result = result.pipe(
-        mergeMap(object => this.getContent(object.hashId).pipe(map(contentValue => {
-          object.contentValue = contentValue;
-          return object;
-        }))),
-      );
-    }
+    result = result.pipe(
+      map(object => {
+        object.contentValue$ = this.getContent(object.hashId);
+
+        if (options.loadContent) {
+          object.contentValue$.subscribe();
+        }
+        return object;
+      }),
+    );
 
     return result;
   }
