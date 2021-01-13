@@ -261,8 +261,6 @@ class VisualizerService(KgService):
                 ID(f) = $from_id
             WITH
                 a AS association,
-                ID(f) as from_id,
-                ID(t) as to_id,
                 t.name as name
             MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
             RETURN name, COUNT(s) as snippet_count
