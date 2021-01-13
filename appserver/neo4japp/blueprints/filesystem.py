@@ -670,14 +670,21 @@ class FileListView(FilesystemBaseView):
                 file.recycler = current_user
                 file.modifier = current_user
 
+            if not file.deleted:
+                file.deletion_date = datetime.now()
+                file.deleter = current_user
+                file.modifier = current_user
+
         db.session.commit()
 
         # ========================================
         # Return changed files
         # ========================================
 
-        return self.get_bulk_file_response(hash_ids, current_user,
-                                           missing_hash_ids=missing_hash_ids)
+        return jsonify(MultipleFileResponseSchema().dump(dict(
+            mapping={},
+            missing=[],
+        )))
 
     def _get_content_from_params(self, params: dict) -> Tuple[io.BufferedIOBase, Optional[str]]:
         url = params.get('content_url')

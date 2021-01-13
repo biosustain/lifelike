@@ -55,7 +55,7 @@ export class ErrorHandler {
       // Override some fields for some error codes
       if (httpErrorResponse.status === 404) {
         title = 'Not Found';
-        message = 'The page that you are looking for does not exist. You may have' +
+        message = 'The page that you are looking for does not exist. You may have ' +
           'followed a broken link or the page may have been removed.';
       } else if (httpErrorResponse.status === 413) {
         title = 'Too Large';
