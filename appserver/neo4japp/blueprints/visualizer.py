@@ -1,6 +1,7 @@
 import attr
 
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
+from flask_apispec import use_kwargs
 
 from typing import List
 
@@ -13,6 +14,8 @@ from neo4japp.data_transfer_objects.visualization import (
     GetSnippetsForEdgeRequest,
     GetSnippetsForClusterRequest,
     ReferenceTableDataRequest,
+)
+from neo4japp.request_schemas.visualizer import (
     NodeAssociatedTypesRequest,
 )
 from neo4japp.exceptions import (
@@ -125,12 +128,14 @@ def get_annotation_legend():
 
 @bp.route('/get-node-associated-types', methods=['POST'])
 @auth.login_required
-@jsonify_with_class(NodeAssociatedTypesRequest)
-def get_node_associated_types(req: NodeAssociatedTypesRequest):
+@use_kwargs(NodeAssociatedTypesRequest)
+def get_node_associated_types(node_id, to_label):
     visualizer = get_visualizer_service()
 
     associated_types_result = visualizer.get_associated_types_from_node(
-        from_id=req.node_id,
-        to_label=req.to_label,
+        from_id=node_id,
+        to_label=to_label,
     )
-    return SuccessResponse(associated_types_result, status_code=200)
+    return jsonify({
+        'result': associated_types_result.to_dict(),
+    })

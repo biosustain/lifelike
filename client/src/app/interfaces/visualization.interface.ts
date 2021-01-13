@@ -7,7 +7,6 @@ import {
     DuplicateVisNode,
     DuplicateVisEdge
 } from './neo4j.interface';
-import { AssociatedType } from 'app/visualization/components/context-menu/context-menu.component';
 
 // Begin Misc. Interfaces
 export interface AssociationSnippet {
@@ -15,6 +14,18 @@ export interface AssociationSnippet {
     publication: Publication;
     rawScore: number;
     normalizedScore: number;
+}
+
+export enum AssociatedType {
+  GENE = 'Gene',
+  CHEMICAL = 'Chemical',
+  DISEASE = 'Disease'
+}
+
+export interface AssociatedTypeEntry {
+  name: string;
+  count: number;
+  percentage: number;
 }
 
 export interface NodeAssociatedType {
@@ -103,6 +114,14 @@ export interface SettingsFormValues {
     animation: SettingsFormControl;
     maxClusterShownRows: SettingsFormControl;
     [key: string]: SettingsFormControl; // Could be any number of node entity checkboxes
+}
+
+export enum SidenavEntityType {
+  EMPTY,
+  NODE,
+  EDGE,
+  CLUSTER,
+  TYPE,
 }
 
 export interface SidenavClusterEntity {

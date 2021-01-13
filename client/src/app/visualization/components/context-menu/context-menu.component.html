@@ -2,8 +2,6 @@
 <div [id]="tooltipSelector" [ngClass]="contextMenuClass">
   <div *ngIf="clusterSelected; else clusterNotSelected">
     <ng-template [ngTemplateOutlet]="getDataGroup"></ng-template>
-
-
     <div class="context-menu-group">
       <div
         [id]="'pull-out-node-from-cluster-menu-item-' + tooltipId"
@@ -26,9 +24,7 @@
     </div>
     <ng-template #singleSelectedEntity>
       <ng-template [ngTemplateOutlet]="getDataGroup"></ng-template>
-      <ng-template [ngTemplateOutlet]="getGeneGroup"></ng-template>
-      <ng-template [ngTemplateOutlet]="getChemicalGroup"></ng-template>
-      <ng-template [ngTemplateOutlet]="getDiseaseGroup"></ng-template>
+      <ng-template [ngTemplateOutlet]="getAssociatedEntitiesGroup"></ng-template>
       <div *ngIf="exactlyOneSelectedNode; else singleSelectedEdge">
         <div class="context-menu-group">
           <div
@@ -93,33 +89,13 @@
   </div>
 </ng-template>
 
-<ng-template #getGeneGroup>
+<ng-template #getAssociatedEntitiesGroup>
   <div class="context-menu-group">
-    <div
+    <div *ngFor="let type of associatedTypeKeys"
       class="context-menu-item"
       (mouseenter)="hideAllSubMenus()"
-      (click)="requestTypeSidenav(associatedType.GENE)"
-    >Show Associated Genes</div>
-  </div>
-</ng-template>
-
-<ng-template #getChemicalGroup>
-  <div class="context-menu-group">
-    <div
-      class="context-menu-item"
-      (mouseenter)="hideAllSubMenus()"
-      (click)="requestTypeSidenav(associatedType.CHEMICAL)"
-    >Show Associated Chemicals</div>
-  </div>
-</ng-template>
-
-<ng-template #getDiseaseGroup>
-  <div class="context-menu-group">
-    <div
-      class="context-menu-item"
-      (mouseenter)="hideAllSubMenus()"
-      (click)="requestTypeSidenav(associatedType.DISEASE)"
-    >Show Associated Diseases</div>
+      (click)="requestTypeSidenav(type)"
+    >Show Associated {{ associatedType[type] }}</div>
   </div>
 </ng-template>
 

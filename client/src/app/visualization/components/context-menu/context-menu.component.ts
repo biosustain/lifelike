@@ -17,17 +17,18 @@ import { isNullOrUndefined } from 'util';
 
 import { IdType } from 'vis-network';
 
-import { GroupRequest, Direction, VisNode } from 'app/interfaces';
+import { VisNode } from 'app/interfaces/neo4j.interface';
+import {
+  AssociatedType,
+  Direction,
+  GroupRequest,
+} from 'app/interfaces/visualization.interface';
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 import { TooltipComponent } from 'app/shared/components/tooltip.component';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';
 
-export enum AssociatedType {
-    GENE,
-    CHEMICAL,
-    DISEASE
-}
+
 @Component({
     selector: 'app-context-menu',
     templateUrl: './context-menu.component.html',
@@ -49,6 +50,7 @@ export class ContextMenuComponent extends TooltipComponent implements AfterViewI
     @Output() openTypeSidebar: EventEmitter<AssociatedType> = new EventEmitter();
 
     associatedType = AssociatedType;
+    associatedTypeKeys = Object.keys(AssociatedType);
 
     FADEOUT_STYLE = 'context-menu fade-out';
     DEFAULT_STYLE = 'context-menu';

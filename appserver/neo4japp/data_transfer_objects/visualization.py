@@ -144,12 +144,6 @@ class DuplicateEdgeConnectionData(CamelDictMixin):
 
 
 @attr.s(frozen=True)
-class NodeAssociatedTypesRequest(CamelDictMixin):
-    node_id: int = attr.ib()
-    to_label: str = attr.ib()
-
-
-@attr.s(frozen=True)
 class ExpandNodeRequest(CamelDictMixin):
     node_id: int = attr.ib()
     filter_labels: List[str] = attr.ib()
