@@ -37,7 +37,7 @@ export interface ResultList<T> {
 export interface ErrorResponse {
   message: string;
   detail?: string;
-  code?: 'validation';
+  code?: 'validation' | 'permission';
   apiHttpError?: {
     name: string;
     message: string;

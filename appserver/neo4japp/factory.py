@@ -38,7 +38,7 @@ from neo4japp.exceptions import (
     JWTAuthTokenException,
     JWTTokenException,
     RecordNotFoundException,
-    DataNotAvailableException, AccessRequestRequiredError
+    DataNotAvailableException, AccessRequestRequiredError, FilesystemAccessRequestRequired
 )
 from neo4japp.schemas.common import ErrorResponseSchema
 from neo4japp.utils.logger import ErrorLog
@@ -69,7 +69,7 @@ cache = Cache()
 
 class ErrorResponse:
     def __init__(self,
-                 code: Optional[Union[Literal['validation']]],
+                 code: Optional[Union[Literal['validation'], Literal['permission']]],
                  message: str,
                  *,
                  detail: Optional[str] = None,
@@ -219,7 +219,8 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(RecordNotFoundException, partial(handle_error, 404))
     app.register_error_handler(JWTAuthTokenException, partial(handle_error, 401))
     app.register_error_handler(JWTTokenException, partial(handle_error, 401))
-    app.register_error_handler(AccessRequestRequiredError, partial(handle_error, 403))
+    app.register_error_handler(FilesystemAccessRequestRequired, partial(handle_access_error, 403))
+    app.register_error_handler(AccessRequestRequiredError, partial(handle_access_error, 403))
     app.register_error_handler(ValidationError, partial(handle_validation_error, 400))
     app.register_error_handler(UnprocessableEntity, partial(handle_webargs_error, 400))
     app.register_error_handler(BaseException, partial(handle_error, 400))
@@ -306,6 +307,18 @@ def handle_validation_error(code, error: ValidationError, messages=None):
         message,
         fields=fields,
         api_http_error='An error occurred with the provided input.',
+    ))), code
+
+
+def handle_access_error(code,
+                        error: Union[AccessRequestRequiredError, FilesystemAccessRequestRequired],
+                        messages=None):
+    current_app.logger.error('Request caused access error', exc_info=error)
+    return jsonify(ErrorResponseSchema().dump(ErrorResponse(
+        'permission',
+        error.message,
+        api_http_error='You do not have the correct permissions for this item.',
+        debug_exception=error,
     ))), code
 
 
