@@ -13,7 +13,7 @@ from sqlalchemy.orm import raiseload, joinedload
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.database import db, get_projects_service
+from neo4japp.database import db, get_projects_service, get_authorization_service
 from neo4japp.exceptions import (
     RecordNotFoundException,
     AccessRequestRequiredError,
@@ -49,6 +49,10 @@ class ProjectBaseView(MethodView):
         t_role = db.aliased(AppRole)
         t_user = db.aliased(AppUser)
 
+        private_data_access = get_authorization_service().has_role(
+            user, 'private-data-access'
+        )
+
         # The following code gets a collection of projects, complete with permission
         # information for the current user, all in one go. Unfortunately, it's complex, but
         # it should be manageable if the only instance of this kind of code is in one place
@@ -61,7 +65,7 @@ class ProjectBaseView(MethodView):
             .filter(Projects.deletion_date.is_(None)) \
             .distinct()
 
-        if accessible_only:
+        if accessible_only and not private_data_access:
             expected_roles = ['project-read', 'project-admin']
 
             project_role_sq = db.session.query(projects_collaborator_role, t_role.name) \
@@ -77,7 +81,8 @@ class ProjectBaseView(MethodView):
 
         # Add extra boolean columns to the result indicating various permissions (read, write, etc.)
         # for the current user, which then can be read later by ProjectCalculator or manually
-        query = add_project_user_role_columns(query, Projects, user.id)
+        query = add_project_user_role_columns(query, Projects, user.id,
+                                              access_override=private_data_access)
 
         return query
 

@@ -9,7 +9,8 @@ from webargs.flaskparser import use_args
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
 from neo4japp.data_transfer_objects import UserRequest, UserUpdateRequest
-from neo4japp.database import get_account_service, get_projects_service, db
+from neo4japp.database import get_account_service, get_projects_service, db, \
+    get_authorization_service
 from neo4japp.exceptions import NotAuthorizedException
 from neo4japp.models import AppRole, AppUser, Projects
 from neo4japp.schemas.account import UserListSchema, UserSearchSchema
@@ -102,6 +103,10 @@ class AccountSearchView(MethodView):
         query = re.sub("[%_]", "\\\\0", params['query'].strip().lower())
         like_query = f"%{query}%"
 
+        private_data_access = get_authorization_service().has_role(
+            current_user, 'private-data-access'
+        )
+
         query = db.session.query(AppUser) \
             .filter(or_(func.lower(AppUser.first_name).like(like_query),
                         func.lower(AppUser.last_name).like(like_query),
@@ -109,7 +114,7 @@ class AccountSearchView(MethodView):
                         func.lower(AppUser.email) == query,
                         func.lower(AppUser.hash_id) == query))
 
-        if params['exclude_self']:
+        if not private_data_access and params['exclude_self']:
             query = query.filter(AppUser.id != current_user.id)
 
         paginated_result = query.paginate(pagination.page, pagination.limit, False)
