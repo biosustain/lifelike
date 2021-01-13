@@ -1,3 +1,5 @@
+import time
+
 from math import inf
 from typing import cast, Dict, List, Set, Tuple, Union
 from uuid import uuid4
@@ -416,6 +418,7 @@ class AnnotationService:
         gene_names_list = list(gene_names)
         organism_ids = list(self.organism_frequency.keys())
 
+        gene_match_time = time.time()
         gene_organism_matches = \
             self.graph.get_gene_to_organism_match_result(
                 genes=gene_names_list,
@@ -423,6 +426,10 @@ class AnnotationService:
                     genes=gene_names_list, organism_ids=organism_ids),
                 matched_organism_ids=organism_ids,
             )
+        current_app.logger.info(
+            f'Gene organism KG query time {time.time() - gene_match_time}',
+            extra=EventLog(event_type='annotations').to_dict()
+        )
 
         # any genes not matched in KG fall back to specified organism
         fallback_gene_organism_matches = {}
@@ -611,11 +618,16 @@ class AnnotationService:
 
         protein_names_list = list(protein_names)
 
+        protein_match_time = time.time()
         protein_organism_matches = \
             self.graph.get_proteins_to_organisms(
                 proteins=protein_names_list,
                 organisms=list(self.organism_frequency.keys()),
             )
+        current_app.logger.info(
+            f'Protein organism KG query time {time.time() - protein_match_time}',
+            extra=EventLog(event_type='annotations').to_dict()
+        )
 
         # any proteins not matched in KG fall back to specified organism
         fallback_protein_organism_matches = {}

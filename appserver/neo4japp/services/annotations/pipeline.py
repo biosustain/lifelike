@@ -169,20 +169,6 @@ def parse_pdf(project_id: int, file_id: str) -> Tuple[str, List[PDFWord]]:
             if len(prev_words) > MAX_ABBREVIATION_WORD_LENGTH:
                 prev_words = []
 
-            greek_symbols = tuple([chr(g) for g in GREEK_SYMBOLS])
-
-            if token['text'].startswith(greek_symbols):
-                counter = 0
-                for c in token['text']:
-                    if c in greek_symbols:
-                        counter += 1
-                        token['pgIdx'] += 1
-                        token['rects'].pop(0)
-                    else:
-                        break
-
-                token['text'] = token['text'][counter:]
-
             parsed.append(
                 PDFWord(
                     keyword=token['text'],
@@ -257,9 +243,15 @@ def _create_annotations(
     if annotation_method == AnnotationMethod.RULES.value:
         entity_recog.set_entity_inclusions(custom_annotations=custom_annotations)
         entity_recog.set_entity_exclusions()
+
+        start_lmdb_time = time.time()
         entity_recog.identify_entities(
             tokens=tokens_list.tokens,
             check_entities_in_lmdb=entity_recog.get_entities_to_identify()
+        )
+        current_app.logger.info(
+            f'Total lmdb lookup time {time.time() - start_lmdb_time}',
+            extra=EventLog(event_type='annotations').to_dict()
         )
 
         entity_synonym = ''
