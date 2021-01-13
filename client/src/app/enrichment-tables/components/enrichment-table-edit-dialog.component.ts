@@ -9,9 +9,10 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { EnrichmentData } from './enrichment-table-viewer.component';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { finalize, map } from 'rxjs/operators';
+import { getObjectLabel } from '../../file-browser/utils/objects';
 
 @Component({
   selector: 'app-enrichment-table-edit-dialog',
@@ -19,6 +20,7 @@ import { finalize, map } from 'rxjs/operators';
 })
 export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponent<EnrichmentData> {
   @Input() object: FilesystemObject;
+  @Input() submitButtonLabel = 'Save';
   private _data: EnrichmentData;
 
   form: FormGroup = new FormGroup({
@@ -38,12 +40,18 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
     'Biocyc',
   ];
 
+  @Input() title: string | ((object: FilesystemObject) => string) = o => `Edit Enrichment Parameters for ${getObjectLabel(o)}`;
+
   constructor(modal: NgbActiveModal,
               messageDialog: MessageDialog,
               protected readonly search: SharedSearchService,
               protected readonly errorHandler: ErrorHandler,
               protected readonly progressDialog: ProgressDialog) {
     super(modal, messageDialog);
+  }
+
+  get effectiveTitle(): string {
+    return typeof this.title === 'string' ? this.title : this.title(this.object);
   }
 
   get data() {
@@ -70,7 +78,11 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
       })),
     });
 
-    this.search.getOrganismFromTaxId(this.organismTaxId).pipe(
+    const organismObservable: Observable<OrganismAutocomplete> = this.organismTaxId ?
+      this.search.getOrganismFromTaxId(this.organismTaxId) :
+      of(null);
+
+    organismObservable.pipe(
       finalize(() => progressDialogRef.close()),
       map(searchResult => {
         this.form.get('entitiesList').setValue(importGenes || '');
