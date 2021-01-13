@@ -1,7 +1,4 @@
 #!/usr/bin/env Rscript
-library(plumber)
-
-#todo: use roxygen comments
 #' use binomial test to do OverRepresentation analysis of annotations, e.g. GO terms.
 #' Use for genes-of-interst data with gene (node) counts, i.e. the same genes are sampled multiple times.
 #' This means we are sampling with replacement so we use Binomial test instead of Fisher's test.
@@ -52,8 +49,7 @@ binomial.p <- function(counts.DT, success_ids, n_total_ids, log.p=F) {
 #' @param annotation - Column name containing annotation terms to test enrichment for, e.g. GO. Required.
 #' @param group - Column name containing grouping label. Default is doing a single ORA for all data.
 #' @param Return enriched data
-#' @post /binomial
-binomial <- function(annotations, id, count, counts, annotation, group) {
+binom.enrich <- function(annotations, id, count, counts, annotation, group) {
     if(is.null(id)) {
         # most likely the column with unique geneIDs
         map.col <- intersect(colnames(counts), colnames(annotations))[1]
@@ -62,14 +58,6 @@ binomial <- function(annotations, id, count, counts, annotation, group) {
     }
     annotation_ids <- unique(annotations[[map.col]])
     n_ids <- length(annotation_ids)
-    count_ids <- unique(counts[[map.col]])
-    notfound <- count_ids[!count_ids %in% annotation_ids]
-    if(length(notfound) > 0) {
-        percent <- length(notfound)/length(count_ids)*100
-        message(length(notfound), " out of ", length(count_ids), " ids without annotation (", formatC(percent, 3, format="f", drop0trailing=T), "%).")
-    }
-    # discard
-    counts <- counts[!get(map.col)%in%notfound]
 
     # helper function. Given a table with columns "id", "count"
     # get a table with columns "enrich", "p" for the p-value of enrichment for each enrich term (usually GO)
@@ -94,7 +82,6 @@ binomial <- function(annotations, id, count, counts, annotation, group) {
     percent <- n_signif / n_tests * 100
     message(n_signif[1], " significant tests (BH) out of ", n_tests, " (", formatC(percent[1], 3, format="f", drop0trailing=T),"%).")
     message(n_signif[2], " significant tests (Bonferroni) out of ", n_tests, " (", formatC(percent[2], 3, format="f", drop0trailing=T),"%).")
-
 
     # revert names back to original naming
     setnames(results, "enrich", annotation)
