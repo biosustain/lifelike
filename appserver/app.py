@@ -757,3 +757,8 @@ def fix_project_acl():
         db.session.close()
         print('error: ', ex)
     print('Completed ACP fix.')
+
+
+
+if __name__ == '__main__':
+  app.run(host='0.0.0.0')
