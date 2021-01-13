@@ -43,9 +43,7 @@ class ResultMappingSchema(CamelCaseSchema):
 class ErrorResponseSchema(CamelCaseSchema):
     message = fields.String()
     detail = fields.String()
-    code = fields.String(validate=marshmallow.validate.OneOf([
-        'validation',
-    ]))
+    code = fields.String()
     api_http_error = fields.String()
     version = fields.String()
     transaction_id = fields.String()
