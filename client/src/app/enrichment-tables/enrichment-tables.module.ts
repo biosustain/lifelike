@@ -5,7 +5,7 @@ import { EnrichmentTableOrderDialogComponent } from './components/enrichment-tab
 import { EnrichmentTableViewerComponent } from './components/enrichment-table-viewer.component';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
-import { EnrichmentTableTypeProvider } from './providers/enrichment-table-type-provider';
+import { EnrichmentTableTypeProvider } from './providers/enrichment-table.type-provider';
 import { EnrichmentTableService } from './services/enrichment-table.service';
 
 @NgModule({
