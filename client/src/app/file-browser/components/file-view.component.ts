@@ -6,7 +6,7 @@ import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { cloneDeep, uniqueId } from 'lodash';
 
-import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
@@ -34,6 +34,7 @@ import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { map } from 'rxjs/operators';
+import { SearchControlComponent } from '../../shared/components/search-control.component';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -59,6 +60,7 @@ class EntityTypeEntry {
 
 export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
+  @ViewChild('searchControl', {static: false, read: SearchControlComponent}) searchControlComponent: SearchControlComponent;
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
 
@@ -537,6 +539,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   annotationHighlightChangedFromViewer(result: AnnotationHighlightResult | undefined) {
     this.annotationHighlight = result;
+    if (this.searchControlComponent) {
+      this.searchControlComponent.focus();
+    }
   }
 
   annotationHighlightNext() {

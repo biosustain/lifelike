@@ -188,7 +188,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       removeCustomAnnotation: (uuid) => this.zone.run(() => this.removeCustomAnnotation(uuid)),
       openExclusionPanel: (annExclusion) => this.zone.run(() => this.openExclusionPanel(annExclusion)),
       removeAnnotationExclusion: (annExclusion) => this.zone.run(() => this.removeAnnotationExclusion(annExclusion)),
-      highlightAllAnnotations: (id) => this.zone.run(() => this.highlightAllAnnotations(id)),
+      highlightAllAnnotations: (id, toggle = true) => this.zone.run(() => this.highlightAllAnnotations(id, toggle)),
     };
 
     this.goToPosition.subscribe((sub) => {
@@ -437,7 +437,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
     base.push(`
         <div class="mt-1">
-          <button type="button" class="btn btn-secondary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].highlightAllAnnotations(${escape(JSON.stringify(an.meta.id))});jQuery('.system-annotation').qtip('hide')">
+          <button type="button" class="btn btn-secondary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].highlightAllAnnotations(${escape(JSON.stringify(an.meta.id))}, false);jQuery('.system-annotation').qtip('hide')">
             <i class="fas fa-fw fa-search"></i>
             <span>Find Occurrences</span>
           </button>
@@ -901,8 +901,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
-  highlightAllAnnotations(id: string | undefined) {
-    if (id != null) {
+  highlightAllAnnotations(id: string | undefined, toggle = true) {
+    if (toggle && id != null) {
       if (this.currentHighlightAnnotationId === id) {
         id = null;
       }
