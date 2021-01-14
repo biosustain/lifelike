@@ -1,5 +1,6 @@
 <div class="module-body-split module-body-browser-split">
-  <div class="module-body-split-main">
+  <div class="module-body-split-main"
+       [class.drop-target]="parent != null && dropTargetHashId === parent.hashId">
     <ng-container *ngIf="showDescription && parent && parent.description && parent.description.trim().length">
       <div class="border-bottom p-4 text-muted d-flex align-items-start">
         <div class="flex-fill">
@@ -92,7 +93,9 @@
       <!-- Results -->
       <tbody *ngIf="objects != null">
       <tr *ngFor="let object of objects.view; index as objectIndex" tabindex="0"
-          [class.active]="this.objects.isSelected(object)" draggable="true"
+          [class.active]="this.objects.isSelected(object)"
+          [class.drop-target]="dropTargetHashId === object.hashId"
+          draggable="true"
           (dragstart)="objectDragStart($event, object)" appContextMenu
           (contextMenuOpened)="objects.selectOnly(object)" [attr.data-accepts-fs-drop]="object.isDirectory ? '1' : '0'"
           [attr.data-fs-hash-id]="object.hashId">

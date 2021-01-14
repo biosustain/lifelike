@@ -54,6 +54,8 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   private lastLockCheckTime = window.performance.now();
   private lastActivityTime = window.performance.now();
 
+  dropTargeted = false;
+
   ngOnInit() {
     this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
       if (changed) {
@@ -62,6 +64,14 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     });
 
     this.ngZone.runOutsideAngular(() => {
+      this.canvasChild.nativeElement.addEventListener('dragend', e => {
+        this.dragEnd(e);
+      });
+
+      this.canvasChild.nativeElement.addEventListener('dragleave', e => {
+        this.dragLeave(e);
+      });
+
       this.canvasChild.nativeElement.addEventListener('dragover', e => {
         this.dragOver(e);
       });
@@ -169,15 +179,33 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     }
   }
 
+  dragEnd(event: DragEvent) {
+    this.ngZone.run(() => {
+      this.dropTargeted = false;
+    });
+  }
+
+  dragLeave(event: DragEvent) {
+    this.ngZone.run(() => {
+      this.dropTargeted = false;
+    });
+  }
+
   dragOver(event: DragEvent) {
     if (event.dataTransfer.types.includes('application/lifelike-node')) {
       event.dataTransfer.dropEffect = 'link';
       event.preventDefault();
+      this.ngZone.run(() => {
+        this.dropTargeted = true;
+      });
     }
   }
 
   drop(event: DragEvent) {
     event.preventDefault();
+    this.ngZone.run(() => {
+      this.dropTargeted = false;
+    });
     const data = event.dataTransfer.getData('application/lifelike-node');
     const node = JSON.parse(data) as UniversalGraphNode;
     const hoverPosition = this.graphCanvas.hoverPosition;
