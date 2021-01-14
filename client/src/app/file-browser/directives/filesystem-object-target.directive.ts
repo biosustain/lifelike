@@ -105,6 +105,7 @@ export class FilesystemObjectTargetDirective {
 
   canAcceptDrop(event: DragEvent): boolean {
     return this.appFSObjectTarget != null
+      && this.appFSObjectTarget.privileges.writable
       && ((
         event.dataTransfer.types.includes(FILESYSTEM_OBJECT_TRANSFER_TYPE)
         && event.target instanceof Element
