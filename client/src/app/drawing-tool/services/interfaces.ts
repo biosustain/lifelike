@@ -40,6 +40,8 @@ export interface UniversalGraphNode {
   style?: UniversalNodeStyle;
 }
 
+export type UniversalGraphNodeTemplate = Pick<UniversalGraphNode, 'display_name' | 'label' | 'sub_labels'>;
+
 export interface UniversalEdgeStyle {
   fontSizeScale?: number;
   strokeColor?: string;
