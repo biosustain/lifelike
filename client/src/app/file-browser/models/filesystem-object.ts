@@ -13,6 +13,8 @@ import { AppUser, User } from '../../interfaces';
 import { FilesystemObjectData, ProjectData } from '../schema';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
 import { Observable } from 'rxjs';
+import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
+import { createObjectDragImage } from '../utils/drag';
 
 // These are legacy mime type definitions that have to exist in this file until
 // all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
@@ -251,9 +253,25 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       case ENRICHMENT_TABLE_MIMETYPE:
         return 'fa fa-table';
       case 'application/pdf':
-        return 'fa fa-file';
+        return 'fa fa-file-pdf';
       default:
         return 'fa fa-file';
+    }
+  }
+
+  get fontAwesomeIconCode() {
+    // TODO: Move this method to ObjectTypeProvider
+    switch (this.mimeType) {
+      case DIRECTORY_MIMETYPE:
+        return '\uf07b';
+      case MAP_MIMETYPE:
+        return '\uf542';
+      case ENRICHMENT_TABLE_MIMETYPE:
+        return '\uf0ce';
+      case 'application/pdf':
+        return '\uf1c1';
+      default:
+        return '\uf15b';
     }
   }
 
@@ -413,6 +431,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   addDataTransferData(dataTransfer: DataTransfer) {
+    createObjectDragImage(this).addDataTransferData(dataTransfer);
     dataTransfer.effectAllowed = 'all';
     dataTransfer.setData('text/plain', this.name);
     dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify({
