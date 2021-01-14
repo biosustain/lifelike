@@ -275,7 +275,7 @@ class FilesystemBaseView(MethodView):
             files = self.get_nondeleted_recycled_children(Files.id.in_([file.id for file in files]),
                                                           lazy_load_content=True)
 
-        target_files = [file for file in files if file.hash_id != parent_hash_id]
+        target_files = [file for file in files if file.hash_id in target_hash_ids]
         parent_file = None
         missing_hash_ids = self.get_missing_hash_ids(query_hash_ids, files)
 
