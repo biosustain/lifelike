@@ -6,7 +6,7 @@ import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { uniqueId } from 'lodash';
 
-import { BehaviorSubject, combineLatest, of, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, of, Subject, Subscription } from 'rxjs';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
@@ -25,13 +25,14 @@ import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { PdfViewerLibComponent } from '../pdf-viewer-lib.component';
+import { AnnotationHighlightResult, PdfViewerLibComponent } from '../pdf-viewer-lib.component';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { mergeMap } from 'rxjs/operators';
+import { map, mergeMap } from 'rxjs/operators';
 import { mapBlobToBuffer, readBlobAsBuffer } from '../../shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
+import { SearchControlComponent } from '../../shared/components/search-control.component';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -57,6 +58,10 @@ class EntityTypeEntry {
 
 export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
+  @ViewChild('searchControl', {
+    static: false,
+    read: SearchControlComponent,
+  }) searchControlComponent: SearchControlComponent;
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
 
@@ -78,8 +83,15 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
   searchQuery = '';
+  annotationHighlight: AnnotationHighlightResult;
   goToPosition: Subject<Location> = new Subject<Location>();
-  highlightAnnotations: Subject<string> = new Subject<string>();
+  highlightAnnotations = new BehaviorSubject<{
+    id: string;
+    text: string;
+  }>(null);
+  highlightAnnotationIds: Observable<string> = this.highlightAnnotations.pipe(
+    map((value) => value ? value.id : null),
+  );
   loadTask: BackgroundTask<[string, Location], [[FilesystemObject, ArrayBuffer], Annotation[]]>;
   pendingScroll: Location;
   pendingAnnotationHighlightId: string;
@@ -104,7 +116,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   removeAnnotationExclusionSub: Subscription;
   removedAnnotationExclusion: RemovedAnnotationExclusion;
 
-  @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
+  @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib: PdfViewerLibComponent;
 
   constructor(
     protected readonly filesystemService: FilesystemService,
@@ -495,16 +507,21 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       this.pendingAnnotationHighlightId = annotationId;
       return;
     }
+    let text = annotationId;
     if (annotationId != null) {
       for (const annotation of this.annotations) {
         if (annotation.meta.id === annotationId) {
+          text = annotation.meta.allText || text;
           this.entityTypeVisibilityMap.set(annotation.meta.type, true);
           this.invalidateEntityTypeVisibility();
           break;
         }
       }
     }
-    this.highlightAnnotations.next(annotationId);
+    this.highlightAnnotations.next({
+      id: annotationId,
+      text,
+    });
   }
 
   loadCompleted(status) {
@@ -537,6 +554,25 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   searchQueryChangedFromViewer(keyword: string) {
     this.searchQuery = keyword;
+  }
+
+  annotationHighlightChangedFromViewer(result: AnnotationHighlightResult | undefined) {
+    this.annotationHighlight = result;
+    if (this.searchControlComponent) {
+      this.searchControlComponent.focus();
+    }
+  }
+
+  annotationHighlightNext() {
+    if (this.pdfViewerLib) {
+      this.pdfViewerLib.nextAnnotationHighlight();
+    }
+  }
+
+  annotationHighlightPrevious() {
+    if (this.pdfViewerLib) {
+      this.pdfViewerLib.previousAnnotationHighlight();
+    }
   }
 
   findNext() {
@@ -632,4 +668,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     } as Partial<UniversalGraphNode>));
   }
 
+
+  getAnnotationBackground(an: Annotation | undefined) {
+    if (an != null) {
+      return ENTITY_TYPE_MAP[an.meta.type].color;
+    } else {
+      return null;
+    }
+  }
 }
