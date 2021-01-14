@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 
@@ -13,6 +13,7 @@ export class ObjectPathComponent {
   _object: FilesystemObject | undefined;
   path: FilesystemObject[] = [];
   @Input() newTab = false;
+  @Output() refreshRequest = new EventEmitter<any>();
 
   constructor(protected readonly workspaceManager: WorkspaceManager) {
   }
