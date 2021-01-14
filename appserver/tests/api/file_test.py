@@ -270,7 +270,6 @@ CUSTOM_ANNOTATION_1 = {
     'rects': [[0.1, 0.2, 0.3, 0.4]],
     'meta': {
         'type': 'gene',
-        'color': 'green',
         'id': '',
         'idType': '',
         'idHyperlink': '',
@@ -296,7 +295,6 @@ CUSTOM_ANNOTATION_2 = {
     'rects': [[0.5, 0.6, 0.7, 0.8]],
     'meta': {
         'type': 'gene',
-        'color': 'green',
         'id': '',
         'idType': '',
         'idHyperlink': '',
