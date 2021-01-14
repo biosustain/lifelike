@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-
 import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
