@@ -1,6 +1,5 @@
 export interface InclusionMeta {
     allText: string;
-    color: string;
     id: string;
     idHyperlink: string;
     includeGlobally: boolean;
