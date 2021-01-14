@@ -251,24 +251,26 @@ class VisualizerService(KgService):
             query_data=edges,
         )
 
-    def get_associated_types_from_node(
+    def get_associated_type_snippet_count(
         self,
-        from_id: int,
-        to_label: str,
+        source_node: int,
+        associated_nodes: List[int],
+        label: str
     ):
-        sanitized_to_label = ''
-        if (to_label == 'Gene'):
-            sanitized_to_label = 'Gene'
-        elif (to_label == 'Chemical'):
-            sanitized_to_label = 'Chemical'
-        elif (to_label == 'Disease'):
-            sanitized_to_label = 'Disease'
+        sanitized_label = ''
+        if (label == 'Gene'):
+            sanitized_label = 'Gene'
+        elif (label == 'Chemical'):
+            sanitized_label = 'Chemical'
+        elif (label == 'Disease'):
+            sanitized_label = 'Disease'
 
-        query = self.get_associated_types_from_node_query(sanitized_to_label)
+        query = self.get_associated_type_snippet_count_query(sanitized_label)
         results = self.graph.run(
             query,
             {
-                'from_id': from_id,
+                'source_node': source_node,
+                'associated_nodes': associated_nodes
             }
         ).data()
 
@@ -326,11 +328,12 @@ class VisualizerService(KgService):
             """
         return query
 
-    def get_associated_types_from_node_query(self, to_label: str):
+    def get_associated_type_snippet_count_query(self, to_label: str):
         query = """
             MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t:{})
             WHERE
-                ID(f) = $from_id
+                ID(f) = $source_node AND
+                ID(t) IN $associated_nodes
             WITH
                 a AS association,
                 t.name as name,

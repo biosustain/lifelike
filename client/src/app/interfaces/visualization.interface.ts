@@ -31,6 +31,7 @@ export interface AssociatedTypeEntry {
 
 export interface NodeAssociatedType {
     name: string;
+    nodeId: number;
     snippetCount: number;
 }
 
@@ -203,9 +204,10 @@ export interface ReferenceTableDataRequest {
     nodeEdgePairs: ReferenceTablePair[];
 }
 
-export interface NodeAssociatedTypesRequest {
-    node_id: number;
-    to_label: string;
+export interface AssociatedTypeSnippetCountRequest {
+    source_node: number;
+    associated_nodes: number[];
+    label: string;
 }
 
 // End Request Interfaces
