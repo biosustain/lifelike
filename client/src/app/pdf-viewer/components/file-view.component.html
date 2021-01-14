@@ -66,13 +66,26 @@
           </div>
 
           <div class="d-flex mr-2" style="min-width: 150px">
-            <app-search-control [disabled]="!ready"
-                                [(ngModel)]="searchQuery" (ngModelChange)="searchQueryChanged()"
-                                (enterPress)="findNext()"
-                                [resultIndex]="(pdfViewerLib?.matchesCount.current || 1) - 1"
-                                [resultCount]="pdfViewerLib?.matchesCount.total || 0"
-                                (previous)="findPrevious()" (next)="findNext()">
-            </app-search-control>
+            <ng-container *ngIf="annotationHighlight != null; else textSearchControl">
+              <app-result-control [value]="annotationHighlight.firstAnnotation ? annotationHighlight.firstAnnotation.meta.allText : annotationHighlight.id"
+                                  [annotationColor]="getAnnotationBackground(annotationHighlight.firstAnnotation)"
+                                  [resultIndex]="(pdfViewerLib?.currentHighlightAnnotationsIndex) || 0"
+                                  [resultCount]="annotationHighlight.found"
+                                  (previous)="annotationHighlightPrevious()" (next)="annotationHighlightNext()"
+                                  (enterPress)="annotationHighlightNext()"
+                                  (valueClear)="this.highlightAnnotations.next(null)">
+              </app-result-control>
+            </ng-container>
+            <ng-template #textSearchControl>
+              <app-search-control [disabled]="!ready"
+                                  [(ngModel)]="searchQuery" (ngModelChange)="searchQueryChanged()"
+                                  (enterPress)="findNext()"
+                                  [resultIndex]="(pdfViewerLib?.matchesCount.current || 1) - 1"
+                                  [resultCount]="pdfViewerLib?.matchesCount.total || 0"
+                                  (previous)="findPrevious()" (next)="findNext()"
+                                  #searchControl>
+              </app-search-control>
+            </ng-template>
           </div>
 
           <div class="btn-group" role="group">
@@ -163,7 +176,7 @@
               [pdfSrc]="pdfData"
               [annotations]="annotations"
               [goToPosition]="goToPosition"
-              [highlightAnnotations]="highlightAnnotations"
+              [highlightAnnotations]="highlightAnnotationIds"
               [addedAnnotations]="addedAnnotations"
               [removedAnnotationIds]="removedAnnotationIds"
               [addedAnnotationExclusion]="addedAnnotationExclusion"
@@ -179,6 +192,7 @@
               (loadCompleted)="loadCompleted($event)"
               (custom-annotation-removed)="annotationRemoved($event)"
               (searchChange)="searchQueryChangedFromViewer($event)"
+              (annotationHighlightChange)="annotationHighlightChangedFromViewer($event)"
             >
             </lib-pdf-viewer-lib>
           </div>

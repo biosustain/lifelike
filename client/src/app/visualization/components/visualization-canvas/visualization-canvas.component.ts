@@ -17,19 +17,24 @@ import { isNullOrUndefined } from 'util';
 import { Network, DataSet, IdType } from 'vis-network';
 
 import {
+  DuplicateVisEdge,
+  DuplicateVisNode,
+  Neo4jGraphConfig,
+  VisEdge,
+  VisNode,
+} from 'app/interfaces/neo4j.interface';
+import {
+    AssociatedType,
     ClusterData,
     DuplicateNodeEdgePair,
     Direction,
     DuplicateEdgeConnectionData,
-    DuplicateVisEdge,
-    DuplicateVisNode,
     EdgeConnectionData,
     ExpandNodeResult,
     ExpandNodeRequest,
     GetClusterSnippetsResult,
     GetEdgeSnippetsResult,
     GroupRequest,
-    Neo4jGraphConfig,
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
     NodeDisplayInfo,
@@ -37,13 +42,13 @@ import {
     ReferenceTablePair,
     ReferenceTableRow,
     SettingsFormValues,
+    SidenavEntityType,
     SidenavClusterEntity,
     SidenavEdgeEntity,
     SidenavNodeEntity,
     SidenavSnippetData,
-    VisEdge,
-    VisNode,
-} from 'app/interfaces';
+    SidenavTypeEntity,
+} from 'app/interfaces/visualization.interface';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
@@ -51,12 +56,6 @@ import { uuidv4 } from 'app/shared/utils';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
 
-enum SidenavEntityType {
-    EMPTY,
-    NODE,
-    EDGE,
-    CLUSTER,
-}
 
 @Component({
     selector: 'app-visualization-canvas',
@@ -232,7 +231,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     sidenavEntityTypeEnum = SidenavEntityType;
 
     sidenavOpened: boolean;
-    sidenavEntity: SidenavNodeEntity | SidenavEdgeEntity | SidenavClusterEntity;
+    sidenavEntity: SidenavNodeEntity | SidenavEdgeEntity | SidenavClusterEntity | SidenavTypeEntity;
     sidenavEntityType: SidenavEntityType;
     isNewClusterSidenavEntity: boolean;
     isNewEdgeSidenavEntity: boolean;
@@ -571,15 +570,15 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                 }
 
                 td {
-                    border: thin solid #3797DB;
+                    border: thin solid #0c8caa;
                     padding: 2.5px 3.5px;
                 }
 
                 .reference-table {
                     background: #FFFFFF;
-                    border: thin solid #3797DB;
+                    border: thin solid #0c8caa;
                     border-radius: 2px;
-                    color: #3797DB;
+                    color: #0c8caa;
                     font-family: Roboto, "Helvetica Neue", sans-serif;
                     font-size: 12px;
                     font-weight: bold;
@@ -609,7 +608,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
 
                 .snippet-bar-repr {
                     height: 10px;
-                    background: #3797DB;
+                    background: #0c8caa;
                 }
             </style>
             <foreignObject x="0" y="0" width="100%" height="100%">
@@ -1037,6 +1036,39 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
     selectNeighbors(node: IdType) {
         this.networkGraph.selectNodes(this.networkGraph.getConnectedNodes(node) as IdType[]);
         this.updateSelectedNodes();
+    }
+
+    openTypeSidenav(type: AssociatedType) {
+        this.openSidenav();
+        if (this.selectedNodes.length === 1 && this.selectedEdges.length === 0 && !this.networkGraph.isCluster(this.selectedNodes[0])) {
+            const sourceNode  = this.nodes.get(this.selectedNodes[0]) as VisNode;
+            const connectedNodeIds = new Set<number>();
+            const connectedNodes = [];
+
+            this.networkGraph.getConnectedNodes(sourceNode.id).forEach(connectedNodeId => {
+              if (!this.networkGraph.isCluster(connectedNodeId)) {
+                const connectedNode: any = this.nodes.get(connectedNodeId);
+                const knowledgeGraphId = connectedNode.duplicateOf || connectedNode.id;
+
+                if (connectedNode.primaryLabel === AssociatedType[type] && !connectedNodeIds.has(knowledgeGraphId)) {
+                  connectedNodeIds.add(knowledgeGraphId);
+                  if (!isNullOrUndefined(connectedNode.duplicateOf)) {
+                    connectedNodes.push(this.createOriginalNodeFromDuplicate(connectedNode));
+                  } else {
+                    connectedNodes.push(connectedNode);
+                  }
+                }
+              }
+            });
+
+            this.sidenavEntity = {
+                sourceNode,
+                connectedNodes,
+                type,
+            } as SidenavTypeEntity;
+            this.sidenavEntityType = SidenavEntityType.TYPE;
+            this.getNodeData.emit(true);
+        }
     }
 
     updateSidenavEntity() {

@@ -22,7 +22,7 @@ import { ProgressDialogComponent } from './components/dialog/progress-dialog.com
 import { TooltipComponent } from './components/tooltip.component';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
-import { FriendlyDateStrPipe, TruncatePipe, ScrubHtmlPipe } from './pipes';
+import { FriendlyDateStrPipe, ScrubHtmlPipe, TruncatePipe } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
 import { OrganismAutocompleteComponent } from './components/organism-autocomplete.component';
 import { SharedSearchService } from './services/shared-search.service';
@@ -62,6 +62,7 @@ import { UserComponent } from './components/user.component';
 import { SelectInputComponent } from './components/form/select-input.component';
 import { UserSelectComponent } from './components/form/user-select.component';
 import { AccountsService } from './services/accounts.service';
+import { ResultControlComponent } from './components/result-control.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -103,6 +104,7 @@ const components = [
   UserComponent,
   SelectInputComponent,
   UserSelectComponent,
+  ResultControlComponent,
 ];
 
 @NgModule({
