@@ -653,13 +653,23 @@ class FileListView(FilesystemBaseView):
         files = self.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids))
         self.check_file_permissions(files, current_user, ['writable'], permit_recycled=True)
 
-        missing_hash_ids = self.get_missing_hash_ids(hash_ids, files)
-
         # ========================================
         # Apply
         # ========================================
 
         for file in files:
+            children = self.get_nondeleted_recycled_files(and_(
+                Files.parent_id == file.id,
+                Files.recycling_date.is_(None),
+                ))
+
+            # For now, we won't let people delete non-empty folders (although this code
+            # is subject to a race condition) because the app doesn't handle deletion that well
+            # yet and the children would just become orphan files that would still be
+            # accessible but only by URL and with no easy way to delete them
+            if len(children):
+                raise ValidationError('Only empty folders can be deleted.', 'hash_ids')
+
             if file.calculated_project.root_id == file.id:
                 raise ValidationError(f"You cannot delete the root directory "
                                       f"for a project (the folder for the project "
