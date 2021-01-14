@@ -137,6 +137,13 @@ def get_visualizer_service():
 
 @scope_flask_app_ctx('file_type_service')
 def get_file_type_service():
+    """
+    Return a service to figure out how to handle a certain type of file in our
+    filesystem. When we add new file types to the system, we need to register
+    its associated provider here.
+
+    :return: the service
+    """
     from neo4japp.services.file_types.service import FileTypeService
     from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider, \
         MapTypeProvider, PDFTypeProvider, DirectoryTypeProvider

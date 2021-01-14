@@ -226,7 +226,9 @@ class ContentSearchView(FilesystemBaseView):
 
         highlight_tag_re = re.compile('@@@@(/?)\\$')
 
-        # Load the files for this result page from the database
+        # So while we have the results from Elasticsearch, they don't contain up to date or
+        # complete data about the matched files, so we'll take the hash IDs returned by Elastic
+        # and query our database
         file_ids = [doc['_source']['id'] for doc in elastic_result['hits']]
         file_map = {file.id: file for file in
                     self.get_nondeleted_recycled_files(Files.id.in_(file_ids))}

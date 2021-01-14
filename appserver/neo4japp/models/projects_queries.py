@@ -50,6 +50,11 @@ def add_project_user_role_columns(query, project_table, user_id, role_names=None
 
 
 class ProjectCalculator:
+    """
+    This class can be used to populate the calculated fields (namely privileges)
+    on the Projects model.
+    """
+
     def __init__(self, result, project_table):
         self.result = result._asdict()
         self.project_table = project_table

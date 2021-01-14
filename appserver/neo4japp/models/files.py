@@ -199,12 +199,16 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
                                        parent_id.isnot(None))),
     )
 
+    # These fields are not available when initially queried but you can set these fields
+    # yourself or use helpers that populate these fields. These fields are used by
+    # a lot of the API endpoints, and some of the helper methods that query for Files
+    # will populate these fields for you
     calculated_project: Optional[Projects] = None
-    calculated_privileges: Dict[int, FilePrivileges] = {}
-    calculated_children: Optional[List['Files']] = None
-    calculated_parent_deleted: Optional[bool] = None
-    calculated_parent_recycled: Optional[bool] = None
-    calculated_highlight: Optional[str] = None
+    calculated_privileges: Dict[int, FilePrivileges] = {}  # key = AppUser.id
+    calculated_children: Optional[List['Files']] = None  # children of this file
+    calculated_parent_deleted: Optional[bool] = None  # whether a parent is deleted
+    calculated_parent_recycled: Optional[bool] = None  # whether a parent is recycled
+    calculated_highlight: Optional[str] = None  # highlight used in the content search
 
     @property
     def parent_deleted(self):

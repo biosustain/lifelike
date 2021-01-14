@@ -3,6 +3,14 @@ from typing import Dict, List, Optional
 
 class BaseException(Exception):
     def __init__(self, name, message, *args, code='error', error_return_props=None):
+        """
+        Create a new exception.
+        :param name: the name of the error, which sometimes used on the client
+        :param message: a message that can be displayed to the user
+        :param args: extra args
+        :param code: an error code
+        :param error_return_props: extra data that is returned to the client
+        """
         self.name = name
         self.message = message
         self.code = code
@@ -162,7 +170,16 @@ class NameUnavailableError(BaseException):
 
 
 class FilesystemAccessRequestRequired(BaseException):
-    """Raised when access needs to be requested."""
+    """
+    Raised when access needs to be requested for a file or folder. The end goal is to
+    provide enough data in this error to the client that we can pop up a
+    dialog to allow the user to request permission. As of writing, this error has not been
+    fleshed out and will probably need rethinking.
+
+    On the client, this error just shows a generic permission error.
+
+    We may want to merge this exception with AccessRequestRequiredError.
+    """
 
     def __init__(self, message, file_hash_id):
         super().__init__('Access Request Required Error',
@@ -178,7 +195,16 @@ class FilesystemAccessRequestRequired(BaseException):
 
 
 class AccessRequestRequiredError(BaseException):
-    """Raised when access needs to be requested."""
+    """
+    Raised when access needs to be requested for a project. The end goal is to
+    provide enough data in this error to the client that we can pop up a
+    dialog to allow the user to request permission. As of writing, this error has not been
+    fleshed out and will probably need rethinking.
+
+    On the client, this error just shows a generic permission error.
+
+    We may want to merge this exception with FilesystemAccessRequestRequired.
+    """
 
     def __init__(self, message, *, file_hash_id=None, project_hash_id=None):
         super().__init__('Access Request Required Error',

@@ -30,7 +30,8 @@ class FallbackOrganismSchema(Schema):  # Not camel case!
 # Annotations
 # ========================================
 
-class AnnotationLinksSchema(Schema):  # Camel case in Python
+class AnnotationLinksSchema(Schema):
+    # These fields are camel case even in Python
     ncbi = fields.String(required=True)
     uniprot = fields.String(required=True)
     chebi = fields.String(required=True)
@@ -40,7 +41,8 @@ class AnnotationLinksSchema(Schema):  # Camel case in Python
     google = fields.String(required=True)
 
 
-class AnnotationMetaSchema(Schema):  # Camel case in Python
+class AnnotationMetaSchema(Schema):
+    # These fields are camel case even in Python
     type = fields.String(required=True)
     color = fields.String(required=True)
     id = fields.String(required=True)
@@ -53,7 +55,8 @@ class AnnotationMetaSchema(Schema):  # Camel case in Python
     isCaseInsensitive = fields.Boolean(required=True)
 
 
-class AnnotationSchema(Schema):  # Camel case in Python
+class AnnotationSchema(Schema):
+    # These fields are camel case even in Python
     pageNumber = fields.Integer(required=True)
     keywords = fields.List(fields.String(required=True))
     rects = fields.List(fields.List(fields.Float(required=True)))
@@ -82,6 +85,7 @@ class AnnotationUUIDListSchema(ResultListSchema):
 # ----------------------------------------
 
 class AnnotationGenerationRequestSchema(CamelCaseSchema):
+    """Request for initial annotation or re-annotation."""
     organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     annotation_method = EnumField(AnnotationMethod, by_value=True)
 

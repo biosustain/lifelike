@@ -21,6 +21,7 @@ class StringIntegerField(fields.Integer):
 
 
 class SortField(fields.String):
+    """Helps return a SQLAlchemy field that you can use to sort with."""
     _deserialize_pattern = re.compile('^((?:[+-])?)(.*)$', re.S)
     value_to_column: Dict
 
