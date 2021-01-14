@@ -125,8 +125,8 @@ def get_all_annotations_from_project(project_name):
         annotation_data = (
             annotation['meta']['id'],
             annotation['meta']['type'],
-            annotation['keyword'],
-            annotation['primaryName'],
+            annotation['keyword'].strip(),
+            annotation['primaryName'].strip(),
         )
         if distinct_annotations.get(annotation_data, None) is not None:
             distinct_annotations[annotation_data] += 1
@@ -479,8 +479,8 @@ def get_all_annotations_from_file(project_name, file_id):
         annotation_data = (
             annotation['meta']['id'],
             annotation['meta']['type'],
-            annotation['keyword'],
-            annotation['primaryName'],
+            annotation['keyword'].strip(),
+            annotation['primaryName'].strip(),
         )
 
         if distinct_annotations.get(annotation_data, None) is not None:
