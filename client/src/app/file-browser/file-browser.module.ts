@@ -28,7 +28,7 @@ import { ObjectExportDialogComponent } from './components/dialog/object-export-d
 import { ObjectTileDeckComponent } from './components/object-tile-deck.component';
 import { ObjectPathComponent } from './components/object-path.component';
 import { ObjectTypeService, TYPE_PROVIDER } from './services/object-type.service';
-import { DirectoryTypeProvider } from './providers/directory-type-provider';
+import { DirectoryTypeProvider } from './providers/directory.type-provider';
 import { DirectoryPreviewComponent } from './components/directory-preview.component';
 import { ObjectMenuComponent } from './components/object-menu.component';
 import { ProjectActions } from './services/project-actions';

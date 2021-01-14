@@ -12,7 +12,7 @@ import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dia
 import { MapRestoreDialogComponent } from './components/map-restore-dialog.component';
 import { MapComponent } from './components/map.component';
 import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
-import { MapTypeProvider } from './providers/map-type-provider';
+import { MapTypeProvider } from './providers/map.type-provider';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { InfoViewPanelComponent } from './components/info-view-panel.component';
 

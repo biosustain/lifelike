@@ -13,7 +13,7 @@ import {
 } from '../../file-browser/services/object-type.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { map, tap } from 'rxjs/operators';
-import { MAP_MIMETYPE } from '../../drawing-tool/providers/map-type-provider';
+import { MAP_MIMETYPE } from '../../drawing-tool/providers/map.type-provider';
 
 @Component({
   selector: 'app-associated-maps',

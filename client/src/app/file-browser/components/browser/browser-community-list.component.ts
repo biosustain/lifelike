@@ -3,7 +3,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
 import { FilesystemObjectList } from '../../models/filesystem-object-list';
 import { FilesystemService } from '../../services/filesystem.service';
-import { MAP_MIMETYPE } from '../../../drawing-tool/providers/map-type-provider';
+import { MAP_MIMETYPE } from '../../../drawing-tool/providers/map.type-provider';
 
 @Component({
   selector: 'app-browser-community-list',
