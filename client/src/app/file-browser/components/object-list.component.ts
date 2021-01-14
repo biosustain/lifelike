@@ -35,6 +35,8 @@ export class ObjectListComponent {
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
 
+  dropTargetHashId: string | undefined;
+
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
@@ -57,10 +59,21 @@ export class ObjectListComponent {
 
   @HostListener('dragover', ['$event'])
   dragOver(event: DragEvent) {
-    if (this.getTargetHashId(event) != null) {
+    this.dropTargetHashId = this.getTargetHashId(event);
+    if (this.dropTargetHashId != null) {
       event.dataTransfer.dropEffect = 'move';
       event.preventDefault();
     }
+  }
+
+  @HostListener('dragend', ['$event'])
+  dragEnd(event: DragEvent) {
+    this.dropTargetHashId = null;
+  }
+
+  @HostListener('dragleave', ['$event'])
+  dragLeave(event: DragEvent) {
+    this.dropTargetHashId = null;
   }
 
   @HostListener('drop', ['$event'])
