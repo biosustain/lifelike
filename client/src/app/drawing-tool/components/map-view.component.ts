@@ -16,7 +16,7 @@ import { FilesystemObject} from '../../file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from '../../file-browser/utils/objects';
 import { cloneDeep } from 'lodash';
-import { MAP_MIMETYPE } from '../providers/map-type-provider';
+import { MAP_MIMETYPE } from '../providers/map.type-provider';
 
 @Component({
   selector: 'app-map-view',
