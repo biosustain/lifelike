@@ -143,7 +143,7 @@
       <div class="module-header">
         <!-- Breadcrumbs -->
         <div class="module-breadcrumb-bar mb-1">
-          <app-object-path [object]="result.value.parent"></app-object-path>
+          <app-object-path [object]="result.value.parent" (refreshRequest)="refresh()"></app-object-path>
         </div>
 
         <!-- Title bar -->
