@@ -25,6 +25,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   @Input() parentLabel = 'Location';
   @Input() promptUpload = false;
   @Input() promptAnnotationOptions = false;
+  @Input() forceAnnotationOptions = false;
   @Input() promptParent = false;
 
   readonly annotationMethodChoices: AnnotationMethod[] = ['NLP', 'Rules Based'];
@@ -106,7 +107,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   get possiblyAnnotatable(): boolean {
-    return this.object.isAnnotatable || this.filePossiblyAnnotatable;
+    return this.object.isAnnotatable || this.filePossiblyAnnotatable || this.forceAnnotationOptions;
   }
 
   private getFileContentRequest(value: { [key: string]: any }): Partial<ObjectContentSource> {
