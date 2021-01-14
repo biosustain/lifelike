@@ -343,6 +343,9 @@ class ProjectCollaboratorsListView(ProjectBaseView):
     decorators = [auth.login_required]
 
     def get_bulk_collaborator_response(self, hash_id, pagination: Pagination):
+        """
+        Generate a list of colloborators for aproject.
+        """
         current_user = g.current_user
         project = self.get_nondeleted_project(Projects.hash_id == hash_id)
         self.check_project_permissions([project], current_user, ['administrable'])
@@ -371,6 +374,11 @@ class ProjectCollaboratorsListView(ProjectBaseView):
     def post(self, params, hash_id):
         proj_service = get_projects_service()
         current_user = g.current_user
+
+        private_data_access = get_authorization_service().has_role(
+            current_user, 'private-data-access'
+        )
+
         project = self.get_nondeleted_project(Projects.hash_id == hash_id)
         self.check_project_permissions([project], current_user, ['administrable'])
 
@@ -402,9 +410,11 @@ class ProjectCollaboratorsListView(ProjectBaseView):
         for role in roles:
             role_map[role.name] = role
 
-        for user in target_users:
-            if user.id == current_user.id:
-                raise ValidationError(f"You cannot edit yourself.")
+        # Super admin users need to be able to change anyone on a project
+        if not private_data_access:
+            for user in target_users:
+                if user.id == current_user.id:
+                    raise ValidationError(f"You cannot edit yourself.")
 
         for entry in params['update_or_create']:
             proj_service.edit_collaborator(user_map[entry['user_hash_id']],

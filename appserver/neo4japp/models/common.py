@@ -214,7 +214,9 @@ class FullTimestampMixin(TimestampMixin):
 
 
 class RecyclableMixin:
-    """ Tables that need a created/updated """
+    """
+    A model that is recyclable supports a recycle bin.
+    """
     recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
 
     @declared_attr
@@ -231,4 +233,7 @@ class RecyclableMixin:
 
 
 class HashIdMixin:
+    """
+    A model with a roughly-ordered hash ID with a bit of randomness.
+    """
     hash_id = db.Column(db.String(36), unique=True, nullable=False, default=generate_hash_id)

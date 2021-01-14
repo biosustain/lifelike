@@ -15,6 +15,9 @@ from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
 
+# This file implements handlers for every file type that we have in Lifelike so file-related
+# code can use these handlers to figure out how to handle different file types
+
 extension_mime_types = {
     '.pdf': 'application/pdf',
     '.llmap': 'vnd.***ARANGO_DB_NAME***.document/map',
@@ -47,6 +50,8 @@ class PDFTypeProvider(BaseFileTypeProvider):
     mime_types = (MIME_TYPE,)
 
     def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+        # We don't even validate PDF content yet, but we need to detect them, so we'll
+        # just return -1 so PDF becomes the fallback file type
         return -1
 
     def can_create(self) -> bool:
@@ -102,6 +107,7 @@ class MapTypeProvider(BaseFileTypeProvider):
 
     def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
         try:
+            # If the data validates, I guess it's a map?
             self.validate_content(buffer)
             return 0
         except ValueError:
@@ -218,6 +224,9 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
 
     def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
         try:
+            # If the data validates, I guess it's an enrichment table?
+            # The enrichment table schema is very simple though so this is very simplistic
+            # and will cause problems in the future
             self.validate_content(buffer)
             return 0
         except ValueError:

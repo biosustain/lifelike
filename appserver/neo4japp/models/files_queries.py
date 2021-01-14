@@ -266,9 +266,10 @@ def add_file_user_role_columns(query, file_table, user_id, role_names=None, colu
 
 class FileHierarchy:
     """
-    Provides accessors for working with the file hierarchy data returned
-    from :func:`build_file_parents_cte` and
-    :func:`build_file_hierarchy_query`.
+    This class can be used to populate the calculated fields on the Files model (like project,
+    privileges, etc.). This class uses the query results returned by
+    :func:`build_file_hierarchy_query` that are returned in a specific way
+    (aka has the right queried columns).
     """
 
     def __init__(self, results, file_table, project_table):
