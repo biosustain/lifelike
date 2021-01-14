@@ -35,8 +35,6 @@ export class ObjectListComponent {
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
 
-  dropTargetHashId: string | undefined;
-
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
@@ -55,71 +53,6 @@ export class ObjectListComponent {
 
     // At this time, we don't support dragging multiple items
     this.objects.selectOnly(object);
-  }
-
-  @HostListener('dragover', ['$event'])
-  dragOver(event: DragEvent) {
-    this.dropTargetHashId = this.getTargetHashId(event);
-    if (this.dropTargetHashId != null) {
-      event.dataTransfer.dropEffect = 'move';
-      event.preventDefault();
-    }
-  }
-
-  @HostListener('dragend', ['$event'])
-  dragEnd(event: DragEvent) {
-    this.dropTargetHashId = null;
-  }
-
-  @HostListener('dragleave', ['$event'])
-  dragLeave(event: DragEvent) {
-    this.dropTargetHashId = null;
-  }
-
-  @HostListener('drop', ['$event'])
-  drop(event: DragEvent) {
-    event.preventDefault();
-    const targetHashId = this.getTargetHashId(event);
-    const data = event.dataTransfer.getData(FILESYSTEM_OBJECT_TRANSFER_TYPE);
-    if (targetHashId != null && data != null) {
-      const transferData: FilesystemObjectTransferData = JSON.parse(data);
-
-      const progressDialogRef = this.progressDialog.display({
-        title: 'Working...',
-        progressObservable: new BehaviorSubject<Progress>(new Progress({
-          status: 'Moving...',
-        })),
-      });
-
-      this.filesystemService.save([transferData.hashId], {
-        parentHashId: targetHashId,
-      }).pipe(
-        tap(() => this.refreshRequest.emit()),
-        finalize(() => progressDialogRef.close()),
-        this.errorHandler.create(),
-      ).subscribe(() => {
-        this.snackBar.open(`Moved item to new folder.`, 'Close', {
-          duration: 5000,
-        });
-      });
-    }
-  }
-
-  getTargetHashId(event: DragEvent): string | undefined {
-    if (event.dataTransfer.types.includes(FILESYSTEM_OBJECT_TRANSFER_TYPE)) {
-      const target = event.target;
-      if ('closest' in target) {
-        const acceptsDropElement = (event.target as Element).closest('[data-accepts-fs-drop]');
-        if (acceptsDropElement) {
-          if (acceptsDropElement.getAttribute('data-accepts-fs-drop') === '1') {
-            return acceptsDropElement.getAttribute('data-fs-hash-id');
-          }
-        } else {
-          return this.parent ? this.parent.hashId : null;
-        }
-      }
-    }
-    return null;
   }
 
   getDateShown(object: DirectoryObject) {

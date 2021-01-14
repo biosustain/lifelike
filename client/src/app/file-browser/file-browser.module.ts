@@ -40,6 +40,7 @@ import { ObjectAnnotationHistoryComponent } from './components/object-annotation
 import { AnnotationsService } from './services/annotations.service';
 import { ObjectCreationService } from './services/object-creation.service';
 import { ObjectAnnotateDialogComponent } from './components/dialog/object-annotate-dialog.component';
+import { FilesystemObjectTargetDirective } from './directives/filesystem-object-target.directive';
 
 @NgModule({
   declarations: [
@@ -73,6 +74,7 @@ import { ObjectAnnotateDialogComponent } from './components/dialog/object-annota
     FileAnnotationHistoryDialogComponent,
     ObjectAnnotationHistoryComponent,
     ObjectAnnotateDialogComponent,
+    FilesystemObjectTargetDirective,
   ],
   imports: [
     SharedModule,
@@ -111,6 +113,7 @@ import { ObjectAnnotateDialogComponent } from './components/dialog/object-annota
     FileAnnotationHistoryDialogComponent,
     ObjectAnnotationHistoryComponent,
     ObjectAnnotateDialogComponent,
+    FilesystemObjectTargetDirective,
   ],
   providers: [
     ProjectsService,
