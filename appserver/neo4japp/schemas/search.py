@@ -3,6 +3,7 @@ from marshmallow import fields, validate
 from neo4japp.database import ma
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import ResultListSchema
+from neo4japp.schemas.filesystem import RankedFileSchema
 
 
 # ========================================
@@ -11,7 +12,6 @@ from neo4japp.schemas.common import ResultListSchema
 
 # Requests
 # ----------------------------------------
-from neo4japp.schemas.filesystem import RankedFileSchema
 
 
 class ContentSearchSchema(CamelCaseSchema):

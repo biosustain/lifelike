@@ -71,7 +71,11 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
     root_id = db.Column(db.Integer, db.ForeignKey('files.id'), nullable=False, index=True)
     root = db.relationship('Files', foreign_keys=root_id)
 
-    calculated_privileges: Dict[int, ProjectPrivileges] = {}
+    # These fields are not available when initially queried but you can set these fields
+    # yourself or use helpers that populate these fields. These fields are used by
+    # a lot of the API endpoints, and some of the helper methods that query for Files
+    # will populate these fields for you
+    calculated_privileges: Dict[int, ProjectPrivileges] = {}  # key = AppUser.id
 
     @validates('name')
     def validate_name(self, key, name):
@@ -178,10 +182,3 @@ def init_default_access(mapper, connection, target):
         principal_id=admin_role.id,
         rule_type=AccessRuleType.ALLOW,
     ))
-
-
-@event.listens_for(Projects, 'after_update')
-def projects_after_update(mapper, connection, target):
-    """listen for the `after_update` event"""
-
-    # TODO

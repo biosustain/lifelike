@@ -98,7 +98,12 @@ class AccountSearchView(MethodView):
     @use_args(UserSearchSchema)
     @use_args(PaginatedRequestSchema)
     def post(self, params: dict, pagination: Pagination):
-        """Endpoint to search for users that match certain criteria."""
+        """
+        Endpoint to search for users that match certain criteria.
+
+        This endpoint is used to populate user auto-completes, which is used (as of writing)
+        on the project collaborators dialog.
+        """
         current_user = g.current_user
         query = re.sub("[%_]", "\\\\0", params['query'].strip().lower())
         like_query = f"%{query}%"
@@ -107,6 +112,9 @@ class AccountSearchView(MethodView):
             current_user, 'private-data-access'
         )
 
+        # This method is inherently dangerous because it allows users to query
+        # our entire database of users. For that reason, we only allow exact
+        # email address searches at least
         query = db.session.query(AppUser) \
             .filter(or_(func.lower(AppUser.first_name).like(like_query),
                         func.lower(AppUser.last_name).like(like_query),
@@ -114,6 +122,9 @@ class AccountSearchView(MethodView):
                         func.lower(AppUser.email) == query,
                         func.lower(AppUser.hash_id) == query))
 
+        # On the project collaborators dialog, we exclude ourselves because you can't
+        # (as of writing) change your own permission level, but if you have the private-data-access
+        # role, you need to be able to do that
         if not private_data_access and params['exclude_self']:
             query = query.filter(AppUser.id != current_user.id)
 

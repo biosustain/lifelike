@@ -20,27 +20,40 @@ class PaginatedRequestSchema(CamelCaseSchema):
 
 
 class RankedItemSchema(CamelCaseSchema):
+    """When you need to assign a rank to each item."""
     rank = fields.Number()
-
-
-class SingleResultSchema(CamelCaseSchema):
-    pass
+    # item = YourField()
 
 
 class ResultQuerySchema(CamelCaseSchema):
     phrases = fields.List(fields.String)
 
 
+class SingleResultSchema(CamelCaseSchema):
+    """When you have one item to return."""
+    # result = YourField()
+
+
 class ResultListSchema(CamelCaseSchema):
+    """When you have a list of items to return."""
     total = fields.Integer()
     query = fields.Nested(ResultQuerySchema)
+    # results = fields.List(YourField())
 
 
 class ResultMappingSchema(CamelCaseSchema):
+    """When you have a key -> value map to return."""
     missing = fields.List(fields.String)
+    # mapping = fields.Dict(YourField(), YourField())
+
+
+# Note: The above schemas (SingleResult, ResultList, ResultMapping) have field names
+# named in a way that lets you combine the schemas without conflicts!
+# (i.e. ResultList + ResultMapping in the same response)
 
 
 class ErrorResponseSchema(CamelCaseSchema):
+    """All errors are emitted with this schema."""
     message = fields.String()
     detail = fields.String()
     code = fields.String()

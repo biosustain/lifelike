@@ -21,7 +21,7 @@ bp = Blueprint('enrichment-table-api', __name__, url_prefix='/enrichment-table')
 @bp.route('/match-ncbi-nodes', methods=['POST'])
 @auth.login_required
 def match_ncbi_nodes():
-    # TODO: Validate incoming data using webargs + Marshmallow
+    # TODO: Validate incoming data using webargs + Marshmallow and move to class-based view
     data = request.get_json()
     geneNames = data.get('geneNames')
     organism = data.get('organism')

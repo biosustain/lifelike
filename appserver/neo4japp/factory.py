@@ -68,6 +68,12 @@ cache = Cache()
 
 
 class ErrorResponse:
+    """
+    Encapsulates the error object that is sent to the client. The purpose of this class
+    is to keep errors sent to the client consistent, but as of writing, this class is
+    a mix of older error handling code and newer error handling code.
+    """
+
     def __init__(self,
                  code: Optional[Union[Literal['validation'], Literal['permission']]],
                  message: str,
@@ -78,6 +84,18 @@ class ErrorResponse:
                  transaction_id: str = None,
                  fields: Optional[Dict[str, List[str]]] = None,
                  debug_exception: Exception = None):
+        """
+        Create a new instance of the error.
+
+        :param code: the error code is a machine-parseable error code (not used yet)
+        :param message: a message that can be displayed direct to the user
+        :param detail: extra text that is show on the client in a 'extra info' box
+        :param api_http_error: the old way of returning the error
+        :param version: the version of the app
+        :param transaction_id: a transaction ID that goes into our logs
+        :param fields: a dictionary of form fields (or _schema for generic) and its errors
+        :param debug_exception: an exception that can be dumped into the 'detail' field
+        """
         assert debug_exception is None or detail is None
 
         self.message = message
@@ -97,8 +115,13 @@ class ErrorResponse:
 @parser.location_handler("mixed_form_json")
 def load_mixed_form_json(request, name, field):
     """
-    Handle JSON that needs to be mixed with file uploads. The proper way of achieving
-    this would probably be to use multipart/mixed, but support for that is too weak.
+    Handle JSON that needs to be mixed with file uploads.
+
+    The problem this is trying to fix is that there is no way to send both JSON data and file
+    uploads in the same request. The proper way of achieving this would probably be to use
+    multipart/mixed, but support for that is too weak in our web server and in Angular, so
+    this is a hacky way of achieving this dream. There is an associated function on the client
+    that formats form data to be compatible here.
     """
 
     # Memoize the JSON parsing - we don't have to do this in newer versions
@@ -288,10 +311,24 @@ def handle_generic_error(code: int, ex: Exception):
 
 
 def handle_validation_error(code, error: ValidationError, messages=None):
+    """
+    Handle errors that are related to form or input validation (any arguments provided by
+    the user).
+
+    The goal here is to preserve the errors generated on the server, which will often be
+    through Marshmallow, and send them to the client so the client can tie the errors
+    to the associated form fields.
+
+    As of writing, we don't fully tackle the problem because we do camel case conversion
+    on the field names and that doesn't happen here, but we cannot just blindly camelCase the field
+    names because not all our API payloads use camel case.
+    """
     current_app.logger.error('Request caused UnprocessableEntity error', exc_info=error)
 
     fields: dict = messages or error.normalized_messages()
     field_keys = list(fields.keys())
+
+    # Generate a message (errors need a message that can be shown to the user)
     if len(field_keys) == 1:
         key = field_keys[0]
         field = fields[key]
@@ -310,6 +347,10 @@ def handle_validation_error(code, error: ValidationError, messages=None):
 def handle_access_error(code,
                         error: Union[AccessRequestRequiredError, FilesystemAccessRequestRequired],
                         messages=None):
+    """
+    Handle errors that occurs when a user doesn't have permission to something but can
+    request permission. This handler is not really fleshed out yet.
+    """
     current_app.logger.error('Request caused access error', exc_info=error)
     return jsonify(ErrorResponseSchema().dump(ErrorResponse(
         'permission',
