@@ -101,13 +101,10 @@
         - deploy
 
     - name: Create/Update LMDB database
-      include_role:
-        name: lmdb
-        apply:
-          tags:
-            - always
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver flask load-lmdb"
       tags:
-        - lmdb
         - deploy
 
     - name: Warm up LMDB
