@@ -295,10 +295,7 @@ def handle_validation_error(code, error: ValidationError, messages=None):
     if len(field_keys) == 1:
         key = field_keys[0]
         field = fields[key]
-        if key == SCHEMA:
-            message = '; '.join(field)
-        else:
-            message = f"{field_keys[0]}: {'; '.join(field)}"
+        message = '; '.join(field)
     else:
         message = 'An error occurred with the provided input.'
 
