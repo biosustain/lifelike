@@ -1,5 +1,5 @@
 <div class="module-body-split module-body-browser-split">
-  <div class="module-body-split-main" [appFSObjectTarget]="parent ? parent.hashId : null"
+  <div class="module-body-split-main" [appFSObjectTarget]="parent"
        (refreshRequest)="this.refreshRequest.emit()">
     <ng-container *ngIf="showDescription && parent && parent.description && parent.description.trim().length">
       <div class="border-bottom p-4 text-muted d-flex align-items-start">
@@ -94,7 +94,7 @@
       <tbody *ngIf="objects != null">
       <tr *ngFor="let object of objects.view; index as objectIndex" tabindex="0"
           [class.active]="this.objects.isSelected(object)"
-          [appFSObjectTarget]="object && object.isDirectory ? object.hashId : null"
+          [appFSObjectTarget]="object && object.isDirectory ? object : null"
           (refreshRequest)="this.refreshRequest.emit()"
           draggable="true"
           (dragstart)="objectDragStart($event, object)" appContextMenu

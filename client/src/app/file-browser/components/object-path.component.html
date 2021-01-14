@@ -6,7 +6,7 @@
   </li>
   <li class="breadcrumb-item" *ngFor="let item of path" appContextMenu>
     <a [appLink]="item.getCommands(forEditing)" [newTab]="newTab"
-       [appFSObjectTarget]="item.isDirectory ? item.hashId : null" (refreshRequest)="refreshRequest.emit()">
+       [appFSObjectTarget]="item.isDirectory ? item : null" (refreshRequest)="refreshRequest.emit()">
       <app-project-icon *ngIf="!item.parent"
                         [project]="item.project" size="16" class="mr-1"></app-project-icon>
       {{ item.isDirectory && item.parent == null && ***ARANGO_USERNAME***Name ? ***ARANGO_USERNAME***Name : item.effectiveName }}
