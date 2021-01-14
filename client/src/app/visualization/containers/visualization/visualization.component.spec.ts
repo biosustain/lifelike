@@ -179,7 +179,7 @@ describe('VisualizationComponent', () => {
             label: mockGraphRelationship.data.description,
             arrows: 'to',
             color: {
-                color: '#3797DB',
+                color: '#0c8caa',
             }
         });
     });
