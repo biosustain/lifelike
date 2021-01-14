@@ -12,7 +12,7 @@ import {
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
     ReferenceTableDataRequest,
-    NodeAssociatedTypesRequest,
+    AssociatedTypeSnippetCountRequest,
     GetAssociatedTypeResult,
     GetNodePairSnippetsResult,
 } from 'app/interfaces';
@@ -84,17 +84,15 @@ export class VisualizationService extends AbstractService {
         );
     }
 
-    getAssociatedTypesForNode(request: NodeAssociatedTypesRequest) {
+    getAssociatedTypeSnippetCount(request: AssociatedTypeSnippetCountRequest) {
         return this.http.post<{result: GetAssociatedTypeResult}>(
-            `${this.baseUrl}/get-node-associated-types`, {
-                node_id: request.node_id,
-                to_label: request.to_label,
+            `${this.baseUrl}/get-associated-type-snippet-count`, {
+                source_node: request.source_node,
+                associated_nodes: request.associated_nodes,
+                label: request.label,
             },
             {...this.getHttpOptions(true)}
-        ).pipe(
-            map(resp => resp.result.associatedData),
-            catchError(error => of(error)),
-        );
+        ).pipe(map(resp => resp.result.associatedData));
     }
 
     getSnippetsForNodePair(fromId: number, toId: number, page: number, limit: number) {

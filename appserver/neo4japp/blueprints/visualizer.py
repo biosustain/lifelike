@@ -17,7 +17,7 @@ from neo4japp.data_transfer_objects.visualization import (
 )
 from neo4japp.request_schemas.visualizer import (
     GetSnippetsForNodePairRequest,
-    NodeAssociatedTypesRequest,
+    AssociatedTypeSnippetCountRequest,
 )
 from neo4japp.exceptions import (
     InvalidArgumentsException,
@@ -127,15 +127,16 @@ def get_annotation_legend():
     return SuccessResponse(result=ANNOTATION_STYLES_DICT, status_code=200)
 
 
-@bp.route('/get-node-associated-types', methods=['POST'])
+@bp.route('/get-associated-type-snippet-count', methods=['POST'])
 @auth.login_required
-@use_kwargs(NodeAssociatedTypesRequest)
-def get_node_associated_types(node_id, to_label):
+@use_kwargs(AssociatedTypeSnippetCountRequest)
+def get_associated_type_snippet_count(source_node, associated_nodes, label):
     visualizer = get_visualizer_service()
 
-    associated_types_result = visualizer.get_associated_types_from_node(
-        from_id=node_id,
-        to_label=to_label,
+    associated_types_result = visualizer.get_associated_type_snippet_count(
+        source_node,
+        associated_nodes,
+        label,
     )
     return jsonify({
         'result': associated_types_result.to_dict(),
