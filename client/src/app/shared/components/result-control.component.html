@@ -1,6 +1,7 @@
 <div class="input-group w-100 d-flex">
   <div class="form-control input-border text-truncate" tabindex="0"
-         [style.width]="value ? '150px' : '100px'" #searchInput>
+       [style.width]="value ? '150px' : '100px'"
+       (keyup.enter)="enterPress.next()" (keyup.backspace)="clear()" #searchInput>
     <ng-container *ngIf="annotationColor != null; else noAnnotationColor">
       <span [style.background]="getAnnotationBackgroundColor(annotationColor)" style="font-weight: bold">
         {{ value }}
