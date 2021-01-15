@@ -24,6 +24,14 @@
         - kg-webserver
         - kg-cache-service
         - kg-nlpapi
+      tags:
+        - deploy
+
+    - name: Pull PDFParser Docker Image
+      docker_image:
+        name: "{{ container_registry }}/{{ item }}:latest"
+        source: pull
+      with_items:
         - kg-pdfparser
       tags:
         - deploy
