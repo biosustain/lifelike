@@ -3,24 +3,20 @@ import multiprocessing as mp
 import requests
 import time
 
-from io import BytesIO
 from flask import current_app
 from typing import Any, Dict, List, Tuple
-from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.datastructures import FileStorage
+from string import punctuation
 
 from neo4japp.database import (
-    db,
     get_annotation_service,
     get_bioc_document_service,
     get_entity_recognition,
     get_manual_annotation_service
 )
 from neo4japp.exceptions import AnnotationError
-from neo4japp.models import FileContent
 from neo4japp.services.annotations.constants import (
     AnnotationMethod,
-    GREEK_SYMBOLS,
+    COMMON_WORDS,
     NLP_ENDPOINT,
     MAX_ABBREVIATION_WORD_LENGTH
 )
@@ -154,43 +150,50 @@ def get_nlp_entities(
     return nlp_tokens, nlp_resp
 
 
+def read_pdf_response(resp: dict) -> Tuple[str, List[PDFWord]]:
+    parsed = []
+    pdf_text = ''
+
+    for page in resp['pages']:
+        prev_words: List[str] = []
+        pdf_text += page['pageText']
+        for token in page['tokens']:
+            if token['text'] not in punctuation:
+                parsed.append(
+                    PDFWord(
+                        keyword=token['text'],
+                        normalized_keyword=token['text'],  # don't need to normalize yet
+                        page_number=page['pageNo'],
+                        cropbox=(page['cropBox']['height'], page['cropBox']['width']),
+                        lo_location_offset=token['pgIdx'],
+                        hi_location_offset=token['pgIdx'] if len(token['text']) == 1 else token['pgIdx'] + len(token['text']) - 1,  # noqa
+                        heights=[rect['height'] for rect in token['rects']],
+                        widths=[rect['width'] for rect in token['rects']],
+                        coordinates=[
+                            [
+                                rect['lowerLeftPt']['x'],
+                                rect['lowerLeftPt']['y'],
+                                rect['lowerLeftPt']['x'] + rect['width'],
+                                rect['lowerLeftPt']['y'] + rect['height']
+                            ] for rect in token['rects']
+                        ],
+                        previous_words=' '.join(prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]) if token['possibleAbbrev'] else '',  # noqa
+                        token_type='',
+                    )
+                )
+                prev_words.append(token['text'])
+                if len(prev_words) > MAX_ABBREVIATION_WORD_LENGTH:
+                    prev_words = prev_words[1:]
+    return pdf_text, parsed
+
+
 def parse_pdf(project_id: int, file_id: str) -> Tuple[str, List[PDFWord]]:
     req = requests.get(
         f'http://pdfparser:7600/token/rect/json/http://appserver:5000/annotations/{project_id}/{file_id}', timeout=30)  # noqa
     resp = req.json()
     req.close()
 
-    parsed = []
-    pdf_text = ''
-    for page in resp['pages']:
-        prev_words: List[str] = []
-        pdf_text += page['pageText']
-        for token in page['tokens']:
-            parsed.append(
-                PDFWord(
-                    keyword=token['text'],
-                    normalized_keyword=token['text'],  # don't need to normalize yet
-                    page_number=page['pageNo'],
-                    cropbox=(page['cropBox']['height'], page['cropBox']['width']),
-                    lo_location_offset=token['pgIdx'],
-                    hi_location_offset=token['pgIdx'] if len(token['text']) == 1 else token['pgIdx'] + len(token['text']) - 1,  # noqa
-                    heights=[rect['height'] for rect in token['rects']],
-                    widths=[rect['width'] for rect in token['rects']],
-                    coordinates=[
-                        [
-                            rect['lowerLeftPt']['x'],
-                            rect['lowerLeftPt']['y'],
-                            rect['lowerLeftPt']['x'] + rect['width'],
-                            rect['lowerLeftPt']['y'] + rect['height']
-                        ] for rect in token['rects']
-                    ],
-                    previous_words=' '.join(prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]) if token['possibleAbbrev'] else '',  # noqa
-                    token_type='',
-                )
-            )
-            prev_words.append(token['text'])
-            if len(prev_words) > MAX_ABBREVIATION_WORD_LENGTH:
-                prev_words = prev_words[1:]
+    pdf_text, parsed = read_pdf_response(resp)
     return pdf_text, parsed
 
 
@@ -215,7 +218,6 @@ def _create_annotations(
     start = time.time()
     try:
         if type(document) is str:
-            # parsed = parser.parse_text(abstract=document)
             raise NotImplementedError()
         else:
             custom_annotations = document.custom_annotations
