@@ -437,7 +437,7 @@ class KgService(HybridDBDao):
                             'from': edge.start_node.identity,
                             'to': edge.end_node.identity,
                             'color': {
-                                'color': '#3797DB',
+                                'color': '#0c8caa',
                             },
                             'arrows': 'to',
                         }
