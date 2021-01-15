@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-
     appserver:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-appserver:${GITHUB_HASH:-latest}
 
@@ -11,11 +10,11 @@ services:
     redis:
         image: redis:6.0.3-alpine
 
+    pdfparser:
+        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-pdfparser:latest
+
     webserver:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-webserver:${GITHUB_HASH:-latest}
 
     nlpapi:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-nlpapi:${GITHUB_HASH:-latest}
-
-    pdfparser:
-        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-pdfparser:latest
