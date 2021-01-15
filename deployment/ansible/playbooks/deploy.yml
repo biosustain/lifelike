@@ -24,6 +24,7 @@
         - kg-webserver
         - kg-cache-service
         - kg-nlpapi
+        - kg-pdfparser
       tags:
         - deploy
 
