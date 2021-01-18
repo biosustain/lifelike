@@ -6,9 +6,6 @@ RUN dnf install postgresql graphviz python-pip python3-devel which -y \
     && dnf clean packages
 RUN pip install pipenv
 
-
-RUN pip install matplotlib
-
 ENV N4J_USER n4j
 ENV N4J_HOME /home/$N4J_USER
 ENV UID 1000
