@@ -28,6 +28,7 @@ import {
   OrderDirection,
   AnnotationVisibility,
 } from 'app/interfaces/annotation-filter.interface';
+import {SortingAlgorithm} from "../../../word-cloud/sorting-algorithms";
 
 @Component({
   selector: 'app-annotation-filter',
@@ -39,6 +40,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
 
   @Input() annotationData: AnnotationFilterEntity[];
   @Output() wordVisibilityOutput: EventEmitter<Map<string, boolean>>;
+  @Input() sortingAlgorithm: SortingAlgorithm;
 
   outputSubject: Subject<boolean>;
   outputSubjectSub: Subscription;
@@ -53,8 +55,8 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   filtersForm: FormGroup;
   filtersFormValueChangesSub: Subscription;
 
-  minimumFrequencyInputId: string;
-  maximumFrequencyInputId: string;
+  minimumValueInputId: string;
+  maximumValueInputId: string;
 
   selectedGroupByOption: string;
   selectedOrderByOption: string;
@@ -72,29 +74,11 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     this.typeVisibilityMap = new Map<string, boolean>();
     this.disabledTypeMap = new Map<string, boolean>();
 
-    this.filtersForm = new FormGroup(
-      // Form controls
-      {
-        minimumFrequency: new FormControl(0, [
-          Validators.required,
-          Validators.min(0),
-          Validators.pattern(/^-?[0-9][^\.]*$/),
-        ]),
-        // TODO: Removing for now, may bring back
-        // maximumFrequency: new FormControl(
-        //   0, [Validators.required, Validators.min(0), Validators.pattern(/^-?[0-9][^\.]*$/)]
-        // ),
-      }
-      // Form group validators
-      // TODO: Don't need this right now, bring it back later if we bring back max frequency
-      // [this.minMaxFreqValidator()]
-    );
-
     this.selectedOrderByOption = DefaultOrderByOptions.FREQUENCY;
     this.selectedOrderDirection = OrderDirection.DESCENDING;
 
-    this.minimumFrequencyInputId = `${this.id}-mininum-frequency-input`;
-    this.maximumFrequencyInputId = `${this.id}-maximum-frequency-input`;
+    this.minimumValueInputId = `${this.id}-mininum-frequency-input`;
+    this.maximumValueInputId = `${this.id}-maximum-frequency-input`;
 
     this.wordVisibilityOutput = new EventEmitter<Map<string, boolean>>();
 
@@ -106,10 +90,29 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    const validators = [
+      Validators.required
+    ];
+    if (this.sortingAlgorithm.hasOwnProperty('min')) { validators.push(Validators.min(this.sortingAlgorithm.min)); }
+    if (this.sortingAlgorithm.step === 1) { validators.push(Validators.pattern(/^-?[0-9][^\.]*$/)); }
+    this.filtersForm = new FormGroup(
+      // Form controls
+      {
+        minimumValue: new FormControl(0, validators),
+        // TODO: Removing for now, may bring back
+        // maximumValue: new FormControl(
+        //   0, [Validators.required, Validators.min(0), Validators.pattern(/^-?[0-9][^\.]*$/)]
+        // ),
+      }
+      // Form group validators
+      // TODO: Don't need this right now, bring it back later if we bring back max frequency
+      // [this.minMaxFreqValidator()]
+    );
+
     // The very first time we get the annotationData, set the default values for the frequency filters
-    this.filtersForm.get('minimumFrequency').setValue(1);
+    if (this.sortingAlgorithm.hasOwnProperty('default')) { this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default); }
     // TODO: Uncomment if we bring back max frequency
-    // this.filtersForm.get('maximumFrequency').setValue(this.annotationData[0].frequency);
+    // this.filtersForm.get('maximumValue').setValue(this.annotationData[0].frequency);
 
     // Get all the annotation types to populate the legend
     this.annotationData.forEach((annotation) => {
@@ -403,14 +406,14 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
    * calling function should bre responsible for the redraw.
    */
   private filterByFrequency(annotation: AnnotationFilterEntity) {
-    const minimumFrequency = this.filtersForm.get('minimumFrequency').value;
+    const minimumValue = this.filtersForm.get('minimumValue').value;
 
     // TODO: Uncomment these if we bring back max frequency
-    // const maximumFrequency = this.filtersForm.get('maximumFrequency').value;
+    // const maximumValue = this.filtersForm.get('maximumValue').value;
 
-    // return minimumFrequency <= annotation.frequency && annotation.frequency <= maximumFrequency;
+    // return minimumValue <= annotation.frequency && annotation.frequency <= maximumValue;
 
-    return minimumFrequency <= annotation.frequency;
+    return minimumValue <= annotation.frequency;
   }
 
   /**
@@ -435,8 +438,8 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
    */
   private minMaxFreqValidator(): ValidatorFn {
     return (fg: FormGroup): ValidationErrors => {
-      const minFreqControl = fg.get('minimumFrequency');
-      const maxFreqControl = fg.get('maximumFrequency');
+      const minFreqControl = fg.get('minimumValue');
+      const maxFreqControl = fg.get('maximumValue');
 
       if (minFreqControl.value > maxFreqControl.value) {
         minFreqControl.setErrors({ ...minFreqControl.errors, badMinMax: true });

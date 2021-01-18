@@ -9,6 +9,7 @@ import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
 import { WordCloudService } from './services/word-cloud.service';
 import { WordCloudComponent } from './word-cloud.component';
+import {DefaultSortingAlgorithm, SortingAlgorithm} from "./sorting-algorithms";
 
 @Component({
   selector: 'app-word-cloud-project',
@@ -27,11 +28,13 @@ export class WordCloudProjectComponent extends WordCloudComponent {
     super(route, pdf, wordCloudService, legendService);
   }
 
+  sorting: SortingAlgorithm = DefaultSortingAlgorithm;
+
   initDataFetch() {
     this.loadTask = new BackgroundTask(() => {
       return combineLatest(
         this.legendService.getAnnotationLegend(),
-        this.wordCloudService.getCombinedAnnotationsProject(this.projectName),
+        this.wordCloudService.getSortedCombinedAnnotationsProject(this.projectName, this.sorting.id),
       );
     });
   }
