@@ -98,19 +98,6 @@ services:
         networks:
             - backend
 
-    webserver:
-        container_name: webserver
-        build:
-            context: ./client
-            dockerfile: Dockerfile
-            target: webserver
-        ports:
-            - "80:80"
-        networks:
-            - frontend
-        depends_on:
-            - appserver
-
     client:
         container_name: client
         build:
