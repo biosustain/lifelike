@@ -13,7 +13,7 @@ import { WordCloudService } from './services/word-cloud.service';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
-import {DefaultSortingAlgorithm, SortingAlgorithm} from "./sorting-algorithms";
+import {defaultSortingAlgorithm, SortingAlgorithm} from './sorting-algorithms';
 
 @Component({
   selector: 'app-word-cloud',
@@ -44,7 +44,7 @@ export class WordCloudComponent {
   clickableWords = false;
   WORD_CLOUD_MARGIN = 10;
 
-  sorting: SortingAlgorithm = DefaultSortingAlgorithm;
+  sorting: SortingAlgorithm = defaultSortingAlgorithm;
 
   constructor(
       readonly route: ActivatedRoute,
@@ -135,7 +135,10 @@ export class WordCloudComponent {
           frequency: Number(cols[3]),
           shown: true,
         } as WordCloudAnnotationFilterEntity;
-        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), this.sorting.min === undefined || annotation.frequency >= this.sorting.min);
+        this.wordVisibilityMap.set(
+          this.getAnnotationIdentifier(annotation),
+          this.sorting.min === undefined || annotation.frequency >= this.sorting.min
+        );
         this.annotationData.push(annotation);
         uniquePairMap.set(uniquePair, this.annotationData.length - 1);
       } else {

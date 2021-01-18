@@ -9,7 +9,7 @@ import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 
 import { WordCloudService } from './services/word-cloud.service';
 import { WordCloudComponent } from './word-cloud.component';
-import {DefaultSortingAlgorithm, SortingAlgorithm} from "./sorting-algorithms";
+import {defaultSortingAlgorithm, SortingAlgorithm} from './sorting-algorithms';
 
 @Component({
   selector: 'app-word-cloud-project',
@@ -28,7 +28,7 @@ export class WordCloudProjectComponent extends WordCloudComponent {
     super(route, pdf, wordCloudService, legendService);
   }
 
-  sorting: SortingAlgorithm = DefaultSortingAlgorithm;
+  sorting: SortingAlgorithm = defaultSortingAlgorithm;
 
   initDataFetch() {
     this.loadTask = new BackgroundTask(() => {

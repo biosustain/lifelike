@@ -116,7 +116,7 @@ def get_all_annotations_from_project(project_name):
         extra=UserEventLog(
             username=g.current_user.username, event_type='view entity word cloud').to_dict()
     )
-    sort = request.args.to_dict()['sort'];
+    sort = request.args.to_dict()['sort']
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
         raise RecordNotFoundException(f'Project {project_name} not found')

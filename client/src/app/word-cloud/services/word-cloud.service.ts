@@ -2,7 +2,7 @@ import {AbstractService} from 'app/shared/services/abstract-service';
 import {Injectable} from '@angular/core';
 import {AuthenticationService} from 'app/auth/services/authentication.service';
 import {HttpClient} from '@angular/common/http';
-import {DefaultSortingAlgorithm} from '../sorting-algorithms';
+import {defaultSortingAlgorithm} from '../sorting-algorithms';
 
 @Injectable()
 export class WordCloudService extends AbstractService {
@@ -18,7 +18,7 @@ export class WordCloudService extends AbstractService {
     });
   }
 
-  getSortedCombinedAnnotations(projectName: string, fileId: string, sort: string = DefaultSortingAlgorithm.id) {
+  getSortedCombinedAnnotations(projectName: string, fileId: string, sort: string = defaultSortingAlgorithm.id) {
     return this.http.get(
       `${this.SEARCH_BASE_URL}/${projectName}/${fileId}`,
       {
@@ -34,7 +34,7 @@ export class WordCloudService extends AbstractService {
     });
   }
 
-  getSortedCombinedAnnotationsProject(projectName: string, sort: string = DefaultSortingAlgorithm.id) {
+  getSortedCombinedAnnotationsProject(projectName: string, sort: string = defaultSortingAlgorithm.id) {
     return this.http.get(`${this.SEARCH_BASE_URL}/${projectName}`, {
       params: {sort},
       headers: this.getAuthHeader(), responseType: 'text',

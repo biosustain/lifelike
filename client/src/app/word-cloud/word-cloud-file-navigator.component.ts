@@ -12,7 +12,7 @@ import { WordCloudAnnotationFilterEntity } from '../interfaces/annotation-filter
 import { FileViewComponent } from '../file-browser/components/file-view.component';
 import { WorkspaceManager } from '../shared/workspace-manager';
 import { escapeRegExp } from 'lodash';
-import { DefaultSortingAlgorithm, SortingAlgorithm } from './sorting-algorithms';
+import { defaultSortingAlgorithm, SortingAlgorithm } from './sorting-algorithms';
 
 @Component({
   selector: 'app-word-cloud-file-navigator',
@@ -25,7 +25,7 @@ export class WordCloudFileNavigatorComponent extends WordCloudComponent
 
   clickableWords = true;
   private wordOpenSubscription: Subscription;
-  sorting: SortingAlgorithm = DefaultSortingAlgorithm;
+  sorting: SortingAlgorithm = defaultSortingAlgorithm;
 
   constructor(
       readonly route: ActivatedRoute,
