@@ -21,3 +21,16 @@
   background: $white;
   border-left: 1px solid $window-border-color;
 }
+
+.lock-panel {
+  position: absolute;
+  left: $window-spacer;
+  top: 0;
+  z-index: 1;
+  width: 350px;
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  max-height: calc(100% - 50px);
+  overflow: auto;
+}

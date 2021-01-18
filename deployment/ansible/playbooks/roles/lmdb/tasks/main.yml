@@ -1,4 +1,5 @@
 - include_vars: gcp_bucket_credentials.yml
+- include_vars: healthcheck.yml
 
 - name: Install Python System dependencies
   become: yes
@@ -9,12 +10,16 @@
     umask: "0022"
 
 - name: Install Python dependencies
+  become_user: "{{ deploy_user }}"
   pip:
     name:
+      - google-auth
       - sqlalchemy
       - google-cloud-storage
       - psycopg2-binary
       - six>1.13.0
+      - google-api-python-client
+      - pytz
     umask: "0022"
     virtualenv: "{{ deploy_dir }}/.venv"
     virtualenv_command: "virtualenv"
@@ -86,17 +91,31 @@
     recurse: yes
     state: directory
 
-- name: Update LMDB Dates
+- name: Copy LMDB PubSub Script
+  copy:
+    src: "./files/lmdb_pubsub.py"
+    dest: "{{ deploy_dir }}"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_user }}"
+    mode: a+x
+
+- name: Stop old LMDB PubSub Tasks
   become_user: "{{ deploy_user }}"
-  script: lmdb_check.py
+  shell: pkill -f lmdb_pubsub.py
+  ignore_errors: true
+
+- name: Run LMDB PubSub Script
+  become_user: "{{ deploy_user }}"
+  shell: "nohup {{ deploy_dir}}/.venv/bin/python3 -u lmdb_pubsub.py >/dev/null 2>&1 &"
+  args:
+    chdir: "{{ deploy_dir }}"
   environment:
     POSTGRES_HOST: "{{ POSTGRES_HOST }}"
     POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
     POSTGRES_PORT: "{{ POSTGRES_PORT }}"
     POSTGRES_USER: "{{ POSTGRES_USER }}"
     POSTGRES_DB: "{{ POSTGRES_DB }}"
+    HEALTHCHECK_URL: "{{ HEALTHCHECK_URL }}"
   register: outcome
-  args:
-    executable: "{{ deploy_dir }}/.venv/bin/python"
 
 - debug: msg="{{ outcome.stdout }}"

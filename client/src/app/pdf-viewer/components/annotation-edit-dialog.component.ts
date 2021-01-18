@@ -51,17 +51,24 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
   }
 
   getValue(): Annotation {
-    const text = this.form.getRawValue().text;
+    const text = this.form.getRawValue().text.trim();
     const links = {};
+    const sourceDomains = new Set(
+      this.linkTemplates.filter(
+        link => link.isDatabase).map(
+          dbDomain => dbDomain.domain.toLowerCase()));
     // idHyperlink should be taken from the search links (entered by user) considering
     // the priority (elements in SEARCH_LINKS array have the prioritized order)
     let idHyperlink;
+    let idType;
     this.form.value.links.forEach((value, i) => {
-      if (!idHyperlink && value) {
-        idHyperlink = value;
-      }
       const domain = this.linkTemplates[i].domain.toLowerCase();
       links[domain] = value || this.substituteLink(this.linkTemplates[i].url, text);
+
+      if (!idHyperlink && value) {
+        idHyperlink = value;
+        idType = sourceDomains.has(domain) ? domain.toUpperCase() : '';
+      }
     });
 
     return {
@@ -73,7 +80,7 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
       meta: {
         id: this.form.value.includeGlobally ? this.form.value.id : (this.form.value.id || text),
         idHyperlink: idHyperlink || '',
-        idType: '',
+        idType: idType || '',
         type: this.form.value.entityType,
         color: ENTITY_TYPE_MAP[this.form.value.entityType].color,
         links,

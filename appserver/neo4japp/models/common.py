@@ -1,3 +1,5 @@
+import random
+
 import sqlalchemy as sa
 from decimal import Decimal
 
@@ -7,6 +9,12 @@ from marshmallow import fields
 from marshmallow_sqlalchemy.convert import ModelConverter as BaseModelConverter
 from sqlalchemy_utils.types import TSVectorType
 from sqlalchemy.types import TIMESTAMP
+
+
+def generate_hash_id():
+    length = 36
+    letters = 'abcdefghkmnoprstwxzABCDEFGHJKLMNPQRTWXY34689'
+    return ''.join(random.choice(letters) for i in range(length))
 
 
 class NEO4JBase():
@@ -169,3 +177,7 @@ class TimestampMixin:
     creation_date = db.Column(TIMESTAMP(timezone=True), default=db.func.now(), nullable=False)
     modified_date = db.Column(
         TIMESTAMP(timezone=True), default=db.func.now(), nullable=False, onupdate=db.func.now())
+
+
+class HashIdMixin:
+    hash_id = db.Column(db.String(36), unique=True, nullable=False, default=generate_hash_id)

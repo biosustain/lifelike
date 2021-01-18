@@ -8,21 +8,24 @@ import {
 } from '@angular/common/http';
 
 import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { throwError } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import {
+    BehaviorSubject,
+    Observable,
+    throwError,
+} from 'rxjs';
+import {
+    catchError,
+    mergeMap,
+    filter,
+    take,
+} from 'rxjs/operators';
 
 import { Store } from '@ngrx/store';
 import { State } from 'app/root-store';
 
-import { ApiHttpError } from 'app/interfaces';
 import { AuthActions } from 'app/auth/store';
 import { SnackbarActions } from 'app/shared/store';
-import {
-  JWT_AUTH_TOKEN_EXPIRED,
-  JWT_AUTH_TOKEN_INVALID,
-  JWT_REFRESH_TOKEN_EXPIRED,
-  JWT_REFRESH_TOKEN_INVALID,
-} from 'app/shared/constants';
+
 
 
 /**
@@ -33,52 +36,77 @@ import {
 @Injectable()
 export class AuthenticationInterceptor implements HttpInterceptor {
 
+    isRefreshingToken = false;
+    refreshTokenSubj = new BehaviorSubject<any>(null);
+
     constructor(
         private auth: AuthenticationService,
         private store: Store<State>,
         private router: Router,
     ) {}
 
-    intercept(req: HttpRequest<any>, next: HttpHandler) {
+
+    handleResponseError(request: HttpRequest<any>, next: HttpHandler) {
+
+        if (!this.isRefreshingToken) {
+            this.isRefreshingToken = true;
+            this.refreshTokenSubj.next(null);
+            return this.auth.refresh().pipe(
+                mergeMap((token) => {
+                    this.isRefreshingToken = false;
+                    this.refreshTokenSubj.next(token.access_jwt);
+                    return next.handle(this.addAuthHeader(request));
+                }),
+                catchError((err) => {
+                    // Refresh token invalid or could not fetch
+                    this.auth.logout();
+                    this.store.dispatch(AuthActions.loginReset());
+                    this.store.dispatch(SnackbarActions.displaySnackbar({payload: {
+                        message: 'Session Expired. Please login again.',
+                        action: 'Dismiss',
+                        config: { duration: 10000 },
+                    }}));
+                    this.router.navigate(['/login']);
+                    return throwError(err);
+                })
+            );
+        } else {
+            return this.refreshTokenSubj.pipe(
+                filter(token => token != null),
+                take(1),
+                mergeMap(() => next.handle(this.addAuthHeader(request)))
+            );
+        }
+    }
+
+
+    intercept(req: HttpRequest<any>, next: HttpHandler): Observable<any> {
+        req = this.addAuthHeader(req);
         return next.handle(req).pipe(
-            catchError((res: HttpErrorResponse) => {
-                const statusCode = res.status;
-                const error: ApiHttpError = res.error.apiHttpError;
-                if (statusCode === 401) {
-                    if (error.message === JWT_REFRESH_TOKEN_EXPIRED || error.message === JWT_REFRESH_TOKEN_INVALID ||
-                        error.message === JWT_AUTH_TOKEN_INVALID) {
-                        // Clear any previous login state which forces users to log out
-                        // and log in again if token has been expired or invalid
-                        this.store.dispatch(AuthActions.loginReset());
-                        this.store.dispatch(SnackbarActions.displaySnackbar({payload: {
-                            message: 'Session expired. Please login again.',
-                            action: 'Dismiss',
-                            config: { duration: 10000 },
-                        }}));
-                        this.router.navigate(['/login']);
-                        return throwError(res);
-                    } else {
-                        // Attempt to refresh the token
-                        return this.auth.refresh().pipe(
-                            switchMap(() => next.handle(this.updateAuthHeader(req))),
-                        );
-                    }
+            catchError(error => {
+                if (error instanceof HttpErrorResponse && error.status === 401 && !(req.url.endsWith('/refresh'))) {
+                    return this.handleResponseError(req, next);
+                } else {
+                    return throwError(error);
                 }
-                return throwError(res);
-            }),
+            })
         );
     }
 
     /**
      * Allow auth header to be updated with new access jwt
-     * @param request - request with auth ehader your trying to modify
+     * @param request - request with auth header you're trying to modify
      */
-    updateAuthHeader(request: HttpRequest<any>) {
-        return request.clone({
-        setHeaders: {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
-        },
-        });
+    addAuthHeader(request: HttpRequest<any>) {
+        const authHeader = this.auth.getAuthHeader();
+        if (authHeader) {
+            return request.clone({
+                setHeaders: {
+                    Authorization: authHeader,
+                }
+            });
+        } else {
+            return request;
+        }
     }
 }
