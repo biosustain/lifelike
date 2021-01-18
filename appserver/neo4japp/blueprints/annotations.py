@@ -1,10 +1,13 @@
 import os
 
 import sqlalchemy as sa
+from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
+from pandas import DataFrame
+import numpy as np
 
 from flask import (
     Blueprint,
@@ -96,24 +99,45 @@ def annotate(
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
 def get_all_annotations_from_project(project_name):
+    sort = request.args.to_dict()['sort'];
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
         raise RecordNotFoundException(f'Project {project_name} not found')
     user = g.current_user
     yield user, project
     annotation_service = get_manual_annotations_service()
-    combined_annotations = annotation_service.get_combined_annotations_in_project(project.id)
-    distinct_annotations = {}
-    for annotation in combined_annotations:
-        annotation_data = (
+
+    if sort == "sum_log_count":
+        files = Files.query.filter(
+            and_(
+                Files.project == project.id,
+                Files.annotations != []
+            )).all()
+
+        df = DataFrame(files)
+        df["annotation"] = df[0].apply(annotation_service._get_file_annotations)
+        df = df.explode("annotation")
+        df["annotation"] = df["annotation"].apply(lambda annotation: (
             annotation['meta']['id'],
             annotation['meta']['type'],
             annotation['meta']['allText'],
-        )
-        if distinct_annotations.get(annotation_data, None) is not None:
-            distinct_annotations[annotation_data] += 1
-        else:
-            distinct_annotations[annotation_data] = 1
+        ))
+        res = df.groupby(["annotation", 0])
+        res2 = np.log(res.size())
+        distinct_annotations = res2.sum(level="annotation").to_dict()
+    else:
+        combined_annotations = annotation_service.get_combined_annotations_in_project(project.id)
+        distinct_annotations = {}
+        for annotation in combined_annotations:
+            annotation_data = (
+                annotation['meta']['id'],
+                annotation['meta']['type'],
+                annotation['meta']['allText'],
+            )
+            if distinct_annotations.get(annotation_data, None) is not None:
+                distinct_annotations[annotation_data] += 1
+            else:
+                distinct_annotations[annotation_data] = 1
     sorted_distintct_annotations = sorted(
         distinct_annotations,
         key=lambda annotation: distinct_annotations[annotation],

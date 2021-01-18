@@ -1,0 +1,8 @@
+<button
+  class="dropdown-item"
+  [ngClass]="{'active': selected == algorithm}"
+  (click)="changeSorting.emit(algorithm)"
+  *ngFor="let algorithm of algorithms"
+>
+  {{ algorithm.description }}
+</button>
