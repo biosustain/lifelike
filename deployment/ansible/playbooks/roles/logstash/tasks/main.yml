@@ -18,6 +18,7 @@
     dest: "/{{ logstash_conf_dir }}/pipeline/{{ item }}"
   with_items:
     - filter-nginx.conf
+    - filter-appserver.conf
   notify: Restart logstash container
 
 - name: Start logstash container

@@ -5,11 +5,11 @@ from neo4japp.constants import *
 
 def setup():
     from app import app
-    from neo4japp.database import get_neo4j
+    from neo4japp.database import connect_to_neo4j
 
     with app.app_context():
         print('Dropping any previous full text search indexes.')
-        graph = get_neo4j()
+        graph = connect_to_neo4j()
         tx = graph.begin()
         drop_fts_index_query = 'CALL db.index.fulltext.drop("namesEvidenceAndId")'
         try:

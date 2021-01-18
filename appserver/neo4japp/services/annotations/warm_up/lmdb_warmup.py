@@ -3,7 +3,7 @@ import os
 from neo4japp.factory import create_app
 
 from neo4japp.services.annotations.constants import AnnotationMethod
-from neo4japp.services.annotations.service_helpers import create_annotations
+from neo4japp.services.annotations.pipeline import create_annotations
 
 
 # reference to this directory
