@@ -7,15 +7,17 @@ import { WordCloudService } from './services/word-cloud.service';
 import { WordCloudComponent } from './word-cloud.component';
 import { WordCloudProjectComponent } from './word-cloud-project.component';
 import { WordCloudFileNavigatorComponent } from './word-cloud-file-navigator.component';
+import {SortingAlgorithmsComponent} from './sorting-algorithms.component';
 
-const components = [
+const declarations = [
   WordCloudComponent,
   WordCloudProjectComponent,
   WordCloudFileNavigatorComponent,
+  SortingAlgorithmsComponent,
 ];
 
 @NgModule({
-  declarations: components,
+  declarations,
   imports: [
     CommonModule,
     SharedModule,
@@ -23,6 +25,6 @@ const components = [
   providers: [
     WordCloudService
   ],
-  exports: components,
+  exports: declarations,
 })
 export class WordCloudModule { }

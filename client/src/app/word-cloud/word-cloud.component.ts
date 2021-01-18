@@ -13,6 +13,7 @@ import { WordCloudService } from './services/word-cloud.service';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
+import {DefaultSortingAlgorithm, SortingAlgorithm} from "./sorting-algorithms";
 
 @Component({
   selector: 'app-word-cloud',
@@ -38,9 +39,12 @@ export class WordCloudComponent {
   legend: Map<string, string> = new Map<string, string>();
 
   filtersPanelOpened = false;
+  sortingPanelOpened = false;
 
   clickableWords = false;
   WORD_CLOUD_MARGIN = 10;
+
+  sorting: SortingAlgorithm = DefaultSortingAlgorithm;
 
   constructor(
       readonly route: ActivatedRoute,
@@ -58,7 +62,7 @@ export class WordCloudComponent {
       return combineLatest(
         this.pdf.getFileMeta(this.fileId, this.projectName),
         this.legendService.getAnnotationLegend(),
-        this.wordCloudService.getCombinedAnnotations(this.projectName, this.fileId),
+        this.wordCloudService.getSortedCombinedAnnotations(this.projectName, this.fileId, this.sorting.id),
       );
     });
   }
@@ -99,6 +103,11 @@ export class WordCloudComponent {
     this.loadTask.update([]);
   }
 
+  sort(algorithm) {
+    this.sorting = algorithm;
+    this.initWordCloud();
+  }
+
   setAnnotationData(annotationExport: any) {
     // Reset annotation data
     this.annotationData = [];
@@ -123,10 +132,10 @@ export class WordCloudComponent {
           type: cols[1],
           color: this.legend.get(cols[1].toLowerCase()), // Set lowercase to match the legend
           text: cols[2],
-          frequency: parseInt(cols[3], 10),
+          frequency: Number(cols[3]),
           shown: true,
         } as WordCloudAnnotationFilterEntity;
-        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), annotation.frequency >= 1);
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), this.sorting.min === undefined || annotation.frequency >= this.sorting.min);
         this.annotationData.push(annotation);
         uniquePairMap.set(uniquePair, this.annotationData.length - 1);
       } else {
@@ -166,6 +175,10 @@ export class WordCloudComponent {
 
   toggleFiltersPanel() {
     this.filtersPanelOpened = !this.filtersPanelOpened;
+  }
+
+  toggleSortingPanel() {
+    this.sortingPanelOpened = !this.sortingPanelOpened;
   }
 
   copyWordCloudToClipboard() {

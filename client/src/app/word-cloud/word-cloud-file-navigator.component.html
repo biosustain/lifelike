@@ -43,6 +43,12 @@
                     placement="bottom top left right">
               <i class="fa fa-fw fa-filter"></i>
             </button>
+            <div ngbDropdown container="body" class="btn-group" role="group">
+              <button class="btn btn-secondary" ngbDropdownToggle>
+                <i class="fa fa-fw fa-sort-amount-desc"></i>
+              </button>
+              <app-sorting-algorithms (changeSorting)="sort($event)" ngbDropdownMenu></app-sorting-algorithms>
+            </div>
           </div>
         </div>
       </div>
@@ -72,6 +78,7 @@
               </div>
               <app-word-cloud-annotation-filter
                 [annotationData]="annotationData"
+                [sortingAlgorithm]="sorting"
                 [clickableWords]="true"
                 (wordOpen)="wordOpen.emit($event)"
                 (wordVisibilityOutput)="updateWordVisibilityMap($event)"

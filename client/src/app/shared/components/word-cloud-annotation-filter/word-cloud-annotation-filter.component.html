@@ -6,24 +6,27 @@
 
       <!-- Minimum frequency input -->
       <div class="form-group d-flex align-items-start">
-        <label class="mt-2 mr-2 text-nowrap" [for]="minimumFrequencyInputId">Min. Entity Frequency:</label>
+        <label class="mt-2 mr-2 text-nowrap"
+               [for]="minimumValueInputId">Min. {{ sortingAlgorithm.valueDescription }}:</label>
         <div>
-          <input [id]="minimumFrequencyInputId"
-                 [ngClass]="filtersForm.get('minimumFrequency').invalid ? 'form-control invalid-input' : 'form-control'"
+          <input [id]="minimumValueInputId"
+                 [ngClass]="filtersForm.get('minimumValue').invalid ? 'form-control invalid-input' : 'form-control'"
                  type="number"
-                 min="0"
-                 step="1"
-                 formControlName="minimumFrequency"/>
-          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('minimumFrequency').hasError('required')">
+                 [min]="sortingAlgorithm.min"
+                 [step]="sortingAlgorithm.step"
+                 [max]="sortingAlgorithm.max"
+                 formControlName="minimumValue"
+          />
+          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('minimumValue').hasError('required')">
             Min frequency cannot be empty!
           </div>
-          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('minimumFrequency').hasError('min')">
-            Min frequency cannot be less than 0!
+          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('minimumValue').hasError('min')">
+            Min frequency cannot be less than {{sortingAlgorithm.min}}!
           </div>
-          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('minimumFrequency').hasError('badMinMax')">
-            Min frequency should not be more than the maximum!
+          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('minimumValue').hasError('badMinMax')">
+            Min frequency should not be more than {{sortingAlgorithm.min}}!
           </div>
-          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('minimumFrequency').hasError('pattern')">
+          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('minimumValue').hasError('pattern')">
             Min frequency must be a whole number!
           </div>
         </div>
@@ -32,24 +35,24 @@
       <!-- TODO: Removing this for now, may bring back in the future -->
       <!-- Maximum frequency input -->
       <!-- <div class="form-group d-flex align-items-start">
-        <label class="mt-2 mr-2 text-nowrap" [for]="maximumFrequencyInputId">Max. Entity Frequency:</label>
+        <label class="mt-2 mr-2 text-nowrap" [for]="maximumValueInputId">Max. Entity Frequency:</label>
         <div>
-          <input [id]="maximumFrequencyInputId"
-                 [ngClass]="filtersForm.get('maximumFrequency').invalid ? 'form-control invalid-input' : 'form-control'"
+          <input [id]="maximumValueInputId"
+                 [ngClass]="filtersForm.get('maximumValue').invalid ? 'form-control invalid-input' : 'form-control'"
                  type="number"
                  min="0"
                  step="1"
-                 formControlName="maximumFrequency"/>
-          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('maximumFrequency').hasError('required')">
+                 formControlName="maximumValue"/>
+          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('maximumValue').hasError('required')">
             Max frequency cannot be empty!
           </div>
-          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('maximumFrequency').hasError('min')">
+          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('maximumValue').hasError('min')">
             Max frequency cannot be less than 0!
           </div>
-          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('maximumFrequency').hasError('badMinMax')">
+          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('maximumValue').hasError('badMinMax')">
             Max frequency should not be less than the minimum!
           </div>
-          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('maximumFrequency').hasError('pattern')">
+          <div class="mt-1 text-danger small-font" *ngIf="filtersForm.get('maximumValue').hasError('pattern')">
             Max frequency must be a whole number!
           </div>
         </div>
@@ -147,7 +150,8 @@
 <fieldset class="fieldset-properties mt-2">
   <legend>Annotations</legend>
   <div class="mb-2">
-    <strong>NOTE: Any terms that could not be drawn in the cloud with the available window dimensions will be denoted by a</strong>
+    <strong>NOTE: Any terms that could not be drawn in the cloud with the available window dimensions will be denoted by
+      a</strong>
     <i class="fa fa-exclamation-triangle text-danger ml-2"></i>
   </div>
   <cdk-virtual-scroll-viewport itemSize="22" class="virtual-scroll-viewport w-100">
@@ -155,21 +159,23 @@
       <div class="d-flex align-items-center text-overflow">
         <div class="custom-control custom-checkbox">
           <input [id]="id + 'filter-' + data.identifier"
-                class="custom-control-input"
-                type="checkbox"
-                [checked]="data.visible"
-                (change)="changeWordVisibility(data.identifier, $event)">
+                 class="custom-control-input"
+                 type="checkbox"
+                 [checked]="data.visible"
+                 (change)="changeWordVisibility(data.identifier, $event)">
           <label class="custom-control-label text-nowrap" [for]="id + 'filter-' + data.identifier">
             <ng-container *ngIf="!clickableWords; else showClickableWords">
               <div class="text-overflow">
-                <span class="entity-type-legend" [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}}
+                <span class="entity-type-legend"
+                      [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}}
                 <span>({{data.entity.frequency}})</span>
                 <i *ngIf="!data.entity.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
               </div>
             </ng-container>
             <ng-template #showClickableWords>
               <a class="text-overflow" href="#" (click)="wordOpen.emit(data.entity); $event.preventDefault()">
-                <span class="entity-type-legend" [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}}
+                <span class="entity-type-legend"
+                      [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}}
                 <span>({{data.entity.frequency}})</span>
                 <i *ngIf="!data.entity.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
               </a>
