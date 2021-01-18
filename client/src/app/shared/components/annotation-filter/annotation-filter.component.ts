@@ -28,7 +28,7 @@ import {
   OrderDirection,
   AnnotationVisibility,
 } from 'app/interfaces/annotation-filter.interface';
-import {SortingAlgorithm} from "../../../word-cloud/sorting-algorithms";
+import {SortingAlgorithm} from '../../../word-cloud/sorting-algorithms';
 
 @Component({
   selector: 'app-annotation-filter',

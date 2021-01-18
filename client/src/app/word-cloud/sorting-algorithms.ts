@@ -8,7 +8,7 @@ export interface SortingAlgorithm {
   default?: number;
 }
 
-export const SortingAlgoritms: SortingAlgorithm[] = [
+export const sortingAlgorithms: SortingAlgorithm[] = [
   {
     id: 'sum_log_count',
     description: 'Arbitrary (sum(log(count))))',
@@ -27,4 +27,4 @@ export const SortingAlgoritms: SortingAlgorithm[] = [
   }
 ];
 
-export const DefaultSortingAlgorithm = SortingAlgoritms[0];
+export const defaultSortingAlgorithm = sortingAlgorithms[0];
