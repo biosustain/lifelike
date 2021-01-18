@@ -35,21 +35,61 @@ convention = {
     'pk': "pk_%(table_name)s"
 }
 
-metadata = MetaData(naming_convention=convention)
-
-# TODO: Set these in a more appropriate location
-# TODO: Handle database connection properly
-
-db = SQLAlchemy(metadata=metadata)
 ma = Marshmallow()
 migrate = Migrate(compare_type=True)
+metadata = MetaData(naming_convention=convention)
+db = SQLAlchemy(
+    metadata=metadata,
+    engine_options={
+        'executemany_mode': 'values',
+        'executemany_values_page_size': 10000
+    }
+)
 
 
-def _connect_to_neo4j():
-    return Graph(
-        host=current_app.config.get("NEO4J_HOST"),
-        auth=current_app.config.get('NEO4J_AUTH').split('/'),
-    )
+# NOTE: local network connection to cloud seems to be causing issues
+# Neo4j Lead Dev/Py2neo creator: https://stackoverflow.com/a/63592570
+# https://github.com/technige/py2neo
+# TODO: how to close connection? Py2neo doesn't seem to do this...
+def connect_to_neo4j():
+    if 'neo4j' not in g:
+        g.neo4j = Graph(
+            host=current_app.config.get('NEO4J_HOST'),
+            auth=current_app.config.get('NEO4J_AUTH').split('/'),
+        )
+    return g.neo4j
+
+
+def connect_to_lmdb():
+    if 'lmdb' not in g:
+        from neo4japp.services.annotations.lmdb import LMDB
+        g.lmdb = LMDB()
+        g.lmdb.open_envs()
+    return g.lmdb
+
+
+def close_lmdb(e=None):
+    lmdb = g.pop('lmdb', None)
+    if lmdb:
+        lmdb.close_envs()
+
+
+class LMDBConnection:
+    def __init__(self):
+        super().__init__()
+        self.session = connect_to_lmdb()
+
+
+class DBConnection:
+    def __init__(self):
+        super().__init__()
+        self.session = db.session
+
+
+class GraphConnection:
+    def __init__(self):
+        super().__init__()
+        self.graph = connect_to_neo4j()
 
 
 def _connect_to_elastic():
@@ -59,17 +99,22 @@ def _connect_to_elastic():
     )
 
 
-def get_neo4j():
-    """ Get a Neo4j Database Connection """
-    if 'neo4j' not in g:
-        g.neo4j = _connect_to_neo4j()
-    return g.neo4j
+"""
+TODO: Update all of these functions to use
+DBConnection or GraphConnection above.
+
+Separation of concerns/Single responsibility.
+
+Better to selectively inherit the connection needed,
+through different services. Separating graph service
+from the postgres service.
+"""
 
 
 def get_kg_service():
     if 'kg_service' not in g:
         from neo4japp.services import KgService
-        graph = get_neo4j()
+        graph = connect_to_neo4j()
         g.kg_service = KgService(
             graph=graph,
             session=db.session,
@@ -80,7 +125,7 @@ def get_kg_service():
 def get_visualizer_service():
     if 'visualizer_service' not in g:
         from neo4japp.services import VisualizerService
-        graph = get_neo4j()
+        graph = connect_to_neo4j()
         g.visualizer_service = VisualizerService(
             graph=graph,
             session=db.session,
@@ -91,7 +136,7 @@ def get_visualizer_service():
 def get_enrichment_table_service():
     if 'enrichment_table_service' not in g:
         from neo4japp.services import EnrichmentTableService
-        graph = _connect_to_neo4j()
+        graph = connect_to_neo4j()
         g.enrichment_table_service = EnrichmentTableService(
             graph=graph,
             session=db.session,
@@ -102,7 +147,7 @@ def get_enrichment_table_service():
 def get_user_file_import_service():
     if 'user_file_import_service' not in g:
         from neo4japp.services import UserFileImportService
-        graph = get_neo4j()
+        graph = connect_to_neo4j()
         g.current_user_file_import_service = UserFileImportService(graph=graph, session=db.session)
     return g.current_user_file_import_service
 
@@ -110,7 +155,7 @@ def get_user_file_import_service():
 def get_search_service_dao():
     if 'search_dao' not in g:
         from neo4japp.services import SearchService
-        graph = get_neo4j()
+        graph = connect_to_neo4j()
         g.search_service_dao = SearchService(graph=graph)
     return g.search_service_dao
 
@@ -144,61 +189,45 @@ def get_elastic_service():
     return g.elastic_service
 
 
-def get_lmdb_dao():
-    if 'lmdb_dao' not in g:
-        from neo4japp.services.annotations import LMDBDao
-        g.lmdb_dao = LMDBDao()
-        g.lmdb_dao.open_envs()
-    return g.lmdb_dao
-
-
-def close_graph(e=None):
-    graph = g.pop('neo4j_graph', None)
-    if graph:
-        # close all graph connections to neo4j
-        graph.service.forget_all()
-
-
-def close_lmdb(e=None):
-    lmdb_dao = g.pop('lmdb_dao', None)
-    if lmdb_dao:
-        lmdb_dao.close_envs()
-
-
-def get_annotation_neo4j():
-    if 'annotation_neo4j' not in g:
-        from neo4japp.services.annotations import AnnotationsNeo4jService
-        graph = get_neo4j()
-        g.annotation_neo4j = AnnotationsNeo4jService(
-            session=db.session,
-            graph=graph,
-        )
-    return g.annotation_neo4j
-
-
-def get_annotations_service():
-    from neo4japp.services.annotations import AnnotationsService
-    return AnnotationsService(
-        annotation_neo4j=get_annotation_neo4j(),
+def get_annotation_service():
+    from neo4japp.services.annotations import (
+        AnnotationService,
+        AnnotationDBService,
+        AnnotationGraphService
+    )
+    return AnnotationService(
+        db=AnnotationDBService(),
+        graph=AnnotationGraphService()
     )
 
 
 def get_entity_recognition():
-    from neo4japp.services.annotations import EntityRecognitionService
+    from neo4japp.services.annotations import (
+        AnnotationDBService,
+        AnnotationGraphService,
+        EntityRecognitionService,
+        LMDBService
+    )
     return EntityRecognitionService(
-        lmdb_session=get_lmdb_dao(),
-        annotation_neo4j=get_annotation_neo4j(),
+        lmdb=LMDBService(),
+        db=AnnotationDBService(),
+        graph=AnnotationGraphService()
     )
 
 
-def get_manual_annotations_service():
-    from neo4japp.services.annotations import ManualAnnotationsService
-    return ManualAnnotationsService()
+def get_manual_annotation_service():
+    from neo4japp.services.annotations import (
+        AnnotationGraphService,
+        ManualAnnotationService
+    )
+    return ManualAnnotationService(
+        graph=AnnotationGraphService()
+    )
 
 
-def get_annotations_pdf_parser():
-    from neo4japp.services.annotations import AnnotationsPDFParser
-    return AnnotationsPDFParser()
+def get_annotation_pdf_parser():
+    from neo4japp.services.annotations import AnnotationPDFParser
+    return AnnotationPDFParser()
 
 
 def get_bioc_document_service():
@@ -224,8 +253,6 @@ def reset_dao():
         'authorization_service',
         'account_service',
         'projects_service',
-        'lmdb_dao',
-        'annotation_neo4j',
         'visualizer_service',
         'neo4j',
     ]:

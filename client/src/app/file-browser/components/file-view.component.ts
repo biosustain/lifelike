@@ -1,12 +1,24 @@
+import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+
+import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { cloneDeep, uniqueId } from 'lodash';
-import { Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+
 import { BehaviorSubject, combineLatest, Subject, Subscription } from 'rxjs';
+
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
-import { AnnotationType, DatabaseType, Hyperlink } from 'app/shared/constants';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 
+import { FileEditDialogComponent } from './file-edit-dialog.component';
+import { FilesystemObjectActions } from '../services/filesystem-object-actions';
+import { pdfFileToFilesystemObject } from '../utils/objects';
 import { PdfAnnotationsService } from '../../drawing-tool/services';
-
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
   AddedAnnotationExclusion,
   Annotation,
@@ -14,23 +26,13 @@ import {
   Meta,
   RemovedAnnotationExclusion,
 } from '../../pdf-viewer/annotation-type';
-
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
-import { ActivatedRoute } from '@angular/router';
-import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
 import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
-import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { FileEditDialogComponent } from './file-edit-dialog.component';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
+import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
+import { BackgroundTask } from '../../shared/rxjs/background-task';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { SearchControlComponent } from '../../shared/components/search-control.component';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -116,6 +118,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     private readonly errorHandler: ErrorHandler,
     private readonly progressDialog: ProgressDialog,
     private readonly workSpaceManager: WorkspaceManager,
+    private readonly filesystemObjectActions: FilesystemObjectActions,
   ) {
     this.projectName = this.route.snapshot.params.project_name || '';
 
@@ -602,6 +605,14 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   openFileNavigatorPane() {
     const url = `/file-navigator/${this.projectName}/${this.pdfFile.file_id}`;
     this.workSpaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
+  }
+
+  openFileAnnotationHistoryDialog() {
+    this.filesystemObjectActions.openFileAnnotationHistoryDialog(
+      pdfFileToFilesystemObject(this.pdfFile),
+    ).then(() => {
+    }, () => {
+    });
   }
 
   isPendingScroll() {

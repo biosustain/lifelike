@@ -1,35 +1,44 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Domain, EntityType } from '../../interfaces';
-import { DOMAINS, ENTITY_TYPES } from '../../shared/database';
+
+import { OrganismAutocomplete } from 'app/interfaces';
+
+import { GraphSearchParameters } from '../graph-search';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { nonEmptyList } from '../../shared/validators';
-import { GraphSearchParameters } from '../graph-search';
-import { OrganismAutocomplete } from 'app/interfaces';
 
 @Component({
   selector: 'app-graph-search-form',
   templateUrl: './graph-search-form.component.html',
 })
 export class GraphSearchFormComponent {
-  domainChoices: Domain[] = DOMAINS.concat().sort((a, b) => a.name.localeCompare(b.name));
-  entityTypeChoices: EntityType[] = ENTITY_TYPES.concat().sort((a, b) => a.name.localeCompare(b.name));
   @Output() search = new EventEmitter<GraphSearchParameters>();
+
+  domainChoices: string[] = ['ChEBI', 'GO', 'Literature', 'MeSH', 'NCBI', 'UniProt'];
+  entityChoices: string[] = [
+    'Biological Process',
+    'Cellular Component',
+    'Chemical',
+    'Disease',
+    'Gene',
+    'Molecular Function',
+    'Protein',
+    'Taxonomy',
+  ];
   organismChoice: string;
 
   form = new FormGroup({
     query: new FormControl('', Validators.required),
-    domains: new FormControl('', nonEmptyList),
-    entityTypes: new FormControl('', nonEmptyList),
+    domains: new FormControl(''),
+    entities: new FormControl(''),
     organism: new FormControl(null),
   });
 
   constructor(private readonly messageDialog: MessageDialog) {
     this.form.patchValue({
       query: '',
-      domains: [...this.domainChoices],
-      entityTypes: [...this.entityTypeChoices],
+      domains: [],
+      entities: [],
       organism: '',
     });
   }
@@ -40,11 +49,20 @@ export class GraphSearchFormComponent {
       this.organismChoice = params.organism;
       this.form.patchValue({
         query: params.query,
-        domains: params.domains != null ? params.domains : [...this.domainChoices],
-        entityTypes: params.entityTypes != null ? params.entityTypes : [...this.entityTypeChoices],
+        domains: params.domains != null ? this.getValidValuesFromListParams(this.domainChoices, params.domains) : [],
+        entities: params.entities != null ? this.getValidValuesFromListParams(this.entityChoices, params.entities) : [],
         organism: params.organism,
       });
     }
+  }
+
+  /**
+   * Returns a filtered list of domains matching values in our hard-coded list.
+   * @param paramList a list of domain strings; individual values may or may not match our hard-coded list
+   */
+  getValidValuesFromListParams(choices: string[], paramList: string[]): string[] {
+    const normalizedParamList = paramList.map(val => val.toLowerCase());
+    return choices.filter(choice => normalizedParamList.includes(choice.toLowerCase()));
   }
 
   submit() {
@@ -73,7 +91,7 @@ export class GraphSearchFormComponent {
   }
 
   choiceLabel(choice) {
-    return choice.name;
+    return choice;
   }
 
   setOrganism(organism: OrganismAutocomplete | null) {

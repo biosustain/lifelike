@@ -1,40 +1,21 @@
-import attr
+from flask import (
+    Blueprint,
+    current_app,
+    request,
+    jsonify,
+    g
+)
 
-from flask import Blueprint, request, jsonify, make_response
-
-from typing import List
 from sqlalchemy.orm.exc import NoResultFound
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.constants import ANNOTATION_STYLES_DICT
-from neo4japp.database import get_enrichment_table_service, db
-from neo4japp.models import (
-    Worksheet,
-    FileContent
-)
-from neo4japp.data_transfer_objects.visualization import (
-    ExpandNodeRequest,
-    GetSnippetsForEdgeRequest,
-    GetSnippetsForClusterRequest,
-    ReferenceTableDataRequest,
-)
-from neo4japp.exceptions import (
-    InvalidFileNameException, RecordNotFoundException, NotAuthorizedException
-)
-from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
+from neo4japp.database import get_enrichment_table_service
+from neo4japp.models import Worksheet
+
+from neo4japp.exceptions import RecordNotFoundException
+from neo4japp.utils.logger import UserEventLog
 
 bp = Blueprint('enrichment-table-api', __name__, url_prefix='/enrichment-table')
-
-
-@bp.route('/get-neo4j-worksheet/<string:worksheet_id>', methods=['GET'])
-@auth.login_required
-def get_neo4j_worksheet(worksheet_id: str):
-    try:
-        worksheets = Worksheet.query.filter(Worksheet.id == worksheet_id).one()
-    except NoResultFound:
-        raise RecordNotFoundException('Worksheet not found.')
-
-    return jsonify({'result': worksheets.to_dict()}), 200
 
 
 @bp.route('/match-ncbi-nodes', methods=['POST'])

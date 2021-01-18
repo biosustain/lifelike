@@ -54,28 +54,6 @@ export class ProjectSpaceService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Create http options with authorization
-   * header if boolean set to true
-   * @param withJwt - boolean representing whether to return the options with a jwt
-   */
-  createHttpOptions(withJwt = false) {
-    if (withJwt) {
-      return {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
-        }),
-      };
-    } else {
-      return {
-          headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-          }),
-      };
-    }
-  }
-
-  /**
    * GET Request for projects resources
    * or specific project if projectName specified
    * @param projectName - name of project to load resource by
@@ -84,7 +62,6 @@ export class ProjectSpaceService {
     projectName = encodeURIComponent(projectName.trim());
     return this.http.get<any>(
       `${this.projectsAPI}/${projectName}`,
-      this.createHttpOptions(true),
     ).pipe(
       map(resp => resp.results)
     );
@@ -100,7 +77,6 @@ export class ProjectSpaceService {
     return this.http.post<any>(
       `${this.projectsAPI}/`,
       projectMeta,
-      this.createHttpOptions(true),
     ).pipe(
       map(resp => resp.results)
     );
@@ -117,7 +93,6 @@ export class ProjectSpaceService {
     projectName = encodeURIComponent(projectName.trim());
     return this.http.get<any>(
       `${this.projectsAPI}/${projectName}/collaborators`,
-      this.createHttpOptions(true),
     ).pipe(
       map(resp => resp.results)
     );
@@ -138,7 +113,6 @@ export class ProjectSpaceService {
     return this.http.post<any>(
         `${this.projectsAPI}/${projectName}/collaborators/${username}`,
         { role },
-        this.createHttpOptions(true)
     );
   }
 
@@ -154,7 +128,6 @@ export class ProjectSpaceService {
     projectName = encodeURIComponent(projectName.trim());
     return this.http.delete<any>(
       `${this.projectsAPI}/${projectName}/collaborators/${username}`,
-      this.createHttpOptions(true)
     );
   }
 
@@ -172,7 +145,6 @@ export class ProjectSpaceService {
     return this.http.put(
       `${this.projectsAPI}/${projectName}/collaborators/${username}`,
       { role },
-      this.createHttpOptions(true)
     );
   }
 }
