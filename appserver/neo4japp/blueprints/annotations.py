@@ -367,7 +367,7 @@ def export_global_exclusions():
 @bp.route('/global-list', methods=['GET'])
 @auth.login_required
 @requires_role('admin')
-def get_annotations():
+def get_annotation_global_list():
 
     yield g.current_user
 
