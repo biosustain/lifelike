@@ -1,4 +1,4 @@
-"""Dropped parsed_content column from FilesContent table.
+"""Dropped parsed_content column from FilesContent table because no longer using pdf-miner. The column was acting as a cache.
 
 Revision ID: 03d2ca2f0b3b
 Revises: e58082ac34b8
