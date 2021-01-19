@@ -13,7 +13,6 @@ from neo4japp.services.annotations import (
 )
 from neo4japp.services.annotations.constants import (
     DatabaseType,
-    EntityColor,
     EntityIdStr,
     EntityType,
     OrganismCategory,
@@ -252,8 +251,7 @@ class AnnotationService:
         entity_id: str,
         entity_id_type: str,
         entity_category: str,
-        entity_id_hyperlink: str,
-        color: str,
+        entity_id_hyperlink: str
     ) -> Annotation:
         keyword_positions: List[Annotation.TextPosition] = []
 
@@ -290,7 +288,6 @@ class AnnotationService:
             organism_meta = OrganismAnnotation.OrganismMeta(
                 category=entity_category,
                 type=token_type,
-                color=color,
                 id=entity_id,
                 id_type=id_type,
                 id_hyperlink=cast(str, hyperlink),
@@ -320,7 +317,6 @@ class AnnotationService:
             gene_meta = GeneAnnotation.GeneMeta(
                 category=entity_category,
                 type=token_type,
-                color=color,
                 id=entity_id,
                 id_type=id_type,
                 id_hyperlink=cast(str, hyperlink),
@@ -345,7 +341,6 @@ class AnnotationService:
         else:
             meta = Annotation.Meta(
                 type=token_type,
-                color=color,
                 id=entity_id,
                 id_type=id_type,
                 id_hyperlink=cast(str, hyperlink),
@@ -373,7 +368,6 @@ class AnnotationService:
         self,
         tokens: Dict[str, LMDBMatch],
         token_type: str,
-        color: str,
         id_str: str,
     ) -> List[Annotation]:
         """Create annotation objects for tokens.
@@ -436,8 +430,7 @@ class AnnotationService:
                             entity_id=entity[id_str],
                             entity_id_type=lmdb_match.id_type,
                             entity_id_hyperlink=lmdb_match.id_hyperlink,
-                            entity_category=entity.get('category', ''),
-                            color=color,
+                            entity_category=entity.get('category', '')
                         )
                     except KeyError:
                         continue
@@ -648,8 +641,7 @@ class AnnotationService:
                         entity_id=gene_id,
                         entity_id_type=entity_id_type,
                         entity_id_hyperlink=entity_id_hyperlink,
-                        entity_category=category,
-                        color=EntityColor.GENE.value,
+                        entity_category=category
                     )
                     matches.append(annotation)
         return matches
@@ -661,7 +653,6 @@ class AnnotationService:
         return self._get_annotation(
             tokens=self.matched_type_anatomy,
             token_type=EntityType.ANATOMY.value,
-            color=EntityColor.ANATOMY.value,
             id_str=entity_id_str
         )
 
@@ -672,7 +663,6 @@ class AnnotationService:
         return self._get_annotation(
             tokens=self.matched_type_chemical,
             token_type=EntityType.CHEMICAL.value,
-            color=EntityColor.CHEMICAL.value,
             id_str=entity_id_str
         )
 
@@ -683,7 +673,6 @@ class AnnotationService:
         return self._get_annotation(
             tokens=self.matched_type_compound,
             token_type=EntityType.COMPOUND.value,
-            color=EntityColor.COMPOUND.value,
             id_str=entity_id_str
         )
 
@@ -694,7 +683,6 @@ class AnnotationService:
         return self._get_annotation(
             tokens=self.matched_type_disease,
             token_type=EntityType.DISEASE.value,
-            color=EntityColor.DISEASE.value,
             id_str=entity_id_str
         )
 
@@ -705,7 +693,6 @@ class AnnotationService:
         return self._get_annotation(
             tokens=self.matched_type_food,
             token_type=EntityType.FOOD.value,
-            color=EntityColor.FOOD.value,
             id_str=entity_id_str
         )
 
@@ -716,7 +703,6 @@ class AnnotationService:
         return self._get_annotation(
             tokens=self.matched_type_phenotype,
             token_type=EntityType.PHENOTYPE.value,
-            color=EntityColor.PHENOTYPE.value,
             id_str=entity_id_str
         )
 
@@ -727,7 +713,6 @@ class AnnotationService:
         return self._get_annotation(
             tokens=self.matched_type_phenomena,
             token_type=EntityType.PHENOMENA.value,
-            color=EntityColor.PHENOMENA.value,
             id_str=entity_id_str
         )
 
@@ -810,8 +795,7 @@ class AnnotationService:
                     entity_id=protein_id,
                     entity_id_type=entity_id_type,
                     entity_id_hyperlink=entity_id_hyperlink,
-                    entity_category=category,
-                    color=EntityColor.PROTEIN.value
+                    entity_category=category
                 )
                 matches.append(annotation)
         return matches
@@ -839,8 +823,7 @@ class AnnotationService:
                             entity_id=entity[EntityIdStr.SPECIES.value],
                             entity_id_type=lmdb_match.id_type,
                             entity_id_hyperlink=lmdb_match.id_hyperlink,
-                            entity_category=entity.get('category', ''),
-                            color=EntityColor.SPECIES.value
+                            entity_category=entity.get('category', '')
                         )
                     except KeyError:
                         continue
@@ -857,7 +840,6 @@ class AnnotationService:
         species_annotations = self._get_annotation(
             tokens=self.matched_type_species,
             token_type=EntityType.SPECIES.value,
-            color=EntityColor.SPECIES.value,
             id_str=entity_id_str
         )
 
@@ -936,7 +918,6 @@ class AnnotationService:
         return self._get_annotation(
             tokens=self.matched_type_company,
             token_type=EntityType.COMPANY.value,
-            color=EntityColor.COMPANY.value,
             id_str=entity_id_str
         )
 
@@ -947,7 +928,6 @@ class AnnotationService:
         return self._get_annotation(
             tokens=self.matched_type_entity,
             token_type=EntityType.ENTITY.value,
-            color=EntityColor.ENTITY.value,
             id_str=entity_id_str
         )
 
