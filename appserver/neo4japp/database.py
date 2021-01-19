@@ -10,7 +10,6 @@ from py2neo import Graph
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
 
-
 def trunc_long_constraint_name(name: str) -> str:
     if (len(name) > 59):
         truncated_name = name[:55] + '_' + \
@@ -224,6 +223,7 @@ def get_manual_annotation_service():
     return ManualAnnotationService(
         graph=AnnotationGraphService()
     )
+
 
 def get_sorted_annotation_service(sort_id):
     from neo4japp.services.annotations import (

@@ -107,7 +107,6 @@ def annotate(
     return update, version
 
 
-
 @bp.route('/<string:project_name>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
