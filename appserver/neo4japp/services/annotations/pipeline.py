@@ -158,7 +158,8 @@ def read_pdf_response(resp: dict) -> Tuple[str, List[PDFWord]]:
         prev_words: List[str] = []
         pdf_text += page['pageText']
         for token in page['tokens']:
-            if token['text'] not in punctuation:
+            # for now ignore any rotated words
+            if token['text'] not in punctuation and all([rect['rotation'] == 0 for rect in token['rects']]):  # noqa
                 parsed.append(
                     PDFWord(
                         keyword=token['text'],
