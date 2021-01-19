@@ -48,6 +48,7 @@ fastjsonschema = "*"
 deepdiff = "*"
 marshmallow-dataclass = "*"
 marshmallow-enum = "*"
+scipy = "*"
 
 [requires]
 python_version = "3.8.2"
