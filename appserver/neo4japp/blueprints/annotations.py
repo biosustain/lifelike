@@ -1,8 +1,11 @@
 import sqlalchemy as sa
+from pandas import DataFrame
+from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
+from numpy import log
 
 from flask import (
     Blueprint,
@@ -24,7 +27,7 @@ from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
     db,
     get_excel_export_service,
-    get_manual_annotation_service,
+    get_manual_annotation_service, get_sorted_annotation_service,
 )
 from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
@@ -104,109 +107,6 @@ def annotate(
     return update, version
 
 
-class SortedAnnotation:
-    id: str
-
-    @staticmethod
-    def get_annotations(annotation_service, project_id) -> Dict[Tuple[str, str, str], float]:
-        raise NotImplemented
-
-
-class SumLogCountSA(SortedAnnotation):
-    id = 'sum_log_count'
-
-    @staticmethod
-    def get_annotations(annotation_service, project_id) -> Dict[Tuple[str, str, str], float]:
-        files = Files.query.filter(
-            and_(
-                Files.project == project_id,
-                Files.annotations != []
-            )).all()
-
-        if len(files) < 1:
-            return {}
-
-        df = DataFrame(files)
-        df["annotation"] = df[0].apply(annotation_service._get_file_annotations)
-        df = df.explode("annotation")
-        df["annotation"] = df["annotation"].apply(lambda annotation: (
-            annotation['meta']['id'],
-            annotation['meta']['type'],
-            annotation['meta']['allText'],
-        ))
-        res = df.groupby(["annotation", 0])
-        res2 = np.log(res.size())
-        distinct_annotations = res2.sum(level="annotation").to_dict()
-        return distinct_annotations
-
-
-class FrequencySA(SortedAnnotation):
-    id = 'frequency'
-
-    @staticmethod
-    def get_annotations(annotation_service, project_id) -> Dict[Tuple[str, str, str], float]:
-        combined_annotations = annotation_service.get_combined_annotations_in_project(project_id)
-        distinct_annotations: Dict[Tuple[str, str, str], float] = {}
-        for annotation in combined_annotations:
-            annotation_data = (
-                annotation['meta']['id'],
-                annotation['meta']['type'],
-                annotation['meta']['allText'],
-            )
-            if distinct_annotations.get(annotation_data, None) is not None:
-                distinct_annotations[annotation_data] += 1
-            else:
-                distinct_annotations[annotation_data] = 1
-        return distinct_annotations
-
-
-class MannWhitneyUSA(SortedAnnotation):
-    id = 'mwu'
-
-    @staticmethod
-    def get_annotations(annotation_service, project_id) -> Dict[Tuple[str, str, str], float]:
-        files = Files.query.filter(
-            and_(
-                Files.project == project_id,
-                Files.annotations != []
-            )).all()
-
-        if len(files) < 1:
-            return {}
-
-        from scipy.stats import mannwhitneyu
-        df = DataFrame(files)
-        df["annotation"] = df[0].apply(annotation_service._get_file_annotations)
-        df = df.explode("annotation")
-        df["annotation"] = df["annotation"].apply(lambda annotation: (
-            annotation['meta']['id'],
-            annotation['meta']['type'],
-            annotation['meta']['allText'],
-        ))
-        res = df.groupby(["annotation", 0])
-        res2 = res.size()
-        distinct_annotations = {}
-        for annotation, group in res2.groupby('annotation'):
-            distinct_annotations[annotation] = -np.log(mannwhitneyu(
-                group,
-                res2[res2.index.get_level_values('annotation') != annotation]
-            ).pvalue)
-        return distinct_annotations
-
-
-sorted_annotations_list = {
-    SumLogCountSA,
-    FrequencySA,
-    MannWhitneyUSA
-}
-
-
-def getSortedAnnotation(id):
-    for sa in sorted_annotations_list:
-        if sa.id == id:
-            return sa
-    raise NotImplementedError(id)
-
 
 @bp.route('/<string:project_name>', methods=['GET'])
 @auth.login_required
@@ -223,11 +123,10 @@ def get_all_annotations_from_project(project_name):
         raise RecordNotFoundException(f'Project {project_name} not found')
     user = g.current_user
     yield user, project
-    annotation_service = get_manual_annotation_service()
 
     from timeit import default_timer as timer
     start = timer()
-    distinct_annotations = getSortedAnnotation(sort).get_annotations(annotation_service, project.id)
+    distinct_annotations = get_sorted_annotation_service(sort).get_annotations(project.id)
     end = timer()
     print(f'Getting annotation using {sort}, took: {(end - start)*1000}ms')
 
