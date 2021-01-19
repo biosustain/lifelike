@@ -9,7 +9,7 @@ from flask_apispec import use_kwargs
 from sqlalchemy.orm import aliased
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.constants import FILE_INDEX_ID
+from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.data_transfer_objects import GeneFilteredRequest
 from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
 from neo4japp.database import get_search_service_dao, db, get_elastic_service
@@ -196,14 +196,14 @@ def search(q, types, limit, page):
                 'data.content': {},
             },
             # Need to be very careful with this option. If fragment_size is too large, search
-            # will be slow because elastic has to generate large highlight fragments. Setting to
-            # default for now.
-            # 'fragment_size': FRAGMENT_SIZE,
-            'fragment_size': 0,
+            # will be slow because elastic has to generate large highlight fragments. Setting
+            # to 0 generates cleaner sentences, but also runs the risk of pulling back huge
+            # sentences.
+            'fragment_size': FRAGMENT_SIZE,
             'order': 'score',
             'pre_tags': ['@@@@$'],
             'post_tags': ['@@@@/$'],
-            'number_of_fragments': 200,
+            'number_of_fragments': 100,
         }
 
         user_id = g.current_user.id
