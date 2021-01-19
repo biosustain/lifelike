@@ -2,8 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { configureTestSuite } from 'ng-bullet';
 
+import { MockComponents } from 'ng-mocks';
+
 import { LegendComponent } from './legend.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CollapsibleWindowComponent } from './collapsible-window.component';
 
 describe('LegendComponent', () => {
     let component: LegendComponent;
@@ -11,7 +14,12 @@ describe('LegendComponent', () => {
 
     configureTestSuite(() => {
         TestBed.configureTestingModule({
-            declarations: [ LegendComponent ],
+            declarations: [
+              LegendComponent,
+              MockComponents(
+                CollapsibleWindowComponent
+              )
+            ],
             imports: [
                 BrowserAnimationsModule
             ]
