@@ -25,8 +25,7 @@
 
             <div class="btn-group ml-2" *ngIf="hasEditPermission">
               <button type="button" class="btn btn-secondary"
-                      [appLink]="['/projects', this.locator.projectName, 'maps', this.locator.hashId, 'edit']"
-                      [newTab]="true">
+                      [appLink]="['/projects', this.locator.projectName, 'maps', this.locator.hashId, 'edit']">
                 <i class="fa fa-fw fa-pencil-alt"></i> Edit
               </button>
             </div>
@@ -55,6 +54,10 @@
               </app-search-control>
             </div>
           </div>
+        </div>
+
+        <div class="text-warning mt-2">
+          You are currently in view-only mode.
         </div>
 
       </div>
