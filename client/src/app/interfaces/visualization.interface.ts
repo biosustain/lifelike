@@ -16,6 +16,25 @@ export interface AssociationSnippet {
     normalizedScore: number;
 }
 
+export enum AssociatedType {
+  GENE = 'Gene',
+  CHEMICAL = 'Chemical',
+  DISEASE = 'Disease'
+}
+
+export interface AssociatedTypeEntry {
+  id: number;
+  name: string;
+  count: number;
+  percentage: number;
+}
+
+export interface NodeAssociatedType {
+    name: string;
+    nodeId: number;
+    snippetCount: number;
+}
+
 export interface ClusterData {
     referenceTableRows: ReferenceTableRow[];
     relationship: string;
@@ -35,6 +54,11 @@ export interface DuplicateEdgeConnectionData {
     fromLabel: string;
     toLabel: string;
     label: string;
+}
+
+export interface NodePair {
+  fromNodeId: number;
+  toNodeId: number;
 }
 
 export interface DuplicateNodeEdgePair {
@@ -99,6 +123,14 @@ export interface SettingsFormValues {
     [key: string]: SettingsFormControl; // Could be any number of node entity checkboxes
 }
 
+export enum SidenavEntityType {
+  EMPTY,
+  NODE,
+  EDGE,
+  CLUSTER,
+  TYPE,
+}
+
 export interface SidenavClusterEntity {
     queryData: DuplicateEdgeConnectionData[];
     snippetData: SidenavSnippetData[];
@@ -114,6 +146,12 @@ export interface SidenavEdgeEntity {
 export interface SidenavNodeEntity {
     data: VisNode;
     edges: VisEdge[];
+}
+
+export interface SidenavTypeEntity {
+    sourceNode: VisNode;
+    connectedNodes: VisNode[];
+    type: AssociatedType;
 }
 
 export interface NodeDisplayInfo {
@@ -156,8 +194,20 @@ export interface NewEdgeSnippetsPageRequest {
     limit: number;
 }
 
+export interface NewNodePairSnippetsPageRequest {
+  queryData: NodePair;
+  page: number;
+  limit: number;
+}
+
 export interface ReferenceTableDataRequest {
     nodeEdgePairs: ReferenceTablePair[];
+}
+
+export interface AssociatedTypeSnippetCountRequest {
+    source_node: number;
+    associated_nodes: number[];
+    label: string;
 }
 
 // End Request Interfaces
@@ -182,6 +232,12 @@ export interface GetClusterSnippetsResult {
     totalResults: number;
 }
 
+export interface GetNodePairSnippetsResult {
+  queryData: NodePair;
+  snippetData: GetSnippetsResult[];
+  totalResults: number;
+}
+
 export interface GetReferenceTableDataResult {
     referenceTableRows: ReferenceTableRow[];
     direction: Direction;
@@ -192,6 +248,10 @@ export interface GetSnippetsResult {
     fromNodeId: number;
     toNodeId: number;
     association: string;
+}
+
+export interface GetAssociatedTypeResult {
+    associatedData: NodeAssociatedType[];
 }
 
 // End Response Interfaces
