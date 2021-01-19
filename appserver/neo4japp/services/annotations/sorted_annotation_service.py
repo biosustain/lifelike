@@ -26,8 +26,7 @@ class SortedAnnotation:
             meta['allText'],
         )
 
-    @staticmethod
-    def get_annotations(annotation_service, project_id) -> Dict[Tuple[str, str, str], float]:
+    def get_annotations(self, project_id) -> Dict[Tuple[str, str, str], float]:
         raise NotImplemented
 
 
@@ -61,7 +60,7 @@ class FrequencySA(SortedAnnotation):
         for annotation in map(
                 SortedAnnotation.meta_to_id_tuple,
                 self.annotation_service.get_combined_annotations_in_project(project_id)
-            ):
+        ):
             if annotation in distinct_annotations:
                 distinct_annotations[annotation] += 1
             else:
