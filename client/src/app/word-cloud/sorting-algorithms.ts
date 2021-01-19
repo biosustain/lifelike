@@ -30,7 +30,7 @@ export const sortingAlgorithms: SortingAlgorithm[] = [
     description: 'p-value (MWU)',
     valueDescription: 'p-value',
     min: 0,
-    step: 0.05,
+    step: 0.25,
     default: 0
   }
 ];
