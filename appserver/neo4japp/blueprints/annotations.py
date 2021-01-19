@@ -1,12 +1,9 @@
-import sqlalchemy as sa
-from sqlalchemy import and_
-from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 from enum import Enum
-from pandas import DataFrame
-import numpy as np
 from typing import Dict, List, Optional, Tuple
 
+import numpy as np
+import sqlalchemy as sa
 from flask import (
     Blueprint,
     current_app,
@@ -15,23 +12,24 @@ from flask import (
     request,
     jsonify,
 )
-
 from flask_apispec import use_kwargs
+from pandas import DataFrame
+from sqlalchemy import and_
+from sqlalchemy.exc import SQLAlchemyError
 
+import neo4japp.models.files_queries as files_queries
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import (
     requires_role,
     requires_project_permission
 )
 from neo4japp.constants import TIMEZONE
+from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.database import (
     db,
     get_excel_export_service,
     get_manual_annotation_service,
 )
-from neo4japp.data_transfer_objects.common import ResultList
-from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
-from neo4japp.request_schemas.annotations import GlobalAnnotationsDeleteSchema
 from neo4japp.exceptions import (
     AnnotationError,
     RecordNotFoundException
@@ -45,7 +43,9 @@ from neo4japp.models import (
     Projects,
     FallbackOrganism
 )
-import neo4japp.models.files_queries as files_queries
+from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
+from neo4japp.request_schemas.annotations import GlobalAnnotationsDeleteSchema
+from neo4japp.services.annotations import AnnotationGraphService
 from neo4japp.services.annotations.constants import (
     AnnotationMethod,
     EntityType,
@@ -62,18 +62,15 @@ from neo4japp.util import (
 )
 from neo4japp.utils.logger import UserEventLog
 
-from neo4japp.services.annotations import AnnotationGraphService
-
-
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 
 def annotate(
-    doc: Files,
-    cause: AnnotationChangeCause,
-    specified_organism: Optional[FallbackOrganism] = None,
-    annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
-    user_id: int = None,
+        doc: Files,
+        cause: AnnotationChangeCause,
+        specified_organism: Optional[FallbackOrganism] = None,
+        annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
+        user_id: int = None,
 ) -> Tuple[Dict, Dict]:
     annotations_json = create_annotations(
         annotation_method=annotation_method,
@@ -107,6 +104,107 @@ def annotate(
     return update, version
 
 
+class SortedAnnotation:
+    id: str
+
+    @staticmethod
+    def get_annotations(annotation_service, project_id) -> Dict[Tuple[str, str, str], float]:
+        raise NotImplemented
+
+
+class SumLogCountSA(SortedAnnotation):
+    id = 'sum_log_count'
+
+    @staticmethod
+    def get_annotations(annotation_service, project_id) -> Dict[Tuple[str, str, str], float]:
+        files = Files.query.filter(
+            and_(
+                Files.project == project_id,
+                Files.annotations != []
+            )).all()
+
+        if len(files) < 1:
+            return {}
+
+        df = DataFrame(files)
+        df["annotation"] = df[0].apply(annotation_service._get_file_annotations)
+        df = df.explode("annotation")
+        df["annotation"] = df["annotation"].apply(lambda annotation: (
+            annotation['meta']['id'],
+            annotation['meta']['type'],
+            annotation['meta']['allText'],
+        ))
+        res = df.groupby(["annotation", 0])
+        res2 = np.log(res.size())
+        distinct_annotations = res2.sum(level="annotation").to_dict()
+        return distinct_annotations
+
+
+class FrequencySA(SortedAnnotation):
+    id = 'frequency'
+
+    @staticmethod
+    def get_annotations(annotation_service, project_id) -> Dict[Tuple[str, str, str], float]:
+        combined_annotations = annotation_service.get_combined_annotations_in_project(project_id)
+        distinct_annotations = {}
+        for annotation in combined_annotations:
+            annotation_data = (
+                annotation['meta']['id'],
+                annotation['meta']['type'],
+                annotation['meta']['allText'],
+            )
+            if distinct_annotations.get(annotation_data, None) is not None:
+                distinct_annotations[annotation_data] += 1
+            else:
+                distinct_annotations[annotation_data] = 1
+        return distinct_annotations
+
+
+class MannWhitneyUSA(SortedAnnotation):
+    id = 'mwu'
+
+    @staticmethod
+    def get_annotations(annotation_service, project_id) -> Dict[Tuple[str, str, str], float]:
+        files = Files.query.filter(
+            and_(
+                Files.project == project_id,
+                Files.annotations != []
+            )).all()
+
+        if len(files) < 1:
+            return {}
+
+        from scipy.stats import mannwhitneyu
+        df = DataFrame(files)
+        df["annotation"] = df[0].apply(annotation_service._get_file_annotations)
+        df = df.explode("annotation")
+        df["annotation"] = df["annotation"].apply(lambda annotation: (
+            annotation['meta']['id'],
+            annotation['meta']['type'],
+            annotation['meta']['allText'],
+        ))
+        res = df.groupby(["annotation", 0])
+        res2 = res.size()
+        distinct_annotations = {}
+        for annotation, group in res2.groupby('annotation'):
+            distinct_annotations[annotation] = -np.log(mannwhitneyu(group, res2[res2.index.get_level_values('annotation') != annotation]).pvalue)
+        return distinct_annotations
+
+
+sorted_annotations_list = {
+    SumLogCountSA,
+    FrequencySA,
+    MannWhitneyUSA
+}
+
+
+def getSortedAnnotation(id):
+    for sa in sorted_annotations_list:
+        if sa.id == id:
+            return sa
+    raise NotImplementedError(id)
+
+
 @bp.route('/<string:project_name>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
@@ -124,37 +222,12 @@ def get_all_annotations_from_project(project_name):
     yield user, project
     annotation_service = get_manual_annotation_service()
 
-    if sort == "sum_log_count":
-        files = Files.query.filter(
-            and_(
-                Files.project == project.id,
-                Files.annotations != []
-            )).all()
+    from timeit import default_timer as timer
+    start = timer()
+    distinct_annotations = getSortedAnnotation(sort).get_annotations(annotation_service, project.id)
+    end = timer()
+    print(f'Getting annotation using {sort}, took: {(end - start)*1000}ms')
 
-        df = DataFrame(files)
-        df["annotation"] = df[0].apply(annotation_service._get_file_annotations)
-        df = df.explode("annotation")
-        df["annotation"] = df["annotation"].apply(lambda annotation: (
-            annotation['meta']['id'],
-            annotation['meta']['type'],
-            annotation['meta']['allText'],
-        ))
-        res = df.groupby(["annotation", 0])
-        res2 = np.log(res.size())
-        distinct_annotations = res2.sum(level="annotation").to_dict()
-    else:
-        combined_annotations = annotation_service.get_combined_annotations_in_project(project.id)
-        distinct_annotations = {}
-        for annotation in combined_annotations:
-            annotation_data = (
-                annotation['meta']['id'],
-                annotation['meta']['type'],
-                annotation['meta']['allText'],
-            )
-            if distinct_annotations.get(annotation_data, None) is not None:
-                distinct_annotations[annotation_data] += 1
-            else:
-                distinct_annotations[annotation_data] = 1
     sorted_distintct_annotations = sorted(
         distinct_annotations,
         key=lambda annotation: distinct_annotations[annotation],
@@ -367,7 +440,6 @@ def export_global_exclusions():
 @auth.login_required
 @requires_role('admin')
 def get_annotations():
-
     yield g.current_user
 
     # Exclusions
