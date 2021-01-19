@@ -362,6 +362,7 @@ export class WordCloudComponent {
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
     const {width, height} = this.getCloudSvgDimensions();
     const maximumCount = Math.max(...data.map(annotation => annotation.frequency as number));
+    const minimumCount = Math.min(...data.map(annotation => annotation.frequency as number));
 
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
     const layout = cloud()
@@ -369,7 +370,7 @@ export class WordCloudComponent {
       .words(data)
       .padding(3)
       // max ~48px, min ~12px
-      .fontSize((d) => ((d.frequency / maximumCount) * 36) + 12)
+      .fontSize((d) => (((d.frequency - minimumCount) / (maximumCount - minimumCount)) * 36) + 12)
       .rotate(() => 0)
       // TODO: Maybe in the future we can allow the user to define their own rotation intervals,
       // but for now just keep it simple and don't rotate the words
