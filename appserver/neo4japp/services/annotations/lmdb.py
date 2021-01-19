@@ -17,7 +17,7 @@ from neo4japp.services.annotations.constants import (
 )
 
 
-directory = environ.get('LMDB_HOME_FOLDER') or "neo4japp/services/annotations"
+directory = environ.get('LMDB_HOME_FOLDER')
 
 
 class LMDB:
@@ -110,7 +110,7 @@ class LMDB:
                 readonly=True,
                 max_dbs=2,
             )
-        except Exception as e:
+        except Exception:
             raise LMDBError('An error occurred opening LMDB environment.')
         else:
             """
