@@ -91,6 +91,11 @@ export class GraphSearchFormComponent {
   }
 
   choiceLabel(choice) {
+    if (choice === 'Taxonomy') {
+      return 'Species/Taxonomy';
+    } else if (choice === 'Chemical') {
+      return 'Chemical/Compound';
+    }
     return choice;
   }
 
