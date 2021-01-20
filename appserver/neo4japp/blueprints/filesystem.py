@@ -232,18 +232,13 @@ class FilesystemBaseView(MethodView):
                     f"The file or directory '{file.filename}' has been trashed and "
                     "must be restored first.")
 
-    def check_recursive_selection_permission(self, user: AppUser):
-        raise ValidationError(f'Recursive selection is not permitted.', "recursive")
-
-    def update_files(self, hash_ids: List[str], params: Dict, user: AppUser, *,
-                     recursive=False):
+    def update_files(self, hash_ids: List[str], params: Dict, user: AppUser):
         """
         Updates the specified files using the parameters from a validated request.
 
         :param hash_ids: the object hash IDs
         :param params: the parameters
         :param user: the user that is making the change
-        :param recursive: apply settings to children of folders
         """
         file_type_service = get_file_type_service()
 
@@ -267,13 +262,6 @@ class FilesystemBaseView(MethodView):
         files = self.get_nondeleted_recycled_files(Files.hash_id.in_(query_hash_ids),
                                                    require_hash_ids=require_hash_ids)
         self.check_file_permissions(files, user, ['writable'], permit_recycled=False)
-
-        # This flag allows a user to update all files within a folder (however
-        # deep the folder hierarchy may get) by simply selecting the folder
-        if recursive:
-            self.check_recursive_selection_permission(user)
-            files = self.get_nondeleted_recycled_children(Files.id.in_([file.id for file in files]),
-                                                          lazy_load_content=True)
 
         target_files = [file for file in files if file.hash_id in target_hash_ids]
         parent_file = None
@@ -636,8 +624,7 @@ class FileListView(FilesystemBaseView):
         """File update endpoint."""
 
         current_user = g.current_user
-        missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user,
-                                             recursive=targets.get('recursive', False))
+        missing_hash_ids = self.update_files(targets['hash_ids'], params, current_user)
         return self.get_bulk_file_response(targets['hash_ids'], current_user,
                                            missing_hash_ids=missing_hash_ids)
 
