@@ -2,7 +2,7 @@ import csv
 import hashlib
 import io
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 import sqlalchemy as sa
 from flask import (
@@ -243,7 +243,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
 
 
 class FileAnnotationGeneCountsView(FileAnnotationCountsView):
-    def get_rows(self, files):
+    def get_rows(self, files: List[Files]):
         manual_annotations_service = get_manual_annotation_service()
         annotation_graph_service = AnnotationGraphService()
 
@@ -255,10 +255,10 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
             'gene_annotation_count'
         ]
 
-        gene_ids = {}
+        gene_ids: Dict[Any, int] = {}
 
         for file in files:
-            combined_annotations = manual_annotations_service.get_combined_annotations(file)
+            combined_annotations = manual_annotations_service.get_file_annotations(file)
             for annotation in combined_annotations:
                 if annotation['meta']['type'] == EntityType.GENE.value:
                     gene_id = annotation['meta']['id']
@@ -610,8 +610,11 @@ filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/exclusions',
     view_func=FileAnnotationExclusionsListView.as_view('file_annotation_exclusions_list'))
 filesystem_bp.add_url_rule(
-    'objects/<string:hash_id>/combined-annotations',
+    'objects/<string:hash_id>/annotations/counts',
     view_func=FileAnnotationCountsView.as_view('file_annotation_counts'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/gene-counts',
+    view_func=FileAnnotationGeneCountsView.as_view('file_annotation_gene_counts'))
 filesystem_bp.add_url_rule(
     'annotations/generate',
     view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'))

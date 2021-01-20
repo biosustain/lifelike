@@ -8,6 +8,7 @@ from typing import List
 
 @attr.s(frozen=True)
 class UserRequest(CamelDictMixin):
+    hash_id: str = attr.ib()
     username: str = attr.ib()
     password: str = attr.ib()
     first_name: str = attr.ib()
