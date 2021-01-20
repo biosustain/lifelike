@@ -1,3 +1,11 @@
+import * as d3 from 'd3';
+
+import { Subject } from 'rxjs';
+
+import * as cola from 'webcola';
+import { InputNode, Layout } from 'webcola';
+import { Group, Link } from 'webcola/WebCola/src/layout';
+
 import {
   GraphEntity,
   GraphEntityType,
@@ -6,18 +14,16 @@ import {
   UniversalGraphEntity,
   UniversalGraphNode
 } from 'app/drawing-tool/services/interfaces';
-import * as d3 from 'd3';
-import * as cola from 'webcola';
-import { InputNode, Layout } from 'webcola';
-import { Group, Link } from 'webcola/WebCola/src/layout';
+import { emptyIfNull } from 'app/shared/utils/types';
+import { compileFind, FindOptions } from 'app/shared/utils/find';
+
 import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
-import { BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
-import { Subject } from 'rxjs';
-import { emptyIfNull } from '../../shared/utils/types';
-import { escapeRegExp } from 'lodash';
-import { compileFind, FindOptions } from '../../shared/utils/find';
+import { BehaviorList } from './behaviors';
+
+
+
 
 /**
  * A rendered view of a graph.

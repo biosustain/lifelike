@@ -1,20 +1,21 @@
 import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
+import { HighlightDisplayLimitChange } from 'app/file-browser/components/file-info.component';
+import { FileViewComponent } from 'app/file-browser/components/file-view.component';
 import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
-import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
+import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
+import { RankedItem } from 'app/shared/schemas/common';
 import { CollectionModal } from 'app/shared/utils/collection-modal';
+import { FindOptions } from 'app/shared/utils/find';
 import { deserializePaginatedParams, getChoicesFromQuery, serializePaginatedParams } from 'app/shared/utils/params';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { ContentSearchOptions, TYPES_MAP } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
-import { HighlightDisplayLimitChange } from '../../file-browser/components/file-info.component';
-import { FileViewComponent } from '../../file-browser/components/file-view.component';
-import { RankedItem } from '../../shared/schemas/common';
 
 @Component({
   selector: 'app-content-search',
@@ -30,6 +31,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     multipleSelection: false,
   });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
+  highlightOptions: FindOptions = {keepSearchSpecialChars: true};
 
   constructor(protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
