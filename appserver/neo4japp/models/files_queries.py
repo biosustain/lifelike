@@ -332,18 +332,18 @@ class FileHierarchy:
                     file_commentable,
                     parent_privileges and parent_privileges.commentable,
                 ])
-                readable = commentable or any([
+                writable = any([
+                    project_manageable,
+                    project_writable,
+                    file_writable,
+                    parent_privileges and parent_privileges.writable,
+                    ])
+                readable = commentable or writable or any([
                     project_manageable,
                     project_readable,
                     file_readable,
                     file.public,
                     parent_privileges and parent_privileges.readable,
-                ])
-                writable = readable and any([
-                    project_manageable,
-                    project_writable,
-                    file_writable,
-                    parent_privileges and parent_privileges.writable,
                 ])
                 commentable = commentable or writable
 
