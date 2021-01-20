@@ -37,13 +37,6 @@ class AppRole(RDBMSBase):
 
 
 class AppUser(RDBMSBase, TimestampMixin, HashIdMixin):
-    API_FIELDS = [
-        'hash_id',
-        'first_name',
-        'last_name',
-        'username',
-    ]
-
     """
         User models to tie ownership of resources to
     """

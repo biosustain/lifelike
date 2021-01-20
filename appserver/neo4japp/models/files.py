@@ -147,18 +147,6 @@ class FilePrivileges:
 
 class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # type: ignore
     MAX_DEPTH = 50
-    API_FIELDS = [
-        'hash_id',
-        'filename',
-        'mime_type',
-        'description',
-        'annotations_date',
-        'doi',
-        'public',
-        'recycled',
-        'creation_date',
-        'modified_date',
-    ]
 
     __tablename__ = 'files'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
