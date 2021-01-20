@@ -296,13 +296,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                                                    lazy_load_content=True)
         self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
 
-        # This flag allows a user to re-annotate all files within a folder (however
-        # deep the folder hierarchy may get) by simply selecting the folder
-        if targets.get('recursive'):
-            self.check_recursive_selection_permission(current_user)
-            files = self.get_nondeleted_recycled_children(Files.id.in_([file.id for file in files]),
-                                                          lazy_load_content=True)
-
         organism = None
         method = params.get('method', AnnotationMethod.RULES)
 

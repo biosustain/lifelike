@@ -194,7 +194,6 @@ class BulkFileRequestSchema(CamelCaseSchema):
     hash_ids = fields.List(fields.String(validate=marshmallow.validate.Length(min=1, max=200)),
                            required=True,
                            validate=marshmallow.validate.Length(min=1, max=100))
-    recursive = fields.Boolean(missing=lambda: False)
 
 
 class FileSearchRequestSchema(CamelCaseSchema):
