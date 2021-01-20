@@ -105,7 +105,7 @@ class AccountSearchView(MethodView):
         on the project collaborators dialog.
         """
         current_user = g.current_user
-        query = re.sub("[%_]", "\\\\0", params['query'].strip().lower())
+        query = re.sub("[%_]", "\\\\0", params['query'].strip())
         like_query = f"%{query}%"
 
         private_data_access = get_authorization_service().has_role(
@@ -116,11 +116,11 @@ class AccountSearchView(MethodView):
         # our entire database of users. For that reason, we only allow exact
         # email address searches at least
         query = db.session.query(AppUser) \
-            .filter(or_(func.lower(AppUser.first_name).like(like_query),
-                        func.lower(AppUser.last_name).like(like_query),
-                        func.lower(AppUser.username).like(like_query),
-                        func.lower(AppUser.email) == query,
-                        func.lower(AppUser.hash_id) == query))
+            .filter(or_(AppUser.first_name.ilike(like_query),
+                        AppUser.last_name.ilike(like_query),
+                        AppUser.username.ilike(like_query),
+                        AppUser.email == query,
+                        AppUser.hash_id == query))
 
         # On the project collaborators dialog, we exclude ourselves because you can't
         # (as of writing) change your own permission level, but if you have the private-data-access
