@@ -97,8 +97,7 @@
           [appFSObjectTarget]="object && object.isDirectory ? object : null"
           (refreshRequest)="this.refreshRequest.emit()"
           draggable="true"
-          (dragstart)="objectDragStart($event, object)" appContextMenu
-          (contextMenuOpened)="objects.selectOnly(object)">
+          (dragstart)="objectDragStart($event, object)">
         <td class="align-middle text-nowrap text-truncate"
             (click)="objects.toggle(object)">
           <div class="custom-control custom-checkbox text-truncate">
@@ -181,12 +180,6 @@
         </td>
 
         <td>
-          <div appContextMenuBody>
-            <app-object-menu [object]="object" [forEditing]="forEditing" [showDelete]="true"
-                             (objectOpen)="this.objectOpen.next($event)"
-                             (refreshRequest)="this.refreshRequest.next($event)">
-            </app-object-menu>
-          </div>
           <div class="d-flex align-items-end" *ngIf="objectControls">
             <div ngbDropdown class="d-inline-block ml-auto" container="body">
               <button class="btn btn-sm" ngbDropdownToggle>
