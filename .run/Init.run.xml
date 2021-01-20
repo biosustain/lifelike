@@ -1,14 +1,14 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="docker-compose" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+  <configuration default="false" name="Init" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
     <deployment type="docker-compose.yml">
       <settings>
         <option name="secondarySourceFiles">
           <list>
+            <option value="docker-compose.override.yml" />
             <option value="docker-compose.ci-test.yml" />
-            <option value="docker-compose.yml" />
           </list>
         </option>
-        <option name="sourceFilePath" value="docker-compose.override.yml" />
+        <option name="sourceFilePath" value="docker-compose.yml" />
       </settings>
     </deployment>
     <method v="2" />

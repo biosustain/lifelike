@@ -49,6 +49,7 @@ terraform-gcloud.json
 # IDE - IntelliJ
 .idea/
 /*.iml
+!.idea/runConfigurations
 
 #virtual environments
 .venv/
