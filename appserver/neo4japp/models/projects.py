@@ -94,7 +94,7 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
         ).filter(
             cls.id == project_id
         ).join(
-            AppUser
+            AppUser, AppUser.id == projects_collaborator_role.c.appuser_id,
         ).filter(
             AppUser.id == user_id
         )

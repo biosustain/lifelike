@@ -31,9 +31,9 @@ export class AnnotationsService {
     );
   }
 
-  getCombinedAnnotations(hashId: string): Observable<string> {
+  getAnnotationCounts(hashId: string): Observable<string> {
     return this.http.post(
-      `/api/filesystem/objects/${encodeURIComponent(hashId)}/combined-annotations`, {}, {
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations/counts`, {}, {
         ...this.apiService.getHttpOptions(true),
         responseType: 'text',
       },

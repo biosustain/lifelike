@@ -245,6 +245,18 @@ class ManualAnnotationService:
 
         db.session.commit()
 
+    def get_combined_annotations(self, file_id):
+        """ Returns automatic annotations that were not marked for exclusion
+        combined with custom annotations.
+        """
+        file = Files.query.filter_by(
+            file_id=file_id,
+        ).one_or_none()
+        if file is None:
+            raise RecordNotFoundException('File does not exist')
+
+        return self._get_file_annotations(file)
+
     def get_file_annotations(self, file):
         def isExcluded(exclusions, annotation):
             for exclusion in exclusions:

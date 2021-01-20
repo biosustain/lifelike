@@ -47,7 +47,7 @@ export class WordCloudComponent {
     this.loadTask = new BackgroundTask(() => {
       return combineLatest(
         this.legendService.getAnnotationLegend(),
-        this.pdfAnnotationService.getCombinedAnnotations(this.object.hashId),
+        this.pdfAnnotationService.getAnnotationCounts(this.object.hashId),
       );
     });
   }
