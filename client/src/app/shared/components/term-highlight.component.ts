@@ -1,7 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { annotationTypesMap } from '../annotation-styles';
-import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+
 import { escape, escapeRegExp } from 'lodash';
+
+import { FindOptions } from 'app/shared/utils/find';
 
 @Component({
   selector: 'app-term-highlight',
@@ -10,13 +11,18 @@ import { escape, escapeRegExp } from 'lodash';
 export class TermHighlightComponent implements OnChanges {
   @Input() text = '';
   @Input() highlightTerms: string[] = [];
+  @Input() highlightOptions: FindOptions = {};
+
   highlight: string;
 
   ngOnChanges(changes: SimpleChanges) {
     if ('highlightTerms' in changes || 'text' in changes) {
       if (this.text && this.highlightTerms) {
         const phrasePatterns = this.highlightTerms.map(
-          phrase => escapeRegExp(phrase).replace(/ +/g, ' +'),
+          phrase => escapeRegExp(phrase)
+            .replace(/ +/g, ' +')
+            .replace(/(\\\*)/g, '\\S*')
+            .replace(/(\\\?)/g, '\\S?'),
         ).join('|');
         const pattern = `\\b(${phrasePatterns})\\b`;
         const regex = new RegExp(pattern, 'gi');
