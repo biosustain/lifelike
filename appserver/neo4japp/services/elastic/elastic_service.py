@@ -324,32 +324,45 @@ class ElasticService():
         parsing_phrase = False
         word_stack = []
         phrase_stack = []
+        wildcard_stack = []
         for c in search_term:
             if c == '"':
                 if parsing_phrase:
-                    phrase_stack.append(term)
+                    if '*' in term or '?' in term:
+                        wildcard_stack.append(term)
+                    else:
+                        phrase_stack.append(term)
                     term = ''
                     parsing_phrase = False
                 else:
                     if term != '':
-                        word_stack.append(term)
+                        if '*' in term or '?' in term:
+                            wildcard_stack.append(term)
+                        else:
+                            word_stack.append(term)
                         term = ''
                     parsing_phrase = True
                 continue
 
             if c == ' ' and not parsing_phrase:
                 if term != '':
-                    word_stack.append(term)
+                    if '*' in term or '?' in term:
+                        wildcard_stack.append(term)
+                    else:
+                        word_stack.append(term)
                     term = ''
                 continue
             term += c
         if term != '':
             # If a phrase doesn't have a closing `"`, it's possible that multiple
             # words might be in the term. So, split the term and extend the
-            # word_stack.
-            word_stack.extend(term.split(' '))
+            # appropriate stack.
+            if '*' in term or '?' in term:
+                wildcard_stack.extend(term.split(' '))
+            else:
+                word_stack.extend(term.split(' '))
 
-        return word_stack, phrase_stack
+        return word_stack, phrase_stack, wildcard_stack
 
     def get_text_match_objs(
         self,
@@ -382,6 +395,7 @@ class ElasticService():
         self,
         words: List[str],
         phrases: List[str],
+        wildcards: List[str],
         text_fields: List[str],
         text_field_boosts: Dict[str, int]
     ):
@@ -414,9 +428,27 @@ class ElasticService():
                 }
             })
 
+        wildcard_operands = []
+        for wildcard in wildcards:
+            wildcard_operands.append({
+                'bool': {
+                    'should': [
+                        {
+                            'wildcard': {
+                                field: {
+                                    'value': wildcard,
+                                    'boost': text_field_boosts[field],
+                                    'case_insensitive': True
+                                }
+                            }
+                        }
+                    for field in text_fields]
+                }
+            })
+
         return {
             'bool': {
-                'must': word_operands + phrase_operands,  # type:ignore
+                'must': word_operands + phrase_operands + wildcard_operands,  # type:ignore
             }
         }
 
@@ -452,7 +484,7 @@ class ElasticService():
         highlight,
     ):
         search_term = search_term.strip()
-        words, phrases = self.get_words_and_phrases_from_search_term(search_term)
+        words, phrases, wildcards = self.get_words_and_phrases_from_search_term(search_term)
 
         search_queries = []
         if len(text_fields) > 0:
@@ -460,6 +492,7 @@ class ElasticService():
                 self.get_text_match_queries(
                     words,
                     phrases,
+                    wildcards,
                     text_fields,
                     text_field_boosts
                 )
@@ -489,7 +522,7 @@ class ElasticService():
                 }
             },
             'highlight': highlight
-        }, phrases + words
+        }, phrases + words + wildcards
 
     def search(
         self,
