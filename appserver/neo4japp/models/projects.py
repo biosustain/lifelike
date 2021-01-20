@@ -56,14 +56,6 @@ class ProjectPrivileges:
 
 
 class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
-    API_FIELDS = [
-        'hash_id',
-        'name',
-        'description',
-        'creation_date',
-        'modified_date',
-    ]
-
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(250), unique=True, nullable=False)
