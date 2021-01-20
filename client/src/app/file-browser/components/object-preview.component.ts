@@ -23,15 +23,7 @@ export class ObjectPreviewComponent {
   @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
 
   private readonly object$ = new BehaviorSubject<FilesystemObject>(null);
-  private readonly objectWithContent$: Observable<FilesystemObject> = this.object$.pipe(
-    map(object => {
-      if (!object.contentValue$) {
-        object.contentValue$ = this.filesystemService.getContent(object.hashId);
-      }
-      return object;
-    }),
-  );
-  readonly previewComponent$ = this.objectWithContent$.pipe(
+  readonly previewComponent$ = this.object$.pipe(
     mergeMap(object => {
       if (object) {
         return this.objectTypeService.get(object).pipe(mergeMap(typeProvider => {

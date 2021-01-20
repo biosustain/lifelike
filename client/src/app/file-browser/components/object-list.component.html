@@ -1,7 +1,8 @@
 <div class="module-body-split module-body-browser-split">
   <div class="module-body-split-main" [appFSObjectTarget]="parent"
        (refreshRequest)="this.refreshRequest.emit()">
-    <ng-container *ngIf="showDescription && parent && parent.description && parent.description.trim().length">
+    <ng-container
+      *ngIf="showDescription && parent && parent.description && parent.description.trim().length">
       <div class="border-bottom p-4 text-muted d-flex align-items-start">
         <div class="flex-fill">
           <span style="white-space: pre-line">{{ parent.description }}</span>
@@ -100,10 +101,11 @@
           (dragstart)="objectDragStart($event, object)">
         <td class="align-middle text-nowrap text-truncate"
             (click)="objects.toggle(object)">
-          <div class="custom-control custom-checkbox text-truncate">
+          <div class="custom-control custom-checkbox text-truncate"
+               (click)="$event.preventDefault()">
             <input type="checkbox" class="custom-control-input"
                    id="{{ id }}-object-{{ objectIndex }}"
-                   (change)="objects.toggle(object)"
+                   (change)="objects.toggle(object); $event.preventDefault()"
                    [checked]="objects.isSelected(object)">
             <label class="custom-control-label d-block" for="{{ id }}-object-{{ objectIndex }}">
               <div class="d-flex align-items-center text-truncate"
