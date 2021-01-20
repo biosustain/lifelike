@@ -88,13 +88,21 @@
                         <a [appLink]="['/projects', result.item.project.projectName]" [newTab]="true" [sideBySide]="true">{{ result.item.project.projectName }}</a>
                         /
                         <a [appLink]="getObjectCommands(result.item)" [newTab]="true" [sideBySide]="true">
-                          <app-term-highlight [text]="result.item.name" [highlightTerms]="resultQuery ? resultQuery.phrases : []"></app-term-highlight>
+                          <app-term-highlight
+                            [text]="result.item.name"
+                            [highlightTerms]="resultQuery ? resultQuery.phrases : []"
+                            [highlightOptions]="highlightOptions"
+                          ></app-term-highlight>
                         </a>
                       </h5>
                     </div>
                     <div class="mt-2 text-truncate"><i>Created by user {{ result.item.creator.username }} on {{ result.item.creationDate | date: 'fullDate'}}</i></div>
                     <div class="mt-2 paragraph-truncate-3">
-                      <app-term-highlight [text]="result.item.description" [highlightTerms]="resultQuery ? resultQuery.phrases : []"></app-term-highlight>
+                      <app-term-highlight
+                        [text]="result.item.description"
+                        [highlightTerms]="resultQuery ? resultQuery.phrases : []"
+                        [highlightOptions]="highlightOptions"
+                      ></app-term-highlight>
                     </div>
                     <ng-container *ngIf="result.item.type == 'file' && result.item.highlight">
                       <div class="dropdown-divider"></div>

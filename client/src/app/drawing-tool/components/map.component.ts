@@ -1,23 +1,26 @@
 import { AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Output, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { CopyKeyboardShortcut } from 'app/graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
+import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import { SelectableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity';
+import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
+import { ModuleProperties } from 'app/shared/modules';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { tokenizeQuery } from 'app/shared/utils/find';
+
 import { MapService } from '../services';
 import { GraphEntity, KnowledgeMap, UniversalGraphNode } from '../services/interfaces';
-import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
-import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
-import { ModuleProperties } from '../../shared/modules';
-import { ActivatedRoute } from '@angular/router';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { map } from 'rxjs/operators';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { tokenizeQuery } from '../../shared/utils/find';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
 
 @Component({
   selector: 'app-map',
@@ -155,7 +158,9 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.emitModuleProperties();
 
     if (this.highlightTerms != null && this.highlightTerms.length) {
-      this.graphCanvas.highlighting.replace(this.graphCanvas.findMatching(this.highlightTerms));
+      this.graphCanvas.highlighting.replace(
+        this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true})
+      );
     }
   }
 

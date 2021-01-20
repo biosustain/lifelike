@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { DirectoryObject } from '../../interfaces/projects.interface';
+
+import { DirectoryObject } from 'app/interfaces/projects.interface';
+import { FindOptions } from 'app/shared/utils/find';
 
 @Component({
   selector: 'app-file-info',
@@ -7,15 +9,8 @@ import { DirectoryObject } from '../../interfaces/projects.interface';
 })
 export class FileInfoComponent implements OnInit {
   @Input() defaultHighlightLimit = 5;
-  highlightLimit = this.defaultHighlightLimit;
   @Input() highlightTerms: string[] | undefined;
-  @Output() objectEdit = new EventEmitter<DirectoryObject>();
-  @Output() highlightClick = new EventEmitter<string>();
-  @Output() highlightDisplayLimitChange = new EventEmitter<HighlightDisplayLimitChange>();
-  _object: DirectoryObject | undefined;
-
-  @Input()
-  set object(object: DirectoryObject | undefined) {
+  @Input() set object(object: DirectoryObject | undefined) {
     this._object = object;
     this.highlightLimit = this.defaultHighlightLimit;
     this.highlightDisplayLimitChange.emit({
@@ -29,13 +24,13 @@ export class FileInfoComponent implements OnInit {
     return this._object;
   }
 
-  ngOnInit() {
-    this.highlightDisplayLimitChange.emit({
-      previous: 0,
-      limit: Math.min(this.highlightLimit,
-          this.object.highlight != null ? this.object.highlight.length : 0),
-    });
-  }
+  @Output() objectEdit = new EventEmitter<DirectoryObject>();
+  @Output() highlightClick = new EventEmitter<string>();
+  @Output() highlightDisplayLimitChange = new EventEmitter<HighlightDisplayLimitChange>();
+
+  highlightLimit = this.defaultHighlightLimit;
+  highlightOptions: FindOptions = {keepSearchSpecialChars: true};
+  _object: DirectoryObject | undefined;
 
   get shownHighlights() {
     return this.object.highlight.slice(0, this.highlightLimit);
@@ -43,6 +38,14 @@ export class FileInfoComponent implements OnInit {
 
   get reachedHighlightLimit() {
     return this.highlightLimit >= this.object.highlight.length;
+  }
+
+  ngOnInit() {
+    this.highlightDisplayLimitChange.emit({
+      previous: 0,
+      limit: Math.min(this.highlightLimit,
+          this.object.highlight != null ? this.object.highlight.length : 0),
+    });
   }
 
   displayMoreHighlights() {
