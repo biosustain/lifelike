@@ -35,8 +35,6 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
   returnUrl: string;
 
-  hasEditPermission = true;
-
   constructor(mapService: MapService,
               snackBar: MatSnackBar,
               modalService: NgbModal,
