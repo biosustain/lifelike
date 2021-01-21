@@ -1,19 +1,26 @@
 import { Observable, pipe, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, first } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessageDialog } from './message-dialog.service';
 import { Injectable } from '@angular/core';
 import { UnaryFunction } from 'rxjs/src/internal/types';
 import { UserError } from '../exceptions';
-
+import { LoggingService } from '../services/logging.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { ServerError } from 'app/interfaces/error.interface';
+import { ErrorLogMeta, ServerError } from 'app/interfaces/error.interface';
+import { isNullOrUndefined } from 'util';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',
 })
 export class ErrorHandler {
-  constructor(private readonly messageDialog: MessageDialog) {
+  constructor(
+    private readonly messageDialog: MessageDialog,
+    private readonly loggingService: LoggingService,
+  ) {}
+
+  createTransactionId(): string {
+    return Math.random().toString(36).substr(2, 9);
   }
 
   createUserError(error: any): UserError {
@@ -21,7 +28,7 @@ export class ErrorHandler {
     let message = 'The server encountered a problem. No further details are currently available.';
     let detail = null;
     // A transaction id for log audits with Sentry (Sentry.io)
-    let transactionId = null;
+    let transactionId = this.createTransactionId();
 
     if (error instanceof HttpErrorResponse) {
       const res = error as HttpErrorResponse;
@@ -43,6 +50,8 @@ export class ErrorHandler {
       if (res.error && res.error.detail) {
         detail = res.error.detail;
       }
+      // Override auto generated transaction Id if HTTP request
+      // as one is already provided by the interceptor
       if (res.error && res.error.transactionId) {
         transactionId = res.error.transactionId;
       }
@@ -78,8 +87,15 @@ export class ErrorHandler {
     return new UserError(title, message, detail, error, transactionId);
   }
 
-  showError(error) {
+  showError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta) {
     const {title, message, detail, transactionId} = this.createUserError(error);
+
+    this.loggingService.sendLogs(
+      {title, message, detail, transactionId, ...logInfo}
+    ).pipe(
+      first(),
+      catchError(() => throwError('logging failure'))
+    ).subscribe();
 
     this.messageDialog.display({
       title,
@@ -90,10 +106,13 @@ export class ErrorHandler {
     });
   }
 
-  create<T>(): UnaryFunction<Observable<T>, Observable<T>> {
+  create<T>(logInfo?: ErrorLogMeta): UnaryFunction<Observable<T>, Observable<T>> {
     return pipe(catchError(error => {
-      this.showError(error);
-
+      if (isNullOrUndefined(logInfo)) {
+        this.showError(error);
+      } else {
+        this.showError(error, logInfo);
+      }
       return throwError(error);
     }));
   }

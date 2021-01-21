@@ -58,18 +58,20 @@ def pullUserFromAuthHead():
     token = request.headers.get('Authorization')
     token = token.split(' ')[-1].strip()
 
-    email = jwt.decode(
-        token,
-        current_app.config['SECRET_KEY'],
-        algorithms=['HS256']
-    )['sub']
-
-    # Pull user by email
     try:
-        user = AppUser.query_by_email(email).one()
-    except NoResultFound:
-        raise RecordNotFoundException('Credentials not found or invalid.')
-    return user
+        email = jwt.decode(
+            token,
+            current_app.config['SECRET_KEY'],
+            algorithms=['HS256']
+        )['sub']
+    except jwt.exceptions.ExpiredSignatureError:
+        raise JWTAuthTokenException('auth token has expired')
+    else:
+        try:
+            user = AppUser.query_by_email(email).one()
+        except NoResultFound:
+            raise RecordNotFoundException('Credentials not found.')
+        return user
 
 
 @bp.route('/refresh', methods=['POST'])

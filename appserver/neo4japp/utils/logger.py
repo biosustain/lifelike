@@ -22,3 +22,9 @@ class ErrorLog(UserEventLog, EventLog):
     error_name: str = attr.ib()
     expected: bool = attr.ib()
     transaction_id: str = attr.ib()
+
+
+@attr.s(frozen=True)
+class ClientErrorLog(ErrorLog):
+    """ Used to describe client side errors """
+    url: str = attr.ib()
