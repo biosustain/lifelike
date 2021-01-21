@@ -11,6 +11,7 @@ from neo4japp.models import (
     AppRole,
     AppUser,
     Directory,
+    GlobalList,
     Project,
     Projects,
     projects_collaborator_role,
@@ -21,13 +22,104 @@ from neo4japp.models import (
     FallbackOrganism
 )
 from neo4japp.services.annotations import AnnotationGraphService, ManualAnnotationService
-from neo4japp.services.annotations.constants import EntityType
+from neo4japp.services.annotations.constants import EntityType, ManualAnnotationType
 from neo4japp.services.elastic import ElasticService
 
 
 #################
 # Service mocks
 ################
+
+@pytest.fixture(scope='function')
+def mock_global_compound_inclusion(session):
+    annotation = {
+        'meta': {
+            'id': 'BIOC:Fake',
+            'type': EntityType.COMPOUND.value,
+        },
+        'keyword': 'compound-(12345)'
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.INCLUSION.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(inclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_gene_exclusion(session):
+    annotation = {
+        'meta': {
+            'id': '59272',
+            'type': EntityType.GENE.value,
+        },
+        'keyword': 'fake-gene'
+    }
+
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    exclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.EXCLUSION.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+
+    session.add(exclusion)
+    session.flush()
+
+
+@pytest.fixture(scope='function')
+def mock_global_list(session):
+    file_content = FileContent(raw_file=b'', checksum_sha256=b'')
+    session.add(file_content)
+    session.flush()
+
+    annotation = {
+        'meta': {
+            'id': 'BIOC:Fake',
+            'type': EntityType.COMPOUND.value,
+        },
+        'keyword': 'compound-(12345)'
+    }
+    inclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.INCLUSION.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+    session.add(inclusion)
+    session.flush()
+
+    annotation = {
+        'id': '59272',
+        'type': EntityType.GENE.value,
+        'text': 'fake-gene'
+    }
+    exclusion = GlobalList(
+        annotation=annotation,
+        type=ManualAnnotationType.EXCLUSION.value,
+        file_id=file_content.id,
+        reviewed=True,
+        approved=True,
+    )
+    session.add(exclusion)
+    session.flush()
+
 
 @pytest.fixture(scope='function')
 def mock_get_combined_annotations_result(monkeypatch):
@@ -37,15 +129,17 @@ def mock_get_combined_annotations_result(monkeypatch):
                 'meta': {
                     'type': EntityType.GENE.value,
                     'id': '59272',
-                    'allText': 'ace2'
-                }
+                },
+                'keyword': 'ace2',
+                'primaryName': 'ACE2',
             },
             {
                 'meta': {
                     'type': EntityType.SPECIES.value,
                     'id': '9606',
-                    'allText': 'human'
-                }
+                },
+                'keyword': 'human',
+                'primaryName': 'Homo Sapiens',
             },
         ]
 
@@ -53,6 +147,35 @@ def mock_get_combined_annotations_result(monkeypatch):
         ManualAnnotationService,
         'get_combined_annotations',
         get_combined_annotations_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_get_combined_annotations_in_project_result(monkeypatch):
+    def get_combined_annotations_in_project_result(*args, **kwargs):
+        return [
+            {
+                'meta': {
+                    'type': EntityType.GENE.value,
+                    'id': '59272',
+                },
+                'keyword': 'ace2',
+                'primaryName': 'ACE2',
+            },
+            {
+                'meta': {
+                    'type': EntityType.SPECIES.value,
+                    'id': '9606',
+                },
+                'keyword': 'human',
+                'primaryName': 'Homo Sapiens',
+            },
+        ]
+
+    monkeypatch.setattr(
+        ManualAnnotationService,
+        'get_combined_annotations_in_project',
+        get_combined_annotations_in_project_result,
     )
 
 
