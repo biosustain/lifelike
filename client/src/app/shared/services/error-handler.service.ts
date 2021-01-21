@@ -94,7 +94,7 @@ export class ErrorHandler {
       {title, message, detail, transactionId, ...logInfo}
     ).pipe(
       first(),
-      catchError(() => throwError('logging failure'))
+      catchError(() => throwError('Client logging is currently not working.'))
     ).subscribe();
 
     this.messageDialog.display({
