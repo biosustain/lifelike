@@ -6,16 +6,14 @@ set -o nounset                  # exit when script tries to use undeclared varia
 if [ "${FLASK_ENV}" = "development" ]; then
     echo "Starting up development environment"
     __dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    if [[ -z "${DEBUG:-}" ]]; then
-      # wait for postgres
-      ${__dir__}/wait-for-postgres
-      # wait for neo4j
-      ${__dir__}/wait-for-neo4j
-      #wait for elastic
-      ${__dir__}/wait-for-elastic
-      # setup db
-      ${__dir__}/dev-db-setup
-    fi
+    # wait for postgres
+    ${__dir__}/wait-for-postgres
+    # wait for neo4j
+    ${__dir__}/wait-for-neo4j
+    #wait for elastic
+    ${__dir__}/wait-for-elastic
+    # setup db
+    ${__dir__}/dev-db-setup
     # Start in server directory
     cd "${__dir__}/.."
     # Mark ready
