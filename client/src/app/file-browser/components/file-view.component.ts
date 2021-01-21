@@ -265,7 +265,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       });
 
       this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotation, annotateAll, this.projectName)
-        .pipe(this.errorHandler.create())
+        .pipe(this.errorHandler.create({label: 'Custom annotation creation'}))
         .subscribe(
           (annotations: Annotation[]) => {
             progressDialogRef.close();
@@ -290,7 +290,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     dialogRef.componentInstance.message = 'Do you want to remove all matching annotations from the file as well?';
     dialogRef.result.then((removeAll: boolean) => {
       this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll, this.projectName)
-        .pipe(this.errorHandler.create())
+        .pipe(this.errorHandler.create({label: 'Custom annotation removal'}))
         .subscribe(
           response => {
             this.removedAnnotationIds = response;
@@ -308,7 +308,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
       this.currentFileId, exclusionData, this.projectName,
     )
-      .pipe(this.errorHandler.create())
+      .pipe(this.errorHandler.create({label: 'Custom annotation exclusion addition'}))
       .subscribe(
         response => {
           this.addedAnnotationExclusion = exclusionData;
@@ -322,7 +322,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   annotationExclusionRemoved({type, text}) {
     this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, type, text, this.projectName)
-      .pipe(this.errorHandler.create())
+      .pipe(this.errorHandler.create({label: 'Custom annotation exclusion removal'}))
       .subscribe(
         response => {
           this.removedAnnotationExclusion = {type, text};
@@ -584,7 +584,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
             newFile.organism,
             newFile.description,
           )
-            .pipe(this.errorHandler.create())
+            .pipe(this.errorHandler.create({label: 'File edit dialog'}))
             .subscribe(() => {
               this.pdfFile.filename = newFile.filename;
               this.pdfFile.description = newFile.description;

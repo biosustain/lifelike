@@ -218,7 +218,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
 
     if (this.lockAcquired === false) {
       this.filesystemService.getLocks(this.locator.hashId).pipe(
-        this.errorHandler.create(),
+        this.errorHandler.create({label: 'Acquire file lock'}),
       ).pipe(
         finalize(() => this.lastLockCheckTime = window.performance.now()),
       ).subscribe(locks => {
