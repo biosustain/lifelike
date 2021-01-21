@@ -44,7 +44,6 @@ class AnnotationLinksSchema(Schema):
 class AnnotationMetaSchema(Schema):
     # These fields are camel case even in Python
     type = fields.String(required=True)
-    color = fields.String(required=True)
     id = fields.String(required=True)
     idType = fields.String(required=True)
     idHyperlink = fields.String(required=True)
@@ -55,22 +54,35 @@ class AnnotationMetaSchema(Schema):
     isCaseInsensitive = fields.Boolean(required=True)
 
 
-class AnnotationSchema(Schema):
+class BaseAnnotationSchema(Schema):
     # These fields are camel case even in Python
+    meta = fields.Nested(AnnotationMetaSchema, required=True)
     pageNumber = fields.Integer(required=True)
     keywords = fields.List(fields.String(required=True))
     rects = fields.List(fields.List(fields.Float(required=True)))
-    meta = fields.Nested(AnnotationMetaSchema, required=True)
     uuid = fields.String(required=False)
-    textInDocument = fields.String(required=False)
+
+
+class SystemAnnotationSchema(BaseAnnotationSchema):
+    # These fields are camel case even in Python
+    keyword = fields.String(required=True)
     primaryName = fields.String(required=False)
+    textInDocument = fields.String(required=False)
+
+
+class CustomAnnotationSchema(BaseAnnotationSchema):
+    pass
 
 
 # Responses
 # ----------------------------------------
 
-class AnnotationListSchema(ResultListSchema):
-    results = fields.List(fields.Nested(AnnotationSchema))
+class SystemAnnotationListSchema(ResultListSchema):
+    results = fields.List(fields.Nested(SystemAnnotationSchema))
+
+
+class CustomAnnotationListSchema(ResultListSchema):
+    results = fields.List(fields.Nested(CustomAnnotationSchema))
 
 
 class AnnotationUUIDListSchema(ResultListSchema):
@@ -112,7 +124,7 @@ class MultipleAnnotationGenerationResponseSchema(CamelCaseSchema):
 # ----------------------------------------
 
 class CustomAnnotationCreateSchema(CamelCaseSchema):
-    annotation = fields.Nested(AnnotationSchema, required=True)
+    annotation = fields.Nested(CustomAnnotationSchema, required=True)
     annotate_all = fields.Boolean(required=False, missing=lambda: False)
 
 
@@ -159,12 +171,16 @@ class CombinedAnnotationMetaSchema(AnnotationMetaSchema):
     exclusionComment = fields.String()
 
 
-class CombinedAnnotationSchema(Schema):
-    uuid = fields.String()
-    pageNumber = fields.Integer()
-    keywords = fields.List(fields.String())
-    rects = fields.List(fields.List(fields.Float()))
+class CombinedAnnotationSchema(SystemAnnotationSchema, CustomAnnotationSchema):
     meta = fields.Nested(CombinedAnnotationMetaSchema)
+
+
+# Responses
+# ----------------------------------------
+
+
+class CombinedAnnotationListSchema(ResultListSchema):
+    results = fields.List(fields.Nested(CombinedAnnotationSchema))
 
 
 # ========================================
