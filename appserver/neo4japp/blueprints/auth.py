@@ -56,6 +56,8 @@ def pullUserFromAuthHead():
     """
     # Pull the JWT
     token = request.headers.get('Authorization')
+    if token is None:
+        raise JWTAuthTokenException('No authorization header found.')
     token = token.split(' ')[-1].strip()
 
     try:
