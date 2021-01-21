@@ -122,6 +122,7 @@ docker-compose exec pgdatabase psql -U postgres -h pgdatabase -d postgres
 This means the application is running and once you hit a certain line in the code
 while going through the application UI, the code will break at that point.
 
+### Using pdb
 To do this, first edit the `docker-compose.yml` file for the `appserver` service. Add the following:
 
 ```yml
@@ -143,6 +144,9 @@ docker-compose down && docker-compose up -d
 docker attach <service_name> # e.g n4j-appserver
 ```
 To exit out of attach mode, can do either `Ctrl+C` to exit and kill the container. Or `Ctrl+P, Ctrl+Q` to detach without killing. It's also possible to add new breakpoints without stopping the container like that since our setup allows updates to the containers automatically.
+
+### Using PyCharm IDE 
+Please check [pycharm_setup](https://github.com/SBRG/kg-prototypes/blob/pycharm_setup/.run/README.md) ([python_setup branch](https://github.com/SBRG/kg-prototypes/tree/pycharm_setup)) for setup instructions and example configuration files.
 
 ## How do I remote ssh into a running container?
 In rare occasions where you need to ssh into the container as ***ARANGO_USERNAME***: `docker exec -u 0 -it <container_name> bash`.
