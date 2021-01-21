@@ -1,9 +1,9 @@
 import { AbstractCanvasBehavior } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
 import { NodeCreation } from '../../../actions/nodes';
-import { makeid } from 'app/drawing-tool/services';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
+import { makeid } from '../../../../shared/utils/identifiers';
 
 /**
  * We use this string to know that it's our own JSON.

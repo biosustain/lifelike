@@ -1,6 +1,6 @@
 <div class="palette-container">
   <div class="palette-item-container" *ngFor='let template of nodeTemplatesShown' [id]='template.label'
-       draggable="true" (dragstart)="dragStarted($event, template)" (click)="clicked()">
+       draggable="true" (dragstart)="dragStart($event, template)" (click)="click()">
     <div class="palette-item">
       <div class="palette-item-icon" [style.background]="template.color">
       </div>

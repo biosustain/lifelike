@@ -3,8 +3,6 @@ from sqlalchemy.orm.session import Session
 
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models.common import RDBMSBase
-from neo4japp.models.projects import Projects
-from neo4japp.models.drawing_tool import Project
 from neo4japp.models.auth import (
     AccessActionType,
     AccessControlPolicy,

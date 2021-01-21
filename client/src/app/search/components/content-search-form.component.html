@@ -16,13 +16,13 @@
   <div class="mt-2">
     <div class="d-flex w-100">
       <div class="form-group d-flex align-items-start mb-0">
-        <label for="types" class="my-0 mr-2 mt-2">
+        <label for="mime-types" class="my-0 mr-2 mt-2">
           File Types:
         </label>
         <div class="d-flex flex-column">
-          <app-select formId="types" [choices]="typeChoices" style="width: 200px"
-                      [values]="form.value.types" (valuesChange)="form.get('types').setValue($event)"
-                      (touch)="form.get('types').markAsTouched()"
+          <app-select formId="mime-types" [choices]="typeChoices" style="width: 200px"
+                      [values]="form.value.mimeTypes" (valuesChange)="form.get('mimeTypes').setValue($event)"
+                      (touch)="form.get('mimeTypes').markAsTouched()"
                       [choiceLabel]="choiceLabel">
           </app-select>
 

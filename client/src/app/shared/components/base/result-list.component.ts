@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 
 import { BackgroundTask } from '../../rxjs/background-task';
-import { CollectionModal } from '../../utils/collection-modal';
+import { CollectionModel } from '../../utils/collection-model';
 import { WorkspaceManager } from '../../workspace-manager';
 import { ResultList, ResultQuery } from '../../schemas/common';
 
@@ -15,7 +15,7 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
 
   public collectionSize = 0;
   public resultQuery: ResultQuery;
-  public results = new CollectionModal<R>([], {
+  public results = new CollectionModel<R>([], {
     multipleSelection: true,
   });
 

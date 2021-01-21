@@ -188,9 +188,9 @@ def read_pdf_response(resp: dict) -> Tuple[str, List[PDFWord]]:
     return pdf_text, parsed
 
 
-def parse_pdf(project_id: int, file_id: str) -> Tuple[str, List[PDFWord]]:
+def parse_pdf(file_id: int) -> Tuple[str, List[PDFWord]]:
     req = requests.get(
-        f'http://pdfparser:7600/token/rect/json/http://appserver:5000/annotations/{project_id}/{file_id}', timeout=30)  # noqa
+        f'http://pdfparser:7600/token/rect/json/http://appserver:5000/annotations/files/{file_id}', timeout=30)  # noqa
     resp = req.json()
     req.close()
 
@@ -203,8 +203,7 @@ def _create_annotations(
     specified_organism_synonym,
     specified_organism_tax_id,
     document,
-    filename,
-    project_id
+    filename
 ):
     annotator = get_annotation_service()
     manual_annotator = get_manual_annotation_service()
@@ -223,7 +222,7 @@ def _create_annotations(
         else:
             custom_annotations = document.custom_annotations
             excluded_annotations = document.excluded_annotations
-            pdf_text, parsed = parse_pdf(project_id, document.file_id)
+            pdf_text, parsed = parse_pdf(document.file_id)
     except requests.exceptions.ConnectTimeout:
         raise AnnotationError(
             'The request timed out while trying to connect to the PDF service.')
@@ -341,16 +340,14 @@ def create_annotations(
     specified_organism_synonym,
     specified_organism_tax_id,
     document,
-    filename,
-    project_id
+    filename
 ):
     _, annotations = _create_annotations(
         annotation_method=annotation_method,
         specified_organism_synonym=specified_organism_synonym,
         specified_organism_tax_id=specified_organism_tax_id,
         document=document,
-        filename=filename,
-        project_id=project_id
+        filename=filename
     )
     return annotations
 

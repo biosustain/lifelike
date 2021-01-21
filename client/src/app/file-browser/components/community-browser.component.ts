@@ -1,18 +1,18 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ProjectSpaceService } from '../services/project-space.service';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
 import { WorkspaceManager } from '../../shared/workspace-manager';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { CollectionModal } from '../../shared/utils/collection-modal';
-import { MapService } from '../../drawing-tool/services';
-import { PublicMap } from '../../drawing-tool/services/map.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { FormControl, FormGroup } from '@angular/forms';
-import { PaginatedRequestOptions, ResultList, StandardRequestOptions } from '../../shared/schemas/common';
+import { FilesystemObject } from '../models/filesystem-object';
+import { FilesystemObjectList } from '../models/filesystem-object-list';
+import { FilesystemService } from '../services/filesystem.service';
+import { PaginatedRequestOptions, StandardRequestOptions } from '../../shared/schemas/common';
+import { MAP_MIMETYPE } from '../../drawing-tool/providers/map.type-provider';
 
 @Component({
   selector: 'app-community-browser',
@@ -22,10 +22,15 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
   private readonly defaultLocator: StandardRequestOptions = {
     limit: 100,
     page: 1,
-    sort: '+label,-dateModified',
+    sort: '-creationDate',
   };
-  public readonly loadTask: BackgroundTask<PaginatedRequestOptions, ResultList<PublicMap>> = new BackgroundTask(
-    (locator: PaginatedRequestOptions) => this.mapService.getCommunityMaps(locator),
+  public readonly loadTask: BackgroundTask<PaginatedRequestOptions, FilesystemObjectList> = new BackgroundTask(
+    (locator: PaginatedRequestOptions) => this.filesystemService.search({
+      type: 'public',
+      mimeTypes: [MAP_MIMETYPE],
+      sort: '-modificationDate',
+      ...locator,
+    }), // TODO
   );
 
   public locator: StandardRequestOptions = {
@@ -37,17 +42,13 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
     limit: new FormControl(100),
   });
 
-  public collectionSize = 0;
-  public readonly results = new CollectionModal<PublicMap>([], {
-    multipleSelection: true,
-  });
+  list: FilesystemObjectList = new FilesystemObjectList();
 
   private routerParamSubscription: Subscription;
   private loadTaskSubscription: Subscription;
 
-  constructor(private readonly projectSpaceService: ProjectSpaceService,
-              private readonly mapService: MapService,
-              private readonly workspaceManager: WorkspaceManager,
+  constructor(private readonly workspaceManager: WorkspaceManager,
+              private readonly filesystemService: FilesystemService,
               private readonly progressDialog: ProgressDialog,
               private readonly ngbModal: NgbModal,
               private readonly route: ActivatedRoute,
@@ -55,9 +56,8 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: maps}) => {
-      this.collectionSize = maps.total;
-      this.results.replace(maps.results);
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: list}) => {
+      this.list = list;
     });
 
     this.routerParamSubscription = this.route.queryParams.pipe(
@@ -102,17 +102,13 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
     });
   }
 
-  getObjectCommands(object: PublicMap): any[] {
-    return ['/projects', object.project.projectName, 'maps', object.map.hash_id];
+  getObjectCommands(object: FilesystemObject): any[] {
+    return ['/projects', object.project.projectName, 'maps', object.hashId];
   }
 
-  getObjectQueryParams() {
-    if (this.router.url === this.workspaceManager.workspaceUrl) {
-      return {};
-    } else {
-      return {
-        return: `/community`,
-      };
-    }
+  openObject(target: FilesystemObject) {
+    this.workspaceManager.navigate(target.getCommands(false), {
+      newTab: true,
+    });
   }
 }
