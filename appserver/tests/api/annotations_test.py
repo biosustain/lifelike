@@ -1,35 +1,10 @@
-import logging
-import os
-import pytest
 import json
 
-from neo4japp.models import Files, Projects, AppUser
+from neo4japp.models import Files, AppUser
 
 
 def generate_headers(jwt_token):
     return {'Authorization': f'Bearer {jwt_token}'}
-
-
-def test_user_can_get_all_annotations_from_project(
-        client,
-        fix_project,
-        fix_api_owner,
-        mock_get_combined_annotations_in_project_result,
-):
-    login_resp = client.login_as_user(fix_api_owner.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
-
-    response = client.get(
-        f'/annotations/{fix_project.project_name}',
-        headers=headers,
-        content_type='application/json',
-    )
-
-    assert response.status_code == 200
-    assert response.get_data() == \
-        b'entity_id\ttype\ttext\tprimary_name\tcount\n' + \
-        b'59272\tGene\tace2\tACE2\t1\n' + \
-        b'9606\tSpecies\thuman\tHomo Sapiens\t1\n'
 
 
 def test_user_can_get_gene_annotations_from_pdf(
@@ -49,9 +24,9 @@ def test_user_can_get_gene_annotations_from_pdf(
         content_type='application/json',
     )
     assert response.status_code == 200
-    assert response.get_data() == \
-        b'gene_id\tgene_name\torganism_id\torganism_name\tgene_annotation_count\r\n' +  \
-        b'59272\tACE2\t9606\tHomo sapiens\t1\r\n'
+    assert response.get_data() == b'gene_id\tgene_name\torganism_id\torganism_name\t' \
+                                  b'gene_annotation_count\r\n' + \
+                                  b'59272\tACE2\t9606\tHomo sapiens\t1\r\n'
 
 
 def test_user_can_get_all_annotations_from_pdf(
@@ -70,10 +45,9 @@ def test_user_can_get_all_annotations_from_pdf(
         content_type='application/json',
     )
     assert response.status_code == 200
-    assert response.get_data() == \
-        b'entity_id\ttype\ttext\tprimary_name\tcount\r\n' + \
-        b'59272\tGene\tace2\tACE2\t1\r\n' + \
-        b'9606\tSpecies\thuman\tHomo Sapiens\t1\r\n'
+    assert response.get_data() == b'entity_id\ttype\ttext\tprimary_name\tcount\r\n' + \
+                                  b'59272\tGene\tace2\tACE2\t1\r\n' + \
+                                  b'9606\tSpecies\thuman\tHomo Sapiens\t1\r\n'
 
 
 def test_user_can_get_global_inclusions(

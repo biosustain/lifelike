@@ -152,35 +152,6 @@ def mock_get_combined_annotations_result(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_get_combined_annotations_in_project_result(monkeypatch):
-    def get_combined_annotations_in_project_result(*args, **kwargs):
-        return [
-            {
-                'meta': {
-                    'type': EntityType.GENE.value,
-                    'id': '59272',
-                },
-                'keyword': 'ace2',
-                'primaryName': 'ACE2',
-            },
-            {
-                'meta': {
-                    'type': EntityType.SPECIES.value,
-                    'id': '9606',
-                },
-                'keyword': 'human',
-                'primaryName': 'Homo Sapiens',
-            },
-        ]
-
-    monkeypatch.setattr(
-        ManualAnnotationService,
-        'get_combined_annotations_in_project',
-        get_combined_annotations_in_project_result,
-    )
-
-
-@pytest.fixture(scope='function')
 def mock_get_organisms_from_gene_ids_result(monkeypatch):
     def get_organisms_from_gene_ids_result(*args, **kwargs):
         return [
