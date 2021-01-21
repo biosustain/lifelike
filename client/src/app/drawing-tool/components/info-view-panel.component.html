@@ -4,7 +4,12 @@
       "{{ name }}"
     </h4>
     <div *ngIf="isNode" class="text-muted">
-      Type: {{ selected.entity.label | titlecase }}
+      <div class="mb-2">Type: {{ selected.entity.label | titlecase }}</div>
+      <div>
+        <button class="btn btn-primary w-100"
+                (click)="searchMapNodeInVisualizer(selected.entity)"
+        >Search in the Visualizer</button>
+      </div>
     </div>
     <div *ngIf="!isNode" class="text-muted">
       Type: Connection
