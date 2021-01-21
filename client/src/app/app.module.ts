@@ -28,6 +28,8 @@ import { KgImportModule } from './kg-import/kg-import.module';
 import { AppVersionDialogComponent } from './app-version-dialog.component';
 import { FileNavigatorModule } from './file-navigator/file-navigator.module';
 import { ShortestPathModule } from './shortest-path/shortest-path.module';
+import { PdfViewerLibModule } from './pdf-viewer/pdf-viewer-lib.module';
+import { EnrichmentTablesModule } from './enrichment-tables/enrichment-tables.module';
 
 @NgModule({
   declarations: [
@@ -43,6 +45,7 @@ import { ShortestPathModule } from './shortest-path/shortest-path.module';
   ],
   imports: [
     BrowserModule,
+    PdfViewerLibModule,
     AdminModule,
     AuthModule,
     SharedModule,
@@ -60,6 +63,7 @@ import { ShortestPathModule } from './shortest-path/shortest-path.module';
     NgbModule,
     FileNavigatorModule,
     ShortestPathModule,
+    EnrichmentTablesModule,
   ],
   providers: [
     httpInterceptorProviders,
@@ -68,7 +72,7 @@ import { ShortestPathModule } from './shortest-path/shortest-path.module';
     UnloadConfirmationGuard,
   ],
   exports: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule {
 }

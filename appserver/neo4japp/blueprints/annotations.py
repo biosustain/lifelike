@@ -1,9 +1,10 @@
-import sqlalchemy as sa
-from sqlalchemy.exc import SQLAlchemyError
+import csv
+import hashlib
+import io
 from datetime import datetime
-from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Optional, List, Dict, Any
 
+import sqlalchemy as sa
 from flask import (
     Blueprint,
     current_app,
@@ -12,270 +13,379 @@ from flask import (
     request,
     jsonify,
 )
-
 from flask_apispec import use_kwargs
+from sqlalchemy.exc import SQLAlchemyError
+from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.blueprints.permissions import (
-    requires_role,
-    requires_project_permission
+    requires_role
 )
 from neo4japp.constants import TIMEZONE
+from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.database import (
     db,
-    get_excel_export_service,
-    get_manual_annotation_service,
+    get_excel_export_service, get_manual_annotation_service,
 )
-from neo4japp.data_transfer_objects.common import ResultList
-from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
-from neo4japp.request_schemas.annotations import GlobalAnnotationsDeleteSchema
 from neo4japp.exceptions import (
-    AnnotationError,
-    RecordNotFoundException
+    AnnotationError
 )
 from neo4japp.models import (
-    AccessActionType,
     AppUser,
     Files,
     FileContent,
     GlobalList,
-    Projects,
     FallbackOrganism
 )
-import neo4japp.models.files_queries as files_queries
 from neo4japp.services.annotations.constants import (
     AnnotationMethod,
     EntityType,
     ManualAnnotationType,
 )
 from neo4japp.services.annotations.data_transfer_objects import (
-    AnnotationRequest,
     GlobalAnnotationData
 )
 from neo4japp.services.annotations.pipeline import create_annotations
-from neo4japp.util import (
-    jsonify_with_class,
-    SuccessResponse,
-)
 from neo4japp.utils.logger import UserEventLog
-
-from neo4japp.services.annotations import AnnotationGraphService
-
+from .filesystem import bp as filesystem_bp
+from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
+from ..schemas.annotations import AnnotationListSchema, \
+    AnnotationGenerationRequestSchema, \
+    MultipleAnnotationGenerationResponseSchema, GlobalAnnotationsDeleteSchema, \
+    CustomAnnotationCreateSchema, CustomAnnotationDeleteSchema, AnnotationUUIDListSchema, \
+    AnnotationExclusionCreateSchema, AnnotationExclusionDeleteSchema
+from ..schemas.filesystem import BulkFileRequestSchema
+from ..services.annotations import AnnotationGraphService
+from ..utils.http import make_cacheable_file_response
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 
-def annotate(
-    doc: Files,
-    cause: AnnotationChangeCause,
-    project_id: int,
-    specified_organism: Optional[FallbackOrganism] = None,
-    annotation_method: str = AnnotationMethod.RULES.value,  # default to Rules Based
-    user_id: int = None,
-) -> Tuple[Dict, Dict]:
-    annotations_json = create_annotations(
-        annotation_method=annotation_method,
-        specified_organism_synonym=specified_organism.organism_synonym if specified_organism else '',  # noqa
-        specified_organism_tax_id=specified_organism.organism_taxonomy_id if specified_organism else '',  # noqa
-        document=doc,
-        filename=doc.filename,
-        project_id=project_id
-    )
+class FileAnnotationsView(FilesystemBaseView):
+    decorators = [auth.login_required]
 
-    current_app.logger.debug(
-        f'File successfully annotated: {doc.file_id}, {doc.filename}')
+    def get(self, hash_id: str):
+        """Fetch annotations for a file.."""
+        current_user = g.current_user
 
-    update = {
-        'id': doc.id,
-        'annotations': annotations_json,
-        'annotations_date': datetime.now(TIMEZONE),
-    }
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
 
-    if specified_organism:
-        update['fallback_organism'] = specified_organism
-        update['fallback_organism_id'] = specified_organism.id
+        if file.annotations:
+            annotations = file.annotations['documents'][0]['passages'][0]['annotations']
 
-    version = {
-        'file_id': doc.id,
-        'cause': cause,
-        'custom_annotations': doc.custom_annotations,
-        'excluded_annotations': doc.excluded_annotations,
-        'user_id': user_id,
-    }
+            def terms_match(term_in_exclusion, term_in_annotation, is_case_insensitive):
+                if is_case_insensitive:
+                    return term_in_exclusion.lower() == term_in_annotation.lower()
+                return term_in_exclusion == term_in_annotation
 
-    return update, version
-
-
-@bp.route('/<int:project_id>/<string:file_id>', methods=['GET'])
-def get_pdf_to_annotate(project_id, file_id):
-    """This endpoint is sent by the annotation pipeline to the
-    pdfparse service, and acts as a resource pull. No need to check for
-    project permission or authentication as the pipeline already
-    queried that to get `project_id` and `file_id`.
-    """
-
-    doc = files_queries.get_all_files_and_content_by_id(
-        file_ids=set([file_id]), project_id=project_id).one_or_none()
-
-    if not doc:
-        raise RecordNotFoundException(f'File with file id {file_id} not found.')
-
-    res = make_response(doc.raw_file)
-    res.headers['Content-Type'] = 'application/pdf'
-    res.headers['Content-Disposition'] = f'attachment;filename={doc.filename}.pdf'
-    return res
-
-
-@bp.route('/<string:project_name>', methods=['GET'])
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_all_annotations_from_project(project_name):
-    current_app.logger.info(
-        f'Project: {project_name}',
-        extra=UserEventLog(
-            username=g.current_user.username, event_type='view entity word cloud').to_dict()
-    )
-    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if project is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-    user = g.current_user
-    yield user, project
-    annotation_service = get_manual_annotation_service()
-    combined_annotations = annotation_service.get_combined_annotations_in_project(project.id)
-    distinct_annotations = {}
-    for annotation in combined_annotations:
-        annotation_data = (
-            annotation['meta']['id'],
-            annotation['meta']['type'],
-            annotation['keyword'].strip(),
-            annotation['primaryName'].strip(),
-        )
-        if distinct_annotations.get(annotation_data, None) is not None:
-            distinct_annotations[annotation_data] += 1
+            # Add additional information for annotations that were excluded
+            for annotation in annotations:
+                for exclusion in file.excluded_annotations:
+                    if (exclusion.get('type') == annotation['meta']['type'] and
+                            terms_match(
+                                exclusion.get('text', 'True'),
+                                annotation.get('textInDocument', 'False'),
+                                exclusion['isCaseInsensitive'])):
+                        annotation['meta']['isExcluded'] = True
+                        annotation['meta']['exclusionReason'] = exclusion['reason']
+                        annotation['meta']['exclusionComment'] = exclusion['comment']
         else:
-            distinct_annotations[annotation_data] = 1
-    sorted_distinct_annotations = sorted(
-        distinct_annotations,
-        key=lambda annotation: distinct_annotations[annotation],
-        reverse=True,
-    )
+            annotations = []
 
-    result = 'entity_id\ttype\ttext\tprimary_name\tcount\n'
-    for annotation_data in sorted_distinct_annotations:
-        result += f'{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t' + \
-                  f'{annotation_data[3]}\t{distinct_annotations[annotation_data]}\n'
+        results = annotations + file.custom_annotations
 
-    response = make_response(result)
-    response.headers['Content-Type'] = 'text/tsv'
-    yield response
+        return jsonify(AnnotationListSchema().dump({
+            'results': results,
+            'total': len(results),
+        }))
 
 
-@bp.route('/<string:project_name>/<string:file_id>', methods=['POST'])
-@auth.login_required
-@jsonify_with_class(AnnotationRequest)
-@requires_project_permission(AccessActionType.WRITE)
-def annotate_file(req: AnnotationRequest, project_name: str, file_id: str):
-    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+class FileCustomAnnotationsListView(FilesystemBaseView):
+    decorators = [auth.login_required]
 
-    if project is None:
-        raise RecordNotFoundException(f'Project {project_name} not found.')
+    @use_args(CustomAnnotationCreateSchema)
+    def post(self, params, hash_id):
+        current_user = g.current_user
+        manual_annotation_service = get_manual_annotation_service()
 
-    yield g.current_user, project
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
 
-    doc = files_queries.get_all_files_and_content_by_id(
-        file_ids=set([file_id]), project_id=project.id).one_or_none()
-
-    if not doc:
-        raise RecordNotFoundException(f'File with file id {file_id} not found.')
-
-    fallback = None
-    if req.organism:
-        fallback = FallbackOrganism(
-            organism_name=req.organism['organism_name'],
-            organism_synonym=req.organism['synonym'],
-            organism_taxonomy_id=req.organism['tax_id']
+        results = manual_annotation_service.add_inclusions(
+            file, current_user, params['annotation'], params['annotate_all']
         )
-        db.session.add(fallback)
-        db.session.flush()
 
-    update, version = annotate(
-        doc=doc,
-        cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
-        annotation_method=req.annotation_method,
-        specified_organism=fallback,
-        project_id=project.id
-    )
-
-    db.session.bulk_insert_mappings(FileAnnotationsVersion, [version])
-    db.session.bulk_update_mappings(Files, [update])
-    db.session.commit()
-    yield SuccessResponse(
-        result={
-            'filenames': doc.filename,
-            'status': 'Successfully annotated.'
-        },
-        status_code=200)
+        return jsonify(AnnotationListSchema().dump({
+            'results': results,
+            'total': len(results),
+        }))
 
 
-class AnnotationOutcome(Enum):
-    ANNOTATED = 'Annotated'
-    NOT_ANNOTATED = 'Not annotated'
-    NOT_FOUND = 'Not found'
+class FileCustomAnnotationsDetailView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(CustomAnnotationDeleteSchema)
+    def delete(self, params, hash_id, uuid):
+        current_user = g.current_user
+        manual_annotation_service = get_manual_annotation_service()
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+
+        results = manual_annotation_service.remove_inclusions(
+            file, current_user, uuid, params['remove_all']
+        )
+
+        return jsonify(AnnotationUUIDListSchema().dump({
+            'results': results,
+            'total': len(results),
+        }))
 
 
-@bp.route('/<string:project_name>/reannotate', methods=['POST'])
-@auth.login_required
-@jsonify_with_class(AnnotationRequest)
-@requires_project_permission(AccessActionType.WRITE)
-def reannotate(req: AnnotationRequest, project_name: str):
-    current_app.logger.info(
-        f'Project: {project_name}',
-        extra=UserEventLog(username=g.current_user.username, event_type='reannotate').to_dict()
-    )
-    user = g.current_user
-    projects = Projects.query.filter(Projects.project_name == project_name).one_or_none()
+class FileAnnotationExclusionsListView(FilesystemBaseView):
+    decorators = [auth.login_required]
 
-    if projects is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
+    @use_args(AnnotationExclusionCreateSchema)
+    def post(self, params, hash_id):
+        current_user = g.current_user
+        manual_annotation_service = get_manual_annotation_service()
 
-    yield user, projects
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
 
-    ids = set(req.file_ids)
-    outcome: Dict[str, str] = {}  # file id to annotation outcome
-    files = files_queries.get_all_files_and_content_by_id(
-        file_ids=ids, project_id=projects.id).all()
+        manual_annotation_service.add_exclusion(file, current_user, params['exclusion'])
 
-    files_not_found = ids - set(f.file_id for f in files)
-    for not_found in files_not_found:
-        outcome[not_found] = AnnotationOutcome.NOT_FOUND.value
+        return jsonify({})
 
-    updated_files: List[dict] = []
-    versions: List[dict] = []
+    @use_args(AnnotationExclusionDeleteSchema)
+    def delete(self, params, hash_id):
+        current_user = g.current_user
+        manual_annotation_service = get_manual_annotation_service()
 
-    for f in files:
-        try:
-            update, version = annotate(
-                doc=f,
-                cause=AnnotationChangeCause.USER_REANNOTATION,
-                specified_organism=FallbackOrganism.query.get(f.fallback_organism_id),
-                project_id=projects.id
-            )
-        except AnnotationError as e:
-            current_app.logger.error(
-                'Could not reannotate file: %s, %s, %s', f.file_id, f.filename, e)
-            outcome[f.file_id] = AnnotationOutcome.NOT_ANNOTATED.value
-        else:
-            updated_files.append(update)
-            versions.append(version)
-            current_app.logger.debug(
-                'File successfully reannotated: %s, %s', f.file_id, f.filename)
-            outcome[f.file_id] = AnnotationOutcome.ANNOTATED.value
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
 
-    # low level fast bulk operation
-    db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
-    db.session.bulk_update_mappings(Files, updated_files)
-    db.session.commit()
-    yield SuccessResponse(result=outcome, status_code=200)
+        manual_annotation_service.remove_exclusion(file, current_user, params['type'],
+                                                   params['text'])
+
+        return jsonify({})
+
+
+class FileAnnotationCountsView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    def get_rows(self, files):
+        manual_annotations_service = get_manual_annotation_service()
+
+        yield [
+            'entity_id',
+            'type',
+            'text',
+            'primary_name',
+            'count',
+        ]
+
+        counts = {}
+
+        for file in files:
+            annotations = manual_annotations_service.get_file_annotations(file)
+            for annotation in annotations:
+                key = annotation['meta']['id']
+                if key not in counts:
+                    counts[key] = {
+                        'meta': annotation['meta'],
+                        'count': 1
+                    }
+                else:
+                    counts[key]['count'] += 1
+
+        count_keys = sorted(
+            counts,
+            key=lambda key: counts[key]['count'],
+            reverse=True
+        )
+
+        for key in count_keys:
+            meta = counts[key]['meta']
+            yield [
+                meta['id'],
+                meta['type'],
+                meta['keyword'].strip(),
+                meta['primaryName'].strip(),
+                counts[key]['count']
+            ]
+
+    def post(self, hash_id: str):
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+        files = self.get_nondeleted_recycled_children(
+            Files.id == file.id,
+            children_filter=Files.mime_type == 'application/pdf',
+            lazy_load_content=True
+        )
+
+        buffer = io.StringIO()
+        writer = csv.writer(buffer, delimiter="\t", quotechar='"')
+        for row in self.get_rows(files):
+            writer.writerow(row)
+
+        result = buffer.getvalue().encode('utf-8')
+
+        return make_cacheable_file_response(
+            request,
+            result,
+            etag=hashlib.sha256(result).hexdigest(),
+            filename=f'{file.filename} - Annotations.tsv',
+            mime_type='text/tsv'
+        )
+
+
+class FileAnnotationGeneCountsView(FileAnnotationCountsView):
+    def get_rows(self, files: List[Files]):
+        manual_annotations_service = get_manual_annotation_service()
+        annotation_graph_service = AnnotationGraphService()
+
+        yield [
+            'gene_id',
+            'gene_name',
+            'organism_id',
+            'organism_name',
+            'gene_annotation_count'
+        ]
+
+        gene_ids: Dict[Any, int] = {}
+
+        for file in files:
+            combined_annotations = manual_annotations_service.get_file_annotations(file)
+            for annotation in combined_annotations:
+                if annotation['meta']['type'] == EntityType.GENE.value:
+                    gene_id = annotation['meta']['id']
+                    if gene_ids.get(gene_id, None) is not None:
+                        gene_ids[gene_id] += 1
+                    else:
+                        gene_ids[gene_id] = 1
+
+        gene_organism_pairs = annotation_graph_service.get_organisms_from_gene_ids(
+            gene_ids=list(gene_ids.keys())
+        )
+        sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']],
+                              reverse=True)  # noqa
+
+        for pair in sorted_pairs:
+            yield [
+                pair['gene_id'],
+                pair['gene_name'],
+                pair['taxonomy_id'],
+                pair['species_name'],
+                gene_ids[pair['gene_id']],
+            ]
+
+
+class FileAnnotationsGenerationView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(lambda request: BulkFileRequestSchema())
+    @use_args(lambda request: AnnotationGenerationRequestSchema())
+    def post(self, targets, params):
+        """Generate annotations for one or more files."""
+        current_user = g.current_user
+
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']),
+                                                   lazy_load_content=True)
+        self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
+
+        organism = None
+        method = params.get('method', AnnotationMethod.RULES)
+
+        if params.get('organism'):
+            organism = params['organism']
+            db.session.add(organism)
+            db.session.flush()
+
+        updated_files = []
+        versions = []
+        results = {}
+        missing = self.get_missing_hash_ids(targets['hash_ids'], files)
+
+        for file in files:
+            if file.mime_type == 'application/pdf':
+                try:
+                    annotations, version = self._annotate(
+                        file=file,
+                        cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
+                        method=method,
+                        organism=organism or file.fallback_organism,
+                        user_id=current_user.id,
+                    )
+                except AnnotationError as e:
+                    current_app.logger.error(
+                        'Could not re-annotate file: %s, %s, %s', file.hash_id, file.filename, e)
+                    results[file.hash_id] = {
+                        'attempted': True,
+                        'success': False,
+                    }
+                else:
+                    current_app.logger.debug(
+                        'File successfully re-annotated: %s, %s', file.hash_id, file.filename)
+                    updated_files.append(annotations)
+                    versions.append(version)
+                    results[file.hash_id] = {
+                        'attempted': True,
+                        'success': True,
+                    }
+            else:
+                results[file.hash_id] = {
+                    'attempted': False,
+                    'success': False,
+                }
+
+        db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
+        db.session.bulk_update_mappings(Files, updated_files)
+        db.session.commit()
+
+        return jsonify(MultipleAnnotationGenerationResponseSchema().dump({
+            'results': results,
+            'missing': missing,
+        }))
+
+    def _annotate(self, file: Files,
+                  cause: AnnotationChangeCause,
+                  organism: Optional[FallbackOrganism] = None,
+                  method: AnnotationMethod = AnnotationMethod.RULES,
+                  user_id: int = None):
+        annotations_json = create_annotations(
+            annotation_method=method.value,
+            specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
+            specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
+            document=file,
+            filename=file.filename
+        )
+
+        current_app.logger.debug(f'File successfully annotated: {file.hash_id}, {file.filename}')
+
+        update = {
+            'id': file.id,
+            'annotations': annotations_json,
+            'annotations_date': datetime.now(TIMEZONE),
+        }
+
+        if organism:
+            update['fallback_organism'] = organism
+            update['fallback_organism_id'] = organism.id
+
+        version = {
+            'file_id': file.id,
+            'cause': cause,
+            'custom_annotations': file.custom_annotations,
+            'excluded_annotations': file.excluded_annotations,
+            'user_id': user_id,
+        }
+
+        return update, version
 
 
 @bp.route('/global-list/inclusions')
@@ -483,92 +593,43 @@ def delete_global_annotations(pids):
     yield jsonify(dict(result='success'))
 
 
-@bp.route('/<string:project_name>/<string:file_id>', methods=['GET'])
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_all_annotations_from_file(project_name, file_id):
-    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if project is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
+@bp.route('/files/<int:file_id>', methods=['GET'])
+def get_pdf_to_annotate(file_id):
+    """This endpoint is sent by the annotation pipeline to the
+    pdfparse service, and acts as a resource pull. No need to check for
+    project permission or authentication as the pipeline already
+    queried that to get `project_id` and `file_id`.
+    """
 
-    user = g.current_user
+    doc = Files.query.get(file_id)
 
-    # yield to requires_project_permission
-    yield user, project
+    if not doc:
+        raise RecordNotFoundException(f'File with file id {file_id} not found.')
 
-    manual_annotation_service = get_manual_annotation_service()
-    combined_annotations = manual_annotation_service.get_combined_annotations(project.id, file_id)
-
-    distinct_annotations = {}
-    for annotation in combined_annotations:
-        annotation_data = (
-            annotation['meta']['id'],
-            annotation['meta']['type'],
-            annotation['keyword'].strip(),
-            annotation['primaryName'].strip(),
-        )
-
-        if distinct_annotations.get(annotation_data, None) is not None:
-            distinct_annotations[annotation_data] += 1
-        else:
-            distinct_annotations[annotation_data] = 1
-
-    sorted_distinct_annotations = sorted(
-        distinct_annotations,
-        key=lambda annotation: distinct_annotations[annotation],
-        reverse=True
-    )
-
-    result = 'entity_id\ttype\ttext\tprimary_name\tcount\n'
-    for annotation_data in sorted_distinct_annotations:
-        result += f'{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t' + \
-                  f'{annotation_data[3]}\t{distinct_annotations[annotation_data]}\n'
-
-    response = make_response(result)
-    response.headers['Content-Type'] = 'text/tsv'
-
-    yield response
+    res = make_response(doc.raw_file)
+    res.headers['Content-Type'] = 'application/pdf'
+    res.headers['Content-Disposition'] = f'attachment;filename={doc.filename}.pdf'
+    return res
 
 
-@bp.route('/<string:project_name>/<string:file_id>/genes')
-@auth.login_required
-@requires_project_permission(AccessActionType.READ)
-def get_gene_list_from_file(project_name, file_id):
-    project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
-    if project is None:
-        raise RecordNotFoundException(f'Project {project_name} not found')
-
-    user = g.current_user
-
-    # yield to requires_project_permission
-    yield user, project
-
-    file = Files.query.filter_by(file_id=file_id, project=project.id).one_or_none()
-    if not file:
-        raise RecordNotFoundException('File does not exist')
-
-    manual_annotation_service = get_manual_annotation_service()
-    combined_annotations = manual_annotation_service.get_combined_annotations(project.id, file_id)
-    gene_ids = {}
-    for annotation in combined_annotations:
-        if annotation['meta']['type'] == EntityType.GENE.value:
-            gene_id = annotation['meta']['id']
-            if gene_ids.get(gene_id, None) is not None:
-                gene_ids[gene_id] += 1
-            else:
-                gene_ids[gene_id] = 1
-
-    annotation_graph_service = AnnotationGraphService()
-    gene_organism_pairs = annotation_graph_service.get_organisms_from_gene_ids(
-        gene_ids=list(gene_ids.keys())
-    )
-    sorted_pairs = sorted(gene_organism_pairs, key=lambda pair: gene_ids[pair['gene_id']], reverse=True)  # noqa
-
-    result = 'gene_id\tgene_name\torganism_id\torganism_name\tgene_annotation_count\n'
-    for pair in sorted_pairs:
-        result += f"{pair['gene_id']}\t{pair['gene_name']}\t{pair['taxonomy_id']}\t{pair['species_name']}\t{gene_ids[pair['gene_id']]}\n"  # noqa
-
-    response = make_response(result)
-    response.headers['Content-Type'] = 'text/tsv'
-
-    yield response
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations',
+    view_func=FileAnnotationsView.as_view('file_annotations_list'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/custom',
+    view_func=FileCustomAnnotationsListView.as_view('file_custom_annotations_list'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/custom/<string:uuid>',
+    view_func=FileCustomAnnotationsDetailView.as_view('file_custom_annotations_detail'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/exclusions',
+    view_func=FileAnnotationExclusionsListView.as_view('file_annotation_exclusions_list'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/counts',
+    view_func=FileAnnotationCountsView.as_view('file_annotation_counts'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/gene-counts',
+    view_func=FileAnnotationGeneCountsView.as_view('file_annotation_gene_counts'))
+filesystem_bp.add_url_rule(
+    'annotations/generate',
+    view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'))

@@ -8,7 +8,7 @@ import { MessageDialog } from '../../../shared/services/message-dialog.service';
  * @see FilesystemObjectActions#openFileAnnotationHistoryDialog
  */
 @Component({
-  selector: 'app-file-annotation-history-dialog',
+  selector: 'app-object-annotation-history-dialog',
   templateUrl: './file-annotation-history-dialog.component.html',
 })
 export class FileAnnotationHistoryDialogComponent extends CommonDialogComponent {

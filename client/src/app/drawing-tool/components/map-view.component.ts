@@ -1,23 +1,22 @@
 import { AfterViewInit, Component, Input, NgZone, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute } from '@angular/router';
-
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { Subscription } from 'rxjs';
-
-import { DownloadService } from 'app/shared/services/download.service';
-
-import { MapComponent } from './map.component';
-import { MapExportDialogComponent } from './map-export-dialog.component';
-import { MapService } from '../services';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { MessageType } from '../../interfaces/message-dialog.interface';
-import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { ModuleAwareComponent } from '../../shared/modules';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ActivatedRoute } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageType } from '../../interfaces/message-dialog.interface';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { MapComponent } from './map.component';
+import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { FilesystemObject} from '../../file-browser/models/filesystem-object';
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
+import { getObjectLabel } from '../../file-browser/utils/objects';
+import { cloneDeep } from 'lodash';
+import { MAP_MIMETYPE } from '../providers/map.type-provider';
 
 @Component({
   selector: 'app-map-view',
@@ -27,7 +26,7 @@ import { WorkspaceManager } from '../../shared/workspace-manager';
   ],
 })
 export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResult>
-    implements OnDestroy, AfterViewInit, ModuleAwareComponent {
+  implements OnDestroy, AfterViewInit, ModuleAwareComponent {
   @Input() titleVisible = true;
 
   paramsSubscription: Subscription;
@@ -35,34 +34,26 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
   returnUrl: string;
 
-  hasEditPermission = true;
-
-  constructor(mapService: MapService,
+  constructor(filesystemService: FilesystemService,
               snackBar: MatSnackBar,
               modalService: NgbModal,
               messageDialog: MessageDialog,
               ngZone: NgZone, route: ActivatedRoute,
               errorHandler: ErrorHandler,
               workspaceManager: WorkspaceManager,
-              filesystemService: FilesystemService,
-              readonly downloadService: DownloadService) {
-    super(mapService, snackBar, modalService, messageDialog, ngZone, route, errorHandler, workspaceManager, filesystemService);
+              filesystemObjectActions: FilesystemObjectActions,
+              protected readonly progressDialog: ProgressDialog) {
+    super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
+      errorHandler, workspaceManager, filesystemObjectActions);
 
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
       this.returnUrl = params.return;
     });
 
     this.paramsSubscription = this.route.params.subscribe(params => {
-      this.locator = {
-        projectName: params.project_name,
-        hashId: params.hash_id,
-      };
+      this.locator = params.hash_id;
     });
   }
-
-// ========================================
-  // Angular events
-  // ========================================
 
   ngOnDestroy() {
     super.ngOnDestroy();
@@ -74,37 +65,47 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     return this.unsavedChanges$.getValue();
   }
 
-  // ========================================
-  // States
-  // ========================================
-
   /**
    * Save the current representation of knowledge model
    */
   save() {
-    this.map.graph = this.graphCanvas.getGraph();
-    this.map.modified_date = new Date().toISOString();
+    const contentValue = new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
+      type: MAP_MIMETYPE,
+    });
 
     // Push to backend to save
-    this.mapService.updateMap(this.locator.projectName, this.map)
-        .pipe(this.errorHandler.create())
-        .subscribe(() => {
-          this.unsavedChanges$.next(false);
-          this.emitModuleProperties();
-          this.snackBar.open('Map saved.', null, {
-            duration: 2000,
-          });
+    this.filesystemService.save([this.locator], {
+      contentValue,
+    })
+      .pipe(this.errorHandler.create())
+      .subscribe(() => {
+        this.unsavedChanges$.next(false);
+        this.emitModuleProperties();
+        this.snackBar.open('Map saved.', null, {
+          duration: 2000,
         });
+      });
   }
 
-  // ========================================
-  // Download
-  // ========================================
+  openCloneDialog() {
+    const newTarget: FilesystemObject = cloneDeep(this.map);
+    newTarget.public = false;
+    return this.filesystemObjectActions.openCloneDialog(newTarget).then(clone => {
+      this.workspaceManager.navigate(clone.getCommands(), {
+        newTab: true,
+      });
+      this.snackBar.open(`Copied ${getObjectLabel(this.map)} to ${getObjectLabel(clone)}.`, 'Close', {
+        duration: 5000,
+      });
+    }, () => {
+    });
+  }
 
-  /**
-   * Asks for the format to download the map
-   */
-  download() {
+  openVersionHistoryDialog() {
+    return this.filesystemObjectActions.openVersionHistoryDialog(this.map);
+  }
+
+  openExportDialog() {
     if (this.unsavedChanges$.getValue()) {
       this.messageDialog.display({
         title: 'Save Required',
@@ -112,60 +113,13 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
         type: MessageType.Error,
       });
     } else {
-      this.modalService.open(MapExportDialogComponent).result.then(format => {
-        if (format === 'pdf') {
-          this.downloadPDF();
-        } else if (format === 'svg') {
-          this.downloadSVG();
-        } else if (format === 'png') {
-          this.downloadPNG();
-        } else {
-          throw new Error('invalid format');
-        }
-      }, () => {
-      });
+      return this.filesystemObjectActions.openExportDialog(this.map);
     }
   }
 
-  /**
-   * Saves and downloads the PDF version of the current map
-   */
-  downloadPDF() {
-    this.downloadService.requestDownload(
-      this.map.label,
-      () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'pdf'),
-      'application/pdf',
-      '.pdf',
-    );
+  openShareDialog() {
+    return this.filesystemObjectActions.openShareDialog(this.map);
   }
-
-  /**
-   * Saves and downloads the SVG version of the current map
-   */
-  downloadSVG() {
-    this.downloadService.requestDownload(
-      this.map.label,
-      () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'svg'),
-      'application/svg',
-      '.svg',
-    );
-  }
-
-  /**
-   * Saves and downloads the PNG version of the current map
-   */
-  downloadPNG() {
-    this.downloadService.requestDownload(
-      this.map.label,
-      () => this.mapService.generateExport(this.locator.projectName, this.locator.hashId, 'png'),
-      'application/png',
-      '.png',
-    );
-  }
-
-  // ========================================
-  // Template stuff
-  // ========================================
 
   goToReturnUrl() {
     if (this.shouldConfirmUnload()) {
@@ -175,11 +129,5 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     } else {
       this.workspaceManager.navigateByUrl(this.returnUrl);
     }
-  }
-
-  displayShareDialog() {
-    const modalRef = this.modalService.open(ShareDialogComponent);
-    modalRef.componentInstance.url = `${window.location.origin}/projects/`
-      + `${this.locator.projectName}/maps/${this.locator.hashId}?fromWorkspace`;
   }
 }

@@ -45,9 +45,10 @@
                        (click)="closeOtherTabs(pane, tab); $event.preventDefault()">Close other tabs</a>
                   </div>
                 </div>
-                <div class="ml-2 mt-1">
+                <div class="ml-2 mt-1 d-flex align-items-start">
                   <div ngbDropdown container="body">
-                    <button type="button" class="btn btn-secondary btn-sm" ngbDropdownToggle ngbTooltip="New Tab"
+                    <button type="button" class="btn btn-secondary btn-sm dropdown-no-arrow"
+                            ngbDropdownToggle ngbTooltip="New Tab"
                             container="body">
                       <i class="fa fa-fw fa-plus"></i>
                     </button>

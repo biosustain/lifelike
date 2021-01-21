@@ -18,7 +18,6 @@ import { Actions, ofType, createEffect } from '@ngrx/effects';
 import * as AuthActions from './actions';
 import * as AuthSelectors from './selectors';
 import { State } from './state';
-import { ApiHttpError } from 'app/interfaces';
 
 import * as SnackbarActions from 'app/shared/store/snackbar-actions';
 import { MatSnackBar } from '@angular/material';
@@ -27,6 +26,7 @@ import {
 } from 'app/users/components/terms-of-service-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TERMS_OF_SERVICE } from '../../users/components/terms-of-service-text.component';
+import { ErrorResponse } from '../../shared/schemas/common';
 
 @Injectable()
 export class AuthEffects {
@@ -109,7 +109,7 @@ export class AuthEffects {
       return this.authService.login(email, password).pipe(
         map(user => AuthActions.loginSuccess({user: user.user})),
         catchError((err: HttpErrorResponse) => {
-          const error: ApiHttpError = err.error.apiHttpError;
+          const error = (err.error as ErrorResponse).apiHttpError;
           return from([
             SnackbarActions.displaySnackbar({
               payload: {

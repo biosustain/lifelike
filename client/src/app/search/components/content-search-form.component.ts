@@ -16,7 +16,7 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
 
   form = new FormGroup({
     q: new FormControl('', Validators.required),
-    types: new FormControl([]),
+    mimeTypes: new FormControl([]),
   });
 
   constructor(messageDialog: MessageDialog) {
