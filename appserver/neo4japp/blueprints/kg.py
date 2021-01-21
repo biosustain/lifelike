@@ -102,25 +102,29 @@ def get_ncbi_enrichment_domains():
         result. All domains should have matching indices e.g. regulon[1] should be data from
         matching same node as uniprot[1].
     """
+    # TODO: Validate incoming data using webargs + Marshmallow
     data = request.get_json()
-    node_ids = data['nodeIds']
-    taxID = data['taxID']
-    kg = get_kg_service()
-    regulon = kg.get_regulon_genes(node_ids)
-    biocyc = kg.get_biocyc_genes(node_ids, taxID)
-    go = kg.get_go_genes(node_ids)
-    string = kg.get_string_genes(node_ids)
-    uniprot = kg.get_uniprot_genes(node_ids)
-    nodes = []
-    for i, node_id in enumerate(node_ids):
-        node = {'regulon': regulon[i],
-                'uniprot': uniprot[i],
-                'string': string[i],
-                'go': go[i],
-                'biocyc': biocyc[i],
-                'node_id': node_id
-                }
-        nodes.append(node)
+    node_ids = data.get('nodeIds')
+    taxID = data.get('taxID')
+    if node_ids is not None and taxID is not None:
+        kg = get_kg_service()
+        regulon = kg.get_regulon_genes(node_ids)
+        biocyc = kg.get_biocyc_genes(node_ids, taxID)
+        go = kg.get_go_genes(node_ids)
+        string = kg.get_string_genes(node_ids)
+        uniprot = kg.get_uniprot_genes(node_ids)
+        nodes = []
+        for i, node_id in enumerate(node_ids):
+            node = {'regulon': regulon[i],
+                    'uniprot': uniprot[i],
+                    'string': string[i],
+                    'go': go[i],
+                    'biocyc': biocyc[i],
+                    'node_id': node_id
+                    }
+            nodes.append(node)
+    else:
+        nodes = []
     return jsonify({'result': nodes}), 200
 
 

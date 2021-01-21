@@ -7,13 +7,31 @@ import { UnaryFunction } from 'rxjs/src/internal/types';
 import { UserError } from '../exceptions';
 
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { ServerError } from 'app/interfaces/error.interface';
+import { ErrorResponse } from '../schemas/common';
+import { AbstractControl } from '@angular/forms';
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class ErrorHandler {
   constructor(private readonly messageDialog: MessageDialog) {
+  }
+
+  getErrorResponse(error: any): ErrorResponse | undefined {
+    if (error instanceof HttpErrorResponse) {
+      const httpErrorResponse = error as HttpErrorResponse;
+      if (typeof httpErrorResponse.error === 'string') {
+        try {
+          return JSON.parse(httpErrorResponse.error);
+        } catch (e) {
+          // Not an error response object
+        }
+      } else if (typeof httpErrorResponse.error === 'object') {
+        return httpErrorResponse.error;
+      }
+    }
+    return null;
   }
 
   createUserError(error: any): UserError {
@@ -24,27 +42,28 @@ export class ErrorHandler {
     let transactionId = null;
 
     if (error instanceof HttpErrorResponse) {
-      const res = error as HttpErrorResponse;
+      const httpErrorResponse = error as HttpErrorResponse;
+      const errorResponse: ErrorResponse | undefined = this.getErrorResponse(error);
 
-      if (res.status === 404) {
+      // Detect if we got an error response object
+      if (errorResponse && errorResponse.message) {
+        message = errorResponse.message;
+        detail = errorResponse.detail;
+        transactionId = errorResponse.transactionId;
+      }
+
+      // Override some fields for some error codes
+      if (httpErrorResponse.status === 404) {
         title = 'Not Found';
-        message = 'The page that you are looking for does not exist. You may have followed a broken link ' +
-          'or the page may have been removed.';
-      } else if (res.status === 413) {
+        message = 'The page that you are looking for does not exist. You may have ' +
+          'followed a broken link or the page may have been removed.';
+      } else if (httpErrorResponse.status === 413) {
         title = 'Too Large';
         message = 'The server could not process your upload because it was too large.';
-      } else if (res.status === 500) {
-        title = 'Unexpected Application Problem';
-        message = 'Lifelike has encountered some unexpected problems. Please try again later.';
-      } else if (res.error && res.error.apiHttpError && res.error.apiHttpError.message != null) {
-        message = (res.error as ServerError).apiHttpError.message;
-      }
-
-      if (res.error && res.error.detail) {
-        detail = res.error.detail;
-      }
-      if (res.error && res.error.transactionId) {
-        transactionId = res.error.transactionId;
+      } else if (httpErrorResponse.status === 400) {
+        title = 'Invalid Input';
+      } else if (httpErrorResponse.status === 403) {
+        title = 'Insufficient Permission';
       }
     } else if (error instanceof UserError) {
       const userError = error as UserError;
@@ -93,6 +112,38 @@ export class ErrorHandler {
   create<T>(): UnaryFunction<Observable<T>, Observable<T>> {
     return pipe(catchError(error => {
       this.showError(error);
+
+      return throwError(error);
+    }));
+  }
+
+  createFormErrorHandler<T>(form: AbstractControl,
+                            apiFieldToFormFieldMapping = {}): UnaryFunction<Observable<T>, Observable<T>> {
+    return pipe(catchError(error => {
+      const errorResponse: ErrorResponse | undefined = this.getErrorResponse(error);
+      if (errorResponse && errorResponse.fields) {
+        const remainingErrors: string[] = [];
+
+        for (const apiFieldKey of Object.keys(errorResponse.fields)) {
+          const formFieldKey = apiFieldToFormFieldMapping[apiFieldKey] || apiFieldKey;
+          const field = form.get(formFieldKey);
+          if (field != null) {
+            field.setErrors({
+              serverValidated: errorResponse.fields[apiFieldKey],
+            });
+          } else {
+            for (const errorMessage of errorResponse.fields[apiFieldKey]) {
+              remainingErrors.push(errorMessage);
+            }
+          }
+        }
+
+        if (remainingErrors.length) {
+          form.setErrors({
+            serverValidated: remainingErrors,
+          });
+        }
+      }
 
       return throwError(error);
     }));

@@ -10,9 +10,7 @@ from datetime import date, datetime
 from neo4japp.models import (
     AppRole,
     AppUser,
-    Directory,
     GlobalList,
-    Project,
     Projects,
     projects_collaborator_role,
     FileContent,
@@ -21,6 +19,7 @@ from neo4japp.models import (
     AnnotationStyle,
     FallbackOrganism
 )
+from neo4japp.services import AccountService
 from neo4japp.services.annotations import AnnotationGraphService, ManualAnnotationService
 from neo4japp.services.annotations.constants import EntityType, ManualAnnotationType
 from neo4japp.services.elastic import ElasticService
@@ -29,6 +28,8 @@ from neo4japp.services.elastic import ElasticService
 #################
 # Service mocks
 ################
+from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider
+
 
 @pytest.fixture(scope='function')
 def mock_global_compound_inclusion(session):
@@ -145,7 +146,7 @@ def mock_get_combined_annotations_result(monkeypatch):
 
     monkeypatch.setattr(
         ManualAnnotationService,
-        'get_combined_annotations',
+        'get_file_annotations',
         get_combined_annotations_result,
     )
 
@@ -232,16 +233,18 @@ def mock_delete_elastic_documents(monkeypatch):
         'delete_documents_with_index',
         delete_documents_with_index,
     )
+
+
 ####################
 # End service mocks
 ####################
 
 
 @pytest.fixture(scope='function')
-def fix_api_owner(session, account_user) -> AppUser:
+def fix_api_owner(session, account_user: AccountService) -> AppUser:
     user = AppUser(
         id=100,
-        username='admin',
+        username='api_owner',
         email='admin@lifelike.bio',
         first_name='Jim',
         last_name='Melancholy',
@@ -287,9 +290,11 @@ def test_user_2(session) -> AppUser:
 
 @pytest.fixture(scope='function')
 def test_user_with_pdf(
-        session, test_user, fix_project, fix_directory, pdf_dir) -> Files:
+        session, test_user: AppUser,
+        fix_directory: Files,
+        pdf_dir: str) -> Files:
     pdf_path = os.path.join(pdf_dir, 'example3.pdf')
-    fake_file = None
+
     with open(pdf_path, 'rb') as pdf_file:
         pdf_content = pdf_file.read()
 
@@ -298,8 +303,6 @@ def test_user_with_pdf(
             checksum_sha256=hashlib.sha256(pdf_content).digest(),
             creation_date=datetime.now(),
         )
-        session.add(file_content)
-        session.flush()
 
         fallback = FallbackOrganism(
             organism_name='Homo sapiens',
@@ -307,32 +310,38 @@ def test_user_with_pdf(
             organism_taxonomy_id='9606'
         )
 
-        session.add(fallback)
-        session.flush()
-
         fake_file = Files(
-            file_id='unknown',
             filename='example3.pdf',
             content_id=file_content.id,
             user_id=test_user.id,
+            mime_type=MapTypeProvider.MIME_TYPE,
             creation_date=datetime.now(),
-            project=fix_project.id,
-            dir_id=fix_directory.id,
+            parent_id=fix_directory.id,
             fallback_organism_id=fallback.id
         )
+
+        session.add(fallback)
+        session.add(file_content)
         session.add(fake_file)
         session.flush()
+
     return fake_file
 
 
 @pytest.fixture(scope='function')
-def fix_project(test_user, session):
-    project = Projects(
-        project_name='Lifelike',
-        description='Test project',
-        creation_date=datetime.now(),
-        users=[test_user.id],
+def fix_project(test_user: AppUser, session) -> Projects:
+    root_dir = Files(
+        mime_type=DirectoryTypeProvider.MIME_TYPE,
+        filename='/',
+        user=test_user,
     )
+    project = Projects(
+        name='Lifelike',
+        description='Test project',
+        root=root_dir,
+        creation_date=datetime.now(),
+    )
+    session.add(root_dir)
     session.add(project)
     session.flush()
 
@@ -353,90 +362,27 @@ def fix_project(test_user, session):
 
 
 @pytest.fixture(scope='function')
-def fix_directory(fix_project, test_user, session):
-    directory = Directory(
-        name='/',
-        directory_parent_id=None,
-        projects_id=fix_project.id,
-        user_id=test_user.id,
+def fix_directory(session, test_user: AppUser) -> Files:
+    dir = Files(
+        filename='/',
+        mime_type=DirectoryTypeProvider.MIME_TYPE,
+        user=test_user,
     )
-    session.add(directory)
-    session.flush()
-    return directory
 
-
-@pytest.fixture(scope='function')
-def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
-    example_data = {
-        "edges": [],
-        "nodes": [
-            {
-                "data": {
-                    "x": -251,
-                    "y": -323,
-                    "hyperlink": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=511145",  # noqa
-                    "detail": "dddd",
-                    "source": "/dt/pdf/0df1c8e0-50a4-4770-9942-621bc1f1cb28/1/98.064/706.8/121.47984/717.8399999999999",  # noqa
-                    "search": [
-                        {
-                            "domain": "google",
-                            "url": "https://www.google.com/search?q=E. coli"
-                        },
-                        {
-                            "domain": "ncbi",
-                            "url": "https://www.ncbi.nlm.nih.gov/gene/?query=E. coli"
-                        },
-                        {
-                            "domain": "mesh",
-                            "url": "https://www.ncbi.nlm.nih.gov/mesh/?term=E. coli"
-                        },
-                        {
-                            "domain": "chebi",
-                            "url": "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=E. coli"  # noqa
-                        },
-                        {
-                            "domain": "pubchem",
-                            "url": "https://pubchem.ncbi.nlm.nih.gov/#query=E. coli"
-                        },
-                        {
-                            "domain": "uniprot",
-                            "url": "https://www.uniprot.org/uniprot/?sort=score&query=E. coli"
-                        },
-                        {
-                            "domain": "wikipedia",
-                            "url": "https://www.google.com/search?q=site:+wikipedia.org+E. coli"
-                        }
-                    ]
-                },
-                "display_name": "E. coli",
-                "hash": "dae84a2f-17ef-444e-b875-13b732a71794",
-                "shape": "box",
-                "label": "species",
-                "sub_labels": []
-            }
-        ]
-    }
-
-    project = Project(
-        id=100,
-        label='Project1',
-        description='a test project',
-        author='Jim Melancholy',
-        graph=example_data,
-        user_id=fix_api_owner.id,
-        dir_id=fix_directory.id,
+    project = Projects(
+        name='test-project',
+        description='test project',
+        root=dir,
     )
+
     session.add(project)
+    session.add(dir)
     session.flush()
 
-    project.set_hash_id()
-
-    session.flush()
-
-    return project
+    return dir
 
 
-def login_as_user(self, email, password):
+def login_as_user(self, email, password) -> AppUser:
     """ Returns the authenticated JWT tokens """
     credentials = {'email': email, 'password': password}
     login_resp = self.post(
@@ -456,15 +402,16 @@ def client(app):
 
 
 @pytest.fixture(scope='function')
-def user_client(client, test_user):
+def user_client(client, test_user: AppUser):
     """ Returns an authenticated client as well as the JWT information """
     auth = client.login_as_user('test@lifelike.bio', 'password')
     return client, auth
 
 
 @pytest.fixture(scope='function')
-def uri_fixture(client, session):
-    uri1 = DomainURLsMap(domain="CHEBI", base_URL="https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}")  # noqa
+def uri_fixture(client, session) -> DomainURLsMap:
+    uri1 = DomainURLsMap(domain="CHEBI",
+                         base_URL="https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}")  # noqa
     uri2 = DomainURLsMap(domain="MESH", base_URL="https://www.ncbi.nlm.nih.gov/mesh/?term={}")
 
     session.add(uri1)
@@ -472,6 +419,5 @@ def uri_fixture(client, session):
     session.flush()
 
     return uri1
-
 
 # TODO: Need to create actual mock data for these

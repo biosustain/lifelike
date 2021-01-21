@@ -10,8 +10,7 @@ from sqlalchemy.orm.query import Query
 
 from neo4japp.database import db, ma
 
-from .common import RDBMSBase, TimestampMixin
-
+from .common import RDBMSBase, TimestampMixin, HashIdMixin
 
 user_role = db.Table(
     'app_user_role',
@@ -37,7 +36,7 @@ class AppRole(RDBMSBase):
     name = db.Column(db.String(128), unique=True, nullable=False)
 
 
-class AppUser(RDBMSBase, TimestampMixin):
+class AppUser(RDBMSBase, TimestampMixin, HashIdMixin):
     """
         User models to tie ownership of resources to
     """
@@ -86,13 +85,8 @@ class AppUser(RDBMSBase, TimestampMixin):
     def query_by_username(cls, username: str) -> Query:
         return cls.query.filter(cls.username == username)
 
-    def to_dict(self, exclude=[], include=None, only=None, keyfn=None):
-        original_dict = super().to_dict(exclude=['password_hash'] + exclude)
-        return {
-            **original_dict,
-            **({'roles': [role.to_dict()['name'] for role in self.roles]}
-               if 'roles' not in exclude else {})
-        }
+    def to_dict(self, exclude=None, **kwargs):
+        return super().to_dict(exclude=['password_hash'] + (exclude or []), **kwargs)
 
 
 class AppUserSchema(ma.ModelSchema):  # type: ignore

@@ -1,0 +1,35 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div>
+    <app-modal-header (cancel)="cancel()">
+      {{ effectiveTitle }}
+    </app-modal-header>
+
+    <app-modal-body>
+      <app-form-row for="entitiesList" label="Gene Names" [control]="form.get('entitiesList')">
+        <textarea formControlName="entitiesList" id="entitiesList" [appFormInput]="form.get('entitiesList')"
+                rows="5" placeholder="* New line for each gene name"></textarea>
+      </app-form-row>
+      <app-form-row for="organism" label="Organism" [control]="form.get('organism')">
+        <app-organism-autocomplete
+          formId="organism"
+          [organismTaxId]="organismTaxId"
+          (organismPicked)="setOrganism($event)"
+        ></app-organism-autocomplete>
+    </app-form-row>
+
+    <app-form-row for="domainsList" label="Domains" [control]="form.get('domainsList')">
+      <div *ngFor="let choice of checks; let i=index">
+        <label>
+          <input type="checkbox" [value]="choice" (change)="onCheckChange($event)" [checked]="domains.includes(choice)">
+          {{choice}}
+        </label>
+      </div>
+    </app-form-row>
+    </app-modal-body>
+
+    <app-modal-footer>
+      <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+      <button type="submit" class="btn btn-primary">{{ submitButtonLabel }}</button>
+    </app-modal-footer>
+  </div>
+</form>

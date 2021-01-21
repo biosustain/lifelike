@@ -1,4 +1,9 @@
-<div class="invalid-feedback d-block" *ngIf="dirty && control?.invalid">
+<div class="d-block" *ngIf="dirty && control?.invalid && control.errors"
+     [class.invalid-feedback]="!formLevel" [class.alert]="formLevel"
+     [class.alert-danger]="formLevel">
+  <div *ngIf="formLevel">
+    <strong>There is an error with your input:</strong>
+  </div>
   <div *ngIf="control.hasError('required')">
     This field is required.
   </div>
@@ -8,6 +13,11 @@
   </div>
   <div *ngIf="control.hasError('email')">
     The provided email is not valid.
+  </div>
+  <div *ngIf="control.hasError('serverValidated')">
+    <div *ngFor="let error of control.getError('serverValidated')">
+      {{ error }}
+    </div>
   </div>
   <ng-container *ngFor="let error of errors | keyvalue">
     <div *ngIf="control.hasError(error.key)">

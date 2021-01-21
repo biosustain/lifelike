@@ -22,7 +22,7 @@ import { ProgressDialogComponent } from './components/dialog/progress-dialog.com
 import { TooltipComponent } from './components/tooltip.component';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
-import { FriendlyDateStrPipe, TruncatePipe, ScrubHtmlPipe } from './pipes';
+import { FriendlyDateStrPipe, ScrubHtmlPipe, TruncatePipe } from './pipes';
 import { NodeTextStylePipe } from './node-text-style.pipe';
 import { OrganismAutocompleteComponent } from './components/organism-autocomplete.component';
 import { SharedSearchService } from './services/shared-search.service';
@@ -54,10 +54,14 @@ import { GenericTableComponent } from './components/table/generic-table.componen
 import { HighlightTextComponent } from './components/highlight-text.component';
 import { AddStatusPipe } from './pipes/add-status.pipe';
 import { TermHighlightComponent } from './components/term-highlight.component';
+import { ApiService } from './services/api.service';
 import { VisJsNetworkComponent } from './components/vis-js-network/vis-js-network.component';
 import { PlotlySankeyDiagramComponent } from './components/plotly-sankey-diagram/plotly-sankey-diagram.component';
 import { SearchControlComponent } from './components/search-control.component';
-import { ApiService } from './services/api.service';
+import { UserComponent } from './components/user.component';
+import { SelectInputComponent } from './components/form/select-input.component';
+import { UserSelectComponent } from './components/form/user-select.component';
+import { AccountsService } from './services/accounts.service';
 import { ResultControlComponent } from './components/result-control.component';
 
 const components = [
@@ -97,6 +101,9 @@ const components = [
   HighlightTextComponent,
   TermHighlightComponent,
   SearchControlComponent,
+  UserComponent,
+  SelectInputComponent,
+  UserSelectComponent,
   ResultControlComponent,
 ];
 
@@ -130,9 +137,11 @@ const components = [
     AddStatusPipe,
   ],
   providers: [
+    ApiService,
     SharedNgrxEffects,
     SharedSearchService,
     ApiService,
+    AccountsService,
   ],
   // exported modules are visible to modules that import this one
   exports: [

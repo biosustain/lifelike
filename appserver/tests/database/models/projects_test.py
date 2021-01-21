@@ -1,4 +1,6 @@
 import pytest
+
+from neo4japp.models import Files
 from neo4japp.models.auth import (
     AccessControlPolicy,
     AppRole,
@@ -8,55 +10,65 @@ from neo4japp.models.projects import (
     Projects,
     projects_collaborator_role,
 )
+from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
 
-@pytest.mark.parametrize('project_name', [
+@pytest.mark.parametrize('name', [
     ('!nva!d'),
     ('i3cr3e@m'),
     ('s t y l e'),
 ])
-def test_flag_invalid_projects_name(session, project_name):
+def test_flag_invalid_projects_name(session, name):
     with pytest.raises(ValueError):
         project = Projects(
-            project_name=project_name,
+            name=name,
             description='description',
-            users=[]
         )
 
 
-@pytest.mark.parametrize('project_name', [
+@pytest.mark.parametrize('name', [
     ('test-project'),
     ('project1'),
 ])
-def test_can_add_projects(session, project_name):
-    project = Projects(
-        project_name=project_name,
-        description='description',
-        users=[],
+def test_can_add_projects(session, name, test_user):
+    root_dir = Files(
+        mime_type=DirectoryTypeProvider.MIME_TYPE,
+        filename='/',
+        user=test_user,
     )
+    project = Projects(
+        name=name,
+        description='description',
+        root=root_dir,
+    )
+    session.add(root_dir)
     session.add(project)
     session.flush()
 
-    proj = Projects.query.filter_by(project_name=project_name).one()
-    assert project.project_name == project_name
+    proj = Projects.query.filter_by(name=name).one()
+    assert project.name == name
 
 
-@pytest.mark.parametrize('project_name, user_fks', [
+@pytest.mark.parametrize('name, user_fks', [
     ('test-project', [1, 2, 3]),
     ('project1', [100, 200, 300]),
 ])
-def test_can_add_users_to_projects(session, project_name, user_fks):
-    project = Projects(
-        project_name=project_name,
-        description='description',
-        users=[],
+def test_can_add_users_to_projects(session, name, user_fks, test_user: AppUser):
+    root_dir = Files(
+        mime_type=DirectoryTypeProvider.MIME_TYPE,
+        filename='/',
+        user=test_user,
     )
+    project = Projects(
+        name=name,
+        description='description',
+        root=root_dir,
+    )
+    session.add(root_dir)
     session.add(project)
     session.flush()
 
-    proj = Projects.query.filter_by(project_name=project_name).one()
-
-    assert len(project.users) == 0
+    proj = Projects.query.filter_by(name=name).one()
 
     proj.users = user_fks
 
@@ -82,12 +94,18 @@ def test_can_set_user_role(session, role):
     session.add(test_user)
     session.flush()
 
+    root_dir = Files(
+        mime_type=DirectoryTypeProvider.MIME_TYPE,
+        filename='/',
+        user=test_user,
+    )
     new_projects = Projects(
-        project_name='they-see-me',
+        name='they-see-me',
         description='rolling',
-        users=[],
+        root=root_dir,
     )
 
+    session.add(root_dir)
     session.add(new_projects)
     session.flush()
 
@@ -114,13 +132,19 @@ def test_can_set_user_role(session, role):
     assert user_role.name == role
 
 
-def test_projects_init_with_roles(session):
+def test_projects_init_with_roles(session, test_user: AppUser):
 
-    p = Projects(
-        project_name='they-see-me',
-        description='rolling',
-        users=[],
+    root_dir = Files(
+        mime_type=DirectoryTypeProvider.MIME_TYPE,
+        filename='/',
+        user=test_user,
     )
+    p = Projects(
+        name='they-see-me',
+        description='rolling',
+        root=root_dir,
+    )
+    session.add(root_dir)
     session.add(p)
     session.flush()
 

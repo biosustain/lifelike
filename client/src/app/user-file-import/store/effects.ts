@@ -1,37 +1,28 @@
 import { Injectable } from '@angular/core';
 
-import {
-    Actions,
-    ofType,
-    createEffect,
-} from '@ngrx/effects';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
 
-import {
-    catchError,
-    map,
-    switchMap,
-    mergeMap,
-} from 'rxjs/operators';
+import { catchError, map, mergeMap, switchMap } from 'rxjs/operators';
 
 import { EMPTY, of } from 'rxjs';
 
 import {
-    getDbLabels,
-    getDbLabelsSuccess,
-    getNodeProperties,
-    getNodePropertiesSuccess,
-    uploadExperimentalDataFile,
-    uploadExperimentalDataFileSuccess,
-    uploadNodeMapping,
-    uploadNodeMappingSuccess,
-    getDbRelationshipTypes,
-    getDbRelationshipTypesSuccess,
+  getDbLabels,
+  getDbLabelsSuccess,
+  getDbRelationshipTypes,
+  getDbRelationshipTypesSuccess,
+  getNodeProperties,
+  getNodePropertiesSuccess,
+  uploadExperimentalDataFile,
+  uploadExperimentalDataFileSuccess,
+  uploadNodeMapping,
+  uploadNodeMappingSuccess,
 } from './actions';
 
 import { displaySnackbar } from 'app/shared/store/snackbar-actions';
 
 import { UserFileImportService } from '../services/user-file-import.service';
-import { ServerError } from 'app/interfaces';
+import { ErrorResponse } from '../../shared/schemas/common';
 
 @Injectable()
 export class UserFileImportEffects {
@@ -95,7 +86,7 @@ export class UserFileImportEffects {
                     }}),
                     // TODO: redirect to show graph of uploaded data
                 ]),
-                catchError((errors: ServerError) => of(displaySnackbar({payload: {
+                catchError((errors: ErrorResponse) => of(displaySnackbar({payload: {
                     message: errors.apiHttpError.message,
                     action: 'Dismiss',
                     config: {duration: 3000},

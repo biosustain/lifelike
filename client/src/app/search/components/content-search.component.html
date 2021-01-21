@@ -80,23 +80,23 @@
                   <div *ngFor="let result of results.view" class="search-results-item"
                        (appTabSelectable)="results.select(result)"
                        [class.active]="results.isSelected(result)">
-                    <div class="mb-1">
-                      <app-file-type-label [object]="result.item"></app-file-type-label>
+                    <div class="text-truncate mb-1">
+                      <app-object-path [object]="result.item.parent" [newTab]="true"></app-object-path>
                     </div>
                     <div class="search-results-item-header text-truncate">
                       <h5 class="text-truncate" [style.padding]="'1px 0'">
-                        <a [appLink]="['/projects', result.item.project.projectName]" [newTab]="true" [sideBySide]="true">{{ result.item.project.projectName }}</a>
-                        /
+                        <app-file-type-label [object]="result.item" [showLabel]="false"
+                          class="mr-1"></app-file-type-label>
                         <a [appLink]="getObjectCommands(result.item)" [newTab]="true" [sideBySide]="true">
                           <app-term-highlight [text]="result.item.name" [highlightTerms]="resultQuery ? resultQuery.phrases : []"></app-term-highlight>
                         </a>
                       </h5>
                     </div>
-                    <div class="mt-2 text-truncate"><i>Created by user {{ result.item.creator.username }} on {{ result.item.creationDate | date: 'fullDate'}}</i></div>
+                    <div class="mt-2 text-truncate"><i>Created by <app-user [user]="result.item.user"></app-user> on {{ result.item.creationDate | date: 'fullDate'}}</i></div>
                     <div class="mt-2 paragraph-truncate-3">
                       <app-term-highlight [text]="result.item.description" [highlightTerms]="resultQuery ? resultQuery.phrases : []"></app-term-highlight>
                     </div>
-                    <ng-container *ngIf="result.item.type == 'file' && result.item.highlight">
+                    <ng-container *ngIf="result.item.highlight">
                       <div class="dropdown-divider"></div>
                       <div class="mt-2 paragraph-truncate-3">
                         <app-highlight-text [highlight]="result.item.highlight[0]"></app-highlight-text>
@@ -131,9 +131,12 @@
       </div>
       <div class="module-body-split-sidebar">
         <ng-container *ngIf="results.selection.length">
-          <app-file-info (highlightClick)="highlightClicked(results.selection[0].item, $event)"
-                         (highlightDisplayLimitChange)="highlightDisplayLimitChanged(results.selection[0].item, $event)"
-                         [object]="results.selection[0].item" [highlightTerms]="resultQuery.phrases"></app-file-info>
+          <app-object-info [forEditing]="false"
+                           (highlightClick)="highlightClicked(results.selection[0].item, $event)"
+                           (highlightDisplayLimitChange)="highlightDisplayLimitChanged(results.selection[0].item, $event)"
+                           [object]="results.selection[0].item"
+                           (objectOpen)="openObject($event)"
+                           [highlightTerms]="resultQuery.phrases"></app-object-info>
         </ng-container>
       </div>
     </div>
