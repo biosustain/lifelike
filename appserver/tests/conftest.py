@@ -1,7 +1,7 @@
 import pytest
 import os
 from pathlib import Path
-
+from elasticsearch import Elasticsearch
 from py2neo import (
     Graph,
     Node,
@@ -10,7 +10,7 @@ from py2neo import (
 
 from neo4japp.services.common import GraphBaseDao
 from neo4japp.constants import DISPLAY_NAME_MAP
-from neo4japp.database import db, reset_dao, get_elastic_service
+from neo4japp.database import db, reset_dao
 from neo4japp.data_transfer_objects.visualization import (
     DuplicateEdgeConnectionData,
     DuplicateVisEdge,
@@ -32,6 +32,7 @@ from neo4japp.services import (
     SearchService,
     VisualizerService,
 )
+from neo4japp.services.elastic import ElasticService
 from neo4japp.util import (
     get_first_known_label_from_node,
 )
@@ -90,13 +91,6 @@ def graph(request, app):
 
 
 @pytest.fixture(scope='function')
-def elasticindexes():
-    """ Sets up the elastic indexes and pipelines """
-    elastic_service = get_elastic_service()
-    elastic_service.recreate_indices_and_pipelines()
-
-
-@pytest.fixture(scope='function')
 def account_service(app, session):
     return AccountService(session)
 
@@ -125,6 +119,21 @@ def visualizer_service(app, graph, session):
         graph=graph,
         session=session
     )
+
+
+@pytest.fixture(scope='function')
+def elastic_service(app, session):
+    elastic_conn = Elasticsearch(
+        timeout=180,
+        hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
+    )
+    elastic_service = ElasticService(elastic=elastic_conn)
+
+    # Ensures that anytime the elastic service is requested for a test, that the environment is
+    # clean
+    elastic_service.recreate_indices_and_pipelines()
+
+    return elastic_service
 
 # Begin Graph Data Fixtures #
 

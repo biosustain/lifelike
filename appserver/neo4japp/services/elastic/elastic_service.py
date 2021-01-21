@@ -441,8 +441,8 @@ class ElasticService():
                                     'case_insensitive': True
                                 }
                             }
-                        }
-                    for field in text_fields]
+                        } for field in text_fields
+                    ]
                 }
             })
 
