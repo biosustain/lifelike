@@ -222,7 +222,7 @@ def _create_annotations(
         else:
             custom_annotations = document.custom_annotations
             excluded_annotations = document.excluded_annotations
-            pdf_text, parsed = parse_pdf(document.file_id)
+            pdf_text, parsed = parse_pdf(document.id)
     except requests.exceptions.ConnectTimeout:
         raise AnnotationError(
             'The request timed out while trying to connect to the PDF service.')

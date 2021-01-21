@@ -597,9 +597,7 @@ def delete_global_annotations(pids):
 @bp.route('/files/<int:file_id>', methods=['GET'])
 def get_pdf_to_annotate(file_id):
     """This endpoint is sent by the annotation pipeline to the
-    pdfparse service, and acts as a resource pull. No need to check for
-    project permission or authentication as the pipeline already
-    queried that to get `project_id` and `file_id`.
+    pdfparse service, and acts as a resource pull.
     """
 
     doc = Files.query.get(file_id)
@@ -607,7 +605,7 @@ def get_pdf_to_annotate(file_id):
     if not doc:
         raise RecordNotFoundException(f'File with file id {file_id} not found.')
 
-    res = make_response(doc.raw_file)
+    res = make_response(doc.content.raw_file)
     res.headers['Content-Type'] = 'application/pdf'
     res.headers['Content-Disposition'] = f'attachment;filename={doc.filename}.pdf'
     return res

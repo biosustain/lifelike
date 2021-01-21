@@ -91,7 +91,7 @@ class ManualAnnotationService:
 
         if annotate_all:
             recognition = get_entity_recognition()
-            _, parsed = parse_pdf(file.file_id)
+            _, parsed = parse_pdf(file.id)
             tokens_list = recognition.extract_tokens(parsed=parsed)
             annotator = get_annotation_service()
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
