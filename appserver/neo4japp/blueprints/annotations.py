@@ -50,11 +50,12 @@ from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.utils.logger import UserEventLog
 from .filesystem import bp as filesystem_bp
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
-from ..schemas.annotations import AnnotationListSchema, \
+from ..schemas.annotations import CombinedAnnotationListSchema, \
     AnnotationGenerationRequestSchema, \
     MultipleAnnotationGenerationResponseSchema, GlobalAnnotationsDeleteSchema, \
     CustomAnnotationCreateSchema, CustomAnnotationDeleteSchema, AnnotationUUIDListSchema, \
-    AnnotationExclusionCreateSchema, AnnotationExclusionDeleteSchema
+    AnnotationExclusionCreateSchema, AnnotationExclusionDeleteSchema, SystemAnnotationListSchema, \
+    CustomAnnotationListSchema
 from ..schemas.filesystem import BulkFileRequestSchema
 from ..services.annotations import AnnotationGraphService
 from ..utils.http import make_cacheable_file_response
@@ -96,7 +97,7 @@ class FileAnnotationsView(FilesystemBaseView):
 
         results = annotations + file.custom_annotations
 
-        return jsonify(AnnotationListSchema().dump({
+        return jsonify(SystemAnnotationListSchema().dump({
             'results': results,
             'total': len(results),
         }))
@@ -117,7 +118,7 @@ class FileCustomAnnotationsListView(FilesystemBaseView):
             file, current_user, params['annotation'], params['annotate_all']
         )
 
-        return jsonify(AnnotationListSchema().dump({
+        return jsonify(CustomAnnotationListSchema().dump({
             'results': results,
             'total': len(results),
         }))
