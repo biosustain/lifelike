@@ -1,0 +1,27 @@
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+@import 'src/scss/variables';
+
+.network-utilities-container {
+    bottom: 0;
+    margin-left: $spacer;
+    margin-bottom: $spacer;
+    position: absolute;
+    width: 0;
+    z-index: 1;
+}
+
+.physics-shadow-on {
+    box-shadow: 0 0 0 0.2rem rgba(12, 140, 170, 0.25);
+}
+.physics-shadow-off {
+    box-shadow: none;
+}
+
+.zoom-in-btn {
+    border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.zoom-out-btn {
+    border-radius: 0 0 0.25rem 0.25rem;
+}

@@ -183,6 +183,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
             'entity_id',
             'type',
             'text',
+            'primary_name',
             'count',
         ]
 
@@ -211,7 +212,8 @@ class FileAnnotationCountsView(FilesystemBaseView):
             yield [
                 meta['id'],
                 meta['type'],
-                meta['allText'],
+                meta['keyword'].strip(),
+                meta['primaryName'].strip(),
                 counts[key]['count']
             ]
 
@@ -413,7 +415,7 @@ def export_global_inclusions():
 
         return {
             'id': inclusion.annotation['meta'].get('id', ''),
-            'term': inclusion.annotation['meta']['allText'],
+            'term': inclusion.annotation['keyword'],
             'type': inclusion.annotation['meta']['type'],
             'hyperlink': inclusion.annotation['meta'].get('idHyperlink', ''),
             'inclusion_date': inclusion.annotation.get('inclusion_date', ''),
@@ -518,7 +520,7 @@ def get_annotations():
         GlobalList.approved,
         GlobalList.creation_date,
         GlobalList.modified_date,
-        GlobalList.annotation['meta']['allText'].astext.label('text'),
+        GlobalList.annotation['keyword'].astext.label('text'),
         sa.sql.null().label('reason'),
         GlobalList.annotation['meta']['type'].astext.label('entityType'),
         GlobalList.annotation['meta']['id'].astext.label('annotationId'),

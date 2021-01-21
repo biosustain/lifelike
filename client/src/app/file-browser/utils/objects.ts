@@ -14,7 +14,7 @@ export function getObjectCommands(object: DirectoryObject) {
         return ['/projects', object.project.projectName, 'files', object.id];
       }
     case 'map':
-      return ['/projects', object.project.projectName, 'maps', object.id, 'edit'];
+      return ['/projects', object.project.projectName, 'maps', object.id];
     default:
       throw new Error(`unknown directory object type: ${object.type}`);
   }

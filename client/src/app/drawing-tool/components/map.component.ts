@@ -19,6 +19,7 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
+import { MovableNode } from '../../graph-viewer/renderers/canvas/behaviors/node-move';
 
 @Component({
   selector: 'app-map',
@@ -43,9 +44,9 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
   graphCanvas: CanvasGraphView;
 
+  protected readonly subscriptions = new Subscription();
   historyChangesSubscription: Subscription;
   unsavedChangesSubscription: Subscription;
-  protected readonly subscriptions = new Subscription();
 
   unsavedChanges$ = new BehaviorSubject<boolean>(false);
 
@@ -105,7 +106,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     });
 
     this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
-      this.unsavedChanges$.next(true);
       this.search();
     });
 
@@ -172,6 +172,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   registerGraphBehaviors() {
     this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcut(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
   }
 
   ngOnDestroy() {
