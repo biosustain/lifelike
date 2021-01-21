@@ -7,7 +7,7 @@ services:
         build: ./appserver
     appserver:
         container_name: appserver
-        build: ./.idea/runConfigurations/assets/
+        build: ./.run/assets/
 #        ports:
 #            - "5000:5000"
 #        environment:

@@ -13,4 +13,18 @@
     </deployment>
     <method v="2" />
   </configuration>
+  <configuration default="false" name="Init" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+    <deployment type="docker-compose.yml">
+      <settings>
+        <option name="secondarySourceFiles">
+          <list>
+            <option value="docker-compose.override.yml" />
+            <option value=".run/assets/docker-compose.yml" />
+          </list>
+        </option>
+        <option name="sourceFilePath" value="docker-compose.yml" />
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
 </component>

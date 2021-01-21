@@ -1,20 +1,15 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Appserver" type="Python.FlaskServer">
+  <configuration default="true" type="Python.FlaskServer">
     <option name="additionalOptions" value="--host=0.0.0.0 --port=5000 --no-debugger --no-reload" />
     <option name="flaskDebug" value="true" />
-    <module name="appserver" />
-    <option name="target" value="app" />
-    <option name="targetType" value="PYTHON" />
+    <module name="kg-prototypes" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
-    <envs>
-      <env name="DEBUG" value="True" />
-    </envs>
     <option name="SDK_HOME" value="docker-compose://[$PROJECT_DIR$/docker-compose.yml, $PROJECT_DIR$/docker-compose.override.yml, $PROJECT_DIR$/.run/assets/docker-compose.yml]:appserver/python3" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/appserver" />
+    <option name="WORKING_DIRECTORY" value="" />
     <option name="IS_MODULE_SDK" value="false" />
-    <option name="ADD_CONTENT_ROOTS" value="false" />
-    <option name="ADD_SOURCE_ROOTS" value="false" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
+    <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
     <option name="launchJavascriptDebuger" value="false" />
     <method v="2" />
