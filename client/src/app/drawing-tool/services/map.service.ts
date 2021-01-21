@@ -59,11 +59,11 @@ export class MapService extends AbstractService {
   }
 
   getMap(projectName: string, hashId: string) {
-    return this.http.get(
+    return this.http.get<{ project: KnowledgeMap, editable: boolean }>(
       `${this.PROJECTS_BASE_URL}/${encodeURIComponent(
-        projectName
+        projectName,
       )}/map/${encodeURIComponent(hashId)}`,
-      this.getHttpOptions(true)
+      this.getHttpOptions(true),
     );
   }
 
