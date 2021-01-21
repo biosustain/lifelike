@@ -27,69 +27,6 @@ class FallbackOrganismSchema(Schema):  # Not camel case!
 
 
 # ========================================
-# Annotations
-# ========================================
-
-class AnnotationLinksSchema(Schema):
-    # These fields are camel case even in Python
-    ncbi = fields.String(required=True)
-    uniprot = fields.String(required=True)
-    chebi = fields.String(required=True)
-    pubchem = fields.String(required=True)
-    mesh = fields.String(required=True)
-    wikipedia = fields.String(required=True)
-    google = fields.String(required=True)
-
-
-class AnnotationMetaSchema(Schema):
-    # These fields are camel case even in Python
-    type = fields.String(required=True)
-    id = fields.String(required=True)
-    idType = fields.String(required=True)
-    idHyperlink = fields.String(required=True)
-    isCustom = fields.Boolean(required=True)
-    allText = fields.String(required=True)
-    links = fields.Nested(AnnotationLinksSchema, required=True)
-    includeGlobally = fields.Boolean(required=True)
-    isCaseInsensitive = fields.Boolean(required=True)
-
-
-class BaseAnnotationSchema(Schema):
-    # These fields are camel case even in Python
-    meta = fields.Nested(AnnotationMetaSchema, required=True)
-    pageNumber = fields.Integer(required=True)
-    keywords = fields.List(fields.String(required=True))
-    rects = fields.List(fields.List(fields.Float(required=True)))
-    uuid = fields.String(required=False)
-
-
-class SystemAnnotationSchema(BaseAnnotationSchema):
-    # These fields are camel case even in Python
-    keyword = fields.String(required=True)
-    primaryName = fields.String(required=False)
-    textInDocument = fields.String(required=False)
-
-
-class CustomAnnotationSchema(BaseAnnotationSchema):
-    pass
-
-
-# Responses
-# ----------------------------------------
-
-class SystemAnnotationListSchema(ResultListSchema):
-    results = fields.List(fields.Nested(SystemAnnotationSchema))
-
-
-class CustomAnnotationListSchema(ResultListSchema):
-    results = fields.List(fields.Nested(CustomAnnotationSchema))
-
-
-class AnnotationUUIDListSchema(ResultListSchema):
-    results = fields.List(fields.String())
-
-
-# ========================================
 # Generation
 # ========================================
 
@@ -117,8 +54,82 @@ class MultipleAnnotationGenerationResponseSchema(CamelCaseSchema):
 
 
 # ========================================
+# Annotations Base
+# ========================================
+
+class AnnotationLinksSchema(Schema):
+    # These fields are camel case even in Python
+    ncbi = fields.String(required=True)
+    uniprot = fields.String(required=True)
+    chebi = fields.String(required=True)
+    pubchem = fields.String(required=True)
+    mesh = fields.String(required=True)
+    wikipedia = fields.String(required=True)
+    google = fields.String(required=True)
+
+
+class BaseAnnotationMetaSchema(Schema):
+    # These fields are camel case even in Python
+    type = fields.String(required=True)
+    links = fields.Nested(AnnotationLinksSchema, required=True)
+    id = fields.String(required=True)
+    idType = fields.String(required=True)
+    idHyperlink = fields.String(required=True)
+    isCustom = fields.Boolean(required=True)
+    allText = fields.String(required=True)
+
+
+class BaseAnnotationSchema(Schema):
+    # These fields are camel case even in Python
+    meta = fields.Nested(BaseAnnotationMetaSchema, required=True)
+    pageNumber = fields.Integer(required=True)
+    keywords = fields.List(fields.String(required=True))
+    rects = fields.List(fields.List(fields.Float(required=True)))
+
+
+# ========================================
+# System Annotations
+# ========================================
+
+class SystemAnnotationMetaSchema(BaseAnnotationMetaSchema):
+    pass
+
+
+class SystemAnnotationSchema(BaseAnnotationSchema):
+    # These fields are camel case even in Python
+    meta = fields.Nested(SystemAnnotationMetaSchema, required=True)
+    keyword = fields.String(required=True)
+    textInDocument = fields.String(required=False)
+    keywordLength = fields.Integer()
+    loLocationOffset = fields.Integer()
+    hiLocationOffset = fields.Integer()
+    uuid = fields.String(required=False)
+    primaryName = fields.String(required=False)
+
+
+# Responses
+# ----------------------------------------
+
+class SystemAnnotationListSchema(ResultListSchema):
+    results = fields.List(fields.Nested(SystemAnnotationSchema))
+
+
+class AnnotationUUIDListSchema(ResultListSchema):
+    results = fields.List(fields.String())
+
+
+# ========================================
 # Custom Annotations
 # ========================================
+
+class CustomAnnotationMetaSchema(BaseAnnotationMetaSchema):
+    includeGlobally = fields.Boolean(required=True)
+    isCaseInsensitive = fields.Boolean(required=True)
+
+
+class CustomAnnotationSchema(BaseAnnotationSchema):
+    meta = fields.Nested(CustomAnnotationMetaSchema, required=True)
+
 
 # Requests
 # ----------------------------------------
@@ -130,6 +141,34 @@ class CustomAnnotationCreateSchema(CamelCaseSchema):
 
 class CustomAnnotationDeleteSchema(CamelCaseSchema):
     remove_all = fields.Boolean(required=False, missing=lambda: False)
+
+
+# Responses
+# ----------------------------------------
+
+class CustomAnnotationListSchema(ResultListSchema):
+    results = fields.List(fields.Nested(CustomAnnotationSchema))
+
+
+# ========================================
+# Combined Annotations
+# ========================================
+
+class CombinedAnnotationMetaSchema(SystemAnnotationMetaSchema, CustomAnnotationMetaSchema):
+    isExcluded = fields.Boolean()
+    exclusionReason = fields.String()
+    exclusionComment = fields.String()
+
+
+class CombinedAnnotationSchema(SystemAnnotationSchema, CustomAnnotationSchema):
+    meta = fields.Nested(CombinedAnnotationMetaSchema)
+
+
+# Responses
+# ----------------------------------------
+
+class CombinedAnnotationListSchema(ResultListSchema):
+    results = fields.List(fields.Nested(CombinedAnnotationSchema))
 
 
 # ========================================
@@ -162,28 +201,6 @@ class AnnotationExclusionDeleteSchema(CamelCaseSchema):
 
 
 # ========================================
-# Combined Annotations
-# ========================================
-
-class CombinedAnnotationMetaSchema(AnnotationMetaSchema):
-    isExcluded = fields.Boolean()
-    exclusionReason = fields.String()
-    exclusionComment = fields.String()
-
-
-class CombinedAnnotationSchema(SystemAnnotationSchema, CustomAnnotationSchema):
-    meta = fields.Nested(CombinedAnnotationMetaSchema)
-
-
-# Responses
-# ----------------------------------------
-
-
-class CombinedAnnotationListSchema(ResultListSchema):
-    results = fields.List(fields.Nested(CombinedAnnotationSchema))
-
-
-# ========================================
 # History
 # ========================================
 
@@ -201,7 +218,7 @@ class AnnotationChangeExclusionMetaSchema(CamelCaseSchema):
 class AnnotationInclusionChangeSchema(CamelCaseSchema):
     action = fields.String()
     date = fields.DateTime()
-    meta = fields.Nested(AnnotationMetaSchema)
+    meta = fields.Nested(CombinedAnnotationMetaSchema)
 
 
 class AnnotationExclusionChangeSchema(CamelCaseSchema):
