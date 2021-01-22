@@ -24,6 +24,7 @@
     </div>
     <ng-template #singleSelectedEntity>
       <ng-template [ngTemplateOutlet]="getDataGroup"></ng-template>
+      <ng-template [ngTemplateOutlet]="getAssociatedEntitiesGroup"></ng-template>
       <div *ngIf="exactlyOneSelectedNode; else singleSelectedEdge">
         <div class="context-menu-group">
           <div
@@ -85,6 +86,16 @@
       (mouseenter)="hideAllSubMenus()"
       (click)="requestDataSidenav()"
     >Show Supporting Data</div>
+  </div>
+</ng-template>
+
+<ng-template #getAssociatedEntitiesGroup>
+  <div class="context-menu-group">
+    <div *ngFor="let type of associatedTypeKeys"
+      class="context-menu-item"
+      (mouseenter)="hideAllSubMenus()"
+      (click)="requestTypeSidenav(type)"
+    >Show Associated {{ associatedType[type] }}</div>
   </div>
 </ng-template>
 
