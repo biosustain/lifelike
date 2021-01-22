@@ -85,6 +85,7 @@ class BaseAnnotationSchema(Schema):
     pageNumber = fields.Integer(required=True)
     keywords = fields.List(fields.String(required=True))
     rects = fields.List(fields.List(fields.Float(required=True)))
+    uuid = fields.String(required=False)
 
 
 # ========================================
@@ -103,7 +104,6 @@ class SystemAnnotationSchema(BaseAnnotationSchema):
     keywordLength = fields.Integer()
     loLocationOffset = fields.Integer()
     hiLocationOffset = fields.Integer()
-    uuid = fields.String(required=False)
     primaryName = fields.String(required=False)
 
 
