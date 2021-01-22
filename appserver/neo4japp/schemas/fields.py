@@ -1,14 +1,24 @@
 import re
 from typing import Optional, Dict
 
-import sqlalchemy
 from marshmallow import fields, ValidationError
 
 from neo4japp.utils.request import parse_sort
+from neo4japp.utils.string import stripped_characters, is_nice_filename_char
+
+
+class NiceFilenameString(fields.String):
+    def _deserialize(self, value, attr, data, **kwargs):
+        value = super()._deserialize(value, attr, data, **kwargs)
+        # Not the most efficient
+        value = value.strip(stripped_characters)
+        value = ''.join([ch for ch in value if is_nice_filename_char(ch)])
+        return value
 
 
 class StringIntegerField(fields.Integer):
     """An integer field that also handles the case when the data is an empty string."""
+
     def _deserialize(self, value, attr, data, **kwargs):
         if value == '':
             if self.missing is not None:

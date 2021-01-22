@@ -376,6 +376,7 @@ class FilesystemBaseView(MethodView):
                         file.content_id = new_content_id
                         changed_fields.add('content_value')
 
+            file.modified_date = datetime.now()
             file.modifier = user
 
         if len(changed_fields):
