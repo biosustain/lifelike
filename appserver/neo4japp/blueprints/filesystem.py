@@ -270,7 +270,7 @@ class FilesystemBaseView(MethodView):
         # Prevent recursive parent hash IDs
         if parent_hash_id is not None and parent_hash_id in [file.hash_id for file in target_files]:
             raise ValidationError(f'An object cannot be set as the parent of itself.',
-                                  "parent_hash_id")
+                                  "parentHashId")
 
         # Check the specified parent to see if it can even be a parent
         if parent_hash_id is not None:
@@ -280,7 +280,7 @@ class FilesystemBaseView(MethodView):
             if parent_file.mime_type != DirectoryTypeProvider.MIME_TYPE:
                 raise ValidationError(f"The specified parent ({parent_hash_id}) is "
                                       f"not a folder. It is a file, and you cannot make files "
-                                      f"become a child of another file.", "parent_hash_id")
+                                      f"become a child of another file.", "parentHashId")
 
         if 'content_value' in params and len(target_files) > 1:
             # We don't allow multiple files to be changed due to a potential deadlock
@@ -307,7 +307,7 @@ class FilesystemBaseView(MethodView):
                     # Re-check referential parent
                     if file.id == parent_file.id:
                         raise ValidationError(f'A file or folder ({file.filename}) cannot be '
-                                              f'set as the parent of itself.', "parent_hash_id")
+                                              f'set as the parent of itself.', "parentHashId")
 
                     # TODO: Check max hierarchy depth
 
@@ -359,7 +359,7 @@ class FilesystemBaseView(MethodView):
                     except ValueError:
                         raise ValidationError(f"The provided file may be corrupt for files of type "
                                               f"'{file.mime_type}' (which '{file.hash_id}' is of).",
-                                              "content_value")
+                                              "contentValue")
 
                     new_content_id = FileContent.get_or_create(buffer)
                     buffer.seek(0)  # Must rewind
