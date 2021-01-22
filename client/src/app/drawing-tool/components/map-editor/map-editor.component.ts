@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
 
 import { cloneDeep } from 'lodash';
 
@@ -6,7 +6,6 @@ import { makeid } from '../../services';
 import { KnowledgeMap, UniversalGraphNode } from '../../services/interfaces';
 
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
-import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
 import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
 import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
 import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
@@ -32,7 +31,7 @@ import { LockError } from '../../../file-browser/services/filesystem.service';
     './map-editor.component.scss',
   ],
 })
-export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implements OnInit, OnDestroy {
+export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
@@ -67,6 +66,14 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     });
 
     this.startLockInterval();
+  }
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+
+    this.subscriptions.add(this.graphCanvas.historyChanges$.subscribe(() => {
+      this.unsavedChanges$.next(true);
+    }));
   }
 
   ngOnDestroy() {
@@ -110,7 +117,6 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     this.graphCanvas.behaviors.add('delete-keyboard-shortcut', new DeleteKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('paste-keyboard-shortcut', new PasteKeyboardShortcut(this.graphCanvas), -100);
     this.graphCanvas.behaviors.add('history-keyboard-shortcut', new HistoryKeyboardShortcuts(this.graphCanvas, this.snackBar), -100);
-    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
     this.graphCanvas.behaviors.add('resize-handles', new HandleResizable(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('edge-creation', new InteractiveEdgeCreation(this.graphCanvas), 1);
   }
@@ -218,8 +224,6 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
 
     if (this.lockAcquired === false) {
       this.filesystemService.getLocks(this.locator.hashId).pipe(
-        this.errorHandler.create(),
-      ).pipe(
         finalize(() => this.lastLockCheckTime = window.performance.now()),
       ).subscribe(locks => {
         this.ngZone.run(() => {
@@ -231,12 +235,6 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
         own: true,
       }).pipe(
         finalize(() => this.lastLockCheckTime = window.performance.now()),
-        catchError(error => {
-          if (!(error instanceof LockError)) {
-            this.errorHandler.showError(error);
-          }
-          return throwError(error);
-        }),
       ).subscribe(locks => {
         this.lockAcquired = true;
         this.ngZone.run(() => {
@@ -245,7 +243,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
       }, (err: LockError) => {
         this.lockAcquired = false;
         this.ngZone.run(() => {
-          this.locks = err.locks;
+          this.locks = 'locks' in err ? err.locks : [];
         });
       });
     }

@@ -48,6 +48,7 @@ import { SnippetDisplayComponent } from '../snippet-display/snippet-display.comp
 import { VisualizationQuickbarComponent } from '../../components/visualization-quickbar/visualization-quickbar.component';
 import { VisualizationCanvasComponent } from '../visualization-canvas/visualization-canvas.component';
 import { VisualizationSettingsComponent } from '../visualization-settings/visualization-settings.component';
+import { SidenavTypeViewComponent } from '../sidenav-type-view/sidenav-type-view.component';
 
 describe('VisualizationCanvasComponent', () => {
     let fixture: ComponentFixture<VisualizationCanvasComponent>;
@@ -131,6 +132,7 @@ describe('VisualizationCanvasComponent', () => {
                     SidenavClusterViewComponent,
                     SidenavEdgeViewComponent,
                     SidenavNodeViewComponent,
+                    SidenavTypeViewComponent,
                     SnippetDisplayComponent,
                     VisualizationCanvasComponent,
                     VisualizationQuickbarComponent,
