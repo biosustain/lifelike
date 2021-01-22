@@ -1,3 +1,4 @@
+import datetime
 from collections import namedtuple
 from typing import Optional
 
@@ -97,7 +98,8 @@ def user_with_project_roles(
 
 ParameterizedFile = namedtuple('FilesParam', (
     'public', 'in_folder', 'user_roles_for_folder', 'user_roles_for_file',
-), defaults=(False, False, [], []))
+    'recycled', 'folder_recycled', 'deleted', 'folder_deleted',
+), defaults=(False, False, [], [], False, False, False, False))
 
 
 @pytest.fixture(scope='function')
@@ -114,7 +116,7 @@ def file_in_project(
     if hasattr(request, 'param'):
         param: ParameterizedFile = request.param
     else:
-        param = ParameterizedFile(False, False, [], [])
+        param = ParameterizedFile(False, False, [], [], False, False, False, False)
 
     file = Files(
         mime_type=MapTypeProvider.MIME_TYPE,
@@ -137,6 +139,20 @@ def file_in_project(
         )
         file.parent = folder
         session.add(folder)
+
+    if param.recycled:
+        file.recycling_date = datetime.datetime.now()
+
+    if param.folder_recycled:
+        assert folder is not None
+        folder.recycling_date = datetime.datetime.now()
+
+    if param.deleted:
+        file.deletion_date = datetime.datetime.now()
+
+    if param.folder_deleted:
+        assert folder is not None
+        folder.deletion_date = datetime.datetime.now()
 
     session.add(content)
     session.add(file)
