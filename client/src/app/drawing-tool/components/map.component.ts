@@ -41,6 +41,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   _map: KnowledgeMap | undefined;
   pendingInitialize = false;
 
+  editable = true;
   graphCanvas: CanvasGraphView;
 
   protected readonly subscriptions = new Subscription();
@@ -68,7 +69,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return combineLatest([
         this.mapService.getMap(locator.projectName, locator.hashId).pipe(
             // tslint:disable-next-line: no-string-literal
-            map(resp => resp['project'] as KnowledgeMap),
+            map(resp => {
+              this.editable = resp.editable;
+              return resp.project;
+            }),
             // TODO: This line is from the existing code and should be properly typed
         ),
         this.getExtraSource(),
