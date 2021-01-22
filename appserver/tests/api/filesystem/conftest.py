@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 import pytest
 
 from neo4japp.models import AppUser, Projects, projects_collaborator_role, Files, FileContent
@@ -48,6 +50,12 @@ def project(
     return project
 
 
+ParameterizedAppUser = namedtuple('UserParam', (
+    'app_roles',
+    'project_roles',
+), defaults=([], []))
+
+
 @pytest.fixture(scope='function')
 def user_with_project_roles(
         request,
@@ -55,6 +63,11 @@ def user_with_project_roles(
         account_user: AccountService,
         login_password: str,
         project: Projects) -> AppUser:
+    if hasattr(request, 'param'):
+        param: ParameterizedAppUser = request.param
+    else:
+        param = ParameterizedAppUser([], [])
+
     user = AppUser(
         username='user_with_project_roles',
         email=f'somehow@lifelike.bio',
@@ -63,11 +76,11 @@ def user_with_project_roles(
     )
     user.set_password(login_password)
     user.roles.extend([account_user.get_or_create_role(role_name)
-                       for role_name in request.param[0]])
+                       for role_name in param.app_roles])
     session.add(user)
     session.flush()
 
-    for role_name in request.param[1]:
+    for role_name in param.project_roles:
         session.execute(
             projects_collaborator_role.insert(),
             [{
@@ -80,11 +93,40 @@ def user_with_project_roles(
     return user
 
 
+ParameterizedFile = namedtuple('FilesParam', (
+    'public',
+), defaults=(False,))
+
+
+@pytest.fixture(scope='function')
+def folder_in_project(
+        request,
+        session,
+        project: Projects,
+        project_owner_user: AppUser) -> Files:
+    file = Files(
+        mime_type=DirectoryTypeProvider.MIME_TYPE,
+        filename='a folder',
+        description='desc',
+        user=project_owner_user,
+        parent=project.root,
+    )
+
+    if hasattr(request, 'param'):
+        param: ParameterizedFile = request.param
+        file.public = param.public
+
+    session.add(file)
+    session.flush()
+    return file
+
+
 @pytest.fixture(scope='function')
 def map_in_project(
         request,
         session,
         project: Projects,
+        folder_in_project: Files,
         project_owner_user: AppUser) -> Files:
     content = FileContent()
     content.raw_file_utf8 = '{}'
@@ -95,9 +137,13 @@ def map_in_project(
         description='desc',
         user=project_owner_user,
         content=content,
-        parent=project.root,
-        **request.param,
+        parent=folder_in_project,
     )
+
+    if hasattr(request, 'param'):
+        param: ParameterizedFile = request.param
+        file.public = param.public
+
     session.add(content)
     session.add(file)
     session.flush()
