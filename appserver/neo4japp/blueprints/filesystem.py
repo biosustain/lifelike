@@ -424,10 +424,10 @@ class FilesystemBaseView(MethodView):
 
         :param hash_ids: the hash IDs of the files
         :param user: the user to check permissions for
+        :param missing_hash_ids: IDs to put in the response
         :return: the response
         """
-        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids),
-                                                   require_hash_ids=hash_ids)
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids))
         self.check_file_permissions(files, user, ['readable'], permit_recycled=True)
 
         returned_files = {}
