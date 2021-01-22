@@ -4,6 +4,8 @@ from urllib.parse import quote
 import pytest
 
 from neo4japp.models import AppUser, Files, Projects
+from tests.api.filesystem.conftest import ParameterizedFile as TestFile, \
+    ParameterizedAppUser as TestUser
 from tests.helpers.api import generate_jwt_headers
 from tests.helpers.assertions import assert_project_response, assert_file_response
 
@@ -11,27 +13,33 @@ from tests.helpers.assertions import assert_project_response, assert_file_respon
 @pytest.mark.parametrize(
     'map_in_project, user_with_project_roles, status_code, readable, writable, commentable', [
         # Private file
-        (dict(public=False), ([], []), 403, False, False, False),
-        (dict(public=False), (['private-data-access'], []), 200, True, True, True),
-        (dict(public=False), ([], ['project-read']), 200, True, False, False),
-        (dict(public=False), ([], ['project-write']), 200, True, True, True),
-        (dict(public=False), ([], ['project-admin']), 200, True, True, True),
-        (dict(public=False), ([], ['project-write', 'project-admin']), 200, True, True, True),
-        (dict(public=False), ([], ['project-read', 'project-write']), 200, True, True, True),
-        (dict(public=False), ([], ['project-read', 'project-admin']), 200, True, True, True),
-        (dict(public=False), ([], ['project-read', 'project-write', 'project-admin']), 200, True,
-         True, True),
+        (TestFile(public=False), TestUser([], []), 403, False, False, False),
+        (TestFile(public=False), TestUser(['private-data-access'], []), 200, True, True, True),
+        (TestFile(public=False), TestUser([], ['project-read']), 200, True, False, False),
+        (TestFile(public=False), TestUser([], ['project-write']), 200, True, True, True),
+        (TestFile(public=False), TestUser([], ['project-admin']), 200, True, True, True),
+        (TestFile(public=False), TestUser([], ['project-write', 'project-admin']), 200, True, True,
+         True),
+        (TestFile(public=False), TestUser([], ['project-read', 'project-write']), 200, True, True,
+         True),
+        (TestFile(public=False), TestUser([], ['project-read', 'project-admin']), 200, True, True,
+         True),
+        (TestFile(public=False), TestUser([], ['project-read', 'project-write', 'project-admin']),
+         200, True, True, True),
         # Public file
-        (dict(public=True), ([], []), 200, True, False, False),
-        (dict(public=True), (['private-data-access'], []), 200, True, True, True),
-        (dict(public=True), ([], ['project-read']), 200, True, False, False),
-        (dict(public=True), ([], ['project-write']), 200, True, True, True),
-        (dict(public=True), ([], ['project-admin']), 200, True, True, True),
-        (dict(public=True), ([], ['project-write', 'project-admin']), 200, True, True, True),
-        (dict(public=True), ([], ['project-read', 'project-write']), 200, True, True, True),
-        (dict(public=True), ([], ['project-read', 'project-admin']), 200, True, True, True),
-        (dict(public=True), ([], ['project-read', 'project-write', 'project-admin']), 200, True,
-         True, True),
+        (TestFile(public=True), TestUser([], []), 200, True, False, False),
+        (TestFile(public=True), TestUser(['private-data-access'], []), 200, True, True, True),
+        (TestFile(public=True), TestUser([], ['project-read']), 200, True, False, False),
+        (TestFile(public=True), TestUser([], ['project-write']), 200, True, True, True),
+        (TestFile(public=True), TestUser([], ['project-admin']), 200, True, True, True),
+        (TestFile(public=True), TestUser([], ['project-write', 'project-admin']), 200, True, True,
+         True),
+        (TestFile(public=True), TestUser([], ['project-read', 'project-write']), 200, True, True,
+         True),
+        (TestFile(public=True), TestUser([], ['project-read', 'project-admin']), 200, True, True,
+         True),
+        (TestFile(public=True), TestUser([], ['project-read', 'project-write', 'project-admin']),
+         200, True, True, True),
     ],
     indirect=['map_in_project', 'user_with_project_roles'],
     ids=str,
@@ -69,7 +77,7 @@ def test_get_file(
 
 @pytest.mark.parametrize(
     'user_with_project_roles', [
-        ([], []),
+        TestUser([], []),
     ],
     indirect=['user_with_project_roles'],
     ids=str,
@@ -92,23 +100,23 @@ def test_get_file_missing(
 
 @pytest.mark.parametrize(
     'user_with_project_roles, status_code', [
-        (([], []), 403),
-        ((['private-data-access'], []), 200),
-        (([], ['project-read']), 403),
-        (([], ['project-write']), 200),
-        (([], ['project-admin']), 200),
-        (([], ['project-write', 'project-admin']), 200),
-        (([], ['project-read', 'project-write']), 200),
-        (([], ['project-read', 'project-admin']), 200),
-        (([], ['project-read', 'project-write', 'project-admin']), 200),
+        (TestUser([], []), 403),
+        (TestUser(['private-data-access'], []), 200),
+        (TestUser([], ['project-read']), 403),
+        (TestUser([], ['project-write']), 200),
+        (TestUser([], ['project-admin']), 200),
+        (TestUser([], ['project-write', 'project-admin']), 200),
+        (TestUser([], ['project-read', 'project-write']), 200),
+        (TestUser([], ['project-read', 'project-admin']), 200),
+        (TestUser([], ['project-read', 'project-write', 'project-admin']), 200),
     ],
     indirect=['user_with_project_roles'],
     ids=str
 )
 @pytest.mark.parametrize(
     'map_in_project', [
-        dict(public=False),
-        dict(public=True),
+        TestFile(public=False),
+        TestFile(public=True),
     ],
     indirect=['map_in_project'],
     ids=str,
@@ -152,7 +160,7 @@ def test_patch_file_permitted(
 
 @pytest.mark.parametrize(
     'user_with_project_roles', [
-        ([], []),
+        TestUser([], []),
     ],
     indirect=['user_with_project_roles'],
     ids=str,
@@ -177,23 +185,23 @@ def test_patch_file_missing(
 
 @pytest.mark.parametrize(
     'user_with_project_roles, status_code', [
-        (([], []), 403),
-        ((['private-data-access'], []), 200),
-        (([], ['project-read']), 403),
-        (([], ['project-write']), 200),
-        (([], ['project-admin']), 200),
-        (([], ['project-write', 'project-admin']), 200),
-        (([], ['project-read', 'project-write']), 200),
-        (([], ['project-read', 'project-admin']), 200),
-        (([], ['project-read', 'project-write', 'project-admin']), 200),
+        (TestUser([], []), 403),
+        (TestUser(['private-data-access'], []), 200),
+        (TestUser([], ['project-read']), 403),
+        (TestUser([], ['project-write']), 200),
+        (TestUser([], ['project-admin']), 200),
+        (TestUser([], ['project-write', 'project-admin']), 200),
+        (TestUser([], ['project-read', 'project-write']), 200),
+        (TestUser([], ['project-read', 'project-admin']), 200),
+        (TestUser([], ['project-read', 'project-write', 'project-admin']), 200),
     ],
     indirect=['user_with_project_roles'],
     ids=str
 )
 @pytest.mark.parametrize(
     'map_in_project', [
-        dict(public=False),
-        dict(public=True),
+        TestFile(public=False),
+        TestFile(public=True),
     ],
     indirect=['map_in_project'],
     ids=str,
@@ -239,7 +247,7 @@ def test_bulk_patch_files_permitted(
 
 @pytest.mark.parametrize(
     'user_with_project_roles', [
-        ([], []),
+        TestUser([], []),
     ],
     indirect=['user_with_project_roles'],
     ids=str,
