@@ -8,6 +8,16 @@ from tests.api.filesystem.conftest import ParameterizedFile as TestFile, \
     ParameterizedAppUser as TestUser
 from tests.helpers.api import generate_jwt_headers
 from tests.helpers.assertions import assert_project_response, assert_file_response
+import hashlib
+from urllib.parse import quote
+
+import pytest
+
+from neo4japp.models import AppUser, Files, Projects
+from tests.api.filesystem.conftest import ParameterizedFile as TestFile, \
+    ParameterizedAppUser as TestUser
+from tests.helpers.api import generate_jwt_headers
+from tests.helpers.assertions import assert_project_response, assert_file_response
 
 
 @pytest.mark.parametrize(
@@ -185,6 +195,92 @@ def test_get_file(
         assert resp_file['privileges']['readable'] is readable
         assert resp_file['privileges']['writable'] is writable
         assert resp_file['privileges']['commentable'] is commentable
+
+
+@pytest.mark.parametrize(
+    'user_with_project_roles', [
+        TestUser(app_roles=['private-data-access']),
+        TestUser(project_roles=['project-read']),
+        TestUser(project_roles=['project-write']),
+        TestUser(project_roles=['project-admin']),
+    ],
+    indirect=['user_with_project_roles'],
+    ids=str,
+)
+@pytest.mark.parametrize(
+    'file_in_project', [
+        TestFile(recycled=True),
+        TestFile(in_folder=True, folder_recycled=True),
+    ],
+    indirect=['file_in_project'],
+    ids=str,
+)
+def test_get_recycled_file(
+        client,
+        login_password: str,
+        user_with_project_roles: AppUser,
+        project: Projects,
+        file_in_project: Files):
+    login_resp = client.login_as_user(user_with_project_roles.email, login_password)
+    headers = generate_jwt_headers(login_resp['access_jwt'])
+
+    resp = client.get(
+        f'/filesystem/objects/{quote(file_in_project.hash_id)}',
+        headers=headers,
+        content_type='application/json'
+    )
+
+    # Recycled files still can be read
+    assert resp.status_code == 200
+
+    resp_data = resp.get_json()
+    resp_file = resp_data['result']
+    assert_file_response(resp_file, file_in_project)
+    assert_project_response(resp_file['project'], project)
+
+
+@pytest.mark.parametrize(
+    'user_with_project_roles', [
+        TestUser(app_roles=['private-data-access']),
+        TestUser(project_roles=['project-read']),
+        TestUser(project_roles=['project-write']),
+        TestUser(project_roles=['project-admin']),
+    ],
+    indirect=['user_with_project_roles'],
+    ids=str,
+)
+@pytest.mark.parametrize(
+    'file_in_project, status_code', [
+        (TestFile(deleted=True), 404),
+        (TestFile(in_folder=True, folder_deleted=True), 200),
+        (TestFile(in_folder=True, deleted=True, folder_deleted=True), 404),
+    ],
+    indirect=['file_in_project'],
+    ids=str,
+)
+def test_get_deleted_file(
+        client,
+        login_password: str,
+        user_with_project_roles: AppUser,
+        status_code: int,
+        project: Projects,
+        file_in_project: Files):
+    login_resp = client.login_as_user(user_with_project_roles.email, login_password)
+    headers = generate_jwt_headers(login_resp['access_jwt'])
+
+    resp = client.get(
+        f'/filesystem/objects/{quote(file_in_project.hash_id)}',
+        headers=headers,
+        content_type='application/json'
+    )
+
+    assert resp.status_code == status_code
+
+    if status_code == 200:
+        resp_data = resp.get_json()
+        resp_file = resp_data['result']
+        assert_file_response(resp_file, file_in_project)
+        assert_project_response(resp_file['project'], project)
 
 
 @pytest.mark.parametrize(
