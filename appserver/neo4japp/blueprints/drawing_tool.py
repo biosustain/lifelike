@@ -23,7 +23,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.utils import secure_filename
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_project_permission, check_project_permission
+from neo4japp.blueprints.permissions import requires_project_permission, check_project_permission, \
+    has_project_permission
 # TODO: LL-415 Migrate the code to the projects folder once GUI is complete and API refactored
 from neo4japp.blueprints.projects import bp as newbp
 from neo4japp.constants import ANNOTATION_STYLES_DICT
@@ -60,7 +61,7 @@ from neo4japp.utils.request import paginate_from_args
 bp = Blueprint('drawing_tool', __name__, url_prefix='/drawing-tool')
 
 
-def get_map(hash_id: str, user: AppUser, check_access: AccessActionType):
+def get_map(hash_id: str, user: AppUser, check_access: AccessActionType) -> Project:
     t_owner = aliased(AppUser)
     t_directory = aliased(Directory)
     t_project = aliased(Projects)
@@ -101,7 +102,10 @@ def get_map_by_hash(hash_id: str, projects_name: str):
     map = get_map(hash_id, g.current_user, AccessActionType.READ)
     map_schema = ProjectSchema()
 
-    return jsonify({'project': map_schema.dump(map)})
+    return jsonify({
+        'project': map_schema.dump(map),
+        'editable': has_project_permission(map.dir.project, g.current_user, AccessActionType.WRITE),
+    })
 
 
 @newbp.route('/<string:projects_name>/map/<string:hash_id>/download', methods=['GET'])
