@@ -197,7 +197,9 @@ class FileAnnotationCountsView(FilesystemBaseView):
                 if key not in counts:
                     counts[key] = {
                         'meta': annotation['meta'],
-                        'count': 1
+                        'count': 1,
+                        'keyword': annotation['keyword'],
+                        'primaryName': annotation['primaryName']
                     }
                 else:
                     counts[key]['count'] += 1
@@ -213,8 +215,8 @@ class FileAnnotationCountsView(FilesystemBaseView):
             yield [
                 meta['id'],
                 meta['type'],
-                meta['keyword'].strip(),
-                meta['primaryName'].strip(),
+                counts[key]['keyword'].strip(),
+                counts[key]['primaryName'].strip(),
                 counts[key]['count']
             ]
 
