@@ -328,10 +328,7 @@ class ElasticService():
         for c in search_term:
             if c == '"':
                 if parsing_phrase:
-                    if '*' in term or '?' in term:
-                        wildcard_stack.append(term)
-                    else:
-                        phrase_stack.append(term)
+                    phrase_stack.append(term)
                     term = ''
                     parsing_phrase = False
                 else:
