@@ -27,8 +27,8 @@ export const sortingAlgorithms: SortingAlgorithm[] = [
   },
   {
     id: 'mwu',
-    description: 'p-value (MWU)',
-    valueDescription: 'p-value',
+    description: 'Mann–Whitney U test',
+    valueDescription: '-log(p-value)',
     min: 0,
     step: 0.25,
     default: 0
