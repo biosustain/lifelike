@@ -309,3 +309,31 @@ def test_can_get_results_with_quoted_phrase(
     res = res['hits']['hits']
 
     assert len(res) > 0
+
+
+def test_using_wildcard_in_phrase_does_not_work(
+    elastic_service,
+    pdf_document,
+    highlight,
+    query_filter_map_and_pdf,
+    text_fields,
+    text_field_boosts,
+    keyword_fields,
+    keyword_field_boosts,
+):
+    res, _ = elastic_service.search(
+        index_id=FILE_INDEX_ID,
+        search_term='"BO*A3"',
+        offset=0,
+        limit=1,
+        text_fields=text_fields,
+        text_field_boosts=text_field_boosts,
+        keyword_fields=keyword_fields,
+        keyword_field_boosts=keyword_field_boosts,
+        query_filter=query_filter_map_and_pdf,
+        highlight=highlight
+    )
+
+    res = res['hits']['hits']
+
+    assert len(res) == 0
