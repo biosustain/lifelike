@@ -30,7 +30,6 @@ class PDFWord(PDFBase):
     keyword: str = attr.ib()
     normalized_keyword: str = attr.ib()
     page_number: int = attr.ib()
-    cropbox: Tuple[int, int] = attr.ib()
     lo_location_offset: int = attr.ib()
     hi_location_offset: int = attr.ib()
     # used to determine abbreviations
@@ -49,17 +48,6 @@ class PDFTokensList():
     tokens: Any = attr.ib()
 
 
-# IMPORTANT NOTE/TODO: JIRA LL-465
-# the commented out old code is there
-# because we need to resolve this issue of what data
-# structure to use. Up until 4/20 the commented out
-# structure was used in annotations and pdf-viewer
-#
-# but a last minute change was done on the pdf-viewer
-# and to avoid back and forth between (1) annotations,
-# (2) pdf-viewer and (3) NLP, we need to settle on a format
-#
-# for now change to what the pdf-viewer use
 @attr.s(frozen=False)
 class Annotation(CamelDictMixin):
     @attr.s(frozen=False)
@@ -82,16 +70,9 @@ class Annotation(CamelDictMixin):
         is_custom: bool = attr.ib(default=False)
         all_text: str = attr.ib(default='')
 
-    @attr.s(frozen=True)
-    class TextPosition(CamelDictMixin):
-        # [x1, y1, x2, y2]
-        positions: List[float] = attr.ib()
-        value: str = attr.ib()
-
     page_number: int = attr.ib()
     # keywords and rects are a pair
     # each index in the list correspond to the other
-    # these two replaced the old lower_left/upper_right in TextPosition
     # the keywords attribute is only there to help with debugging the coordinates
     keywords: List[str] = attr.ib()
     rects: List[List[float]] = attr.ib()
