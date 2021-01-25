@@ -9,7 +9,7 @@ from neo4japp.schemas.account import UserSchema
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import ResultListSchema, ResultMappingSchema, SingleResultSchema, \
     RankedItemSchema
-from neo4japp.schemas.fields import SortField, FileUploadField
+from neo4japp.schemas.fields import SortField, FileUploadField, NiceFilenameString
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
 
@@ -218,7 +218,8 @@ class FileSearchRequestSchema(CamelCaseSchema):
 
 
 class BulkFileUpdateRequestSchema(CamelCaseSchema):
-    filename = fields.String(required=True, validate=marshmallow.validate.Length(min=1, max=200))
+    filename = NiceFilenameString(required=True,
+                                  validate=marshmallow.validate.Length(min=1, max=200))
     parent_hash_id = fields.String(required=True,
                                    validate=marshmallow.validate.Length(min=1, max=36))
     description = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
