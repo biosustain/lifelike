@@ -85,7 +85,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
     // Push to backend to save
     this.mapService.updateMap(this.locator.projectName, this.map)
-        .pipe(this.errorHandler.create())
+        .pipe(this.errorHandler.create({label: 'Update map'}))
         .subscribe(() => {
           this.unsavedChanges$.next(false);
           this.emitModuleProperties();
