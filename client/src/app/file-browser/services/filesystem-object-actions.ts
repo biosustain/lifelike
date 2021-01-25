@@ -72,7 +72,7 @@ export class FilesystemObjectActions {
           resp.name,
       )
           .pipe(
-              this.errorHandler.create(),
+              this.errorHandler.create({label: 'Create directory'}),
               finalize(() => progressDialogRef.close()),
           )
           .toPromise();
@@ -98,7 +98,7 @@ export class FilesystemObjectActions {
           newMap.public,
         )
           .pipe(
-            this.errorHandler.create(),
+            this.errorHandler.create({label: 'Create map (no parent)'}),
             finalize(() => progressDialogRef.close()),
           )
           .toPromise();
@@ -122,7 +122,7 @@ export class FilesystemObjectActions {
           false,
         )
           .pipe(
-            this.errorHandler.create(),
+            this.errorHandler.create({label: 'Create map'}),
             finalize(() => progressDialogRef.close()),
           )
           .toPromise();
@@ -138,7 +138,7 @@ export class FilesystemObjectActions {
       const enrichmentData = result.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + result.organism + '/' + result.domainsList.join(',');
       return this.filesService.addGeneList(parent.locator.projectName, parent.directory.id, enrichmentData, result.description, result.name)
           .pipe(
-              this.errorHandler.create(),
+              this.errorHandler.create({label: 'Open enrichment table'}),
               finalize(() => progressDialogRef.close()),
           )
           .toPromise();
@@ -176,7 +176,7 @@ export class FilesystemObjectActions {
           result.description,
       )
           .pipe(
-              this.errorHandler.create(),
+              this.errorHandler.create({label: 'Edit enrichment table'}),
               finalize(() => progressDialogRef.close()),
           )
           .toPromise();
@@ -203,7 +203,7 @@ export class FilesystemObjectActions {
               parseInt(destination.locator.directoryId, 10),
           )
               .pipe(
-                  this.errorHandler.create(),
+                  this.errorHandler.create({label: 'Move file'}),
                   finalize(() => progressDialogRef.close()),
               )
               .toPromise();
@@ -214,7 +214,7 @@ export class FilesystemObjectActions {
               parseInt(destination.locator.directoryId, 10),
           )
               .pipe(
-                  this.errorHandler.create(),
+                  this.errorHandler.create({label: 'Move map'}),
                   finalize(() => progressDialogRef.close()),
               )
               .toPromise();
@@ -247,7 +247,7 @@ export class FilesystemObjectActions {
             resp.name,
         )
             .pipe(
-                this.errorHandler.create(),
+                this.errorHandler.create({label: 'Edit file'}),
                 finalize(() => progressDialogRef.close()),
             )
             .toPromise();
@@ -263,7 +263,7 @@ export class FilesystemObjectActions {
         this.filesService.getFileFallbackOrganism(
             target.locator.projectName, file.file_id,
         ).pipe(
-            this.errorHandler.create(),
+            this.errorHandler.create({label: 'Get fallback organism'}),
             map(organismTaxId => {
               const dialogRef = this.modalService.open(FileEditDialogComponent);
               dialogRef.componentInstance.organism = organismTaxId;
@@ -280,7 +280,7 @@ export class FilesystemObjectActions {
                       data.description,
                   )
                       .pipe(
-                          this.errorHandler.create(),
+                          this.errorHandler.create({label: 'Update file meta'}),
                           finalize(() => progressDialogRef.close()),
                           tap(accept),
                           catchError(error => {
@@ -308,7 +308,7 @@ export class FilesystemObjectActions {
 
         return this.mapService.updateMap(target.locator.projectName, newMap)
             .pipe(
-                this.errorHandler.create(),
+                this.errorHandler.create({label: 'Update map'}),
                 finalize(() => progressDialogRef.close()),
             )
             .toPromise();
@@ -384,7 +384,7 @@ export class FilesystemObjectActions {
             },
         ))
         .pipe(
-            this.errorHandler.create(),
+            this.errorHandler.create({label: 'Upload file'}),
             finalize(() => {
               progressDialogRef.close();
             }))
@@ -415,7 +415,7 @@ export class FilesystemObjectActions {
         const ids: string[] = files.map((file: PdfFile) => file.file_id);
         return this.filesService.reannotateFiles(projectName, ids);
       })).pipe(
-          this.errorHandler.create(),
+          this.errorHandler.create({label: 'Reannotate'}),
           finalize(() => {
             progressDialogRef.close();
           }),
@@ -448,7 +448,7 @@ export class FilesystemObjectActions {
             }),
         )))
         .pipe(
-            this.errorHandler.create(),
+            this.errorHandler.create({label: 'Delete file'}),
             tap(() => {
               if (failed.length) {
                 const dialogRef = this.modalService.open(ObjectDeletionResultDialogComponent);
