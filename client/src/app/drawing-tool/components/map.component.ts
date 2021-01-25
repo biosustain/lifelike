@@ -18,6 +18,7 @@ import { WorkspaceManager } from '../../shared/workspace-manager';
 import { tokenizeQuery } from '../../shared/utils/find';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
+import { MovableNode } from '../../graph-viewer/renderers/canvas/behaviors/node-move';
 
 @Component({
   selector: 'app-map',
@@ -40,8 +41,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   _map: KnowledgeMap | undefined;
   pendingInitialize = false;
 
+  editable = true;
   graphCanvas: CanvasGraphView;
 
+  protected readonly subscriptions = new Subscription();
   historyChangesSubscription: Subscription;
   unsavedChangesSubscription: Subscription;
 
@@ -66,7 +69,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return combineLatest([
         this.mapService.getMap(locator.projectName, locator.hashId).pipe(
             // tslint:disable-next-line: no-string-literal
-            map(resp => resp['project'] as KnowledgeMap),
+            map(resp => {
+              this.editable = resp.editable;
+              return resp.project;
+            }),
             // TODO: This line is from the existing code and should be properly typed
         ),
         this.getExtraSource(),
@@ -105,7 +111,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     });
 
     this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
-      this.unsavedChanges$.next(true);
       this.search();
     });
 
@@ -162,12 +167,14 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   registerGraphBehaviors() {
     this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcut(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
   }
 
   ngOnDestroy() {
     this.historyChangesSubscription.unsubscribe();
     this.unsavedChangesSubscription.unsubscribe();
     this.graphCanvas.destroy();
+    this.subscriptions.unsubscribe();
   }
 
   emitModuleProperties() {
