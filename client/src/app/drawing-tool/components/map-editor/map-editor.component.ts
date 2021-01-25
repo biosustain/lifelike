@@ -1,4 +1,12 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 
 import { cloneDeep } from 'lodash';
 
@@ -37,7 +45,7 @@ import { MAP_MIMETYPE } from '../../providers/map.type-provider';
     './map-editor.component.scss',
   ],
 })
-export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefined> implements OnInit, OnDestroy {
+export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
@@ -82,6 +90,14 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     });
 
     this.startLockInterval();
+  }
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+
+    this.subscriptions.add(this.graphCanvas.historyChanges$.subscribe(() => {
+      this.unsavedChanges$.next(true);
+    }));
   }
 
   ngOnDestroy() {
