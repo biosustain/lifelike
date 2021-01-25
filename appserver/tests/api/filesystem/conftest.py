@@ -1,8 +1,11 @@
+import datetime
 from collections import namedtuple
+from typing import Optional
 
 import pytest
 
-from neo4japp.models import AppUser, Projects, projects_collaborator_role, Files, FileContent
+from neo4japp.models import AppUser, Projects, projects_collaborator_role, Files, FileContent, \
+    file_collaborator_role
 from neo4japp.services import AccountService
 from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider
 
@@ -94,42 +97,26 @@ def user_with_project_roles(
 
 
 ParameterizedFile = namedtuple('FilesParam', (
-    'public',
-), defaults=(False,))
+    'public', 'in_folder', 'user_roles_for_folder', 'user_roles_for_file',
+    'recycled', 'folder_recycled', 'deleted', 'folder_deleted',
+), defaults=(False, False, [], [], False, False, False, False))
 
 
 @pytest.fixture(scope='function')
-def folder_in_project(
+def file_in_project(
         request,
         session,
+        account_user: AccountService,
         project: Projects,
-        project_owner_user: AppUser) -> Files:
-    file = Files(
-        mime_type=DirectoryTypeProvider.MIME_TYPE,
-        filename='a folder',
-        description='desc',
-        user=project_owner_user,
-        parent=project.***ARANGO_USERNAME***,
-    )
-
-    if hasattr(request, 'param'):
-        param: ParameterizedFile = request.param
-        file.public = param.public
-
-    session.add(file)
-    session.flush()
-    return file
-
-
-@pytest.fixture(scope='function')
-def map_in_project(
-        request,
-        session,
-        project: Projects,
-        folder_in_project: Files,
+        user_with_project_roles: AppUser,
         project_owner_user: AppUser) -> Files:
     content = FileContent()
     content.raw_file_utf8 = '{}'
+
+    if hasattr(request, 'param'):
+        param: ParameterizedFile = request.param
+    else:
+        param = ParameterizedFile(False, False, [], [], False, False, False, False)
 
     file = Files(
         mime_type=MapTypeProvider.MIME_TYPE,
@@ -137,14 +124,70 @@ def map_in_project(
         description='desc',
         user=project_owner_user,
         content=content,
-        parent=folder_in_project,
+        parent=project.***ARANGO_USERNAME***,
+        public=param.public,
     )
 
-    if hasattr(request, 'param'):
-        param: ParameterizedFile = request.param
-        file.public = param.public
+    folder: Optional[Files] = None
+    if param.in_folder:
+        folder = Files(
+            mime_type=DirectoryTypeProvider.MIME_TYPE,
+            filename='a folder',
+            description='desc',
+            user=project_owner_user,
+            parent=project.***ARANGO_USERNAME***,
+        )
+        file.parent = folder
+        session.add(folder)
+
+    if param.recycled:
+        file.recycling_date = datetime.datetime.now()
+
+    if param.folder_recycled:
+        assert folder is not None
+        folder.recycling_date = datetime.datetime.now()
+
+    if param.deleted:
+        file.deletion_date = datetime.datetime.now()
+
+    if param.folder_deleted:
+        assert folder is not None
+        folder.deletion_date = datetime.datetime.now()
 
     session.add(content)
     session.add(file)
     session.flush()
+
+    if param.user_roles_for_file:
+        assert param.in_folder
+
+        for role_name in param.user_roles_for_file:
+            session.execute(
+                file_collaborator_role.insert(),
+                [{
+                    'file_id': file.id,
+                    'collaborator_id': user_with_project_roles.id,
+                    'owner_id': user_with_project_roles.id,
+                    'role_id': account_user.get_or_create_role(role_name).id,
+                    'creator_id': user_with_project_roles.id,
+                    'modifier_id': user_with_project_roles.id,
+                }]
+            )
+
+    if param.user_roles_for_folder:
+        assert folder is not None
+
+        for role_name in param.user_roles_for_folder:
+            session.execute(
+                file_collaborator_role.insert(),
+                [{
+                    'file_id': folder.id,
+                    'collaborator_id': user_with_project_roles.id,
+                    'owner_id': user_with_project_roles.id,
+                    'role_id': account_user.get_or_create_role(role_name).id,
+                    'creator_id': user_with_project_roles.id,
+                    'modifier_id': user_with_project_roles.id,
+                }]
+            )
+
     return file
