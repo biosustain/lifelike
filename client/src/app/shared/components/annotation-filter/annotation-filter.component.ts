@@ -94,7 +94,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
       Validators.required
     ];
     if (this.sortingAlgorithm.hasOwnProperty('min')) { validators.push(Validators.min(this.sortingAlgorithm.min)); }
-    if (this.sortingAlgorithm.step === 1) { validators.push(Validators.pattern(/^-?[0-9][^\.]*$/)); }
+    if (this.sortingAlgorithm.step === 1) { validators.push(Validators.pattern(/^-?[0-9]*\.?[0-9]*$/)); }
     this.filtersForm = new FormGroup(
       // Form controls
       {

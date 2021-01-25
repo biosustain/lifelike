@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Client" type="JavascriptDebugType" uri="http://localhost:4200" useFirstLineBreakpoints="true">
+    <mapping url="http://localhost:4200" local-file="$PROJECT_DIR$/client/src" />
+    <method v="2" />
+  </configuration>
+</component>
