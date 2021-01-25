@@ -10,8 +10,7 @@ from string import punctuation
 from neo4japp.database import (
     get_annotation_service,
     get_bioc_document_service,
-    get_entity_recognition,
-    get_manual_annotation_service
+    get_entity_recognition
 )
 from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.constants import (
@@ -150,7 +149,7 @@ def get_nlp_entities(
     return nlp_tokens, nlp_resp
 
 
-def read_pdf_response(resp: dict) -> Tuple[str, List[PDFWord]]:
+def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
     parsed = []
     pdf_text = ''
 
@@ -165,7 +164,6 @@ def read_pdf_response(resp: dict) -> Tuple[str, List[PDFWord]]:
                         keyword=token['text'],
                         normalized_keyword=token['text'],  # don't need to normalize yet
                         page_number=page['pageNo'],
-                        cropbox=(page['cropBox']['height'], page['cropBox']['width']),
                         lo_location_offset=token['pgIdx'],
                         hi_location_offset=token['pgIdx'] if len(token['text']) == 1 else token['pgIdx'] + len(token['text']) - 1,  # noqa
                         heights=[rect['height'] for rect in token['rects']],
@@ -194,49 +192,33 @@ def parse_pdf(file_id: int) -> Tuple[str, List[PDFWord]]:
     resp = req.json()
     req.close()
 
-    pdf_text, parsed = read_pdf_response(resp)
+    pdf_text, parsed = read_parser_response(resp)
+    return pdf_text, parsed
+
+
+def parse_text(text: str) -> Tuple[str, List[PDFWord]]:
+    req = requests.get(
+        f'http://pdfparser:7600/token/rect/json', params={'text': text}, timeout=30)
+    resp = req.json()
+    req.close()
+
+    pdf_text, parsed = read_parser_response(resp)
     return pdf_text, parsed
 
 
 def _create_annotations(
-    annotation_method,
-    specified_organism_synonym,
-    specified_organism_tax_id,
-    document,
-    filename
+    annotation_method: str,
+    specified_organism_synonym: str,
+    specified_organism_tax_id: str,
+    filename: str,
+    parsed: List[PDFWord],
+    pdf_text: str,
+    excluded_annotations: List[dict],
+    custom_annotations: List[dict]
 ):
     annotator = get_annotation_service()
-    manual_annotator = get_manual_annotation_service()
     bioc_service = get_bioc_document_service()
     entity_recog = get_entity_recognition()
-
-    custom_annotations = []
-    excluded_annotations = []
-    parsed = []
-    pdf_text = ''
-
-    start = time.time()
-    try:
-        if type(document) is str:
-            raise NotImplementedError()
-        else:
-            custom_annotations = document.custom_annotations
-            excluded_annotations = document.excluded_annotations
-            pdf_text, parsed = parse_pdf(document.id)
-    except requests.exceptions.ConnectTimeout:
-        raise AnnotationError(
-            'The request timed out while trying to connect to the PDF service.')
-    except requests.exceptions.Timeout:
-        raise AnnotationError(
-            'The request to the PDF service timed out.')
-    except requests.exceptions.RequestException:
-        raise AnnotationError(
-            'An unexpected error occurred with the PDF service.')
-
-    current_app.logger.info(
-        f'Time to parse PDF {time.time() - start}',
-        extra=EventLog(event_type='annotations').to_dict()
-    )
 
     start = time.time()
     tokens_list = entity_recog.extract_tokens(parsed)
@@ -284,46 +266,49 @@ def _create_annotations(
                 synonym=entity_synonym, organism_id=entity_id, category=entity_category)
         )
     elif annotation_method == AnnotationMethod.NLP.value:
-        nlp_tokens, nlp_resp = get_nlp_entities(
-            page_index=parsed.min_idx_in_page,
-            text=pdf_text,
-            tokens=tokens_list
-        )
+        raise NotImplementedError()
+        # TODO: fix this once it's enabled for users again
+        #
+        # nlp_tokens, nlp_resp = get_nlp_entities(
+        #     page_index=parsed.min_idx_in_page,
+        #     text=pdf_text,
+        #     tokens=tokens_list
+        # )
 
-        # for NLP first annotate species using rules based
-        # with tokens from PDF
-        entity_recog.identify_entities(
-            tokens=tokens_list.tokens,
-            check_entities_in_lmdb=entity_recog.get_entities_to_identify(
-                anatomy=False, chemical=False, compound=False, disease=False,
-                food=False, gene=False, phenotype=False, protein=False
-            )
-        )
+        # # for NLP first annotate species using rules based
+        # # with tokens from PDF
+        # entity_recog.identify_entities(
+        #     tokens=tokens_list.tokens,
+        #     check_entities_in_lmdb=entity_recog.get_entities_to_identify(
+        #         anatomy=False, chemical=False, compound=False, disease=False,
+        #         food=False, gene=False, phenotype=False, protein=False
+        #     )
+        # )
 
-        species_annotations = annotator.create_rules_based_annotations(
-            tokens=tokens_list,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_recog.get_entity_match_results(),
-            entity_type_and_id_pairs=annotator.get_entities_to_annotate(
-                anatomy=False, chemical=False, compound=False, disease=False,
-                food=False, gene=False, phenotype=False, protein=False
-            )
-        )
+        # species_annotations = annotator.create_rules_based_annotations(
+        #     tokens=tokens_list,
+        #     custom_annotations=[],
+        #     excluded_annotations=[],
+        #     entity_results=entity_recog.get_entity_match_results(),
+        #     entity_type_and_id_pairs=annotator.get_entities_to_annotate(
+        #         anatomy=False, chemical=False, compound=False, disease=False,
+        #         food=False, gene=False, phenotype=False, protein=False
+        #     )
+        # )
 
-        # now annotate using results from NLP
-        entity_recog.identify_entities(
-            tokens=nlp_tokens,
-            check_entities_in_lmdb=entity_recog.get_entities_to_identify(species=False)
-        )
+        # # now annotate using results from NLP
+        # entity_recog.identify_entities(
+        #     tokens=nlp_tokens,
+        #     check_entities_in_lmdb=entity_recog.get_entities_to_identify(species=False)
+        # )
 
-        annotations = annotator.create_nlp_annotations(
-            nlp_resp=nlp_resp,
-            species_annotations=species_annotations,
-            custom_annotations=custom_annotations,
-            excluded_annotations=excluded_annotations,
-            entity_type_and_id_pairs=annotator.get_entities_to_annotate(species=False),
-        )
+        # annotations = annotator.create_nlp_annotations(
+        #     nlp_resp=nlp_resp,
+        #     species_annotations=species_annotations,
+        #     custom_annotations=custom_annotations,
+        #     excluded_annotations=excluded_annotations,
+        #     entity_type_and_id_pairs=annotator.get_entities_to_annotate(species=False),
+        # )
     else:
         raise AnnotationError(f'Your file {filename} could not be annotated.')
     bioc = bioc_service.read(text=pdf_text, file_uri=filename)
@@ -332,42 +317,126 @@ def _create_annotations(
         f'Time to create annotations {time.time() - start}',
         extra=EventLog(event_type='annotations').to_dict()
     )
-    return pdf_text, bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
+    return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
 
-def create_annotations(
+def create_annotations_from_pdf(
     annotation_method,
     specified_organism_synonym,
     specified_organism_tax_id,
     document,
     filename
 ):
-    _, annotations = _create_annotations(
+    pdf_text = ''
+    parsed = None
+
+    start = time.time()
+    try:
+        pdf_text, parsed = parse_pdf(document.id)
+    except requests.exceptions.ConnectTimeout:
+        raise AnnotationError(
+            'The request timed out while trying to connect to the parsing service.')
+    except requests.exceptions.Timeout:
+        raise AnnotationError(
+            'The request to the parsing service timed out.')
+    except requests.exceptions.RequestException:
+        raise AnnotationError(
+            'An unexpected error occurred with the parsing service.')
+
+    current_app.logger.info(
+        f'Time to parse PDF {time.time() - start}',
+        extra=EventLog(event_type='annotations').to_dict()
+    )
+
+    annotations = _create_annotations(
         annotation_method=annotation_method,
         specified_organism_synonym=specified_organism_synonym,
         specified_organism_tax_id=specified_organism_tax_id,
-        document=document,
-        filename=filename
+        filename=filename,
+        parsed=parsed,
+        pdf_text=pdf_text,
+        custom_annotations=document.custom_annotations,
+        excluded_annotations=document.excluded_annotations
     )
     return annotations
 
 
-def create_annotations2(
+def create_annotations_from_text(
     annotation_method,
     specified_organism_synonym,
     specified_organism_tax_id,
-    document,
-    filename
+    text
 ):
-    """Used for one-off scripts where the text is needed
-    to be saved to pubtator file.
+    pdf_text = ''
+    parsed = None
+    data_to_annotate = []
 
-    (not used by ***ARANGO_DB_NAME*** app)
-    """
-    return _create_annotations(
-        annotation_method,
-        specified_organism_synonym,
-        specified_organism_tax_id,
-        document,
-        filename
+    start = time.time()
+    try:
+        for row in text:
+            with mp.Pool(processes=4) as pool:
+                results = pool.map(parse_text, row)
+                data_to_annotate.append(results)
+    except requests.exceptions.ConnectTimeout:
+        raise AnnotationError(
+            'The request timed out while trying to connect to the parsing service.')
+    except requests.exceptions.Timeout:
+        raise AnnotationError(
+            'The request to the parsing service timed out.')
+    except requests.exceptions.RequestException:
+        raise AnnotationError(
+            'An unexpected error occurred with the parsing service.')
+
+    current_app.logger.info(
+        f'Time to parse text {time.time() - start}',
+        extra=EventLog(event_type='annotations').to_dict()
     )
+
+    annotations = []
+
+    start = time.time()
+    for row in data_to_annotate:
+        # with mp.Pool(processes=4) as pool:
+        #     results = pool.starmap(
+        #         _create_annotations,
+        #         [
+        #             (
+        #                 annotation_method,
+        #                 specified_organism_synonym,
+        #                 specified_organism_tax_id,
+        #                 'text-extract',
+        #                 parsed,
+        #                 pdf_text,
+        #                 [],
+        #                 []
+        #             ) for (pdf_text, parsed) in row
+        #         ]
+        #     )
+        #     annotations.append(results)
+
+        row_annotations = []
+        for (pdf_text, parsed) in row:
+            anno = _create_annotations(
+                annotation_method=annotation_method,
+                specified_organism_synonym=specified_organism_synonym,
+                specified_organism_tax_id=specified_organism_tax_id,
+                filename='text-extract',
+                parsed=parsed,
+                pdf_text=pdf_text,
+                custom_annotations=[],
+                excluded_annotations=[]
+            )
+            if anno:
+                row_annotations.append(anno['documents'][0]['passages'][0]['annotations'])
+            else:
+                row_annotations.append([])
+        annotations.append(row_annotations)
+
+    current_app.logger.info(
+        f'Time to annotate enrichment text {time.time() - start}',
+        extra=EventLog(event_type='annotations').to_dict()
+    )
+
+    # TODO: continue processing annotations for enrichment
+
+    return annotations

@@ -178,6 +178,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     public = db.Column(db.Boolean, nullable=False, default=False)
     deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
+
     __table_args__ = (
         db.Index('uq_files_unique_filename', 'filename', 'parent_id',
                  unique=True,

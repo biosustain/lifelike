@@ -813,39 +813,6 @@ class AnnotationService:
             id_str=entity_id_str
         )
 
-    def annotate(
-        self,
-        annotation_type: str,
-        entity_id_str: str,
-        custom_annotations: List[dict],
-        excluded_annotations: List[dict]
-    ) -> List[Annotation]:
-        funcs = {
-            EntityType.ANATOMY.value: self._annotate_anatomy,
-            EntityType.CHEMICAL.value: self._annotate_type_chemical,
-            EntityType.COMPOUND.value: self._annotate_type_compound,
-            EntityType.DISEASE.value: self._annotate_type_disease,
-            EntityType.FOOD.value: self._annotate_type_food,
-            EntityType.PHENOMENA.value: self._annotate_type_phenomena,
-            EntityType.PHENOTYPE.value: self._annotate_type_phenotype,
-            EntityType.SPECIES.value: self._annotate_type_species,
-            EntityType.PROTEIN.value: self._annotate_type_protein,
-            EntityType.GENE.value: self._annotate_type_gene,
-            EntityType.COMPANY.value: self._annotate_type_company,
-            EntityType.ENTITY.value: self._annotate_type_entity
-        }
-
-        annotate_entities = funcs[annotation_type]
-        if annotation_type == EntityType.SPECIES.value:
-            return annotate_entities(
-                entity_id_str=entity_id_str,
-                custom_annotations=custom_annotations,
-                excluded_annotations=excluded_annotations
-            )  # type: ignore
-        else:
-            return annotate_entities(
-                entity_id_str=entity_id_str)  # type: ignore
-
     def _update_entity_frequency_map(
         self,
         entity_frequency: Dict[str, int],
@@ -991,14 +958,33 @@ class AnnotationService:
         """
         unified_annotations: List[Annotation] = []
 
+        funcs = {
+            EntityType.ANATOMY.value: self._annotate_anatomy,
+            EntityType.CHEMICAL.value: self._annotate_type_chemical,
+            EntityType.COMPOUND.value: self._annotate_type_compound,
+            EntityType.DISEASE.value: self._annotate_type_disease,
+            EntityType.FOOD.value: self._annotate_type_food,
+            EntityType.PHENOMENA.value: self._annotate_type_phenomena,
+            EntityType.PHENOTYPE.value: self._annotate_type_phenotype,
+            EntityType.SPECIES.value: self._annotate_type_species,
+            EntityType.PROTEIN.value: self._annotate_type_protein,
+            EntityType.GENE.value: self._annotate_type_gene,
+            EntityType.COMPANY.value: self._annotate_type_company,
+            EntityType.ENTITY.value: self._annotate_type_entity
+        }
+
         for entity_type, entity_id_str in types_to_annotate:
-            annotations = self.annotate(
-                annotation_type=entity_type,
-                entity_id_str=entity_id_str,
-                custom_annotations=custom_annotations,
-                excluded_annotations=excluded_annotations
-            )
-            unified_annotations.extend(annotations)
+            annotate_entities = funcs[entity_type]
+            if entity_type == EntityType.SPECIES.value:
+                annotations = annotate_entities(
+                    entity_id_str=entity_id_str,
+                    custom_annotations=custom_annotations,
+                    excluded_annotations=excluded_annotations
+                )  # type: ignore
+                unified_annotations.extend(annotations)
+            else:
+                annotations = annotate_entities(entity_id_str=entity_id_str)  # type: ignore
+                unified_annotations.extend(annotations)
 
         return unified_annotations
 

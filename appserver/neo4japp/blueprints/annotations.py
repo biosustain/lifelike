@@ -46,19 +46,30 @@ from neo4japp.services.annotations.constants import (
 from neo4japp.services.annotations.data_transfer_objects import (
     GlobalAnnotationData
 )
-from neo4japp.services.annotations.pipeline import create_annotations
+from neo4japp.services.annotations.pipeline import (
+    create_annotations_from_pdf,
+    create_annotations_from_text
+)
 from neo4japp.utils.logger import UserEventLog
 from .filesystem import bp as filesystem_bp
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
-from ..schemas.annotations import CombinedAnnotationListSchema, \
-    AnnotationGenerationRequestSchema, \
-    MultipleAnnotationGenerationResponseSchema, GlobalAnnotationsDeleteSchema, \
-    CustomAnnotationCreateSchema, CustomAnnotationDeleteSchema, AnnotationUUIDListSchema, \
-    AnnotationExclusionCreateSchema, AnnotationExclusionDeleteSchema, SystemAnnotationListSchema, \
+from neo4japp.schemas.annotations import (
+    CombinedAnnotationListSchema,
+    AnnotationGenerationRequestSchema,
+    EnrichmentAnnotationGenerationRequestSchema,
+    MultipleAnnotationGenerationResponseSchema,
+    GlobalAnnotationsDeleteSchema,
+    CustomAnnotationCreateSchema,
+    CustomAnnotationDeleteSchema,
+    AnnotationUUIDListSchema,
+    AnnotationExclusionCreateSchema,
+    AnnotationExclusionDeleteSchema,
+    SystemAnnotationListSchema,
     CustomAnnotationListSchema
-from ..schemas.filesystem import BulkFileRequestSchema
-from ..services.annotations import AnnotationGraphService
-from ..utils.http import make_cacheable_file_response
+)
+from neo4japp.schemas.filesystem import BulkFileRequestSchema
+from neo4japp.services.annotations import AnnotationGraphService
+from neo4japp.utils.http import make_cacheable_file_response
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
@@ -360,7 +371,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                   organism: Optional[FallbackOrganism] = None,
                   method: AnnotationMethod = AnnotationMethod.RULES,
                   user_id: int = None):
-        annotations_json = create_annotations(
+        annotations_json = create_annotations_from_pdf(
             annotation_method=method.value,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
@@ -389,6 +400,57 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         }
 
         return update, version
+
+
+class EnrichmentAnnotationsGenerationView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(lambda request: EnrichmentAnnotationGenerationRequestSchema())
+    def post(self, params):
+        """Generate annotations for one or more files."""
+        current_user = g.current_user
+
+        organism = None
+        method = params.get('method', AnnotationMethod.RULES)
+        text = params.get('text', [])
+
+        if params.get('organism'):
+            organism = params['organism']
+
+        try:
+            annotations = self._annotate(
+                method=method,
+                organism=organism,
+                text=text
+            )
+        except AnnotationError as e:
+            current_app.logger.error('Could not annotate enrichment file.', e)
+        else:
+            current_app.logger.debug('Enrichment file successfully annotated!')
+
+        return jsonify(MultipleAnnotationGenerationResponseSchema().dump({
+            'results': results,
+            'missing': missing,
+        }))
+
+    def _annotate(
+        self,
+        text: List[List[str]],
+        organism: Optional[FallbackOrganism] = None,
+        method: AnnotationMethod = AnnotationMethod.RULES
+    ):
+        annotations_json = create_annotations_from_text(
+            annotation_method=method.value,
+            specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
+            specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
+            text=text
+        )
+
+        # current_app.logger.debug(f'File successfully annotated!')
+
+        # TODO: finish this...
+
+        return None
 
 
 @bp.route('/global-list/inclusions')
@@ -634,3 +696,6 @@ filesystem_bp.add_url_rule(
 filesystem_bp.add_url_rule(
     'annotations/generate',
     view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'))
+filesystem_bp.add_url_rule(
+    'annotations/enrichment/generate',
+    view_func=EnrichmentAnnotationsGenerationView.as_view('enrichment_annotation_generation'))

@@ -215,6 +215,12 @@ export interface AnnotationGenerationRequest {
   annotationMethod?: AnnotationMethod;
 }
 
+export interface EnrichmentAnnotationGenerationRequest {
+  organism?: OrganismAutocomplete;
+  annotationMethod?: AnnotationMethod;
+  text: string[][];
+}
+
 // ========================================
 // Custom Annotations
 // ========================================
