@@ -2,8 +2,8 @@ source("./R/binom.R", chdir = TRUE)
 library(testthat)
 
 test_that("simple use case", {
-  annotations = fread("./tests/assets/npub_date10_disease-mesh.tsv")
-  counts = fread("./tests/assets/cagpapers.tsv")
+  annotations = fread("assets/npub_date10_disease-mesh.tsv")
+  counts = fread("assets/cagpapers.tsv")
   count = "npub"
   annotation = "npub"
   opts = list(id = "entrez", group = "mesh", header = T)
