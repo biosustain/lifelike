@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  statistical-enrichment:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    networks:
+      - kg-prototypes_backend
+
+networks:
+  kg-prototypes_backend:
+    external: true

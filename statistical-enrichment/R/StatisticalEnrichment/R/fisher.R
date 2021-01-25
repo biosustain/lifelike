@@ -24,11 +24,17 @@ fisher.p <- function(x, m, n, k) {
 #' @param GOIs
 #' @param q.threshold
 #' @param Return enriched data
-fisher.enrich <- function(id, annotations=list(
-              id= "abc",
-              annotation = "cde"
-            ), GOIs, q.threshold=0.05) {
-    print(id, GOIs)
+fisher.enrich <- function(
+        genes=list(),
+        annotations=list(),
+        q.threshold=0.05
+) {
+    print(annotations)
+    print(genes)
+    print(q.threshold)
+
+    return({})
+
     m <- length(GOIs)
     n <- length(unique(annotations$id)) - m
     annotation.ps <- annotations[, .(p=fisher.p(sum(id%in%GOIs), m, n, .N)), by=annotation]
