@@ -49,6 +49,7 @@ deepdiff = "*"
 marshmallow-dataclass = "*"
 marshmallow-enum = "*"
 scipy = "*"
+webargs = "==5.4.0"
 
 [requires]
 python_version = "3.8.2"

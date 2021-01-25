@@ -6,6 +6,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 from numpy import log
+from webargs import fields
+from webargs.flaskparser import use_args
 
 from flask import (
     Blueprint,
@@ -110,24 +112,20 @@ def annotate(
 @bp.route('/<string:project_name>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_all_annotations_from_project(project_name):
+@use_args({"sort": fields.Str(required=True)})
+def get_all_annotations_from_project(args, project_name):
     current_app.logger.info(
         f'Project: {project_name}',
         extra=UserEventLog(
             username=g.current_user.username, event_type='view entity word cloud').to_dict()
     )
-    sort = request.args.to_dict()['sort']
+    annotation_service = get_sorted_annotation_service(args['sort'])
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
         raise RecordNotFoundException(f'Project {project_name} not found')
     user = g.current_user
     yield user, project
-
-    from timeit import default_timer as timer
-    start = timer()
-    distinct_annotations = get_sorted_annotation_service(sort).get_annotations(project.id)
-    end = timer()
-    print(f'Getting annotation using {sort}, took: {(end - start)*1000}ms')
+    distinct_annotations = annotation_service.get_annotations(project.id)
 
     sorted_distintct_annotations = sorted(
         distinct_annotations,
