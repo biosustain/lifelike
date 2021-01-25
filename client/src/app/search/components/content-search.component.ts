@@ -5,10 +5,12 @@ import { HighlightDisplayLimitChange } from 'app/file-browser/components/file-in
 import { FileViewComponent } from 'app/file-browser/components/file-view.component';
 import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
 import { RankedItem } from 'app/shared/schemas/common';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CollectionModal } from 'app/shared/utils/collection-modal';
 import { FindOptions } from 'app/shared/utils/find';
 import { deserializePaginatedParams, getChoicesFromQuery, serializePaginatedParams } from 'app/shared/utils/params';
@@ -20,6 +22,7 @@ import { ContentSearchService } from '../services/content-search.service';
 @Component({
   selector: 'app-content-search',
   templateUrl: './content-search.component.html',
+  styleUrls: ['./content-search.component.scss']
 })
 export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchOptions,
   RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
@@ -36,7 +39,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   constructor(protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly contentSearchService: ContentSearchService,
-              protected readonly zone: NgZone) {
+              protected readonly zone: NgZone,
+              protected readonly messageDialog: MessageDialog) {
     super(route, workspaceManager);
   }
 
@@ -142,5 +146,15 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
         });
       }
     }
+  }
+
+  openAdvancedSearchOptions() {
+    this.messageDialog.display({
+      title: 'Advanced Search Options',
+      message: '- Exact phrase: "this exact phrase"\n' +
+      '- Zero or more wildcard character: ba*na\n' +
+      '- One or more wildcard character: ba?ana',
+      type: MessageType.Info,
+    });
   }
 }
