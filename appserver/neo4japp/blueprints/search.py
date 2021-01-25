@@ -29,7 +29,7 @@ from neo4japp.schemas.search import (
     VizSearchSchema, ContentSearchResponseSchema
 )
 from neo4japp.services.annotations.constants import AnnotationMethod
-from neo4japp.services.annotations.pipeline import create_annotations
+from neo4japp.services.annotations.pipeline import create_annotations_from_pdf
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.request import Pagination
@@ -90,7 +90,7 @@ def annotate(texts):
         text = highlight_strip_tag_re.sub("%%%%%-\\1-%%%%%", text)
 
         try:
-            annotations = create_annotations(
+            annotations = create_annotations_from_pdf(
                 annotation_method=AnnotationMethod.RULES.value,
                 document=text,
                 filename='snippet.pdf',

@@ -1884,7 +1884,6 @@ class EntityRecognitionService:
                         # if multi-word, consider it as part
                         # of page of first word
                         page_number=words_subset[0].page_number,
-                        cropbox=words_subset[0].cropbox,
                         lo_location_offset=words_subset[0].lo_location_offset,
                         hi_location_offset=words_subset[-1].hi_location_offset,
                         coordinates=coordinates,
