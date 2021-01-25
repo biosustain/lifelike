@@ -2,12 +2,15 @@
   <div class="module" appContainerBreakpoints>
     <div class="module-header">
       <div class="module-title-bar">
-        <h1 class="module-title">
-          Search
-          <ng-container *ngIf="valid">
-            Results for "{{ params.q }}"
-          </ng-container>
-        </h1>
+        <div class="d-flex justify-content-between w-100">
+          <h1 class="module-title">
+            Search
+            <ng-container *ngIf="valid">
+              Results for "{{ params.q }}"
+            </ng-container>
+          </h1>
+          <div class="fake-link" (click)="openAdvancedSearchOptions()">Advanced Search Options</div>
+        </div>
       </div>
 
       <div class="module-toolbar mt-2">
