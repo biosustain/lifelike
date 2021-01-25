@@ -49,7 +49,18 @@ binomial.p <- function(counts.DT, success_ids, n_total_ids, log.p=F) {
 #' @param annotation - Column name containing annotation terms to test enrichment for, e.g. GO. Required.
 #' @param group - Column name containing grouping label. Default is doing a single ORA for all data.
 #' @param Return enriched data
-binom.enrich <- function(annotations, id, count, counts, annotation, group) {
+binom.enrich <- function(
+        genes=list(),
+        annotations=list(),
+        q.threshold=0.05
+) {
+    print(annotations)
+    print(genes)
+    print(q.threshold)
+
+    return({})
+
+# <- function(annotations, id, count, counts, annotation, group) {
     if(is.null(id)) {
         # most likely the column with unique geneIDs
         map.col <- intersect(colnames(counts), colnames(annotations))[1]

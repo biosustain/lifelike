@@ -1,5 +1,6 @@
 Package: StatisticalEnrichment
-Title: What the Package Does (One Line, Title Case)
+Type: Package
+Title: Statistical enrichment service
 Version: 0.0.0.9000
 Authors@R: c(
     person(
@@ -14,9 +15,12 @@ Authors@R: c(
        role = c("com", "cre"),
        email = "Skitionek@gmail.com"
     ))
-Description: What the package does (one paragraph).
+Description: Statistical enrichment service implementing Fisher, Binomial, Mann Whitney U Test
 Encoding: UTF-8
 LazyData: true
-Roxygen: list(markdown = TRUE)
+Imports:
+    plumber, jsonlite, data.table
+Suggests:
+    testthat (>= 2.1.0)
 RoxygenNote: 7.1.1
 Depends: R (>= 4.0.0)
