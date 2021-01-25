@@ -24,7 +24,7 @@ def query_filter_map():
     return {
         'bool': {
             'must': [
-                {'terms': {'type': ['map', 'pdf']}},
+                {'terms': {'type': ['map']}},
             ]
         }
     }
@@ -35,7 +35,7 @@ def query_filter_pdf():
     return {
         'bool': {
             'must': [
-                {'terms': {'type': ['map', 'pdf']}},
+                {'terms': {'type': ['pdf']}},
             ]
         }
     }
