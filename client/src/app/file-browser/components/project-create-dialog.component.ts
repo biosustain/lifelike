@@ -55,7 +55,7 @@ export class ProjectCreateDialogComponent extends CommonDialogComponent {
             return throwError(error);
           }
         }),
-        this.errorHandler.create(),
+        this.errorHandler.create({label: 'Project creation'}),
       ).subscribe(newProject => this.modal.close(newProject));
     } else {
       this.form.markAsDirty();
