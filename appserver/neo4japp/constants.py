@@ -9,6 +9,8 @@ TYPE_PATHWAY = 'Pathway'
 TYPE_PROTEIN = 'Protein'
 TYPE_ENZREACTION = 'EnzReaction'
 TYPE_REACTION = 'Reaction'
+TYPE_REGULATION = 'Regulation'
+TYPE_RNA = 'RNA'
 TYPE_CHEMICAL = 'Chemical'
 TYPE_COMPOUND = 'Compound'
 TYPE_BIOLOGICAL_PROCESS = 'BiologicalProcess'
@@ -49,9 +51,15 @@ TYPE_ASSOCIATION_TYPE = 'AssociationType'
 TYPE_CHEMICAL = 'Chemical'
 TYPE_DISEASE = 'Disease'
 TYPE_GENE = 'Gene'
+TYPE_GENE_PRODUCT = 'GeneProduct'
 TYPE_PUBLICATION = 'Publication'
 TYPE_SNIPPET = 'Snippet'
 TYPE_TAXONOMY = 'Taxonomy'
+TYPE_OPERON = 'Operon'
+TYPE_PROMOTER = 'Promoter'
+TYPE_PROTEIN = 'Protein'
+TYPE_TRANSCRIPTION_FACTOR = 'TranscriptionFactor'
+TYPE_TRANSCRIPTION_UNIT = 'TranscriptionUnit'
 
 DISPLAY_NAME_MAP = {
     TYPE_ASSOCIATION: 'description',
@@ -59,13 +67,24 @@ DISPLAY_NAME_MAP = {
     TYPE_BIOLOGICAL_PROCESS: 'name',
     TYPE_CELLULAR_COMPONENT: 'name',
     TYPE_CHEMICAL: 'name',
+    TYPE_COMPOUND: 'name',
     TYPE_DISEASE: 'name',
     TYPE_GENE: 'name',
+    TYPE_GENE_PRODUCT: 'name',
     TYPE_MOLECULAR_FUNCTION: 'name',
+    TYPE_OPERON: 'name',
+    TYPE_PATHWAY: 'name',
+    TYPE_PROMOTER: 'name',
+    TYPE_PROTEIN: 'name',
     TYPE_PUBLICATION: 'title',  # NOTE: These tend to be long, might want to use a different attribute or consider truncating on the client  # noqa
+    TYPE_ENZREACTION: 'name',
+    TYPE_REACTION: 'name',
+    TYPE_REGULATION: 'displayName',
+    TYPE_RNA: 'displayName',
     TYPE_SNIPPET: 'sentence',  # NOTE: Same here
     TYPE_TAXONOMY: 'name',
-    TYPE_PROTEIN: 'name',
+    TYPE_TRANSCRIPTION_FACTOR: 'name',
+    TYPE_TRANSCRIPTION_UNIT: 'displayName',
 }
 
 # Start Text Mining Dataset
@@ -100,7 +119,7 @@ ANNOTATION_STYLES_DICT = {
         'label': 'mutation',
     },
     'species': {
-        'color': '#0277bd',
+        'color': '#3177b8',
         'label': 'species',
     },
     'company': {
@@ -119,6 +138,10 @@ ANNOTATION_STYLES_DICT = {
         'color': '#e377c2',
         'label': 'pathway',
     },
+    'phenomena': {
+        'color': '#edc949',
+        'label': 'phenomena',
+    },
     'phenotype': {
         'color': '#edc949',
         'label': 'phenotype',
@@ -132,8 +155,8 @@ ANNOTATION_STYLES_DICT = {
         'label': 'anatomy',
     },
     'entity': {
-        'label': 'ENTITY',
-        'color': '#7f7f7f'
+        'color': '#7f7f7f',
+        'label': 'ENTITY'
     },
     'lab strain': {
         'color': '#f71698',
@@ -155,6 +178,42 @@ ANNOTATION_STYLES_DICT = {
         'label': 'note',
         'color': '#EDC949'
     },
+    'reaction': {
+        'label': 'reaction',
+        'color': '#ebb434'
+    },
+    'enzreaction': {
+        'label': 'enzreaction',
+        'color': '#b32b7f'
+    },
+    'geneproduct': {
+        'label': 'geneproduct',
+        'color': '#eb333d'
+    },
+    'operon': {
+        'label': 'operon',
+        'color': '#439641'
+    },
+    'promoter': {
+        'label': 'promoter',
+        'color': '#5bc9ca'
+    },
+    'regulation': {
+        'label': 'regulation',
+        'color': '#bf5858'
+    },
+    'rna': {
+        'label': 'rna',
+        'color': '#5c98d1'
+    },
+    'transcriptionfactor': {
+        'label': 'transcriptionfactor',
+        'color': '#ea3cf7'
+    },
+    'transcriptionunit': {
+        'label': 'transcriptionunit',
+        'color': '#cccdfb'
+    },
     # Non - Entity Types
     'correlation': {
         'label': 'correlation',
@@ -175,10 +234,6 @@ ANNOTATION_STYLES_DICT = {
     'association': {
         'label': 'association',
         'color': '#d7d9f8'
-    },
-    'species': {
-        'color': '#0277bd',
-        'label': 'species',
     },
     'phentotype': {
         'color': '#edc949',
@@ -205,4 +260,4 @@ ANNOTATION_STYLES_DICT = {
 
 # Start shared Elastic constants
 FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
-FRAGMENT_SIZE = 2147483647
+FRAGMENT_SIZE = 1024

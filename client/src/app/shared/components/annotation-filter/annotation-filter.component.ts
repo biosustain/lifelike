@@ -164,7 +164,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   }
 
   getAnnotationIdentifier(annotation: AnnotationFilterEntity) {
-    return annotation.id + annotation.type + annotation.text;
+    return annotation.id + annotation.type + annotation.keyword;
   }
 
   isWordVisible(identifier: string) {
