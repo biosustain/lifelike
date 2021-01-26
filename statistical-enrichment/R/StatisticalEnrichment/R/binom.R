@@ -58,8 +58,6 @@ binom.enrich <- function(
     print(genes)
     print(q.threshold)
 
-    return({})
-
 # <- function(annotations, id, count, counts, annotation, group) {
     if(is.null(id)) {
         # most likely the column with unique geneIDs
@@ -73,7 +71,7 @@ binom.enrich <- function(
     # helper function. Given a table with columns "id", "count"
     # get a table with columns "enrich", "p" for the p-value of enrichment for each enrich term (usually GO)
     enrich <- function(counts.sum) {
-        annotations[, .(log.p=binomial.p(counts.sum, get(map.col), n_ids, log.p=T)), by=.(enrich=get(annotation))]
+        annotations[, .(log.p=binomial.p(counts.sum, get(map.col), n_ids, log.p=T)), by=.(enrich=get("annotation"))]
     }
     # summarize counts and do enrichment analysis either ungrouped or grouped
     if(group == '') group <- NULL

@@ -1,6 +1,13 @@
 #!/usr/bin/env Rscript
 library(data.table)
 
+mdb <- list()
+
+update <- function(type, l) {
+  mdb[type] <- l
+  TRUE
+}
+
 #' read gene list of interest (GOI) from stdin and write enrichment table to stdout.
 #' You can use merge.R -s and a synonym2object.tsv to convert gene symbols to GO object IDs.
 #' Take a single positional arg with a table of GO annotations, at least columns "GO" and one with the id.
@@ -25,21 +32,20 @@ fisher.p <- function(x, m, n, k) {
 #' @param q.threshold
 #' @param Return enriched data
 fisher.enrich <- function(
-        genes=list(),
-        annotations=list(),
-        q.threshold=0.05
+  entities=list(),
+  type=str,
+  q.threshold=0.05
 ) {
+    annotations <- mdb[type]
     print(annotations)
-    print(genes)
+    print(entities)
     print(q.threshold)
 
-    return({})
-
-    m <- length(GOIs)
+    m <- length(entities)
     n <- length(unique(annotations$id)) - m
-    annotation.ps <- annotations[, .(p=fisher.p(sum(id%in%GOIs), m, n, .N)), by=annotation]
+    annotation.ps <- annotations[, .(p=fisher.p(sum(entity%in%entities), m, n, .N)), by="category"]
     annotation.ps$q <- p.adjust(annotation.ps$p, "fdr")
     result <- annotation.ps[q <= q.threshold][order(q, p)]
-    return(result)
+    result
 }
 
