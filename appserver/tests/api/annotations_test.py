@@ -28,6 +28,56 @@ def test_user_can_get_all_annotations_from_project(
         b'59272\tGene\tace2\tACE2\t1\n' + \
         b'9606\tSpecies\thuman\tHomo Sapiens\t1\n'
 
+def test_user_can_get_all_annotations_from_project_sorted_by_sum_log_count(
+        client,
+        fix_project,
+        fix_api_owner,
+        mock_get_combined_annotations_in_project_result,
+):
+    login_resp = client.login_as_user(fix_api_owner.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    response = client.get(
+        f'/annotations/{fix_project.project_name}',
+        data={
+            "sort": "sum_log_count"
+        },
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == 200
+    print(response.get_data())
+    assert response.get_data() == \
+        b'entity_id\ttype\ttext\tprimary_name\tcount\n' + \
+        b'59272\tGene\tace2\tACE2\t1\n' + \
+        b'9606\tSpecies\thuman\tHomo Sapiens\t1\n'
+
+def test_user_can_get_all_annotations_from_project_sorted_by_mwu(
+        client,
+        fix_project,
+        fix_api_owner,
+        mock_get_combined_annotations_in_project_result,
+):
+    login_resp = client.login_as_user(fix_api_owner.email, 'password')
+    headers = generate_headers(login_resp['access_jwt'])
+
+    response = client.get(
+        f'/annotations/{fix_project.project_name}',
+        data={
+            "sort": "mwu"
+        },
+        headers=headers,
+        content_type='application/json',
+    )
+
+    assert response.status_code == 200
+    print(response.get_data())
+    assert response.get_data() == \
+        b'entity_id\ttype\ttext\tprimary_name\tcount\n' + \
+        b'59272\tGene\tace2\tACE2\t1\n' + \
+        b'9606\tSpecies\thuman\tHomo Sapiens\t1\n'
+
 
 def test_user_can_get_gene_annotations_from_pdf(
         client,
