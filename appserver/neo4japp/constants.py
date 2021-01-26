@@ -49,7 +49,9 @@ BIOCYC_ORG_ID_DICT = {'9606': 'HUMAN', '511145': 'ECOLI', '559292': 'YEAST'}
 TYPE_ASSOCIATION = 'Association'
 TYPE_ASSOCIATION_TYPE = 'AssociationType'
 TYPE_CHEMICAL = 'Chemical'
+TYPE_CLASS = 'Class'
 TYPE_DISEASE = 'Disease'
+TYPE_DNA_BINDING_SITE = 'DNABindingSite'
 TYPE_GENE = 'Gene'
 TYPE_GENE_PRODUCT = 'GeneProduct'
 TYPE_PUBLICATION = 'Publication'
@@ -58,6 +60,7 @@ TYPE_TAXONOMY = 'Taxonomy'
 TYPE_OPERON = 'Operon'
 TYPE_PROMOTER = 'Promoter'
 TYPE_PROTEIN = 'Protein'
+TYPE_TERMINATOR = 'Terminator'
 TYPE_TRANSCRIPTION_FACTOR = 'TranscriptionFactor'
 TYPE_TRANSCRIPTION_UNIT = 'TranscriptionUnit'
 
@@ -67,8 +70,10 @@ DISPLAY_NAME_MAP = {
     TYPE_BIOLOGICAL_PROCESS: 'name',
     TYPE_CELLULAR_COMPONENT: 'name',
     TYPE_CHEMICAL: 'name',
+    TYPE_CLASS: 'biocyc_id',
     TYPE_COMPOUND: 'name',
     TYPE_DISEASE: 'name',
+    TYPE_DNA_BINDING_SITE: 'displayName',
     TYPE_GENE: 'name',
     TYPE_GENE_PRODUCT: 'name',
     TYPE_MOLECULAR_FUNCTION: 'name',
@@ -83,6 +88,7 @@ DISPLAY_NAME_MAP = {
     TYPE_RNA: 'displayName',
     TYPE_SNIPPET: 'sentence',  # NOTE: Same here
     TYPE_TAXONOMY: 'name',
+    TYPE_TERMINATOR: 'biocyc_id',
     TYPE_TRANSCRIPTION_FACTOR: 'name',
     TYPE_TRANSCRIPTION_UNIT: 'displayName',
 }
@@ -248,6 +254,10 @@ ANNOTATION_STYLES_DICT = {
         'color': '#34ebd3',
         'label': 'biologicalprocess'
     },
+    'class': {
+        'color': '#f1587a',
+        'label': 'class'
+    },
     'molecularfunction': {
         'color': '#eb34dc',
         'label': 'biologicalprocess'
@@ -256,6 +266,10 @@ ANNOTATION_STYLES_DICT = {
         'color': '#0277bd',
         'label': 'taxonomy',
     },
+    'terminator': {
+        'color': '#e5a731',
+        'label': 'terminator'
+    }
 }
 
 # Start shared Elastic constants
