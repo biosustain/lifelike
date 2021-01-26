@@ -53,12 +53,11 @@ export class HighlightSnippetComponent implements OnChanges {
         styleMap[entry1TextJoinedByUnderscore] = `<div style="${entry1StyleString}">${this.entry1Text}</div>`;
         styleMap[entry2TextJoinedByUnderscore] = `<div style="${entry2StyleString}">${this.entry2Text}</div>`;
 
-
         this.highlightedSnippet = this.snippet.replace(
-            new RegExp(`\\b${this.entry1Text}|${this.entry2Text}|${entry1TextJoinedByUnderscore}|${entry2TextJoinedByUnderscore}\\b`, 'g'),
-            match => {
-                return styleMap[match];
-            }
+          new RegExp(`\\b(${this.entry1Text}|${this.entry2Text}|${entry1TextJoinedByUnderscore}|${entry2TextJoinedByUnderscore})\\b`, 'g'),
+          match => {
+            return styleMap[match];
+          }
         );
 
         // We have to be VERY careful using this! It could expose our site to XSS attacks if we aren't cautious.

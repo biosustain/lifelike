@@ -277,7 +277,7 @@ def export_global_inclusions():
 
         return {
             'id': inclusion.annotation['meta'].get('id', ''),
-            'term': inclusion.annotation['meta']['allText'],
+            'term': inclusion.annotation['keyword'],
             'type': inclusion.annotation['meta']['type'],
             'hyperlink': inclusion.annotation['meta'].get('idHyperlink', ''),
             'inclusion_date': inclusion.annotation.get('inclusion_date', ''),
@@ -382,7 +382,7 @@ def get_annotations():
         GlobalList.approved,
         GlobalList.creation_date,
         GlobalList.modified_date,
-        GlobalList.annotation['meta']['allText'].astext.label('text'),
+        GlobalList.annotation['keyword'].astext.label('text'),
         sa.sql.null().label('reason'),
         GlobalList.annotation['meta']['type'].astext.label('entityType'),
         GlobalList.annotation['meta']['id'].astext.label('annotationId'),
@@ -475,7 +475,8 @@ def get_all_annotations_from_file(project_name, file_id):
         annotation_data = (
             annotation['meta']['id'],
             annotation['meta']['type'],
-            annotation['meta']['allText'],
+            annotation['keyword'].strip(),
+            annotation['primaryName'].strip(),
         )
 
         if distinct_annotations.get(annotation_data, None) is not None:
@@ -489,9 +490,10 @@ def get_all_annotations_from_file(project_name, file_id):
         reverse=True
     )
 
-    result = 'entity_id\ttype\ttext\tcount\n'
+    result = 'entity_id\ttype\ttext\tprimary_name\tcount\n'
     for annotation_data in sorted_distinct_annotations:
-        result += f"{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t{distinct_annotations[annotation_data]}\n"  # noqa
+        result += f'{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t' + \
+                  f'{annotation_data[3]}\t{distinct_annotations[annotation_data]}\n'
 
     response = make_response(result)
     response.headers['Content-Type'] = 'text/tsv'
