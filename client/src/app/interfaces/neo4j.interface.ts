@@ -75,7 +75,6 @@ export interface AssociationSentence {
 
 export interface FTSQueryRecord {
   node: GraphNode;
-  score: number;
   taxonomyId?: number;
   taxonomyName?: string;
   goClass?: string;
