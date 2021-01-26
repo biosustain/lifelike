@@ -20,7 +20,7 @@ export class ContentSearchService {
 
   annotate(params: AnnotationRequestOptions): Observable<AnnotationResponse> {
     return this.http.post<AnnotationResponse>(
-      `/api/search/annotate`,
+      `/api/filesystem/annotations/text/generate`,
       params,
       this.apiService.getHttpOptions(true),
     );

@@ -407,13 +407,15 @@ class AnnotationService:
         entity_token_pairs = []
         gene_names: Set[str] = set()
         for word, lmdb_match in tokens.items():
-            for token in lmdb_match.tokens:
-                for entity in lmdb_match.entities:
-                    entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
-                    gene_names.add(entity_synonym)
-
-                    entity_token_pairs.append(
-                        (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token))
+            for entity in lmdb_match.entities:
+                entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
+                for token in lmdb_match.tokens:
+                    # for genes we want to do exact comparison
+                    # like in self._get_fixed_false_positive_unified_annotations
+                    if token.keyword == entity_synonym:
+                        gene_names.add(entity_synonym)
+                        entity_token_pairs.append(
+                            (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token))
 
         gene_names_list = list(gene_names)
         organism_ids = list(self.organism_frequency.keys())
@@ -609,12 +611,16 @@ class AnnotationService:
         entity_token_pairs = []
         protein_names: Set[str] = set()
         for word, lmdb_match in tokens.items():
-            for token_positions in lmdb_match.tokens:
-                for entity in lmdb_match.entities:
-                    protein_names.add(entity['synonym'])
-
-                    entity_token_pairs.append(
-                        (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token_positions))
+            for entity in lmdb_match.entities:
+                entity_synonym = entity['synonym']
+                for token in lmdb_match.tokens:
+                    text = token.keyword.split(' ')
+                    if (len(text) == 1 and text[0] == entity_synonym) or len(text) > 1:
+                        # we only want proteins that are greater than one word
+                        # otherwise if it is one word, then it must be an exact match
+                        protein_names.add(entity_synonym)
+                        entity_token_pairs.append(
+                            (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token))
 
         protein_names_list = list(protein_names)
 

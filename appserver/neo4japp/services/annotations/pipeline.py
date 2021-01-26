@@ -369,14 +369,10 @@ def create_annotations_from_text(
 ):
     pdf_text = ''
     parsed = None
-    data_to_annotate = []
 
     start = time.time()
     try:
-        for row in text:
-            with mp.Pool(processes=4) as pool:
-                results = pool.map(parse_text, row)
-                data_to_annotate.append(results)
+        pdf_text, parsed = parse_text(text)
     except requests.exceptions.ConnectTimeout:
         raise AnnotationError(
             'The request timed out while trying to connect to the parsing service.')
@@ -392,51 +388,20 @@ def create_annotations_from_text(
         extra=EventLog(event_type='annotations').to_dict()
     )
 
-    annotations = []
-
     start = time.time()
-    for row in data_to_annotate:
-        # with mp.Pool(processes=4) as pool:
-        #     results = pool.starmap(
-        #         _create_annotations,
-        #         [
-        #             (
-        #                 annotation_method,
-        #                 specified_organism_synonym,
-        #                 specified_organism_tax_id,
-        #                 'text-extract',
-        #                 parsed,
-        #                 pdf_text,
-        #                 [],
-        #                 []
-        #             ) for (pdf_text, parsed) in row
-        #         ]
-        #     )
-        #     annotations.append(results)
-
-        row_annotations = []
-        for (pdf_text, parsed) in row:
-            anno = _create_annotations(
-                annotation_method=annotation_method,
-                specified_organism_synonym=specified_organism_synonym,
-                specified_organism_tax_id=specified_organism_tax_id,
-                filename='text-extract',
-                parsed=parsed,
-                pdf_text=pdf_text,
-                custom_annotations=[],
-                excluded_annotations=[]
-            )
-            if anno:
-                row_annotations.append(anno['documents'][0]['passages'][0]['annotations'])
-            else:
-                row_annotations.append([])
-        annotations.append(row_annotations)
+    annotations = _create_annotations(
+        annotation_method=annotation_method,
+        specified_organism_synonym=specified_organism_synonym,
+        specified_organism_tax_id=specified_organism_tax_id,
+        filename='text-extract',
+        parsed=parsed,
+        pdf_text=pdf_text,
+        custom_annotations=[],
+        excluded_annotations=[]
+    )
 
     current_app.logger.info(
         f'Time to annotate enrichment text {time.time() - start}',
         extra=EventLog(event_type='annotations').to_dict()
     )
-
-    # TODO: continue processing annotations for enrichment
-
     return annotations

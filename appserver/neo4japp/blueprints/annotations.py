@@ -1,6 +1,10 @@
 import csv
 import hashlib
+import html
 import io
+import json
+import re
+
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
@@ -19,18 +23,15 @@ from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.filesystem import FilesystemBaseView
-from neo4japp.blueprints.permissions import (
-    requires_role
-)
+from neo4japp.blueprints.permissions import requires_role
 from neo4japp.constants import TIMEZONE
 from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.database import (
     db,
-    get_excel_export_service, get_manual_annotation_service,
+    get_excel_export_service,
+    get_manual_annotation_service
 )
-from neo4japp.exceptions import (
-    AnnotationError
-)
+from neo4japp.exceptions import AnnotationError
 from neo4japp.models import (
     AppUser,
     Files,
@@ -56,7 +57,7 @@ from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from neo4japp.schemas.annotations import (
     CombinedAnnotationListSchema,
     AnnotationGenerationRequestSchema,
-    EnrichmentAnnotationGenerationRequestSchema,
+    TextAnnotationGenerationRequestSchema,
     MultipleAnnotationGenerationResponseSchema,
     GlobalAnnotationsDeleteSchema,
     CustomAnnotationCreateSchema,
@@ -402,40 +403,70 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         return update, version
 
 
-class EnrichmentAnnotationsGenerationView(FilesystemBaseView):
+class TextAnnotationsGenerationView(FilesystemBaseView):
     decorators = [auth.login_required]
 
-    @use_args(lambda request: EnrichmentAnnotationGenerationRequestSchema())
+    @use_args(lambda request: TextAnnotationGenerationRequestSchema())
     def post(self, params):
         """Generate annotations for one or more files."""
         current_user = g.current_user
 
+        # If done right, we would parse the XML but the built-in XML libraries in Python
+        # are susceptible to some security vulns, but because this is an internal API,
+        # we can accept that it can be janky
+        container_tag_re = re.compile("^<snippet>(.*)</snippet>$", re.DOTALL | re.IGNORECASE)
+        highlight_strip_tag_re = re.compile("^<highlight>([^<]+)</highlight>$", re.IGNORECASE)
+        highlight_add_tag_re = re.compile("^%%%%%-(.+)-%%%%%$", re.IGNORECASE)
+
+        results = []
+
         organism = None
         method = params.get('method', AnnotationMethod.RULES)
-        text = params.get('text', [])
+        texts = params.get('texts', [])
 
         if params.get('organism'):
             organism = params['organism']
 
-        try:
-            annotations = self._annotate(
-                method=method,
-                organism=organism,
-                text=text
-            )
-        except AnnotationError as e:
-            current_app.logger.error('Could not annotate enrichment file.', e)
-        else:
-            current_app.logger.debug('Enrichment file successfully annotated!')
+        for text in texts:
+            annotations = []
 
-        return jsonify(MultipleAnnotationGenerationResponseSchema().dump({
-            'results': results,
-            'missing': missing,
-        }))
+            # Remove the outer document tag
+            text = container_tag_re.sub("\\1", text)
+            # Remove the highlight tags to help the annotation parser
+            text = highlight_strip_tag_re.sub("%%%%%-\\1-%%%%%", text)
+
+            try:
+                annotations = self._annotate(
+                    method=method,
+                    organism=organism,
+                    text=text
+                )['documents'][0]['passages'][0]['annotations']
+            except AnnotationError as e:
+                current_app.logger.error('Could not annotate text.', e)
+
+            for annotation in annotations:
+                keyword = annotation['keyword']
+                text = re.sub(
+                    # Replace but outside tags (shh @ regex)
+                    f"({re.escape(keyword)})(?![^<]*>|[^<>]*</)",
+                    f'<annotation type="{annotation["meta"]["type"]}" '
+                    f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
+                    f'>\\1</annotation>',
+                    text,
+                    flags=re.IGNORECASE)
+
+            # Re-add the highlight tags
+            text = highlight_add_tag_re.sub("<highlight>\\1</highlight>", text)
+            # Re-wrap with document tags
+            text = f"<snippet>{text}</snippet>"
+
+            results.append(text)
+
+        return jsonify({'result': results})
 
     def _annotate(
         self,
-        text: List[List[str]],
+        text: str,
         organism: Optional[FallbackOrganism] = None,
         method: AnnotationMethod = AnnotationMethod.RULES
     ):
@@ -445,12 +476,7 @@ class EnrichmentAnnotationsGenerationView(FilesystemBaseView):
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
             text=text
         )
-
-        # current_app.logger.debug(f'File successfully annotated!')
-
-        # TODO: finish this...
-
-        return None
+        return annotations_json
 
 
 @bp.route('/global-list/inclusions')
@@ -697,5 +723,5 @@ filesystem_bp.add_url_rule(
     'annotations/generate',
     view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'))
 filesystem_bp.add_url_rule(
-    'annotations/enrichment/generate',
-    view_func=EnrichmentAnnotationsGenerationView.as_view('enrichment_annotation_generation'))
+    'annotations/text/generate',
+    view_func=TextAnnotationsGenerationView.as_view('text_annotation_generation'))

@@ -18,7 +18,12 @@
     <ng-container>
       <tr *ngFor="let row of entries">
         <td *ngFor="let entry of row" style="white-space:pre-wrap; word-wrap:break-word" class="overflow-auto resizeable" [ngClass]="{ 'error': entry.highlight}">
-          <div >{{ entry.text }}</div>
+          <div>
+            <app-highlight-text [highlight]="formatText(entry.text)"></app-highlight-text>
+          </div>
+          <span *ngIf="entry.text">
+            <button class="btn btn-primary" (click)="annotate(entry)">Annotate</button>
+          </span>
           <ng-container *ngIf="entry.multiLink">
             <ul *ngFor="let link of entry.multiLink">
               <li><a target="_blank" rel="noopener noreferrer" href="{{ link.link }}">{{ link.linkText }}</a></li>
