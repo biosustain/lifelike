@@ -89,7 +89,7 @@ const routes: Routes = [
     component: GraphSearchComponent,
     canActivate: [AuthGuard],
     data: {
-      title: 'Visualizer',
+      title: 'Knowledge Graph',
       fontAwesomeIcon: 'fas fa-chart-network',
     },
   },
@@ -131,7 +131,7 @@ const routes: Routes = [
         component: VisualizationComponent,
         canActivate: [AuthGuard],
         data: {
-          title: 'Visualizer',
+          title: 'Knowledge Graph',
           fontAwesomeIcon: 'search',
         },
       },
@@ -140,7 +140,7 @@ const routes: Routes = [
         component: UserFileImportComponent,
         canActivate: [AuthGuard],
         data: {
-          title: 'KG Visualizer Upload',
+          title: 'Knowledge Graph Upload',
           fontAwesomeIcon: 'search',
         },
       },
