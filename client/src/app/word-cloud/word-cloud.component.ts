@@ -289,9 +289,10 @@ export class WordCloudComponent {
     this.updateWordVisibility(words);
 
     const {width, height} = this.getCloudSvgDimensions();
+    const componentId = this.id;
 
     // create a tooltip
-    const tooltip = d3.select(`#${this.id}cloud-wrapper`)
+    const tooltip = d3.select(`#${componentId}cloud-wrapper`)
       .append('div')
       .style('opacity', 0)
       .attr('class', 'tooltip')
@@ -302,7 +303,6 @@ export class WordCloudComponent {
       .style('padding', '5px');
 
     // Also create a function for the tooltip content, to be shown when the text is hovered over
-    const componentId = this.id;
     const keywordsShown = this.keywordsShown;
     const mousemove = function(d) {
       const coordsOfCloud = document.getElementById(`${componentId}cloud-wrapper`).getBoundingClientRect() as DOMRect;

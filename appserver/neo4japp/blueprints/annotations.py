@@ -59,7 +59,8 @@ from neo4japp.services.annotations.data_transfer_objects import (
     GlobalAnnotationData
 )
 from neo4japp.services.annotations.pipeline import create_annotations
-from neo4japp.services.annotations.sorted_annotation_service import sorted_annotations_dict
+from neo4japp.services.annotations.sorted_annotation_service import \
+    sorted_annotations_dict, default_sorted_annotation
 from neo4japp.util import (
     jsonify_with_class,
     SuccessResponse,
@@ -114,7 +115,12 @@ def annotate(
 @bp.route('/<string:project_name>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-@use_args({"sort": fields.Str(required=True, validate=validate.OneOf(sorted_annotations_dict))})
+@use_args({
+    "sort": fields.Str(
+        missing=default_sorted_annotation.id,
+        validate=validate.OneOf(sorted_annotations_dict)
+    )
+})
 def get_all_annotations_from_project(args, project_name):
     current_app.logger.info(
         f'Project: {project_name}',
@@ -131,15 +137,17 @@ def get_all_annotations_from_project(args, project_name):
     annotation_service = get_sorted_annotation_service(args['sort'])
     distinct_annotations = annotation_service.get_annotations(project.id)
 
-    sorted_distintct_annotations = sorted(
+    sorted_distinct_annotations = sorted(
         distinct_annotations,
         key=lambda annotation: distinct_annotations[annotation],
         reverse=True,
     )
 
-    result = 'entity_id\ttype\ttext\tcount\n'
-    for annotation_data in sorted_distintct_annotations:
-        result += f"{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t{distinct_annotations[annotation_data]}\n"  # noqa
+    result = 'entity_id\ttype\ttext\tprimary_name\tcount\n'
+    for annotation_data in sorted_distinct_annotations:
+        result += f'{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t' + \
+                  f'{annotation_data[3]}\t{distinct_annotations[annotation_data]}\n'
+
     response = make_response(result)
     response.headers['Content-Type'] = 'text/tsv'
     yield response

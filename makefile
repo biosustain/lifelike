@@ -12,16 +12,16 @@ gcp-sa:
 
 # Fetches the LMDB files needed to run the application
 lmdb:
-	gsutil cp -r gs://lmdb_database/chemicals $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/compounds $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/diseases $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/genes $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/phenomenas $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/phenotypes $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/proteins $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/species $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/anatomy $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/foods $(LMDB_PATH)
+	gsutil cp -r gs://lmdb_database/v1/chemicals $(LMDB_PATH)
+	gsutil cp -r gs://lmdb_database/v1/compounds $(LMDB_PATH)
+	gsutil cp -r gs://lmdb_database/v1/diseases $(LMDB_PATH)
+	gsutil cp -r gs://lmdb_database/v1/genes $(LMDB_PATH)
+	gsutil cp -r gs://lmdb_database/v1/phenomenas $(LMDB_PATH)
+	gsutil cp -r gs://lmdb_database/v1/phenotypes $(LMDB_PATH)
+	gsutil cp -r gs://lmdb_database/v1/proteins $(LMDB_PATH)
+	gsutil cp -r gs://lmdb_database/v1/species $(LMDB_PATH)
+	gsutil cp -r gs://lmdb_database/v1/anatomy $(LMDB_PATH)
+	gsutil cp -r gs://lmdb_database/v1/foods $(LMDB_PATH)
 	find $(LMDB_PATH) -name '*.mdb.backup' -delete
 
 # Sets up everything you need to run the application
