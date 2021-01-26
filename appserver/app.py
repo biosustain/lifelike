@@ -4,13 +4,11 @@ import logging
 import os
 import click
 import sentry_sdk
-from datetime import datetime
 from flask import request
 
-from sqlalchemy import func, MetaData, inspect, Table
+from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import text
 
-from neo4japp.constants import TIMEZONE
 from neo4japp.database import db, get_account_service, get_elastic_service
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, GCPStorageProvider
@@ -24,11 +22,6 @@ from neo4japp.utils.logger import EventLog
 app_config = os.environ['FLASK_APP_CONFIG']
 app = create_app(config=f'config.{app_config}')
 logger = logging.getLogger(__name__)
-
-
-@app.route('/')
-def home():
-    return 'Ouch! You hit me.'
 
 
 @app.before_request
@@ -704,7 +697,8 @@ def global2gcp(bucket_name, users_filter):
 
 
 @app.cli.command('kg-stats')
-def refresh_kg_statistics():
+@click.option('--force', default=False, help='Force refresh although data already exists')
+def refresh_kg_statistics(force):
     """
     Used for pulling in data about our neo4j database
     and adding it to a redis cache. This cache is viewable
@@ -714,9 +708,16 @@ def refresh_kg_statistics():
     so we only want to run this sparingly. """
     from neo4japp.database import get_kg_statistics_service
     stat_service = get_kg_statistics_service()
-    statistics = stat_service.get_kg_statistics()
-    stat_service.set_cache_data('kg_statistics', statistics)
-    app.logger.info(f'Finish loading the statistics data into redis.')
+    try:
+        if stat_service.get_cache_data('kg_statistics') is None or force:
+            statistics = stat_service.get_kg_statistics()
+            stat_service.set_cache_data('kg_statistics', statistics)
+            app.logger.info(f'Finish loading the statistics data into redis.')
+        else:
+            app.logger.info(
+                f'Skipping refresh, data already exists. Run --force=True to force refresh.')
+    except Exception as err:
+        app.logger.error(f'Kg statistics refresh failure: {err}')
 
 
 @app.cli.command('load-lmdb')

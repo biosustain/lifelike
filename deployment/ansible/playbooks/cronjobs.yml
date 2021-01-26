@@ -1,0 +1,19 @@
+- hosts: "{{ webserver }}"
+  become: true
+
+  tasks:
+    - name: Adds Kg Statistics Cache Refresher with Health Check API
+      ansible.builtin.cron:
+        name: "Kg Statistics Cache Refresher"
+        user: ansible
+        special_time: daily
+        job: "docker exec appserver flask kg-stats --force=True && curl -fsS -o /dev/null {{ HEALTH_CHECK_API }}"
+      when: HEALTH_CHECK_API is defined
+
+    - name: Adds Kg Statistics Cache Refresher to default Logger
+      ansible.builtin.cron:
+        name: "Kg Statistics Cache Refresher"
+        user: ansible
+        special_time: daily
+        job: "docker exec appserver flask kg-stats --force=True > {{ deploy_dir }}/cronlogs/status.log 2>&1"
+      when: HEALTH_CHECK_API is undefined

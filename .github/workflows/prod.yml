@@ -69,17 +69,6 @@ jobs:
                 context: ./client
                 dockerfile: ./Dockerfile
 
-            - name: Build Redis
-              uses: whoan/docker-build-with-cache-action@v5
-              with:
-                username: _json_key
-                password: ${{ secrets.GCE_SA_KEY }}
-                registry: gcr.io
-                image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
-                image_tag: ${{ github.sha }}
-                context: ./cache-invalidator
-                dockerfile: ./Dockerfile
-
     deploy:
       name: Deploy
       needs: build
@@ -105,5 +94,6 @@ jobs:
               --extra-vars set_git_timestamp=${{ needs.build.outputs.output1 }}
               --extra-vars set_app_build_number=${{ needs.build.outputs.output2 }}
               --extra-vars set_app_version=${{ needs.build.outputs.output3 }}
+              --extra-vars set_cloud_backup=true
               --user ansible
               --verbose

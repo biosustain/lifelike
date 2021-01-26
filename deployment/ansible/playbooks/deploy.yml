@@ -1,3 +1,4 @@
+- include: cronjobs.yml
 - hosts: "{{ webserver }}"
   become: true
   vars:
@@ -23,6 +24,14 @@
     - name: Create Docker Network - Frontend
       docker_network:
         name: frontend
+
+    - name: Create/Update LMDB database
+      file:
+        path: "{{ deploy_dir }}/lmdb"
+        state: directory
+        mode: "775"
+        owner: "{{ deploy_user }}"
+        group: "1000" # We do this because group permissions 1000 in Docker files
 
     - name: Appserver Container Deployment
       docker_container:
@@ -73,7 +82,7 @@
             aliases:
               - appserver
       tags:
-        - delpoy
+        - deploy
 
     - name: Webserver Container Deployment
       docker_container:
@@ -134,13 +143,17 @@
       tags:
         - deploy
 
-    - name: Create/Update LMDB database
-      file:
-        path: "{{ deploy_dir }}/lmdb"
-        state: directory
-        mode: "775"
-        owner: "{{ deploy_user }}"
-        group: "1000" # We do this because group permissions 1000 in Docker files
+    - name: Download LMDB files
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker exec appserver flask load-lmdb"
+      tags:
+        - deploy
+
+    - name: Load up Kg Statistics if it does not yet exist
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker exec appserver flask kg-stats"
 
     - name: Seed Elasticsearch with Global Annotations
       include_role:
