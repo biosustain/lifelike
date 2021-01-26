@@ -3,8 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '../../shared/services/api.service';
-import { TableCell } from 'app/shared/components/table/generic-table.component';
-import { EnrichmentAnnotationGenerationRequest } from 'app/file-browser/schema';
+import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
 
 @Injectable()
 export class EnrichmentTableService {
@@ -42,9 +41,9 @@ export class EnrichmentTableService {
     );
   }
 
-  annotateEnrichment(request: EnrichmentAnnotationGenerationRequest): Observable<any> {
+  annotateEnrichment(request: TextAnnotationGenerationRequest): Observable<any> {
     return this.http.post(
-      `/api/filesystem/annotations/enrichment/generate`,
+      `/api/filesystem/annotations/text/generate`,
       {...request},
       this.apiService.getHttpOptions(true)
     ).pipe(

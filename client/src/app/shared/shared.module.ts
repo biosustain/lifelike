@@ -134,7 +134,7 @@ const components = [
     FriendlyDateStrPipe,
     NodeTextStylePipe,
     ScrubHtmlPipe,
-    AddStatusPipe,
+    AddStatusPipe
   ],
   providers: [
     ApiService,
@@ -164,7 +164,7 @@ const components = [
     FriendlyDateStrPipe,
     NodeTextStylePipe,
     NgbModule,
-    AddStatusPipe,
+    AddStatusPipe
   ],
 })
 export class SharedModule {
