@@ -101,8 +101,8 @@ class MannWhitneyUSA(SortedAnnotation):
         return distinct_annotations
 
 
-sorted_annotations_list = {
-    SumLogCountSA,
-    FrequencySA,
-    MannWhitneyUSA
+sorted_annotations_dict = {
+    SumLogCountSA.id: SumLogCountSA,
+    FrequencySA.id: FrequencySA,
+    MannWhitneyUSA.id: MannWhitneyUSA
 }
