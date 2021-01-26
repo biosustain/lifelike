@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+from marshmallow import validate
 from pandas import DataFrame
 from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
@@ -58,6 +59,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     GlobalAnnotationData
 )
 from neo4japp.services.annotations.pipeline import create_annotations
+from neo4japp.services.annotations.sorted_annotation_service import sorted_annotations_dict
 from neo4japp.util import (
     jsonify_with_class,
     SuccessResponse,
@@ -112,19 +114,21 @@ def annotate(
 @bp.route('/<string:project_name>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-@use_args({"sort": fields.Str(required=True)})
+@use_args({"sort": fields.Str(required=True, validate=validate.OneOf(sorted_annotations_dict))})
 def get_all_annotations_from_project(args, project_name):
     current_app.logger.info(
         f'Project: {project_name}',
         extra=UserEventLog(
             username=g.current_user.username, event_type='view entity word cloud').to_dict()
     )
-    annotation_service = get_sorted_annotation_service(args['sort'])
+
     project = Projects.query.filter(Projects.project_name == project_name).one_or_none()
     if project is None:
         raise RecordNotFoundException(f'Project {project_name} not found')
     user = g.current_user
     yield user, project
+
+    annotation_service = get_sorted_annotation_service(args['sort'])
     distinct_annotations = annotation_service.get_annotations(project.id)
 
     sorted_distintct_annotations = sorted(
@@ -132,6 +136,7 @@ def get_all_annotations_from_project(args, project_name):
         key=lambda annotation: distinct_annotations[annotation],
         reverse=True,
     )
+
     result = 'entity_id\ttype\ttext\tcount\n'
     for annotation_data in sorted_distintct_annotations:
         result += f"{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t{distinct_annotations[annotation_data]}\n"  # noqa

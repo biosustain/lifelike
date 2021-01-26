@@ -3,9 +3,9 @@ import os
 
 from elasticsearch import Elasticsearch
 from flask import g, current_app
+from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
 from py2neo import Graph
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
@@ -13,7 +13,7 @@ from sqlalchemy import MetaData, Table, UniqueConstraint
 def trunc_long_constraint_name(name: str) -> str:
     if (len(name) > 59):
         truncated_name = name[:55] + '_' + \
-            hashlib.md5(name[55:].encode('utf-8')).hexdigest()[:4]
+                         hashlib.md5(name[55:].encode('utf-8')).hexdigest()[:4]
         return truncated_name
     return name
 
@@ -230,16 +230,13 @@ def get_sorted_annotation_service(sort_id):
         AnnotationGraphService,
         ManualAnnotationService
     )
-    from neo4japp.services.annotations.sorted_annotation_service import sorted_annotations_list
+    from neo4japp.services.annotations.sorted_annotation_service import sorted_annotations_dict
 
-    for sa in sorted_annotations_list:
-        if sa.id == sort_id:
-            return sa(
-                annotation_service=ManualAnnotationService(
-                    graph=AnnotationGraphService()
-                )
-            )
-    raise NotImplementedError(id)
+    return sorted_annotations_dict[sort_id](
+        annotation_service=ManualAnnotationService(
+            graph=AnnotationGraphService()
+        )
+    )
 
 
 def get_annotation_pdf_parser():
