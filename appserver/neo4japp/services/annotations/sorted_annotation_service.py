@@ -23,7 +23,8 @@ class SortedAnnotation:
         return (
             meta['id'],
             meta['type'],
-            meta['allText'],
+            annotation['keyword'].strip(),
+            annotation['primaryName'].strip(),
         )
 
     def get_annotations(self, project_id) -> Dict[Tuple[str, str, str], float]:
@@ -106,3 +107,5 @@ sorted_annotations_dict = {
     FrequencySA.id: FrequencySA,
     MannWhitneyUSA.id: MannWhitneyUSA
 }
+
+default_sorted_annotation = FrequencySA
