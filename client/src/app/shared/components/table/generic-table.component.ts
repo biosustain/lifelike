@@ -1,5 +1,8 @@
 import { Component, Input } from '@angular/core';
 
+import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
+import { EnrichmentTableService } from 'app/enrichment-tables/services/enrichment-table.service';
+
 @Component({
   selector: 'app-generic-table',
   templateUrl: './generic-table.component.html',
@@ -11,7 +14,8 @@ export class GenericTableComponent {
   // Number of columns can be inferred from the headers
   numColumns: number[];
 
-  constructor() {}
+  constructor(
+    protected readonly worksheetViewerService: EnrichmentTableService) {}
 
   // Probably don't need setters for all of these
   @Input()
@@ -21,6 +25,28 @@ export class GenericTableComponent {
     this.numColumns = new Array(num);
   }
   @Input() entries: TableCell[][];
+  @Input() organism = '';
+  @Input() taxID = '';
+
+  annotate(entry) {
+    this.worksheetViewerService.annotateEnrichment(
+      {
+        texts: [entry.text],
+        organism: {
+          organism_name: this.organism,
+          synonym: this.organism,
+          tax_id: this.taxID
+        }
+      } as TextAnnotationGenerationRequest).pipe().subscribe(results => entry.text = results);
+  }
+
+  formatText(text: string) {
+    if (text.indexOf('snippet') === -1) {
+      return `<snippet>${text}</snippet>`;
+    } else {
+      return text;
+    }
+  }
 }
 
 export interface TableCell {

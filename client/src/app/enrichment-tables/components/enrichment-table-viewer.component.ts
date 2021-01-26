@@ -32,7 +32,6 @@ import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../shared
 import { ENRICHMENT_TABLE_MIMETYPE } from '../providers/enrichment-table.type-provider';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { EnrichmentAnnotationGenerationRequest } from 'app/file-browser/schema';
 
 
 @Component({
@@ -514,29 +513,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           newEntries[i].unshift({text: synonyms[i]});
         }
         newEntries = newEntries.concat(this.processUnmatchedNodes(synonyms, currentGenes));
-        // this.tableEntries = this.tableEntries.concat(newEntries);
-        // this.loadingData = false;
-
-
-
-        const enrichmentText = newEntries.map((row) => {
-          return row.map((cell) => {
-            return cell.text;
-          });
-        });
-        this.worksheetViewerService.annotateEnrichment(
-          {
-            text: enrichmentText,
-            organism: {
-              organism_name: this.organism,
-              synonym: this.organism,
-              tax_id: this.taxID
-            }
-          } as EnrichmentAnnotationGenerationRequest).pipe().subscribe(results => {
-            this.tableEntries = this.tableEntries.concat(newEntries);
-            this.loadingData = false;
-            console.log(results);
-          });
+        this.tableEntries = this.tableEntries.concat(newEntries);
+        this.loadingData = false;
       });
   }
 

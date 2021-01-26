@@ -215,10 +215,10 @@ export interface AnnotationGenerationRequest {
   annotationMethod?: AnnotationMethod;
 }
 
-export interface EnrichmentAnnotationGenerationRequest {
+export interface TextAnnotationGenerationRequest {
   organism?: OrganismAutocomplete;
   annotationMethod?: AnnotationMethod;
-  text: string[][];
+  texts: string[];
 }
 
 // ========================================

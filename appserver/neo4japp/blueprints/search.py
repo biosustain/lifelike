@@ -68,61 +68,6 @@ def visualizer_search(
     })
 
 
-@bp.route('/annotate', methods=['POST'])
-@auth.login_required
-@use_kwargs(AnnotateRequestSchema)
-def annotate(texts):
-    # If done right, we would parse the XML but the built-in XML libraries in Python
-    # are susceptible to some security vulns, but because this is an internal API,
-    # we can accept that it can be janky
-    container_tag_re = re.compile("^<snippet>(.*)</snippet>$", re.DOTALL | re.IGNORECASE)
-    highlight_strip_tag_re = re.compile("^<highlight>([^<]+)</highlight>$", re.IGNORECASE)
-    highlight_add_tag_re = re.compile("^%%%%%-(.+)-%%%%%$", re.IGNORECASE)
-
-    results = []
-
-    for text in texts:
-        annotations = []
-
-        # Remove the outer document tag
-        text = container_tag_re.sub("\\1", text)
-        # Remove the highlight tags to help the annotation parser
-        text = highlight_strip_tag_re.sub("%%%%%-\\1-%%%%%", text)
-
-        try:
-            annotations = create_annotations_from_pdf(
-                annotation_method=AnnotationMethod.RULES.value,
-                document=text,
-                filename='snippet.pdf',
-                specified_organism_synonym='',
-                specified_organism_tax_id='',
-            )['documents'][0]['passages'][0]['annotations']
-        except Exception as e:
-            pass
-
-        for annotation in annotations:
-            keyword = annotation['keyword']
-            text = re.sub(
-                # Replace but outside tags (shh @ regex)
-                f"({re.escape(keyword)})(?![^<]*>|[^<>]*</)",
-                f'<annotation type="{annotation["meta"]["type"]}" '
-                f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
-                f'>\\1</annotation>',
-                text,
-                flags=re.IGNORECASE)
-
-        # Re-add the highlight tags
-        text = highlight_add_tag_re.sub("<highlight>\\1</highlight>", text)
-        # Re-wrap with document tags
-        text = f"<snippet>{text}</snippet>"
-
-        results.append(text)
-
-    return jsonify({
-        'texts': results,
-    })
-
-
 class ContentSearchView(FilesystemBaseView):
     decorators = [auth.login_required]
 

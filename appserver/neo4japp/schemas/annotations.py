@@ -39,10 +39,10 @@ class AnnotationGenerationRequestSchema(CamelCaseSchema):
     annotation_method = EnumField(AnnotationMethod, by_value=True)
 
 
-class EnrichmentAnnotationGenerationRequestSchema(CamelCaseSchema):
+class TextAnnotationGenerationRequestSchema(CamelCaseSchema):
     organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     annotation_method = EnumField(AnnotationMethod, by_value=True)
-    text = fields.List(fields.List(fields.String))
+    texts = fields.List(fields.String())
 
 
 # Responses
