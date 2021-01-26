@@ -1,0 +1,3 @@
+server_name: sandbox.lifelike.bio
+app_environment: qa
+elastic_file_content_index_id: file_sandbox

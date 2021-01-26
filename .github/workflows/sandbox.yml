@@ -1,18 +1,17 @@
-name: Staging Deployment
+name: Sandbox Deployment
 
 on:
   push:
-    tags:
-      - "staging"
     branches:
-      # only trigger when branches match refs/heads/staging/
-      - "staging/**"
+      - master
+    tags:
+      - sandbox
 
 jobs:
   build:
     name: Setup, Build, Publish
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     outputs:
       output1: ${{ steps.timestamp.outputs.commit_timestamp }}
@@ -72,22 +71,11 @@ jobs:
           context: ./client
           dockerfile: ./Dockerfile
 
-      - name: Build Redis
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: _json_key
-          password: ${{ secrets.GCE_SA_KEY }}
-          registry: gcr.io
-          image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
-          image_tag: ${{ github.sha }}
-          context: ./cache-invalidator
-          dockerfile: ./Dockerfile
-
   deploy:
     name: Deploy
     needs: build
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     steps:
 
@@ -103,10 +91,9 @@ jobs:
           vault_password: ${{ secrets.ANSIBLE_VAULT }}
           ssh_key: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
           options: |
-            --extra-vars webserver=staging
+            --extra-vars webserver=sandbox
             --extra-vars set_docker_img_hash=${{ github.sha }}
             --extra-vars set_git_timestamp=${{ needs.build.outputs.output1 }}
             --extra-vars set_app_build_number=${{ needs.build.outputs.output2 }}
             --extra-vars set_app_version=${{ needs.build.outputs.output3 }}
             --user ansible
-            --verbose

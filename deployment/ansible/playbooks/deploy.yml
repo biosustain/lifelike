@@ -5,6 +5,7 @@
     git_timestamp: "{{ set_git_timestamp | default('not specified') }}"
     app_build_number: "{{ set_app_build_number | default('not specified') }}"
     app_version: "{{ set_app_version | default('not specified') }}"
+    cloud_backup: "{{ set_cloud_backup | default(false) }}"
   roles:
     - role: docker
       tags: ["docker"]
@@ -15,83 +16,97 @@
     - name: Allow Docker to access Google Cloud Registry
       shell: gcloud --quiet auth configure-docker
 
-    - name: Pull Docker Images
-      docker_image:
-        name: "{{ container_registry }}/{{ item }}:{{ docker_img_hash }}"
-        source: pull
-      with_items:
-        - kg-appserver
-        - kg-webserver
-        - kg-cache-service
-        - kg-nlpapi
-      tags:
-        - deploy
+    - name: Create Docker Network - Backend
+      docker_network:
+        name: backend
 
-    - name: Copy docker-compose files
-      copy:
-        src: "./files/{{ item }}"
-        dest: "{{ deploy_dir }}"
-        owner: "{{ deploy_user }}"
-        group: "{{ deploy_user }}"
-        mode: u=rw,g=r,o=r
-      with_items:
-        - docker-compose.yml
-        - docker-compose.prod.yml
-      tags:
-        - deploy
+    - name: Create Docker Network - Frontend
+      docker_network:
+        name: frontend
 
-    - name: Create .env file
-      copy:
-        content: |
-          GITHUB_COMMIT_TIMESTAMP={{ git_timestamp }}
-          ELASTICSEARCH_HOSTS={{ ELASTICSEARCH_HOSTS }}
-          ELASTIC_FILE_INDEX_ID={{ elastic_file_content_index_id }}
-          POSTGRES_HOST={{ POSTGRES_HOST }}
-          POSTGRES_PORT={{ POSTGRES_PORT }}
-          POSTGRES_USER={{ POSTGRES_USER }}
-          POSTGRES_PASSWORD={{ POSTGRES_PASSWORD }}
-          POSTGRES_DB={{ POSTGRES_DB }}
-          NEO4J_HOST={{ NEO4J_HOST }}
-          NEO4J_AUTH={{ NEO4J_AUTH }}
-          FLASK_APP={{ FLASK_APP }}
-          FLASK_APP_CONFIG={{ FLASK_APP_CONFIG }}
-          FLASK_ENV={{ FLASK_ENV }}
-          PROJECT_ID={{ PROJECT_ID }}
-          CLOUD_SQL_ALIAS={{ CLOUD_SQL_ALIAS }}
-          GCE_BACKUP_BUCKET={{ GCE_BACKUP_BUCKET }}
-          SENTRY_KEY={{ SENTRY_KEY }}
-          REDIS_HOST={{ REDIS_HOST }}
-          REDIS_PORT={{ REDIS_PORT }}
-          DOMAIN={{ DOMAIN }}
-          GITHUB_HASH={{ docker_img_hash }}
-          APP_VERSION={{ app_version }}
-          APP_BUILD_NUMBER={{ app_build_number }}
-          GOOGLE_APPLICATION_CREDENTIALS="ansible_service_account.json"
-          LMDB_HOME_FOLDER={{ LMDB_HOME_FOLDER }}
-        dest: "{{ deploy_dir }}/.env"
-        owner: "{{ deploy_user }}"
-        group: "{{ deploy_user }}"
-        mode: u=rw,g=r,o=r
+    - name: Appserver Container Deployment
+      docker_container:
+        name: appserver
+        state: started
+        image: "{{ container_registry }}/kg-appserver:{{ docker_img_hash }}"
+        ports:
+          - "5000:5000"
+        env:
+          GITHUB_COMMIT_TIMESTAMP: "{{ git_timestamp }}"
+          ELASTICSEARCH_HOSTS: "{{ ELASTICSEARCH_HOSTS }}"
+          ELASTIC_FILE_INDEX_ID: "{{ elastic_file_content_index_id }}"
+          POSTGRES_HOST: "{{ POSTGRES_HOST }}"
+          POSTGRES_PORT: "{{ POSTGRES_PORT|quote }}"
+          POSTGRES_USER: "{{ POSTGRES_USER }}"
+          POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+          POSTGRES_DB: "{{ POSTGRES_DB }}"
+          NEO4J_HOST: "{{ NEO4J_HOST }}"
+          NEO4J_AUTH: "{{ NEO4J_AUTH }}"
+          FLASK_APP: "{{ FLASK_APP }}"
+          FLASK_APP_CONFIG: "{{ FLASK_APP_CONFIG }}"
+          FLASK_ENV: "{{ FLASK_ENV }}"
+          PROJECT_ID: "{{ PROJECT_ID }}"
+          CLOUD_SQL_ALIAS: "{{ CLOUD_SQL_ALIAS }}"
+          GCE_BACKUP_BUCKET: "{{ GCE_BACKUP_BUCKET }}"
+          SENTRY_KEY: "{{ SENTRY_KEY }}"
+          REDIS_HOST: "{{ REDIS_HOST }}"
+          REDIS_PORT: "{{ REDIS_PORT|quote }}"
+          DOMAIN: "{{ DOMAIN }}"
+          GITHUB_HASH: "{{ docker_img_hash }}"
+          APP_VERSION: "{{ app_version }}"
+          APP_BUILD_NUMBER: "{{ app_build_number|quote }}"
+          GOOGLE_APPLICATION_CREDENTIALS: "ansible_service_account.json"
+          LMDB_HOME_FOLDER: "{{ LMDB_HOME_FOLDER }}"
+        comparisons:
+          image: strict
+          env: strict
+        cpus: 4
+        memory: 10G
+        volumes:
+          - /home/ansible/ansible_service_account.json:/home/n4j/ansible_service_account.json
+          - /home/ansible/lmdb:/home/n4j/neo4japp/services/annotations/lmdb
+        networks:
+          - name: backend
+            aliases:
+              - appserver
+          - name: frontend
+            aliases:
+              - appserver
       tags:
-        - deploy
+        - delpoy
 
-    - name: Stop any previous containers
-      shell:
-        chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml down"
-
-    - name: Start docker
-      shell:
-        chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
-      tags:
-        - deploy
+    - name: Webserver Container Deployment
+      docker_container:
+        name: webserver
+        state: started
+        image: "{{ container_registry }}/kg-webserver:{{ docker_img_hash }}"
+        cpus: 4
+        memory: 2G
+        comparisons:
+          image: strict
+          env: strict
+        ports:
+          - "80:80"
+          - "443:443"
+        networks:
+          - name: frontend
+            aliases:
+              - webserver
 
     - name: Prune unused images
-      shell:
-        "docker image prune -a -f"
+      shell: "docker image prune -a -f"
       tags:
         - deploy
+
+    - name: Redis Container Deployment
+      docker_container:
+        name: redis
+        state: started
+        image: redis:alpine
+        networks:
+          - name: backend
+            aliases:
+              - redis
 
     - name: Run database migrations and backups
       block:
@@ -108,24 +123,24 @@
 
         - name: Generate backup
           shell: "gcloud sql export sql {{ CLOUD_SQL_ALIAS }} gs://{{ GCE_BACKUP_BUCKET }}/{{ BACKUP_ID.stdout }} --database={{ POSTGRES_DB }}"
+      when: cloud_backup|bool
+      tags:
+        - deploy
 
-        - name: Run the migration
-          shell:
-            chdir: "{{ deploy_dir }}"
-            cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver bin/migrate-db --upgrade --data-migrate"
-      when: CLOUD_BACKUP|bool
+    - name: Run the migration
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker exec appserver bin/migrate-db --upgrade --data-migrate"
       tags:
         - deploy
 
     - name: Create/Update LMDB database
-      include_role:
-        name: lmdb
-        apply:
-          tags:
-            - always
-      tags:
-        - lmdb
-        - deploy
+      file:
+        path: "{{ deploy_dir }}/lmdb"
+        state: directory
+        mode: "775"
+        owner: "{{ deploy_user }}"
+        group: "1000" # We do this because group permissions 1000 in Docker files
 
     - name: Seed Elasticsearch with Global Annotations
       include_role:
@@ -140,6 +155,6 @@
     - name: Warm up LMDB
       shell:
         chdir: "{{ deploy_dir }}"
-        cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml exec -T appserver python3 neo4japp/services/annotations/warm_up/lmdb_warmup.py"
+        cmd: "docker exec appserver python3 neo4japp/services/annotations/warm_up/lmdb_warmup.py"
       tags:
         - deploy

@@ -76,17 +76,6 @@ jobs:
           context: ./cache-invalidator
           dockerfile: ./Dockerfile
 
-      - name: Build NLP
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: _json_key
-          password: ${{ secrets.GCE_SA_KEY }}
-          registry: gcr.io
-          image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
-          image_tag: ${{ github.sha }}
-          context: ./nlp
-          dockerfile: ./Dockerfile
-
   deploy:
     name: Deploy
     needs: build

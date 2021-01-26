@@ -766,3 +766,19 @@ def fix_project_acl():
         db.session.close()
         print('error: ', ex)
     print('Completed ACP fix.')
+
+
+@app.cli.command('kg-stats')
+def refresh_kg_statistics():
+    """
+    Used for pulling in data about our neo4j database
+    and adding it to a redis cache. This cache is viewable
+    via the kg-statistics visualizer.
+
+    NOTE: This command bogs down neo4j pretty heavily,
+    so we only want to run this sparingly. """
+    from neo4japp.database import get_kg_statistics_service
+    stat_service = get_kg_statistics_service()
+    statistics = stat_service.get_kg_statistics()
+    stat_service.set_cache_data('kg_statistics', statistics)
+    app.logger.info(f'Finish loading the statistics data into redis.')

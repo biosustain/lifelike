@@ -22,8 +22,6 @@
       with_items:
         - kg-appserver
         - kg-webserver
-        - kg-cache-service
-        - kg-nlpapi
       tags:
         - deploy
 
@@ -93,15 +91,15 @@
       tags:
         - deploy
 
+    - name: Create LMDB di
+
     - name: Create/Update LMDB database
-      include_role:
-        name: lmdb
-        apply:
-          tags:
-            - always
-      tags:
-        - lmdb
-        - deploy
+      file:
+        path: "{{ deploy_dir }}/lmdb"
+        state: directory
+        mode: "775"
+        owner: "{{ deploy_user }}"
+        group: "1000" # We do this because group permissions 1000 in Docker files
 
     - name: Warm up LMDB
       shell:

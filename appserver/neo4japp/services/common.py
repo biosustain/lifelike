@@ -1,3 +1,4 @@
+import json
 from sqlalchemy.exc import SQLAlchemyError
 from neo4japp.exceptions import DatabaseError
 
@@ -28,6 +29,20 @@ class RDBMSBaseDao:
             self.commit()
         else:
             self.session.flush()
+
+
+class RedisDao:
+    def __init__(self, redis_conn, **kwargs):
+        self.redis = redis_conn
+        super().__init__(**kwargs)
+
+    def set_cache_data(self, key, value, cache_expiration=1209600):
+        self.redis.set(key, json.dumps(value))
+        self.redis.expire(key, cache_expiration)
+        return self.redis.get(key)
+
+    def get_cache_data(self, key):
+        return self.redis.get(key)
 
 
 class HybridDBDao(GraphBaseDao, RDBMSBaseDao):

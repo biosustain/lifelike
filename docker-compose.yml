@@ -5,14 +5,5 @@ services:
     appserver:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-appserver:${GITHUB_HASH:-latest}
 
-    cache-invalidator:
-        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-cache-service:${GITHUB_HASH:-latest}
-
-    redis:
-        image: redis:6.0.3-alpine
-
     webserver:
         image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-webserver:${GITHUB_HASH:-latest}
-
-    nlpapi:
-        image: ${REGISTRY:-gcr.io/able-goods-221820}/kg-nlpapi:${GITHUB_HASH:-latest}

@@ -7,6 +7,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from py2neo import Graph
+from redis import Redis
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
 
@@ -72,6 +73,16 @@ def close_lmdb(e=None):
     lmdb = g.pop('lmdb', None)
     if lmdb:
         lmdb.close_envs()
+
+
+def connect_to_redis():
+    if 'redis' not in g:
+        g.redis = Redis(
+            host=current_app.config.get('REDIS_HOST'),
+            port=current_app.config.get('REDIS_PORT'),
+            decode_responses=True
+        )
+    return g.redis
 
 
 class LMDBConnection:
@@ -240,6 +251,18 @@ def get_excel_export_service():
     return ExcelExportService()
 
 
+def get_kg_statistics_service():
+    if 'kg_statistics_service' not in g:
+        from neo4japp.services.kg_statistics import KgStatisticsService
+        graph = connect_to_neo4j()
+        redis_conn = connect_to_redis()
+        g.kg_statistics_service = KgStatisticsService(
+            graph=graph,
+            redis_conn=redis_conn
+        )
+    return g.kg_statistics_service
+
+
 def reset_dao():
     """ Cleans up DAO bound to flask request context
 
@@ -254,6 +277,7 @@ def reset_dao():
         'account_service',
         'projects_service',
         'visualizer_service',
+        'redis',
         'neo4j',
     ]:
         if dao in g:
