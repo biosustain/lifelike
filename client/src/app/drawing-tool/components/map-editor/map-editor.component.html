@@ -22,25 +22,27 @@
               (dragstart)="this.dragStarted($event)">
             {{ map?.label }}
           </h1>
-          <div class="text-danger ml-2" *ngIf="unsavedChanges$.value; else saved">
-            <i class="fa fa-fw fa-pencil-alt"></i> Unsaved changes
-          </div>
-          <ng-template #saved>
-            <div class="ml-2 text-muted" ngbTooltip="Saved to the cloud" container="body">
-              <i class="fa fa-fw fa-cloud-upload-alt"></i>
+          <ng-container *ngIf="editable">
+            <div class="text-danger ml-2" *ngIf="unsavedChanges$.value; else saved">
+              <i class="fa fa-fw fa-pencil-alt"></i> Unsaved changes
             </div>
-          </ng-template>
+            <ng-template #saved>
+              <div class="ml-2 text-muted" ngbTooltip="Saved to the cloud" container="body">
+                <i class="fa fa-fw fa-cloud-upload-alt"></i>
+              </div>
+            </ng-template>
+          </ng-container>
         </div>
 
         <div class="module-toolbar d-flex align-items-center mt-2">
           <div class="btn-group mr-2">
             <button type="button" class="btn btn-secondary"
-                    [disabled]="(unsavedChanges$ | async) == null"
+                    [disabled]="(unsavedChanges$ | async) == null || !editable"
                     ngbTooltip="Save" placement="bottom" container="body"
                     (click)="save()">
               <i class="fa fa-fw fa-save"></i> Save
             </button>
-            <button type="button" class="btn btn-secondary"
+            <button type="button" class="btn btn-secondary" [disabled]="!editable"
                     ngbTooltip="Download map as an image or PDF" placement="bottom" container="body"
                     (click)="download()">
               <i class="fa fa-fw fa-file-export"></i> Export
@@ -80,7 +82,7 @@
           <div class="btn-group">
             <button type="button" class="btn btn-secondary" container="body"
                     ngbTooltip="Map Version History" placement="bottom"
-                    (click)="mapVersionDialog()">
+                    (click)="mapVersionDialog()" [disabled]="!editable">
               Version History
             </button>
           </div>
@@ -92,6 +94,10 @@
             </app-search-control>
           </div>
         </div>
+
+        <div class="text-danger mt-2" *ngIf="!editable">
+          You do not have permission to save changes to this map.
+        </div>
       </div>
 
       <div class="position-relative overflow-hidden flex-fill">
@@ -99,7 +105,7 @@
           <canvas #canvas class="graph-view"></canvas>
         </div>
 
-        <ng-container *ngIf="map && (lockAcquired === false || !lockCheckingActive)">
+        <ng-container *ngIf="map && (lockAcquired === false || !lockCheckingActive) && editable">
           <ng-container *ngIf="locks.length && lockCheckingActive; else locksReleased">
             <div class="lock-panel alert alert-danger">
               <div>
@@ -131,7 +137,7 @@
       </div>
     </div>
 
-    <div>
+    <div *ngIf="editable">
       <div>
         <div class="palette-panel">
           <app-collapsible-window title="Palette" [reversed]="true" class="flex-fill">
