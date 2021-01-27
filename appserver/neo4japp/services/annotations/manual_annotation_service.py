@@ -325,7 +325,7 @@ class ManualAnnotationService:
                 Files.project == project_id,
                 Files.annotations != []
             )).all()
-        files_annotations = []
+        files_annotations = {}
         for fi in files:
             files_annotations[fi.file_id] = self._get_file_annotations(fi)
         return files_annotations
