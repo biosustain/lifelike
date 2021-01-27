@@ -224,7 +224,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
 
     if (this.lockAcquired === false) {
       this.filesystemService.getLocks(this.locator.hashId).pipe(
-        this.errorHandler.create(),
+        this.errorHandler.create({label: 'Acquire file lock'}),
       ).pipe(
         finalize(() => this.lastLockCheckTime = window.performance.now()),
       ).subscribe(locks => {
@@ -237,12 +237,6 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
         own: true,
       }).pipe(
         finalize(() => this.lastLockCheckTime = window.performance.now()),
-        catchError(error => {
-          if (!(error instanceof LockError)) {
-            this.errorHandler.showError(error);
-          }
-          return throwError(error);
-        }),
       ).subscribe(locks => {
         this.lockAcquired = true;
         this.ngZone.run(() => {
@@ -251,7 +245,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
       }, (err: LockError) => {
         this.lockAcquired = false;
         this.ngZone.run(() => {
-          this.locks = err.locks;
+          this.locks = 'locks' in err ? err.locks : [];
         });
       });
     }

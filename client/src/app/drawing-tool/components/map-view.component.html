@@ -23,7 +23,7 @@
               {{ map?.label }}
             </h1>
 
-            <div class="btn-group ml-2" *ngIf="hasEditPermission">
+            <div class="btn-group ml-2" *ngIf="editable">
               <button type="button" class="btn btn-secondary"
                       [appLink]="['/projects', this.locator.projectName, 'maps', this.locator.hashId, 'edit']">
                 <i class="fa fa-fw fa-pencil-alt"></i> Edit
@@ -56,9 +56,14 @@
           </div>
         </div>
 
-        <div class="text-warning mt-2">
+        <div class="text-warning mt-2" *ngIf="editable; else notEditableWarning">
           You are currently in view-only mode.
         </div>
+        <ng-template #notEditableWarning>
+          <div class="text-muted mt-2">
+            You do not have permission to edit this map but you can explore it.
+          </div>
+        </ng-template>
 
       </div>
 
