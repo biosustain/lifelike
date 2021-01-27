@@ -65,7 +65,7 @@ class FrequencySA(SortedAnnotation):
             if annotation in distinct_annotations:
                 distinct_annotations[annotation] += 1
             else:
-                distinct_annotations[annotation] = 0
+                distinct_annotations[annotation] = 1
 
         return distinct_annotations
 
