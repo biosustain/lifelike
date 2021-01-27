@@ -91,7 +91,7 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
         return searchResult;
       }),
       this.errorHandler.createFormErrorHandler(this.form),
-      this.errorHandler.create(),
+      this.errorHandler.create({label: 'Get organism for enrichment table'}),
     ).subscribe(() => {
     }, () => {
       // If an error happened, we need to close the dialog because it is totally broken now

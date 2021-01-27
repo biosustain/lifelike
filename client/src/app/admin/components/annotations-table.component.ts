@@ -144,7 +144,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         });
 
         this.subscriptions.add(this.globalAnnotationService.exportGlobalExclusions().pipe(
-            this.errorHandler.create()
+            this.errorHandler.create({label: 'Export global exclusion'})
         ).subscribe(event => {
             if (event.type === HttpEventType.DownloadProgress) {
                 if (event.loaded >= event.total) {
@@ -178,7 +178,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         });
 
         this.subscriptions.add(this.globalAnnotationService.exportGlobalInclusions().pipe(
-            this.errorHandler.create()
+            this.errorHandler.create({label: 'Export global inclusion'})
         ).subscribe(event => {
             if (event.type === HttpEventType.DownloadProgress) {
                 if (event.loaded >= event.total) {

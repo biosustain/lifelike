@@ -1,0 +1,40 @@
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.image: kg-webserver
+          config:
+            - type: docker
+              containers.ids:
+                - "${data.docker.container.id}"
+            - module: nginx
+              access:
+                enabled: true
+                containers:
+                  stream: "stdout"
+              error:
+                enabled: true
+                containers:
+                  stream: "stderr"
+
+    - type: docker
+      templates:
+        - condition:
+            contains:
+              docker.container.image: kg-appserver
+          config:
+            - type: container
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+              multiline.pattern: 'ERROR|INFO|DEBUG|WARN'
+              multiline.negate: true
+              multiline.match: after
+
+processors:
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
+
+output.logstash:
+    hosts: ["logstash:5044"]

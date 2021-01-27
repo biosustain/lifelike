@@ -77,7 +77,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     this.filesystemService.save([this.locator], {
       contentValue,
     })
-      .pipe(this.errorHandler.create())
+      .pipe(this.errorHandler.create({label: 'Update map'}))
       .subscribe(() => {
         this.unsavedChanges$.next(false);
         this.emitModuleProperties();
