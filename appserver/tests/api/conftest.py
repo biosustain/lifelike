@@ -426,8 +426,9 @@ def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
                     "y": -323,
                     "hyperlink": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=511145",  # noqa
                     "detail": "dddd",
-                    "source": 
-                    "/dt/pdf/0df1c8e0-50a4-4770-9942-621bc1f1cb28/1/98.064/706.8/121.47984/717.8399999999999",
+                    "source":
+                    "/dt/pdf/0df1c8e0-50a4-4770-9942-621bc1f1cb28/" + \
+                    "1/98.064/706.8/121.47984/717.8399999999999",
                     # noqa
                     "search": [
                         {
