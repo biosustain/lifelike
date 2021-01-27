@@ -469,8 +469,9 @@ class KgService(HybridDBDao):
             16: 'Xylose (ALE Mutation Data)',
             17: '42C Temperature (ALE Mutation Data)',
             18: 'nagC (ALE Mutation Data)',
-            # 19: 'nagA (ALE Mutation Data)',
-            # 20: 'nagA/nagC (ALE Mutation Data)',
+            19: 'nagA/nagC (ALE Mutation Data)',
+            # 20: 'nagA (ALE Mutation Data)',
+
         }
 
     def get_query_id_to_func_map(self):
@@ -497,8 +498,8 @@ class KgService(HybridDBDao):
             16: [self.get_data_from_file, 'ale_mutation_data/xylose.json'],
             17: [self.get_data_from_file, 'ale_mutation_data/42C.json'],
             18: [self.get_data_from_file, 'ale_mutation_data/nagC.json'],
-            # 19: [self.get_data_from_file, 'ale_mutation_data/nagA.json'],
-            # 20: [self.get_data_from_file, 'ale_mutation_data/nagAC.json'],
+            19: [self.get_data_from_file, 'ale_mutation_data/nagAC.json'],
+            # 20: [self.get_data_from_file, 'ale_mutation_data/nagA.json'],
         }
 
     def get_shortest_path_data(self, query_id):
