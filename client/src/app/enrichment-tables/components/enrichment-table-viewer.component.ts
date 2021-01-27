@@ -110,7 +110,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.loadTask = new BackgroundTask(() => this.filesystemService.get(this.fileId, {
       loadContent: true,
     }).pipe(
-      this.errorHandler.create(),
+      this.errorHandler.create({label: 'Load enrichment table'}),
       mergeMap((object: FilesystemObject) => {
         return object.contentValue$.pipe(
           mapBlobToBuffer(),
@@ -388,7 +388,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       })
         .pipe(
           finalize(() => progressDialogRef.close()),
-          this.errorHandler.create(),
+          this.errorHandler.create({label: 'Edit enrichment table'}),
         )
         .subscribe(() => {
           this.emitModuleProperties();
@@ -448,7 +448,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           this.loadingData = false;
           return error;
         }),
-        this.errorHandler.create(),
+        this.errorHandler.create({label: 'Match NCBI nodes'}),
       )
       .subscribe((result: NCBIWrapper[]) => {
         this.getDomains(result, this.importGenes);
@@ -494,7 +494,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           this.loadingData = false;
           return error;
         }),
-        this.errorHandler.create(),
+        this.errorHandler.create({label: 'Get domains for enrichment table'}),
       )
       .subscribe((domainResult: EnrichmentWrapper[]) => {
         let newEntries = domainResult.map((wrapper) =>

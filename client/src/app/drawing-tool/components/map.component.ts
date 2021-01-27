@@ -159,7 +159,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.subscriptions.add(this.map.contentValue$.pipe(
       mapBlobToBuffer(),
       mapBufferToJson<UniversalGraph>(),
-      this.errorHandler.create(),
+      this.errorHandler.create({label: 'Parse map data'}),
     ).subscribe(graph => {
       this.graphCanvas.setGraph(graph);
       this.graphCanvas.zoomToFit(0);
