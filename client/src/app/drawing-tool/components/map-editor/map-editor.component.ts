@@ -258,8 +258,6 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
 
     if (this.lockAcquired === false) {
       this.filesystemService.getLocks(this.locator).pipe(
-        this.errorHandler.create(),
-      ).pipe(
         finalize(() => this.lastLockCheckTime = window.performance.now()),
       ).subscribe(locks => {
         this.ngZone.run(() => {
@@ -285,7 +283,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
       }, (err: LockError) => {
         this.lockAcquired = false;
         this.ngZone.run(() => {
-          this.locks = err.locks;
+          this.locks = 'locks' in err ? err.locks : [];
         });
       });
     }
