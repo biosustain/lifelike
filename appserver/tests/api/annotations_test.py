@@ -28,6 +28,7 @@ def test_user_can_get_all_annotations_from_project(
         b'59272\tGene\tace2\tACE2\t1\n' + \
         b'9606\tSpecies\thuman\tHomo Sapiens\t1\n'
 
+
 def test_user_can_get_all_annotations_from_project_sorted_by_sum_log_count(
         client,
         fix_project,
@@ -52,6 +53,7 @@ def test_user_can_get_all_annotations_from_project_sorted_by_sum_log_count(
         b'entity_id\ttype\ttext\tprimary_name\tcount\n' + \
         b'59272\tGene\tace2\tACE2\t1\n' + \
         b'9606\tSpecies\thuman\tHomo Sapiens\t1\n'
+
 
 def test_user_can_get_all_annotations_from_project_sorted_by_mwu(
         client,
