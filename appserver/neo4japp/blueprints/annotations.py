@@ -219,7 +219,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
                 meta['id'],
                 meta['type'],
                 text,
-                meta.get('primaryName', '').strip(),
+                annotation.get('primaryName', '').strip(),
                 counts[key]['count']
             ]
 
@@ -501,7 +501,7 @@ def get_annotations():
         GlobalList.approved,
         GlobalList.creation_date,
         GlobalList.modified_date,
-        GlobalList.annotation['meta']['allText'].astext.label('text'),
+        GlobalList.annotation['text'].astext.label('text'),
         GlobalList.annotation['reason'].astext.label('reason'),
         GlobalList.annotation['type'].astext.label('entityType'),
         GlobalList.annotation['id'].astext.label('annotationId'),
