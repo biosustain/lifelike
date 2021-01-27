@@ -46,7 +46,7 @@ export class AdminSettingsComponent {
         const file: File = data.files[0];
         this.storage
           .uploadUserManual(file)
-          .pipe(this.errorHandler.create())
+          .pipe(this.errorHandler.create({label: 'Upload user manual'}))
           .subscribe(
             (event) => {
               if (event.type === HttpEventType.UploadProgress) {

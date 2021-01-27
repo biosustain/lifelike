@@ -5,8 +5,8 @@ import { Observable, throwError } from 'rxjs';
 
 import { Store } from '@ngrx/store';
 import { State } from 'app/root-store/state';
-import { MessageDialogActions, SnackbarActions } from 'app/shared/store';
-import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { SnackbarActions } from 'app/shared/store';
+import { ErrorHandler} from 'app/shared/services/error-handler.service';
 
 /**
  * HttpErrorInterceptor is used to intercept a request/response
@@ -16,11 +16,13 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
 
-  constructor(private store: Store<State>) {
+  constructor(
+    private store: Store<State>,
+    private errorHandler: ErrorHandler) {
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<any> {
-    return next.handle(req).pipe(
+    return next.handle(this.addLogHeader(req)).pipe(
       catchError((res: HttpErrorResponse) => {
         const statusCode = res.status;
         if (statusCode === 0) {
@@ -42,5 +44,10 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         return throwError(res);
       }),
     );
+  }
+
+  addLogHeader(request: HttpRequest<any>) {
+    const transactionId = this.errorHandler.createTransactionId();
+    return request.clone({setHeaders: {'X-Transaction-ID': transactionId}});
   }
 }
