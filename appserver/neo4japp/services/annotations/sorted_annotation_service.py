@@ -3,6 +3,7 @@ from typing import Dict, Tuple
 from numpy import log
 from pandas import DataFrame
 from sqlalchemy import and_
+from scipy.stats import mannwhitneyu
 
 from neo4japp.models import Files
 from neo4japp.services.annotations import ManualAnnotationService
@@ -35,21 +36,16 @@ class SumLogCountSA(SortedAnnotation):
     id = 'sum_log_count'
 
     def get_annotations(self, project_id) -> Dict[Tuple[str, str, str], float]:
-        files = Files.query.filter(
-            and_(
-                Files.project == project_id,
-                Files.annotations != []
-            )).all()
-
-        if len(files) < 1:
-            return {}
-
-        df = DataFrame(files)
-        df["annotation"] = df[0].apply(self.annotation_service._get_file_annotations)
-        df[0] = df[0].apply(lambda file: file.file_id)
-        df = df.explode("annotation")
-        df["annotation"] = df["annotation"].apply(SortedAnnotation.meta_to_id_tuple)
-        gdf = df.groupby(["annotation", 0])
+        files_annotations = self.annotation_service.get_files_annotations_in_project(project_id)
+        df = DataFrame(
+            [
+                (file_id, SortedAnnotation.meta_to_id_tuple(annotation))
+                for (file_id, annotations) in files_annotations.items()
+                for annotation in annotations
+            ],
+            columns=['file_id', 'annotation']
+        )
+        gdf = df.groupby(["annotation", "file_id"])
         return log(gdf.size()).sum(level="annotation").to_dict()
 
 
@@ -74,29 +70,23 @@ class MannWhitneyUSA(SortedAnnotation):
     id = 'mwu'
 
     def get_annotations(self, project_id) -> Dict[Tuple[str, str, str], float]:
-        files = Files.query.filter(
-            and_(
-                Files.project == project_id,
-                Files.annotations != []
-            )).all()
-
-        if len(files) < 1:
-            return {}
-
-        from scipy.stats import mannwhitneyu
-        df = DataFrame(files)
-        df["annotation"] = df[0].apply(self.annotation_service._get_file_annotations)
-        df = df.explode("annotation")
-        df["annotation"] = df["annotation"].apply(SortedAnnotation.meta_to_id_tuple)
-        df[0] = df[0].apply(lambda file: file.file_id)
-        res = df.groupby(["annotation", 0])
-        res2 = res.size()
+        files_annotations = self.annotation_service.get_files_annotations_in_project(project_id)
+        df = DataFrame(
+                [
+                    (file_id, SortedAnnotation.meta_to_id_tuple(annotation))
+                    for (file_id, annotations) in files_annotations.items()
+                    for annotation in annotations
+                ],
+                columns=['file_id', 'annotation']
+            )\
+            .groupby(["annotation", "file_id"])\
+            .size()
         distinct_annotations = {}
-        for annotation, group in res2.groupby('annotation'):
+        for annotation, group in df.groupby('annotation'):
             distinct_annotations[annotation] = -log(
                 mannwhitneyu(
                     group,
-                    res2[res2.index.get_level_values('annotation') != annotation]
+                    df[df.index.get_level_values('annotation') != annotation]
                 ).pvalue
             )
         return distinct_annotations
