@@ -1,11 +1,12 @@
 import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { HighlightDisplayLimitChange } from 'app/file-browser/components/file-info.component';
 import { FileViewComponent } from 'app/file-browser/components/file-view.component';
 import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
-import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
@@ -18,6 +19,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { ContentSearchOptions, TYPES_MAP } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
+import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
 
 @Component({
   selector: 'app-content-search',
@@ -36,7 +38,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
   highlightOptions: FindOptions = {keepSearchSpecialChars: true};
 
-  constructor(protected readonly route: ActivatedRoute,
+  constructor(private modalService: NgbModal,
+              protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly contentSearchService: ContentSearchService,
               protected readonly zone: NgZone,
@@ -148,13 +151,18 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     }
   }
 
-  openAdvancedSearchOptions() {
-    this.messageDialog.display({
-      title: 'Advanced Search Options',
-      message: '- Exact phrase: "this exact phrase"\n' +
-      '- Zero or more wildcard character: ba*na\n' +
-      '- One or more wildcard character: ba?ana',
-      type: MessageType.Info,
+  openAdvancedSearch() {
+    const modalRef = this.modalService.open(AdvancedSearchDialogComponent, {
+      size: 'md',
     });
+    modalRef.result
+      // Advanced search was triggered
+      .then(() => {
+        console.log('Searching...with advanced parameters!');
+      })
+      // Advanced search dialog was dismissed or rejected
+      .catch(() => {
+        console.log('Advanced search dialog rejected');
+      });
   }
 }
