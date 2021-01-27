@@ -417,7 +417,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           this.loadingData = false;
           return error;
       }),
-        this.errorHandler.create(),
+        this.errorHandler.create({label: 'Match NCBI nodes'}),
       )
       .subscribe((result: NCBIWrapper[]) => {
         this.getDomains(result, this.importGenes);
@@ -463,7 +463,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           this.loadingData = false;
           return error;
       }),
-      this.errorHandler.create(),
+      this.errorHandler.create({label: 'Get domains for enrichment table'}),
       )
       .subscribe((domainResult: EnrichmentWrapper[]) => {
         let newEntries = domainResult.map((wrapper) =>
