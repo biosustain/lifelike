@@ -1,11 +1,11 @@
-import binascii
 import json
 import hashlib
+import json
 import os
 import types
-import hashlib
+from datetime import datetime
+
 import pytest
-from datetime import date, datetime
 
 from neo4japp.models import (
     AppRole,
@@ -18,7 +18,6 @@ from neo4japp.models import (
     FileContent,
     Files,
     DomainURLsMap,
-    AnnotationStyle,
     FallbackOrganism
 )
 from neo4japp.services.annotations import AnnotationGraphService, ManualAnnotationService
@@ -180,6 +179,55 @@ def mock_get_combined_annotations_in_project_result(monkeypatch):
 
 
 @pytest.fixture(scope='function')
+def mock_get_files_annotations_in_project_result(monkeypatch):
+    def get_files_annotations_in_project_result(*args, **kwargs):
+        return {
+            "a": [
+                {
+                    'meta': {
+                        'type': EntityType.GENE.value,
+                        'id': '59272',
+                    },
+                    'keyword': 'ace2',
+                    'primaryName': 'ACE2',
+                },
+                {
+                    'meta': {
+                        'type': EntityType.SPECIES.value,
+                        'id': '9606',
+                    },
+                    'keyword': 'human',
+                    'primaryName': 'Homo Sapiens',
+                }
+            ],
+            "b": [
+                {
+                    'meta': {
+                        'type': EntityType.SPECIES.value,
+                        'id': '9606',
+                    },
+                    'keyword': 'human',
+                    'primaryName': 'Homo Sapiens',
+                },
+                {
+                    'meta': {
+                        'type': EntityType.SPECIES.value,
+                        'id': '9606',
+                    },
+                    'keyword': 'human',
+                    'primaryName': 'Homo Sapiens',
+                }
+            ],
+        }
+
+    monkeypatch.setattr(
+        ManualAnnotationService,
+        'get_files_annotations_in_project',
+        get_files_annotations_in_project_result,
+    )
+
+
+@pytest.fixture(scope='function')
 def mock_get_organisms_from_gene_ids_result(monkeypatch):
     def get_organisms_from_gene_ids_result(*args, **kwargs):
         return [
@@ -232,6 +280,8 @@ def mock_delete_elastic_documents(monkeypatch):
         'delete_documents_with_index',
         delete_documents_with_index,
     )
+
+
 ####################
 # End service mocks
 ####################
@@ -376,7 +426,8 @@ def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
                     "y": -323,
                     "hyperlink": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=511145",  # noqa
                     "detail": "dddd",
-                    "source": "/dt/pdf/0df1c8e0-50a4-4770-9942-621bc1f1cb28/1/98.064/706.8/121.47984/717.8399999999999",  # noqa
+                    "source": "/dt/pdf/0df1c8e0-50a4-4770-9942-621bc1f1cb28/1/98.064/706.8/121.47984/717.8399999999999",
+                    # noqa
                     "search": [
                         {
                             "domain": "google",
@@ -472,6 +523,5 @@ def uri_fixture(client, session):
     session.flush()
 
     return uri1
-
 
 # TODO: Need to create actual mock data for these
