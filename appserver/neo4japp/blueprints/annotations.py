@@ -196,7 +196,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
                 key = annotation['meta']['id']
                 if key not in counts:
                     counts[key] = {
-                        'meta': annotation['meta'],
+                        'annotation': annotation,
                         'count': 1
                     }
                 else:
@@ -209,12 +209,17 @@ class FileAnnotationCountsView(FilesystemBaseView):
         )
 
         for key in count_keys:
-            meta = counts[key]['meta']
+            annotation = counts[key]['annotation']
+            meta = annotation['meta']
+            if annotation.get('keyword', None) is not None:
+                text = annotation['keyword'].strip()
+            else:
+                text = annotation['meta']['allText'].strip()
             yield [
                 meta['id'],
                 meta['type'],
-                meta['keyword'].strip(),
-                meta['primaryName'].strip(),
+                text,
+                meta.get('primaryName', '').strip(),
                 counts[key]['count']
             ]
 
@@ -416,7 +421,7 @@ def export_global_inclusions():
 
         return {
             'id': inclusion.annotation['meta'].get('id', ''),
-            'term': inclusion.annotation['keyword'],
+            'term': inclusion.annotation['meta']['allText'],
             'type': inclusion.annotation['meta']['type'],
             'hyperlink': inclusion.annotation['meta'].get('idHyperlink', ''),
             'inclusion_date': inclusion.annotation.get('inclusion_date', ''),
@@ -496,7 +501,7 @@ def get_annotations():
         GlobalList.approved,
         GlobalList.creation_date,
         GlobalList.modified_date,
-        GlobalList.annotation['text'].astext.label('text'),
+        GlobalList.annotation['meta']['allText'].astext.label('text'),
         GlobalList.annotation['reason'].astext.label('reason'),
         GlobalList.annotation['type'].astext.label('entityType'),
         GlobalList.annotation['id'].astext.label('annotationId'),
@@ -521,7 +526,7 @@ def get_annotations():
         GlobalList.approved,
         GlobalList.creation_date,
         GlobalList.modified_date,
-        GlobalList.annotation['keyword'].astext.label('text'),
+        GlobalList.annotation['meta']['allText'].astext.label('text'),
         sa.sql.null().label('reason'),
         GlobalList.annotation['meta']['type'].astext.label('entityType'),
         GlobalList.annotation['meta']['id'].astext.label('annotationId'),
