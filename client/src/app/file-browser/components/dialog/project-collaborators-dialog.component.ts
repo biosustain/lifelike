@@ -118,7 +118,7 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
         this.collaborators$ = of(collaborators);
       }),
       finalize(() => progressDialogRef.close()),
-      this.errorHandler.create(),
+      this.errorHandler.create({label: 'Save project collaborators'}),
     );
   }
 }

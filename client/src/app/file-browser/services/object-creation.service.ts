@@ -83,7 +83,7 @@ export class ObjectCreationService {
           );
         }),
         finalize(() => progressDialogRef.close()),
-        this.errorHandler.create(),
+        this.errorHandler.create({label: 'Create object'}),
       );
   }
 

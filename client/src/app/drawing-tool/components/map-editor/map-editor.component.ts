@@ -117,7 +117,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
               mapBufferToJson<UniversalGraph>(),
             )
             : of(null)),
-          this.errorHandler.create(),
+          this.errorHandler.create({label: 'Load map backup'}),
         ),
     ));
   }
@@ -173,7 +173,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   restore(version: ObjectVersion) {
     readBlobAsBuffer(version.contentValue).pipe(
       mapBufferToJson<UniversalGraph>(),
-      this.errorHandler.create(),
+      this.errorHandler.create({label: 'Restore map from backup'}),
     ).subscribe(graph => {
       this.graphCanvas.execute(new KnowledgeMapRestore(
         `Restore map to '${version.hashId}'`,
