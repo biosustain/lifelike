@@ -69,8 +69,6 @@ def test_can_upload_pdf(
     test_user,
     fix_project,
     fix_directory,
-    elasticindexes,
-    mock_index_maps
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['access_jwt'])

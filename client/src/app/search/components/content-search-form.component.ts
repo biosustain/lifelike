@@ -1,10 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
+
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { FormComponent } from 'app/shared/components/base/form.component';
 
 import { ContentSearchOptions, TYPES } from '../content-search';
 import { SearchType } from '../shared';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { FormComponent } from '../../shared/components/base/form.component';
 
 @Component({
   selector: 'app-content-search-form',
@@ -15,7 +16,7 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
   @Output() formResult = new EventEmitter<ContentSearchOptions>();
 
   form = new FormGroup({
-    q: new FormControl('', Validators.required),
+    q: new FormControl('', [Validators.required, this.whitespaceValidator]),
     types: new FormControl([]),
   });
 
@@ -29,5 +30,10 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
 
   choiceLabel(choice) {
     return choice.name;
+  }
+
+  whitespaceValidator(control: AbstractControl): {[key: string]: any} | null {
+    const val =  control.value as string;
+    return val.length > 0 && val.match(/.*\S.*/) === null ? {whitespace: {value: control.value}} : null;
   }
 }
