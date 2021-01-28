@@ -15,7 +15,6 @@ from neo4japp.database import (
 from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.constants import (
     AnnotationMethod,
-    COMMON_WORDS,
     NLP_ENDPOINT,
     MAX_ABBREVIATION_WORD_LENGTH
 )
@@ -33,120 +32,120 @@ multiple steps needed in the annotation pipeline.
 """
 
 
-def process_nlp(
-    page: int,
-    page_text: str,
-    pages_to_index: Dict[int, int],
-    min_idx_in_page: Dict[int, int]
-):
-    nlp_tokens = []  # type: ignore
-    combined_nlp_resp = []  # type: ignore
+# def process_nlp(
+#     page: int,
+#     page_text: str,
+#     pages_to_index: Dict[int, int],
+#     min_idx_in_page: Dict[int, int]
+# ):
+#     nlp_tokens = []  # type: ignore
+#     combined_nlp_resp = []  # type: ignore
 
-    # try:
-    #     req = requests.post(NLP_ENDPOINT, json={'text': page_text}, timeout=30)
-    #     nlp_resp = req.json()
+#     # try:
+#     #     req = requests.post(NLP_ENDPOINT, json={'text': page_text}, timeout=30)
+#     #     nlp_resp = req.json()
 
-    #     for predicted in nlp_resp:
-    #         # TODO: nlp only checks for Bacteria right now
-    #         # replace with Species in the future
-    #         if predicted['type'] != 'Bacteria':
-    #             # need to do offset here because index resets
-    #             # after each text string for page
-    #             offset = pages_to_index[page]
-    #             curr_char_idx_mappings = {
-    #                 i+offset: char for i, char in zip(
-    #                     range(predicted['low_index'], predicted['high_index']),
-    #                     predicted['item'],
-    #                 )
-    #             }
+#     #     for predicted in nlp_resp:
+#     #         # TODO: nlp only checks for Bacteria right now
+#     #         # replace with Species in the future
+#     #         if predicted['type'] != 'Bacteria':
+#     #             # need to do offset here because index resets
+#     #             # after each text string for page
+#     #             offset = pages_to_index[page]
+#     #             curr_char_idx_mappings = {
+#     #                 i+offset: char for i, char in zip(
+#     #                     range(predicted['low_index'], predicted['high_index']),
+#     #                     predicted['item'],
+#     #                 )
+#     #             }
 
-    #             # determine page keyword is on
-    #             page_idx = -1
-    #             min_page_idx_list = list(min_idx_in_page)
-    #             for min_page_idx in min_page_idx_list:
-    #                 # include offset here, see above
-    #                 if predicted['high_index']+offset <= min_page_idx:
-    #                     # reminder: can break here because dict in python 3.8+ are
-    #                     # insertion order
-    #                     break
-    #                 else:
-    #                     page_idx = min_page_idx
-    #             token = PDFTokenPositions(
-    #                 page_number=min_idx_in_page[page_idx],
-    #                 keyword=predicted['item'],
-    #                 normalized_keyword=normalize_str(predicted['item']),
-    #                 char_positions=curr_char_idx_mappings,
-    #                 token_type=predicted['type'],
-    #             )
-    #             nlp_tokens.append(token)
+#     #             # determine page keyword is on
+#     #             page_idx = -1
+#     #             min_page_idx_list = list(min_idx_in_page)
+#     #             for min_page_idx in min_page_idx_list:
+#     #                 # include offset here, see above
+#     #                 if predicted['high_index']+offset <= min_page_idx:
+#     #                     # reminder: can break here because dict in python 3.8+ are
+#     #                     # insertion order
+#     #                     break
+#     #                 else:
+#     #                     page_idx = min_page_idx
+#     #             token = PDFTokenPositions(
+#     #                 page_number=min_idx_in_page[page_idx],
+#     #                 keyword=predicted['item'],
+#     #                 normalized_keyword=normalize_str(predicted['item']),
+#     #                 char_positions=curr_char_idx_mappings,
+#     #                 token_type=predicted['type'],
+#     #             )
+#     #             nlp_tokens.append(token)
 
-    #             offset_predicted = {k: v for k, v in predicted.items()}
-    #             offset_predicted['high_index'] += offset
-    #             offset_predicted['low_index'] += offset
+#     #             offset_predicted = {k: v for k, v in predicted.items()}
+#     #             offset_predicted['high_index'] += offset
+#     #             offset_predicted['low_index'] += offset
 
-    #             combined_nlp_resp.append(offset_predicted)
+#     #             combined_nlp_resp.append(offset_predicted)
 
-    #     req.close()
-    # except requests.exceptions.ConnectTimeout:
-    #     raise AnnotationError(
-    #         'The request timed out while trying to connect to the NLP service.')
-    # except requests.exceptions.Timeout:
-    #     raise AnnotationError(
-    #         'The request to the NLP service timed out.')
-    # except requests.exceptions.RequestException:
-    #     raise AnnotationError(
-    #         'An unexpected error occurred with the NLP service.')
+#     #     req.close()
+#     # except requests.exceptions.ConnectTimeout:
+#     #     raise AnnotationError(
+#     #         'The request timed out while trying to connect to the NLP service.')
+#     # except requests.exceptions.Timeout:
+#     #     raise AnnotationError(
+#     #         'The request to the NLP service timed out.')
+#     # except requests.exceptions.RequestException:
+#     #     raise AnnotationError(
+#     #         'An unexpected error occurred with the NLP service.')
 
-    return nlp_tokens, combined_nlp_resp
+#     return nlp_tokens, combined_nlp_resp
 
 
-def get_nlp_entities(
-    page_index: Dict[int, int],
-    text: str,
-    tokens: PDFTokensList,
-):
-    """Makes a call to the NLP service.
-    There is a memory issue with the NLP service, so for now
-    the REST call is broken into one per PDF page.
+# def get_nlp_entities(
+#     page_index: Dict[int, int],
+#     text: str,
+#     tokens: PDFTokensList,
+# ):
+#     """Makes a call to the NLP service.
+#     There is a memory issue with the NLP service, so for now
+#     the REST call is broken into one per PDF page.
 
-    Returns the NLP tokens and combined NLP response.
-    """
-    nlp_resp: List[dict] = []
-    nlp_tokens: List[Any] = []
-    pages_to_index = {v: k for k, v in page_index.items()}
-    pages = list(pages_to_index)
-    text_in_page: List[Tuple[int, str]] = []
+#     Returns the NLP tokens and combined NLP response.
+#     """
+#     nlp_resp: List[dict] = []
+#     nlp_tokens: List[Any] = []
+#     pages_to_index = {v: k for k, v in page_index.items()}
+#     pages = list(pages_to_index)
+#     text_in_page: List[Tuple[int, str]] = []
 
-    # TODO: Breaking the request into pages
-    # because doing the entire PDF seem to cause
-    # the NLP service container to crash with no
-    # errors and exit code of 247... (memory related)
-    length = len(pages) - 1
-    for i, page in enumerate(pages):
-        if i == length:
-            text_in_page.append((page, text[pages_to_index[page]:]))
-        else:
-            text_in_page.append((page, text[pages_to_index[page]:pages_to_index[page+1]]))
+#     # TODO: Breaking the request into pages
+#     # because doing the entire PDF seem to cause
+#     # the NLP service container to crash with no
+#     # errors and exit code of 247... (memory related)
+#     length = len(pages) - 1
+#     for i, page in enumerate(pages):
+#         if i == length:
+#             text_in_page.append((page, text[pages_to_index[page]:]))
+#         else:
+#             text_in_page.append((page, text[pages_to_index[page]:pages_to_index[page+1]]))
 
-    # with mp.Pool(processes=3) as pool:
-    #     resources = []
-    #     for page, page_text in text_in_page:
-    #         resources.append(
-    #             (page, page_text, pages_to_index, tokens.min_idx_in_page)
-    #         )
+#     # with mp.Pool(processes=3) as pool:
+#     #     resources = []
+#     #     for page, page_text in text_in_page:
+#     #         resources.append(
+#     #             (page, page_text, pages_to_index, tokens.min_idx_in_page)
+#     #         )
 
-    #     results = pool.starmap(process_nlp, resources)
+#     #     results = pool.starmap(process_nlp, resources)
 
-    #     for result_tokens, resp in results:
-    #         nlp_tokens += result_tokens
-    #         nlp_resp += resp
+#     #     for result_tokens, resp in results:
+#     #         nlp_tokens += result_tokens
+#     #         nlp_resp += resp
 
-    # current_app.logger.info(
-    #     f'NLP Response Output: {json.dumps(nlp_resp)}',
-    #     extra=EventLog(event_type='annotations').to_dict()
-    # )
+#     # current_app.logger.info(
+#     #     f'NLP Response Output: {json.dumps(nlp_resp)}',
+#     #     extra=EventLog(event_type='annotations').to_dict()
+#     # )
 
-    return nlp_tokens, nlp_resp
+#     return nlp_tokens, nlp_resp
 
 
 def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
@@ -188,7 +187,7 @@ def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
 
 def parse_pdf(file_id: int) -> Tuple[str, List[PDFWord]]:
     req = requests.get(
-        f'http://pdfparser:7600/token/rect/json/http://appserver:5000/annotations/files/{file_id}', timeout=30)  # noqa
+        f'http://pdfparser:7600/token/rect/json/http://appserver:5000/annotations/files/{file_id}', timeout=45)  # noqa
     resp = req.json()
     req.close()
 
@@ -221,19 +220,15 @@ def _create_annotations(
     entity_recog = get_entity_recognition()
 
     start = time.time()
-    tokens_list = entity_recog.extract_tokens(parsed)
 
     if annotation_method == AnnotationMethod.RULES.value:
-        entity_recog.set_entity_inclusions(custom_annotations=custom_annotations)
-        entity_recog.set_entity_exclusions()
-
         start_lmdb_time = time.time()
-        entity_recog.identify_entities(
-            tokens=tokens_list.tokens,
-            check_entities_in_lmdb=entity_recog.get_entities_to_identify()
+        entity_results = entity_recog.identify(
+            custom_annotations=custom_annotations,
+            tokens=parsed
         )
         current_app.logger.info(
-            f'Total lmdb lookup time {time.time() - start_lmdb_time}',
+            f'Total LMDB lookup time {time.time() - start_lmdb_time}',
             extra=EventLog(event_type='annotations').to_dict()
         )
 
@@ -257,10 +252,9 @@ def _create_annotations(
                 entity_category = 'Uncategorized'
 
         annotations = annotator.create_rules_based_annotations(
-            tokens=tokens_list,
             custom_annotations=custom_annotations,
             excluded_annotations=excluded_annotations,
-            entity_results=entity_recog.get_entity_match_results(),
+            entity_results=entity_results,
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
             specified_organism=SpecifiedOrganismStrain(
                 synonym=entity_synonym, organism_id=entity_id, category=entity_category)
@@ -388,7 +382,6 @@ def create_annotations_from_text(
         extra=EventLog(event_type='annotations').to_dict()
     )
 
-    start = time.time()
     annotations = _create_annotations(
         annotation_method=annotation_method,
         specified_organism_synonym=specified_organism_synonym,
@@ -398,10 +391,5 @@ def create_annotations_from_text(
         pdf_text=pdf_text,
         custom_annotations=[],
         excluded_annotations=[]
-    )
-
-    current_app.logger.info(
-        f'Time to annotate enrichment text {time.time() - start}',
-        extra=EventLog(event_type='annotations').to_dict()
     )
     return annotations

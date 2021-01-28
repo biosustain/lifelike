@@ -92,7 +92,7 @@ class ManualAnnotationService:
         if annotate_all:
             recognition = get_entity_recognition()
             _, parsed = parse_pdf(file.id)
-            tokens_list = recognition.extract_tokens(parsed=parsed)
+            tokens_list = recognition.extract_tokens(parsed=parsed)  # TODO: FIX THIS, extract_tokens() was removed  # noqa
             annotator = get_annotation_service()
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
             matches = annotator.get_matching_manual_annotations(

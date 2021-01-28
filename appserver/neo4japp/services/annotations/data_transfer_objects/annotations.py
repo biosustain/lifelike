@@ -105,27 +105,27 @@ class GeneAnnotation(Annotation):
 @attr.s(frozen=False)
 class LMDBMatch():
     entities: List[dict] = attr.ib()
-    tokens: List[PDFWord] = attr.ib()
+    token: PDFWord = attr.ib()
     id_type: str = attr.ib(default='')
     id_hyperlink: str = attr.ib(default='')
 
 
 @attr.s(frozen=True)
 class EntityResults():
-    matched_type_anatomy: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_chemical: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_compound: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_disease: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_food: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_gene: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_phenomena: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_phenotype: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_protein: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_species: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_species_local: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_anatomy: List[LMDBMatch] = attr.ib()
+    matched_type_chemical: List[LMDBMatch] = attr.ib()
+    matched_type_compound: List[LMDBMatch] = attr.ib()
+    matched_type_disease: List[LMDBMatch] = attr.ib()
+    matched_type_food: List[LMDBMatch] = attr.ib()
+    matched_type_gene: List[LMDBMatch] = attr.ib()
+    matched_type_phenomena: List[LMDBMatch] = attr.ib()
+    matched_type_phenotype: List[LMDBMatch] = attr.ib()
+    matched_type_protein: List[LMDBMatch] = attr.ib()
+    matched_type_species: List[LMDBMatch] = attr.ib()
+    matched_type_species_local: List[LMDBMatch] = attr.ib()
     # non LMDB entity types
-    matched_type_company: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_entity: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_company: List[LMDBMatch] = attr.ib()
+    matched_type_entity: List[LMDBMatch] = attr.ib()
 
 
 @attr.s(frozen=True)
