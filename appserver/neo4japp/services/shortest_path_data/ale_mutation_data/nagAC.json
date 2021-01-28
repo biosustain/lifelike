@@ -2,7 +2,7 @@
     "nodes": [
         {
             "id": 3706423,
-            "label": "Unknown Display Name",
+            "label": "RXN0-4661",
             "databaseLabel": "Reaction",
             "value": 2,
             "font": {
@@ -44,7 +44,7 @@
         },
         {
             "id": 3720436,
-            "label": "Unknown Display Name",
+            "label": "eutM-eutD-eutT-eutQ-eutP-eutS TU",
             "databaseLabel": "TranscriptionUnit",
             "value": 2,
             "font": {
@@ -65,7 +65,7 @@
         },
         {
             "id": 3726181,
-            "label": "nagBACD",
+            "label": "nagBACD TU",
             "databaseLabel": "TranscriptionUnit",
             "value": 2,
             "font": {
@@ -86,7 +86,7 @@
         },
         {
             "id": 3726281,
-            "label": "nanCMS",
+            "label": "nanCMS TU",
             "databaseLabel": "TranscriptionUnit",
             "value": 2,
             "font": {
@@ -107,7 +107,7 @@
         },
         {
             "id": 3726504,
-            "label": "chbBCARFG",
+            "label": "chbBCARFG TU",
             "databaseLabel": "TranscriptionUnit",
             "value": 2,
             "font": {
@@ -128,7 +128,7 @@
         },
         {
             "id": 3726534,
-            "label": "manXYZ",
+            "label": "manXYZ TU",
             "databaseLabel": "TranscriptionUnit",
             "value": 2,
             "font": {
@@ -149,7 +149,7 @@
         },
         {
             "id": 3727090,
-            "label": "fimB",
+            "label": "fimB TU",
             "databaseLabel": "TranscriptionUnit",
             "value": 2,
             "font": {
@@ -170,7 +170,7 @@
         },
         {
             "id": 3727240,
-            "label": "ydeNM",
+            "label": "ydeNM TU",
             "databaseLabel": "TranscriptionUnit",
             "value": 2,
             "font": {
@@ -233,7 +233,7 @@
         },
         {
             "id": 3729072,
-            "label": "creABCD",
+            "label": "creABCD TU",
             "databaseLabel": "TranscriptionUnit",
             "value": 2,
             "font": {
@@ -254,7 +254,7 @@
         },
         {
             "id": 3729062,
-            "label": "feoABC",
+            "label": "feoABC TU",
             "databaseLabel": "TranscriptionUnit",
             "value": 2,
             "font": {
@@ -275,7 +275,7 @@
         },
         {
             "id": 3729294,
-            "label": "ydeP",
+            "label": "ydeP TU",
             "databaseLabel": "TranscriptionUnit",
             "value": 2,
             "font": {
@@ -317,7 +317,7 @@
         },
         {
             "id": 3730324,
-            "label": "nanCM",
+            "label": "nanCM TU",
             "databaseLabel": "TranscriptionUnit",
             "value": 2,
             "font": {
