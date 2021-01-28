@@ -66,16 +66,13 @@ class AnnotationGraphService(GraphConnection):
         gene_to_organism_map: Dict[str, Dict[str, Dict[str, str]]] = {}
 
         query = self.get_gene_to_organism_query()
-        cursor = self.graph.run(
+        result = self.graph.run(
             query,
             {
                 'genes': genes,
                 'organisms': organisms,
             }
-        )
-
-        result = cursor.data()
-        cursor.close()
+        ).data()
 
         for row in result:
             gene_name: str = row['gene_name']
@@ -101,16 +98,13 @@ class AnnotationGraphService(GraphConnection):
         protein_to_organism_map: Dict[str, Dict[str, str]] = {}
 
         query = self.get_protein_to_organism_query()
-        cursor = self.graph.run(
+        result = self.graph.run(
             query,
             {
                 'proteins': proteins,
                 'organisms': organisms,
             }
-        )
-
-        result = cursor.data()
-        cursor.close()
+        ).data()
 
         for row in result:
             protein_name: str = row['protein']
