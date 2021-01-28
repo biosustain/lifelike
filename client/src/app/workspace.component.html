@@ -11,7 +11,8 @@
                    [cdkDropListData]="pane">
                 <div class="nav-item d-flex text-truncate" [class.active]="pane.activeTab === tab"
                      *ngFor="let tab of pane.tabs; index as i"
-                     cdkDrag style="max-width: 250px; width: 30%">
+                     cdkDrag style="max-width: 250px; width: 30%"
+                     appContextMenu>
                   <div class="nav-link d-flex text-truncate" [class.active]="pane.activeTab === tab"
                        (click)="handleTabClick($event, pane, tab); $event.preventDefault()">
                     <div class="d-block d-flex align-items-center text-truncate mr-2">
@@ -34,6 +35,14 @@
                     <a href="#" (click)="closeTab(pane, tab); $event.preventDefault()" class="ml-auto text-muted">
                       <i class="fa fa-fw fa-times"></i>
                     </a>
+                  </div>
+                  <div appContextMenuBody>
+                    <a class="dropdown-item" href="#" (click)="duplicateTab(pane, tab); $event.preventDefault()">Duplicate</a>
+                    <a class="dropdown-item" href="#" (click)="shareTab(pane, tab); $event.preventDefault()">Share...</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#" (click)="closeTab(pane, tab); $event.preventDefault()">Close</a>
+                    <a class="dropdown-item" [class.disabled]="pane.tabs.length <= 1" href="#"
+                       (click)="closeOtherTabs(pane, tab); $event.preventDefault()">Close other tabs</a>
                   </div>
                 </div>
                 <div class="ml-2 mt-1 d-flex align-items-start">

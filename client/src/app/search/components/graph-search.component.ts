@@ -55,7 +55,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
     this.valuesSubscription = this.loadTask.values$.subscribe(value => {
       this.modulePropertiesChange.emit({
         title: value.query != null && value.query.length ? `Visualizer: ${value.query}` : 'Visualizer',
-        fontAwesomeIcon: 'search',
+        fontAwesomeIcon: 'fas fa-chart-network',
       });
     });
 

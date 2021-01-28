@@ -2,6 +2,11 @@
   color: gray;
 }
 
+.resizeable {
+  overflow: auto;
+  resize: horizontal;
+}
+
 ul {
   padding-inline-start: 20px;
 }

@@ -3,8 +3,8 @@ import {
     HttpClient,
     HttpHeaders,
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { AbstractService } from 'app/shared/services/abstract-service';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { Project } from './project-space.service';
@@ -30,7 +30,7 @@ export interface NCBINode {
   name: string;
 }
 
-interface NCBIWrapper {
+export interface NCBIWrapper {
   neo4jID: number;
   x: NCBINode;
   link: string;
@@ -126,15 +126,11 @@ export class EnrichmentTableService extends AbstractService {
     super(auth, http);
   }
 
-  getWorksheet(worksheetId): Observable<Worksheet> {
-    return this.http.get<Worksheet>(
-      `${this.worksheetAPI}/get-neo4j-worksheet/${encodeURIComponent(worksheetId)}`,
-      this.getHttpOptions(true),
-    ).pipe(
-      map((resp: any) => resp.result),
-    );
-  }
-
+  /**
+   * Match gene names to NCBI nodes with same name and has given taxonomy ID.
+   * @param geneNames list of input gene names to match to
+   * @param organism tax id of organism
+   */
   matchNCBINodes(geneNames: string[], organism: string): Observable<NCBIWrapper[]> {
     return this.http.post<{result: NCBIWrapper[]}>(
       `${this.worksheetAPI}/match-ncbi-nodes`,
@@ -145,6 +141,11 @@ export class EnrichmentTableService extends AbstractService {
     );
   }
 
+  /**
+   * Match enrichment domains to given node ids.
+   * @param nodeIds list of node ids to match to enrichment domains
+   * @param taxID tax id of organism
+   */
   getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<EnrichmentWrapper[]> {
     return this.http.post<{result: EnrichmentWrapper[]}>(
       `${this.kgAPI}/get-ncbi-nodes/enrichment-domains`,

@@ -24,7 +24,7 @@
   position: absolute;
   top: $window-spacer;
   left: $window-spacer;
-  width: 500px;
+  width: 300px;
   max-width: calc(100% - #{$spacer * 2});
   max-height: calc(100% - #{$spacer * 2});
   z-index: 1;
@@ -37,4 +37,16 @@
   line-clamp: 10;
   overflow: hidden;
   transition: 0.2s ease opacity;
+}
+
+.info-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 250px;
+  z-index: 20;
+  overflow: auto;
+  background: $white;
+  border-left: 1px solid $window-border-color;
 }

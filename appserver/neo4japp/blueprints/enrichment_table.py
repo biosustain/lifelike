@@ -17,6 +17,7 @@ from neo4japp.utils.logger import UserEventLog
 
 bp = Blueprint('enrichment-table-api', __name__, url_prefix='/enrichment-table')
 
+
 @bp.route('/match-ncbi-nodes', methods=['POST'])
 @auth.login_required
 def match_ncbi_nodes():

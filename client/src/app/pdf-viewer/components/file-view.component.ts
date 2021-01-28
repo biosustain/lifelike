@@ -1,30 +1,46 @@
-import {uniqueId} from 'lodash';
-import {Component, EventEmitter, OnDestroy, Output, ViewChild} from '@angular/core';
-import {BehaviorSubject, combineLatest, of, Subject, Subscription} from 'rxjs';
+import { uniqueId } from 'lodash';
+import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { BehaviorSubject, combineLatest, of, Subject, Subscription } from 'rxjs';
 
-import {PdfAnnotationsService} from '../../drawing-tool/services';
+import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import {
+  AddedAnnotationExclusion,
+  Annotation,
+  Location,
+  Meta,
+  RemovedAnnotationExclusion,
+} from '../annotation-type';
 
-import {UniversalGraphNode} from '../../drawing-tool/services/interfaces';
-import {AddedAnnotationExclusion, Annotation, Location, Meta, RemovedAnnotationExclusion,} from '../annotation-type';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { PdfFile } from '../../interfaces/pdf-files.interface';
+import { BackgroundTask } from '../../shared/rxjs/background-task';
+import { PdfViewerLibComponent } from '../pdf-viewer-lib.component';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
+import { ActivatedRoute } from '@angular/router';
+import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
+import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
+import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { WorkspaceManager } from '../../shared/workspace-manager';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
+import { mergeMap } from 'rxjs/operators';
+import { readBlobAsBuffer } from '../../shared/utils/files';
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
+import { AnnotationsService } from '../../file-browser/services/annotations.service';
 
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {PdfFile} from '../../interfaces/pdf-files.interface';
-import {BackgroundTask} from '../../shared/rxjs/background-task';
-import {PdfViewerLibComponent} from '../pdf-viewer-lib.component';
-import {ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType} from 'app/shared/annotation-types';
-import {ActivatedRoute} from '@angular/router';
-import {ModuleAwareComponent, ModuleProperties} from '../../shared/modules';
-import {ConfirmDialogComponent} from '../../shared/components/dialog/confirm-dialog.component';
-import {NgbDropdown, NgbModal} from '@ng-bootstrap/ng-bootstrap';
-import {ErrorHandler} from '../../shared/services/error-handler.service';
-import {ProgressDialog} from 'app/shared/services/progress-dialog.service';
-import {Progress} from 'app/interfaces/common-dialog.interface';
-import {WorkspaceManager} from '../../shared/workspace-manager';
-import {FilesystemService} from '../../file-browser/services/filesystem.service';
-import {FilesystemObject} from '../../file-browser/models/filesystem-object';
-import {mergeMap} from 'rxjs/operators';
-import {readBlobAsBuffer} from '../../shared/utils/files';
-import {FilesystemObjectActions} from '../../file-browser/services/filesystem-object-actions';
+class DummyFile implements PdfFile {
+  constructor(
+    // tslint:disable-next-line
+    public file_id: string,
+    public filename: string = null,
+    // tslint:disable-next-line
+    public creation_date: string = null,
+    public username: string = null) {
+  }
+}
 
 class EntityTypeEntry {
   constructor(public type: EntityType, public annotations: Annotation[]) {
@@ -91,10 +107,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   constructor(
     protected readonly filesystemService: FilesystemService,
     protected readonly fileObjectActions: FilesystemObjectActions,
-    protected pdfAnnService: PdfAnnotationsService,
-    protected snackBar: MatSnackBar,
+    protected readonly pdfAnnService: AnnotationsService,
+    protected readonly snackBar: MatSnackBar,
     protected readonly modalService: NgbModal,
-    protected route: ActivatedRoute,
+    protected readonly route: ActivatedRoute,
     protected readonly errorHandler: ErrorHandler,
     protected readonly progressDialog: ProgressDialog,
     protected readonly workSpaceManager: WorkspaceManager,
@@ -243,7 +259,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         })),
       });
 
-      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotation, annotateAll)
+      this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, {
+        annotation,
+        annotateAll,
+      })
         .pipe(this.errorHandler.create())
         .subscribe(
           (annotations: Annotation[]) => {
@@ -268,7 +287,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const dialogRef = this.modalService.open(ConfirmDialogComponent);
     dialogRef.componentInstance.message = 'Do you want to remove all matching annotations from the file as well?';
     dialogRef.result.then((removeAll: boolean) => {
-      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll)
+      this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, {
+        removeAll,
+      })
         .pipe(this.errorHandler.create())
         .subscribe(
           response => {
@@ -285,7 +306,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   annotationExclusionAdded(exclusionData: AddedAnnotationExclusion) {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
-      this.currentFileId, exclusionData,
+      this.currentFileId, {
+        exclusion: exclusionData,
+      },
     )
       .pipe(this.errorHandler.create())
       .subscribe(
@@ -300,7 +323,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   annotationExclusionRemoved({type, text}) {
-    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, type, text)
+    this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, {
+      type,
+      text,
+    })
       .pipe(this.errorHandler.create())
       .subscribe(
         response => {
@@ -562,6 +588,12 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   openFileNavigatorPane() {
     const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
     this.workSpaceManager.navigateByUrl(url, {sideBySide: true, newTab: true});
+  }
+
+  openFileAnnotationHistoryDialog() {
+    this.fileObjectActions.openFileAnnotationHistoryDialog(this.object).then(() => {
+    }, () => {
+    });
   }
 
   isPendingScroll() {

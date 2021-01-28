@@ -38,6 +38,7 @@ export class QuickSearchComponent implements OnChanges {
       this.shownLinks = this.linkTemplates.map(link => ({
         domain: link.domain,
         url: link.url.replace('%s', encodeURIComponent(this.query)),
+        isDatabase: link.isDatabase
       }));
       this.generated = true;
     } else {

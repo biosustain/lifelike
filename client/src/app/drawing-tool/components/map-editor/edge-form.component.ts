@@ -119,7 +119,7 @@ export class EdgeFormComponent implements AfterViewInit {
    * Allow user to navigate to a link in a new tab
    */
   goToLink(hyperlink) {
-    openPotentialInternalLink(this.workspaceManager, hyperlink);
+    openPotentialInternalLink(this.workspaceManager, hyperlink, true);
   }
 
   /**
@@ -130,8 +130,8 @@ export class EdgeFormComponent implements AfterViewInit {
       this.edge.data.hyperlinks = [];
     }
 
-    const [domain, url] = ['', ''];
-    this.edge.data.hyperlinks.push({url, domain});
+    const [domain, url, isDatabase] = ['', '', false];
+    this.edge.data.hyperlinks.push({url, domain, isDatabase});
   }
 
   /**

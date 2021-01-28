@@ -70,6 +70,10 @@ export class FontIconNode implements PlacedNode {
     );
   }
 
+  isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean {
+    return x0 <= this.bbox.minX && y0 <= this.bbox.minY && x1 >= this.bbox.maxX && y1 >= this.bbox.maxY;
+  }
+
   lineIntersectionPoint(lineOriginX: number, lineOriginY: number): number[] {
     // TODO: Polygonal intersection because we have an icon 'head' and a text 'body'
     return [this.x, this.y];

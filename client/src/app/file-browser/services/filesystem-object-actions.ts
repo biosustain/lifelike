@@ -34,6 +34,8 @@ import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-
 import { AnnotationsService } from './annotations.service';
 import {EnrichmentTableCreateDialogComponent} from "../components/enrichment/table/enrichment-table-create-dialog.component";
 import {EnrichmentTableEditDialogComponent} from "../components/enrichment/table/enrichment-table-edit-dialog.component";
+import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
+import { AnnotationsService } from './annotations.service';
 
 @Injectable()
 export class FilesystemObjectActions {

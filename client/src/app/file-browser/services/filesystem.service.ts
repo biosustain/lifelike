@@ -1,30 +1,32 @@
-import {Injectable} from '@angular/core';
-import {FilesystemObject} from '../models/filesystem-object';
-import {PdfFilesService} from '../../shared/services/pdf-files.service';
-import {ActivatedRoute, Router} from '@angular/router';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
-import {ProgressDialog} from '../../shared/services/progress-dialog.service';
-import {ErrorHandler} from '../../shared/services/error-handler.service';
-import {BehaviorSubject, Observable, of, Subscription, throwError} from 'rxjs';
-import {PdfFile} from '../../interfaces/pdf-files.interface';
-import {catchError, map, mergeMap} from 'rxjs/operators';
-import {HttpClient, HttpErrorResponse, HttpEvent, HttpEventType} from '@angular/common/http';
-import {ApiService} from '../../shared/services/api.service';
+import { Injectable } from '@angular/core';
+import { FilesystemObject } from '../models/filesystem-object';
+import { PdfFilesService } from '../../shared/services/pdf-files.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { BehaviorSubject, Observable, of, Subscription, throwError } from 'rxjs';
+import { PdfFile } from '../../interfaces/pdf-files.interface';
+import { catchError, map, mergeMap } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
+import { ApiService } from '../../shared/services/api.service';
 import {
-  BulkObjectUpdateRequest,
+  BulkObjectUpdateRequest, FileAnnotationHistoryResponse,
   FilesystemObjectData,
   ObjectBackupCreateRequest,
   ObjectCreateRequest,
-  ObjectExportRequest,
+  ObjectExportRequest, ObjectLockData,
   ObjectSearchRequest,
   ObjectVersionHistoryResponse,
 } from '../schema';
-import {objectToFormData, objectToMixedFormData} from '../../shared/utils/forms';
-import {ObjectVersion, ObjectVersionHistory} from '../models/object-version';
-import {serializePaginatedParams} from '../../shared/utils/params';
-import {FilesystemObjectList} from '../models/filesystem-object-list';
-import {PaginatedRequestOptions, ResultList, ResultMapping, SingleResult} from '../../shared/schemas/common';
+import { objectToFormData, objectToMixedFormData } from '../../shared/utils/forms';
+import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
+import { serializePaginatedParams } from '../../shared/utils/params';
+import { FilesystemObjectList } from '../models/filesystem-object-list';
+import { PaginatedRequestOptions, ResultList, ResultMapping, SingleResult } from '../../shared/schemas/common';
+import { FileAnnotationHistory } from '../models/file-annotation-history';
+import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { ObjectLock } from '../models/object-lock';
 
 /**
  * Endpoints to manage with the filesystem exposed to the user.
@@ -195,7 +197,7 @@ export class FilesystemService {
     }));
   }
 
-  putBackup(request: ObjectBackupCreateRequest): Observable<any> {
+  putBackup(request: ObjectBackupCreateRequest): Observable<{}> {
     return this.http.put<unknown>(
       `/api/filesystem/objects/${encodeURIComponent(request.hashId)}/backup`,
       objectToMixedFormData(request),
@@ -205,12 +207,14 @@ export class FilesystemService {
     );
   }
 
-  deleteBackup(hashId: string): Observable<any> {
+  deleteBackup(hashId: string): Observable<{}> {
     return this.http.delete<unknown>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/backup`, {
         ...this.apiService.getHttpOptions(true),
       },
-    ).pipe(map(() => ({})));
+    ).pipe(
+      map(() => ({}))
+    );
   }
 
   getVersionHistory(fileHashId: string,
@@ -244,6 +248,23 @@ export class FilesystemService {
     );
   }
 
+  /**
+   * Get the annotation history for a file.
+   * @param hashId the file hash ID
+   * @param options additional options
+   */
+  getAnnotationHistory(hashId: string, options: Partial<PaginatedRequestOptions> = {}):
+    Observable<FileAnnotationHistory> {
+    return this.http.get<FileAnnotationHistoryResponse>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotation-history`, {
+        ...this.apiService.getHttpOptions(true),
+        params: serializePaginatedParams(options, false),
+      },
+    ).pipe(
+      map(data => new FileAnnotationHistory().update(data)),
+    );
+  }
+
   annotate(object: FilesystemObject): Subscription {
     return this.lmdbsDates.subscribe(data => {
       object.children.items.forEach((child: FilesystemObject) => {
@@ -266,6 +287,55 @@ export class FilesystemService {
       (tooltip: string, [name, date]: [string, string]) => `${tooltip}\n- ${name}, ${new Date(date).toDateString()}`,
       'Outdated:',
     );
+  }
+
+  getLocks(hashId: string): Observable<ObjectLock[]> {
+    return this.http.get<ResultList<ObjectLockData>>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/locks`, {
+        ...this.apiService.getHttpOptions(true),
+      },
+    ).pipe(
+      map(data => {
+        return data.results.map(itemData => new ObjectLock().update(itemData));
+      }),
+    );
+  }
+
+  acquireLock(hashId: string, options: { own: true }): Observable<ObjectLock[]> {
+    return this.http.put<ResultList<ObjectLockData>>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/locks?own=true`,
+      {},
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(data => {
+        return data.results.map(itemData => new ObjectLock().update(itemData));
+      }),
+      catchError(e => {
+        if (e instanceof HttpErrorResponse) {
+          if (e.status === 409) {
+            const otherLocks = e.error.results.map(itemData => new ObjectLock().update(itemData));
+            return throwError(new LockError(otherLocks));
+          }
+        }
+
+        return throwError(e);
+      }),
+    );
+  }
+
+  deleteLock(hashId: string, options: { own: true }): Observable<{}> {
+    return this.http.delete<unknown>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/locks?own=true`, {
+        ...this.apiService.getHttpOptions(true),
+      },
+    ).pipe(
+      map(() => ({}))
+    );
+  }
+}
+
+export class LockError {
+  constructor(public readonly locks: ObjectLock[]) {
   }
 }
 
