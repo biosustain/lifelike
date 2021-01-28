@@ -1,6 +1,8 @@
 /**
  * Keeps track of a set of behaviors and provides methods to call them.
  */
+import { GraphEntity } from '../../drawing-tool/services/interfaces';
+
 export class BehaviorList<T extends Behavior> {
   private behaviorsMap: Map<string, {
     priority: number,
@@ -180,13 +182,14 @@ export interface Behavior {
  * A behavior that is for the canvas renderer.
  */
 export interface CanvasBehavior extends Behavior {
+  shouldDrag(event: BehaviorEvent<MouseEvent>): boolean;
   keyDown(event: KeyboardEvent): BehaviorResult;
   click(event: MouseEvent): BehaviorResult;
   doubleClick(event: MouseEvent): BehaviorResult;
   mouseMove(event: MouseEvent): BehaviorResult;
-  dragStart(event: MouseEvent): BehaviorResult;
-  drag(event: MouseEvent): BehaviorResult;
-  dragEnd(event: MouseEvent): BehaviorResult;
+  dragStart(event: DragBehaviorEvent): BehaviorResult;
+  drag(event: DragBehaviorEvent): BehaviorResult;
+  dragEnd(event: DragBehaviorEvent): BehaviorResult;
   draw(ctx: CanvasRenderingContext2D, transform: any);
 }
 
@@ -198,6 +201,10 @@ export abstract class AbstractCanvasBehavior implements CanvasBehavior {
   }
 
   destroy() {
+  }
+
+  shouldDrag(event: BehaviorEvent<MouseEvent>): boolean {
+    return undefined;
   }
 
   keyDown(event: KeyboardEvent): BehaviorResult {
@@ -216,18 +223,26 @@ export abstract class AbstractCanvasBehavior implements CanvasBehavior {
     return BehaviorResult.Continue;
   }
 
-  dragStart(event: MouseEvent): BehaviorResult {
+  dragStart(event: DragBehaviorEvent): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
-  drag(event: MouseEvent): BehaviorResult {
+  drag(event: DragBehaviorEvent): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
-  dragEnd(event: MouseEvent): BehaviorResult {
+  dragEnd(event: DragBehaviorEvent): BehaviorResult {
     return BehaviorResult.Continue;
   }
 
   draw(ctx: CanvasRenderingContext2D, transform: any) {
   }
+}
+
+export class BehaviorEvent<T> {
+  event: T;
+}
+
+export class DragBehaviorEvent extends BehaviorEvent<MouseEvent> {
+  entity: GraphEntity;
 }

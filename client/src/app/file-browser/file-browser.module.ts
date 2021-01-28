@@ -44,6 +44,9 @@ import {EnrichmentVisualisationCreateDialogComponent} from './components/enrichm
 import {EnrichmentVisualisationOrderDialogComponent} from './components/enrichment/visualisation/dialog/enrichment-visualisation-order-dialog.component';
 import {EnrichmentVisualisationEditDialogComponent} from './components/enrichment/visualisation/dialog/enrichment-visualisation-edit-dialog.component';
 import {AnnotationsService} from "./services/annotations.service";
+import { ProjectCollaboratorsDialogComponent } from './components/dialog/project-collaborators-dialog.component';
+import { FileAnnotationHistoryDialogComponent } from './components/dialog/file-annotation-history-dialog.component';
+import { FileAnnotationHistoryComponent } from './components/file-annotation-history.component';
 
 @NgModule({
   declarations: [
@@ -81,6 +84,9 @@ import {AnnotationsService} from "./services/annotations.service";
     ObjectMenuComponent,
     ProjectMenuComponent,
     ProjectIconComponent,
+    ProjectCollaboratorsDialogComponent,
+    FileAnnotationHistoryDialogComponent,
+    FileAnnotationHistoryComponent,
   ],
   imports: [
     CommonModule,
@@ -112,6 +118,9 @@ import {AnnotationsService} from "./services/annotations.service";
     EnrichmentVisualisationCreateDialogComponent,
     EnrichmentVisualisationEditDialogComponent,
     EnrichmentVisualisationOrderDialogComponent
+    ProjectCollaboratorsDialogComponent,
+    FileAnnotationHistoryDialogComponent,
+    FileAnnotationHistoryComponent,
   ],
   exports: [
     ObjectInfoComponent,
@@ -124,10 +133,13 @@ import {AnnotationsService} from "./services/annotations.service";
     ObjectPathComponent,
     ObjectMenuComponent,
     ProjectIconComponent,
+    FileAnnotationHistoryDialogComponent,
+    FileAnnotationHistoryComponent,
   ],
   providers: [
     ProjectsService,
     FilesystemService,
+    AnnotationsService,
     FilesystemObjectActions,
     ProjectActions,
     ObjectTypeService,

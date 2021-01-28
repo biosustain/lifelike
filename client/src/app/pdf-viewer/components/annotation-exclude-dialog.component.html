@@ -29,6 +29,11 @@
       <input type="checkbox" class="custom-control-input" id="exclude-globally" formControlName="excludeGlobally">
       <label class="custom-control-label" for="exclude-globally">Exclude this annotation from a global list</label>
     </div>
+
+    <div *ngIf="form.get('excludeGlobally').value" class="text-muted mt-3">
+      <i class="fas fa-info-circle"></i>
+        Re-annotate other documents to incorporate this exclusion.
+    </div>
   </app-modal-body>
 
   <app-modal-footer>

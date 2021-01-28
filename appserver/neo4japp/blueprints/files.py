@@ -190,6 +190,12 @@ def get_enrichment_data(id: str, projects_name: str):
             username=g.current_user.username, event_type='open enrichment file').to_dict()
     )
 
+    current_app.logger.info(
+        f'Project: {projects_name}, File ID: {id}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='open enrichment file').to_dict()
+    )
+
     yield jsonify({
         'status': 'success',
         'data': entry.raw_file.decode('utf-8'),

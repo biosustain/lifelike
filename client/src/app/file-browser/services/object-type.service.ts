@@ -15,7 +15,7 @@ export interface ObjectTypeProvider {
 
 }
 
-class DefaultObjectTypeProvider implements ObjectTypeProvider {
+export class DefaultObjectTypeProvider implements ObjectTypeProvider {
 
   handles(object: FilesystemObject): boolean {
     return true;

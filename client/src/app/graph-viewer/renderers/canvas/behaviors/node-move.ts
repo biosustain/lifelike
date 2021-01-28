@@ -2,7 +2,7 @@ import { cloneDeep } from 'lodash';
 import * as d3 from 'd3';
 import { GraphEntity, GraphEntityType, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
+import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../behaviors';
 import { GraphEntityUpdate } from '../../../actions/graph';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
 import { isCtrlOrMetaPressed, isShiftPressed } from '../../../../shared/utils';
@@ -23,13 +23,13 @@ export class MovableNode extends AbstractCanvasBehavior {
     super();
   }
 
-  dragStart(event: MouseEvent): BehaviorResult {
+  dragStart(event: DragBehaviorEvent): BehaviorResult {
     const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
     const transform = this.graphView.transform;
-    const subject: GraphEntity | undefined = d3.event.subject;
+    const entity = event.entity;
 
-    if (subject.type === GraphEntityType.Node) {
-      const node = subject.entity as UniversalGraphNode;
+    if (entity != null && entity.type === GraphEntityType.Node) {
+      const node = entity.entity as UniversalGraphNode;
 
       this.startMousePosition = [transform.invertX(mouseX), transform.invertY(mouseY)];
 
@@ -40,7 +40,7 @@ export class MovableNode extends AbstractCanvasBehavior {
     return BehaviorResult.Continue;
   }
 
-  drag(event: MouseEvent): BehaviorResult {
+  drag(event: DragBehaviorEvent): BehaviorResult {
     // TODO: cache
     const [mouseX, mouseY] = d3.mouse(this.graphView.canvas);
     const transform = this.graphView.transform;
@@ -64,7 +64,7 @@ export class MovableNode extends AbstractCanvasBehavior {
       // (CTRL or CMD), then we add the target node to the selection and move the whole group
       if (!selectedNodes.has(this.target)) {
         // Case (a)
-        if (!isCtrlOrMetaPressed(event) && !isShiftPressed(event)) {
+        if (!isCtrlOrMetaPressed(event.event) && !isShiftPressed(event.event)) {
           selectedNodes.clear();
         }
 
@@ -93,7 +93,7 @@ export class MovableNode extends AbstractCanvasBehavior {
     return BehaviorResult.Continue;
   }
 
-  dragEnd(event: MouseEvent): BehaviorResult {
+  dragEnd(event: DragBehaviorEvent): BehaviorResult {
     if (this.target) {
       if (this.target.data.x !== this.originalTarget.data.x ||
           this.target.data.y !== this.originalTarget.data.y) {

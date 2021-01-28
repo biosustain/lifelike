@@ -78,17 +78,21 @@ export class ErrorHandler {
     return new UserError(title, message, detail, error, transactionId);
   }
 
+  showError(error) {
+    const {title, message, detail, transactionId} = this.createUserError(error);
+
+    this.messageDialog.display({
+      title,
+      message,
+      detail,
+      transactionId,
+      type: MessageType.Error,
+    });
+  }
+
   create<T>(): UnaryFunction<Observable<T>, Observable<T>> {
     return pipe(catchError(error => {
-      const {title, message, detail, transactionId} = this.createUserError(error);
-
-      this.messageDialog.display({
-        title,
-        message,
-        detail,
-        transactionId,
-        type: MessageType.Error,
-      });
+      this.showError(error);
 
       return throwError(error);
     }));
