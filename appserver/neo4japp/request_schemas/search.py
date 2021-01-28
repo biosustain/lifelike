@@ -4,7 +4,13 @@ from neo4japp.database import ma
 
 
 class ContentSearchSchema(ma.Schema):
-    q = ma.String(required=True)
+    q = ma.String(
+        required=True,
+        validate=validate.Regexp(
+            regex=r'.*\S.*',
+            error='Search query cannot contain only whitespace characters.'
+        )
+    )
     types = ma.String(required=True)
     page = ma.Integer(required=True)
     limit = ma.Integer(required=True, validate=validate.Range(min=0, max=1000))
