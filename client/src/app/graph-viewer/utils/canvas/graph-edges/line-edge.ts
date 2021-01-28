@@ -113,6 +113,11 @@ export class LineEdge implements PlacedEdge {
     return distanceUnsq(x, y, this.source.x + t * dx, this.source.y + t * dy);
   }
 
+  isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean {
+    return x0 <= this.boundingBox.minX && y0 <= this.boundingBox.minY
+      && x1 >= this.boundingBox.maxX && y1 >= this.boundingBox.maxY;
+  }
+
   draw(transform: any): void {
     const ctx = this.ctx;
 

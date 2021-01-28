@@ -7,12 +7,11 @@ import {
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphNode,
-  UniversalGraphEntity,
 } from 'app/drawing-tool/services/interfaces';
-import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode } from 'app/graph-viewer/styles/styles';
+import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode, PlacedObject } from 'app/graph-viewer/styles/styles';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
-import { isStopResult } from '../behaviors';
+import { DragBehaviorEvent, isStopResult } from '../behaviors';
 import { LineEdge } from '../../utils/canvas/graph-edges/line-edge';
 import { SolidLine } from '../../utils/canvas/lines/solid';
 import { nullCoalesce } from '../../../shared/utils/types';
@@ -180,7 +179,22 @@ export class CanvasGraphView extends GraphView {
         .call(d3.drag()
             .container(this.canvas)
             .filter(() => !d3.event.button)
-            .subject(this.getEntityAtMouse.bind(this))
+            .subject((): CanvasSubject => {
+              if (this.behaviors.call('shouldDrag', {
+                event: d3.event.sourceEvent,
+              })) {
+                return {
+                  entity: null,
+                };
+              }
+              const entity = this.getEntityAtMouse();
+              if (entity) {
+                return {
+                  entity,
+                };
+              }
+              return null;
+            })
             .on('start', this.canvasDragStarted.bind(this))
             .on('drag', this.canvasDragged.bind(this))
             .on('end', this.canvasDragEnded.bind(this)))
@@ -378,10 +392,15 @@ export class CanvasGraphView extends GraphView {
     this.placedEdgesCache.delete(d);
   }
 
-  getEntityAtMouse(): GraphEntity | undefined {
+  getLocationAtMouse(): [number, number] {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const x = this.transform.invertX(mouseX);
     const y = this.transform.invertY(mouseY);
+    return [x, y];
+  }
+
+  getEntityAtMouse(): GraphEntity | undefined {
+    const [x, y] = this.getLocationAtMouse();
     return this.getEntityAtPosition(x, y);
   }
 
@@ -915,16 +934,20 @@ export class CanvasGraphView extends GraphView {
 
   canvasDragStarted(): void {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
-    const subject: GraphEntity | undefined = d3.event.subject;
+    const subject: CanvasSubject = d3.event.subject;
+    const behaviorEvent: DragBehaviorEvent = {
+      event: d3.event.sourceEvent,
+      entity: subject.entity,
+    };
 
-    this.behaviors.apply(behavior => behavior.dragStart(d3.event.sourceEvent));
+    this.behaviors.apply(behavior => behavior.dragStart(behaviorEvent));
 
     this.touchPosition = {
       position: {
         x: this.transform.invertX(mouseX),
         y: this.transform.invertY(mouseY),
       },
-      entity: subject,
+      entity: subject.entity,
     };
 
     this.requestRender();
@@ -932,23 +955,33 @@ export class CanvasGraphView extends GraphView {
 
   canvasDragged(): void {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
-    const subject: GraphEntity | undefined = d3.event.subject;
+    const subject: CanvasSubject = d3.event.subject;
+    const behaviorEvent: DragBehaviorEvent = {
+      event: d3.event.sourceEvent,
+      entity: subject.entity,
+    };
 
-    this.behaviors.apply(behavior => behavior.drag(d3.event.sourceEvent));
+    this.behaviors.apply(behavior => behavior.drag(behaviorEvent));
 
     this.touchPosition = {
       position: {
         x: this.transform.invertX(mouseX),
         y: this.transform.invertY(mouseY),
       },
-      entity: subject,
+      entity: subject.entity,
     };
 
     this.requestRender();
   }
 
   canvasDragEnded(): void {
-    this.behaviors.apply(behavior => behavior.dragEnd(d3.event.sourceEvent));
+    const subject: CanvasSubject = d3.event.subject;
+    const behaviorEvent: DragBehaviorEvent = {
+      event: d3.event.sourceEvent,
+      entity: subject.entity,
+    };
+
+    this.behaviors.apply(behavior => behavior.dragEnd(behaviorEvent));
     this.nodePositionOverrideMap.clear();
     this.mouseDown = false;
     this.touchPosition = null;
@@ -975,4 +1008,8 @@ export class CanvasGraphView extends GraphView {
     this.mouseDown = false;
     this.requestRender();
   }
+}
+
+interface CanvasSubject {
+  entity: GraphEntity | undefined;
 }

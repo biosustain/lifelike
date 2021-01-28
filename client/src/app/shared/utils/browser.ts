@@ -26,11 +26,22 @@ export function openLink(url: string, target = '_blank'): boolean {
   return true;
 }
 
-export function openPotentialInternalLink(workspaceManager: WorkspaceManager, url: string): boolean {
-  const urlObject = new URL(url, window.location.href);
+export function openPotentialInternalLink(workspaceManager: WorkspaceManager, url: string,
+                                          defaultExternal = true): boolean {
+  let urlObject;
+  try {
+    urlObject = new URL(url);
+  } catch (e) {
+    if (defaultExternal) {
+      urlObject = new URL('http://' + url);
+    } else {
+      urlObject = new URL(url, window.location.href);
+    }
+  }
+
   const openInternally = workspaceManager.isWithinWorkspace()
     && (window.location.hostname === urlObject.hostname
-    && (window.location.port || '80') === (urlObject.port || '80'));
+      && (window.location.port || '80') === (urlObject.port || '80'));
   const pathSearchHash = urlObject.pathname + urlObject.search + urlObject.hash;
 
   if (openInternally) {

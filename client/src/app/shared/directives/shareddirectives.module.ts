@@ -7,6 +7,8 @@ import { FormInputDirective } from './form-input.directive';
 import { AutoFocusDirective } from './auto-focus.directive';
 import { ContainerBreakpointsDirective } from './container-breakpoints.directive';
 import { TabSelectableDirective } from './tab-selectable.directive';
+import { ContextMenuBodyDirective, ContextMenuDirective } from './context-menu.directive';
+import { MouseNavigableDirective, MouseNavigableItemDirective } from './mouse-navigable.directive';
 
 const directives = [
   DebounceClickDirective,
@@ -18,6 +20,10 @@ const directives = [
   AutoFocusDirective,
   ContainerBreakpointsDirective,
   TabSelectableDirective,
+  ContextMenuDirective,
+  ContextMenuBodyDirective,
+  MouseNavigableDirective,
+  MouseNavigableItemDirective,
 ];
 
 @NgModule({

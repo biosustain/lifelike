@@ -67,7 +67,7 @@
         </div>
       </div>
 
-      <div class="flex-fill position-relative overflow-hidden">
+      <div class="flex-fill position-relative overflow-hidden" style="z-index: 0">
         <canvas #canvas class="graph-view"></canvas>
 
         <ng-container *ngIf="(loadTask.status$ | async) as status">
@@ -88,6 +88,13 @@
               </div>
             </app-collapsible-window>
           </div>
+
+          <ng-container *ngIf="(graphCanvas?.selection.changeObservable | async) as selected">
+            <div class="info-panel" *ngIf="selected[0].length === 1">
+              <app-info-view-panel [selected]="selected[0][0]">
+              </app-info-view-panel>
+            </div>
+          </ng-container>
         </ng-container>
       </div>
     </div>

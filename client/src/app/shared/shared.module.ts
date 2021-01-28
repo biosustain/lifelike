@@ -61,6 +61,9 @@ import { SearchControlComponent } from './components/search-control.component';
 import {FilterComponent} from './components/filter/filter.component';
 import {WordCloudFilterComponent} from "./components/word-cloud-filter/word-cloud-filter.component";
 import { UserComponent } from './components/user.component';
+import { SelectInputComponent } from './components/form/select-input.component';
+import { UserSelectComponent } from './components/form/user-select.component';
+import { AccountsService } from './services/accounts.service';
 
 const components = [
   VisJsNetworkComponent,
@@ -102,6 +105,8 @@ const components = [
   TermHighlightComponent,
   SearchControlComponent,
   UserComponent,
+  SelectInputComponent,
+  UserSelectComponent,
 ];
 
 @NgModule({
@@ -137,6 +142,8 @@ const components = [
     ApiService,
     SharedNgrxEffects,
     SharedSearchService,
+    ApiService,
+    AccountsService,
   ],
   // exported modules are visible to modules that import this one
   exports: [

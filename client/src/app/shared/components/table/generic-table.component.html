@@ -17,8 +17,8 @@
   <tbody *ngIf="entries">
     <ng-container>
       <tr *ngFor="let row of entries">
-        <td *ngFor="let entry of row" style="white-space:pre-wrap; word-wrap:break-word" class="overflow-auto" [ngClass]="{ 'error': entry.highlight}">
-          <div>{{ entry.text }}</div>
+        <td *ngFor="let entry of row" style="white-space:pre-wrap; word-wrap:break-word" class="overflow-auto resizeable" [ngClass]="{ 'error': entry.highlight}">
+          <div >{{ entry.text }}</div>
           <ng-container *ngIf="entry.multiLink">
             <ul *ngFor="let link of entry.multiLink">
               <li><a target="_blank" rel="noopener noreferrer" href="{{ link.link }}">{{ link.linkText }}</a></li>

@@ -1,11 +1,7 @@
 import { AbstractCanvasBehavior, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
-import { NodeCreation } from '../../../actions/nodes';
 import { isCtrlOrMetaPressed } from 'app/shared/utils';
-import { makeid } from 'app/drawing-tool/services';
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
-import { CompoundAction, GraphAction } from '../../../actions/actions';
-import { smartTruncate } from '../../../utils/strings';
+import { GraphEntity } from '../../../../drawing-tool/services/interfaces';
 import { GraphClipboardData, TYPE_STRING } from './paste-keyboard-shortcut';
 
 /**

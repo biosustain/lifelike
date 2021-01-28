@@ -126,6 +126,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     }
   }
 
+  applyValue(value: ObjectEditDialogValue) {
+    Object.assign(this.object, value.objectChanges);
+  }
+
   getValue(): ObjectEditDialogValue {
     const value = this.form.value;
 
@@ -136,14 +140,12 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       public: value.public,
     };
 
-    Object.assign(this.object, objectChanges);
-
     const request: ObjectCreateRequest = {
-      filename: this.object.filename,
-      parentHashId: this.object.parent ? this.object.parent.hashId : null,
-      description: this.object.description,
-      public: this.object.public,
-      mimeType: this.object.mimeType,
+      filename: value.filename,
+      parentHashId: value.parent ? value.parent.hashId : null,
+      description: value.description,
+      public: value.public,
+      mimeType: value.mimeType,
       ...this.getFileContentRequest(value),
     };
 

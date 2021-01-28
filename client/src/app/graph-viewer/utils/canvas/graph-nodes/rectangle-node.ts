@@ -63,6 +63,10 @@ export class RectangleNode implements PlacedNode {
     return x >= this.nodeX && x <= this.nodeX2 && y >= this.nodeY && y <= this.nodeY2;
   }
 
+  isBBoxEnclosing(x0: number, y0: number, x1: number, y1: number): boolean {
+    return x0 <= this.nodeX && y0 <= this.nodeY && x1 >= this.nodeX2 && y1 >= this.nodeY2;
+  }
+
   lineIntersectionPoint(lineOriginX: number, lineOriginY: number): number[] {
     const {x, y} = pointOnRect(
       lineOriginX,

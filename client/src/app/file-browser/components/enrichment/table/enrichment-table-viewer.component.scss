@@ -10,3 +10,16 @@
   display: flex;
   justify-content: center;
 }
+
+.right-justified {
+  margin-left:auto;
+  margin-right:0;
+  margin-bottom: 1rem;
+}
+
+.fixed {
+  position: fixed;
+  bottom: 30px;
+  right: 60px;
+  z-index: 99;
+}

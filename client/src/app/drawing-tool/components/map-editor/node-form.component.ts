@@ -181,7 +181,7 @@ export class NodeFormComponent implements AfterViewInit {
    * Allow user to navigate to a link in a new tab
    */
   goToLink(hyperlink) {
-    openPotentialInternalLink(this.workspaceManager, hyperlink);
+    openPotentialInternalLink(this.workspaceManager, hyperlink, true);
   }
 
   /**
@@ -192,8 +192,8 @@ export class NodeFormComponent implements AfterViewInit {
       this.node.data.hyperlinks = [];
     }
 
-    const [domain, url] = ['', ''];
-    this.node.data.hyperlinks.push({url, domain});
+    const [domain, url, isDatabase] = ['', '', false];
+    this.node.data.hyperlinks.push({url, domain, isDatabase});
   }
 
   /**
