@@ -200,7 +200,7 @@ def get_enrichment_data(id: str, projects_name: str):
 @newbp.route('/<string:projects_name>/enrichment-visualisation', methods=['POST'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def add_gene_list(projects_name: str):
+def add_gene_list_2(projects_name: str):
     data = request.get_json()
     user = g.current_user
 
@@ -255,11 +255,12 @@ def add_gene_list(projects_name: str):
 
     yield jsonify({'status': 'success', 'filename': filename + '.enrichment'}), 200
 
-ENRICHMENT_VISUALISATION_EXTENSION = ENRICHMENT_VISUALISATION_EXTENSION;
+
+ENRICHMENT_VISUALISATION_EXTENSION = 'enrichment-visualisation'
 @newbp.route('/<string:projects_name>/enrichment-visualisation/<string:fileId>', methods=['PATCH'])
 @auth.login_required
 @requires_project_permission(AccessActionType.WRITE)
-def edit_gene_list(projects_name: str, fileId: str):
+def edit_gene_list_2(projects_name: str, fileId: str):
     data = request.get_json()
 
     try:
@@ -325,7 +326,7 @@ def edit_gene_list(projects_name: str, fileId: str):
 @newbp.route('/<string:projects_name>/enrichment-visualisation/<string:id>', methods=['GET'])
 @auth.login_required
 @requires_project_permission(AccessActionType.READ)
-def get_enrichment_data(id: str, projects_name: str):
+def get_enrichment_data_2(id: str, projects_name: str):
     user = g.current_user
 
     try:

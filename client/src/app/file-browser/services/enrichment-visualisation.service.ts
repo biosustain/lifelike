@@ -37,6 +37,20 @@ interface NCBIWrapper {
   s: Synonym;
 }
 
+interface GoTerm {
+      geneId: number,
+    geneName: string,
+    "goId": "GO:0000027",
+    "goTerm": "ribosomal large subunit assembly",
+    "goLabel": [
+      "BiologicalProcess"
+    ]
+  neo4jID: number;
+  x: NCBINode;
+  link: string;
+  s: Synonym;
+}
+
 interface BiocycWrapper {
   link: string;
   result: BiocycNode;
@@ -129,6 +143,16 @@ export class EnrichmentVisualisationService extends AbstractService {
   getWorksheet(worksheetId): Observable<Worksheet> {
     return this.http.get<Worksheet>(
       `${this.worksheetAPI}/get-neo4j-worksheet/${encodeURIComponent(worksheetId)}`,
+      this.getHttpOptions(true),
+    ).pipe(
+      map((resp: any) => resp.result),
+    );
+  }
+
+  getEnrichedGO() {
+    return this.http.post<{result: NCBIWrapper[]}>(
+      `${this.worksheetAPI}/enrich-go-terms`,
+      {geneNames, organism},
       this.getHttpOptions(true),
     ).pipe(
       map((resp: any) => resp.result),
