@@ -12,24 +12,16 @@ gcp-sa:
 
 # Fetches the LMDB files needed to run the application
 lmdb:
-	gsutil cp -r gs://lmdb_database/chemicals $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/compounds $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/diseases $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/genes $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/phenomenas $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/phenotypes $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/proteins $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/species $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/anatomy $(LMDB_PATH)
-	gsutil cp -r gs://lmdb_database/foods $(LMDB_PATH)
+	docker-compose up -d appserver
+	docker-compose exec appserver flask load-lmdb
 	find $(LMDB_PATH) -name '*.mdb.backup' -delete
 
 # Sets up everything you need to run the application
 # Mostly used for first time dev environment setup
-init: ansible-secrets gcp-sa lmdb
+init: ansible-secrets gcp-sa
 	docker-compose build --no-cache
 
-docker-run: docker-stop gcp-sa
+docker-run: docker-stop gcp-sa lmdb
 	docker-compose up -d
 
 docker-stop:
