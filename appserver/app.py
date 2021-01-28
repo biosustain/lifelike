@@ -39,6 +39,18 @@ def request_navigator_log():
         EventLog(event_type='user navigate').to_dict())
 
 
+@app.cli.command("abc")
+def abc():
+    from neo4japp.database import db, get_account_service, get_elastic_service, get_enrichment_visualisation_service
+
+    enrichment_visualisation = get_enrichment_visualisation_service()
+    nodes = enrichment_visualisation.get_GO_terms()
+    print(nodes)
+    from flask import jsonify
+    return jsonify({'result': nodes}), 200
+
+
+
 @app.cli.command("seed")
 def seed():
     def find_existing_row(model, value):

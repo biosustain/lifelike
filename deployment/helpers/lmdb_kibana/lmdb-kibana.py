@@ -23,7 +23,8 @@ COMPOUNDS_BIOCYC_LMDB = 'compounds_biocyc'
 DISEASES_MESH_LMDB = 'diseases_mesh'
 FOODS_MESH_LMDB = 'foods_mesh'
 GENES_NCBI_LMDB = 'genes_ncbi'
-PHENOTYPES_MESH_LMDB = 'phenotypes_mesh'
+PHENOMENAS_MESH_LMDB = 'phenomenas_mesh'
+PHENOTYPES_CUSTOM_LMDB = 'phenotypes_custom'
 PROTEINS_UNIPROT_LMDB = 'proteins_uniprot'
 SPECIES_NCBI_LMDB = 'species_ncbi'
 
@@ -47,8 +48,10 @@ def open_env(entity_type, parentdir):
         env, db = _open_env(parentdir, FOODS_MESH_LMDB)
     elif entity_type == 'genes':
         env, db = _open_env(parentdir, GENES_NCBI_LMDB)
+    elif entity_type == 'phenomenas':
+        env, db = _open_env(parentdir, PHENOMENAS_MESH_LMDB)
     elif entity_type == 'phenotypes':
-        env, db = _open_env(parentdir, PHENOTYPES_MESH_LMDB)
+        env, db = _open_env(parentdir, PHENOTYPES_CUSTOM_LMDB)
     elif entity_type == 'proteins':
         env, db = _open_env(parentdir, PROTEINS_UNIPROT_LMDB)
     elif entity_type == 'species':

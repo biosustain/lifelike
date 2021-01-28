@@ -226,7 +226,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
       (page - 1) * this.pageSize + this.pageSize
     );
     this.worksheetViewerService
-      .matchNCBINodes(this.currentGenes, this.taxID)
+      .getEnrichedGO(this.currentGenes, this.taxID)
       .subscribe((result) => {
         this.synonyms = result.map((wrapper) => wrapper.s);
         this.ncbiNodes = result.map((wrapper) => wrapper.x);

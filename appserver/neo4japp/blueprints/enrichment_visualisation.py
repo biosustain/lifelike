@@ -17,13 +17,13 @@ from neo4japp.utils.logger import UserEventLog
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
 
-@bp.route('/match-ncbi-nodes', methods=['POST'])
+@bp.route('/enrich-with-go-terms', methods=['POST'])
 @auth.login_required
-def match_ncbi_nodes():
+def enrich_go():
     data = request.get_json()
     geneNames = data['geneNames']
     organism = data['organism']
     enrichment_visualisation = get_enrichment_visualisation_service()
-    nodes = enrichment_visualisation.match_ncbi_genes(geneNames, organism)
+    nodes = enrichment_visualisation.enrich_go(geneNames)
 
     return jsonify({'result': nodes}), 200
