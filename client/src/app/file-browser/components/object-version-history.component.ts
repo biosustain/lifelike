@@ -57,7 +57,7 @@ export class ObjectVersionHistoryComponent implements ControlValueAccessor {
             if (!version.contentValue) {
               this.filesystemService.getVersionContent(version.hashId)
                 .pipe(
-                  this.errorHandler.create(),
+                  this.errorHandler.create({label: 'Get object version content'}),
                 )
                 .subscribe(content => {
                   version.contentValue = content;
@@ -73,7 +73,7 @@ export class ObjectVersionHistoryComponent implements ControlValueAccessor {
         });
         return history;
       }),
-      this.errorHandler.create(),
+      this.errorHandler.create({label: 'Get object version history'}),
     ) : from([]);
   }
 
