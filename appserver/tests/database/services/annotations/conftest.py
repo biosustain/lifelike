@@ -11,7 +11,7 @@ from neo4japp.services.annotations import (
     AnnotationDBService,
     AnnotationGraphService,
     EntityRecognitionService,
-    LMDB,
+    LMDBAccess,
     LMDBService,
     ManualAnnotationService
 )
@@ -138,7 +138,7 @@ def lmdb_service():
     proteins_lmdb_path = path.join(directory, 'lmdb/proteins')
     species_lmdb_path = path.join(directory, 'lmdb/species')
 
-    lmdb = LMDB(
+    lmdb = LMDBAccess(
         genes_lmdb_path=genes_lmdb_path,
         anatomy_lmdb_path=anatomy_lmdb_path,
         chemicals_lmdb_path=chemicals_lmdb_path,
@@ -1117,66 +1117,38 @@ def mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf(monkeypat
 
 
 @pytest.fixture(scope='function')
-def mock_compound_exclusion(monkeypatch):
-    monkeypatch.setattr(
-        EntityRecognitionService,
-        'exclusion_type_compound',
-        {'guanosine', 'hydrogen'}
-    )
+def mock_compound_exclusion():
+    return {'guanosine', 'hydrogen'}
 
 
 @pytest.fixture(scope='function')
-def mock_global_chemical_exclusion(monkeypatch):
-    monkeypatch.setattr(
-        EntityRecognitionService,
-        'exclusion_type_chemical',
-        {'hypofluorite', 'hydrogen', 'adenosine'}
-    )
+def mock_global_chemical_exclusion():
+    return {'hypofluorite', 'hydrogen', 'adenosine'}
 
 
 @pytest.fixture(scope='function')
-def mock_disease_exclusion(monkeypatch):
-    monkeypatch.setattr(
-        EntityRecognitionService,
-        'exclusion_type_disease',
-        {'cold sore'}
-    )
+def mock_disease_exclusion():
+    return {'cold sore'}
 
 
 @pytest.fixture(scope='function')
-def mock_gene_exclusion(monkeypatch):
-    monkeypatch.setattr(
-        EntityRecognitionService,
-        'exclusion_type_gene',
-        {'BOLA3', 'rpoS'}
-    )
+def mock_gene_exclusion():
+    return {'BOLA3', 'rpoS'}
 
 
 @pytest.fixture(scope='function')
-def mock_phenotype_exclusion(monkeypatch):
-    monkeypatch.setattr(
-        EntityRecognitionService,
-        'exclusion_type_phenotype',
-        {'whey proteins'}
-    )
+def mock_phenotype_exclusion():
+    return {'whey proteins'}
 
 
 @pytest.fixture(scope='function')
-def mock_protein_exclusion(monkeypatch):
-    monkeypatch.setattr(
-        EntityRecognitionService,
-        'exclusion_type_protein',
-        {'Wasabi receptor toxin'}
-    )
+def mock_protein_exclusion():
+    return {'Wasabi receptor toxin'}
 
 
 @pytest.fixture(scope='function')
-def mock_species_exclusion(monkeypatch):
-    monkeypatch.setattr(
-        EntityRecognitionService,
-        'exclusion_type_species',
-        {'human', 'dog', 'fruit fly'}
-    )
+def mock_species_exclusion():
+    return {'human', 'dog', 'fruit fly'}
 
 
 @pytest.fixture(scope='function')

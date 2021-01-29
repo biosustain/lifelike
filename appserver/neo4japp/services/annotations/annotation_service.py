@@ -32,7 +32,6 @@ from neo4japp.services.annotations.data_transfer_objects import (
     LMDBMatch,
     OrganismAnnotation,
     PDFWord,
-    PDFTokensList,
     SpecifiedOrganismStrain
 )
 from neo4japp.exceptions import AnnotationError
@@ -408,12 +407,9 @@ class AnnotationService:
         for match in matches_list:
             for entity in match.entities:
                 entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
-                # for genes we want to do exact comparison
-                # like in self._get_fixed_false_positive_unified_annotations
-                if match.token.keyword == entity_synonym:
-                    gene_names.add(entity_synonym)
-                    entity_token_pairs.append(
-                        (entity, match.id_type, match.id_hyperlink, match.token))
+                gene_names.add(entity_synonym)
+                entity_token_pairs.append(
+                    (entity, match.id_type, match.id_hyperlink, match.token))
 
         gene_names_list = list(gene_names)
         organism_ids = list(self.organism_frequency.keys())
@@ -611,13 +607,9 @@ class AnnotationService:
         for match in matches_list:
             for entity in match.entities:
                 entity_synonym = entity['synonym']
-                text = match.token.keyword.split(' ')
-                if (len(text) == 1 and text[0] == entity_synonym) or len(text) > 1:
-                    # we only want proteins that are greater than one word
-                    # otherwise if it is one word, then it must be an exact match
-                    protein_names.add(entity_synonym)
-                    entity_token_pairs.append(
-                        (entity, match.id_type, match.id_hyperlink, match.token))
+                protein_names.add(entity_synonym)
+                entity_token_pairs.append(
+                    (entity, match.id_type, match.id_hyperlink, match.token))
 
         protein_names_list = list(protein_names)
 
@@ -1312,13 +1304,13 @@ class AnnotationService:
         self,
         keyword: str,
         is_case_insensitive: bool,
-        tokens_list: PDFTokensList
+        tokens_list: List[PDFWord]
     ):
         """Returns coordinate positions and page numbers
         for all matching terms in the document
         """
         matches = []
-        for token in tokens_list.tokens:
+        for token in tokens_list:
             if not is_case_insensitive:
                 if token.keyword != keyword:
                     continue

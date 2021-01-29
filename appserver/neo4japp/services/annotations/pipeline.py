@@ -20,7 +20,6 @@ from neo4japp.services.annotations.constants import (
 )
 from neo4japp.services.annotations.data_transfer_objects import (
     PDFWord,
-    PDFTokensList,
     SpecifiedOrganismStrain
 )
 from neo4japp.util import normalize_str
