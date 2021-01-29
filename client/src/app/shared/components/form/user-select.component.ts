@@ -56,7 +56,7 @@ export class UserSelectComponent implements ControlValueAccessor, OnInit, OnDest
           this.requestLoading = null;
         }
       }),
-      this.errorHandler.create(),
+      this.errorHandler.create({label: 'Auto-complete users'}),
     ).subscribe(([request, items]) => this.choices = items));
   }
 

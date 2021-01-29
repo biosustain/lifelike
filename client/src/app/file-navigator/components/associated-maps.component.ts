@@ -76,7 +76,7 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
         () => {
         },
       )),
-      this.errorHandler.create(),
+      this.errorHandler.create({label: 'Create map'}),
     ).subscribe();
   }
 }
