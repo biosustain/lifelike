@@ -403,11 +403,13 @@ class KgService(HybridDBDao):
                             node_label = get_first_known_label_from_node(node)
                             node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
                         except ValueError:
+                            node_label = 'Unknown'
                             node_color = '#000000'
 
                         node_data = {
                             'id': node.identity,
                             'label': node_display_name,
+                            'databaseLabel': node_label,
                             'font': {
                                 'color': node_color,
                             },
@@ -437,7 +439,7 @@ class KgService(HybridDBDao):
                             'from': edge.start_node.identity,
                             'to': edge.end_node.identity,
                             'color': {
-                                'color': '#3797DB',
+                                'color': '#0c8caa',
                             },
                             'arrows': 'to',
                         }
@@ -454,9 +456,23 @@ class KgService(HybridDBDao):
             3: 'SIRT5 to NFE2L2 Using Literature Data',
             4: 'CTNNB1 to Diarrhea Using Literature Data',
             5: 'Two pathways using BioCyc',
-            # 6: 'Glycolisis Regulon',
-            7: 'Serine SP Pathway',
-            8: 'Serine to malZp',
+            6: 'Serine SP Pathway',
+            7: 'Serine to malZp',
+            8: 'Acetate (ALE Mutation Data)',
+            9: 'Glycerol (ALE Mutation Data)',
+            10: 'Hexanoic (ALE Mutation Data)',
+            11: 'Isobutyric (ALE Mutation Data)',
+            12: 'Putrescine (ALE Mutation Data)',
+            13: 'Serine (ALE Mutation Data)',
+            14: 'tpiA (ALE Mutation Data)',
+            15: 'Xylose (ALE Mutation Data)',
+            16: '42C Temperature (ALE Mutation Data)',
+            17: 'nagC (ALE Mutation Data)',
+            18: 'nagA/nagC (ALE Mutation Data)',
+            19: 'nagA/nagC Shortest Paths (ALE Mutation Data)',
+            # 20: 'nagA (ALE Mutation Data)',
+            # 21: 'Glycolisis Regulon',
+
         }
 
     def get_query_id_to_func_map(self):
@@ -470,9 +486,22 @@ class KgService(HybridDBDao):
             3: [self.get_data_from_query, self.get_sirt5_to_nfe2l2_literature_query],
             4: [self.get_data_from_query, self.get_ctnnb1_to_diarrhea_literature_query],
             5: [self.get_data_from_query, self.get_two_pathways_biocyc_query],
-            # 6: [self.get_data_from_query, self.get_glycolisis_regulon_query],
-            7: [self.get_data_from_file, 'serine.json'],
-            8: [self.get_data_from_file, 'serine-to-malZp.json'],
+            6: [self.get_data_from_file, 'serine.json'],
+            7: [self.get_data_from_file, 'serine-to-malZp.json'],
+            8: [self.get_data_from_file, 'ale_mutation_data/acetate.json'],
+            9: [self.get_data_from_file, 'ale_mutation_data/glycerol.json'],
+            10: [self.get_data_from_file, 'ale_mutation_data/hexanoic.json'],
+            11: [self.get_data_from_file, 'ale_mutation_data/isobutyric.json'],
+            12: [self.get_data_from_file, 'ale_mutation_data/putrescine.json'],
+            13: [self.get_data_from_file, 'ale_mutation_data/serine.json'],
+            14: [self.get_data_from_file, 'ale_mutation_data/tpiA.json'],
+            15: [self.get_data_from_file, 'ale_mutation_data/xylose.json'],
+            16: [self.get_data_from_file, 'ale_mutation_data/42C.json'],
+            17: [self.get_data_from_file, 'ale_mutation_data/nagC.json'],
+            18: [self.get_data_from_file, 'ale_mutation_data/nagAC.json'],
+            19: [self.get_data_from_file, 'ale_mutation_data/nagAC_shortestpaths.json'],
+            # 20: [self.get_data_from_file, 'ale_mutation_data/nagA.json'],
+            # 21: [self.get_data_from_query, self.get_glycolisis_regulon_query],
         }
 
     def get_shortest_path_data(self, query_id):
@@ -486,7 +515,7 @@ class KgService(HybridDBDao):
 
     def get_data_from_file(self, filename):
         directory = os.path.realpath(os.path.dirname(__file__))
-        with open(os.path.join(directory, f'./shortest-path-data/{filename}'), 'r') as data_file:
+        with open(os.path.join(directory, f'./shortest_path_data/{filename}'), 'r') as data_file:
             return json.load(data_file)
 
     def get_uniprot_genes_query(self):

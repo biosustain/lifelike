@@ -18,7 +18,6 @@ class LinksSchema(StrictSchema):
 
 class MetaSchema(StrictSchema):
     type = ma.String(required=True)
-    color = ma.String(required=True)
     id = ma.String(required=True)
     idType = ma.String(required=True)
     idHyperlink = ma.String(required=True)

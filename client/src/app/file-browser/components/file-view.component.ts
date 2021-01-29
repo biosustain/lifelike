@@ -1,11 +1,24 @@
+import { Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+
+import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { cloneDeep, uniqueId } from 'lodash';
-import { Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, Subject, Subscription } from 'rxjs';
+
+import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
+
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { PdfFilesService } from 'app/shared/services/pdf-files.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 
+import { FileEditDialogComponent } from './file-edit-dialog.component';
+import { FilesystemObjectActions } from '../services/filesystem-object-actions';
+import { pdfFileToFilesystemObject } from '../utils/objects';
 import { PdfAnnotationsService } from '../../drawing-tool/services';
-
 import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
   AddedAnnotationExclusion,
   Annotation,
@@ -13,25 +26,15 @@ import {
   Meta,
   RemovedAnnotationExclusion,
 } from '../../pdf-viewer/annotation-type';
-
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
-import { ActivatedRoute } from '@angular/router';
-import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
+import { AnnotationHighlightResult, PdfViewerLibComponent } from '../../pdf-viewer/pdf-viewer-lib.component';
 import { ConfirmDialogComponent } from '../../shared/components/dialog/confirm-dialog.component';
-import { NgbDropdown, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { FileEditDialogComponent } from './file-edit-dialog.component';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
+import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
+import { BackgroundTask } from '../../shared/rxjs/background-task';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
+import { map } from 'rxjs/operators';
 import { SearchControlComponent } from '../../shared/components/search-control.component';
-import { FilesystemObjectActions } from '../services/filesystem-object-actions';
-import { pdfFileToFilesystemObject } from '../utils/objects';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -57,6 +60,7 @@ class EntityTypeEntry {
 
 export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
+  @ViewChild('searchControl', {static: false, read: SearchControlComponent}) searchControlComponent: SearchControlComponent;
   @Output() requestClose: EventEmitter<any> = new EventEmitter();
   @Output() fileOpen: EventEmitter<PdfFile> = new EventEmitter();
 
@@ -78,8 +82,15 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   searchChanged: Subject<{ keyword: string, findPrevious: boolean }> = new Subject<{ keyword: string, findPrevious: boolean }>();
   searchQuery = '';
+  annotationHighlight: AnnotationHighlightResult;
   goToPosition: Subject<Location> = new Subject<Location>();
-  highlightAnnotations: Subject<string> = new Subject<string>();
+  highlightAnnotations = new BehaviorSubject<{
+    id: string;
+    text: string;
+  }>(null);
+  highlightAnnotationIds: Observable<string> = this.highlightAnnotations.pipe(
+    map((value) => value ? value.id : null)
+  );
   loadTask: BackgroundTask<[PdfFile, Location], [PdfFile, ArrayBuffer, any]>;
   pendingScroll: Location;
   pendingAnnotationHighlightId: string;
@@ -105,7 +116,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   removedAnnotationExclusion: RemovedAnnotationExclusion;
   projectName: string;
 
-  @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib;
+  @ViewChild(PdfViewerLibComponent, {static: false}) pdfViewerLib: PdfViewerLibComponent;
 
   constructor(
     private readonly filesService: PdfFilesService,
@@ -254,7 +265,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       });
 
       this.addAnnotationSub = this.pdfAnnService.addCustomAnnotation(this.currentFileId, annotation, annotateAll, this.projectName)
-        .pipe(this.errorHandler.create())
+        .pipe(this.errorHandler.create({label: 'Custom annotation creation'}))
         .subscribe(
           (annotations: Annotation[]) => {
             progressDialogRef.close();
@@ -279,7 +290,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     dialogRef.componentInstance.message = 'Do you want to remove all matching annotations from the file as well?';
     dialogRef.result.then((removeAll: boolean) => {
       this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, removeAll, this.projectName)
-        .pipe(this.errorHandler.create())
+        .pipe(this.errorHandler.create({label: 'Custom annotation removal'}))
         .subscribe(
           response => {
             this.removedAnnotationIds = response;
@@ -297,7 +308,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.addAnnotationExclusionSub = this.pdfAnnService.addAnnotationExclusion(
       this.currentFileId, exclusionData, this.projectName,
     )
-      .pipe(this.errorHandler.create())
+      .pipe(this.errorHandler.create({label: 'Custom annotation exclusion addition'}))
       .subscribe(
         response => {
           this.addedAnnotationExclusion = exclusionData;
@@ -311,7 +322,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
   annotationExclusionRemoved({type, text}) {
     this.removeAnnotationExclusionSub = this.pdfAnnService.removeAnnotationExclusion(this.currentFileId, type, text, this.projectName)
-      .pipe(this.errorHandler.create())
+      .pipe(this.errorHandler.create({label: 'Custom annotation exclusion removal'}))
       .subscribe(
         response => {
           this.removedAnnotationExclusion = {type, text};
@@ -477,16 +488,21 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       this.pendingAnnotationHighlightId = annotationId;
       return;
     }
+    let text = annotationId;
     if (annotationId != null) {
       for (const annotation of this.annotations) {
         if (annotation.meta.id === annotationId) {
+          text = annotation.meta.allText || text;
           this.entityTypeVisibilityMap.set(annotation.meta.type, true);
           this.invalidateEntityTypeVisibility();
           break;
         }
       }
     }
-    this.highlightAnnotations.next(annotationId);
+    this.highlightAnnotations.next({
+      id: annotationId,
+      text,
+    });
   }
 
   loadCompleted(status) {
@@ -521,6 +537,25 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.searchQuery = keyword;
   }
 
+  annotationHighlightChangedFromViewer(result: AnnotationHighlightResult | undefined) {
+    this.annotationHighlight = result;
+    if (this.searchControlComponent) {
+      this.searchControlComponent.focus();
+    }
+  }
+
+  annotationHighlightNext() {
+    if (this.pdfViewerLib) {
+      this.pdfViewerLib.nextAnnotationHighlight();
+    }
+  }
+
+  annotationHighlightPrevious() {
+    if (this.pdfViewerLib) {
+      this.pdfViewerLib.previousAnnotationHighlight();
+    }
+  }
+
   findNext() {
     this.searchQueryChanged();
   }
@@ -549,7 +584,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
             newFile.organism,
             newFile.description,
           )
-            .pipe(this.errorHandler.create())
+            .pipe(this.errorHandler.create({label: 'File edit dialog'}))
             .subscribe(() => {
               this.pdfFile.filename = newFile.filename;
               this.pdfFile.description = newFile.description;
@@ -646,5 +681,13 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         }],
       },
     } as Partial<UniversalGraphNode>));
+  }
+
+  getAnnotationBackground(an: Annotation | undefined) {
+    if (an != null) {
+      return ENTITY_TYPE_MAP[an.meta.type].color;
+    } else {
+      return null;
+    }
   }
 }

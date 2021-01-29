@@ -1,0 +1,12 @@
+{
+    "anatomy": "v2",
+    "chemicals": "v1",
+    "compounds": "v1",
+    "diseases": "v2",
+    "foods": "v2",
+    "genes": "v1",
+    "phenomenas": "v2",
+    "proteins": "v1",
+    "species": "v1",
+    "phenotypes": "v1"
+}

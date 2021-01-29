@@ -16,7 +16,7 @@ from neo4japp.services.annotations.constants import (
     DISEASES_MESH_LMDB,
     FOODS_MESH_LMDB,
     GENES_NCBI_LMDB,
-    PHENOTYPES_MESH_LMDB,
+    PHENOTYPES_CUSTOM_LMDB,
     PROTEINS_UNIPROT_LMDB,
     SPECIES_NCBI_LMDB,
 )
@@ -105,7 +105,7 @@ def open_env(entity_type, parentdir):
     elif entity_type == 'genes':
         env, db = _open_env(parentdir, GENES_NCBI_LMDB)
     elif entity_type == 'phenotypes':
-        env, db = _open_env(parentdir, PHENOTYPES_MESH_LMDB)
+        env, db = _open_env(parentdir, PHENOTYPES_CUSTOM_LMDB)
     elif entity_type == 'proteins':
         env, db = _open_env(parentdir, PROTEINS_UNIPROT_LMDB)
     elif entity_type == 'species':

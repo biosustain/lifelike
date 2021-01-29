@@ -1,4 +1,68 @@
-<div *ngIf="!stabilized" class="h-100 w-100 d-flex justify-content-center align-items-center">
+<div *ngIf="!stabilized else stable" class="h-100 w-100 d-flex justify-content-center align-items-center">
   <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
 </div>
-<div [id]="networkContainerId" class="h-100 w-100" [ngStyle]="{'display': stabilized ? 'block' : 'hidden'}"></div>
+<ng-template #stable>
+  <div>
+    <app-legend [legend]="legend"></app-legend>
+  </div>
+  <div class="network-utilities-container">
+    <div class="mb-1">
+      <button [class]="'btn bg-white ' + (physicsEnabled ? 'border-primary physics-shadow-on' : 'border-secondary physics-shadow-off')"
+              (click)="togglePhysics()"
+              ngbTooltip="Toggle Physics"
+              container="body"
+              placement="right bottom top left">
+        <i [class]="'fa fa-fw fa-power-off ' + (physicsEnabled ? 'text-primary' : 'text-secondary')"></i>
+      </button>
+    </div>
+    <div class="mb-1">
+      <button class="btn btn-secondary border-white"
+              (click)="fitToNetwork()"
+              ngbTooltip="Fit Canvas"
+              container="body"
+              placement="right bottom top left">
+        <i class="fas fa-fw fa-expand-arrows-alt"></i>
+      </button>
+    </div>
+    <div>
+      <button class="btn btn-secondary border-white zoom-in-btn"
+              (click)="zoomIn()"
+              ngbTooltip="Zoom In"
+              container="body"
+              placement="right bottom top left">
+        <i class="fa fa-fw fa-search-plus"></i>
+      </button>
+    </div>
+    <div>
+      <button class="btn btn-secondary border-white mb-1 zoom-out-btn"
+              (click)="zoomOut()"
+              ngbTooltip="Zoom Out"
+              container="body"
+              placement="right bottom top left">
+        <i class="fa fa-fw fa-search-minus"></i>
+      </button>
+    </div>
+    <div ngbDropdown container="body" placement="top-right">
+      <button type="button"
+              class="btn btn-secondary border-white"
+              ngbDropdownToggle
+              ngbTooltip="Adjust Layout Strategy"
+              container="body"
+              placement="right bottom top left">
+        Layout: {{ currentSolver }}
+      </button>
+      <div ngbDropdownMenu class="dropdown-menu">
+        <button *ngFor="let solver of solverMap | keyvalue" class="dropdown-item" (click)="updateNetworkLayout(solver.key)">
+          {{ solver.value }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+<div [id]="networkContainerId"
+     class="h-100 w-100"
+     [ngStyle]="{
+        'display': stabilized ? 'block' : 'hidden',
+        'cursor': cursorStyle
+      }"
+></div>

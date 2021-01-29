@@ -118,6 +118,9 @@
             "minLength": 0,
             "maxLength": 100,
             "$comment": "this field can actually be anything and not a domain, like 'File Source' due to legacy reasons, and it can even be blank"
+          },
+          "isDatabase": {
+            "type": "boolean"
           }
         }
       }

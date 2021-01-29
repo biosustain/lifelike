@@ -26,6 +26,7 @@
         (selectNeighbors)="selectNeighbors($event)"
         (pullOutNodeFromCluster)="removeNodeFromCluster($event)"
         (openDataSidebar)="updateSidenavEntity()"
+        (openTypeSidebar)="openTypeSidenav($event)"
       ></app-context-menu>
     </div>
   </as-split-area>
@@ -41,6 +42,12 @@
       </div>
       <!-- Each switch case appears to be lazy loaded, so switching between two cases will destroy the old case, and create the new case. -->
       <div [ngSwitch]="sidenavEntityType">
+        <div *ngSwitchCase="sidenavEntityTypeEnum.TYPE">
+          <app-sidenav-type-view
+            [legend]="legend"
+            [nodeEntity]="sidenavEntity"
+          ></app-sidenav-type-view>
+        </div>
         <div *ngSwitchCase="sidenavEntityTypeEnum.NODE">
           <app-sidenav-node-view
             [legend]="legend"

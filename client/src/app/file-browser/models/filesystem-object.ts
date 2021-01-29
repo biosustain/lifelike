@@ -48,7 +48,7 @@ export class FilesystemObject implements DirectoryObject {
           return ['/projects', this.project.projectName, 'files', this.id];
         }
       case 'map':
-        return ['/projects', this.project.projectName, 'maps', this.id, 'edit'];
+        return ['/projects', this.project.projectName, 'maps', this.id];
       default:
         throw new Error(`unknown directory object type: ${this.type}`);
     }
