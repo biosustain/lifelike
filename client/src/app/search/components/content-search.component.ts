@@ -155,14 +155,14 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     const modalRef = this.modalService.open(AdvancedSearchDialogComponent, {
       size: 'md',
     });
+    modalRef.componentInstance.params = this.params;
     modalRef.result
       // Advanced search was triggered
-      .then(() => {
-        console.log('Searching...with advanced parameters!');
+      .then((params) => {
+        // TODO: Implement advanced searching
+        // this.search(params);
       })
       // Advanced search dialog was dismissed or rejected
-      .catch(() => {
-        console.log('Advanced search dialog rejected');
-      });
+      .catch(() => {});
   }
 }
