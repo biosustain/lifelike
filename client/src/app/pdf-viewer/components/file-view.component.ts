@@ -277,7 +277,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         annotation,
         annotateAll,
       })
-        .pipe(this.errorHandler.create())
+        .pipe(this.errorHandler.create({label: 'Custom annotation creation'}))
         .subscribe(
           (annotations: Annotation[]) => {
             progressDialogRef.close();
@@ -304,7 +304,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       this.removeAnnotationSub = this.pdfAnnService.removeCustomAnnotation(this.currentFileId, uuid, {
         removeAll,
       })
-        .pipe(this.errorHandler.create())
+        .pipe(this.errorHandler.create({label: 'Custom annotation removal'}))
         .subscribe(
           response => {
             this.removedAnnotationIds = response;
@@ -324,7 +324,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
         exclusion: exclusionData,
       },
     )
-      .pipe(this.errorHandler.create())
+      .pipe(this.errorHandler.create({label: 'Custom annotation exclusion addition'}))
       .subscribe(
         response => {
           this.addedAnnotationExclusion = exclusionData;
@@ -341,7 +341,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
       type,
       text,
     })
-      .pipe(this.errorHandler.create())
+      .pipe(this.errorHandler.create({label: 'Custom annotation exclusion removal'}))
       .subscribe(
         response => {
           this.removedAnnotationExclusion = {type, text};
