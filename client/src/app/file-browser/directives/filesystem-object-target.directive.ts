@@ -78,7 +78,7 @@ export class FilesystemObjectTargetDirective {
         }).pipe(
           tap(() => this.refreshRequest.emit()),
           finalize(() => progressDialogRef.close()),
-          this.errorHandler.create(),
+          this.errorHandler.create({label: 'Move object from drag and drop'}),
         ).subscribe(() => {
           this.snackBar.open(`Moved item to new folder.`, 'Close', {
             duration: 5000,

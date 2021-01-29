@@ -1,4 +1,12 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 
 import { cloneDeep } from 'lodash';
 
@@ -37,7 +45,7 @@ import { MAP_MIMETYPE } from '../../providers/map.type-provider';
     './map-editor.component.scss',
   ],
 })
-export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefined> implements OnInit, OnDestroy {
+export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
@@ -84,6 +92,14 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     this.startLockInterval();
   }
 
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+
+    this.subscriptions.add(this.graphCanvas.historyChanges$.subscribe(() => {
+      this.unsavedChanges$.next(true);
+    }));
+  }
+
   ngOnDestroy() {
     super.ngOnDestroy();
     this.autoSaveSubscription.unsubscribe();
@@ -101,7 +117,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
               mapBufferToJson<UniversalGraph>(),
             )
             : of(null)),
-          this.errorHandler.create(),
+          this.errorHandler.create({label: 'Load map backup'}),
         ),
     ));
   }
@@ -157,7 +173,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   restore(version: ObjectVersion) {
     readBlobAsBuffer(version.contentValue).pipe(
       mapBufferToJson<UniversalGraph>(),
-      this.errorHandler.create(),
+      this.errorHandler.create({label: 'Restore map from backup'}),
     ).subscribe(graph => {
       this.graphCanvas.execute(new KnowledgeMapRestore(
         `Restore map to '${version.hashId}'`,
@@ -242,8 +258,6 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
 
     if (this.lockAcquired === false) {
       this.filesystemService.getLocks(this.locator).pipe(
-        this.errorHandler.create(),
-      ).pipe(
         finalize(() => this.lastLockCheckTime = window.performance.now()),
       ).subscribe(locks => {
         this.ngZone.run(() => {
@@ -269,7 +283,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
       }, (err: LockError) => {
         this.lockAcquired = false;
         this.ngZone.run(() => {
-          this.locks = err.locks;
+          this.locks = 'locks' in err ? err.locks : [];
         });
       });
     }
