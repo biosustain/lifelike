@@ -43,11 +43,6 @@ class PDFWord(PDFBase):
     token_type: Optional[str] = attr.ib(default=None)
 
 
-@attr.s(frozen=True)
-class PDFTokensList():
-    tokens: Any = attr.ib()
-
-
 @attr.s(frozen=False)
 class Annotation(CamelDictMixin):
     @attr.s(frozen=False)
