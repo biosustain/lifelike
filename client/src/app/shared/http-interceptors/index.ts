@@ -1,6 +1,5 @@
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
-import { LogInterceptor } from './log-interceptor';
 import { AuthenticationInterceptor } from './auth-interceptor';
 import { HttpErrorInterceptor } from './http-error-interceptor';
 
@@ -9,7 +8,6 @@ import { HttpErrorInterceptor } from './http-error-interceptor';
  * will be handled before the next.
  */
 export const httpInterceptorProviders = [
-  {provide: HTTP_INTERCEPTORS, useClass: LogInterceptor, multi: true},
   {provide: HTTP_INTERCEPTORS, useClass: AuthenticationInterceptor, multi: true},
   {provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true},
 ];

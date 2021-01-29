@@ -44,7 +44,7 @@ def requires_permission(action: AccessActionType):
     return check_permission
 
 
-def check_project_permission(project, user, action: AccessActionType):
+def has_project_permission(project, user, action: AccessActionType):
     auth = get_authorization_service()
 
     # SUPER USER ADMIN overrides all permissions
@@ -54,9 +54,16 @@ def check_project_permission(project, user, action: AccessActionType):
         proj = get_projects_service()
         role = proj.has_role(user, project)
         if role is None or not auth.is_allowed(role, action, project):
-            raise NotAuthorizedException(
-                f'{user.username} does not have {action.name} privilege'
-            )
+            return False
+
+    return True
+
+
+def check_project_permission(project, user, action: AccessActionType):
+    if not has_project_permission(project, user, action):
+        raise NotAuthorizedException(
+            f'{user.username} does not have {action.name} privilege'
+        )
 
 
 def requires_project_permission(action: AccessActionType):

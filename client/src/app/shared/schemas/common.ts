@@ -46,3 +46,16 @@ export interface ErrorResponse {
   transactionId?: string;
   fields?: { [key: string]: string[] };
 }
+
+export interface ErrorLogMeta {
+  label: string;
+  expected?: boolean;
+  url?: string;
+}
+
+export interface ErrorLog extends ErrorLogMeta {
+  title: string;
+  message: string;
+  detail?: string;
+  transactionId: string;
+}

@@ -91,7 +91,7 @@ export class FilesystemObjectActions {
             openDownloadForBlob(blob, filename);
             return true;
           }),
-          this.errorHandler.create(),
+          this.errorHandler.create({label: 'Export object'}),
         ).toPromise();
       };
       return dialogRef.result;
@@ -160,7 +160,7 @@ export class FilesystemObjectActions {
         .pipe(
           finalize(() => progressDialogRef.close()),
           this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
-          this.errorHandler.create(),
+          this.errorHandler.create({label: 'Move object'}),
         )
         .toPromise()
         .then(() => ({
@@ -185,7 +185,7 @@ export class FilesystemObjectActions {
         .pipe(
           finalize(() => progressDialogRef.close()),
           this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
-          this.errorHandler.create(),
+          this.errorHandler.create({label: 'Edit object'}),
         )
         .toPromise();
     });
@@ -200,7 +200,7 @@ export class FilesystemObjectActions {
       return this.filesystemService.delete(targets.map(target => target.hashId))
         .pipe(
           finalize(() => progressDialogRef.close()),
-          this.errorHandler.create(),
+          this.errorHandler.create({label: 'Delete object'}),
         )
         .toPromise();
     });
@@ -222,7 +222,7 @@ export class FilesystemObjectActions {
         .pipe(
           finalize(() => progressDialogRef.close()),
           this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
-          this.errorHandler.create(),
+          this.errorHandler.create({label: 'Annotate object'}),
         )
         .toPromise();
     });
@@ -265,7 +265,7 @@ export class FilesystemObjectActions {
     return this.annotationsService.generateAnnotations(targets.map(object => object.hashId))
       .pipe(
         finalize(() => progressDialogRef.close()),
-        this.errorHandler.create(),
+        this.errorHandler.create({label: 'Re-annotate object'}),
       )
       .toPromise();
   }
