@@ -1163,6 +1163,7 @@ class AnnotationService:
         """
         updated_unified_annotations: List[Annotation] = []
         annotation_interval_dict: Dict[Tuple[int, int], List[Annotation]] = {}
+        annotation_interval_set: Set[Tuple[int, int]] = set()
 
         for unified in unified_annotations:
             if unified.lo_location_offset == unified.hi_location_offset:
@@ -1175,15 +1176,16 @@ class AnnotationService:
                     annotation_interval_dict[interval_pair].append(unified)
                 else:
                     annotation_interval_dict[interval_pair] = [unified]
+                annotation_interval_set.add(interval_pair)
 
         # it's faster to create an interval tree with just
         # intervals, rather than a tree with intervals and data
         # because the data are viewed as unique, so the tree is bigger
-        tree = AnnotationIntervalTree([
+        tree = AnnotationIntervalTree(
             AnnotationInterval(
                 begin=lo,
                 end=hi
-            ) for lo, hi in list(annotation_interval_dict)])
+            ) for lo, hi in annotation_interval_set)
 
         # first clean all annotations with equal intervals
         # this means the same keyword was mapped to multiple entities
