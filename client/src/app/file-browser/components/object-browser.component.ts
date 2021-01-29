@@ -67,7 +67,7 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
         this.projectService.search({
           name: params.project_name,
         }).pipe(
-          this.errorHandler.create(),
+          this.errorHandler.create({label: 'Load project from name for legacy URL'}),
         ).subscribe(list => {
           if (list.results.length) {
             this.load(list.results.items[0].***ARANGO_USERNAME***.hashId);

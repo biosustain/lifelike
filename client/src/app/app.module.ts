@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { ErrorHandler, NgModule } from '@angular/core';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
@@ -30,6 +30,7 @@ import { FileNavigatorModule } from './file-navigator/file-navigator.module';
 import { ShortestPathModule } from './shortest-path/shortest-path.module';
 import { PdfViewerLibModule } from './pdf-viewer/pdf-viewer-lib.module';
 import { EnrichmentTablesModule } from './enrichment-tables/enrichment-tables.module';
+import { GlobalErrorHandler } from './global-error-handler';
 
 @NgModule({
   declarations: [
@@ -70,6 +71,10 @@ import { EnrichmentTablesModule } from './enrichment-tables/enrichment-tables.mo
     Title,
     WorkspaceManager,
     UnloadConfirmationGuard,
+    {
+      provide: ErrorHandler,
+      useClass: GlobalErrorHandler,
+    }
   ],
   exports: [],
   bootstrap: [AppComponent],

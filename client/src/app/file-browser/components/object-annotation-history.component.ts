@@ -40,7 +40,7 @@ export class ObjectAnnotationHistoryComponent {
       page: this.page,
       limit: this.limit,
     }).pipe(
-      this.errorHandler.create(),
+      this.errorHandler.create({label: 'Refresh file annotation history'}),
     ) : from([]);
   }
 

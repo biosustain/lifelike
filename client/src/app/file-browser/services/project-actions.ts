@@ -48,7 +48,7 @@ export class ProjectActions {
         ...(options.request || {}),
       }).pipe(
         finalize(() => progressDialogRef.close()),
-        this.errorHandler.create(),
+        this.errorHandler.create({label: 'Create project'}),
       ).toPromise();
     });
     return dialogRef.result;
@@ -68,7 +68,7 @@ export class ProjectActions {
       })
         .pipe(
           finalize(() => progressDialogRef.close()),
-          this.errorHandler.create(),
+          this.errorHandler.create({label: 'Edit project'}),
         )
         .toPromise();
     });
