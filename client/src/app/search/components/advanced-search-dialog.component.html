@@ -1,9 +1,87 @@
-<form (ngSubmit)="close()">
+<form [formGroup]="form" (ngSubmit)="close()">
   <app-modal-header (cancel)="dismiss()">Advanced Search</app-modal-header>
 
-  <app-modal-body>Stuff goes here!</app-modal-body>
+  <app-modal-body>
+    <div>
+      <div class="font-weight-bold mb-2">Find documents</div>
+    </div>
+    <!-- Words field -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="field-label mr-2">
+        <span>with <strong>all</strong> the words</span>
+      </div>
+      <div class="field-value">
+        <input [class]="'form-control w-100 border' + (form.get('q').invalid && form.get('q').dirty ? ' border-danger' : '')" formControlName="q">
+        <app-form-input-feedback [control]="form.get('q')"></app-form-input-feedback>
+      </div>
+    </div>
+
+    <!-- Types field -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="field-label mr-2">
+        <span>where the document is of type</span>
+      </div>
+      <div class="field-value">
+        <app-select formId="types" [choices]="typeChoices"
+                [values]="form.value.types" (valuesChange)="form.get('types').setValue($event)"
+                (touch)="form.get('types').markAsTouched()"
+                [choiceLabel]="choiceLabel">
+        </app-select>
+      </div>
+    </div>
+
+    <!-- Phrase field -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="field-label mr-2">
+        <span>with the <strong>exact phrase</strong></span>
+      </div>
+      <div class="field-value">
+        <input class="form-control border w-100" disabled placeholder="Coming Soon!">
+      </div>
+    </div>
+
+    <!-- Wildcards field -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="field-label mr-2">
+        <span>with the <strong>wildcard</strong> words</span>
+      </div>
+      <div class="field-value">
+        <input class="form-control border w-100" disabled placeholder="Coming Soon!">
+      </div>
+    </div>
+
+    <!-- Author field -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="field-label mr-2">
+        <span>Return documents <strong>located</strong> in</span>
+      </div>
+      <div class="field-value">
+        <input class="form-control border w-100" disabled placeholder="Coming Soon!">
+      </div>
+    </div>
+
+    <!-- Author field -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="field-label mr-2">
+        <span>Return documents <strong>authored</strong> by</span>
+      </div>
+      <div class="field-value">
+        <input class="form-control border w-100" disabled placeholder="Coming Soon!">
+      </div>
+    </div>
+
+    <!-- Dates fields -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="field-label mr-2">
+        <span>Return articles <strong>dated</strong> between</span>
+      </div>
+      <div class="field-value">
+        <input class="form-control border w-100" disabled placeholder="Coming Soon!">
+      </div>
+    </div>
+  </app-modal-body>
 
   <app-modal-footer>
-    <button type="submit" class="btn btn-danger">OK</button>
+    <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i></button>
   </app-modal-footer>
 </form>
