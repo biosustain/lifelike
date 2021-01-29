@@ -63,7 +63,6 @@ export class OrganismAutocompleteComponent implements OnInit {
   }
 
   clear() {
-    console.log('clear!');
     this.organism = undefined;
     this.organismPicked.emit(null);
   }
