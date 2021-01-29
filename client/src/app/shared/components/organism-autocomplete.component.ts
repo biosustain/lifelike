@@ -61,4 +61,10 @@ export class OrganismAutocompleteComponent implements OnInit {
     this.organism = event.item;
     this.organismPicked.emit(event.item);
   }
+
+  clear() {
+    console.log('clear!');
+    this.organism = undefined;
+    this.organismPicked.emit(null);
+  }
 }
