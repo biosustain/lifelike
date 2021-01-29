@@ -92,8 +92,8 @@ def mock_global_list(session):
         'meta': {
             'id': 'BIOC:Fake',
             'type': EntityType.COMPOUND.value,
+            'allText': 'compound-(12345)'
         },
-        'keyword': 'compound-(12345)'
     }
     inclusion = GlobalList(
         annotation=annotation,
