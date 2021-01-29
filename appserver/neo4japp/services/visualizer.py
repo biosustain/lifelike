@@ -7,11 +7,13 @@ from neo4japp.data_transfer_objects.visualization import (
     EdgeConnectionData,
     GetClusterSnippetsResult,
     GetEdgeSnippetsResult,
+    GetNodePairSnippetsResult,
     GetReferenceTableDataResult,
     GetSnippetsFromEdgeResult,
     ReferenceTablePair,
     ReferenceTableRow,
     Snippet,
+    GetAssociatedTypesResult,
 )
 from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.services import KgService
@@ -61,6 +63,25 @@ class VisualizerService(KgService):
             }
         ).data()
 
+    def get_snippets_from_node_pair(
+        self,
+        from_id: int,
+        to_id: int,
+        page: int,
+        limit: int
+    ):
+        query = self.get_snippets_from_node_pair_query()
+
+        return self.graph.run(
+            query,
+            {
+                'from_id': from_id,
+                'to_id': to_id,
+                'skip': (page - 1) * limit,
+                'limit': limit,
+            }
+        ).data()
+
     def get_snippet_count_from_edges(
         self,
         from_ids: List[int],
@@ -74,6 +95,20 @@ class VisualizerService(KgService):
                 'from_ids': from_ids,
                 'to_ids': to_ids,
                 'description': description,  # All the edges should have the same label
+            }
+        ).evaluate()
+
+    def get_snippet_count_from_node_pair(
+        self,
+        from_id: int,
+        to_id: int,
+    ):
+        query = self.get_snippet_count_from_node_pair_query()
+        return self.graph.run(
+            query,
+            {
+                'from_id': from_id,
+                'to_id': to_id,
             }
         ).evaluate()
 
@@ -216,6 +251,71 @@ class VisualizerService(KgService):
             query_data=edges,
         )
 
+    def get_associated_type_snippet_count(
+        self,
+        source_node: int,
+        associated_nodes: List[int],
+        label: str
+    ):
+        sanitized_label = ''
+        if (label == 'Gene'):
+            sanitized_label = 'Gene'
+        elif (label == 'Chemical'):
+            sanitized_label = 'Chemical'
+        elif (label == 'Disease'):
+            sanitized_label = 'Disease'
+
+        query = self.get_associated_type_snippet_count_query(sanitized_label)
+        results = self.graph.run(
+            query,
+            {
+                'source_node': source_node,
+                'associated_nodes': associated_nodes
+            }
+        ).data()
+
+        return GetAssociatedTypesResult(
+            associated_data=results
+        )
+
+    def get_snippets_for_node_pair(
+        self,
+        from_id: int,
+        to_id: int,
+        page: int,
+        limit: int,
+    ):
+        data = self.get_snippets_from_node_pair(from_id, to_id, page, limit)
+        total_results = self.get_snippet_count_from_node_pair(from_id, to_id)
+
+        results = [
+            GetSnippetsFromEdgeResult(
+                from_node_id=from_id,
+                to_node_id=to_id,
+                association=row['description'],
+                snippets=[Snippet(
+                    reference=GraphNode.from_py2neo(
+                        reference['snippet'],
+                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['snippet'])]),  # type: ignore  # noqa
+                        primary_label_fn=get_first_known_label_from_node,
+                    ),
+                    publication=GraphNode.from_py2neo(
+                        reference['publication'],
+                        display_fn=lambda x: x.get(DISPLAY_NAME_MAP[get_first_known_label_from_node(reference['publication'])]),  # type: ignore  # noqa
+                        primary_label_fn=get_first_known_label_from_node,
+                    ),
+                    raw_score=reference['raw_score'],
+                    normalized_score=reference['normalized_score']
+                ) for reference in row['references']]
+            ) for row in data
+        ]
+
+        return GetNodePairSnippetsResult(
+            snippet_data=results,
+            total_results=total_results,
+            query_data={'from_node_id': from_id, 'to_node_id': to_id},
+        )
+
     def get_expand_query(self):
         query = """
                 MATCH (n)
@@ -226,6 +326,22 @@ class VisualizerService(KgService):
                     apoc.convert.toSet([n] + collect(m)) AS nodes,
                     apoc.convert.toSet(collect(l)) AS relationships
             """
+        return query
+
+    def get_associated_type_snippet_count_query(self, to_label: str):
+        query = """
+            MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t:{})
+            WHERE
+                ID(f) = $source_node AND
+                ID(t) IN $associated_nodes
+            WITH
+                a AS association,
+                t.name as name,
+                ID(t) as node_id
+            MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            RETURN name, node_id, COUNT(s) as snippet_count
+            ORDER BY snippet_count DESC
+        """.format(to_label)
         return query
 
     def get_snippets_from_edge_query(self, from_label: str, to_label: str):
@@ -277,13 +393,64 @@ class VisualizerService(KgService):
             RETURN collect(reference) as references, from_id, to_id, description
         """
 
+    def get_snippets_from_node_pair_query(self):
+        return """
+            MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
+            WHERE
+                ID(f)=$from_id AND
+                ID(t)=$to_id
+            WITH
+                a AS association,
+                ID(f) as from_id,
+                ID(t) as to_id,
+                a.description as description
+            MATCH (association)<-[r:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            WITH
+                COUNT(s) as snippet_count,
+                collect({
+                    snippet:s,
+                    publication:p,
+                    raw_score:r.raw_score,
+                    normalized_score:r.normalized_score
+                }) as references,
+                max(p.pub_year) as max_pub_year,
+                from_id,
+                to_id,
+                description
+            ORDER BY snippet_count DESC, max_pub_year DESC
+            UNWIND references as reference
+            WITH
+                snippet_count,
+                reference,
+                from_id,
+                to_id,
+                description
+            ORDER BY snippet_count DESC, coalesce(reference.publication.pub_year, -1) DESC
+            SKIP $skip LIMIT $limit
+            RETURN collect(reference) as references, from_id, to_id, description
+        """
+
     def get_snippet_count_from_edges_query(self):
         return """
-            MATCH (f)-[:HAS_ASSOCIATION]->(a:Association)-[:HAS_ASSOCIATION]->(t)
+            MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
             WHERE
                 ID(f) IN $from_ids AND
                 ID(t) IN $to_ids AND
                 a.description=$description
+            WITH
+                a AS association,
+                ID(f) as from_id,
+                ID(t) as to_id
+            MATCH (association)<-[:PREDICTS]-(s:Snippet)-[:IN_PUB]-(p:Publication)
+            RETURN COUNT(s) as snippet_count
+        """
+
+    def get_snippet_count_from_node_pair_query(self):
+        return """
+            MATCH (f)-[:HAS_ASSOCIATION]-(a:Association)-[:HAS_ASSOCIATION]-(t)
+            WHERE
+                ID(f)=$from_id AND
+                ID(t)=$to_id
             WITH
                 a AS association,
                 ID(f) as from_id,

@@ -68,6 +68,7 @@ describe('SnippetDisplayComponentComponent', () => {
             subLabels: [],
             displayName: 'Mock Reference Display Name',
             entityUrl: null,
+            domainLabels: [],
         } as Reference;
 
         mockAssociationSnippets = [

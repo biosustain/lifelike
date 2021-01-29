@@ -1,8 +1,12 @@
-import { Component, Inject, Input, OnDestroy, OnInit } from '@angular/core';
-import { throttleTime } from 'rxjs/operators';
-import { asyncScheduler, Observable, Subscription } from 'rxjs';
-import { Progress } from 'app/interfaces/common-dialog.interface';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { asyncScheduler, Observable, Subscription } from 'rxjs';
+import { throttleTime } from 'rxjs/operators';
+
+import { Progress } from 'app/interfaces/common-dialog.interface';
+
 
 /**
  * A dialog to indicate the progress of a process.

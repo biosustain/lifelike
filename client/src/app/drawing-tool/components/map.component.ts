@@ -1,23 +1,27 @@
 import { AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Output, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { CopyKeyboardShortcut } from 'app/graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
+import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
+import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import { SelectableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity';
+import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
+import { ModuleProperties } from 'app/shared/modules';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { tokenizeQuery } from 'app/shared/utils/find';
+
 import { MapService } from '../services';
 import { GraphEntity, KnowledgeMap, UniversalGraphNode } from '../services/interfaces';
-import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
-import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
-import { ModuleProperties } from '../../shared/modules';
-import { ActivatedRoute } from '@angular/router';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { BackgroundTask } from '../../shared/rxjs/background-task';
-import { map } from 'rxjs/operators';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { CopyKeyboardShortcut } from '../../graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { tokenizeQuery } from '../../shared/utils/find';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
 
 @Component({
   selector: 'app-map',
@@ -40,8 +44,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   _map: KnowledgeMap | undefined;
   pendingInitialize = false;
 
+  editable = true;
   graphCanvas: CanvasGraphView;
 
+  protected readonly subscriptions = new Subscription();
   historyChangesSubscription: Subscription;
   unsavedChangesSubscription: Subscription;
 
@@ -66,7 +72,10 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return combineLatest([
         this.mapService.getMap(locator.projectName, locator.hashId).pipe(
             // tslint:disable-next-line: no-string-literal
-            map(resp => resp['project'] as KnowledgeMap),
+            map(resp => {
+              this.editable = resp.editable;
+              return resp.project;
+            }),
             // TODO: This line is from the existing code and should be properly typed
         ),
         this.getExtraSource(),
@@ -105,7 +114,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     });
 
     this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
-      this.unsavedChanges$.next(true);
       this.search();
     });
 
@@ -155,19 +163,23 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.emitModuleProperties();
 
     if (this.highlightTerms != null && this.highlightTerms.length) {
-      this.graphCanvas.highlighting.replace(this.graphCanvas.findMatching(this.highlightTerms));
+      this.graphCanvas.highlighting.replace(
+        this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true})
+      );
     }
   }
 
   registerGraphBehaviors() {
     this.graphCanvas.behaviors.add('selection', new SelectableEntity(this.graphCanvas), 0);
     this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcut(this.graphCanvas), -100);
+    this.graphCanvas.behaviors.add('moving', new MovableNode(this.graphCanvas), -10);
   }
 
   ngOnDestroy() {
     this.historyChangesSubscription.unsubscribe();
     this.unsavedChangesSubscription.unsubscribe();
     this.graphCanvas.destroy();
+    this.subscriptions.unsubscribe();
   }
 
   emitModuleProperties() {

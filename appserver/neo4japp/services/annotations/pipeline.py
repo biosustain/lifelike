@@ -27,7 +27,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     PDFTokensList,
     SpecifiedOrganismStrain
 )
-from neo4japp.services.annotations.util import normalize_str
+from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
 
 
@@ -274,7 +274,7 @@ def _create_annotations(
         )
 
         species_annotations = annotator.create_rules_based_annotations(
-            tokens=tokens,
+            tokens=tokens_list,
             custom_annotations=[],
             excluded_annotations=[],
             entity_results=entity_recog.get_entity_match_results(),

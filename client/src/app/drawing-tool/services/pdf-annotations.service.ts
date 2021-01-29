@@ -20,28 +20,6 @@ export class PdfAnnotationsService {
   ) { }
 
   /**
-   * Create http options with authorization
-   * header if boolean set to true
-   * @param withJwt boolean representing whether to return the options with a jwt
-   */
-  createHttpOptions(withJwt = false) {
-    if (withJwt) {
-      return {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + localStorage.getItem('access_jwt'),
-        }),
-      };
-    } else {
-      return {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-        }),
-      };
-    }
-  }
-
-  /**
    * Send sample annotations
    */
   public getMockupAnnotation(): Observable<any[]> {
@@ -56,7 +34,6 @@ export class PdfAnnotationsService {
     const url = `/api/projects/${projectName}/files/${fileId}/annotations`;
     return this.http.get(
       url,
-      this.createHttpOptions(true),
     );
   }
 
@@ -71,7 +48,6 @@ export class PdfAnnotationsService {
     return this.http.patch(
       url,
       { annotation, annotateAll },
-      this.createHttpOptions(true)
     );
   }
 
@@ -86,7 +62,6 @@ export class PdfAnnotationsService {
     return this.http.patch(
       url,
       { uuid, removeAll },
-      this.createHttpOptions(true)
     );
   }
 
@@ -99,7 +74,6 @@ export class PdfAnnotationsService {
     return this.http.patch(
       `/api/projects/${projectName}/files/${fileId}/annotations/add_annotation_exclusion`,
       exclusionData,
-      this.createHttpOptions(true),
     );
   }
 
@@ -113,7 +87,6 @@ export class PdfAnnotationsService {
     return this.http.patch(
       `/api/projects/${projectName}/files/${fileId}/annotations/remove_annotation_exclusion`,
       { type, text },
-      this.createHttpOptions(true)
     );
   }
 

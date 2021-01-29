@@ -84,7 +84,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
       });
 
       this.accountService.createUser(newUser)
-        .pipe(this.errorHandler.create())
+        .pipe(this.errorHandler.create({label: 'Create user'}))
         .subscribe((user: AppUser) => {
           progressDialogRef.close();
           this.accountService.getUserList();

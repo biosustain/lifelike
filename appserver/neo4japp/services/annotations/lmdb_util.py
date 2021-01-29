@@ -62,15 +62,27 @@ def create_ner_type_gene(name: str, synonym: str) -> dict:
     }
 
 
+def create_ner_type_phenomena(
+    id_: str,
+    name: str,
+    synonym: str
+) -> dict:
+    return {
+        EntityIdStr.PHENOMENA.value: id_,
+        'id_type': DatabaseType.MESH.value,
+        'name': name,
+        'synonym': synonym,
+    }
+
+
 def create_ner_type_phenotype(
     id_: str,
     name: str,
-    synonym: str,
-    custom: bool = False
+    synonym: str
 ) -> dict:
     return {
         EntityIdStr.PHENOTYPE.value: id_,
-        'id_type': DatabaseType.MESH.value if not custom else DatabaseType.CUSTOM.value,
+        'id_type': DatabaseType.CUSTOM.value,
         'name': name,
         'synonym': synonym,
     }

@@ -1,7 +1,5 @@
 from enum import Enum
 
-from neo4japp.constants import ANNOTATION_STYLES_DICT
-
 
 # lmdb database names
 ANATOMY_MESH_LMDB = 'anatomy_mesh'
@@ -11,7 +9,8 @@ COMPOUNDS_BIOCYC_LMDB = 'compounds_biocyc'
 DISEASES_MESH_LMDB = 'diseases_mesh'
 FOODS_MESH_LMDB = 'foods_mesh'
 GENES_NCBI_LMDB = 'genes_ncbi'
-PHENOTYPES_MESH_LMDB = 'phenotypes_mesh'
+PHENOMENAS_MESH_LMDB = 'phenomenas_mesh'
+PHENOTYPES_CUSTOM_LMDB = 'phenotypes_custom'
 PROTEINS_UNIPROT_LMDB = 'proteins_uniprot'
 SPECIES_NCBI_LMDB = 'species_ncbi'
 
@@ -93,6 +92,7 @@ class EntityType(Enum):
     DISEASE = 'Disease'
     FOOD = 'Food'
     GENE = 'Gene'
+    PHENOMENA = 'Phenomena'
     PHENOTYPE = 'Phenotype'
     PROTEIN = 'Protein'
     SPECIES = 'Species'
@@ -104,10 +104,11 @@ class EntityType(Enum):
 
 ENTITY_TYPE_PRECEDENCE = {
     # larger value takes precedence
-    EntityType.SPECIES.value: 11,
-    EntityType.GENE.value: 10,
-    EntityType.PROTEIN.value: 9,
-    EntityType.PHENOTYPE.value: 8,
+    EntityType.SPECIES.value: 12,
+    EntityType.GENE.value: 11,
+    EntityType.PROTEIN.value: 10,
+    EntityType.PHENOTYPE.value: 9,
+    EntityType.PHENOMENA.value: 8,
     EntityType.CHEMICAL.value: 7,
     EntityType.COMPOUND.value: 6,
     EntityType.DISEASE.value: 5,
@@ -126,22 +127,6 @@ class OrganismCategory(Enum):
     UNCATEGORIZED = 'Uncategorized'
 
 
-class EntityColor(Enum):
-    ANATOMY = ANNOTATION_STYLES_DICT['anatomy']['color']
-    CHEMICAL = ANNOTATION_STYLES_DICT['chemical']['color']
-    COMPOUND = ANNOTATION_STYLES_DICT['compound']['color']
-    DISEASE = ANNOTATION_STYLES_DICT['disease']['color']
-    FOOD = ANNOTATION_STYLES_DICT['food']['color']
-    GENE = ANNOTATION_STYLES_DICT['gene']['color']
-    PHENOTYPE = ANNOTATION_STYLES_DICT['phenotype']['color']
-    PROTEIN = ANNOTATION_STYLES_DICT['protein']['color']
-    SPECIES = ANNOTATION_STYLES_DICT['species']['color']
-
-    # non LMDB entity types
-    COMPANY = ANNOTATION_STYLES_DICT['company']['color']
-    ENTITY = ANNOTATION_STYLES_DICT['entity']['color']
-
-
 class EntityIdStr(Enum):
     ANATOMY = 'anatomy_id'
     CHEMICAL = 'chemical_id'
@@ -149,6 +134,7 @@ class EntityIdStr(Enum):
     DISEASE = 'disease_id'
     FOOD = 'food_id'
     GENE = 'gene_id'
+    PHENOMENA = 'phenomena_id'
     PHENOTYPE = 'phenotype_id'
     PROTEIN = 'protein_id'
     SPECIES = 'tax_id'

@@ -73,6 +73,7 @@ describe('VisualizationComponent', () => {
             data: {},
             subLabels: ['Mock Node'],
             displayName: 'Mock Node 1',
+            domainLabels: [],
             entityUrl: null,
         };
         mockGraphRelationship = {
@@ -178,7 +179,7 @@ describe('VisualizationComponent', () => {
             label: mockGraphRelationship.data.description,
             arrows: 'to',
             color: {
-                color: '#3797DB',
+                color: '#0c8caa',
             }
         });
     });

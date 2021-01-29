@@ -2,6 +2,8 @@ import { Component, Input } from '@angular/core';
 
 import { DataSet } from 'vis-network';
 
+import { isNullOrUndefined } from 'util';
+
 import { Neo4jGraphConfig } from 'app/interfaces';
 
 import { GraphData } from '../containers/shortest-path.component';
@@ -27,6 +29,9 @@ export class RouteDisplayComponent {
 
     // Update sankey data
     this.generateSankeyData(graphData.nodes, graphData.edges);
+
+    // Update legend
+    this.setupLegend(graphData.nodes);
   }
 
   currentDisplay: string;
@@ -37,9 +42,12 @@ export class RouteDisplayComponent {
   sankeyConfig: any;
   sankeyData: any;
 
+  legend: Map<string, string[]>;
+
   constructor() {
     this.initVisJsSettings();
     this.initPlotlySankeySettings();
+    this.legend = new Map<string, string[]>();
   }
 
   initVisJsSettings() {
@@ -47,32 +55,35 @@ export class RouteDisplayComponent {
     this.networkConfig = {
       interaction: {
         hover: true,
-        navigationButtons: true,
         multiselect: true,
         selectConnectedEdges: false,
       },
       physics: {
-        enabled: false,
-        barnesHut: {
-          avoidOverlap: 0.2,
-          centralGravity: 0.1,
-          damping: 0.9,
-          gravitationalConstant: -10000,
-          springLength: 250,
-        },
+        enabled: true,
+        solver: 'barnesHut',
       },
       edges: {
         font: {
           size: 12,
         },
+        length: 250,
         widthConstraint: {
           maximum: 90,
         },
       },
       nodes: {
-        size: 25,
+        scaling: {
+          min: 25,
+          max: 50,
+          label: {
+            enabled: true,
+            min: 12,
+            max: 72,
+            maxVisible: 72,
+            drawThreshold: 5,
+          },
+        },
         shape: 'box',
-        // TODO: Investigate the 'scaling' property for dynamic resizing of 'box' shape nodes
       },
     };
 
@@ -162,4 +173,20 @@ export class RouteDisplayComponent {
       }
     };
   }
+
+  /**
+   * Given a list of input nodes, generates a Map object representing a node legend. Keys are the label of the nodes, and values are a list
+   * of colors representing the border and background of the node.
+   * @param nodes list of node objects
+   */
+  setupLegend(nodes: any) {
+    nodes.forEach((node) => {
+      if (!isNullOrUndefined(node.databaseLabel)) {
+        if (!this.legend.has(node.databaseLabel)) {
+          this.legend.set(node.databaseLabel, [node.color.border, node.color.background]);
+        }
+      }
+    });
+  }
+
 }

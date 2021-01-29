@@ -1,6 +1,5 @@
-import { Component, EventEmitter, HostBinding, Input, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { NgbDropdown } from '@ng-bootstrap/ng-bootstrap';
-import { ENTITY_TYPES } from '../../database';
 
 // Copy instead based on: https://github.com/ng-bootstrap/ng-bootstrap/issues/2632
 // import { PlacementArray } from '@ng-bootstrap/ng-bootstrap/util/positioning';
@@ -24,7 +23,7 @@ export class SelectComponent<T = any> {
   @Output() touch = new EventEmitter<any>();
   @Output() valuesChange = new EventEmitter<T[]>();
   @Input() placement: PlacementArray = 'bottom-left bottom-right top-left top-right';
-  @Input() emptyLabel = 'None';
+  @Input() emptyLabel = 'All';
   @Input() allLabel = 'All';
   @Input() choiceLabel = choice => choice;
 

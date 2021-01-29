@@ -15,41 +15,17 @@ export class GraphSearchService extends AbstractService {
     super(auth, http);
   }
 
-  // NOTE: Commenting out as these are unused...do we need these?
-  // fullTextSearch(query: string, page: number = 1, limit: number = 10) {
-  //   return this.http.post<{ result: FTSResult }>(
-  //     `${this.searchApi}/search`,
-  //     {query, page, limit},
-  //     {...this.getHttpOptions(true)}
-  //   ).pipe(map(resp => resp.result));
-  // }
-
-  // simpleFullTextSearch(query: string, page: number = 1, limit: number = 10, filter: string = 'labels(node)') {
-  //   return this.http.post<{ result: FTSResult }>(
-  //     `${this.searchApi}/simple-search`,
-  //     {query, page, filter, limit},
-  //     {...this.getHttpOptions(true)}
-  //   ).pipe(map(resp => resp.result));
-  // }
-
-  visualizerSearchTemp(
+  visualizerSearch(
       query: string,
       organism: string = '',
       page: number = 1,
       limit: number = 10,
-      filter: string = 'labels(node)'
+      domains: string[],
+      entities: string[],
   ) {
     return this.http.post<{ result: FTSResult }>(
-      `${this.searchApi}/viz-search-temp`,
-      {query, organism, page, filter, limit},
-      {...this.getHttpOptions(true)}
-    ).pipe(map(resp => resp.result));
-  }
-
-  getGenesFilteredByOrganism(query: string, organismId: string, filters: string) {
-    return this.http.post<{ result: FTSResult }>(
-      `${this.searchApi}/genes_filtered_by_organism_and_others`,
-      {query, organismId, filters},
+      `${this.searchApi}/viz-search`,
+      {query, organism, page, domains, entities, limit},
       {...this.getHttpOptions(true)}
     ).pipe(map(resp => resp.result));
   }

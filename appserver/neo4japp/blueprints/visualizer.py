@@ -1,6 +1,7 @@
 import attr
 
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
+from flask_apispec import use_kwargs
 
 from typing import List
 
@@ -13,6 +14,10 @@ from neo4japp.data_transfer_objects.visualization import (
     GetSnippetsForEdgeRequest,
     GetSnippetsForClusterRequest,
     ReferenceTableDataRequest,
+)
+from neo4japp.request_schemas.visualizer import (
+    GetSnippetsForNodePairRequest,
+    AssociatedTypeSnippetCountRequest,
 )
 from neo4japp.exceptions import (
     InvalidArgumentsException,
@@ -120,3 +125,37 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
 @jsonify_with_class()
 def get_annotation_legend():
     return SuccessResponse(result=ANNOTATION_STYLES_DICT, status_code=200)
+
+
+@bp.route('/get-associated-type-snippet-count', methods=['POST'])
+@auth.login_required
+@use_kwargs(AssociatedTypeSnippetCountRequest)
+def get_associated_type_snippet_count(source_node, associated_nodes, label):
+    visualizer = get_visualizer_service()
+
+    associated_types_result = visualizer.get_associated_type_snippet_count(
+        source_node,
+        associated_nodes,
+        label,
+    )
+    return jsonify({
+        'result': associated_types_result.to_dict(),
+    })
+
+
+@bp.route('/get-snippets-for-node-pair', methods=['POST'])
+@auth.login_required
+@use_kwargs(GetSnippetsForNodePairRequest)
+def get_snippets_for_node_pair(from_id, to_id, page, limit):
+    visualizer = get_visualizer_service()
+
+    node_pair_snippet_result = visualizer.get_snippets_for_node_pair(
+        from_id,
+        to_id,
+        page,
+        limit
+    )
+
+    return jsonify({
+        'result': node_pair_snippet_result.to_dict()
+    })

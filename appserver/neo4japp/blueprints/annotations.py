@@ -122,23 +122,31 @@ def get_all_annotations_from_project(project_name):
     combined_annotations = annotation_service.get_combined_annotations_in_project(project.id)
     distinct_annotations = {}
     for annotation in combined_annotations:
+        if annotation.get('keyword', None) is not None:
+            text = annotation['keyword'].strip()
+        else:
+            text = annotation['meta']['allText'].strip()
         annotation_data = (
             annotation['meta']['id'],
             annotation['meta']['type'],
-            annotation['meta']['allText'],
+            text,
+            annotation['primaryName'].strip(),
         )
         if distinct_annotations.get(annotation_data, None) is not None:
             distinct_annotations[annotation_data] += 1
         else:
             distinct_annotations[annotation_data] = 1
-    sorted_distintct_annotations = sorted(
+    sorted_distinct_annotations = sorted(
         distinct_annotations,
         key=lambda annotation: distinct_annotations[annotation],
         reverse=True,
     )
-    result = 'entity_id\ttype\ttext\tcount\n'
-    for annotation_data in sorted_distintct_annotations:
-        result += f"{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t{distinct_annotations[annotation_data]}\n"  # noqa
+
+    result = 'entity_id\ttype\ttext\tprimary_name\tcount\n'
+    for annotation_data in sorted_distinct_annotations:
+        result += f'{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t' + \
+                  f'{annotation_data[3]}\t{distinct_annotations[annotation_data]}\n'
+
     response = make_response(result)
     response.headers['Content-Type'] = 'text/tsv'
     yield response
@@ -472,10 +480,15 @@ def get_all_annotations_from_file(project_name, file_id):
 
     distinct_annotations = {}
     for annotation in combined_annotations:
+        if annotation.get('keyword', None) is not None:
+            text = annotation['keyword'].strip()
+        else:
+            text = annotation['meta']['allText'].strip()
         annotation_data = (
             annotation['meta']['id'],
             annotation['meta']['type'],
-            annotation['meta']['allText'],
+            text,
+            annotation['primaryName'].strip(),
         )
 
         if distinct_annotations.get(annotation_data, None) is not None:
@@ -489,9 +502,10 @@ def get_all_annotations_from_file(project_name, file_id):
         reverse=True
     )
 
-    result = 'entity_id\ttype\ttext\tcount\n'
+    result = 'entity_id\ttype\ttext\tprimary_name\tcount\n'
     for annotation_data in sorted_distinct_annotations:
-        result += f"{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t{distinct_annotations[annotation_data]}\n"  # noqa
+        result += f'{annotation_data[0]}\t{annotation_data[1]}\t{annotation_data[2]}\t' + \
+                  f'{annotation_data[3]}\t{distinct_annotations[annotation_data]}\n'
 
     response = make_response(result)
     response.headers['Content-Type'] = 'text/tsv'

@@ -3,6 +3,8 @@ export interface AnnotationFilterEntity {
   type: string;
   color: string;
   text: string;
+  keyword: string;
+  primaryName: string;
   frequency: number;
 }
 
