@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { ErrorHandler, NgModule } from '@angular/core';
 
 import { RootStoreModule } from 'app/root-store';
 
@@ -28,6 +28,7 @@ import { KgImportModule } from './kg-import/kg-import.module';
 import { AppVersionDialogComponent } from './app-version-dialog.component';
 import { FileNavigatorModule } from './file-navigator/file-navigator.module';
 import { ShortestPathModule } from './shortest-path/shortest-path.module';
+import { GlobalErrorHandler } from './global-error-handler';
 
 @NgModule({
   declarations: [
@@ -66,6 +67,10 @@ import { ShortestPathModule } from './shortest-path/shortest-path.module';
     Title,
     WorkspaceManager,
     UnloadConfirmationGuard,
+    {
+      provide: ErrorHandler,
+      useClass: GlobalErrorHandler,
+    }
   ],
   exports: [],
   bootstrap: [AppComponent]

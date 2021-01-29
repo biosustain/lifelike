@@ -181,7 +181,7 @@ export class NodeFormComponent implements AfterViewInit {
    * Allow user to navigate to a link in a new tab
    */
   goToLink(hyperlink) {
-    openPotentialInternalLink(this.workspaceManager, hyperlink);
+    openPotentialInternalLink(this.workspaceManager, hyperlink, true);
   }
 
   /**
@@ -222,5 +222,42 @@ export class NodeFormComponent implements AfterViewInit {
       element.focus();
       element.select();
     }
+  }
+
+  searchMapNodeInVisualizer(node) {
+    // TODO: This is a temp fix to make searching compoounds/species easier. Sometime in the future it's expected that these types will be
+    // squashed down into a single type.
+    let entityType = node.label;
+
+    if (entityType === 'compound') {
+      entityType = 'chemical';
+    } else if (entityType === 'species') {
+      entityType = 'taxonomy';
+    }
+
+    this.workspaceManager.navigate(['/search'], {
+      queryParams: {
+        q: node.display_name,
+        page: 1,
+        entities: entityType,
+        domains: '',
+        organism: ''
+      },
+      sideBySide: true,
+      newTab: true,
+    });
+  }
+
+  searchMapNodeInContent(node) {
+    this.workspaceManager.navigate(['/search/content'], {
+      queryParams: {
+        q: node.display_name,
+        types: 'map;pdf',
+        limit: 20,
+        page: 1
+      },
+      sideBySide: true,
+      newTab: true,
+    });
   }
 }

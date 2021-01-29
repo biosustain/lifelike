@@ -1,3 +1,5 @@
+import { annotationTypesMap } from 'app/shared/annotation-styles';
+
 export class EntityType {
   id: string;
 
@@ -8,21 +10,22 @@ export class EntityType {
 }
 
 export const ENTITY_TYPES = [
-  new EntityType('Gene', '#673ab7'),
-  new EntityType('Protein', '#bcbd22'),
-  new EntityType('Disease', '#ff9800'),
-  new EntityType('Species', '#3177b8'),
-  new EntityType('Company', '#d62728'),
-  new EntityType('Mutation', '#5d4037'),
-  new EntityType('Chemical', '#4caf50'),
-  new EntityType('Phenotype', '#edc949'),
-  new EntityType('Pathway', '#e377c2'),
-  new EntityType('Entity', '#7f7f7f'),
-  new EntityType('Compound', '#4caf50'),
-  new EntityType('Food', '#8eff69'),
-  new EntityType('Anatomy', '#0202bd'),
-  new EntityType('Lab Strain', '#f71698'),
-  new EntityType('Lab Sample', '#f71698')
+  new EntityType('Gene', annotationTypesMap.get('gene').color),
+  new EntityType('Protein', annotationTypesMap.get('protein').color),
+  new EntityType('Disease', annotationTypesMap.get('disease').color),
+  new EntityType('Species', annotationTypesMap.get('species').color),
+  new EntityType('Company', annotationTypesMap.get('company').color),
+  new EntityType('Mutation', annotationTypesMap.get('mutation').color),
+  new EntityType('Chemical', annotationTypesMap.get('chemical').color),
+  new EntityType('Phenomena', annotationTypesMap.get('phenomena').color),
+  new EntityType('Phenotype', annotationTypesMap.get('phenotype').color),
+  new EntityType('Pathway', annotationTypesMap.get('pathway').color),
+  new EntityType('Entity', annotationTypesMap.get('entity').color),
+  new EntityType('Compound', annotationTypesMap.get('compound').color),
+  new EntityType('Food', annotationTypesMap.get('food').color),
+  new EntityType('Anatomy', annotationTypesMap.get('anatomy').color),
+  new EntityType('Lab Strain', annotationTypesMap.get('lab strain').color),
+  new EntityType('Lab Sample', annotationTypesMap.get('lab sample').color)
 ];
 
 export const ENTITY_TYPE_MAP = ENTITY_TYPES.reduce((map, item) => {

@@ -1,25 +1,28 @@
 import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
+import { HighlightDisplayLimitChange } from 'app/file-browser/components/file-info.component';
+import { FileViewComponent } from 'app/file-browser/components/file-view.component';
 import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
-import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
+import { RankedItem } from 'app/shared/schemas/common';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CollectionModal } from 'app/shared/utils/collection-modal';
+import { FindOptions } from 'app/shared/utils/find';
 import { deserializePaginatedParams, getChoicesFromQuery, serializePaginatedParams } from 'app/shared/utils/params';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
-import { ContentSearchOptions, TYPES, TYPES_MAP } from '../content-search';
+import { ContentSearchOptions, TYPES_MAP } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
-import { HighlightDisplayLimitChange } from '../../file-browser/components/file-info.component';
-import { escapeRegExp } from 'lodash';
-import { FileViewComponent } from '../../file-browser/components/file-view.component';
-import { RankedItem } from '../../shared/schemas/common';
 
 @Component({
   selector: 'app-content-search',
   templateUrl: './content-search.component.html',
+  styleUrls: ['./content-search.component.scss']
 })
 export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchOptions,
   RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
@@ -31,11 +34,13 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     multipleSelection: false,
   });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
+  highlightOptions: FindOptions = {keepSearchSpecialChars: true};
 
   constructor(protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly contentSearchService: ContentSearchService,
-              protected readonly zone: NgZone) {
+              protected readonly zone: NgZone,
+              protected readonly messageDialog: MessageDialog) {
     super(route, workspaceManager);
   }
 
@@ -59,7 +64,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       limit: this.defaultLimit,
       page: 1,
       sort: '+name',
-      types: [...TYPES],
+      types: [],
       q: '',
     };
   }
@@ -68,7 +73,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     return {
       ...deserializePaginatedParams(params, this.defaultLimit),
       q: params.hasOwnProperty('q') ? params.q : '',
-      types: params.hasOwnProperty('types') ? getChoicesFromQuery(params, 'types', TYPES_MAP) : [...TYPES],
+      types: params.hasOwnProperty('types') ? getChoicesFromQuery(params, 'types', TYPES_MAP) : [],
     };
   }
 
@@ -141,5 +146,15 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
         });
       }
     }
+  }
+
+  openAdvancedSearchOptions() {
+    this.messageDialog.display({
+      title: 'Advanced Search Options',
+      message: '- Exact phrase: "this exact phrase"\n' +
+      '- Zero or more wildcard character: ba*na\n' +
+      '- One or more wildcard character: ba?ana',
+      type: MessageType.Info,
+    });
   }
 }

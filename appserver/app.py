@@ -13,6 +13,7 @@ from sqlalchemy.sql.expression import text
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import db, get_account_service, get_elastic_service
 from neo4japp.factory import create_app
+from neo4japp.lmdb_manager import LMDBManager, GCPStorageProvider
 from neo4japp.models import (
     AppUser,
     OrganismGeneMatch,
@@ -702,67 +703,10 @@ def global2gcp(bucket_name, users_filter):
     app.logger.info(f'Finish loading files to bucket: {bucket_name}')
 
 
-@app.cli.command('fix-projects')
-def fix_project_acl():
-    # TODO: Deprecate me after production release
-    # Used for a staging fix
-    from neo4japp.models import (
-        AppRole,
-        AccessControlPolicy,
-        AccessActionType,
-        AccessRuleType,
-        Projects,
-    )
-
-    # Each project should have 6 ACP
-    # 2 ACP (READ + WRITE) x 3 Roles (read, write, admin) = 6 combinations
-    q = db.session.query(
-        AccessControlPolicy.asset_id,
-        func.count(AccessControlPolicy.action),
-    ).filter(
-        AccessControlPolicy.asset_type == Projects.__tablename__
-    ).group_by(
-        AccessControlPolicy.asset_id,
-    ).having(
-        func.count(AccessControlPolicy.asset_id) == 6
-    )
-
-    project_ids = db.session.query(Projects).all()
-    project_ids = [p.id for p in project_ids]
-
-    # Projects with correct ACP settings
-    acp_projects = [i for i, _ in q.all()]
-
-    # Projects that do not have the correct ACP settings
-    projs_to_fix = set(project_ids) - set(acp_projects)
-
-    project_admin = db.session.query(AppRole).filter_by(name='project-admin').one()
-    project_read = db.session.query(AppRole).filter_by(name='project-read').one()
-    project_write = db.session.query(AppRole).filter_by(name='project-write').one()
-
-    acp_rules = [
-        (project_admin.id, AccessActionType.READ, AccessRuleType.ALLOW),
-        (project_admin.id, AccessActionType.WRITE, AccessRuleType.ALLOW),
-        (project_read.id, AccessActionType.READ, AccessRuleType.ALLOW),
-        (project_read.id, AccessActionType.WRITE, AccessRuleType.DENY),
-        (project_write.id, AccessActionType.READ, AccessRuleType.ALLOW),
-        (project_write.id, AccessActionType.WRITE, AccessRuleType.ALLOW),
-    ]
-
-    try:
-        for pid in projs_to_fix:
-            for principal_id, action, rule in acp_rules:
-                db.session.execute(AccessControlPolicy.__table__.insert().values(
-                    action=action,
-                    asset_type=Projects.__tablename__,
-                    asset_id=pid,
-                    principal_type=AppRole.__tablename__,
-                    principal_id=principal_id,
-                    rule_type=rule,
-                ))
-        db.session.commit()
-    except Exception as ex:
-        db.session.rollback()
-        db.session.close()
-        print('error: ', ex)
-    print('Completed ACP fix.')
+@app.cli.command('load-lmdb')
+def load_lmdb():
+    """ Downloads LMDB files from Cloud to Local for application """
+    manager = LMDBManager(GCPStorageProvider(), 'lmdb_database')
+    lmdb_dir_path = os.path.join(app.root_path, 'services/annotations/lmdb')
+    manager.download_all(lmdb_dir_path)
+    manager.update_all_dates()

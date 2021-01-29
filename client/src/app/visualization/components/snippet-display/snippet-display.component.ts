@@ -9,6 +9,7 @@ import {
     NewClusterSnippetsPageRequest,
     NewEdgeSnippetsPageRequest,
     SidenavSnippetData,
+    NewNodePairSnippetsPageRequest,
 } from 'app/interfaces';
 import { SNIPPET_PAGE_LIMIT, SNIPPET_RESULT_LIMIT } from 'app/shared/constants';
 
@@ -18,7 +19,11 @@ import { SNIPPET_PAGE_LIMIT, SNIPPET_RESULT_LIMIT } from 'app/shared/constants';
     styleUrls: ['./snippet-display.component.scss']
 })
 export class SnippetDisplayComponent implements OnDestroy {
-    @Output() requestNewPageEmitter: EventEmitter<NewClusterSnippetsPageRequest | NewEdgeSnippetsPageRequest>;
+    @Output() requestNewPageEmitter: EventEmitter<
+      NewClusterSnippetsPageRequest |
+      NewEdgeSnippetsPageRequest |
+      NewNodePairSnippetsPageRequest
+    >;
     @Input() set isNewEntity(isNewEntity: boolean) {
         // An update to isNewEntity indicates that new data was requested -- either for a new entity
         // or for the first time for an existing one -- so set dataLoaded to false until snippetData is updated.
@@ -143,6 +148,6 @@ export class SnippetDisplayComponent implements OnDestroy {
             queryData: this.queryData,
             page: this.page,
             limit: this.pageLimit,
-        } as NewClusterSnippetsPageRequest | NewEdgeSnippetsPageRequest);
+        } as NewClusterSnippetsPageRequest | NewEdgeSnippetsPageRequest | NewNodePairSnippetsPageRequest);
     }
 }

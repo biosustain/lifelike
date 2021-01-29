@@ -82,7 +82,6 @@ export class AnnotationEditDialogComponent extends CommonFormDialogComponent {
         idHyperlink: idHyperlink || '',
         idType: idType || '',
         type: this.form.value.entityType,
-        color: ENTITY_TYPE_MAP[this.form.value.entityType].color,
         links,
         isCustom: true,
         allText: text,

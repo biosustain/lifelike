@@ -43,7 +43,6 @@ def create_mock_entity_annotations(data: List[Tuple[str, str, int, int, str]]):
         rects=[[1, 2]],
         meta=Annotation.Meta(
             type=kwtype,
-            color='',
             id='',
             id_type='',
             id_hyperlink='',
@@ -66,7 +65,6 @@ def create_mock_gene_annotations(data: List[Tuple[str, str, int, int, str]]):
         rects=[[1, 2]],
         meta=GeneAnnotation.GeneMeta(
             type=EntityType.GENE.value,
-            color='',
             id='',
             id_type='',
             id_hyperlink='',
@@ -324,7 +322,6 @@ def test_local_inclusion_organism_gene_crossmatch(
         'meta': {
             'id': '9606',
             'type': 'Species',
-            'color': '#0277bd',
             'links': {
                 'ncbi': 'https://www.ncbi.nlm.nih.gov/gene/?query=hooman',
                 'mesh': 'https://www.ncbi.nlm.nih.gov/mesh/?term=hooman',
@@ -1158,6 +1155,40 @@ def test_global_disease_inclusion_annotation(
     assert annotations[0].meta.id == 'MESH:Ncbi:Fake'
 
 
+def test_global_phenomena_inclusion_annotation(
+    default_lmdb_setup,
+    mock_global_phenomena_inclusion,
+    get_annotation_service,
+    get_entity_service
+):
+    annotation_service = get_annotation_service
+    pdf_parser = get_annotation_pdf_parser()
+    entity_service = get_entity_service
+
+    pdf = path.join(
+        directory,
+        'pdf_samples/annotations_test/test_global_phenomena_inclusion_annotation.pdf')  # noqa
+
+    with open(pdf, 'rb') as f:
+        parsed = pdf_parser.parse_pdf(pdf=f)
+        tokens = entity_service.extract_tokens(parsed=parsed)
+
+        lookup_entities(entity_service=entity_service, tokens_list=tokens)
+        annotations = annotation_service.create_rules_based_annotations(
+            tokens=tokens,
+            custom_annotations=[],
+            excluded_annotations=[],
+            entity_results=entity_service.get_entity_match_results(),
+            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+            specified_organism=SpecifiedOrganismStrain(
+                    synonym='', organism_id='', category='')
+        )
+
+    assert len(annotations) == 1
+    assert annotations[0].keyword == 'fake-phenomena'
+    assert annotations[0].meta.id == 'MESH:Fake'
+
+
 def test_global_phenotype_inclusion_annotation(
     default_lmdb_setup,
     mock_global_phenotype_inclusion,
@@ -1189,7 +1220,7 @@ def test_global_phenotype_inclusion_annotation(
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'phenotype-(12345)'
-    assert annotations[0].meta.id == 'MESH:Ncbi:Fake'
+    assert annotations[0].meta.id == 'CUSTOM:Fake'
 
 
 def test_global_protein_inclusion_annotation(

@@ -58,6 +58,7 @@ import { VisJsNetworkComponent } from './components/vis-js-network/vis-js-networ
 import { PlotlySankeyDiagramComponent } from './components/plotly-sankey-diagram/plotly-sankey-diagram.component';
 import { SearchControlComponent } from './components/search-control.component';
 import { ApiService } from './services/api.service';
+import { ResultControlComponent } from './components/result-control.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -96,6 +97,7 @@ const components = [
   HighlightTextComponent,
   TermHighlightComponent,
   SearchControlComponent,
+  ResultControlComponent,
 ];
 
 @NgModule({

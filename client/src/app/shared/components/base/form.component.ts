@@ -1,7 +1,8 @@
+import { EventEmitter } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
+
 import { MessageType } from '../../../interfaces/message-dialog.interface';
 import { MessageDialog } from '../../services/message-dialog.service';
-import { EventEmitter, Input } from '@angular/core';
 
 export abstract class FormComponent<O> {
   abstract form: AbstractControl;

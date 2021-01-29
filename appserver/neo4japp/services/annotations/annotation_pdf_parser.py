@@ -12,6 +12,7 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 
+from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.data_transfer_objects import (
     PDFChar,
     PDFMeta,
@@ -19,7 +20,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     PDFParsedContent,
     PDFTokensList
 )
-from neo4japp.exceptions import AnnotationError
+from neo4japp.util import clean_char, normalize_str
 
 from .constants import (
     COMMON_WORDS,
@@ -30,7 +31,6 @@ from .constants import (
     PDF_NEW_LINE_THRESHOLD,
     SPACE_COORDINATE_FLOAT
 )
-from .util import clean_char, normalize_str
 
 
 class AnnotationPDFParser:

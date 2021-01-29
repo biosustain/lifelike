@@ -10,17 +10,41 @@
         [ngStyle]="{
           'border': 'thin solid',
           'border-radius': '10px',
-          'border-color': legend.get(node.node.label),
-          'color': legend.get(node.node.label),
+          'border-color': legend.get(normalizedNodeLabel),
+          'color': legend.get(normalizedNodeLabel),
           'margin-left': '10px',
           'padding': '0 5px'
         }"
-      >{{ node.node.label }} </span>
+      >{{ node.node.label }}</span>
+      <span *ngFor="let domain of node.node.domainLabels"
+            [ngStyle]="{
+              'border': 'thin solid',
+              'border-radius': '10px',
+              'border-color': '#0c8caa',
+              'color': '#0c8caa',
+              'margin-left': '10px',
+              'padding': '0 5px'
+            }"
+      >{{ domain.slice(3) }}</span>
     </h5>
   </div>
 
   <div class="search-results-item-body">
     <div [ngSwitch]="node.node.label">
+      <div *ngSwitchCase="'BiologicalProcess'">
+        <span>ID:
+          <a target="_blank"
+             href="http://amigo.geneontology.org/amigo/term/{{node.node.data.id}}">{{node.node.data.id}}</a>
+          <i class="link-icon fa fa-external-link"></i>
+        </span>
+      </div>
+      <div *ngSwitchCase="'CellularComponent'">
+        <span>ID:
+          <a target="_blank"
+             href="http://amigo.geneontology.org/amigo/term/{{node.node.data.id}}">{{node.node.data.id}}</a>
+          <i class="link-icon fa fa-external-link"></i>
+        </span>
+      </div>
       <div *ngSwitchCase="'Chemical'">
         <div [ngSwitch]="node.node.data.id.split(':')[0]">
           <span *ngSwitchCase="'CHEBI'">ID: <a target="_blank"
@@ -51,6 +75,29 @@
           </span>
         <br>
         <span>Taxonomy: {{ node.taxonomyName }}</span>
+      </div>
+      <div *ngSwitchCase="'MolecularFunction'">
+        <span>ID:
+          <a target="_blank"
+             href="http://amigo.geneontology.org/amigo/term/{{node.node.data.id}}">{{node.node.data.id}}</a>
+          <i class="link-icon fa fa-external-link"></i>
+        </span>
+      </div>
+      <div *ngSwitchCase="'Protein'">
+        <div *ngIf="node.node.data.uniprotId">
+          <span>ID:
+            <a target="_blank"
+               href="https://uniprot.org/uniprot/{{node.node.data.id}}">{{node.node.data.id}}</a>
+            <i class="link-icon fa fa-external-link"></i>
+          </span>
+        </div>
+      </div>
+      <div *ngSwitchCase="'Taxonomy'">
+        <span>ID:
+          <a target="_blank"
+             href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{node.node.data.id}}">{{node.node.data.id}}</a>
+          <i class="link-icon fa fa-external-link"></i>
+        </span>
       </div>
     </div>
   </div>
