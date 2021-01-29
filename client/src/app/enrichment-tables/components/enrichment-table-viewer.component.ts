@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { BehaviorSubject, forkJoin, from, of, Subscription } from 'rxjs';
-import { catchError, finalize, flatMap, map, mergeMap } from 'rxjs/operators';
+import { catchError, finalize, flatMap, map, mergeMap, switchMap } from 'rxjs/operators';
 
 import {
   TableCell,
@@ -33,6 +33,7 @@ import { ENRICHMENT_TABLE_MIMETYPE } from '../providers/enrichment-table.type-pr
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 
+import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -513,8 +514,57 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           newEntries[i].unshift({text: synonyms[i]});
         }
         newEntries = newEntries.concat(this.processUnmatchedNodes(synonyms, currentGenes));
-        this.tableEntries = this.tableEntries.concat(newEntries);
-        this.loadingData = false;
+
+        const annotatedEntries: TableCell[][] = [];
+
+        // dirty way for now...
+        const annotateEnrichments = new Promise((resolve, reject) => {
+          newEntries.forEach(row => {
+            const cellData = {};
+            const annotationRequests = [];
+            row.forEach((cell, idx) => {
+              cellData[idx] = cell;
+              annotationRequests.push(
+                this.worksheetViewerService.annotateEnrichment(
+                  {
+                    texts: [cell.text],
+                    organism: {
+                      organism_name: this.organism,
+                      synonym: this.organism,
+                      tax_id: this.taxID
+                    }
+                  } as TextAnnotationGenerationRequest)
+              );
+            });
+
+            const colEntries: TableCell[] = [];
+            forkJoin(annotationRequests).pipe(
+              switchMap(results => results)
+            ).subscribe((annotatedEnrichments: string[]) => {
+              annotatedEnrichments.forEach((snippet, idx) => {
+                const entry: TableCell = {text: snippet};
+                if (cellData[idx].singleLink) {
+                  entry.singleLink = cellData[idx].singleLink;
+                }
+
+                if (cellData[idx].multiLink) {
+                  entry.multiLink = cellData[idx].multiLink;
+                }
+
+                if (cellData[idx].highlight) {
+                  entry.highlight = cellData[idx].highlight;
+                }
+                colEntries.push(entry);
+              });
+            });
+            annotatedEntries.push(colEntries);
+          });
+          resolve(annotatedEntries);
+        });
+        annotateEnrichments.then((entries: TableCell[][]) => {
+          this.tableEntries = this.tableEntries.concat(entries);
+          this.loadingData = false;
+        });
       });
   }
 
