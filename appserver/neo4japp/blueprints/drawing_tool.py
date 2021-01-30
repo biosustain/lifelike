@@ -584,26 +584,34 @@ def get_project_image(projects_name: str, hash_id: str, format: str):
 @bp.route('/map/<string:hash_id>/backup', methods=['GET'])
 @auth.login_required
 def project_backup_get(hash_id):
-    backup = ProjectBackup.query.filter_by(
-        hash_id=hash_id,
-        user_id=g.current_user.id,
-    ).one_or_none()
-    if backup is None:
+
+    try:
+        map = get_map(hash_id, g.current_user, AccessActionType.WRITE)
+    except (NotAuthorizedException, RecordNotFoundException):
         raise RecordNotFoundException('No backup found.')
-    current_app.logger.info(
-        'User getting a backup',
-        extra=UserEventLog(username=g.current_user.username, event_type='map get backup').to_dict())
-    return {
-        'id': backup.project_id,
-        'label': backup.label,
-        'description': backup.description,
-        'modified_date': backup.modified_date,
-        'graph': backup.graph,
-        'author': backup.author,
-        'public': backup.public,
-        'user_id': backup.user_id,
-        'hash_id': backup.hash_id,
-    }
+    else:
+        backup = ProjectBackup.query.filter_by(
+            hash_id=map.hash_id,
+            user_id=g.current_user.id,
+        ).one_or_none()
+        if backup is None:
+            raise RecordNotFoundException('No backup found.')
+        else:
+            current_app.logger.info(
+                'User getting a backup',
+                extra=UserEventLog(
+                    username=g.current_user.username, event_type='map get backup').to_dict())
+            return {
+                'id': backup.project_id,
+                'label': backup.label,
+                'description': backup.description,
+                'modified_date': backup.modified_date,
+                'graph': backup.graph,
+                'author': backup.author,
+                'public': backup.public,
+                'user_id': g.current_user.id,
+                'hash_id': backup.hash_id,
+            }
 
 
 @bp.route('/map/<string:hash_id_>/backup', methods=['POST'])
@@ -614,68 +622,73 @@ def project_backup_post(hash_id_, **data):
     # hash_id = data.pop('hash_id')
     # hence replacing the URL parameter's value, which incidentally has the same
     # name as one of `data`'s keys
-    project = Project.query.filter_by(
-        hash_id=hash_id_,
-        user_id=g.current_user.id,
-    ).one_or_none()
-
-    # Make sure that the person who's trying to save a backup has access
-    # to the project
-    if project is None:
-        raise NotAuthorizedException('Wrong project id or you do not own the project.')
-
-    graph = data.get("graph", {'nodes': [], 'edges': []})
 
     try:
-        validate_map(graph)
-    except JsonSchemaException as e:
+        map = get_map(hash_id_, g.current_user, AccessActionType.WRITE)
+    except (NotAuthorizedException, RecordNotFoundException):
+        raise RecordNotFoundException('No backup found.')
+    else:
+        graph = data.get("graph", {'nodes': [], 'edges': []})
+
+        try:
+            validate_map(graph)
+        except JsonSchemaException as e:
+            current_app.logger.info(
+                f'Map backup data validation error: {map.dir.project.id}',
+                extra=UserEventLog(
+                    username=g.current_user.username,
+                    event_type='map backup').to_dict())
+
+        old_backup = ProjectBackup.query.filter_by(
+            hash_id=map.hash_id,
+            user_id=g.current_user.id,
+        ).one_or_none()
+
+        if old_backup is not None:
+            db.session.delete(old_backup)
+
+        backup = ProjectBackup()
+        backup.project_id = data["id"]
+        backup.label = data["label"]
+        backup.description = data["description"]
+        backup.modified_date = data["modified_date"]
+        backup.graph = data["graph"]
+        backup.author = data["author"]
+        backup.public = data["public"]
+        backup.user_id = g.current_user.id
+        backup.hash_id = data["hash_id"]
+
+        db.session.add(backup)
+        db.session.commit()
         current_app.logger.info(
-            f'Map backup data validation error: {project.id}',
-            extra=UserEventLog(username=g.current_user.username,
-                               event_type='map backup').to_dict()
-        )
-
-    old_backup = ProjectBackup.query.filter_by(
-        hash_id=hash_id_,
-        user_id=g.current_user.id,
-    ).one_or_none()
-
-    if old_backup is not None:
-        db.session.delete(old_backup)
-
-    backup = ProjectBackup()
-    backup.project_id = data["id"]
-    backup.label = data["label"]
-    backup.description = data["description"]
-    backup.modified_date = data["modified_date"]
-    backup.graph = data["graph"]
-    backup.author = data["author"]
-    backup.public = data["public"]
-    backup.user_id = data["user_id"]
-    backup.hash_id = data["hash_id"]
-
-    db.session.add(backup)
-    db.session.commit()
-    current_app.logger.info(
-        'User added a backup',
-        extra=UserEventLog(username=g.current_user.username, event_type='map add backup').to_dict())
+            'User added a backup',
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='map add backup').to_dict())
     return ''
 
 
 @bp.route('/map/<string:hash_id>/backup', methods=['DELETE'])
 @auth.login_required
 def project_backup_delete(hash_id):
-    backup = ProjectBackup.query.filter_by(
-        hash_id=hash_id,
-        user_id=g.current_user.id,
-    ).one_or_none()
-    if backup is not None:
-        db.session.delete(backup)
-        db.session.commit()
-        current_app.logger.info(
-            'User deleted a backup',
-            extra=UserEventLog(
-                username=g.current_user.username, event_type='map delete backup').to_dict())
+
+    try:
+        map = get_map(hash_id, g.current_user, AccessActionType.WRITE)
+    except (NotAuthorizedException, RecordNotFoundException):
+        raise RecordNotFoundException('No backup found.')
+    else:
+        backup = ProjectBackup.query.filter_by(
+            hash_id=map.hash_id,
+            user_id=g.current_user.id,
+        ).one_or_none()
+        if backup is None:
+            raise RecordNotFoundException('No backup found.')
+        else:
+            db.session.delete(backup)
+            db.session.commit()
+            current_app.logger.info(
+                'User deleted a backup',
+                extra=UserEventLog(
+                    username=g.current_user.username, event_type='map delete backup').to_dict())
     return ''
 
 

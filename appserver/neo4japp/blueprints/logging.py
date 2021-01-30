@@ -32,7 +32,7 @@ def client_logging(args):
         url=args.get('url', 'not specified'),
     )
     current_app.logger.error(
-        args['detail'],
+        args.get('detail', 'No further details'),
         extra={
             **err.to_dict(),
             **{'to_sentry': False}
