@@ -5,7 +5,7 @@ from neo4japp.schemas.base import CamelCaseSchema
 class ClientErrorSchema(CamelCaseSchema):
     title = fields.String()
     message = fields.String()
-    detail = fields.String()
+    detail = fields.String(allow_none=True)
     transaction_id = fields.String()
     url = fields.String()
     label = fields.String()
