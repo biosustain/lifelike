@@ -25,7 +25,7 @@ class PDFBase():
         return attr.asdict(self)
 
 
-@attr.s(frozen=True)
+@attr.s(frozen=False)
 class PDFWord(PDFBase):
     keyword: str = attr.ib()
     normalized_keyword: str = attr.ib()
@@ -41,6 +41,8 @@ class PDFWord(PDFBase):
     coordinates: List[List[float]] = attr.ib(default=attr.Factory(list))
     # used with NLP because it returns the type
     token_type: Optional[str] = attr.ib(default=None)
+    # type is itself, not sure how that works so set to Any for now
+    next: Optional[Any] = attr.ib(default=None)
 
 
 @attr.s(frozen=False)
