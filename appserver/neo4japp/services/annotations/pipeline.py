@@ -150,6 +150,7 @@ multiple steps needed in the annotation pipeline.
 def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
     parsed = []
     pdf_text = ''
+    prev_pdf_word = None
 
     for page in resp['pages']:
         prev_words: List[str] = []
@@ -157,27 +158,29 @@ def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
         for token in page['tokens']:
             # for now ignore any rotated words
             if token['text'] not in punctuation and all([rect['rotation'] == 0 for rect in token['rects']]):  # noqa
-                parsed.append(
-                    PDFWord(
-                        keyword=token['text'],
-                        normalized_keyword=token['text'],  # don't need to normalize yet
-                        page_number=page['pageNo'],
-                        lo_location_offset=token['pgIdx'],
-                        hi_location_offset=token['pgIdx'] if len(token['text']) == 1 else token['pgIdx'] + len(token['text']) - 1,  # noqa
-                        heights=[rect['height'] for rect in token['rects']],
-                        widths=[rect['width'] for rect in token['rects']],
-                        coordinates=[
-                            [
-                                rect['lowerLeftPt']['x'],
-                                rect['lowerLeftPt']['y'],
-                                rect['lowerLeftPt']['x'] + rect['width'],
-                                rect['lowerLeftPt']['y'] + rect['height']
-                            ] for rect in token['rects']
-                        ],
-                        previous_words=' '.join(prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]) if token['possibleAbbrev'] else '',  # noqa
-                        token_type='',
-                    )
+                pdf_word = PDFWord(
+                    keyword=token['text'],
+                    normalized_keyword=token['text'],  # don't need to normalize yet
+                    page_number=page['pageNo'],
+                    lo_location_offset=token['pgIdx'],
+                    hi_location_offset=token['pgIdx'] if len(token['text']) == 1 else token['pgIdx'] + len(token['text']) - 1,  # noqa
+                    heights=[rect['height'] for rect in token['rects']],
+                    widths=[rect['width'] for rect in token['rects']],
+                    coordinates=[
+                        [
+                            rect['lowerLeftPt']['x'],
+                            rect['lowerLeftPt']['y'],
+                            rect['lowerLeftPt']['x'] + rect['width'],
+                            rect['lowerLeftPt']['y'] + rect['height']
+                        ] for rect in token['rects']
+                    ],
+                    previous_words=' '.join(prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]) if token['possibleAbbrev'] else '',  # noqa
+                    token_type=''
                 )
+                if prev_pdf_word:
+                    prev_pdf_word.next = pdf_word
+                parsed.append(pdf_word)
+                prev_pdf_word = pdf_word
                 prev_words.append(token['text'])
                 if len(prev_words) > MAX_ABBREVIATION_WORD_LENGTH:
                     prev_words = prev_words[1:]
