@@ -17,7 +17,6 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
 
   form = new FormGroup({
     q: new FormControl('', [Validators.required, this.whitespaceValidator]),
-    types: new FormControl([]),
   });
 
   constructor(messageDialog: MessageDialog) {
@@ -25,7 +24,22 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
   }
 
   @Input() set params(params: ContentSearchOptions) {
-    super.params = params;
+    super.params = {
+      ...params,
+      q: this.getQueryStringFromParams(params),
+    };
+  }
+
+  getQueryStringFromParams(params: ContentSearchOptions) {
+    const q = [];
+    if (params.hasOwnProperty('q')) {
+      q.push(params.q);
+    }
+
+    if (params.hasOwnProperty('types') && params.types !== []) {
+      params.types.forEach(type => q.push(`type:${type.id}`));
+    }
+    return q.join(' ');
   }
 
   choiceLabel(choice) {

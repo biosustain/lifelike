@@ -16,7 +16,8 @@ export class AdvancedSearchDialogComponent {
     this.form.setValue({
       ...this.form.value,
       q: params.q,
-      types: params.types,
+      // Advanced Params
+      types: params.types ? params.types : [],
     });
   }
 

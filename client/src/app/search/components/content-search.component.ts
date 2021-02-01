@@ -3,6 +3,8 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
+import { isNullOrUndefined } from 'util';
+
 import { HighlightDisplayLimitChange } from 'app/file-browser/components/file-info.component';
 import { FileViewComponent } from 'app/file-browser/components/file-view.component';
 import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
@@ -10,7 +12,7 @@ import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
-import { RankedItem } from 'app/shared/schemas/common';
+import { RankedItem, StandardRequestOptions } from 'app/shared/schemas/common';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CollectionModal } from 'app/shared/utils/collection-modal';
 import { FindOptions } from 'app/shared/utils/find';
@@ -26,7 +28,7 @@ import { AdvancedSearchDialogComponent } from './advanced-search-dialog.componen
   templateUrl: './content-search.component.html',
   styleUrls: ['./content-search.component.scss']
 })
-export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchOptions,
+export class ContentSearchComponent extends PaginatedResultListComponent<StandardRequestOptions,
   RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
   @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
@@ -59,7 +61,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   }
 
   getResults(params: ContentSearchOptions) {
-    return this.contentSearchService.search(params);
+    return this.contentSearchService.search(this.serializeParams(params));
   }
 
   getDefaultParams() {
@@ -67,25 +69,72 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       limit: this.defaultLimit,
       page: 1,
       sort: '+name',
-      types: [],
       q: '',
     };
+  }
+
+  deserializeAdvancedParams(params) {
+    const advancedParams: any = {};
+
+    if (params.hasOwnProperty('types')) {
+      advancedParams.types = getChoicesFromQuery(params, 'types', TYPES_MAP);
+    }
+    return advancedParams;
   }
 
   deserializeParams(params) {
     return {
       ...deserializePaginatedParams(params, this.defaultLimit),
-      q: params.hasOwnProperty('q') ? params.q : '',
-      types: params.hasOwnProperty('types') ? getChoicesFromQuery(params, 'types', TYPES_MAP) : [],
+      ...this.deserializeAdvancedParams(params),
+      q: isNullOrUndefined(params.q) ? '' : params.q,
     };
+  }
+
+  serializeAdvancedParams(params) {
+    const advancedParams: any = {};
+
+    if (params.hasOwnProperty('types')) {
+      advancedParams.types = params.types.map(value => value.id).join(';');
+    }
+    return advancedParams;
   }
 
   serializeParams(params, restartPagination = false) {
     return {
       ...serializePaginatedParams(params, restartPagination),
-      q: params.q,
-      types: params.types.map(value => value.id).join(';'),
+      ...this.serializeAdvancedParams(params),
+      q: isNullOrUndefined(params.q) ? '' : params.q,
     };
+  }
+
+  search(params) {
+    this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {
+      queryParams: {
+        ...this.serializeParams({
+          ...this.getDefaultParams(),
+          // If normal search, only use the 'q' param; Ignore any advanced params we arrived at the page with
+          q: isNullOrUndefined(params.q) ? '' : params.q,
+        }, true),
+        t: new Date().getTime(),
+      },
+    });
+  }
+
+  /**
+   * Special version of search which handles the existence of advanced query params.
+   * @param params object representing the search query options
+   */
+  advancedSearch(params) {
+    this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {
+      queryParams: {
+        ...this.serializeParams({
+          ...this.getDefaultParams(),
+          // If advanced search, use all params
+          ...params,
+        }, true),
+        t: new Date().getTime(),
+      },
+    });
   }
 
   getObjectCommands(object: DirectoryObject) {
@@ -151,16 +200,56 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     }
   }
 
+  /**
+   * Attempts to extract advanced search options from the query string paramter 'q'. If any advanced options are found, they are removed
+   * 'q' and added to the params object.
+   * @param params object representing the url query string params
+   */
+  extractAdvancedParams(params) {
+    const advancedParams: any = {};
+    let q = '';
+
+    if (params.hasOwnProperty('q')) {
+      q = (params.q as string);
+
+      // Remove 'types' from q and add to the types option of the advancedParams
+      const typeMatches = q.match(/\btype:\S*/);
+      let extractedTypes = [];
+      if (!isNullOrUndefined(typeMatches)) {
+        extractedTypes = typeMatches.map(typeVal => typeVal.split(':')[1]);
+      }
+
+      q = q.replace(/\btype:\S*/g, '').trim();
+
+      let givenTypes = [];
+      if (params.hasOwnProperty('types')) {
+        givenTypes = params.types.map(value => value.id);
+      }
+
+      advancedParams.types = getChoicesFromQuery(
+        {types: extractedTypes.concat(givenTypes).join(';')},
+        'types',
+        TYPES_MAP
+      );
+    }
+
+    advancedParams.q = q;
+
+    return advancedParams;
+  }
+
+  /**
+   * Openns the advanced search dialog. Users can add special options to their query using this feature.
+   */
   openAdvancedSearch() {
     const modalRef = this.modalService.open(AdvancedSearchDialogComponent, {
       size: 'md',
     });
-    modalRef.componentInstance.params = this.params;
+    modalRef.componentInstance.params = this.extractAdvancedParams(this.params);
     modalRef.result
       // Advanced search was triggered
       .then((params) => {
-        // TODO: Implement advanced searching
-        // this.search(params);
+        this.advancedSearch(params);
       })
       // Advanced search dialog was dismissed or rejected
       .catch(() => {});

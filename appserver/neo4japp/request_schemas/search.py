@@ -11,9 +11,12 @@ class ContentSearchSchema(ma.Schema):
             error='Search query cannot contain only whitespace characters.'
         )
     )
-    types = ma.String(required=True)
     page = ma.Integer(required=True)
     limit = ma.Integer(required=True, validate=validate.Range(min=0, max=1000))
+
+
+class AdvancedContentSearchSchema(ContentSearchSchema):
+    types = ma.String(default='', required=False)
 
 
 class AnnotateRequestSchema(ma.Schema):

@@ -5,11 +5,10 @@ import { Observable } from 'rxjs';
 
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
+import { RankedItem, ResultList } from 'app/shared/schemas/common';
 import { AbstractService } from 'app/shared/services/abstract-service';
-import { serializePaginatedParams } from 'app/shared/utils/params';
 
-import { AnnotationRequestOptions, AnnotationResponse, ContentSearchOptions } from '../content-search';
-import { RankedItem, ResultList } from '../../shared/schemas/common';
+import { AnnotationRequestOptions, AnnotationResponse } from '../content-search';
 
 @Injectable()
 export class ContentSearchService extends AbstractService {
@@ -28,15 +27,11 @@ export class ContentSearchService extends AbstractService {
     );
   }
 
-  search(params: ContentSearchOptions): Observable<ResultList<RankedItem<DirectoryObject>>> {
+  search(params): Observable<ResultList<RankedItem<DirectoryObject>>> {
     return this.http.get<ResultList<RankedItem<DirectoryObject>>>(
       `${this.SEARCH_BASE_URL}/content`, {
         ...this.getHttpOptions(true),
-        params: {
-          ...serializePaginatedParams(params, false),
-          q: params.q,
-          types: params.types.map(value => value.id).join(';'),
-        } as Record<keyof ContentSearchOptions, string>,
+        params,
       },
     );
   }

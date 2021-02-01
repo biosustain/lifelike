@@ -9,7 +9,7 @@ export const TYPES: readonly SearchType[] = Object.freeze([
 export const TYPES_MAP: Map<string, SearchType> = new Map(Array.from(TYPES.values()).map(value => [value.id, value]));
 
 export interface ContentSearchOptions extends StandardRequestOptions {
-  types: SearchType[];
+  types?: SearchType[];
 }
 
 export interface AnnotationRequestOptions {
