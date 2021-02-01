@@ -3,7 +3,6 @@ import json
 import jwt
 from datetime import datetime, timedelta
 from neo4japp.models import AppUser
-from neo4japp.util import generate_jwt_token
 
 
 def user_factory(uid):
