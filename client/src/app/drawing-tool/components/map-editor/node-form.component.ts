@@ -247,4 +247,17 @@ export class NodeFormComponent implements AfterViewInit {
       newTab: true,
     });
   }
+
+  searchMapNodeInContent(node) {
+    this.workspaceManager.navigate(['/search/content'], {
+      queryParams: {
+        q: node.display_name,
+        types: 'map;pdf',
+        limit: 20,
+        page: 1
+      },
+      sideBySide: true,
+      newTab: true,
+    });
+  }
 }
