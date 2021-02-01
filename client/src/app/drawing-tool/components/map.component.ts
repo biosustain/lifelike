@@ -160,12 +160,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return;
     }
 
-    if (this.highlightTerms != null && this.highlightTerms.length) {
-      this.graphCanvas.highlighting.replace(
-        this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true}),
-      );
-    }
-
     this.emitModuleProperties();
 
     this.subscriptions.add(this.map.contentValue$.pipe(
@@ -175,6 +169,12 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     ).subscribe(graph => {
       this.graphCanvas.setGraph(graph);
       this.graphCanvas.zoomToFit(0);
+
+      if (this.highlightTerms != null && this.highlightTerms.length) {
+        this.graphCanvas.highlighting.replace(
+          this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true}),
+        );
+      }
     }, e => {
       // Data is corrupt
       // TODO: Prevent the user from editing or something so the user doesnt lose data?
