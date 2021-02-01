@@ -741,7 +741,15 @@ export class CanvasGraphView extends GraphView {
     if (!this.touchPosition) {
       const highlighted = this.searchHighlighting.get();
       for (const highlightedEntity of highlighted) {
-        this.drawEntityBackground(ctx, highlightedEntity, 'rgba(254, 234, 0, 0.3)');
+        ctx.beginPath();
+        const bbox = this.getEntityBoundingBox([highlightedEntity], 10);
+        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+        ctx.strokeStyle = 'rgba(255, 0, 0, 255)';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'butt';
+        ctx.globalAlpha = 0.4;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
       }
     }
   }
@@ -756,7 +764,7 @@ export class CanvasGraphView extends GraphView {
         const bbox = this.getEntityBoundingBox([focusEntity], 10);
         ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
         ctx.strokeStyle = 'rgba(255, 0, 0, 255)';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 5;
         ctx.lineCap = 'butt';
         ctx.stroke();
       }
