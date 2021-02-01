@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
-import { AppUser } from 'app/interfaces';
+import { JWTTokenResponse } from 'app/interfaces';
 import { isNullOrUndefined } from 'util';
 
-@Injectable({
-  providedIn: '***ARANGO_USERNAME***'
-})
+@Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class AuthenticationService {
   readonly baseUrl = '/api/auth';
 
@@ -23,14 +21,16 @@ export class AuthenticationService {
    * Authenticate users to get a JWT
    */
   public login(email: string, password: string) {
-    return this.http.post<{user: AppUser, access_jwt: string, refresh_jwt: string}>(
+    return this.http.post<JWTTokenResponse>(
       this.baseUrl + '/login',
       {email, password},
     ).pipe(
-      map((resp: any) => {
-        localStorage.setItem('auth', resp.user);
-        localStorage.setItem('access_jwt', resp.access_jwt);
-        localStorage.setItem('refresh_jwt', resp.refresh_jwt);
+      map((resp) => {
+        localStorage.setItem('auth', resp.user.username);
+        localStorage.setItem('access_jwt', resp.accessToken.token);
+        localStorage.setItem('expires_at', resp.accessToken.exp);
+        // TODO: Move this out of localStorage
+        localStorage.setItem('refresh_jwt', resp.refreshToken.token);
         return resp;
       })
     );
@@ -43,6 +43,7 @@ export class AuthenticationService {
   public logout() {
     localStorage.removeItem('refresh_jwt');
     localStorage.removeItem('access_jwt');
+    localStorage.removeItem('expires_at');
     // See ***ARANGO_USERNAME***-store module where this is set
     localStorage.removeItem('auth');
   }
@@ -52,13 +53,15 @@ export class AuthenticationService {
    */
   public refresh() {
     const jwt = localStorage.getItem('refresh_jwt');
-    return this.http.post<{access_jwt: string, refresh_jwt: string}>(
+    return this.http.post<JWTTokenResponse>(
       this.baseUrl + '/refresh',
       { jwt },
     ).pipe(
-        map((resp: {access_jwt: string, refresh_jwt: string}) => {
-          localStorage.setItem('access_jwt', resp.access_jwt);
-          localStorage.setItem('refresh_jwt', resp.refresh_jwt);
+        map((resp) => {
+          localStorage.setItem('access_jwt', resp.accessToken.token);
+          localStorage.setItem('expires_at', resp.accessToken.exp);
+          // TODO: Remove refresh token from localStorage
+          localStorage.setItem('refresh_jwt', resp.refreshToken.token);
           return resp;
         }),
       );
