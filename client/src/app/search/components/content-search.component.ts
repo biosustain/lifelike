@@ -1,8 +1,9 @@
 import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
-import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
 import { CollectionModel } from 'app/shared/utils/collection-model';
@@ -22,10 +23,14 @@ import { map } from 'rxjs/operators';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { Observable } from 'rxjs';
 import { ContentSearchRequest } from '../schema';
+import { FindOptions } from '../../shared/utils/find';
+import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
 
 @Component({
   selector: 'app-content-search',
   templateUrl: './content-search.component.html',
+  styleUrls: ['./content-search.component.scss']
 })
 export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchOptions,
   RankedItem<FilesystemObject>> implements OnInit, OnDestroy {
@@ -37,11 +42,14 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     multipleSelection: false,
   });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
+  highlightOptions: FindOptions = {keepSearchSpecialChars: true};
 
   constructor(protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly contentSearchService: ContentSearchService,
-              protected readonly zone: NgZone) {
+              protected readonly zone: NgZone,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly messageDialog: MessageDialog) {
     super(route, workspaceManager);
   }
 
@@ -71,6 +79,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     }
 
     return this.contentSearchService.search(request).pipe(
+      this.errorHandler.create({label: 'Content search'}),
       map(result => ({
         query: result.query,
         total: result.collectionSize,
@@ -171,6 +180,16 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   openObject(target: FilesystemObject) {
     this.workspaceManager.navigate(target.getCommands(false), {
       newTab: true,
+    });
+  }
+
+  openAdvancedSearchOptions() {
+    this.messageDialog.display({
+      title: 'Advanced Search Options',
+      message: '- Exact phrase: "this exact phrase"\n' +
+      '- Zero or more wildcard character: ba*na\n' +
+      '- One or more wildcard character: ba?ana',
+      type: MessageType.Info,
     });
   }
 }
