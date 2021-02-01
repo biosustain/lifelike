@@ -41,7 +41,7 @@ export class SearchRecordNodeComponent {
       sub_labels: [],
       data: {
         hyperlinks: [{
-          domain: 'Visualizer',
+          domain: 'Knowledge Graph',
           url: getLink(this.node),
         }],
         references: [{
