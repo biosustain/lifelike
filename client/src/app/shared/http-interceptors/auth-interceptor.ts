@@ -59,6 +59,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
                 }),
                 catchError((err) => {
                     // Refresh token invalid or could not fetch
+                    this.isRefreshingToken = false;
                     this.auth.logout();
                     this.store.dispatch(AuthActions.loginReset());
                     this.store.dispatch(SnackbarActions.displaySnackbar({payload: {
