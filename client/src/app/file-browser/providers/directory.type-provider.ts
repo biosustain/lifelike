@@ -1,7 +1,7 @@
 import {
   AbstractObjectTypeProvider,
   CreateActionOptions,
-  CreateDialogAction,
+  CreateDialogAction, PreviewOptions,
 } from '../services/object-type.service';
 import { FilesystemObject } from '../models/filesystem-object';
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
@@ -27,7 +27,7 @@ export class DirectoryTypeProvider extends AbstractObjectTypeProvider {
     return object.mimeType === DIRECTORY_MIMETYPE;
   }
 
-  createPreviewComponent(object: FilesystemObject) {
+  createPreviewComponent(object: FilesystemObject, options?: PreviewOptions) {
     return this.filesystemService.get(object.hashId).pipe(map(newObject => {
       const factory: ComponentFactory<DirectoryPreviewComponent> =
         this.componentFactoryResolver.resolveComponentFactory(DirectoryPreviewComponent);

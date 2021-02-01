@@ -2,6 +2,7 @@ import {
   AbstractObjectTypeProvider,
   CreateActionOptions,
   CreateDialogAction,
+  PreviewOptions,
 } from '../../file-browser/services/object-type.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
@@ -26,11 +27,12 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
     return object.mimeType === MAP_MIMETYPE;
   }
 
-  createPreviewComponent(object: FilesystemObject) {
+  createPreviewComponent(object: FilesystemObject, options?: PreviewOptions) {
     const factory: ComponentFactory<MapComponent<any>> =
       this.componentFactoryResolver.resolveComponentFactory(MapComponent);
     const componentRef = factory.create(this.injector);
     const instance: MapComponent = componentRef.instance;
+    instance.highlightTerms = options ? options.highlightTerms : null;
     instance.locator = object.hashId;
     return of(componentRef);
   }
