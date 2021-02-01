@@ -20,7 +20,7 @@ from neo4japp.models import (
 )
 from neo4japp.request_schemas.search import (
     AnnotateRequestSchema,
-    ContentSearchSchema,
+    AdvancedContentSearchSchema,
     OrganismSearchSchema,
     VizSearchSchema
 )
@@ -171,20 +171,52 @@ def hydrate_search_results(es_results):
         doc['_db'] = row
 
 
+# Start Search Helpers #
+
+def get_types_from_params(q, advanced_args):
+    # Get document types from either `q` or `types`
+    types = set()
+    if 'types' in advanced_args and advanced_args['types'] != '':
+        types = set(advanced_args['types'].split(';'))
+
+    # Even if `types` is in the advanced args, expect `q` might also contain some types
+    extracted_types = re.findall(r'\btype:\S*', q)
+
+    if len(extracted_types) > 0:
+        q = re.sub(r'\btype:\S*', '', q)
+        for extracted_type in extracted_types:
+            types.add(extracted_type.split(':')[1])
+
+    # If we found any types in the advanced args, or in the query, use them. Otherwise default is
+    # all.
+    types = list(types) if len(types) > 0 else ['map', 'pdf']
+
+    return q, types
+
+# End Search Helpers #
+
 # TODO: Probably should rename this to something else...not sure what though
 @bp.route('/content', methods=['GET'])
 @auth.login_required
-@use_kwargs(ContentSearchSchema)
-def search(q, types, limit, page):
+@use_kwargs(AdvancedContentSearchSchema)
+def search(
+    limit,
+    page,
+    q,
+    **advanced_args
+):
     current_app.logger.info(
         f'Term: {q}',
         extra=UserEventLog(
             username=g.current_user.username, event_type='search contentsearch').to_dict()
     )
-    search_term = q
-    types = types.split(';') if types != '' else ['map', 'pdf']
     offset = (page - 1) * limit
     search_phrases = []
+
+    q, types = get_types_from_params(q, advanced_args)
+
+    # Set the search term once we've parsed 'q' for all advanced options
+    search_term = q
 
     if search_term:
         text_fields = ['description', 'data.content', 'filename']
