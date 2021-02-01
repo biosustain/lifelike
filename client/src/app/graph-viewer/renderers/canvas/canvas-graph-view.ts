@@ -836,17 +836,49 @@ export class CanvasGraphView extends GraphView {
    * Draw a red box around the entity.
    */
   private drawEntityHighlightBox(ctx: CanvasRenderingContext2D, entity: GraphEntity, strong: boolean) {
-    ctx.beginPath();
-    const bbox = this.getEntityBoundingBox([entity], 10);
-    ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-    ctx.strokeStyle = 'rgba(255, 0, 0, 255)';
-    ctx.lineWidth = strong ? 5 : 3;
-    ctx.lineCap = 'butt';
-    if (!strong) {
-      ctx.globalAlpha = 0.4;
+    if (entity.type === GraphEntityType.Edge) {
+      const d = entity.entity as UniversalGraphEdge;
+      const from = this.expectNodeByHash(d.from);
+      const to = this.expectNodeByHash(d.to);
+      const placedFrom: PlacedNode = this.placeNode(from);
+      const placedTo: PlacedNode = this.placeNode(to);
+
+      const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
+      const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
+
+      const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
+      const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
+      const lineWidth = lineWidthScale * 1 + 20;
+
+      (new LineEdge(ctx, {
+        source: {
+          x: fromX,
+          y: fromY,
+        },
+        target: {
+          x: toX,
+          y: toY,
+        },
+        stroke: new SolidLine(lineWidth, `rgba(255, 0, 0, ${strong ? 0.4 : 0.2})`, {
+          lineCap: 'square',
+        }),
+        forceHighDetailLevel: true,
+      })).draw(this.transform);
+    } else {
+      const lineWidth = strong ? 5 : 3;
+
+      ctx.beginPath();
+      const bbox = this.getEntityBoundingBox([entity], 10);
+      ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+      ctx.strokeStyle = 'rgba(255, 0, 0, 255)';
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'butt';
+      if (!strong) {
+        ctx.globalAlpha = 0.4;
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
     }
-    ctx.stroke();
-    ctx.globalAlpha = 1;
   }
 
   /**
