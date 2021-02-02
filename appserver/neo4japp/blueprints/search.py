@@ -173,6 +173,16 @@ def hydrate_search_results(es_results):
 
 # Start Search Helpers #
 
+def empty_params(q, advanced_args):
+    q_exists = q != ''
+    types_exists = advanced_args.get('types', None) is not None and advanced_args['types'] != ''
+    projects_exists = (
+        advanced_args.get('projects', None) is not None and
+        advanced_args['projects'] != ''
+    )
+    return not (q_exists or types_exists or projects_exists)
+
+
 def get_types_from_params(q, advanced_args):
     # Get document types from either `q` or `types`
     types = set()
@@ -313,6 +323,16 @@ def search(
         extra=UserEventLog(
             username=g.current_user.username, event_type='search contentsearch').to_dict()
     )
+
+    if empty_params(q, advanced_args):
+        return jsonify(
+            ResultList(
+                total=0,
+                results=[],
+                query=ResultQuery(phrases=[])
+            ).to_dict(),
+        )
+
     offset = (page - 1) * limit
 
     q, types = get_types_from_params(q, advanced_args)

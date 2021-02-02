@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -27,7 +27,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
   projects: string[] = [];
 
   form = new FormGroup({
-    q: new FormControl('', [Validators.required, this.whitespaceValidator]),
+    q: new FormControl('', [this.whitespaceValidator]),
     types: new FormControl([]),
     projects: new FormControl([]),
   });
