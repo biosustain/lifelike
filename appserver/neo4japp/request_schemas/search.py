@@ -17,6 +17,7 @@ class ContentSearchSchema(ma.Schema):
 
 class AdvancedContentSearchSchema(ContentSearchSchema):
     types = ma.String(default='', required=False)
+    projects = ma.String(default='', required=False)
 
 
 class AnnotateRequestSchema(ma.Schema):

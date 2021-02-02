@@ -193,121 +193,67 @@ def get_types_from_params(q, advanced_args):
 
     return q, types
 
-# End Search Helpers #
 
-# TODO: Probably should rename this to something else...not sure what though
-@bp.route('/content', methods=['GET'])
-@auth.login_required
-@use_kwargs(AdvancedContentSearchSchema)
-def search(
-    limit,
-    page,
-    q,
-    **advanced_args
-):
-    current_app.logger.info(
-        f'Term: {q}',
-        extra=UserEventLog(
-            username=g.current_user.username, event_type='search contentsearch').to_dict()
+def get_projects_from_params(q, advanced_args):
+    # Get projects from either `q` or `projects`
+    projects = set()
+    if 'projects' in advanced_args and advanced_args['projects'] != '':
+        projects = set(advanced_args['projects'].split(';'))
+
+    # Even if `projects` is in the advanced args, expect `q` might also contain some projects
+    extracted_projects = re.findall(r'\bproject:\S*', q)
+
+    if len(extracted_projects) > 0:
+        q = re.sub(r'\bproject:\S*', '', q)
+        for extracted_type in extracted_projects:
+            projects.add(extracted_type.split(':')[1])
+
+    return q, list(projects)
+
+
+def get_accessible_projects_filter(user_id):
+    t_project = aliased(Projects)
+    t_project_role = aliased(AppRole)
+
+    # Role table used to check if we have permission
+    query = db.session.query(
+        t_project.id
+    ).join(
+        projects_collaborator_role,
+        sqlalchemy.and_(
+            projects_collaborator_role.c.projects_id == t_project.id,
+            projects_collaborator_role.c.appuser_id == user_id,
+        )
+    ).join(
+        t_project_role,
+        sqlalchemy.and_(
+            t_project_role.id == projects_collaborator_role.c.app_role_id,
+            sqlalchemy.or_(
+                t_project_role.name == 'project-read',
+                t_project_role.name == 'project-write',
+                t_project_role.name == 'project-admin'
+            )
+        )
     )
-    offset = (page - 1) * limit
-    search_phrases = []
+    accessible_project_ids = [project_id for project_id, in query]
 
-    q, types = get_types_from_params(q, advanced_args)
-
-    # Set the search term once we've parsed 'q' for all advanced options
-    search_term = q
-
-    if search_term:
-        text_fields = ['description', 'data.content', 'filename']
-        text_field_boosts = {'description': 1, 'data.content': 1, 'filename': 3}
-        keyword_fields = []
-        keyword_field_boosts = {}
-        highlight = {
-            'fields': {
-                'data.content': {},
-            },
-            # Need to be very careful with this option. If fragment_size is too large, search
-            # will be slow because elastic has to generate large highlight fragments. Setting
-            # to 0 generates cleaner sentences, but also runs the risk of pulling back huge
-            # sentences.
-            'fragment_size': FRAGMENT_SIZE,
-            'order': 'score',
-            'pre_tags': ['@@@@$'],
-            'post_tags': ['@@@@/$'],
-            'number_of_fragments': 100,
+    return {
+        'bool': {
+            'should': [
+                # If the user has access to the project the document is in...
+                {'terms': {'project_id': accessible_project_ids}},
+                # OR if the document is public...
+                {'term': {'public': True}}
+            ]
         }
+    }
 
-        user_id = g.current_user.id
 
-        t_project = aliased(Projects)
-        t_project_role = aliased(AppRole)
-
-        # Role table used to check if we have permission
-        query = db.session.query(
-            t_project.id
-        ).join(
-            projects_collaborator_role,
-            sqlalchemy.and_(
-                projects_collaborator_role.c.projects_id == t_project.id,
-                projects_collaborator_role.c.appuser_id == user_id,
-            )
-        ).join(
-            t_project_role,
-            sqlalchemy.and_(
-                t_project_role.id == projects_collaborator_role.c.app_role_id,
-                sqlalchemy.or_(
-                    t_project_role.name == 'project-read',
-                    t_project_role.name == 'project-write',
-                    t_project_role.name == 'project-admin'
-                )
-            )
-        )
-
-        accessible_project_ids = [project_id for project_id, in query]
-        query_filter = {
-            'bool': {
-                'must': [
-                    # The document must have the specified type
-                    {'terms': {'type': types}},
-                    # And...
-                    {
-                        'bool': {
-                            'should': [
-                                # If the user has access to the project the document is in...
-                                {'terms': {'project_id': accessible_project_ids}},
-                                # OR if the document is public...
-                                {'term': {'public': True}}
-                            ]
-                        }
-                    }
-                ]
-            }
-        }
-
-        elastic_service = get_elastic_service()
-        res, search_phrases = elastic_service.search(
-            index_id=FILE_INDEX_ID,
-            search_term=search_term,
-            offset=offset,
-            limit=limit,
-            text_fields=text_fields,
-            text_field_boosts=text_field_boosts,
-            keyword_fields=keyword_fields,
-            keyword_field_boosts=keyword_field_boosts,
-            query_filter=query_filter,
-            highlight=highlight
-        )
-        res = res['hits']
-
-        hydrate_search_results(res)
-    else:
-        res = {'hits': [], 'max_score': None, 'total': 0}
-
+def prep_search_results(search_results, search_phrases):
     highlight_tag_re = re.compile('@@@@(/?)\\$')
 
     results = []
-    for doc in res['hits']:
+    for doc in search_results['hits']:
         snippets = None
 
         db_data = doc.get('_db', defaultdict(lambda: None))
@@ -344,12 +290,97 @@ def search(
             'rank': doc['_score'],
         })
 
-    response = ResultList(
-        total=res['total'],
+    return ResultList(
+        total=search_results['total'],
         results=results,
         query=ResultQuery(phrases=search_phrases),
     )
 
+# End Search Helpers #
+
+
+@bp.route('/content', methods=['GET'])
+@auth.login_required
+@use_kwargs(AdvancedContentSearchSchema)
+def search(
+    limit,
+    page,
+    q,
+    **advanced_args
+):
+    current_app.logger.info(
+        f'Term: {q}',
+        extra=UserEventLog(
+            username=g.current_user.username, event_type='search contentsearch').to_dict()
+    )
+    offset = (page - 1) * limit
+
+    q, types = get_types_from_params(q, advanced_args)
+    q, projects = get_projects_from_params(q, advanced_args)
+
+    # Set the search term once we've parsed 'q' for all advanced options
+    search_term = q
+
+    # Set additional elastic search query options
+    text_fields = ['description', 'data.content', 'filename']
+    text_field_boosts = {'description': 1, 'data.content': 1, 'filename': 3}
+    keyword_fields = []
+    keyword_field_boosts = {}
+    highlight = {
+        'fields': {
+            'data.content': {},
+        },
+        # Need to be very careful with this option. If fragment_size is too large, search
+        # will be slow because elastic has to generate large highlight fragments. Setting
+        # to 0 generates cleaner sentences, but also runs the risk of pulling back huge
+        # sentences.
+        'fragment_size': FRAGMENT_SIZE,
+        'order': 'score',
+        'pre_tags': ['@@@@$'],
+        'post_tags': ['@@@@/$'],
+        'number_of_fragments': 100,
+    }
+
+    query_filter = {
+        'bool': {
+            'must': [
+                # The document must have the specified type...
+                {'terms': {'type': types}},
+                # ...And the user must have access to the document...
+                get_accessible_projects_filter(g.current_user.id),
+                # ...And the project name should match at least one of the given project strings...
+                {
+                    'bool': {
+                        'should': [{
+                            'multi_match': {
+                                    'query': project,  # type:ignore
+                                    'type': 'phrase',  # type:ignore
+                                    'fields': ['project_name']
+                            }
+                        } for project in projects],
+                    }
+                }
+            ]
+        }
+    }
+
+    elastic_service = get_elastic_service()
+    res, search_phrases = elastic_service.search(
+        index_id=FILE_INDEX_ID,
+        search_term=search_term,
+        offset=offset,
+        limit=limit,
+        text_fields=text_fields,
+        text_field_boosts=text_field_boosts,
+        keyword_fields=keyword_fields,
+        keyword_field_boosts=keyword_field_boosts,
+        query_filter=query_filter,
+        highlight=highlight
+    )
+    res = res['hits']
+    hydrate_search_results(res)
+
+    response = prep_search_results(res, search_phrases)
     return jsonify(response.to_dict())
 
 

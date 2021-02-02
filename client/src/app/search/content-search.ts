@@ -10,6 +10,7 @@ export const TYPES_MAP: Map<string, SearchType> = new Map(Array.from(TYPES.value
 
 export interface ContentSearchOptions extends StandardRequestOptions {
   types?: SearchType[];
+  projects?: string[];
 }
 
 export interface AnnotationRequestOptions {
@@ -18,4 +19,13 @@ export interface AnnotationRequestOptions {
 
 export interface AnnotationResponse {
   texts: string[];
+}
+
+export interface Project {
+  creationDate: string;
+  description: string;
+  id: number;
+  modifiedDate: string;
+  projectName: string;
+  users: string[];
 }

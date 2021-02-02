@@ -3,7 +3,7 @@
 
   <app-modal-body>
     <div>
-      <div class="font-weight-bold mb-2">Find documents</div>
+      <div class="font-weight-bold mb-2">Find content</div>
     </div>
     <!-- Words field -->
     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -25,7 +25,7 @@
         <app-select formId="types" [choices]="typeChoices"
                 [values]="form.value.types" (valuesChange)="form.get('types').setValue($event)"
                 (touch)="form.get('types').markAsTouched()"
-                [choiceLabel]="choiceLabel">
+                [choiceLabel]="typeLabel">
         </app-select>
       </div>
     </div>
@@ -50,20 +50,26 @@
       </div>
     </div>
 
-    <!-- Author field -->
+    <!-- Projects field -->
     <div class="d-flex justify-content-between align-items-center mb-2">
       <div class="field-label mr-2">
-        <span>Return documents <strong>located</strong> in</span>
+        <span>Return content <strong>located</strong> in</span>
       </div>
       <div class="field-value">
-        <input class="form-control border w-100" disabled placeholder="Coming Soon!">
+        <!-- TODO: Likely going to update this in the future to be a text search box. It's not reasonable to
+          assume the list of accessible projects will remain small as the site grows. -->
+        <app-select formId="projects" [choices]="projects"
+                [values]="form.value.projects" (valuesChange)="form.get('projects').setValue($event)"
+                (touch)="form.get('projects').markAsTouched()"
+                [choiceLabel]="projectLabel">
+        </app-select>
       </div>
     </div>
 
     <!-- Author field -->
     <div class="d-flex justify-content-between align-items-center mb-2">
       <div class="field-label mr-2">
-        <span>Return documents <strong>authored</strong> by</span>
+        <span>Return content <strong>authored</strong> by</span>
       </div>
       <div class="field-value">
         <input class="form-control border w-100" disabled placeholder="Coming Soon!">
@@ -73,7 +79,7 @@
     <!-- Dates fields -->
     <div class="d-flex justify-content-between align-items-center mb-2">
       <div class="field-label mr-2">
-        <span>Return articles <strong>dated</strong> between</span>
+        <span>Return content <strong>dated</strong> between</span>
       </div>
       <div class="field-value">
         <input class="form-control border w-100" disabled placeholder="Coming Soon!">
