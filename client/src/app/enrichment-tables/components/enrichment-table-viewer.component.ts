@@ -518,6 +518,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         const annotatedEntries: TableCell[][] = [];
 
         // dirty way for now...
+        // TODO: need better way to handle the forkJoin inside the forEach
+        // it's still not waiting for all of the entries to load
         const annotateEnrichments = new Promise((resolve, reject) => {
           newEntries.forEach(row => {
             const cellData = {};
