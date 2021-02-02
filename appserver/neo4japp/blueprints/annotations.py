@@ -447,6 +447,9 @@ class TextAnnotationsGenerationView(FilesystemBaseView):
             except AnnotationError as e:
                 current_app.logger.error('Could not annotate text.', e)
 
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!
+            # TODO: See JIRA BUG LL-2451
+            #
             for annotation in annotations:
                 keyword = annotation['keyword']
                 text = re.sub(
