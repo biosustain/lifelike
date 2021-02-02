@@ -2,17 +2,23 @@
   <div class="module" appContainerBreakpoints>
     <div class="module-header">
       <div class="module-title-bar">
-        <h1 class="module-title">
-          Search
-          <ng-container *ngIf="valid">
-            Results for "{{ params.q }}"
-          </ng-container>
-        </h1>
+        <div class="d-flex justify-content-between w-100">
+          <h1 class="module-title">
+            Search
+            <ng-container *ngIf="valid">
+              Results for "{{ params.q }}"
+            </ng-container>
+          </h1>
+          <div class="fake-link" (click)="openAdvancedSearchOptions()">Advanced Search Options</div>
+        </div>
       </div>
 
       <div class="module-toolbar mt-2">
-        <app-content-search-form class="w-100" [params]="params" (formResult)="search($event)">
-        </app-content-search-form>
+        <ng-container *ngIf="(searchTypes$ | async) as searchTypes">
+          <app-content-search-form class="w-100" [params]="params" (formResult)="search($event)"
+            [typeChoices]="searchTypes">
+          </app-content-search-form>
+        </ng-container>
       </div>
     </div>
 
@@ -88,13 +94,21 @@
                         <app-file-type-label [object]="result.item" [showLabel]="false"
                           class="mr-1"></app-file-type-label>
                         <a [appLink]="getObjectCommands(result.item)" [newTab]="true" [sideBySide]="true">
-                          <app-term-highlight [text]="result.item.name" [highlightTerms]="resultQuery ? resultQuery.phrases : []"></app-term-highlight>
+                          <app-term-highlight
+                            [text]="result.item.name"
+                            [highlightTerms]="resultQuery ? resultQuery.phrases : []"
+                            [highlightOptions]="highlightOptions"
+                          ></app-term-highlight>
                         </a>
                       </h5>
                     </div>
                     <div class="mt-2 text-truncate"><i>Created by <app-user [user]="result.item.user"></app-user> on {{ result.item.creationDate | date: 'fullDate'}}</i></div>
                     <div class="mt-2 paragraph-truncate-3">
-                      <app-term-highlight [text]="result.item.description" [highlightTerms]="resultQuery ? resultQuery.phrases : []"></app-term-highlight>
+                      <app-term-highlight
+                        [text]="result.item.description"
+                        [highlightTerms]="resultQuery ? resultQuery.phrases : []"
+                        [highlightOptions]="highlightOptions"
+                      ></app-term-highlight>
                     </div>
                     <ng-container *ngIf="result.item.highlight">
                       <div class="dropdown-divider"></div>
