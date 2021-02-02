@@ -1,15 +1,15 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import {Component, EventEmitter, Output} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
 
-import { combineLatest, Subscription } from 'rxjs';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import {combineLatest, Subscription} from 'rxjs';
+import {BackgroundTask} from 'app/shared/rxjs/background-task';
 import { FilesystemObject} from '../../file-browser/models/filesystem-object';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { WordCloudAnnotationFilterEntity } from '../../interfaces/annotation-filter.interface';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { escapeRegExp } from 'lodash';
-import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
-import { ModuleAwareComponent, ModuleProperties } from '../../shared/modules';
+import {FilesystemService} from '../../file-browser/services/filesystem.service';
+import {WordCloudAnnotationFilterEntity} from '../../interfaces/annotation-filter.interface';
+import {WorkspaceManager} from '../../shared/workspace-manager';
+import {escapeRegExp} from 'lodash';
+import {FileViewComponent} from '../../pdf-viewer/components/file-view.component';
+import {ModuleAwareComponent, ModuleProperties} from '../../shared/modules';
 import { PDF_MIMETYPE } from '../../pdf-viewer/providers/pdf-type-provider';
 
 @Component({

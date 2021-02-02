@@ -1,0 +1,12 @@
+# Load required packages
+using JuliaWebAPI
+
+include("mannwhitney.jl")
+
+# Expose testfn1 and testfn2 via a ZMQ listener
+process(
+    JuliaWebAPI.create_responder([
+        (calculateMannWhitney, true)
+    ], "tcp://127.0.0.1:9999", true, "")
+)
+

@@ -1,11 +1,11 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FilesystemObject } from '../models/filesystem-object';
-import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
-import { from, Observable } from 'rxjs';
-import { FilesystemService } from '../services/filesystem.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { map } from 'rxjs/operators';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import {Component, Input} from '@angular/core';
+import {FilesystemObject} from '../models/filesystem-object';
+import {ObjectVersionHistory} from '../models/object-version';
+import {from, Observable} from 'rxjs';
+import {FilesystemService} from '../services/filesystem.service';
+import {ErrorHandler} from '../../shared/services/error-handler.service';
+import {map} from 'rxjs/operators';
+import {ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
 
 @Component({
   selector: 'app-object-version-history',

@@ -1,17 +1,17 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
-import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../../shared/services/message-dialog.service';
-import { FilesystemObject } from '../../models/filesystem-object';
-import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
-import { ObjectContentSource, ObjectCreateRequest } from '../../schema';
-import { OrganismAutocomplete } from '../../../interfaces';
-import { select, Store } from '@ngrx/store';
-import { AuthSelectors } from '../../../auth/store';
-import { State } from 'app/***ARANGO_USERNAME***-store';
-import { Observable } from 'rxjs';
-import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
-import { AnnotationMethod } from '../../../interfaces/annotation';
+import {Component, ElementRef, Input, ViewChild} from '@angular/core';
+import {FormControl, FormGroup, ValidationErrors, Validators} from '@angular/forms';
+import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {MessageDialog} from '../../../shared/services/message-dialog.service';
+import {FilesystemObject} from '../../models/filesystem-object';
+import {CommonFormDialogComponent} from '../../../shared/components/dialog/common-form-dialog.component';
+import {ObjectContentSource, ObjectCreateRequest} from '../../schema';
+import {OrganismAutocomplete} from '../../../interfaces';
+import {select, Store} from '@ngrx/store';
+import {AuthSelectors} from '../../../auth/store';
+import {State} from 'app/***ARANGO_USERNAME***-store';
+import {Observable} from 'rxjs';
+import {ObjectSelectionDialogComponent} from './object-selection-dialog.component';
+import {AnnotationMethod} from '../../../interfaces/annotation';
 
 @Component({
   selector: 'app-object-edit-dialog',
