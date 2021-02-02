@@ -3,6 +3,7 @@ import { FilesystemObject } from '../models/filesystem-object';
 import { Observable, of } from 'rxjs';
 import { RankedItem } from '../../shared/schemas/common';
 import { CreateDialogOptions } from './object-creation.service';
+import { SearchType } from '../../search/shared';
 
 export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>('objectTypeProvider');
 
@@ -55,6 +56,11 @@ export interface ObjectTypeProvider {
    */
   getCreateDialogOptions(): RankedItem<CreateDialogAction>[];
 
+  /**
+   * Get a list of search types for the content search.
+   */
+  getSearchTypes(): SearchType[];
+
 }
 
 /**
@@ -68,6 +74,10 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   }
 
   getCreateDialogOptions(options?: CreateDialogOptions) {
+    return [];
+  }
+
+  getSearchTypes(): SearchType[] {
     return [];
   }
 
