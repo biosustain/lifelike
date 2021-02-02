@@ -1,9 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { ContentSearchOptions, TYPES } from '../content-search';
+import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
 
 @Component({
@@ -11,26 +12,36 @@ import { SearchType } from '../shared';
   templateUrl: './advanced-search-dialog.component.html',
   styleUrls: ['./advanced-search-dialog.component.scss']
 })
-export class AdvancedSearchDialogComponent {
+export class AdvancedSearchDialogComponent implements OnInit {
   @Input() set params(params: ContentSearchOptions) {
     this.form.setValue({
       ...this.form.value,
       q: params.q,
       // Advanced Params
       types: params.types ? params.types : [],
+      projects: params.projects ? params.projects : [],
     });
   }
 
   typeChoices: SearchType[] = TYPES.concat().sort((a, b) => a.name.localeCompare(b.name));
+  projects: string[] = [];
 
   form = new FormGroup({
     q: new FormControl('', [Validators.required, this.whitespaceValidator]),
     types: new FormControl([]),
+    projects: new FormControl([]),
   });
 
   constructor(
     private readonly modal: NgbActiveModal,
+    protected readonly contentSearchService: ContentSearchService,
   ) {
+  }
+
+  ngOnInit() {
+    this.contentSearchService.getProjects().subscribe((projects: string[]) => {
+      this.projects = projects;
+    });
   }
 
   dismiss() {
@@ -45,8 +56,12 @@ export class AdvancedSearchDialogComponent {
     }
   }
 
-  choiceLabel(choice) {
+  typeLabel(choice) {
     return choice.name;
+  }
+
+  projectLabel(choice) {
+    return choice;
   }
 
   whitespaceValidator(control: AbstractControl): {[key: string]: any} | null {
