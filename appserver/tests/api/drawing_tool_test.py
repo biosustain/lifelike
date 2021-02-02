@@ -27,7 +27,7 @@ def test_uri_hash(
         content_type='application/json'
     )
 
-    jwt = resp.get_json()['access_jwt']
+    jwt = resp.get_json()['accessToken']['token']
 
     headers = {
         'Authorization': 'Bearer {}'.format(
@@ -63,7 +63,7 @@ def test_uri_private_maps(
         content_type='application/json'
     )
 
-    jwt = resp.get_json()['access_jwt']
+    jwt = resp.get_json()['accessToken']['token']
 
     headers = {
         'Authorization': 'Bearer {}'.format(
@@ -90,7 +90,7 @@ def test_can_download_map(
         fix_api_owner.email,
         'password',
     )
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     proj_label = private_fix_map.label
     proj_hash = private_fix_map.hash_id
     resp = client.get(
@@ -110,7 +110,7 @@ def test_can_upload_map(
     session
 ):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     mock_data = BytesIO(json.dumps({'graph': {'edges': [], 'nodes': []}}).encode('utf-8'))
     res = client.post(
         f'/projects/{fix_project.project_name}/map/upload',
@@ -132,7 +132,7 @@ def test_can_upload_map(
 
 def test_can_add_map(client, mock_index_maps, fix_api_owner, fix_project, fix_directory):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     res = client.post(
         f'/projects/{fix_project.project_name}/map',
         headers=headers,
@@ -159,7 +159,7 @@ def test_can_update_map(
     private_fix_map
 ):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     res = client.patch(
         f'/projects/{fix_project.project_name}/map/{private_fix_map.hash_id}',
         headers=headers,
@@ -177,7 +177,7 @@ def test_can_delete_map(
     private_fix_map
 ):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     res = client.delete(
         f'/projects/{fix_project.project_name}/map/{private_fix_map.hash_id}',
         headers=headers,
@@ -187,7 +187,7 @@ def test_can_delete_map(
 
 def test_can_get_pdf_from_map(client, fix_api_owner, fix_project, private_fix_map):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     res = client.get(
         f'/projects/{fix_project.project_name}/map/{private_fix_map.hash_id}/pdf',
         headers=headers,

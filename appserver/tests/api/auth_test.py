@@ -58,7 +58,7 @@ def test_can_authenticate_with_auth_token(client, session):
     )
 
     response_data = response.get_json()
-    refresh_jwt = response_data['access_jwt']
+    refresh_jwt = response_data['accessToken']['token']
     headers = {'Authorization': f'Bearer {refresh_jwt}'}
 
     response = client.get(

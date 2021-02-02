@@ -21,7 +21,7 @@ def test_user_can_delete_own_pdf(
     mock_delete_elastic_documents
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.file_id
     delete_resp = client.delete(
         f'/projects/{fix_project.project_name}/files',
@@ -36,7 +36,7 @@ def test_user_can_delete_own_pdf(
 def test_user_cannot_delete_pdf_without_permission(
         client, fix_project, test_user_with_pdf, test_user_2):
     login_resp = client.login_as_user(test_user_2.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.id
     delete_resp = client.delete(
         f'/projects/{fix_project.project_name}/files',
@@ -50,7 +50,7 @@ def test_user_cannot_delete_pdf_without_permission(
 def test_admin_can_delete_pdf_without_permission(
         client, test_user_with_pdf, fix_project, fix_api_owner, mock_delete_elastic_documents):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.id
     delete_resp = client.delete(
         f'/projects/{fix_project.project_name}/files',
@@ -71,7 +71,7 @@ def test_can_upload_pdf(
     fix_directory,
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     def mock_extract_doi(pdf_content, file_id, filename):
         """ Mocks out the extract doi function in the module """
@@ -103,7 +103,7 @@ def test_cannot_upload_if_no_write_permission(
     fix_directory
 ):
     login_resp = client.login_as_user(test_user_2.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     mock_pdf = BytesIO(json.dumps({}).encode('utf-8'))
 
@@ -130,7 +130,7 @@ def test_can_view_all_files_in_project(
     fix_directory
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     def mock_extract_doi(pdf_content, file_id, filename):
         """ Mocks out the extract doi function in the module """
@@ -159,7 +159,7 @@ def test_can_view_all_files_in_project(
 
 def test_can_get_pdf(client, test_user, test_user_with_pdf, fix_project):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     file_id = test_user_with_pdf.file_id
 
@@ -176,7 +176,7 @@ def test_can_update_pdf_metadata(
     fix_project
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     file_id = test_user_with_pdf.file_id
 
@@ -209,7 +209,7 @@ def test_can_update_pdf_metadata_remove_fallback(
     fix_project
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     file_id = test_user_with_pdf.file_id
 
@@ -250,7 +250,7 @@ def test_can_get_pdf_annotations(
     )
 
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     file_id = test_user_with_pdf.file_id
 
@@ -315,7 +315,7 @@ CUSTOM_ANNOTATION_2 = {
 
 def test_user_can_add_custom_annotation(client, test_user, test_user_with_pdf, fix_project):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.file_id
 
     resp = client.patch(
@@ -334,7 +334,7 @@ def test_user_can_add_custom_annotation(client, test_user, test_user_with_pdf, f
 
 def test_user_can_remove_custom_annotation(client, test_user, test_user_with_pdf, fix_project):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.file_id
 
     add_resp = client.patch(
@@ -370,7 +370,7 @@ def test_user_can_remove_matching_custom_annotations(
     fix_project
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.file_id
 
     add_resp_1 = client.patch(
@@ -420,7 +420,7 @@ def test_can_delete_files(
     mock_delete_elastic_documents
 ):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.file_id
     resp = client.delete(
         f'/projects/{fix_project.project_name}/files',
@@ -434,7 +434,7 @@ def test_can_delete_files(
 
 def test_user_can_remove_annotation_exclusion(client, test_user, test_user_with_pdf, fix_project):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.file_id
 
     client.patch(

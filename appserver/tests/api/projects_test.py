@@ -16,7 +16,7 @@ def generate_headers(jwt_token):
 
 def test_can_add_projects(client, session, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     response = client.post(
         '/projects/',
         data=json.dumps({
@@ -42,7 +42,7 @@ def test_can_add_projects(client, session, test_user):
 
 def test_can_get_project(client, fix_project, fix_directory, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     response = client.get('/projects/Lifelike', headers=headers)
     assert response.status_code == 200
     response_data = response.get_json()['results']
@@ -51,7 +51,7 @@ def test_can_get_project(client, fix_project, fix_directory, test_user):
 
 def test_can_get_list_of_projects(client, session, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     number_of_projects_made_by_test_user = 2
 
@@ -102,7 +102,7 @@ def test_only_admins_can_add_collaborators_and_not_themselves(
         client, session, fix_project, test_user, test_user_2, username, email, expected_status):
 
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     response = client.post(
         f'/projects/{fix_project.project_name}/collaborators/{email}',
@@ -122,7 +122,7 @@ def test_only_admins_can_remove_collaborators(
         client, session, fix_project, test_user, test_user_2, username, email, expected_status):
 
     login_resp = client.login_as_user(email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     response = client.delete(
         f'/projects/{fix_project.project_name}/collaborators/{username}',
@@ -135,7 +135,7 @@ def test_only_admins_can_remove_collaborators(
 
 def test_can_get_collaborators(client, session, fix_project, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     response = client.get(
         f'/projects/{fix_project.project_name}/collaborators',
@@ -152,7 +152,7 @@ def test_can_get_collaborators(client, session, fix_project, test_user):
 
 def test_noncollaborators_cannot_view(client, session, fix_project, test_user_2):
     login_resp = client.login_as_user(test_user_2.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     response = client.get(
         f'/projects/{fix_project.project_name}/collaborators',
@@ -165,7 +165,7 @@ def test_noncollaborators_cannot_view(client, session, fix_project, test_user_2)
 
 def test_can_add_directory(client, session, fix_project, fix_directory, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     response = client.post(
         f'/projects/{fix_project.project_name}/directories',
@@ -182,7 +182,7 @@ def test_can_add_directory(client, session, fix_project, fix_directory, test_use
 
 def test_can_rename_directory(client, session, fix_project, fix_directory, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     new_dir = Directory(
         name='bobsled',
@@ -207,7 +207,7 @@ def test_can_rename_directory(client, session, fix_project, fix_directory, test_
 
 def test_can_delete_directory(client, session, fix_project, fix_directory, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     new_dir = Directory(
         name='bobsled',
@@ -229,7 +229,7 @@ def test_can_delete_directory(client, session, fix_project, fix_directory, test_
 
 def test_can_move_directory(client, session, fix_project, fix_directory, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     nested_dir = Directory(
         name='child-1',
