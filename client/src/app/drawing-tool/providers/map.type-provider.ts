@@ -11,6 +11,8 @@ import { of } from 'rxjs';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
 import { UniversalGraph } from '../services/interfaces';
+import { SearchType } from '../../search/shared';
+import { ENRICHMENT_TABLE_MIMETYPE } from '../../enrichment-tables/providers/enrichment-table.type-provider';
 
 export const MAP_MIMETYPE = 'vnd.lifelike.document/map';
 
@@ -61,6 +63,12 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
         },
       },
     }];
+  }
+
+  getSearchTypes(): SearchType[] {
+    return [
+      Object.freeze({id: MAP_MIMETYPE, name: 'Maps'}),
+    ];
   }
 
 }
