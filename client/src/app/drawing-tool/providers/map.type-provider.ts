@@ -2,6 +2,7 @@ import {
   AbstractObjectTypeProvider,
   CreateActionOptions,
   CreateDialogAction,
+  PreviewOptions,
 } from '../../file-browser/services/object-type.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
@@ -10,6 +11,8 @@ import { of } from 'rxjs';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
 import { UniversalGraph } from '../services/interfaces';
+import { SearchType } from '../../search/shared';
+import { ENRICHMENT_TABLE_MIMETYPE } from '../../enrichment-tables/providers/enrichment-table.type-provider';
 
 export const MAP_MIMETYPE = 'vnd.lifelike.document/map';
 
@@ -26,11 +29,12 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
     return object.mimeType === MAP_MIMETYPE;
   }
 
-  createPreviewComponent(object: FilesystemObject) {
+  createPreviewComponent(object: FilesystemObject, options?: PreviewOptions) {
     const factory: ComponentFactory<MapComponent<any>> =
       this.componentFactoryResolver.resolveComponentFactory(MapComponent);
     const componentRef = factory.create(this.injector);
     const instance: MapComponent = componentRef.instance;
+    instance.highlightTerms = options ? options.highlightTerms : null;
     instance.locator = object.hashId;
     return of(componentRef);
   }
@@ -59,6 +63,12 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
         },
       },
     }];
+  }
+
+  getSearchTypes(): SearchType[] {
+    return [
+      Object.freeze({id: MAP_MIMETYPE, name: 'Maps'}),
+    ];
   }
 
 }
