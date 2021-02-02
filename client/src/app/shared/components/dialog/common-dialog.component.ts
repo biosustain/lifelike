@@ -1,6 +1,6 @@
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { AbstractControl } from '@angular/forms';
-import { MessageDialog } from '../../services/message-dialog.service';
+import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
+import {AbstractControl} from '@angular/forms';
+import {MessageDialog} from '../../services/message-dialog.service';
 
 /**
  * An abstract component for dialogs.

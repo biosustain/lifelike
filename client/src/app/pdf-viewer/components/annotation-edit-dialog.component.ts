@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { Annotation } from '../annotation-type';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES } from '../../shared/annotation-types';
+import { ENTITY_TYPES } from '../../shared/annotation-types';
 import { CommonFormDialogComponent } from '../../shared/components/dialog/common-form-dialog.component';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';

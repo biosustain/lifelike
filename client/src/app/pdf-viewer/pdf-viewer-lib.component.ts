@@ -52,7 +52,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Input() debugMode: boolean;
   @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
   @Input() filterChanges: Observable<void>;
-  renderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
+  @Input() renderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
   currentHighlightAnnotationId: string | undefined;
   foundHighlightAnnotations: Annotation[] = [];
   currentHighlightAnnotationsIndex = 0;
@@ -392,7 +392,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const collapseTargetId = uniqueId('pdf-tooltip-collapse-target');
     let collapseHtml = `
       <a class="pdf-tooltip-collapse-control collapsed" role="button" data-toggle="collapse" data-target="#${collapseTargetId}" aria-expanded="false" aria-controls="${collapseTargetId}">
-        Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i>
+        Search links
       </a>
       <div class="collapse" id="${collapseTargetId}">
     `;
@@ -649,7 +649,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     // Each section rectangle represent one selection,
     // this means multiple words on the same line should
     // create one selection rectangle
-    // See LL-1437 (https://github.com/SBRG/kg-prototypes/pull/474)
     createCorrectRects(rects);
 
     this.selectedTextCoords = [];

@@ -1,20 +1,20 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { from, Observable, Subscription, throwError } from 'rxjs';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { WorkspaceManager } from '../../shared/workspace-manager';
-import { ModuleProperties } from '../../shared/modules';
-import { FilesystemObject } from '../models/filesystem-object';
-import { FilesystemService } from '../services/filesystem.service';
-import { map } from 'rxjs/operators';
-import { FilesystemObjectActions } from '../services/filesystem-object-actions';
-import { getObjectLabel } from '../utils/objects';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { MessageType } from '../../interfaces/message-dialog.interface';
+import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {from, Observable, Subscription, throwError} from 'rxjs';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {ErrorHandler} from '../../shared/services/error-handler.service';
+import {WorkspaceManager} from '../../shared/workspace-manager';
+import {ModuleProperties} from '../../shared/modules';
+import { FilesystemObject, PathLocator } from '../models/filesystem-object';
+import {FilesystemService} from '../services/filesystem.service';
+import {map} from 'rxjs/operators';
+import {FilesystemObjectActions} from '../services/filesystem-object-actions';
+import {getObjectLabel} from '../utils/objects';
+import {MessageDialog} from '../../shared/services/message-dialog.service';
+import {MessageType} from '../../interfaces/message-dialog.interface';
 import { ProjectsService } from '../services/projects.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import {HttpErrorResponse} from '@angular/common/http';
 import {
   CreateActionOptions,
   CreateDialogAction,
@@ -149,6 +149,48 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
       return true;
     }
   }
+  //
+  // openDirectoryCreateDialog(parent: FilesystemObject) {
+  //   return this.actions.openDirectoryCreateDialog(parent).then(object => {
+  //     this.snackBar.open(`Directory ${getObjectLabel(object)} created.`, 'Close', {
+  //       duration: 5000,
+  //     });
+  //     this.load(this.hashId);
+  //   }, () => {
+  //   });
+  // }
+  //
+  // openMapCreateDialog(parent: FilesystemObject) {
+  //   return this.actions.openMapCreateDialog({
+  //     parent,
+  //   }).then(object => {
+  //     this.snackBar.open(`Map ${getObjectLabel(object)} created.`, 'Close', {
+  //       duration: 5000,
+  //     });
+  //     this.load(this.hashId);
+  //   }, () => {
+  //   });
+  // }
+
+  // openEnrichmentTableCreateDialog(parent: FilesystemObject) {
+  //   return this.actions.openEnrichmentTableCreateDialog(parent).then(object => {
+  //     this.snackBar.open(`Enrichment table ${getObjectLabel(object)} created.`, 'Close', {
+  //       duration: 5000,
+  //     });
+  //     this.load(this.hashId);
+  //   }, () => {
+  //   });
+  // }
+  //
+  // openEnrichmentVisualisationCreateDialog(parent: FilesystemObject) {
+  //   return this.actions.openEnrichmentVisualisationCreateDialog(parent).then(object => {
+  //     this.snackBar.open(`Enrichment visualisation ${getObjectLabel(object)} created.`, 'Close', {
+  //       duration: 5000,
+  //     });
+  //     this.load(this.hashId);
+  //   }, () => {
+  //   });
+  // }
 
   openUploadDialog(parent: FilesystemObject) {
     return this.actions.openUploadDialog(parent).then(object => {

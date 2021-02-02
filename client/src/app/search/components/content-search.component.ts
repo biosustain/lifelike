@@ -1,22 +1,22 @@
-import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
-import { DirectoryObject } from 'app/interfaces/projects.interface';
-import { PDFResult, PDFSnippets } from 'app/interfaces';
-import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
-import { ModuleProperties } from 'app/shared/modules';
+import {Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+import {getObjectCommands, getObjectMatchExistingTab} from 'app/file-browser/utils/objects';
+import {DirectoryObject} from 'app/interfaces/projects.interface';
+import {PDFResult, PDFSnippets} from 'app/interfaces';
+import {PaginatedResultListComponent} from 'app/shared/components/base/paginated-result-list.component';
+import {ModuleProperties} from 'app/shared/modules';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import {
   deserializePaginatedParams,
   getChoicesFromQuery,
   serializePaginatedParams,
 } from 'app/shared/utils/params';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import {WorkspaceManager} from 'app/shared/workspace-manager';
 
 import { ContentSearchOptions, TYPES_MAP } from '../content-search';
-import { ContentSearchService } from '../services/content-search.service';
-import { HighlightDisplayLimitChange } from '../../file-browser/components/object-info.component';
-import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
+import {ContentSearchService} from '../services/content-search.service';
+import {HighlightDisplayLimitChange} from '../../file-browser/components/object-info.component';
+import {FileViewComponent} from '../../pdf-viewer/components/file-view.component';
 import { RankedItem, ResultList } from '../../shared/schemas/common';
 import { map } from 'rxjs/operators';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
