@@ -4,6 +4,7 @@
             "analyzer": {
               "filename_analyzer": {
                 "tokenizer": "standard",
+                "filter": ["lowercase"],
                 "char_filter": [
                   "replace_dot"
                 ]

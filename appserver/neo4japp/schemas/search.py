@@ -15,7 +15,13 @@ from neo4japp.schemas.filesystem import RankedFileSchema
 
 
 class ContentSearchSchema(CamelCaseSchema):
-    q = fields.String(required=True)
+    q = ma.String(
+        required=True,
+        validate=validate.Regexp(
+            regex=r'.*\S.*',
+            error='Search query cannot contain only whitespace characters.'
+        )
+    )
     mime_types = fields.List(fields.String(), min=0, max=100,
                              missing=lambda: ['vnd.***ARANGO_DB_NAME***.document/map',
                                               'application/pdf'])
