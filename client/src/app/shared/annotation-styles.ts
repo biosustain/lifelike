@@ -136,7 +136,7 @@ const annotationTypes: AnnotationStyle[] = [
   {
     label: 'link',
     color: LINK,
-    iconCode: ''
+    iconCode: '\uf0c1'
   },
   {
     label: 'entity',
@@ -145,7 +145,7 @@ const annotationTypes: AnnotationStyle[] = [
   {
     label: 'map',
     color: MAP,
-    iconCode: '\uf279'
+    iconCode: '\uf542'
   },
   {
     label: 'note',
