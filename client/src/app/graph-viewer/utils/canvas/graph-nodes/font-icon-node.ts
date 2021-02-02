@@ -24,7 +24,7 @@ export class FontIconNode implements PlacedNode {
   readonly minimumBBoxSize = 10;
 
   readonly yShift = 7; // Older renderer was a little off?
-  readonly iconLabelSpacing = 2;
+  readonly iconLabelSpacing = 8;
   readonly totalHeight: number;
   readonly minY: number;
   readonly bbox: {minX: number, minY: number, maxX: number, maxY: number};

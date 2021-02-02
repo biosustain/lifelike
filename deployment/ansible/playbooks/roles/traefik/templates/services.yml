@@ -45,6 +45,24 @@ http:
         certResolver: "le"
         domains:
           - main: "elk.lifelike.bio"
+    lifelike-demo:
+      entryPoints:
+        - websecure
+      rule: "Host(`demo.lifelike.bio`)"
+      service: lifelike-demo-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "demo.lifelike.bio"
+    lifelike-sandbox:
+      entryPoints:
+        - websecure
+      rule: "Host(`sandbox.lifelike.bio`)"
+      service: lifelike-sandbox-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "sandbox.lifelike.bio"
 
   services:
     lifelike-qa-service:
@@ -63,6 +81,14 @@ http:
       loadBalancer:
         servers:
           - url: "http://10.128.15.244"
+    lifelike-sandbox-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.15.216"
+    lifelike-demo-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.0.63"
 
   middlewares:
     admin-auth:
