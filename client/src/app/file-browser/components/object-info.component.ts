@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FilesystemObject } from '../models/filesystem-object';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {FilesystemObject} from '../models/filesystem-object';
 
 @Component({
   selector: 'app-object-info',

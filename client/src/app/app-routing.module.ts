@@ -22,12 +22,11 @@ import { MapEditorComponent } from './drawing-tool/components/map-editor/map-edi
 import { MapViewComponent } from './drawing-tool/components/map-view.component';
 import { CommunityBrowserComponent } from './file-browser/components/community-browser.component';
 import { BrowserComponent } from './file-browser/components/browser/browser.component';
-// import { KgImportWizardComponent } from './kg-import/containers/kg-import-wizard/kg-import-wizard.component';
-// import { GeneImportWizardComponent } from './kg-import/containers/gene-import-wizard/gene-import-wizard.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
-import { EnrichmentTableViewerComponent } from './enrichment-tables/components/enrichment-table-viewer.component';
-import { ObjectNavigatorComponent } from './file-navigator/components/object-navigator.component';
+import {ObjectNavigatorComponent} from './file-navigator/components/object-navigator.component';
 import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
+import {EnrichmentTableViewerComponent} from './enrichment/components/table/enrichment-table-viewer.component';
+import {EnrichmentVisualisationViewerComponent} from './enrichment/components/visualisation/enrichment-visualisation-viewer.component';
 
 // TODO: Add an unprotected home page
 const routes: Routes = [
@@ -113,6 +112,15 @@ const routes: Routes = [
     data: {
       title: 'Enrichment Table',
       fontAwesomeIcon: 'table',
+    },
+  },
+  {
+    path: 'projects/:project_name/enrichment-visualisation/:file_id',
+    canActivate: [AuthGuard],
+    component: EnrichmentVisualisationViewerComponent,
+    data: {
+      title: 'Enrichment Visualisation',
+      fontAwesomeIcon: 'chart-bar',
     },
   },
   {

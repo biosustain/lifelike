@@ -1,10 +1,10 @@
-import { Component, Input } from '@angular/core';
-import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../../shared/services/message-dialog.service';
-import { FilesystemObject } from '../../models/filesystem-object';
-import { ObjectExportRequest } from '../../schema';
+import {Component, Input} from '@angular/core';
+import {CommonFormDialogComponent} from '../../../shared/components/dialog/common-form-dialog.component';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
+import {MessageDialog} from '../../../shared/services/message-dialog.service';
+import {FilesystemObject} from '../../models/filesystem-object';
+import {ObjectExportRequest} from '../../schema';
 
 @Component({
   selector: 'app-object-export-dialog',

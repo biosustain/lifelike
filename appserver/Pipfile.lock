@@ -603,11 +603,11 @@
         },
         "marshmallow-dataclass": {
             "hashes": [
-                "sha256:08b69ce7504b96a6f382dfc08976d03865aeb296687a5bf3855a1eb2c555d0a9",
-                "sha256:d64446f3c307796001cea0f0154ab9ded817b1dc273d610bf6e47483d04414e6"
+                "sha256:5f854dead81e2eb3e2734d0d65568a953d7487be314be3eefebae5ad1239396e",
+                "sha256:8d004657724a7266c4aef62e2c06f5a82bdf2d6d25707d994b35e7f3ea5d077e"
             ],
             "index": "pypi",
-            "version": "==8.3.0"
+            "version": "==8.2.0"
         },
         "marshmallow-enum": {
             "hashes": [

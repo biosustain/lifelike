@@ -87,9 +87,7 @@ export class PdfViewerComponent
 
   @Input('render-text-mode')
   set renderTextMode(renderTextMode: RenderTextMode) {
-      if (renderTextMode !== undefined) {
-          this.internalRenderTextMode = renderTextMode;
-      }
+    this.internalRenderTextMode = renderTextMode === undefined ? RenderTextMode.ENHANCED : renderTextMode;
   }
 
   @Input('original-size')
@@ -486,7 +484,7 @@ export class PdfViewerComponent
       linkService: this.pdfMultiPageLinkService,
       textLayerMode: this.internalRenderText
         ? this.internalRenderTextMode
-        : RenderTextMode.DISABLED,
+        : RenderTextMode.ENHANCED,
       findController: this.pdfMultiPageFindController
     };
 
@@ -539,7 +537,7 @@ export class PdfViewerComponent
       linkService: this.pdfSinglePageLinkService,
       textLayerMode: this.internalRenderText
         ? this.internalRenderTextMode
-        : RenderTextMode.DISABLED,
+        : RenderTextMode.ENHANCED,
       findController: this.pdfSinglePageFindController
     };
 
