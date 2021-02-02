@@ -1,20 +1,48 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/operators';
 import { JWTTokenResponse } from 'app/interfaces';
 import { isNullOrUndefined } from 'util';
+import { of, timer, Subscription } from 'rxjs';
+import { map, mergeMap } from 'rxjs/operators';
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
-export class AuthenticationService {
+export class AuthenticationService implements OnDestroy {
   readonly baseUrl = '/api/auth';
 
+  private refreshSubscription: Subscription;
+
   constructor(private http: HttpClient) { }
+
+  ngOnDestroy() {
+    this.refreshSubscription.unsubscribe();
+  }
 
   getAuthHeader(): string | void {
     const token = localStorage.getItem('access_jwt');
     if (token) {
       return `Bearer ${token}`;
     }
+  }
+
+  public isAuthenticated(): boolean {
+    const expirationTime = new Date(localStorage.getItem('expires_at')).getTime();
+    const currentTime = new Date().getTime();
+    return currentTime < expirationTime;
+  }
+
+  public scheduleRenewal() {
+    if (!this.isAuthenticated()) {
+      return;
+    }
+    const expirationTime = new Date(localStorage.getItem('expires_at')).getTime();
+    const source = of(expirationTime).pipe(mergeMap((expiresAt) => {
+      const now = new Date().getTime();
+      const refreshAt = expiresAt - (1000 * 30);
+      return timer(Math.max(1, refreshAt - now)).pipe(
+        mergeMap(() => this.refresh()));
+    }));
+
+    this.refreshSubscription = source.subscribe(() => {});
   }
 
   /**
@@ -31,6 +59,7 @@ export class AuthenticationService {
         localStorage.setItem('expires_at', resp.accessToken.exp);
         // TODO: Move this out of localStorage
         localStorage.setItem('refresh_jwt', resp.refreshToken.token);
+        this.scheduleRenewal();
         return resp;
       })
     );
@@ -62,6 +91,7 @@ export class AuthenticationService {
           localStorage.setItem('expires_at', resp.accessToken.exp);
           // TODO: Remove refresh token from localStorage
           localStorage.setItem('refresh_jwt', resp.refreshToken.token);
+          this.scheduleRenewal();
           return resp;
         }),
       );
