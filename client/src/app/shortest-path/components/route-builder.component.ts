@@ -24,12 +24,12 @@ export class RouteBuilderComponent implements OnInit, OnDestroy {
 
   routeBuilderOpen: boolean;
 
-  queries: Map<number, string>;
+  queries: string[][];
 
   constructor(
     public shortestPathService: ShortestPathService,
   ) {
-    this.queries = new Map<number, string>();
+    this.queries = [];
 
     this.routeBuilderContainerClass = 'route-builder-container-open';
     this.routeBuilderOpen = true;
@@ -46,7 +46,7 @@ export class RouteBuilderComponent implements OnInit, OnDestroy {
       result: [shortestPathQueries],
       value: [],
     }) => {
-      this.queries = shortestPathQueries;
+      this.queries = Object.keys(shortestPathQueries).map(key => [key, shortestPathQueries[key]]);
     });
   }
 
