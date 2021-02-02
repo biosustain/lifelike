@@ -14,8 +14,11 @@
       </div>
 
       <div class="module-toolbar mt-2">
-        <app-content-search-form class="w-100" [params]="params" (formResult)="search($event)">
-        </app-content-search-form>
+        <ng-container *ngIf="(searchTypes$ | async) as searchTypes">
+          <app-content-search-form class="w-100" [params]="params" (formResult)="search($event)"
+            [typeChoices]="searchTypes">
+          </app-content-search-form>
+        </ng-container>
       </div>
     </div>
 

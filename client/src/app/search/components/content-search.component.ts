@@ -14,23 +14,29 @@ import {
 } from 'app/shared/utils/params';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
-import { ContentSearchOptions, TYPES_MAP } from '../content-search';
+import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { HighlightDisplayLimitChange } from '../../file-browser/components/object-info.component';
 import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
 import { RankedItem, ResultList } from '../../shared/schemas/common';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { ContentSearchRequest } from '../schema';
 import { FindOptions } from '../../shared/utils/find';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { SearchType } from '../shared';
+import {
+  ObjectTypeProvider,
+  ObjectTypeService,
+} from '../../file-browser/services/object-type.service';
+import { flatten } from 'lodash';
 
 @Component({
   selector: 'app-content-search',
   templateUrl: './content-search.component.html',
-  styleUrls: ['./content-search.component.scss']
+  styleUrls: ['./content-search.component.scss'],
 })
 export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchOptions,
   RankedItem<FilesystemObject>> implements OnInit, OnDestroy {
@@ -43,14 +49,19 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
   highlightOptions: FindOptions = {keepSearchSpecialChars: true};
+  searchTypes$: Observable<SearchType[]>;
 
   constructor(protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly contentSearchService: ContentSearchService,
               protected readonly zone: NgZone,
               protected readonly errorHandler: ErrorHandler,
-              protected readonly messageDialog: MessageDialog) {
+              protected readonly messageDialog: MessageDialog,
+              protected readonly objectTypeService: ObjectTypeService) {
     super(route, workspaceManager);
+    objectTypeService.all().subscribe((providers: ObjectTypeProvider[]) => {
+      this.searchTypes$ = of(flatten(providers.map(provider => provider.getSearchTypes())));
+    });
   }
 
   get valid(): boolean {
@@ -99,11 +110,16 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   }
 
   deserializeParams(params) {
-    return {
-      ...deserializePaginatedParams(params, this.defaultLimit),
-      q: params.hasOwnProperty('q') ? params.q : '',
-      mimeTypes: params.hasOwnProperty('mimeTypes') ? getChoicesFromQuery(params, 'mimeTypes', TYPES_MAP) : [],
-    };
+    return this.searchTypes$.pipe(
+      map(searchTypes => {
+        const searchTypesMap = new Map(Array.from(searchTypes.values()).map(value => [value.id, value]));
+        return {
+          ...deserializePaginatedParams(params, this.defaultLimit),
+          q: params.hasOwnProperty('q') ? params.q : '',
+          mimeTypes: params.hasOwnProperty('mimeTypes') ? getChoicesFromQuery(params, 'mimeTypes', searchTypesMap) : [],
+        };
+      }),
+    );
   }
 
   serializeParams(params, restartPagination = false) {
@@ -187,8 +203,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     this.messageDialog.display({
       title: 'Advanced Search Options',
       message: '- Exact phrase: "this exact phrase"\n' +
-      '- Zero or more wildcard character: ba*na\n' +
-      '- One or more wildcard character: ba?ana',
+        '- Zero or more wildcard character: ba*na\n' +
+        '- One or more wildcard character: ba?ana',
       type: MessageType.Info,
     });
   }
