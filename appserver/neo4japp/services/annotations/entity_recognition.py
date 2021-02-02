@@ -58,7 +58,8 @@ class EntityRecognitionService:
         self.db = db
 
         self.entity_max_words = 6
-        self.gene_max_words = 1  # this may change in the future
+        self.food_max_words = 4
+        self.gene_max_words = 1
 
         self.exclusion_type_anatomy: Set[str] = set()
         self.exclusion_type_chemical: Set[str] = set()
@@ -722,7 +723,6 @@ class EntityRecognitionService:
         regex = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
 
         for token in tokens:
-            # genes has a different max_words length
             for current_token in self.generate_tokens(token, self.gene_max_words):
                 if (current_token.keyword.lower() in COMMON_WORDS or
                     regex.match(current_token.keyword) or
@@ -740,6 +740,7 @@ class EntityRecognitionService:
                     entities = None
                     id_type = None
                     id_hyperlink = None
+
                     if genes_cur.set_key(lookup_term.encode('utf-8')):
                         entities = [json.loads(v) for v in genes_cur.iternext_dup()]
                     else:
@@ -752,6 +753,45 @@ class EntityRecognitionService:
 
                     if entities:
                         genes_found.append(
+                            LMDBMatch(
+                                entities=entities,  # type: ignore
+                                token=current_token,
+                                id_type=id_type or '',
+                                id_hyperlink=id_hyperlink or ''
+                            )
+                        )
+
+            # foods has a different max_words length
+            for current_token in self.generate_tokens(token, self.food_max_words):
+                if (current_token.keyword.lower() in COMMON_WORDS or
+                    regex.match(current_token.keyword) or
+                    current_token.keyword in ascii_letters or
+                    current_token.keyword in digits or
+                    len(current_token.normalized_keyword) <= 2 or
+                    self.is_abbrev(current_token)
+                ):  # noqa
+                    continue
+
+                term = current_token.keyword
+                lookup_term = current_token.normalized_keyword
+
+                if not self.is_food_exclusion(term):
+                    entities = None
+                    id_type = None
+                    id_hyperlink = None
+
+                    if foods_cur.set_key(lookup_term.encode('utf-8')):
+                        entities = [json.loads(v) for v in foods_cur.iternext_dup()]
+                    else:
+                        # didn't find in LMDB so look in global inclusion
+                        found = self.inclusion_type_food.get(lookup_term, None)
+                        if found:
+                            entities = found.entities
+                            id_type = found.entity_id_type
+                            id_hyperlink = found.entity_id_hyperlink
+
+                    if entities:
+                        foods_found.append(
                             LMDBMatch(
                                 entities=entities,  # type: ignore
                                 token=current_token,
@@ -868,31 +908,6 @@ class EntityRecognitionService:
                             LMDBMatch(
                                 entities=entities,  # type: ignore
                                 token=current_token,
-                                id_type=id_type or '',
-                                id_hyperlink=id_hyperlink or ''
-                            )
-                        )
-
-                if not self.is_food_exclusion(term):
-                    entities = None
-                    id_type = None
-                    id_hyperlink = None
-
-                    if foods_cur.set_key(lookup_term.encode('utf-8')):
-                        entities = [json.loads(v) for v in foods_cur.iternext_dup()]
-                    else:
-                        # didn't find in LMDB so look in global inclusion
-                        found = self.inclusion_type_food.get(lookup_term, None)
-                        if found:
-                            entities = found.entities
-                            id_type = found.entity_id_type
-                            id_hyperlink = found.entity_id_hyperlink
-
-                    if entities:
-                        foods_found.append(
-                            LMDBMatch(
-                                entities=entities,  # type: ignore
-                                token=token,
                                 id_type=id_type or '',
                                 id_hyperlink=id_hyperlink or ''
                             )
