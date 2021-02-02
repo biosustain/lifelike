@@ -71,13 +71,13 @@ class TokenService:
         }
 
     def get_access_token(
-            self, subj, token_type='access', time_offset=40, time_unit='seconds') -> JWTToken:
+            self, subj, token_type='access', time_offset=1, time_unit='hours') -> JWTToken:
         return self._generate_jwt_token(
             sub=subj, secret=self.app_secret, token_type=token_type,
             time_offset=time_offset, time_unit=time_unit)
 
     def get_refresh_token(
-            self, subj, token_type='refresh', time_offset=20, time_unit='seconds') -> JWTToken:
+            self, subj, token_type='refresh', time_offset=7, time_unit='days') -> JWTToken:
         return self._generate_jwt_token(
             sub=subj, secret=self.app_secret, token_type=token_type,
             time_offset=time_offset, time_unit=time_unit)
