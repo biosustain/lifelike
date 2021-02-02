@@ -12,7 +12,7 @@ import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
-import { RankedItem, StandardRequestOptions } from 'app/shared/schemas/common';
+import { RankedItem } from 'app/shared/schemas/common';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CollectionModal } from 'app/shared/utils/collection-modal';
 import { FindOptions } from 'app/shared/utils/find';
@@ -28,7 +28,7 @@ import { AdvancedSearchDialogComponent } from './advanced-search-dialog.componen
   templateUrl: './content-search.component.html',
   styleUrls: ['./content-search.component.scss']
 })
-export class ContentSearchComponent extends PaginatedResultListComponent<StandardRequestOptions,
+export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchOptions,
   RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
   @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
@@ -40,6 +40,17 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Standar
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
   highlightOptions: FindOptions = {keepSearchSpecialChars: true};
 
+  get emptyParams(): boolean {
+    if (isNullOrUndefined(this.params)) {
+      return true;
+    }
+    const qExists = this.params.hasOwnProperty('q') && this.params.q.length !== 0;
+    const typesExists = this.params.hasOwnProperty('types') && this.params.types.length !== 0;
+    const projectsExists = this.params.hasOwnProperty('projects') && this.params.projects.length !== 0;
+
+    return !(qExists || typesExists || projectsExists);
+  }
+
   constructor(private modalService: NgbModal,
               protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
@@ -47,10 +58,6 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Standar
               protected readonly zone: NgZone,
               protected readonly messageDialog: MessageDialog) {
     super(route, workspaceManager);
-  }
-
-  get valid(): boolean {
-    return !!this.params.q.length;
   }
 
   valueChanged(value: ContentSearchOptions) {
