@@ -1,6 +1,6 @@
 import jwt
 import sentry_sdk
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from flask import current_app, request, Blueprint, g, jsonify
 from flask_httpauth import HTTPTokenAuth
 from sqlalchemy.orm.exc import NoResultFound
@@ -54,7 +54,7 @@ class TokenService:
             time_offset - the difference in time before token expiration
             time_unit - time offset for expiration (days, hours, etc) (see datetime docs)
         """
-        time_now = datetime.utcnow()
+        time_now = datetime.now(timezone.utc)
         expiration = time_now + timedelta(**{time_unit: time_offset})
         token = jwt.encode({
             'iat': time_now,
@@ -71,13 +71,13 @@ class TokenService:
         }
 
     def get_access_token(
-            self, subj, token_type='access', time_offset=10, time_unit='seconds') -> JWTToken:
+            self, subj, token_type='access', time_offset=40, time_unit='seconds') -> JWTToken:
         return self._generate_jwt_token(
             sub=subj, secret=self.app_secret, token_type=token_type,
             time_offset=time_offset, time_unit=time_unit)
 
     def get_refresh_token(
-            self, subj, token_type='refresh', time_offset=60, time_unit='days') -> JWTToken:
+            self, subj, token_type='refresh', time_offset=20, time_unit='seconds') -> JWTToken:
         return self._generate_jwt_token(
             sub=subj, secret=self.app_secret, token_type=token_type,
             time_offset=time_offset, time_unit=time_unit)
