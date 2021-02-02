@@ -79,6 +79,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Standar
     if (params.hasOwnProperty('types')) {
       advancedParams.types = getChoicesFromQuery(params, 'types', TYPES_MAP);
     }
+    if (params.hasOwnProperty('projects')) {
+      advancedParams.projects = params.projects === '' ? [] : params.projects.split(';');
+    }
     return advancedParams;
   }
 
@@ -95,6 +98,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Standar
 
     if (params.hasOwnProperty('types')) {
       advancedParams.types = params.types.map(value => value.id).join(';');
+    }
+    if (params.hasOwnProperty('projects')) {
+      advancedParams.projects = params.projects.join(';');
     }
     return advancedParams;
   }
@@ -231,6 +237,22 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Standar
         'types',
         TYPES_MAP
       );
+
+      // Remove 'projects' from q and add to the projects option of the advancedParams
+      const projectMatches = q.match(/\bproject:\S*/);
+      let extractedProjects = [];
+      if (!isNullOrUndefined(projectMatches)) {
+        extractedProjects = projectMatches.map(projectVal => projectVal.split(':')[1]);
+      }
+
+      q = q.replace(/\bproject:\S*/g, '').trim();
+
+      let givenProjects = [];
+      if (params.hasOwnProperty('projects')) {
+        givenProjects = params.projects;
+      }
+
+      advancedParams.projects = extractedProjects.concat(givenProjects);
     }
 
     advancedParams.q = q;
