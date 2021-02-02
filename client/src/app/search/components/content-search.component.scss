@@ -1,0 +1,11 @@
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+@import 'src/scss/variables';
+
+.fake-link {
+    color: $primary;
+}
+.fake-link:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}

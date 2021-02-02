@@ -58,7 +58,6 @@ class SearchService(GraphBaseDao):
         formatted_results: List[FTSQueryRecord] = []
         for result in results:
             node = result['node']
-            score = result['score']
             taxonomy_id = result.get('taxonomy_id', '')
             taxonomy_name = result.get('taxonomy_name', '')
             go_class = result.get('go_class', '')
@@ -70,7 +69,6 @@ class SearchService(GraphBaseDao):
             )
             formatted_results.append(FTSTaxonomyRecord(
                 node=graph_node,
-                score=score,
                 taxonomy_id=taxonomy_id if taxonomy_id is not None
                 else 'N/A',
                 taxonomy_name=taxonomy_name if taxonomy_name is not None
@@ -159,12 +157,12 @@ class SearchService(GraphBaseDao):
 
         cypher_query = f"""
             CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
-            YIELD node, score
+            YIELD node
             MATCH (node)-[]-(n)
             WHERE {result_filters}
-            WITH score, n
+            WITH n
             {organism_match_string}
-            RETURN DISTINCT score as score, n AS node, t.id AS taxonomy_id,
+            RETURN DISTINCT n AS node, t.id AS taxonomy_id,
                 t.name AS taxonomy_name, n.namespace AS go_class
             SKIP $amount
             LIMIT $limit
@@ -184,12 +182,12 @@ class SearchService(GraphBaseDao):
 
         total_query = f"""
             CALL db.index.fulltext.queryNodes("synonymIdx", $search_term)
-            YIELD node, score
+            YIELD node
             MATCH (node)-[]-(n)
             WHERE {result_filters}
-            WITH score, n
+            WITH n
             {organism_match_string}
-            RETURN DISTINCT score as score, n AS node, t.id AS taxonomy_id,
+            RETURN DISTINCT n AS node, t.id AS taxonomy_id,
                 t.name AS taxonomy_name, n.namespace AS go_class
             LIMIT 1001
         """

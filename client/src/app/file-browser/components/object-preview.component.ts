@@ -20,6 +20,7 @@ import { map, mergeMap } from 'rxjs/operators';
 })
 export class ObjectPreviewComponent {
 
+  @Input() highlightTerms: string[] | undefined;
   @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
 
   private readonly object$ = new BehaviorSubject<FilesystemObject>(null);
@@ -27,7 +28,9 @@ export class ObjectPreviewComponent {
     mergeMap(object => {
       if (object) {
         return this.objectTypeService.get(object).pipe(mergeMap(typeProvider => {
-          return typeProvider.createPreviewComponent(object);
+          return typeProvider.createPreviewComponent(object, {
+            highlightTerms: this.highlightTerms,
+          });
         }));
       } else {
         return of(null);
