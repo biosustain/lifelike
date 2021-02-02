@@ -7,6 +7,7 @@ import { BackgroundTask } from '../../rxjs/background-task';
 import { CollectionModel } from '../../utils/collection-model';
 import { WorkspaceManager } from '../../workspace-manager';
 import { ResultList, ResultQuery } from '../../schemas/common';
+import { mergeMap } from 'rxjs/operators';
 
 export abstract class ResultListComponent<O, R, RL extends ResultList<R> = ResultList<R>> implements OnInit, OnDestroy {
   public loadTask: BackgroundTask<O, RL> = new BackgroundTask(params => this.getResults(params));
@@ -36,8 +37,10 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
       this.results.replace(result.results);
     }));
 
-    this.subscriptions.add(this.route.queryParams.subscribe(params => {
-      this.params = this.deserializeParams(params);
+    this.subscriptions.add(this.route.queryParams.pipe(
+      mergeMap(params => this.deserializeParams(params))
+    ).subscribe(params => {
+      this.params = params;
       if (this.valid) {
         this.loadTask.update(this.params);
       }
@@ -75,7 +78,7 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
 
   abstract getDefaultParams(): Required<O>;
 
-  abstract deserializeParams(params: { [key: string]: string }): Required<O>;
+  abstract deserializeParams(params: { [key: string]: string }): Observable<Required<O>>;
 
   abstract serializeParams(params: O, restartPagination: boolean): Record<keyof O, string>;
 }
