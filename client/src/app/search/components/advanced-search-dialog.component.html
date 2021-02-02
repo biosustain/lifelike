@@ -19,7 +19,7 @@
     <!-- Types field -->
     <div class="d-flex justify-content-between align-items-center mb-2">
       <div class="field-label mr-2">
-        <span>where the document is of type</span>
+        <span>with these <strong>types</strong></span>
       </div>
       <div class="field-value">
         <app-select formId="types" [choices]="typeChoices"
@@ -29,6 +29,24 @@
         </app-select>
       </div>
     </div>
+
+    <!-- Projects field -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="field-label mr-2">
+        <span>in these <strong>projects</strong></span>
+      </div>
+      <div class="field-value">
+        <!-- TODO: Likely going to update this in the future to be a text search box. It's not reasonable to
+          assume the list of accessible projects will remain small as the site grows. -->
+        <app-select formId="projects" [choices]="projects"
+                [values]="form.value.projects" (valuesChange)="form.get('projects').setValue($event)"
+                (touch)="form.get('projects').markAsTouched()"
+                [choiceLabel]="projectLabel">
+        </app-select>
+      </div>
+    </div>
+
+    <div class="d-flex my-4 border-bottom"></div>
 
     <!-- Phrase field -->
     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -50,41 +68,27 @@
       </div>
     </div>
 
-    <!-- Projects field -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div class="field-label mr-2">
-        <span>Return content <strong>located</strong> in</span>
-      </div>
-      <div class="field-value">
-        <!-- TODO: Likely going to update this in the future to be a text search box. It's not reasonable to
-          assume the list of accessible projects will remain small as the site grows. -->
-        <app-select formId="projects" [choices]="projects"
-                [values]="form.value.projects" (valuesChange)="form.get('projects').setValue($event)"
-                (touch)="form.get('projects').markAsTouched()"
-                [choiceLabel]="projectLabel">
-        </app-select>
-      </div>
-    </div>
+    <!-- TODOs -->
 
     <!-- Author field -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
+    <!-- <div class="d-flex justify-content-between align-items-center mb-2">
       <div class="field-label mr-2">
         <span>Return content <strong>authored</strong> by</span>
       </div>
       <div class="field-value">
         <input class="form-control border w-100" disabled placeholder="Coming Soon!">
       </div>
-    </div>
+    </div> -->
 
     <!-- Dates fields -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
+    <!-- <div class="d-flex justify-content-between align-items-center mb-2">
       <div class="field-label mr-2">
         <span>Return content <strong>dated</strong> between</span>
       </div>
       <div class="field-value">
         <input class="form-control border w-100" disabled placeholder="Coming Soon!">
       </div>
-    </div>
+    </div> -->
   </app-modal-body>
 
   <app-modal-footer>
