@@ -8,7 +8,13 @@ import {
   UniversalGraphEdge,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
-import { EdgeRenderStyle, NodeRenderStyle, PlacedEdge, PlacedNode, PlacedObject } from 'app/graph-viewer/styles/styles';
+import {
+  EdgeRenderStyle,
+  NodeRenderStyle,
+  PlacedEdge,
+  PlacedNode,
+  PlacedObject,
+} from 'app/graph-viewer/styles/styles';
 import { debounceTime, throttleTime } from 'rxjs/operators';
 import { asyncScheduler, fromEvent, Subject, Subscription } from 'rxjs';
 import { DragBehaviorEvent, isStopResult } from '../behaviors';
@@ -158,61 +164,61 @@ export class CanvasGraphView extends GraphView {
     this.canvas.height = this.canvas.clientHeight;
 
     this.zoom = d3.zoom()
-        .on('zoom', this.canvasZoomed.bind(this))
-        .on('end', this.canvasZoomEnded.bind(this));
+      .on('zoom', this.canvasZoomed.bind(this))
+      .on('end', this.canvasZoomEnded.bind(this));
 
     // We use rxjs to limit the number of mousemove events
     const canvasMouseMoveSubject = new Subject<any>();
 
     d3.select(this.canvas)
-        .on('click', this.canvasClicked.bind(this))
-        .on('dblclick', this.canvasDoubleClicked.bind(this))
-        .on('mousedown', this.canvasMouseDown.bind(this))
-        .on('mousemove', () => {
-          canvasMouseMoveSubject.next();
+      .on('click', this.canvasClicked.bind(this))
+      .on('dblclick', this.canvasDoubleClicked.bind(this))
+      .on('mousedown', this.canvasMouseDown.bind(this))
+      .on('mousemove', () => {
+        canvasMouseMoveSubject.next();
+      })
+      .on('dragover', () => {
+        canvasMouseMoveSubject.next();
+      })
+      .on('mouseleave', this.canvasMouseLeave.bind(this))
+      .on('mouseup', this.canvasMouseUp.bind(this))
+      .call(d3.drag()
+        .container(this.canvas)
+        .filter(() => !d3.event.button)
+        .subject((): CanvasSubject => {
+          if (this.behaviors.call('shouldDrag', {
+            event: d3.event.sourceEvent,
+          })) {
+            return {
+              entity: null,
+            };
+          }
+          const entity = this.getEntityAtMouse();
+          if (entity) {
+            return {
+              entity,
+            };
+          }
+          return null;
         })
-        .on('dragover', () => {
-          canvasMouseMoveSubject.next();
-        })
-        .on('mouseleave', this.canvasMouseLeave.bind(this))
-        .on('mouseup', this.canvasMouseUp.bind(this))
-        .call(d3.drag()
-            .container(this.canvas)
-            .filter(() => !d3.event.button)
-            .subject((): CanvasSubject => {
-              if (this.behaviors.call('shouldDrag', {
-                event: d3.event.sourceEvent,
-              })) {
-                return {
-                  entity: null,
-                };
-              }
-              const entity = this.getEntityAtMouse();
-              if (entity) {
-                return {
-                  entity,
-                };
-              }
-              return null;
-            })
-            .on('start', this.canvasDragStarted.bind(this))
-            .on('drag', this.canvasDragged.bind(this))
-            .on('end', this.canvasDragEnded.bind(this)))
-        .call(this.zoom)
-        .on('dblclick.zoom', null);
+        .on('start', this.canvasDragStarted.bind(this))
+        .on('drag', this.canvasDragged.bind(this))
+        .on('end', this.canvasDragEnded.bind(this)))
+      .call(this.zoom)
+      .on('dblclick.zoom', null);
 
     this.trackedSubscriptions.push(
-        canvasMouseMoveSubject
-            .pipe(throttleTime(this.renderMinimumInterval, asyncScheduler, {
-              leading: true,
-              trailing: false,
-            }))
-            .subscribe(this.canvasMouseMoved.bind(this)),
+      canvasMouseMoveSubject
+        .pipe(throttleTime(this.renderMinimumInterval, asyncScheduler, {
+          leading: true,
+          trailing: false,
+        }))
+        .subscribe(this.canvasMouseMoved.bind(this)),
     );
 
     this.trackedSubscriptions.push(
-        fromEvent(this.canvas, 'keyup')
-            .subscribe(this.canvasKeyDown.bind(this)),
+      fromEvent(this.canvas, 'keyup')
+        .subscribe(this.canvasKeyDown.bind(this)),
     );
   }
 
@@ -245,10 +251,10 @@ export class CanvasGraphView extends GraphView {
     // Handle resizing of the canvas, but doing it with a throttled stream
     // so we don't burn extra CPU cycles resizing repeatedly unnecessarily
     this.canvasResizePendingSubscription = this.canvasResizePendingSubject
-        .pipe(debounceTime(250, asyncScheduler))
-        .subscribe(([width, height]) => {
-          this.setSize(width, height);
-        });
+      .pipe(debounceTime(250, asyncScheduler))
+      .subscribe(([width, height]) => {
+        this.setSize(width, height);
+      });
     const pushResize = () => {
       this.canvasResizePendingSubject.next([
         this.canvas.clientWidth,
@@ -322,9 +328,9 @@ export class CanvasGraphView extends GraphView {
         const newCenterX = this.transform.invertX(this.canvas.width / 2);
         const newCenterY = this.transform.invertY(this.canvas.height / 2);
         d3.select(this.canvas).call(
-            this.zoom.translateBy,
-            newCenterX - centerX,
-            newCenterY - centerY,
+          this.zoom.translateBy,
+          newCenterX - centerX,
+          newCenterY - centerY,
         );
       }
     }
@@ -444,7 +450,7 @@ export class CanvasGraphView extends GraphView {
   private applyPanToEdge(
     edge: UniversalGraphEdge,
     duration: number = 1500,
-    padding = 50
+    padding = 50,
   ) {
     this.previousZoomToFitPadding = padding;
 
@@ -475,7 +481,7 @@ export class CanvasGraphView extends GraphView {
         // move to the midpoint of the edge
         .translate(
           -((from.data.x + to.data.x) / 2),
-          -((from.data.y + to.data.y) / 2)
+          -((from.data.y + to.data.y) / 2),
         ),
     );
 
@@ -531,11 +537,11 @@ export class CanvasGraphView extends GraphView {
     }
 
     select.call(
-        this.zoom.transform,
-        d3.zoomIdentity
-            .translate(canvasWidth / 2, canvasHeight / 2)
-            .scale(Math.min(1, Math.min(canvasWidth / width, canvasHeight / height)))
-            .translate(-minX - width / 2, -minY - height / 2),
+      this.zoom.transform,
+      d3.zoomIdentity
+        .translate(canvasWidth / 2, canvasHeight / 2)
+        .scale(Math.min(1, Math.min(canvasWidth / width, canvasHeight / height)))
+        .translate(-minX - width / 2, -minY - height / 2),
     );
 
     this.invalidateAll();
@@ -684,12 +690,12 @@ export class CanvasGraphView extends GraphView {
     const ctx = this.canvas.getContext('2d');
 
     yield* this.drawTouchPosition(ctx);
-    yield* this.drawHighlightBackground(ctx);
     yield* this.drawSelectionBackground(ctx);
-    yield* this.drawSearchHighlightBackground(ctx);
     yield* this.drawLayoutGroups(ctx);
     yield* this.drawEdges(ctx);
     yield* this.drawNodes(ctx);
+    yield* this.drawHighlightBackground(ctx);
+    yield* this.drawSearchHighlightBackground(ctx);
     yield* this.drawSearchFocusBackground(ctx);
     yield* this.drawActiveBehaviors(ctx);
   }
@@ -718,10 +724,9 @@ export class CanvasGraphView extends GraphView {
     yield null;
 
     ctx.save();
-    ctx.globalCompositeOperation = 'overlay';
     const highlighted = this.highlighting.get();
     for (const highlightedEntity of highlighted) {
-      this.drawEntityBackground(ctx, highlightedEntity, 'rgba(254, 234, 0, 0.3)');
+      this.drawEntityHighlightBox(ctx, highlightedEntity, false);
     }
     ctx.restore();
   }
@@ -741,7 +746,7 @@ export class CanvasGraphView extends GraphView {
     if (!this.touchPosition) {
       const highlighted = this.searchHighlighting.get();
       for (const highlightedEntity of highlighted) {
-        this.drawEntityBackground(ctx, highlightedEntity, 'rgba(254, 234, 0, 0.3)');
+        this.drawEntityHighlightBox(ctx, highlightedEntity, false);
       }
     }
   }
@@ -752,13 +757,7 @@ export class CanvasGraphView extends GraphView {
     if (!this.touchPosition) {
       const focus = this.searchFocus.get();
       for (const focusEntity of focus) {
-        ctx.beginPath();
-        const bbox = this.getEntityBoundingBox([focusEntity], 10);
-        ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
-        ctx.strokeStyle = 'rgba(255, 0, 0, 255)';
-        ctx.lineWidth = 1;
-        ctx.lineCap = 'butt';
-        ctx.stroke();
+        this.drawEntityHighlightBox(ctx, focusEntity, true);
       }
     }
   }
@@ -831,6 +830,55 @@ export class CanvasGraphView extends GraphView {
    * Update the current mouse cursor.
    */
   updateMouseCursor() {
+  }
+
+  /**
+   * Draw a red box around the entity.
+   */
+  private drawEntityHighlightBox(ctx: CanvasRenderingContext2D, entity: GraphEntity, strong: boolean) {
+    if (entity.type === GraphEntityType.Edge) {
+      const d = entity.entity as UniversalGraphEdge;
+      const from = this.expectNodeByHash(d.from);
+      const to = this.expectNodeByHash(d.to);
+      const placedFrom: PlacedNode = this.placeNode(from);
+      const placedTo: PlacedNode = this.placeNode(to);
+
+      const [toX, toY] = placedTo.lineIntersectionPoint(from.data.x, from.data.y);
+      const [fromX, fromY] = placedFrom.lineIntersectionPoint(to.data.x, to.data.y);
+
+      const styleData: UniversalEdgeStyle = nullCoalesce(d.style, {});
+      const lineWidthScale = nullCoalesce(styleData.lineWidthScale, 1);
+      const lineWidth = lineWidthScale * 1 + 20;
+
+      (new LineEdge(ctx, {
+        source: {
+          x: fromX,
+          y: fromY,
+        },
+        target: {
+          x: toX,
+          y: toY,
+        },
+        stroke: new SolidLine(lineWidth, `rgba(255, 0, 0, ${strong ? 0.4 : 0.2})`, {
+          lineCap: 'square',
+        }),
+        forceHighDetailLevel: true,
+      })).draw(this.transform);
+    } else {
+      const lineWidth = strong ? 5 : 3;
+
+      ctx.beginPath();
+      const bbox = this.getEntityBoundingBox([entity], 10);
+      ctx.rect(bbox.minX, bbox.minY, bbox.maxX - bbox.minX, bbox.maxY - bbox.minY);
+      ctx.strokeStyle = 'rgba(255, 0, 0, 255)';
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'butt';
+      if (!strong) {
+        ctx.globalAlpha = 0.4;
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
   }
 
   /**

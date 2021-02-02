@@ -6,6 +6,8 @@
       class="text-center"
       [style.border]="'thin solid ' + leftNodeColor"
       [style.border-radius]="'0.5rem'"
+      draggable="true"
+      (dragstart)="nodeDragStart($event, leftNodeName, leftNodeLabel, leftNodeUrl)"
     >
       <ng-container *ngIf="leftNodeUrl; else leftNodeNoUrl">
         <a class="px-1" target="_blank" [href]="leftNodeUrl">{{ leftNodeName }}</a>
@@ -30,6 +32,8 @@
       class="text-center"
       [style.border]="'thin solid ' + rightNodeColor"
       [style.border-radius]="'0.5rem'"
+      draggable="true"
+      (dragstart)="nodeDragStart($event, rightNodeName, rightNodeLabel, rightNodeUrl)"
     >
       <ng-container *ngIf="rightNodeUrl; else rightNodeNoUrl">
         <a class="px-1" target="_blank" [href]="rightNodeUrl">{{ rightNodeName }}</a>

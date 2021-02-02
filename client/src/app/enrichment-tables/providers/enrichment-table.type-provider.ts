@@ -10,6 +10,7 @@ import { ObjectCreationService } from '../../file-browser/services/object-creati
 import { EnrichmentData } from '../components/enrichment-table-viewer.component';
 import { EnrichmentTableEditDialogComponent } from '../components/enrichment-table-edit-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { SearchType } from '../../search/shared';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 
@@ -65,6 +66,12 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
         },
       },
     }];
+  }
+
+  getSearchTypes(): SearchType[] {
+    return [
+      Object.freeze({id: ENRICHMENT_TABLE_MIMETYPE, name: 'Enrichment Tables'}),
+    ];
   }
 
 }
