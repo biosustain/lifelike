@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup } from '@angular/forms';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { FormComponent } from 'app/shared/components/base/form.component';
@@ -16,7 +16,7 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
   @Output() formResult = new EventEmitter<ContentSearchOptions>();
 
   form = new FormGroup({
-    q: new FormControl('', [Validators.required, this.whitespaceValidator]),
+    q: new FormControl('', [this.whitespaceValidator]),
   });
 
   constructor(messageDialog: MessageDialog) {

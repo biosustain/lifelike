@@ -5,9 +5,9 @@ from neo4japp.database import ma
 
 class ContentSearchSchema(ma.Schema):
     q = ma.String(
-        required=True,
+        default='',
         validate=validate.Regexp(
-            regex=r'.*\S.*',
+            regex=r'(.*\S.*)|(^$)',
             error='Search query cannot contain only whitespace characters.'
         )
     )
