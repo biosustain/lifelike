@@ -1,3 +1,5 @@
+@import 'src/scss/variables';
+
 .error {
   color: gray;
 }
@@ -12,13 +14,14 @@ ul {
 }
 
 table, th, td {
-  border: 1px ridge black !important;
+  border: 1px solid $gray-500 !important;
   border-collapse: separate;
   border-spacing: 0;
 }
 
-th {
-  background-color: #dddfdf;
+.table thead th {
+  background-color: $gray-200;
+  color: $black;
 }
 
 thead tr:nth-child(1) th { position: sticky; top: 0; }
