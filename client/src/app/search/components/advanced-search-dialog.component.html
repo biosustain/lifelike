@@ -38,10 +38,10 @@
       <div class="field-value">
         <!-- TODO: Likely going to update this in the future to be a text search box. It's not reasonable to
           assume the list of accessible projects will remain small as the site grows. -->
-        <app-select formId="projects" [choices]="projects"
+        <app-select formId="projects" [choices]="projectIds"
                 [values]="form.value.projects" (valuesChange)="form.get('projects').setValue($event)"
                 (touch)="form.get('projects').markAsTouched()"
-                [choiceLabel]="projectLabel">
+                [choiceLabel]="projectLabel()">
         </app-select>
       </div>
     </div>

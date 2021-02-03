@@ -3,7 +3,7 @@ import { AbstractControl, FormControl, FormGroup } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { ContentSearchOptions, TYPES } from '../content-search';
+import { ContentSearchOptions, Project, TYPES } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
 
@@ -24,7 +24,8 @@ export class AdvancedSearchDialogComponent implements OnInit {
   }
 
   typeChoices: SearchType[] = TYPES.concat().sort((a, b) => a.name.localeCompare(b.name));
-  projects: string[] = [];
+  projectIds: string[] = [];
+  projectsMap: Map<string, string>;
 
   form = new FormGroup({
     q: new FormControl('', [this.whitespaceValidator]),
@@ -36,11 +37,19 @@ export class AdvancedSearchDialogComponent implements OnInit {
     private readonly modal: NgbActiveModal,
     protected readonly contentSearchService: ContentSearchService,
   ) {
+    this.projectsMap = new Map<string, string>();
   }
 
   ngOnInit() {
-    this.contentSearchService.getProjects().subscribe((projects: string[]) => {
-      this.projects = projects;
+    this.contentSearchService.getProjects().subscribe((projects: Project[]) => {
+      projects.forEach(project => {
+        // Need to convert to string to match query params
+        const projectIdAsString = project.id.toString();
+        if (!this.projectIds.includes(projectIdAsString)) {
+          this.projectIds.push(projectIdAsString);
+        }
+        this.projectsMap.set(projectIdAsString, project.projectName);
+      });
     });
   }
 
@@ -56,12 +65,20 @@ export class AdvancedSearchDialogComponent implements OnInit {
     }
   }
 
-  typeLabel(choice) {
+  /**
+   * Function used by the 'types' app-select component to choose what value is displayed in the dropdown list.
+   * @param choice SearchType representing an option in the list
+   */
+  typeLabel(choice: SearchType) {
     return choice.name;
   }
 
-  projectLabel(choice) {
-    return choice;
+  /**
+   * Function used by the 'projects' app-select component to choose which value is displayed in the dropdown list. Creates and returns a
+   * closure to allow the app-select component to use the value of 'this.projectsMap'.
+   */
+  projectLabel() {
+    return (choice: string) => this.projectsMap.get(choice);
   }
 
   whitespaceValidator(control: AbstractControl): {[key: string]: any} | null {
