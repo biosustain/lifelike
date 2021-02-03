@@ -145,7 +145,7 @@ const annotationTypes: AnnotationStyle[] = [
   {
     label: 'map',
     color: MAP,
-    iconCode: '\uf279'
+    iconCode: '\uf542'
   },
   {
     label: 'note',

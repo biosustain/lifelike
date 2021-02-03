@@ -112,5 +112,5 @@ class ProjectBackup(RDBMSBase, TimestampMixin):
     graph = db.Column(db.JSON)
     author = db.Column(db.String(240), nullable=False)
     public = db.Column(db.Boolean, default=False)
-    user_id = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, primary_key=True, nullable=False)
     hash_id = db.Column(db.String(50))
