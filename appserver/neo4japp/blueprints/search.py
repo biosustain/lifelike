@@ -2,6 +2,7 @@ import html
 import json
 import re
 from collections import defaultdict
+from typing import List
 
 import sqlalchemy
 from flask import Blueprint, current_app, jsonify, g
@@ -27,7 +28,7 @@ from neo4japp.request_schemas.search import (
 from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.util import jsonify_with_class, SuccessResponse
-from neo4japp.utils.logger import UserEventLog
+from neo4japp.utils.logger import EventLog, UserEventLog
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
@@ -196,11 +197,19 @@ def get_projects_from_params(advanced_args):
     projects = set()
     if 'projects' in advanced_args and advanced_args['projects'] != '':
         projects = set(advanced_args['projects'].split(';'))
+    try:
+        return [int(project) for project in projects]
+    except ValueError as e:
+        current_app.logger.error(
+            f'Content search was given invalid value for argument "projects": ' +
+            f'{list(projects)}. List values should represent base 10 integers.',
+            exc_info=e,
+            extra=EventLog(event_type='content_search').to_dict()
+        )
+        raise
 
-    return list(projects)
 
-
-def get_accessible_projects_filter(user_id):
+def get_projects_filter(user_id: int, projects: List[int]):
     t_project = aliased(Projects)
     t_project_role = aliased(AppRole)
 
@@ -226,16 +235,28 @@ def get_accessible_projects_filter(user_id):
     )
     accessible_project_ids = [project_id for project_id, in query]
 
-    return {
-        'bool': {
-            'should': [
-                # If the user has access to the project the document is in...
-                {'terms': {'project_id': accessible_project_ids}},
-                # OR if the document is public...
-                {'term': {'public': True}}
-            ]
+    if len(projects) > 0:
+        return {
+            'bool': {
+                'must': [
+                    # If the user has access to the project the document is in...
+                    {'terms': {'project_id': accessible_project_ids}},
+                    # AND the document is in the given list.
+                    {'terms': {'project_id': [project for project in projects]}}
+                ]
+            }
         }
-    }
+    else:
+        return {
+            'bool': {
+                'should': [
+                    # If the user has access to the project the document is in...
+                    {'terms': {'project_id': accessible_project_ids}},
+                    # OR if the document is public.
+                    {'term': {'public': True}}
+                ]
+            }
+        }
 
 
 def prep_search_results(search_results, search_phrases):
@@ -345,20 +366,9 @@ def search(
             'must': [
                 # The document must have the specified type...
                 {'terms': {'type': types}},
-                # ...And the user must have access to the document...
-                get_accessible_projects_filter(g.current_user.id),
-                # ...And the project name should match at least one of the given project strings...
-                {
-                    'bool': {
-                        'should': [{
-                            'multi_match': {
-                                    'query': project,  # type:ignore
-                                    'type': 'phrase',  # type:ignore
-                                    'fields': ['project_name']
-                            }
-                        } for project in projects],
-                    }
-                }
+                # ...And must be accessible by the user, and in the specified list of
+                # projects or public if no list is given...
+                get_projects_filter(g.current_user.id, projects),
             ]
         }
     }
