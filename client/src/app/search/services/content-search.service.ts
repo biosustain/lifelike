@@ -38,11 +38,11 @@ export class ContentSearchService extends AbstractService {
     );
   }
 
-  getProjects(): Observable<string[]> {
+  getProjects(): Observable<Project[]> {
     return this.http.get<{results: Project[]}>(
       `${this.PROJECTS_BASE_URL}/`, {
         ...this.getHttpOptions(true),
       },
-    ).pipe(map(resp => resp.results.map(project => project.projectName)));
+    ).pipe(map(resp => resp.results));
   }
 }
