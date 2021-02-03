@@ -85,15 +85,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
 
   getExtraSource(): Observable<KnowledgeMap> {
     return from([this.locator]).pipe(switchMap(locator => {
-      return this.mapService.getBackup(locator.projectName, locator.hashId).pipe(catchError(error => {
-        if (error instanceof HttpErrorResponse) {
-          const res = error as HttpErrorResponse;
-          if (res.status === 404) {
-            return from([null]);
-          }
-        }
-        return throwError(error);
-      }));
+      return this.mapService.getBackup(locator.projectName, locator.hashId);
     }));
   }
 
@@ -130,7 +122,8 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     if (this.map) {
       this.map.graph = this.graphCanvas.getGraph();
       this.map.modified_date = new Date().toISOString();
-      const observable = this.mapService.createOrUpdateBackup(this.locator.projectName, cloneDeep(this.map));
+      const observable = this.mapService.createOrUpdateBackup(
+        this.locator.projectName, cloneDeep(this.map));
       observable.subscribe();
       return observable;
     }

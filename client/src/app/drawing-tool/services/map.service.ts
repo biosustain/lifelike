@@ -10,6 +10,7 @@ import { AppUser } from 'app/interfaces';
 import { AbstractService } from 'app/shared/services/abstract-service';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { PaginatedRequestOptions, ResultList } from '../../shared/schemas/common';
+import { ignore404Errors } from 'app/shared/utils';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',
@@ -150,7 +151,7 @@ export class MapService extends AbstractService {
     return this.http.get(
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/backup`,
       this.getHttpOptions(true)
-    );
+    ).pipe(ignore404Errors());
   }
 
   createOrUpdateBackup(projectName: string, target: KnowledgeMap): Observable<any> {
@@ -162,14 +163,14 @@ export class MapService extends AbstractService {
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(target.hash_id)}/backup`,
       target,
       this.getHttpOptions(true),
-    );
+    ).pipe(ignore404Errors());
   }
 
   deleteBackup(projectName: string, hashId: string): Observable<any> {
     return this.http.delete(
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/backup`,
       this.getHttpOptions(true)
-    );
+    ).pipe(ignore404Errors());
   }
 
   // ========================================
