@@ -439,7 +439,7 @@ class AnnotationService:
                     matched_organism_ids=[self.specified_organism.organism_id],
                 )
 
-        for (entity, entity_id_type, entity_id_hyperlink, token) in entity_token_pairs:
+        for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
             category = None
             try:
@@ -634,7 +634,7 @@ class AnnotationService:
                     organisms=[self.specified_organism.organism_id],
                 )
 
-        for (entity, entity_id_type, entity_id_hyperlink, token) in entity_token_pairs:
+        for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             category = entity.get('category', '')
             try:
                 protein_id = entity[EntityIdStr.PROTEIN.value]
@@ -677,7 +677,7 @@ class AnnotationService:
                 matches.append(annotation)
         return matches
 
-    def _annotate_type_species_local(self,) -> List[Annotation]:
+    def _annotate_type_species_local(self) -> List[Annotation]:
         """Similar to self._get_annotation() but for creating
         annotations of custom species.
         However, does not check if a synonym is used by multiple
@@ -810,7 +810,7 @@ class AnnotationService:
     def _update_entity_frequency_map(
         self,
         entity_frequency: Dict[str, int],
-        annotation: Annotation,
+        annotation
     ) -> Dict[str, int]:
         entity_id = annotation.meta.id
         if entity_frequency.get(entity_id, None) is not None:
@@ -819,7 +819,7 @@ class AnnotationService:
             entity_frequency[entity_id] = 1
 
         # If this annotation is a virus then we also have to update the homo sapiens frequency
-        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+        if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
             if entity_frequency.get(HOMO_SAPIENS_TAX_ID, None) is not None:
                 entity_frequency[HOMO_SAPIENS_TAX_ID] += 1
             else:
@@ -830,7 +830,7 @@ class AnnotationService:
     def _update_entity_location_map(
         self,
         matched_entity_locations: Dict[str, List[Tuple[int, int]]],
-        annotation: Annotation,
+        annotation
     ) -> Dict[str, List[Tuple[int, int]]]:
         if matched_entity_locations.get(annotation.meta.id, None) is not None:
             matched_entity_locations[annotation.meta.id].append(
@@ -843,7 +843,7 @@ class AnnotationService:
 
         # If the annotation represents a virus, then also mark this location as a human
         # annotation
-        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+        if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
             if matched_entity_locations.get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
                 matched_entity_locations[HOMO_SAPIENS_TAX_ID].append(  # noqa
                     (annotation.lo_location_offset, annotation.hi_location_offset)
@@ -857,7 +857,7 @@ class AnnotationService:
 
     def _get_entity_frequency_location_and_category(
         self,
-        annotations: List[Annotation],
+        annotations
     ) -> Tuple[
             Dict[str, int],
             Dict[str, List[Tuple[int, int]]],
@@ -879,12 +879,11 @@ class AnnotationService:
                 matched_entity_locations=matched_entity_locations,
                 annotation=annotation,
             )
-            entity_categories[annotation.meta.id] = annotation.meta.to_dict().get('category', '')
+            entity_categories[annotation.meta.id] = annotation.meta.category or ''
 
             # Need to add an entry for humans if we annotated a virus
-            if isinstance(annotation, OrganismAnnotation) and isinstance(annotation.meta, OrganismAnnotation.OrganismMeta):  # noqa
-                if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
-                    entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.EUKARYOTA.value
+            if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+                entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.EUKARYOTA.value
 
         return entity_frequency, matched_entity_locations, entity_categories
 
@@ -967,7 +966,7 @@ class AnnotationService:
             EntityType.ENTITY.value: self._annotate_type_entity
         }
 
-        for (entity_type, entity_id_str) in types_to_annotate:
+        for entity_type, entity_id_str in types_to_annotate:
             annotate_entities = funcs[entity_type]
             if entity_type == EntityType.SPECIES.value:
                 annotations = annotate_entities(
@@ -1166,17 +1165,12 @@ class AnnotationService:
         annotation_interval_set: Set[Tuple[int, int]] = set()
 
         for unified in unified_annotations:
-            if unified.lo_location_offset == unified.hi_location_offset:
-                # keyword is a single character
-                # should not have overlaps
-                updated_unified_annotations.append(unified)
+            interval_pair = (unified.lo_location_offset, unified.hi_location_offset)
+            if interval_pair in annotation_interval_dict:
+                annotation_interval_dict[interval_pair].append(unified)
             else:
-                interval_pair = (unified.lo_location_offset, unified.hi_location_offset)
-                if interval_pair in annotation_interval_dict:
-                    annotation_interval_dict[interval_pair].append(unified)
-                else:
-                    annotation_interval_dict[interval_pair] = [unified]
-                annotation_interval_set.add(interval_pair)
+                annotation_interval_dict[interval_pair] = [unified]
+            annotation_interval_set.add(interval_pair)
 
         # it's faster to create an interval tree with just
         # intervals, rather than a tree with intervals and data
@@ -1202,7 +1196,7 @@ class AnnotationService:
 
         overlap_ranges = tree.merge_overlaps()
 
-        for (lo, hi) in overlap_ranges:
+        for lo, hi in overlap_ranges:
             overlaps = tree.overlap(lo, hi)
 
             annotations_to_fix: List[Annotation] = []
@@ -1246,48 +1240,39 @@ class AnnotationService:
                 # gene has lowercase: cysB
                 # also cases like gene SerpinA1 vs protein Serpin A1
 
-                def check_gene_protein(
-                    anno1: Annotation,
-                    anno2: Annotation,
-                    anno1_text_in_document: str,
-                    anno2_text_in_document: str,
-                ):
-                    """First check for exact match
-                    if no exact match then check substrings
-                    e.g `Serpin A1` matched to `serpin A1`
-                    e.g `SerpinA1` matched to `serpin A1`
+                """First check for exact match
+                if no exact match then check substrings
+                e.g `Serpin A1` matched to `serpin A1`
+                e.g `SerpinA1` matched to `serpin A1`
 
-                    We take the first case will not count hyphens separated
-                    because hard to infer if it was used as a space
-                    need to consider precedence in case gene and protein
-                    have the exact spelling correct annotated word
-                    """
-                    if anno1_text_in_document == anno1.keyword:
-                        return anno1
-                    if anno2_text_in_document == anno2.keyword:
-                        return anno2
-
-                    if len(anno1_text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
-                        return anno1
-                    if len(anno2_text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
-                        return anno2
-
-                    return None
-
+                We take the first case will not count hyphens separated
+                because hard to infer if it was used as a space
+                need to consider precedence in case gene and protein
+                have the exact spelling correct annotated word
+                """
+                gene_protein_precedence_result = None
                 if key1 > key2:
-                    gene_protein_precedence_result = check_gene_protein(
-                        anno1=anno1,
-                        anno2=anno2,
-                        anno1_text_in_document=anno1.text_in_document,
-                        anno2_text_in_document=anno2.text_in_document,
-                    )
+                    if anno1.text_in_document == anno1.keyword:
+                        gene_protein_precedence_result = anno1
+                    elif anno2.text_in_document == anno2.keyword:
+                        gene_protein_precedence_result = anno2
+
+                    # no match so far
+                    if len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
+                        gene_protein_precedence_result = anno1
+                    elif len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
+                        gene_protein_precedence_result = anno2
                 else:
-                    gene_protein_precedence_result = check_gene_protein(
-                        anno1=anno2,
-                        anno2=anno1,
-                        anno1_text_in_document=anno2.text_in_document,
-                        anno2_text_in_document=anno1.text_in_document,
-                    )
+                    if anno2.text_in_document == anno2.keyword:
+                        gene_protein_precedence_result = anno2
+                    elif anno1.text_in_document == anno1.keyword:
+                        gene_protein_precedence_result = anno1
+
+                    # no match so far
+                    if len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
+                        gene_protein_precedence_result = anno2
+                    elif len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
+                        gene_protein_precedence_result = anno1
 
                 if gene_protein_precedence_result is not None:
                     return gene_protein_precedence_result
