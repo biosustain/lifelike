@@ -122,10 +122,14 @@ def get_all_annotations_from_project(project_name):
     combined_annotations = annotation_service.get_combined_annotations_in_project(project.id)
     distinct_annotations = {}
     for annotation in combined_annotations:
+        if annotation.get('keyword', None) is not None:
+            text = annotation['keyword'].strip()
+        else:
+            text = annotation['meta']['allText'].strip()
         annotation_data = (
             annotation['meta']['id'],
             annotation['meta']['type'],
-            annotation['keyword'].strip(),
+            text,
             annotation['primaryName'].strip(),
         )
         if distinct_annotations.get(annotation_data, None) is not None:
@@ -280,7 +284,7 @@ def export_global_inclusions():
 
         return {
             'id': inclusion.annotation['meta'].get('id', ''),
-            'term': inclusion.annotation['keyword'],
+            'term': inclusion.annotation['meta']['allText'],
             'type': inclusion.annotation['meta']['type'],
             'hyperlink': inclusion.annotation['meta'].get('idHyperlink', ''),
             'inclusion_date': inclusion.annotation.get('inclusion_date', ''),
@@ -386,7 +390,7 @@ def get_annotations():
         GlobalList.approved,
         GlobalList.creation_date,
         GlobalList.modified_date,
-        GlobalList.annotation['keyword'].astext.label('text'),
+        GlobalList.annotation['meta']['allText'].astext.label('text'),
         sa.sql.null().label('reason'),
         GlobalList.annotation['meta']['type'].astext.label('entityType'),
         GlobalList.annotation['meta']['id'].astext.label('annotationId'),
@@ -476,10 +480,14 @@ def get_all_annotations_from_file(project_name, file_id):
 
     distinct_annotations = {}
     for annotation in combined_annotations:
+        if annotation.get('keyword', None) is not None:
+            text = annotation['keyword'].strip()
+        else:
+            text = annotation['meta']['allText'].strip()
         annotation_data = (
             annotation['meta']['id'],
             annotation['meta']['type'],
-            annotation['keyword'].strip(),
+            text,
             annotation['primaryName'].strip(),
         )
 

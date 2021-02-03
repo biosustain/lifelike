@@ -341,7 +341,7 @@ class ElasticService():
                     parsing_phrase = True
                 continue
 
-            if c == ' ' and not parsing_phrase:
+            if re.match(r'\s', c) and not parsing_phrase:
                 if term != '':
                     if '*' in term or '?' in term:
                         wildcard_stack.append(term)
@@ -350,14 +350,15 @@ class ElasticService():
                     term = ''
                 continue
             term += c
+
         if term != '':
             # If a phrase doesn't have a closing `"`, it's possible that multiple
-            # words might be in the term. So, split the term and extend the
-            # appropriate stack.
+            # words might be in the term. So, split the phrase and extend the
+            # appropriate stack with the split values.
             if '*' in term or '?' in term:
-                wildcard_stack.extend(term.split(' '))
+                wildcard_stack.extend(re.split(r'\s+', term.strip()))
             else:
-                word_stack.extend(term.split(' '))
+                word_stack.extend(re.split(r'\s+', term.strip()))
 
         return word_stack, phrase_stack, wildcard_stack
 

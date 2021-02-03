@@ -1,5 +1,5 @@
 import {
-  DETAIL_NODE_LABELS,
+  DETAIL_NODE_LABELS, Hyperlink, Source,
   UniversalEdgeStyle,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -133,8 +133,38 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
 
       const iconLabelColor = nullCoalesce(d.icon ? d.icon.color : null, textColor);
       const iconSize = nullCoalesce(d.icon ? d.icon.size : null, 50);
-      const iconFontFace = nullCoalesce(d.icon ? d.icon.face : null, 'FontAwesome');
+      const iconFontFace = nullCoalesce(d.icon ? d.icon.face : null, '\'Font Awesome 5 Pro\'');
       const iconFont = `${iconSize}px ${iconFontFace}`;
+
+      // Override icon for link types
+      if (d.label === 'link') {
+        const links: string[] = [
+          ...(d.data && d.data.sources ? d.data.sources.map(item => item.url || '') : []),
+          ...(d.data && d.data.hyperlinks ? d.data.hyperlinks.map(item => item.url || '') : []),
+        ];
+
+        for (const link of links) {
+          try {
+            const url = new URL(link, window.location.href);
+            if (url.pathname.match(/^\/projects\/([^\/]+)\/enrichment-table\//)) {
+              iconCode = '\uf0ce';
+              break;
+            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/maps\//)) {
+              iconCode = '\uf542';
+              break;
+            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/files\//)) {
+              iconCode = '\uf15b';
+              break;
+            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/?$/)) {
+              iconCode = '\uf5fd';
+              break;
+            } else if (url.protocol.match(/^mailto:$/i)) {
+              iconCode = '\uf0e0';
+            }
+          } catch (e) {
+          }
+        }
+      }
 
       // Textbox to draw the icon
       const iconTextbox = new TextElement(ctx, {

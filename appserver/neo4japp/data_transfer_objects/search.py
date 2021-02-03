@@ -9,7 +9,6 @@ from neo4japp.util import CamelDictMixin
 class FTSQueryRecord(CamelDictMixin):
     """ Single record from a full text query in Neo4j """
     node: GraphNode = attr.ib()
-    score: int = attr.ib()
 
 
 @attr.s(frozen=True)
