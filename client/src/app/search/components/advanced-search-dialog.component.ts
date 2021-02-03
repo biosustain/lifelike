@@ -50,6 +50,11 @@ export class AdvancedSearchDialogComponent implements OnInit {
         }
         this.projectsMap.set(projectIdAsString, project.projectName);
       });
+
+      // Finally, if the user included any ids in the query params that they DON'T actually have access to, remove them from the form. If
+      // we don't do this, there will be "ghost" values in the app-select dropdown that won't be visible.
+      const formProjectIds = this.form.get('projects').value as string[];
+      this.form.get('projects').setValue(formProjectIds.filter(projectId => this.projectIds.includes(projectId)));
     });
   }
 
