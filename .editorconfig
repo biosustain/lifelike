@@ -249,6 +249,10 @@ ij_shell_minify_program = false
 ij_shell_redirect_followed_by_space = false
 ij_shell_switch_cases_indented = false
 
+[*.json]
+indent_size = 2
+tab_width = 2
+
 [{*.cjs,*.js}]
 indent_size = 2
 tab_width = 2
