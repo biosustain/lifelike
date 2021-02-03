@@ -1,7 +1,5 @@
-from flask import current_app, Blueprint, jsonify
+from flask import current_app, g, Blueprint, jsonify
 from webargs.flaskparser import use_args
-from neo4japp.exceptions import RecordNotFoundException
-from neo4japp.blueprints.auth import pullUserFromAuthHead
 from neo4japp.utils.logger import ClientErrorLog
 from neo4japp.schemas.errors import ClientErrorSchema
 
@@ -18,9 +16,9 @@ def client_logging(args):
     through proper CORS settings.
     """
 
-    try:
-        current_user = pullUserFromAuthHead().username
-    except RecordNotFoundException:
+    if 'current_user' in g:
+        current_user = g.current_user.username
+    else:
         current_user = 'anonymous'
 
     err = ClientErrorLog(
