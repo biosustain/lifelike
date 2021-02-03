@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "data"
+  ],
+  "properties": {
+    "data": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 20000
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "ncbiNodes",
+        "domainResults"
+      ],
+      "properties": {
+        "version": {
+          "const": "1"
+        },
+        "ncbiNodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": [
+              "neo4jID",
+              "x",
+              "link",
+              "s"
+            ],
+            "properties": {
+              "neo4jID": {
+                "type": "number"
+              },
+              "x": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "full_name": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "locus_tag": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "link": {
+                "type": "string"
+              },
+              "s": {
+                "type": "object",
+                "additionalProperties": true,
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "domainResults": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  }
+}
