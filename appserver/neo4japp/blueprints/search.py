@@ -183,42 +183,21 @@ def empty_params(q, advanced_args):
     return not (q_exists or types_exists or projects_exists)
 
 
-def get_types_from_params(q, advanced_args):
-    # Get document types from either `q` or `types`
+def get_types_from_params(advanced_args):
     types = set()
     if 'types' in advanced_args and advanced_args['types'] != '':
         types = set(advanced_args['types'].split(';'))
 
-    # Even if `types` is in the advanced args, expect `q` might also contain some types
-    extracted_types = re.findall(r'\btype:\S*', q)
-
-    if len(extracted_types) > 0:
-        q = re.sub(r'\btype:\S*', '', q)
-        for extracted_type in extracted_types:
-            types.add(extracted_type.split(':')[1])
-
-    # If we found any types in the advanced args, or in the query, use them. Otherwise default is
-    # all.
-    types = list(types) if len(types) > 0 else ['map', 'pdf']
-
-    return q, types
+    # If we found any types in the advanced args, use them. Otherwise default is all.
+    return list(types) if len(types) > 0 else ['map', 'pdf']
 
 
-def get_projects_from_params(q, advanced_args):
-    # Get projects from either `q` or `projects`
+def get_projects_from_params(advanced_args):
     projects = set()
     if 'projects' in advanced_args and advanced_args['projects'] != '':
         projects = set(advanced_args['projects'].split(';'))
 
-    # Even if `projects` is in the advanced args, expect `q` might also contain some projects
-    extracted_projects = re.findall(r'\bproject:\S*', q)
-
-    if len(extracted_projects) > 0:
-        q = re.sub(r'\bproject:\S*', '', q)
-        for extracted_type in extracted_projects:
-            projects.add(extracted_type.split(':')[1])
-
-    return q, list(projects)
+    return list(projects)
 
 
 def get_accessible_projects_filter(user_id):
@@ -335,8 +314,8 @@ def search(
 
     offset = (page - 1) * limit
 
-    q, types = get_types_from_params(q, advanced_args)
-    q, projects = get_projects_from_params(q, advanced_args)
+    types = get_types_from_params(advanced_args)
+    projects = get_projects_from_params(advanced_args)
 
     # Set the search term once we've parsed 'q' for all advanced options
     search_term = q
