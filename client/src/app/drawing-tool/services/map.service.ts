@@ -1,8 +1,7 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-import { from, Observable, throwError, pipe } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import { KnowledgeMap } from './interfaces';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
@@ -11,7 +10,7 @@ import { AppUser } from 'app/interfaces';
 import { AbstractService } from 'app/shared/services/abstract-service';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import { PaginatedRequestOptions, ResultList } from '../../shared/schemas/common';
-import { UnaryFunction } from 'rxjs/src/internal/types';
+import { ignore404Errors } from 'app/shared/utils';
 
 @Injectable({
   providedIn: 'root',
@@ -152,7 +151,7 @@ export class MapService extends AbstractService {
     return this.http.get(
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/backup`,
       this.getHttpOptions(true)
-    ).pipe(this.ignore404Errors());
+    ).pipe(ignore404Errors());
   }
 
   createOrUpdateBackup(projectName: string, target: KnowledgeMap): Observable<any> {
@@ -164,31 +163,19 @@ export class MapService extends AbstractService {
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(target.hash_id)}/backup`,
       target,
       this.getHttpOptions(true),
-    ).pipe(this.ignore404Errors());
+    ).pipe(ignore404Errors());
   }
 
   deleteBackup(projectName: string, hashId: string): Observable<any> {
     return this.http.delete(
       `${this.MAPS_BASE_URL}/map/${encodeURIComponent(hashId)}/backup`,
       this.getHttpOptions(true)
-    ).pipe(this.ignore404Errors());
+    ).pipe(ignore404Errors());
   }
 
   // ========================================
   // Utility
   // ========================================
-
-  ignore404Errors<T>(): UnaryFunction<Observable<T>, Observable<T>> {
-    return pipe(catchError(error => {
-      if (error instanceof HttpErrorResponse) {
-        const res = error as HttpErrorResponse;
-        if (res.status === 404) {
-          return from([null]);
-        }
-      }
-      return throwError(error);
-    }));
-  }
 
   isEditableByUser(projectName: string, hashId: string): Observable<any> {
     return this.http.get(
