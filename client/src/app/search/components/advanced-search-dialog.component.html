@@ -5,23 +5,19 @@
     <div>
       <div class="font-weight-bold mb-2">Find content</div>
     </div>
-    <!-- Words field -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div class="field-label mr-2">
-        <span>with <strong>all</strong> the words</span>
-      </div>
-      <div class="field-value">
-        <input [class]="'form-control w-100 border' + (form.get('q').invalid && form.get('q').dirty ? ' border-danger' : '')" formControlName="q">
+    <!-- AND Words field -->
+    <div class="form-group row">
+      <label class="col-sm-4 col-form-label">with <strong>all</strong> the words</label>
+      <div class="col-sm-8">
+        <input [class]="'form-control border' + (form.get('q').invalid && form.get('q').dirty ? ' border-danger' : '')" formControlName="q">
         <app-form-input-feedback [control]="form.get('q')"></app-form-input-feedback>
       </div>
     </div>
 
     <!-- Types field -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div class="field-label mr-2">
-        <span>with these <strong>types</strong></span>
-      </div>
-      <div class="field-value">
+    <div class="form-group row">
+      <label class="col-sm-4 col-form-label">with these <strong>types</strong></label>
+      <div class="col-sm-8">
         <app-select formId="types" [choices]="typeChoices"
                 [values]="form.value.types" (valuesChange)="form.get('types').setValue($event)"
                 (touch)="form.get('types').markAsTouched()"
@@ -31,17 +27,15 @@
     </div>
 
     <!-- Projects field -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div class="field-label mr-2">
-        <span>in these <strong>projects</strong></span>
-      </div>
-      <div class="field-value">
+    <div class="form-group row">
+      <label class="col-sm-4 col-form-label">in these <strong>projects</strong></label>
+      <div class="col-sm-8">
         <!-- TODO: Likely going to update this in the future to be a text search box. It's not reasonable to
           assume the list of accessible projects will remain small as the site grows. -->
         <app-select formId="projects" [choices]="projectIds"
-                [values]="form.value.projects" (valuesChange)="form.get('projects').setValue($event)"
-                (touch)="form.get('projects').markAsTouched()"
-                [choiceLabel]="projectLabel()">
+          [values]="form.value.projects" (valuesChange)="form.get('projects').setValue($event)"
+          (touch)="form.get('projects').markAsTouched()"
+          [choiceLabel]="projectLabel()">
         </app-select>
       </div>
     </div>
@@ -49,26 +43,33 @@
     <div class="d-flex my-4 border-bottom"></div>
 
     <!-- Phrase field -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div class="field-label mr-2">
-        <span>with the <strong>exact phrase</strong></span>
-      </div>
-      <div class="field-value">
-        <input class="form-control border w-100" disabled placeholder="Coming Soon!">
+    <div class="form-group row">
+      <label class="col-sm-4 col-form-label">with the <strong>exact phrase</strong></label>
+      <div class="col-sm-8">
+        <input class="form-control border" formControlName="phrase" placeholder="e.g., patients with comorbidities">
       </div>
     </div>
 
     <!-- Wildcards field -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div class="field-label mr-2">
-        <span>with the <strong>wildcard</strong> words</span>
-      </div>
-      <div class="field-value">
-        <input class="form-control border w-100" disabled placeholder="Coming Soon!">
+    <div class="form-group row">
+      <label class="col-sm-4 col-form-label">with the <strong>wildcard</strong> words</label>
+      <div class="col-sm-8">
+        <input class="form-control border" formControlName="wildcards" placeholder="e.g., C*ID, CO?ID">
+        <small class="form-text text-muted">
+          Use '*' anywhere in a word to match 0 or more characters. '?' will match 0 or 1 characters.
+        </small>
       </div>
     </div>
 
     <!-- TODOs -->
+
+    <!-- OR Words field -->
+    <!-- <div class="form-group row">
+      <label class="col-sm-4 col-form-label">with <strong>at least one</strong> of the words</label>
+      <div class="col-sm-8">
+        <input class="form-control border w-100" disabled placeholder="Coming Soon!">
+      </div>
+    </div> -->
 
     <!-- Author field -->
     <!-- <div class="d-flex justify-content-between align-items-center mb-2">

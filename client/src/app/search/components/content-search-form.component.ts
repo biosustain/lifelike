@@ -32,8 +32,14 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
 
   getQueryStringFromParams(params: ContentSearchOptions) {
     const q = [];
-    if (params.hasOwnProperty('q')) {
+    if (params.hasOwnProperty('q') && params.q !== '') {
       q.push(params.q);
+    }
+    if (params.hasOwnProperty('wildcards') && params.wildcards !== '') {
+      q.push(params.wildcards);
+    }
+    if (params.hasOwnProperty('phrase') && params.phrase !== '') {
+      q.push(`"${params.phrase}"`);
     }
     if (params.hasOwnProperty('types') && params.types !== []) {
       params.types.forEach(type => q.push(`type:${type.id}`));

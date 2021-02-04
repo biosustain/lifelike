@@ -181,7 +181,12 @@ def empty_params(q, advanced_args):
         advanced_args.get('projects', None) is not None and
         advanced_args['projects'] != ''
     )
-    return not (q_exists or types_exists or projects_exists)
+    phrase_exists = advanced_args.get('phrase', None) is not None and advanced_args['phrase'] != ''
+    wildcards_exists = (
+        advanced_args.get('wildcards', None) is not None and
+        advanced_args['wildcards'] != ''
+    )
+    return not (q_exists or types_exists or projects_exists or phrase_exists or wildcards_exists)
 
 
 def get_types_from_params(q, advanced_args):
@@ -227,6 +232,22 @@ def get_projects_from_params(q, advanced_args):
             extra=EventLog(event_type='content_search').to_dict()
         )
         raise
+
+
+def get_wildcards_from_params(q, advanced_args):
+    # Get wildcards from `wildcards`
+    wildcards = set()
+    if 'wildcards' in advanced_args and advanced_args['wildcards'] != '':
+        wildcards = set(advanced_args['wildcards'].split(';'))
+
+    return ' '.join([q] + list(wildcards))
+
+
+def get_phrase_from_params(q, advanced_args):
+    if 'phrase' in advanced_args and advanced_args['phrase'] != '':
+        q += ' "' + advanced_args['phrase'] + '"'
+
+    return q
 
 
 def get_projects_filter(user_id: int, projects: List[int]):
@@ -357,6 +378,8 @@ def search(
 
     q, types = get_types_from_params(q, advanced_args)
     q, projects = get_projects_from_params(q, advanced_args)
+    q = get_wildcards_from_params(q, advanced_args)
+    q = get_phrase_from_params(q, advanced_args)
 
     # Set the search term once we've parsed 'q' for all advanced options
     search_term = q.strip()

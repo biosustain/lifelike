@@ -20,6 +20,8 @@ export class AdvancedSearchDialogComponent implements OnInit {
       // Advanced Params
       types: params.types ? params.types : [],
       projects: params.projects ? params.projects : [],
+      phrase: params.phrase ? params.phrase : '',
+      wildcards: params.wildcards ? params.wildcards : [],
     });
   }
 
@@ -31,6 +33,8 @@ export class AdvancedSearchDialogComponent implements OnInit {
     q: new FormControl('', [this.whitespaceValidator]),
     types: new FormControl([]),
     projects: new FormControl([]),
+    phrase: new FormControl(''),
+    wildcards: new FormControl([]),
   });
 
   constructor(

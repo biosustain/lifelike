@@ -469,6 +469,19 @@ class ElasticService():
         highlight,
     ):
         search_term = search_term.strip()
+
+        if search_term == '':
+            return {
+                'query': {
+                    'bool': {
+                        'must': [
+                            query_filter,
+                        ],
+                    }
+                },
+                'highlight': highlight
+            }, []
+
         words, phrases, wildcards = self.get_words_phrases_and_wildcards(search_term)
 
         search_queries = []
