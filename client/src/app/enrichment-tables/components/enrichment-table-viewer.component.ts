@@ -126,7 +126,13 @@ export class EnrichmentTableViewerComponent implements OnInit {
         })),
       tap(() => this.unsavedChanges$.next(false)),
       this.errorHandler.create({label: 'Save enrichment table'}),
-    ).subscribe();
+    ).subscribe(() => {
+      this.snackBar.open(
+        `Enrichment table saved.`,
+        'Close',
+        {duration: 5000},
+      );
+    });
   }
 
   /**
@@ -143,7 +149,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
     combineLatest(
       this.object$,
       this.table$.pipe(
-        mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableEntries)),
+        mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
       ),
     ).pipe(
       take(1),
