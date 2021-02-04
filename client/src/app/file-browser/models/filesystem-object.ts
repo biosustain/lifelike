@@ -13,7 +13,6 @@ import { AppUser, User } from '../../interfaces';
 import { FilesystemObjectData, ProjectData } from '../schema';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
 import { Observable } from 'rxjs';
-import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
 import { createObjectDragImage } from '../utils/drag';
 
 // These are legacy mime type definitions that have to exist in this file until
@@ -22,6 +21,7 @@ const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
 const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
 const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
+const ENRICHMENT_VISUALISATION_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-visualisation';
 
 export interface ProjectPrivileges {
   readable: boolean;
@@ -413,6 +413,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
         return ['/projects', projectName, 'folders', this.hashId];
       case ENRICHMENT_TABLE_MIMETYPE:
         return ['/projects', projectName, 'enrichment-table', this.hashId];
+      case ENRICHMENT_VISUALISATION_MIMETYPE:
+        return ['/projects', projectName, 'enrichment-visualisation', this.hashId];
       case PDF_MIMETYPE:
         return ['/projects', projectName, 'files', this.hashId];
       case MAP_MIMETYPE:

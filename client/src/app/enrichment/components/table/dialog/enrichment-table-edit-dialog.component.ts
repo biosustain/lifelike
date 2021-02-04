@@ -139,5 +139,3 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
     }
   }
 }
-
-

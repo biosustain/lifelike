@@ -145,13 +145,15 @@ def get_file_type_service():
     :return: the service
     """
     from neo4japp.services.file_types.service import FileTypeService
-    from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider, \
+    from neo4japp.services.file_types.providers import \
+        EnrichmentTableTypeProvider, EnrichmentVisualisationTypeProvider, \
         MapTypeProvider, PDFTypeProvider, DirectoryTypeProvider
     service = FileTypeService()
     service.register(DirectoryTypeProvider())
     service.register(PDFTypeProvider())
     service.register(MapTypeProvider())
     service.register(EnrichmentTableTypeProvider())
+    service.register(EnrichmentVisualisationTypeProvider())
     return service
 
 

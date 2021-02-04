@@ -1,4 +1,4 @@
-import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild, AfterViewInit, Input, NgZone } from '@angular/core';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ActivatedRoute} from '@angular/router';
 
@@ -7,35 +7,52 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {BehaviorSubject, forkJoin, from, of, Subscription} from 'rxjs';
 import {catchError, finalize, flatMap, map, mergeMap} from 'rxjs/operators';
 
-import {TableCell, TableHeader } from 'app/shared/components/table/generic-table.component';
-import {ModuleProperties} from 'app/shared/modules';
+import {TableCell, TableHeader} from 'app/shared/components/table/generic-table.component';
+import {ModuleAwareComponent, ModuleProperties} from 'app/shared/modules';
 import {BackgroundTask} from 'app/shared/rxjs/background-task';
 import {ErrorHandler} from 'app/shared/services/error-handler.service';
 import {DownloadService} from 'app/shared/services/download.service';
 
-import {EnrichmentTableEditDialogComponent} from './dialog/enrichment-table-edit-dialog.component';
-import {EnrichmentTableOrderDialogComponent} from './dialog/enrichment-table-order-dialog.component';
 import {
-  EnrichmentTableService,
+  EnrichmentVisualisationService,
   EnrichmentWrapper,
   GoNode,
   NCBINode,
   NCBIWrapper,
-} from '../../services/enrichment-table.service';
+} from '../../services/enrichment-visualisation.service';
+
+import {WordCloudComponent} from './word-cloud/word-cloud.component';
 import {FilesystemObject} from '../../../file-browser/models/filesystem-object';
 import {FilesystemService} from '../../../file-browser/services/filesystem.service';
-import {mapBlobToBuffer, mapBufferToJson} from '../../../shared/utils/files';
-import {ENRICHMENT_TABLE_MIMETYPE} from '../../providers/enrichment-table.type-provider';
-import {Progress} from '../../../interfaces/common-dialog.interface';
 import {ProgressDialog} from '../../../shared/services/progress-dialog.service';
+import {mapBlobToBuffer, mapBufferToJson} from '../../../shared/utils/files';
+import {EnrichmentTableOrderDialogComponent} from '../table/dialog/enrichment-table-order-dialog.component';
+import {EnrichmentTableEditDialogComponent} from '../table/dialog/enrichment-table-edit-dialog.component';
+import {Progress} from '../../../interfaces/common-dialog.interface';
 
+// import mockedData from './stories/assets/mocked_data.json';
+import {EnrichmentTableService} from '../../services/enrichment-table.service';
+import {MessageDialog} from "../../../shared/services/message-dialog.service";
+import {WorkspaceManager} from "../../../shared/workspace-manager";
+import {FilesystemObjectActions} from "../../../file-browser/services/filesystem-object-actions";
+import {MAP_MIMETYPE} from "../../../drawing-tool/providers/map.type-provider";
+import {getObjectLabel} from "../../../file-browser/utils/objects";
+import {MessageType} from "../../../interfaces/message-dialog.interface";
+
+export const ENRICHMENT_VISUALISATION_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-visualisation';
 
 @Component({
-  selector: 'app-enrichment-table-viewer',
-  templateUrl: './enrichment-table-viewer.component.html',
-  styleUrls: ['./enrichment-table-viewer.component.scss'],
+  selector: 'app-enrichment-visualisation-viewer',
+  templateUrl: './enrichment-visualisation-viewer.component.html',
+  styleUrls: ['./enrichment-visualisation-viewer.component.scss'],
 })
-export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
+export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy, AfterViewInit, ModuleAwareComponent {
+  @Input() titleVisible = true;
+
+  paramsSubscription: Subscription;
+  queryParamsSubscription: Subscription;
+
+  returnUrl: string;
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
@@ -76,8 +93,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   geneNames: string[];
   taxID: string;
   organism: string;
-  loadTask: BackgroundTask<null, [FilesystemObject, EnrichmentData]>;
-  loadTaskSubscription: Subscription;
+  loadTableTask: BackgroundTask<null, [FilesystemObject, EnrichmentData]>;
+  loadTableTaskSubscription: Subscription;
   object: FilesystemObject;
   data: EnrichmentData;
   neo4jId: number;
@@ -85,25 +102,71 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   unmatchedGenes: string;
   duplicateGenes: string;
   columnOrder: string[] = [];
+  legend: Map<string, string> = new Map<string, string>();
+  filtersPanelOpened = false;
+  clickableWords = false;
+  @ViewChild(WordCloudComponent, {static: false})
+  private wordCloudComponent: WordCloudComponent;
+
 
   scrollTopAmount: number;
 
   loadingData: boolean;
 
-  constructor(protected readonly route: ActivatedRoute,
+  cloudData: string[] = [];
+
+  selectedRow = 0;
+
+  constructor(protected readonly messageDialog: MessageDialog,
+              protected readonly ngZone: NgZone,
+              protected readonly workspaceManager: WorkspaceManager,
+              protected readonly filesystemObjectActions: FilesystemObjectActions,
+              protected readonly route: ActivatedRoute,
               protected readonly worksheetViewerService: EnrichmentTableService,
+              protected readonly enrichmentService: EnrichmentVisualisationService,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
               protected readonly errorHandler: ErrorHandler,
               protected readonly downloadService: DownloadService,
               protected readonly filesystemService: FilesystemService,
               protected readonly progressDialog: ProgressDialog) {
-    this.projectName = this.route.snapshot.params.project_name || '';
-    this.fileId = this.route.snapshot.params.file_id || '';
+
+    this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
+      this.returnUrl = params.return;
+    });
+
+    this.paramsSubscription = this.route.params.subscribe(params => {
+      this.locator = params.hash_id;
+    });
+  }
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
+    this.queryParamsSubscription.unsubscribe();
+    this.paramsSubscription.unsubscribe();
+    this.loadTableTaskSubscription.unsubscribe();
+  }
+
+  shouldConfirmUnload() {
+    return this.unsavedChanges$.getValue();
+  }
+
+  setCloudData() {
+    console.log(this.data, this.selectedRow);
+    this.cloudData = this.mockedData.data[this.selectedRow].Genes.split(';');
+  }
+
+  // events
+  public chartClick({event, active}: { event: MouseEvent, active: {}[] }): void {
+    console.log('active', active[0]);
+    if (active[0]) {
+      this.selectedRow = (active[0] as any)._index;
+      this.setCloudData();
+    }
   }
 
   ngOnInit() {
-    this.loadTask = new BackgroundTask(() => this.filesystemService.get(this.fileId, {
+    this.loadTableTask = new BackgroundTask(() => this.filesystemService.get(this.fileId, {
       loadContent: true,
     }).pipe(
       this.errorHandler.create({label: 'Load enrichment table'}),
@@ -115,7 +178,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
         );
       }),
     ));
-    this.loadTaskSubscription = this.loadTask.results$.subscribe((result) => {
+    this.loadTableTaskSubscription = this.loadTableTask.results$.subscribe((result) => {
       const [object, data] = result.result;
       // parse the file content to get gene list and organism tax id and name
       this.object = object;
@@ -144,20 +207,21 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
           }
         }
       } else {
-        // Default view for existing tables
+        // Default view for existing Visualisations
         this.domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
         this.columnOrder = ['Regulon', 'Regulon 2', 'Regulon 3', 'UniProt', 'String', 'GO', 'Biocyc'];
       }
       this.initializeHeaders();
       this.removeDuplicates(this.importGenes);
       this.matchNCBINodes();
+      this.enrichWithGOTerms();
+      this.setCloudData();
     });
-    this.loadTask.update();
+    this.loadTableTask.update();
+
   }
 
-  ngOnDestroy() {
-    this.loadTaskSubscription.unsubscribe();
-  }
+
 
   scrollTop() {
     this.scrollTopAmount = 0;
@@ -322,6 +386,28 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Save the current representation of knowledge model
+   */
+  save() {
+    const contentValue = new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
+      type: MAP_MIMETYPE,
+    });
+
+    // Push to backend to save
+    this.filesystemService.save([this.locator], {
+      contentValue,
+    })
+      .pipe(this.errorHandler.create({label: 'Update map'}))
+      .subscribe(() => {
+        this.unsavedChanges$.next(false);
+        this.emitModuleProperties();
+        this.snackBar.open('Visualisation saved.', null, {
+          duration: 2000,
+        });
+      });
+  }
+
+  /**
    * Change current table entries to follow new column order.
    * @param order new column order.
    */
@@ -368,7 +454,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     dialogRef.componentInstance.data = this.data;
     return dialogRef.result.then((result: EnrichmentData) => {
       const contentValue = new Blob([JSON.stringify(result)], {
-        type: ENRICHMENT_TABLE_MIMETYPE,
+        type: ENRICHMENT_VISUALISATION_MIMETYPE,
       });
 
       const progressDialogRef = this.progressDialog.display({
@@ -392,7 +478,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
             duration: 2000,
           });
           this.tableEntries = [];
-          this.loadTask.update();
+          this.loadTableTask.update();
         });
     }, () => {
     });
@@ -402,8 +488,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
 
   emitModuleProperties() {
     this.modulePropertiesChange.emit({
-      title: this.object ? this.object.filename : 'Enrichment Table',
-      fontAwesomeIcon: 'table',
+      title: this.object ? this.object.filename : 'Enrichment Visualisation',
+      fontAwesomeIcon: 'chart-bar',
     });
   }
 
@@ -448,6 +534,28 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       )
       .subscribe((result: NCBIWrapper[]) => {
         this.getDomains(result, this.importGenes);
+      });
+  }
+
+  /**
+   *  Match list of inputted gene names to NCBI nodes with name stored in Neo4j.
+   */
+  enrichWithGOTerms() {
+    this.loadingData = true;
+    this.enrichmentService
+      .enrichWithGOTerms(this.importGenes, this.taxID)
+      .pipe(
+        catchError((error) => {
+          this.snackBar.open(`Unable to load entries.`, 'Close', {
+            duration: 5000,
+          });
+          this.loadingData = false;
+          return error;
+        }),
+        this.errorHandler.create({label: 'Match NCBI nodes'}),
+      )
+      .subscribe((result: NCBIWrapper[]) => {
+          console.log(result);
       });
   }
 
@@ -714,6 +822,50 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     this.object.addDataTransferData(dataTransfer);
+  }
+
+  openCloneDialog() {
+    const newTarget: FilesystemObject = cloneDeep(this.map);
+    newTarget.public = false;
+    return this.filesystemObjectActions.openCloneDialog(newTarget).then(clone => {
+      this.workspaceManager.navigate(clone.getCommands(), {
+        newTab: true,
+      });
+      this.snackBar.open(`Copied ${getObjectLabel(this.map)} to ${getObjectLabel(clone)}.`, 'Close', {
+        duration: 5000,
+      });
+    }, () => {
+    });
+  }
+
+  openVersionHistoryDialog() {
+    return this.filesystemObjectActions.openVersionHistoryDialog(this.map);
+  }
+
+  openExportDialog() {
+    if (this.unsavedChanges$.getValue()) {
+      this.messageDialog.display({
+        title: 'Save Required',
+        message: 'Please save your changes before exporting.',
+        type: MessageType.Error,
+      });
+    } else {
+      return this.filesystemObjectActions.openExportDialog(this.map);
+    }
+  }
+
+  openShareDialog() {
+    return this.filesystemObjectActions.openShareDialog(this.map);
+  }
+
+  goToReturnUrl() {
+    if (this.shouldConfirmUnload()) {
+      if (confirm('Leave editor? Changes you made may not be saved.')) {
+        this.workspaceManager.navigateByUrl(this.returnUrl);
+      }
+    } else {
+      this.workspaceManager.navigateByUrl(this.returnUrl);
+    }
   }
 }
 

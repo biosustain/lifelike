@@ -9,9 +9,11 @@ import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
 import { EnrichmentData } from '../components/table/enrichment-table-viewer.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import {EnrichmentVisualisationEditDialogComponent} from "../components/visualisation/dialog/enrichment-visualisation-edit-dialog.component";
+import {
+  EnrichmentVisualisationEditDialogComponent
+} from '../components/visualisation/dialog/enrichment-visualisation-edit-dialog.component';
 
-export const ENRICHMENT_VISUALISATION_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
+export const ENRICHMENT_VISUALISATION_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-visualisation';
 
 @Injectable()
 export class EnrichmentVisualisationTypeProvider extends AbstractObjectTypeProvider {
@@ -66,5 +68,4 @@ export class EnrichmentVisualisationTypeProvider extends AbstractObjectTypeProvi
       },
     }];
   }
-
 }
