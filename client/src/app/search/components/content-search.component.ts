@@ -224,8 +224,42 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
     if (params.hasOwnProperty('q')) {
       q = (params.q as string);
-      advancedParams.types = params.hasOwnProperty('types') ? params.types : [];
-      advancedParams.projects = params.hasOwnProperty('projects') ? params.projects : [];
+
+      // Remove 'types' from q and add to the types option of the advancedParams
+      const typeMatches = q.match(/\btype:\S*/);
+      let extractedTypes = [];
+      if (!isNullOrUndefined(typeMatches)) {
+        extractedTypes = typeMatches.map(typeVal => typeVal.split(':')[1]);
+      }
+
+      q = q.replace(/\btype:\S*/g, '').trim();
+
+      let givenTypes = [];
+      if (params.hasOwnProperty('types')) {
+        givenTypes = params.types.map(value => value.id);
+      }
+
+      advancedParams.types = getChoicesFromQuery(
+        {types: extractedTypes.concat(givenTypes).join(';')},
+        'types',
+        TYPES_MAP
+      );
+
+      // Remove 'projects' from q and add to the projects option of the advancedParams
+      const projectMatches = q.match(/\bproject:\S*/);
+      let extractedProjects = [];
+      if (!isNullOrUndefined(projectMatches)) {
+        extractedProjects = projectMatches.map(projectVal => projectVal.split(':')[1]);
+      }
+
+      q = q.replace(/\bproject:\S*/g, '').trim();
+
+      let givenProjects = [];
+      if (params.hasOwnProperty('projects')) {
+        givenProjects = params.projects;
+      }
+
+      advancedParams.projects = extractedProjects.concat(givenProjects);
     }
 
     advancedParams.q = q;
