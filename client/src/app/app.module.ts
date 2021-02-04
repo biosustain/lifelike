@@ -31,6 +31,7 @@ import { ShortestPathModule } from './shortest-path/shortest-path.module';
 import { PdfViewerLibModule } from './pdf-viewer/pdf-viewer-lib.module';
 import { EnrichmentTablesModule } from './enrichment/enrichment-tables.module';
 import { GlobalErrorHandler } from './global-error-handler';
+import {EnrichmentVisualisationsModule} from './enrichment/enrichment-visualisation.module';
 
 @NgModule({
   declarations: [
@@ -65,6 +66,7 @@ import { GlobalErrorHandler } from './global-error-handler';
     FileNavigatorModule,
     ShortestPathModule,
     EnrichmentTablesModule,
+    EnrichmentVisualisationsModule,
   ],
   providers: [
     httpInterceptorProviders,

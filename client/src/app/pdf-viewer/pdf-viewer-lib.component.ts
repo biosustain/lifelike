@@ -828,6 +828,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         this.pdfSrc = e.target.result;
       };
 
+
+      console.time("pageRendering")
       reader.readAsArrayBuffer($pdf.files[0]);
     }
   }
@@ -845,6 +847,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     // }, 2000);
 
     // this.isLoadCompleted = true;
+    console.timeEnd("pageRendering")
   }
 
   /**
@@ -1026,6 +1029,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
    * Page rendered callback, which is called when a page is rendered (called multiple times)
    */
   pageRendered(e: CustomEvent) {
+    console.timeEnd("pageRendering")
+    console.time("pageRendered")
     this.allPages = this.pdf.numPages;
     this.currentRenderedPage = (e as any).pageNumber;
     const nump = Number(this.pdf.numPages);
@@ -1045,6 +1050,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const pageNum = (e as any).pageNumber;
     const pdfPageView = (e as any).source;
     this.processAnnotations(pageNum, pdfPageView);
+    console.timeEnd("pageRendered")
+    console.time("pageRendering")
   }
 
   searchQueryChanged(newQuery: { keyword: string, findPrevious: boolean }) {

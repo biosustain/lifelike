@@ -9,7 +9,7 @@ import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import {EnrichmentData} from '../enrichment-visualisation-viewer.component';
+import {EnrichmentVisualisationData} from '../enrichment-visualisation-viewer.component';
 import {getObjectLabel} from '../../../../file-browser/utils/objects';
 import {ErrorHandler} from '../../../../shared/services/error-handler.service';
 import {ProgressDialog} from '../../../../shared/services/progress-dialog.service';
@@ -22,10 +22,10 @@ import {Progress} from '../../../../interfaces/common-dialog.interface';
 export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialogComponent {
   @Input() object: FilesystemObject;
   @Input() submitButtonLabel = 'Save';
-  private _data: EnrichmentData;
+  private _data: EnrichmentVisualisationData;
 
   form: FormGroup = new FormGroup({
-    organism: new FormControl('', Validators.required),
+    organism: new FormControl(''),
     entitiesList: new FormControl('', Validators.required),
     domainsList: new FormArray([]),
   });
@@ -60,7 +60,7 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
   }
 
   @Input()
-  set data(value: EnrichmentData) {
+  set data(value: EnrichmentVisualisationData) {
     this._data = value;
 
     const resultArray = value.data.split('/');
@@ -92,7 +92,7 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
         return searchResult;
       }),
       this.errorHandler.createFormErrorHandler(this.form),
-      this.errorHandler.create({label: 'Get organism for enrichment table'}),
+      this.errorHandler.create({label: 'Get organism for enrichment visualisation'}),
     ).subscribe(() => {
     }, () => {
       // If an error happened, we need to close the dialog because it is totally broken now
@@ -109,7 +109,7 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
     this.form.get('organism').setValue(organism ? organism.tax_id + '/' + organism.organism_name : null);
   }
 
-  getValue(): EnrichmentData {
+  getValue(): EnrichmentVisualisationData {
     const value = this.form.value;
     return {
       data: value.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + value.organism + '/' + value.domainsList.join(','),

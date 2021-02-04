@@ -1,0 +1,12 @@
+<button class="btn btn-secondary fixed" (click)="scrollTop()">
+  Return to Top of Page
+</button>
+<app-generic-table [header]="tableHeader" [entries]="tableEntries">
+</app-generic-table>
+<div style="font-size: 30px; text-align: center; padding: 1em"
+     *ngIf="!object || loadingData">
+          <span>
+            <i class="fa fa-spinner fa-spin" style="margin-right: 2px;"></i>
+            Currently Loading Data...
+          </span>
+</div>
