@@ -2,8 +2,10 @@ from random import random
 
 
 def wrap_with_random_p_value(g):
-    g["p-value"] = random()
-    return g
+    return {
+        "gene": g,
+        "p-value": random()
+    }
 
 
 def fisher(geneNames, GOterms, *args, **kwargs):

@@ -12,6 +12,7 @@ from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
+from neo4japp.schemas.formats.enrichment_visualisation import validate_enrichment_visualisation
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider
 
@@ -240,3 +241,26 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     def validate_content(self, buffer: BufferedIOBase):
         data = json.loads(buffer.read())
         validate_enrichment_table(data)
+
+class EnrichmentVisualisationTypeProvider(BaseFileTypeProvider):
+    MIME_TYPE = 'vnd.lifelike.document/enrichment-visualisation'
+    mime_types = (MIME_TYPE,)
+
+    def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
+        try:
+            # If the data validates, I guess it's an enrichment table?
+            # The enrichment table schema is very simple though so this is very simplistic
+            # and will cause problems in the future
+            self.validate_content(buffer)
+            return 0
+        except ValueError:
+            return None
+        finally:
+            buffer.seek(0)
+
+    def can_create(self) -> bool:
+        return True
+
+    def validate_content(self, buffer: BufferedIOBase):
+        data = json.loads(buffer.read())
+        validate_enrichment_visualisation(data)

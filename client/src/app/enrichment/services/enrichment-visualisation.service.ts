@@ -1,13 +1,53 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { ApiService } from '../../shared/services/api.service';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {ApiService} from '../../shared/services/api.service';
+import {BackgroundTask} from "../../shared/rxjs/background-task";
+import {FilesystemObject} from "../../file-browser/models/filesystem-object";
+import {mapBlobToBuffer, mapBufferToJson} from "../../shared/utils/files";
+import {EnrichmentVisualisationData} from "../components/visualisation/enrichment-visualisation-viewer.component";
+import {FilesystemService} from "../../file-browser/services/filesystem.service";
+
+import {map, mergeMap} from 'rxjs/operators';
+import {EnrichmentData} from "../components/table/enrichment-table-viewer.component";
+import {ErrorHandler} from "../../shared/services/error-handler.service";
 
 @Injectable()
 export class EnrichmentVisualisationService {
   constructor(protected readonly http: HttpClient,
-              protected readonly apiService: ApiService) {
+              protected readonly apiService: ApiService,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly filesystemService: FilesystemService) {
+
+  }
+
+  private currentFileId: string;
+  private file;
+  public done_loading: boolean;
+  loadTask: BackgroundTask<null, [FilesystemObject, EnrichmentData]>;
+
+  set fileId(file_id: string) {
+    this.currentFileId = file_id;
+
+    this.loadTask = new BackgroundTask(() =>
+      this.filesystemService.get(
+        this.fileId,
+        {loadContent: true}
+      ).pipe(
+        this.errorHandler.create({label : 'Load enrichment table'}),
+        mergeMap((object: FilesystemObject) => {
+          return object.contentValue$.pipe(
+            mapBlobToBuffer(),
+            mapBufferToJson<EnrichmentVisualisationData>(),
+            map((data: EnrichmentVisualisationData) => [object, data] as [FilesystemObject, EnrichmentVisualisationData]),
+          );
+        }),
+      ));
+    this.file = this.loadTask.results$.subscribe();
+  }
+
+  get fileId(): string {
+    return this.currentFileId;
   }
 
   /**
@@ -15,9 +55,9 @@ export class EnrichmentVisualisationService {
    * @param geneNames list of input gene names to match to
    * @param organism tax id of organism
    */
-  matchNCBINodes(geneNames: string[], organism: string): Observable<NCBIWrapper[]> {
+  enrichWithGOTerms(geneNames: string[], organism: string): Observable<NCBIWrapper[]> {
     return this.http.post<{ result: NCBIWrapper[] }>(
-      `/api/enrichment-visualisation/match-ncbi-nodes`,
+      `/api/enrichment-visualisation/enrich-with-go-terms`,
       {geneNames, organism},
       this.apiService.getHttpOptions(true),
     ).pipe(
