@@ -54,7 +54,7 @@
               <div class="btn-group ml-2">
                 <button type="button" class="btn btn-secondary"
                         ngbTooltip="Save" placement="bottom" container="body" (click)="save()"
-                        [disabled]="!unsavedChanges$.value">
+                        [disabled]="!result.object.value.privileges.writable">
                   <i class="fa fa-fw fa-save"></i>
                 </button>
               </div>
@@ -118,7 +118,7 @@
                (scroll)="onTableScroll($event)"
                [scrollTop]="scrollTopAmount">
             <app-generic-table [header]="result.table.value.tableHeader"
-                               [entries]="result.table.value.tableEntries">
+                               [entries]="result.table.value.tableCells">
             </app-generic-table>
 
 
