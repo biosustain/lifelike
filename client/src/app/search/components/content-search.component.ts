@@ -47,8 +47,10 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     const qExists = this.params.hasOwnProperty('q') && this.params.q.length !== 0;
     const typesExists = this.params.hasOwnProperty('types') && this.params.types.length !== 0;
     const projectsExists = this.params.hasOwnProperty('projects') && this.params.projects.length !== 0;
+    const phraseExists = this.params.hasOwnProperty('phrase') && this.params.phrase.length !== 0;
+    const wildcardExists = this.params.hasOwnProperty('wildcards') && this.params.wildcards.length !== 0;
 
-    return !(qExists || typesExists || projectsExists);
+    return !(qExists || typesExists || projectsExists || phraseExists || wildcardExists);
   }
 
   constructor(private modalService: NgbModal,
@@ -89,6 +91,12 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     if (params.hasOwnProperty('projects')) {
       advancedParams.projects = params.projects === '' ? [] : params.projects.split(';');
     }
+    if (params.hasOwnProperty('phrase')) {
+      advancedParams.phrase = params.phrase;
+    }
+    if (params.hasOwnProperty('wildcards')) {
+      advancedParams.wildcards = params.wildcards;
+    }
     return advancedParams;
   }
 
@@ -108,6 +116,12 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     }
     if (params.hasOwnProperty('projects')) {
       advancedParams.projects = params.projects.join(';');
+    }
+    if (params.hasOwnProperty('phrase')) {
+      advancedParams.phrase = params.phrase;
+    }
+    if (params.hasOwnProperty('wildcards')) {
+      advancedParams.wildcards = params.wildcards;
     }
     return advancedParams;
   }
@@ -226,19 +240,19 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       q = (params.q as string);
 
       // Remove 'types' from q and add to the types option of the advancedParams
-      const typeMatches = q.match(/\btype:\S*/);
+      const typeMatches = q.match(/\btype:\S*/g);
       let extractedTypes = [];
       if (!isNullOrUndefined(typeMatches)) {
         extractedTypes = typeMatches.map(typeVal => typeVal.split(':')[1]);
       }
 
-      q = q.replace(/\btype:\S*/g, '').trim();
 
       let givenTypes = [];
       if (params.hasOwnProperty('types')) {
         givenTypes = params.types.map(value => value.id);
       }
 
+      q = q.replace(/\btype:\S*/g, '').trim();
       advancedParams.types = getChoicesFromQuery(
         {types: extractedTypes.concat(givenTypes).join(';')},
         'types',
@@ -246,20 +260,35 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       );
 
       // Remove 'projects' from q and add to the projects option of the advancedParams
-      const projectMatches = q.match(/\bproject:\S*/);
+      const givenProjects = params.hasOwnProperty('projects') ? params.projects : [];
+      const projectMatches = q.match(/\bproject:\S*/g);
+
       let extractedProjects = [];
       if (!isNullOrUndefined(projectMatches)) {
         extractedProjects = projectMatches.map(projectVal => projectVal.split(':')[1]);
       }
 
       q = q.replace(/\bproject:\S*/g, '').trim();
+      advancedParams.projects = extractedProjects.concat(givenProjects);
 
-      let givenProjects = [];
-      if (params.hasOwnProperty('projects')) {
-        givenProjects = params.projects;
+      // Remove the first phrase from q and add to the phrase option of the advancedParams
+      if (params.hasOwnProperty('phrase')) {
+        advancedParams.phrase = params.phrase;
+      } else {
+        const phraseMatches = q.match(/\"((?:\"\"|[^\"])*)\"/);
+        if (!isNullOrUndefined(phraseMatches)) {
+          // Object at index 1 should be the string enclosed by '"'
+          advancedParams.phrase = phraseMatches[1];
+          q = q.replace(/\"((?:\"\"|[^\"])*)\"/, '').trim();
+        }
       }
 
-      advancedParams.projects = extractedProjects.concat(givenProjects);
+      // Remove 'wildcards' from q and add to the wildcards option of the advancedParams
+      const givenWildcards = params.hasOwnProperty('wildcards') ? [params.wildcards] : [];
+      const extractedWildcards = q.match(/\S*(\?|\*)\S*/g);
+
+      q = q.replace(/\S*(\?|\*)\S*/g, '').trim();
+      advancedParams.wildcards = givenWildcards.concat(extractedWildcards).join(' ').trim();
     }
 
     advancedParams.q = q;
@@ -268,7 +297,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   }
 
   /**
-   * Openns the advanced search dialog. Users can add special options to their query using this feature.
+   * Opens the advanced search dialog. Users can add special options to their query using this feature.
    */
   openAdvancedSearch() {
     const modalRef = this.modalService.open(AdvancedSearchDialogComponent, {
