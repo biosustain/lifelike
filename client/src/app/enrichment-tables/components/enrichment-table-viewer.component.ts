@@ -8,7 +8,6 @@ import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
 import { finalize, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { DownloadService } from 'app/shared/services/download.service';
 import { EnrichmentTableService } from '../services/enrichment-table.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
