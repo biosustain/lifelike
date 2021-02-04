@@ -31,15 +31,9 @@ export class EnrichmentDocument {
       taxID = '559292';
     }
 
-    let columnOrder: string[];
-
     // parse for column order/domain input
-    if (domains != null) {
-      columnOrder = [...domains];
-    } else {
-      // Default view for existing tables
+    if (domains == null) {
       domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
-      columnOrder = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
     }
 
     const [uniqueImportGenes, duplicateGenes] = this.removeDuplicates(rawImportGenes);
@@ -84,7 +78,7 @@ export class EnrichmentDocument {
         this.importGenes.join(', '),
         this.taxID,
         this.organism,
-        this.domains,
+        this.domains.join(','),
       ].join('/'),
       ...(this.result != null ? {
         result: this.result,
