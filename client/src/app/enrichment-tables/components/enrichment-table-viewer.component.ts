@@ -20,7 +20,6 @@ import { TableCSVExporter } from '../../shared/utils/tables/table-csv-exporter';
 import { openDownloadForBlob } from '../../shared/utils/files';
 import { Progress } from '../../interfaces/common-dialog.interface';
 
-
 @Component({
   selector: 'app-enrichment-table-viewer',
   templateUrl: './enrichment-table-viewer.component.html',
