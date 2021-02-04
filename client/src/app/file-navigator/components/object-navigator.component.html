@@ -40,7 +40,7 @@
       </div>
 
       <div class="module-body flex-fill" *ngIf="object.hasWordCloud" style="height: 100%">
-        <app-word-cloud [object]="object" [clickableWords]="clickableWords"
+        <app-word-cloud [object]="object" [clickableWords]="true"
                         (wordOpen)="openWord($event)"></app-word-cloud>
       </div>
 

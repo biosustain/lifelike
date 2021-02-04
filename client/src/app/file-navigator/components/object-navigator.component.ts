@@ -49,12 +49,8 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
     this.loadTask.update(this.route.snapshot.params.file_id);
   }
 
-  get clickableWords() {
-    return this.object.mimeType === PDF_MIMETYPE;
-  }
-
   openWord(annotation: WordCloudAnnotationFilterEntity) {
-    if (this.clickableWords) {
+    if (this.object.mimeType === PDF_MIMETYPE) {
       const url = this.object.getURL();
       this.workspaceManager.navigateByUrl(
         `${url}#annotation=${encodeURIComponent(annotation.id)}`, {
@@ -66,6 +62,16 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
             fileViewComponent.highlightAnnotation(annotation.id);
             return false;
           },
+        },
+      );
+    } else {
+      this.workspaceManager.navigate(
+        ['/search', 'content'], {
+          queryParams: {
+            q: annotation.text,
+          },
+          newTab: true,
+          sideBySide: true,
         },
       );
     }
