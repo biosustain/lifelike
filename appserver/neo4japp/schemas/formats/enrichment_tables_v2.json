@@ -5,7 +5,21 @@
   "required": [
     "data"
   ],
+  "definitions": {
+    "safeUrl": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "pattern": "(?i)^(https?://.+|mailto:.+)$",
+      "$comment": "changing this may have defense-in-depth security implications"
+    }
+  },
   "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 20000
+    },
     "data": {
       "type": "string",
       "minLength": 0,
@@ -16,69 +30,90 @@
       "additionalProperties": false,
       "required": [
         "version",
-        "ncbiNodes",
-        "domainResults"
+        "domainInfo",
+        "genes"
       ],
       "properties": {
         "version": {
           "const": "1"
         },
-        "ncbiNodes": {
-          "type": "array",
-          "items": {
+        "domainInfo": {
+          "type": "object",
+          "additionalProperties": {
             "type": "object",
-            "additionalProperties": true,
+            "additionalProperties": false,
             "required": [
-              "neo4jID",
-              "x",
-              "link",
-              "s"
+              "labels"
             ],
             "properties": {
-              "neo4jID": {
-                "type": "number"
-              },
-              "x": {
-                "type": "object",
-                "additionalProperties": true,
-                "properties": {
-                  "full_name": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "string"
-                  },
-                  "locus_tag": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                }
-              },
-              "link": {
-                "type": "string"
-              },
-              "s": {
-                "type": "object",
-                "additionalProperties": true,
-                "required": [
-                  "name"
-                ],
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  }
+              "labels": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
                 }
               }
             }
           }
         },
-        "domainResults": {
+        "genes": {
           "type": "array",
           "items": {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": false,
+            "required": [
+              "imported"
+            ],
+            "properties": {
+              "imported": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "matched": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "fullName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "link": {
+                "$ref": "#/definitions/safeUrl"
+              },
+              "domains": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "text",
+                      "link"
+                    ],
+                    "properties": {
+                      "text": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 512000
+                      },
+                      "annotatedText": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 512000
+                      },
+                      "link": {
+                        "$ref": "#/definitions/safeUrl"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
