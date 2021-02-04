@@ -35,6 +35,12 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
     if (params.hasOwnProperty('q')) {
       q.push(params.q);
     }
+    if (params.hasOwnProperty('types') && params.types !== []) {
+      params.types.forEach(type => q.push(`type:${type.id}`));
+    }
+    if (params.hasOwnProperty('projects') && params.projects !== []) {
+      params.projects.forEach(project => q.push(`project:${project}`));
+    }
 
     return q.join(' ');
   }
