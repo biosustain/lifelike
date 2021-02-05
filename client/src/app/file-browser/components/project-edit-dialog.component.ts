@@ -130,7 +130,6 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent implem
         result: collabs
       }) => {
         const userId = this.auth.whoAmI();
-
         this.userCollab = collabs.filter(c => userId === c.id)[0];
         this.collabs = collabs.filter(c => userId !== c.id);
 

@@ -7,3 +7,7 @@ class UserSchema(CamelCaseSchema):
     username = fields.String()
     first_name = fields.String()
     last_name = fields.String()
+
+
+class UserSchemaWithId(UserSchema):
+    id = fields.Integer()
