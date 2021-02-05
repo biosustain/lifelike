@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 from neo4japp.models import AppUser
 from neo4japp.data_transfer_objects import UserUpdateRequest
@@ -6,6 +8,7 @@ from neo4japp.util import camel_to_snake_dict
 
 def user_factory(uid):
     return {
+        'hashId': str(uuid.uuid4()),
         'username': f'appuser-{uid}',
         'firstName': f'firstname-{uid}',
         'lastName': f'lastname-{uid}',

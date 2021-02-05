@@ -1,47 +1,67 @@
 import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-
-import { HighlightDisplayLimitChange } from 'app/file-browser/components/file-info.component';
-import { FileViewComponent } from 'app/file-browser/components/file-view.component';
 import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
-import { RankedItem } from 'app/shared/schemas/common';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { CollectionModal } from 'app/shared/utils/collection-modal';
-import { FindOptions } from 'app/shared/utils/find';
-import { deserializePaginatedParams, getChoicesFromQuery, serializePaginatedParams } from 'app/shared/utils/params';
+import { CollectionModel } from 'app/shared/utils/collection-model';
+import {
+  deserializePaginatedParams,
+  getChoicesFromQuery,
+  serializePaginatedParams,
+} from 'app/shared/utils/params';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
-import { ContentSearchOptions, TYPES_MAP } from '../content-search';
+import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
+import { HighlightDisplayLimitChange } from '../../file-browser/components/object-info.component';
+import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
+import { RankedItem, ResultList } from '../../shared/schemas/common';
+import { map, tap } from 'rxjs/operators';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
+import { Observable, of } from 'rxjs';
+import { ContentSearchRequest } from '../schema';
+import { FindOptions } from '../../shared/utils/find';
+import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { SearchType } from '../shared';
+import {
+  ObjectTypeProvider,
+  ObjectTypeService,
+} from '../../file-browser/services/object-type.service';
+import { flatten } from 'lodash';
 
 @Component({
   selector: 'app-content-search',
   templateUrl: './content-search.component.html',
-  styleUrls: ['./content-search.component.scss']
+  styleUrls: ['./content-search.component.scss'],
 })
 export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchOptions,
-  RankedItem<DirectoryObject>> implements OnInit, OnDestroy {
+  RankedItem<FilesystemObject>> implements OnInit, OnDestroy {
   @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   private readonly defaultLimit = 20;
-  public results = new CollectionModal<RankedItem<DirectoryObject>>([], {
+  public results = new CollectionModel<RankedItem<FilesystemObject>>([], {
     multipleSelection: false,
   });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
   highlightOptions: FindOptions = {keepSearchSpecialChars: true};
+  searchTypes$: Observable<SearchType[]>;
 
   constructor(protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly contentSearchService: ContentSearchService,
               protected readonly zone: NgZone,
-              protected readonly messageDialog: MessageDialog) {
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly messageDialog: MessageDialog,
+              protected readonly objectTypeService: ObjectTypeService) {
     super(route, workspaceManager);
+    objectTypeService.all().subscribe((providers: ObjectTypeProvider[]) => {
+      this.searchTypes$ = of(flatten(providers.map(provider => provider.getSearchTypes())));
+    });
   }
 
   get valid(): boolean {
@@ -55,8 +75,28 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     });
   }
 
-  getResults(params: ContentSearchOptions) {
-    return this.contentSearchService.search(params);
+  getResults(params: ContentSearchOptions): Observable<ResultList<RankedItem<FilesystemObject>>> {
+    const request: ContentSearchRequest = {
+      sort: params.sort,
+      page: params.page,
+      limit: params.limit,
+      q: params.q,
+    };
+
+    // If we don't provide a list of mime types, then the server will return all
+    // by default
+    if (params.mimeTypes.length) {
+      request.mimeTypes = params.mimeTypes.map(item => item.id);
+    }
+
+    return this.contentSearchService.search(request).pipe(
+      this.errorHandler.create({label: 'Content search'}),
+      map(result => ({
+        query: result.query,
+        total: result.collectionSize,
+        results: [...result.results.items],
+      })),
+    );
   }
 
   getDefaultParams() {
@@ -64,24 +104,29 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       limit: this.defaultLimit,
       page: 1,
       sort: '+name',
-      types: [],
+      mimeTypes: [],
       q: '',
     };
   }
 
   deserializeParams(params) {
-    return {
-      ...deserializePaginatedParams(params, this.defaultLimit),
-      q: params.hasOwnProperty('q') ? params.q : '',
-      types: params.hasOwnProperty('types') ? getChoicesFromQuery(params, 'types', TYPES_MAP) : [],
-    };
+    return this.searchTypes$.pipe(
+      map(searchTypes => {
+        const searchTypesMap = new Map(Array.from(searchTypes.values()).map(value => [value.id, value]));
+        return {
+          ...deserializePaginatedParams(params, this.defaultLimit),
+          q: params.hasOwnProperty('q') ? params.q : '',
+          mimeTypes: params.hasOwnProperty('mimeTypes') ? getChoicesFromQuery(params, 'mimeTypes', searchTypesMap) : [],
+        };
+      }),
+    );
   }
 
   serializeParams(params, restartPagination = false) {
     return {
       ...serializePaginatedParams(params, restartPagination),
       q: params.q,
-      types: params.types.map(value => value.id).join(';'),
+      mimeTypes: params.mimeTypes.map(value => value.id).join(';'),
     };
   }
 
@@ -148,12 +193,18 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     }
   }
 
+  openObject(target: FilesystemObject) {
+    this.workspaceManager.navigate(target.getCommands(false), {
+      newTab: true,
+    });
+  }
+
   openAdvancedSearchOptions() {
     this.messageDialog.display({
       title: 'Advanced Search Options',
       message: '- Exact phrase: "this exact phrase"\n' +
-      '- Zero or more wildcard character: ba*na\n' +
-      '- One or more wildcard character: ba?ana',
+        '- Zero or more wildcard character: ba*na\n' +
+        '- One or more wildcard character: ba?ana',
       type: MessageType.Info,
     });
   }

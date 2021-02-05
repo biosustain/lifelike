@@ -2,32 +2,37 @@ import html
 import json
 import re
 from collections import defaultdict
+from typing import Optional
 
 import sqlalchemy
 from flask import Blueprint, current_app, jsonify, g
 from flask_apispec import use_kwargs
 from sqlalchemy.orm import aliased
+from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.data_transfer_objects import GeneFilteredRequest
 from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
-from neo4japp.database import get_search_service_dao, db, get_elastic_service
+from neo4japp.database import get_search_service_dao, db, get_elastic_service, get_file_type_service
 from neo4japp.models import (
     Projects,
     AppRole,
-    projects_collaborator_role, AppUser, Directory, Project, Files
+    projects_collaborator_role, Files
 )
-from neo4japp.request_schemas.search import (
+from neo4japp.schemas.common import PaginatedRequestSchema
+from neo4japp.schemas.search import (
     AnnotateRequestSchema,
     ContentSearchSchema,
     OrganismSearchSchema,
-    VizSearchSchema
+    VizSearchSchema, ContentSearchResponseSchema
 )
 from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog
+from neo4japp.utils.request import Pagination
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
@@ -36,12 +41,12 @@ bp = Blueprint('search', __name__, url_prefix='/search')
 @auth.login_required
 @use_kwargs(VizSearchSchema)
 def visualizer_search(
-    query,
-    page,
-    limit,
-    domains,
-    entities,
-    organism
+        query,
+        page,
+        limit,
+        domains,
+        entities,
+        organism
 ):
     search_dao = get_search_service_dao()
     current_app.logger.info(
@@ -118,79 +123,29 @@ def annotate(texts):
     })
 
 
-def hydrate_search_results(es_results):
-    es_mapping = defaultdict(lambda: {})
+class ContentSearchView(FilesystemBaseView):
+    decorators = [auth.login_required]
 
-    for doc in es_results['hits']:
-        es_mapping[doc['_source']['type']][doc['_source']['id']] = doc
+    @use_args(ContentSearchSchema)
+    @use_args(PaginatedRequestSchema)
+    def post(self, params: dict, pagination: Pagination):
+        current_user = g.current_user
 
-    t_owner = aliased(AppUser)
-    t_directory = aliased(Directory)
-    t_project = aliased(Projects)
+        file_type_service = get_file_type_service()
 
-    map_query = db.session.query(Project.hash_id.label('id'),
-                                 Project.label.label('name'),
-                                 Project.description.label('description'),
-                                 sqlalchemy.literal_column('NULL').label('annotation_date'),
-                                 Project.creation_date.label('creation_date'),
-                                 Project.modified_date.label('modification_date'),
-                                 t_owner.id.label('owner_id'),
-                                 t_owner.username.label('owner_username'),
-                                 t_owner.first_name.label('owner_first_name'),
-                                 t_owner.last_name.label('owner_last_name'),
-                                 t_project.project_name.label('project_name'),
-                                 sqlalchemy.literal_column('\'map\'').label('type')) \
-        .join(t_owner, t_owner.id == Project.user_id) \
-        .join(t_directory, t_directory.id == Project.dir_id) \
-        .join(t_project, t_project.id == t_directory.projects_id) \
-        .filter(Project.hash_id.in_(es_mapping['map'].keys()))
+        search_term = params['q']
+        mime_types = params['mime_types']
 
-    file_query = db.session.query(Files.file_id.label('id'),
-                                  Files.filename.label('name'),
-                                  Files.description.label('description'),
-                                  Files.annotations_date.label('annotation_date'),
-                                  Files.creation_date.label('creation_date'),
-                                  Files.modified_date.label('modification_date'),
-                                  t_owner.id.label('owner_id'),
-                                  t_owner.username.label('owner_username'),
-                                  t_owner.first_name.label('owner_first_name'),
-                                  t_owner.last_name.label('owner_last_name'),
-                                  t_project.project_name.label('project_name'),
-                                  sqlalchemy.literal_column('\'pdf\'').label('type')) \
-        .join(t_owner, t_owner.id == Files.user_id) \
-        .join(t_directory, t_directory.id == Files.dir_id) \
-        .join(t_project, t_project.id == t_directory.projects_id) \
-        .filter(Files.file_id.in_(es_mapping['pdf'].keys()))
+        current_app.logger.info(
+            f'Term: {search_term}',
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='search contentsearch').to_dict()
+        )
 
-    combined_query = sqlalchemy.union_all(map_query, file_query).alias('combined_results')
-    query = db.session.query(combined_query)
+        offset = (pagination.page - 1) * pagination.limit
 
-    for row in query.all():
-        row = row._asdict()
-        doc = es_mapping[row['type']][row['id']]
-        doc['_db'] = row
-
-
-# TODO: Probably should rename this to something else...not sure what though
-@bp.route('/content', methods=['GET'])
-@auth.login_required
-@use_kwargs(ContentSearchSchema)
-def search(q, types, limit, page):
-    current_app.logger.info(
-        f'Term: {q}',
-        extra=UserEventLog(
-            username=g.current_user.username, event_type='search contentsearch').to_dict()
-    )
-    search_term = q
-    types = types.split(';') if types != '' else ['map', 'pdf']
-    offset = (page - 1) * limit
-    search_phrases = []
-
-    if search_term:
         text_fields = ['description', 'data.content', 'filename']
         text_field_boosts = {'description': 1, 'data.content': 1, 'filename': 3}
-        keyword_fields = []
-        keyword_field_boosts = {}
         highlight = {
             'fields': {
                 'data.content': {},
@@ -233,11 +188,12 @@ def search(q, types, limit, page):
         )
 
         accessible_project_ids = [project_id for project_id, in query]
+
         query_filter = {
             'bool': {
                 'must': [
                     # The document must have the specified type
-                    {'terms': {'type': types}},
+                    {'terms': {'mime_type': mime_types}},
                     # And...
                     {
                         'bool': {
@@ -254,71 +210,62 @@ def search(q, types, limit, page):
         }
 
         elastic_service = get_elastic_service()
-        res, search_phrases = elastic_service.search(
+        elastic_result, search_phrases = elastic_service.search(
             index_id=FILE_INDEX_ID,
             search_term=search_term,
             offset=offset,
-            limit=limit,
+            limit=pagination.limit,
             text_fields=text_fields,
             text_field_boosts=text_field_boosts,
-            keyword_fields=keyword_fields,
-            keyword_field_boosts=keyword_field_boosts,
+            keyword_fields=[],
+            keyword_field_boosts={},
             query_filter=query_filter,
             highlight=highlight
         )
-        res = res['hits']
 
-        hydrate_search_results(res)
-    else:
-        res = {'hits': [], 'max_score': None, 'total': 0}
+        elastic_result = elastic_result['hits']
 
-    highlight_tag_re = re.compile('@@@@(/?)\\$')
+        highlight_tag_re = re.compile('@@@@(/?)\\$')
 
-    results = []
-    for doc in res['hits']:
-        snippets = None
+        # So while we have the results from Elasticsearch, they don't contain up to date or
+        # complete data about the matched files, so we'll take the hash IDs returned by Elastic
+        # and query our database
+        file_ids = [doc['_source']['id'] for doc in elastic_result['hits']]
+        file_map = {file.id: file for file in
+                    self.get_nondeleted_recycled_files(Files.id.in_(file_ids))}
 
-        db_data = doc.get('_db', defaultdict(lambda: None))
+        results = []
+        for document in elastic_result['hits']:
+            file_id = document['_source']['id']
+            file: Optional[Files] = file_map.get(file_id)
 
-        if doc.get('highlight', None) is not None:
-            if doc['highlight'].get('data.content', None) is not None:
-                snippets = doc['highlight']['data.content']
+            if file and file.calculated_privileges[current_user.id].readable:
+                file_type = file_type_service.get(file)
+                if file_type.should_highlight_content_text_matches() and \
+                        document.get('highlight') is not None:
+                    if document['highlight'].get('data.content') is not None:
+                        snippets = document['highlight']['data.content']
+                        for i, snippet in enumerate(snippets):
+                            snippet = html.escape(snippet)
+                            snippet = highlight_tag_re.sub('<\\1highlight>', snippet)
+                            snippets[i] = f"<snippet>{snippet}</snippet>"
+                        file.calculated_highlight = snippets
 
-        if snippets:
-            for i, snippet in enumerate(snippets):
-                snippet = html.escape(snippet)
-                snippet = highlight_tag_re.sub('<\\1highlight>', snippet)
-                snippets[i] = f"<snippet>{snippet}</snippet>"
+                results.append({
+                    'item': file,
+                    'rank': document['_score'],
+                })
 
-        results.append({
-            'item': {
-                # TODO LL-1723: Need to add complete file path here
-                'type': 'file' if doc['_source']['type'] == 'pdf' else 'map',
-                'id': doc['_source']['id'],
-                'name': db_data['name'] or doc['_source']['filename'],
-                'description': db_data['description'] or doc['_source']['description'],
-                'highlight': snippets,
-                'doi': doc['_source']['doi'],
-                'creation_date': db_data['creation_date'] or doc['_source']['uploaded_date'],
-                'modification_date': db_data['modification_date'],
-                'annotation_date': db_data['annotation_date'],
-                'project': {
-                    'project_name': db_data['project_name'] or doc['_source']['project_name'],
-                },
-                'creator': {
-                    'username': db_data['owner_username'] or doc['_source']['username'],
-                },
-            },
-            'rank': doc['_score'],
-        })
+        return jsonify(ContentSearchResponseSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }).dump({
+            'total': elastic_result['total'],
+            'query': ResultQuery(phrases=search_phrases),
+            'results': results,
+        }))
 
-    response = ResultList(
-        total=res['total'],
-        results=results,
-        query=ResultQuery(phrases=search_phrases),
-    )
 
-    return jsonify(response.to_dict())
+bp.add_url_rule('content', view_func=ContentSearchView.as_view('content_search'))
 
 
 @bp.route('/organism/<string:organism_tax_id>', methods=['GET'])
