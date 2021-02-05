@@ -27,8 +27,15 @@ export interface JWTToken {
     token: string;
 }
 
+export interface LoginResp {
+    id: number;
+    username: string;
+    firstName: string;
+    lastName: string;
+}
+
 export interface JWTTokenResponse {
     accessToken: JWTToken;
     refreshToken: JWTToken;
-    user: AppUser;
+    user: LoginResp;
 }

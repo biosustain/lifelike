@@ -1,6 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 
-import { AppUser, Credential } from 'app/interfaces';
+import { AppUser, Credential, LoginResp } from 'app/interfaces';
 import { LOGOUT_SUCCESS } from 'app/shared/constants';
 
 export const checkTermsOfService = createAction(
@@ -28,7 +28,7 @@ export const login = createAction(
 
 export const loginSuccess = createAction(
     '[Auth] Login Success',
-    props<{user: AppUser}>(),
+    props<{user: LoginResp}>(),
 );
 
 export const loginFailure = createAction(
