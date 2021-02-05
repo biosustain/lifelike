@@ -1,11 +1,10 @@
 import jwt
 import sentry_sdk
-from datetime import datetime, timedelta
-from flask import current_app, request, Response, json, Blueprint, g
+from datetime import datetime, timedelta, timezone
+from flask import current_app, request, Blueprint, g, jsonify
 from flask_httpauth import HTTPTokenAuth
 from sqlalchemy.orm.exc import NoResultFound
-
-from neo4japp.database import db
+from typing_extensions import TypedDict
 from neo4japp.exceptions import (
     InvalidCredentialsException,
     JWTTokenException,
@@ -13,8 +12,8 @@ from neo4japp.exceptions import (
     RecordNotFoundException,
     NotAuthorizedException,
 )
+from neo4japp.schemas.auth import JWTTokenResponse
 from neo4japp.models.auth import AppUser
-from neo4japp.util import generate_jwt_token
 from neo4japp.utils.logger import UserEventLog
 
 
@@ -23,106 +22,130 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 auth = HTTPTokenAuth('Bearer')
 
 
+JWTToken = TypedDict(
+    'JWTToken', {'sub': str, 'iat': datetime, 'exp': datetime, 'token_type': str, 'token': str})
+
+JWTResp = TypedDict(
+    'JWTResp', {'sub': str, 'iat': str, 'exp': int, 'type': str})
+
+
+class TokenService:
+
+    def __init__(self, app_secret: str, algorithm: str = 'HS256'):
+        self.app_secret = app_secret
+        # See JWT library documentation for available algorithms
+        self.algorithm = algorithm
+
+    def _generate_jwt_token(
+            self,
+            sub: str,
+            secret: str,
+            token_type: str = 'access',
+            time_offset: int = 1,
+            time_unit: str = 'hours',
+    ) -> JWTToken:
+        """
+        Generates an authentication or refresh JWT Token
+
+        Args:
+            sub - the subject of the token (e.g. user email)
+            secret - secret that should not be shared for encryption
+            token_type - one of 'access' or 'refresh'
+            time_offset - the difference in time before token expiration
+            time_unit - time offset for expiration (days, hours, etc) (see datetime docs)
+        """
+        time_now = datetime.now(timezone.utc)
+        expiration = time_now + timedelta(**{time_unit: time_offset})
+        token = jwt.encode({
+            'iat': time_now,
+            'sub': sub,
+            'exp': expiration,
+            'type': token_type,
+        }, secret, algorithm=self.algorithm).decode('utf-8')
+        return {
+            'sub': sub,
+            'iat': time_now,
+            'exp': expiration,
+            'token_type': token_type,
+            'token': token
+        }
+
+    def get_access_token(
+            self, subj, token_type='access', time_offset=1, time_unit='hours') -> JWTToken:
+        return self._generate_jwt_token(
+            sub=subj, secret=self.app_secret, token_type=token_type,
+            time_offset=time_offset, time_unit=time_unit)
+
+    def get_refresh_token(
+            self, subj, token_type='refresh', time_offset=7, time_unit='days') -> JWTToken:
+        return self._generate_jwt_token(
+            sub=subj, secret=self.app_secret, token_type=token_type,
+            time_offset=time_offset, time_unit=time_unit)
+
+    def decode_token(self, token: str) -> JWTResp:
+        try:
+            payload = jwt.decode(token, self.app_secret, algorithms=[self.algorithm])
+            jwt_resp: JWTResp = {
+                'sub': payload['sub'], 'iat': payload['iat'], 'exp': payload['exp'],
+                'type': payload['type']}
+        except jwt.exceptions.InvalidTokenError:  # type: ignore
+            raise JWTTokenException('auth token is invalid')
+        except jwt.exceptions.ExpiredSignatureError:  # type: ignore
+            raise JWTTokenException('auth token is expired')
+        else:
+            return jwt_resp
+
+
 @auth.verify_token
 def verify_token(token):
     """ Verify JTW """
-    try:
-        decoded = jwt.decode(
-            token,
-            current_app.config['SECRET_KEY'],
-            algorithms=['HS256']
-        )
-        if decoded['type'] == 'access':
-            user = pullUserFromAuthHead()
-            g.current_user = user
-            with sentry_sdk.configure_scope() as scope:
-                scope.set_tag('user_email', user.email)
-            return True
+    token_service = TokenService(current_app.config['SECRET_KEY'])
+    decoded = token_service.decode_token(token)
+    if decoded['type'] == 'access':
+        token = request.headers.get('Authorization')
+        if token is None:
+            raise JWTAuthTokenException('No authorization header found.')
         else:
-            raise NotAuthorizedException('no access found')
-    except RecordNotFoundException:
-        raise JWTAuthTokenException('auth token is invalid')
-    except jwt.exceptions.ExpiredSignatureError:
-        # Signature has expired
-        raise JWTAuthTokenException('auth token has expired')
-    except jwt.exceptions.InvalidTokenError:
-        raise JWTAuthTokenException('auth token is invalid')
-
-
-def pullUserFromAuthHead():
-    """
-        Return user object from jwt in
-        auth header of request
-    """
-    # Pull the JWT
-    token = request.headers.get('Authorization')
-    if token is None:
-        raise JWTAuthTokenException('No authorization header found.')
-    token = token.split(' ')[-1].strip()
-
-    try:
-        email = jwt.decode(
-            token,
-            current_app.config['SECRET_KEY'],
-            algorithms=['HS256']
-        )['sub']
-    except jwt.exceptions.ExpiredSignatureError:
-        raise JWTAuthTokenException('auth token has expired')
+            token = token.split(' ')[-1].strip()
+            try:
+                user = AppUser.query_by_email(decoded['sub']).one()
+            except NoResultFound:
+                raise RecordNotFoundException('Credentials not found.')
+            else:
+                g.current_user = user
+                with sentry_sdk.configure_scope() as scope:
+                    scope.set_tag('user_email', user.email)
+                return True
     else:
-        try:
-            user = AppUser.query_by_email(email).one()
-        except NoResultFound:
-            raise RecordNotFoundException('Credentials not found.')
-        return user
+        raise NotAuthorizedException('no access found')
 
 
 @bp.route('/refresh', methods=['POST'])
 def refresh():
-    """
-        Renew access token with refresh token
-    """
+    """ Renew access token with refresh token """
     data = request.get_json()
     token = data.get('jwt')
+    token_service = TokenService(current_app.config['SECRET_KEY'])
+
+    decoded = token_service.decode_token(token)
+    if decoded['type'] != 'refresh':
+        raise JWTTokenException('wrong token type submitted')
+
+    # Create access & refresh token pair
+    token_subj = decoded['sub']
+    access_jwt = token_service.get_access_token(token_subj)
+    refresh_jwt = token_service.get_refresh_token(token_subj)
 
     try:
-        decoded = jwt.decode(
-            token,
-            current_app.config['SECRET_KEY'],
-            algorithms=['HS256']
-        )
-
-        if decoded['type'] != 'refresh':
-            # Wrong token type
-            return {'status': 'wrong token type submitted'}, 401
-
-        # Create access & refresh token pair
-        access_jwt_encoded = generate_jwt_token(
-            sub=decoded['sub'],
-            secret=current_app.config['SECRET_KEY'],
-            token_type='access',
-            time_offset=1,
-            time_unit='hours',
-        )
-        refresh_jwt_encoded = generate_jwt_token(
-            sub=decoded['sub'],
-            secret=current_app.config['SECRET_KEY'],
-            token_type='refresh',
-            time_offset=1,
-            time_unit='days',
-        )
-
-        # Create response
-        resp = {
-            "access_jwt": access_jwt_encoded.decode('utf-8'),
-            "refresh_jwt": refresh_jwt_encoded.decode('utf-8')
-        }
-        return resp, 200
-    except jwt.exceptions.ExpiredSignatureError:
-        # Signature has expired
-        raise JWTTokenException('refresh token has expired')
-    except jwt.exceptions.InvalidTokenError:
-        # Invalid token
-        raise JWTTokenException('refresh token is invalid')
+        user = AppUser.query.filter_by(email=decoded['sub']).one()
+    except NoResultFound:
+        raise RecordNotFoundException('Credentials not found.')
+    else:
+        return jsonify(JWTTokenResponse().dump({
+            'access_token': access_jwt,
+            'refresh_token': refresh_jwt,
+            'user': user,
+        }))
 
 
 @bp.route('/login', methods=['POST'])
@@ -135,44 +158,21 @@ def login():
 
     # Pull user by email
     try:
-        user = AppUser.query.filter_by(
-            email=data.get('email')
-        ).one()
+        user = AppUser.query.filter_by(email=data.get('email')).one()
     except NoResultFound:
         raise RecordNotFoundException('Credentials not found or invalid.')
-
-    if user.check_password(data.get('password')):
-        current_app.logger.info(
-            UserEventLog(username=user.username, event_type='user login').to_dict())
-        # Issue access jwt
-        access_jwt_encoded = generate_jwt_token(
-            sub=user.email,
-            secret=current_app.config['SECRET_KEY'],
-            token_type='access',
-            time_offset=1,
-            time_unit='hours',
-        )
-        # Issue refresh jwt
-        refresh_jwt_encoded = generate_jwt_token(
-            sub=user.email,
-            secret=current_app.config['SECRET_KEY'],
-            token_type='refresh',
-            time_offset=1,
-            time_unit='days',
-        )
-
-        # Create response
-        resp = {
-            'user': user.to_dict(),
-            'access_jwt': access_jwt_encoded.decode('utf-8'),
-            'refresh_jwt': refresh_jwt_encoded.decode('utf-8')
-        }
-
-        return Response(
-            response=json.dumps(resp),
-            status=200,
-            mimetype='application/json'
-        )
     else:
-        # Complain about invalid credentials
-        raise InvalidCredentialsException('Invalid credentials')
+        if user.check_password(data.get('password')):
+            current_app.logger.info(
+                UserEventLog(username=user.username, event_type='user login').to_dict())
+            token_service = TokenService(current_app.config['SECRET_KEY'])
+            access_jwt = token_service.get_access_token(user.email)
+            refresh_jwt = token_service.get_refresh_token(user.email)
+            return jsonify(JWTTokenResponse().dump({
+                'access_token': access_jwt,
+                'refresh_token': refresh_jwt,
+                'user': user,
+            }))
+        else:
+            # Complain about invalid credentials
+            raise InvalidCredentialsException('Invalid credentials')
