@@ -8,7 +8,6 @@ from neo4japp.util import (
     camel_to_snake,
     camel_to_snake_dict,
     encode_to_str,
-    generate_jwt_token,
 )
 
 
@@ -54,29 +53,3 @@ class MockEnum(Enum):
 ])
 def test_can_encode_to_str(data_input, expected_output):
     assert encode_to_str(data_input) == expected_output
-
-
-@pytest.mark.parametrize('subject, secret, token_type, time_offset, time_unit, algorithm', [
-    ('user@gmail.com', 'secret', 'access', 1, 'days', 'HS256'),
-    ('user@gmail.com', 'secret', 'refresh', 0, 'days', 'HS384'),
-    ('user@gmail.com', 'secret', 'access', 10, 'days', 'HS256'),
-    ('user@gmail.com', 'secret', 'access', 1, 'hours', 'HS256'),
-    ('user@gmail.com', 'secret', 'access', 5, 'hours', 'HS256'),
-    ('user@gmail.com', 'secret', 'access', 5.2, 'hours', 'HS256'),
-])
-def test_can_generate_and_decrypt_jwt_tokens(
-        subject, secret, token_type, time_offset, time_unit, algorithm):
-    jwt_token = generate_jwt_token(
-        subject, secret, token_type, time_offset, time_unit, algorithm)
-    decoded_jwt = jwt.decode(jwt_token, secret, algorithms=[algorithm])
-
-    assert decoded_jwt.get('sub') == subject
-    assert decoded_jwt.get('type') == token_type
-
-    exp_time = decoded_jwt.get('exp')
-    issued_time = decoded_jwt.get('iat')
-
-    if time_unit == 'days':
-        assert ((((exp_time - issued_time)/60)/60)/24) == time_offset
-    else:
-        assert ((((exp_time - issued_time)/60)/60)) == time_offset
