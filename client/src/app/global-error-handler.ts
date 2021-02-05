@@ -15,7 +15,11 @@ export class GlobalErrorHandler implements ErrorHandler {
 
     handleError(error: Error | HttpErrorResponse) {
         if (!(error instanceof HttpErrorResponse && this.KNOWN_HTTP_ERROR_CODES.includes(error.status))) {
+          try {
             this.errorHandlerService.showError(error, {label: 'Uncaught exception', expected: false});
+          } catch (e) {
+            console.error(error);
+          }
         }
     }
 }

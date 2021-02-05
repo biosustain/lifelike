@@ -1,14 +1,14 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { OrganismAutocomplete } from 'app/interfaces/neo4j.interface';
-import { SharedSearchService } from 'app/shared/services/shared-search.service';
+import {Component, Input} from '@angular/core';
+import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
+import {FormArray, FormControl, FormGroup, Validators} from '@angular/forms';
+import {CommonFormDialogComponent} from 'app/shared/components/dialog/common-form-dialog.component';
+import {MessageDialog} from 'app/shared/services/message-dialog.service';
+import {OrganismAutocomplete} from 'app/interfaces/neo4j.interface';
+import {SharedSearchService} from 'app/shared/services/shared-search.service';
 
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { finalize, map } from 'rxjs/operators';
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import {BehaviorSubject, Observable, of} from 'rxjs';
+import {finalize, map} from 'rxjs/operators';
+import {FilesystemObject} from 'app/file-browser/models/filesystem-object';
 import {EnrichmentVisualisationData} from '../enrichment-visualisation-viewer.component';
 import {getObjectLabel} from '../../../../file-browser/utils/objects';
 import {ErrorHandler} from '../../../../shared/services/error-handler.service';
@@ -60,17 +60,14 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
   }
 
   @Input()
-  set data(value: EnrichmentVisualisationData) {
-    this._data = value;
+  set data({
+             importGenes,
+             organismTaxId,
+             domains = []
+           }) {
 
-    const resultArray = value.data.split('/');
-    const importGenes: string = resultArray[0].split(',').filter(gene => gene !== '').join('\n');
-    this.organismTaxId = resultArray[1];
-    if (resultArray.length > 3) {
-      if (resultArray[3] !== '') {
-        this.domains = resultArray[3].split(',');
-      }
-    }
+    this.organismTaxId = organismTaxId;
+    this.domains = domains
 
     const progressDialogRef = this.progressDialog.display({
       title: `Loading Parameters`,
@@ -86,7 +83,7 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
     organismObservable.pipe(
       finalize(() => progressDialogRef.close()),
       map(searchResult => {
-        this.form.get('entitiesList').setValue(importGenes || '');
+        this.form.get('entitiesList').setValue(importGenes.join('\n') || '');
         this.setOrganism(searchResult);
         this.setDomains();
         return searchResult;
@@ -110,11 +107,14 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
   }
 
   getValue(): EnrichmentVisualisationData {
-    const value = this.form.value;
+    const {entitiesList='', ...rest} = this.form.value;
     return {
-      data: value.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + value.organism + '/' + value.domainsList.join(','),
+      entitiesList: entitiesList.split(/[\n \t,;]/),
+      ...rest
     };
   }
+
+
 
   onCheckChange(event) {
     const formArray: FormArray = this.form.get('domainsList') as FormArray;

@@ -90,7 +90,8 @@ const createResizeObserver = (callback, container) => {
     }
     resize(width, height);
   });
-  observer.observe(container);
+  //todo
+  // observer.observe(container);
   return observer;
 };
 
