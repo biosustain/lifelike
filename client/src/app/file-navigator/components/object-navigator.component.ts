@@ -49,7 +49,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
     this.loadTask.update(this.route.snapshot.params.file_id);
   }
 
-  openWord(annotation: WordCloudAnnotationFilterEntity) {
+  openWord(annotation: WordCloudAnnotationFilterEntity, useKeyword: boolean) {
     if (this.object.mimeType === PDF_MIMETYPE) {
       const url = this.object.getURL();
       this.workspaceManager.navigateByUrl(
@@ -68,7 +68,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
       this.workspaceManager.navigate(
         ['/search', 'content'], {
           queryParams: {
-            q: annotation.text,
+            q: useKeyword ? annotation.text : annotation.primaryName,
           },
           newTab: true,
           sideBySide: true,
