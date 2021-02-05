@@ -191,9 +191,9 @@ def empty_params(q, advanced_args):
 
 def get_types_from_params(q, advanced_args):
     # Get document types from either `q` or `types`
-    types = set()
+    types = []
     if 'types' in advanced_args and advanced_args['types'] != '':
-        types = set(advanced_args['types'].split(';'))
+        types = advanced_args['types'].split(';')
 
     # Even if `types` is in the advanced args, expect `q` might also contain some types
     extracted_types = re.findall(r'\btype:\S*', q)
@@ -210,9 +210,9 @@ def get_types_from_params(q, advanced_args):
 
 def get_projects_from_params(q, advanced_args):
     # Get projects from either `q` or `projects`
-    projects = set()
+    projects = []
     if 'projects' in advanced_args and advanced_args['projects'] != '':
-        projects = set(advanced_args['projects'].split(';'))
+        projects = advanced_args['projects'].split(';')
 
     # Even if `projects` is in the advanced args, expect `q` might also contain some projects
     extracted_projects = re.findall(r'\bproject:\S*', q)
@@ -236,9 +236,9 @@ def get_projects_from_params(q, advanced_args):
 
 def get_wildcards_from_params(q, advanced_args):
     # Get wildcards from `wildcards`
-    wildcards = set()
+    wildcards = []
     if 'wildcards' in advanced_args and advanced_args['wildcards'] != '':
-        wildcards = set(advanced_args['wildcards'].split(';'))
+        wildcards = advanced_args['wildcards'].split(';')
 
     return ' '.join([q] + list(wildcards))
 
