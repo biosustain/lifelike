@@ -37,7 +37,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
               },
             },
           }));
-          return throwError('No internet connection');
+          return throwError(res);
         } else if (statusCode >= 400) {
           return throwError(res);
         }
