@@ -25,7 +25,7 @@ export class WordCloudComponent {
   @Input() title = 'Entity Cloud';
   @Input() object: FilesystemObject;
   @Input() clickableWords = false;
-  @Output() wordOpen = new EventEmitter<WordCloudAnnotationFilterEntity>();
+  @Output() wordOpen = new EventEmitter<WordOpen>();
 
   loadTask: BackgroundTask<[], any>;
   annotationsLoadedSub: Subscription;
@@ -296,7 +296,10 @@ export class WordCloudComponent {
       .enter()
       .append('text')
       .on('click', (item: WordCloudAnnotationFilterEntity) => {
-        this.wordOpen.emit(item);
+        this.wordOpen.emit({
+          entity: item,
+          keywordsShown: this.keywordsShown,
+        });
       })
       .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
       .style('fill', (d) => d.color)
@@ -372,7 +375,10 @@ export class WordCloudComponent {
       .attr('text-anchor', 'middle')
       .text((d) => d.text)
       .on('click', (item: WordCloudAnnotationFilterEntity) => {
-        this.wordOpen.emit(item);
+        this.wordOpen.emit({
+          entity: item,
+          keywordsShown: this.keywordsShown,
+        });
       })
       .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
       .style('font-size', (d) => d.size + 'px')
@@ -414,4 +420,9 @@ export class WordCloudComponent {
       .on('end', words => initial ? this.createInitialWordCloudElements(words) : this.updateWordCloudElements(words));
     layout.start();
   }
+}
+
+class WordOpen {
+  entity: WordCloudAnnotationFilterEntity;
+  keywordsShown: boolean;
 }
