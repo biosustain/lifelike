@@ -1,4 +1,4 @@
-import {Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild, AfterViewInit, Input, NgZone } from '@angular/core';
+import {Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output} from '@angular/core';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ActivatedRoute} from '@angular/router';
 
@@ -9,44 +9,33 @@ import {catchError, finalize, flatMap, map, mergeMap} from 'rxjs/operators';
 
 import {TableCell, TableHeader} from 'app/shared/components/table/generic-table.component';
 import {ModuleAwareComponent, ModuleProperties} from 'app/shared/modules';
-import {BackgroundTask} from 'app/shared/rxjs/background-task';
 import {ErrorHandler} from 'app/shared/services/error-handler.service';
 import {DownloadService} from 'app/shared/services/download.service';
-
+import {WorkspaceManager} from "../../../../shared/workspace-manager";
+import {ProgressDialog} from "../../../../shared/services/progress-dialog.service";
+import {MessageDialog} from "../../../../shared/services/message-dialog.service";
 import {
-  EnrichmentVisualisationService,
-  EnrichmentWrapper,
-  GoNode,
+  EnrichmentTableService,
+  EnrichmentWrapper, GoNode,
   NCBINode,
-  NCBIWrapper,
-} from '../../services/enrichment-visualisation.service';
-
-import {WordCloudComponent} from './word-cloud/word-cloud.component';
-import {FilesystemObject} from '../../../file-browser/models/filesystem-object';
-import {FilesystemService} from '../../../file-browser/services/filesystem.service';
-import {ProgressDialog} from '../../../shared/services/progress-dialog.service';
-import {mapBlobToBuffer, mapBufferToJson} from '../../../shared/utils/files';
-import {EnrichmentTableOrderDialogComponent} from '../table/dialog/enrichment-table-order-dialog.component';
-import {EnrichmentTableEditDialogComponent} from '../table/dialog/enrichment-table-edit-dialog.component';
-import {Progress} from '../../../interfaces/common-dialog.interface';
-
-// import mockedData from './stories/assets/mocked_data.json';
-import {EnrichmentTableService} from '../../services/enrichment-table.service';
-import {MessageDialog} from "../../../shared/services/message-dialog.service";
-import {WorkspaceManager} from "../../../shared/workspace-manager";
-import {FilesystemObjectActions} from "../../../file-browser/services/filesystem-object-actions";
-import {MAP_MIMETYPE} from "../../../drawing-tool/providers/map.type-provider";
-import {getObjectLabel} from "../../../file-browser/utils/objects";
-import {MessageType} from "../../../interfaces/message-dialog.interface";
+  NCBIWrapper
+} from "../../../services/enrichment-table.service";
+import {EnrichmentVisualisationService} from "../../../services/enrichment-visualisation.service";
+import {EnrichmentTableOrderDialogComponent} from "../../table/dialog/enrichment-table-order-dialog.component";
+import {EnrichmentTableEditDialogComponent} from "../../table/dialog/enrichment-table-edit-dialog.component";
+import {Progress} from "../../../../interfaces/common-dialog.interface";
+import {BackgroundTask} from "../../../../shared/rxjs/background-task";
+import {FilesystemObject} from "../../../../file-browser/models/filesystem-object";
+import {mapBlobToBuffer, mapBufferToJson} from "../../../../shared/utils/files";
 
 export const ENRICHMENT_VISUALISATION_MIMETYPE = 'vnd.lifelike.document/enrichment-visualisation';
 
 @Component({
-  selector: 'app-enrichment-visualisation-viewer',
-  templateUrl: './enrichment-visualisation-viewer.component.html',
-  styleUrls: ['./enrichment-visualisation-viewer.component.scss'],
+  selector: 'app-enrichment-visualisation-table-viewer',
+  templateUrl: './enrichment-table-viewer.component.html',
+  styleUrls: ['./enrichment-table-viewer.component.scss'],
 })
-export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy, AfterViewInit, ModuleAwareComponent {
+export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, ModuleAwareComponent {
   @Input() titleVisible = true;
 
   paramsSubscription: Subscription;
@@ -88,39 +77,33 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
 
   // Enrichment Table and NCBI Matching Results
   domains: string[] = [];
-  projectName: string;
-  fileId: string;
+
   geneNames: string[];
-  taxID: string;
-  organism: string;
-  loadTableTask: BackgroundTask<null, [FilesystemObject, EnrichmentData]>;
-  loadTableTaskSubscription: Subscription;
-  object: FilesystemObject;
+  @Input() taxID: string;
+  @Input() organism: string;
   data: EnrichmentData;
   neo4jId: number;
-  importGenes: string[];
+  object:any;
+  @Input() importGenes: string[];
   unmatchedGenes: string;
   duplicateGenes: string;
   columnOrder: string[] = [];
   legend: Map<string, string> = new Map<string, string>();
   filtersPanelOpened = false;
   clickableWords = false;
-  @ViewChild(WordCloudComponent, {static: false})
-  private wordCloudComponent: WordCloudComponent;
-
 
   scrollTopAmount: number;
 
   loadingData: boolean;
 
-  cloudData: string[] = [];
 
   selectedRow = 0;
+  private loadTableTaskSubscription: Promise<PushSubscription>;
+  private loadTableTask: any;
 
   constructor(protected readonly messageDialog: MessageDialog,
               protected readonly ngZone: NgZone,
               protected readonly workspaceManager: WorkspaceManager,
-              protected readonly filesystemObjectActions: FilesystemObjectActions,
               protected readonly route: ActivatedRoute,
               protected readonly worksheetViewerService: EnrichmentTableService,
               protected readonly enrichmentService: EnrichmentVisualisationService,
@@ -128,42 +111,15 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
               protected readonly modalService: NgbModal,
               protected readonly errorHandler: ErrorHandler,
               protected readonly downloadService: DownloadService,
-              protected readonly filesystemService: FilesystemService,
               protected readonly progressDialog: ProgressDialog) {
 
-    this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
-      this.returnUrl = params.return;
-    });
-
-    this.paramsSubscription = this.route.params.subscribe(params => {
-      this.locator = params.hash_id;
-    });
   }
 
   ngOnDestroy() {
-    super.ngOnDestroy();
     this.queryParamsSubscription.unsubscribe();
     this.paramsSubscription.unsubscribe();
-    this.loadTableTaskSubscription.unsubscribe();
   }
 
-  shouldConfirmUnload() {
-    return this.unsavedChanges$.getValue();
-  }
-
-  setCloudData() {
-    console.log(this.data, this.selectedRow);
-    this.cloudData = this.mockedData.data[this.selectedRow].Genes.split(';');
-  }
-
-  // events
-  public chartClick({event, active}: { event: MouseEvent, active: {}[] }): void {
-    console.log('active', active[0]);
-    if (active[0]) {
-      this.selectedRow = (active[0] as any)._index;
-      this.setCloudData();
-    }
-  }
 
   ngOnInit() {
     this.loadTableTask = new BackgroundTask(() => this.filesystemService.get(this.fileId, {
@@ -214,8 +170,6 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
       this.initializeHeaders();
       this.removeDuplicates(this.importGenes);
       this.matchNCBINodes();
-      this.enrichWithGOTerms();
-      this.setCloudData();
     });
     this.loadTableTask.update();
 
@@ -237,7 +191,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
    * Function to that returns all data without changing current table view.
    */
   loadAllEntries(): Promise<TableCell[][]> {
-    return this.worksheetViewerService
+    return this.enrichmentService
       .matchNCBINodes(this.importGenes, this.taxID)
       .pipe(
         flatMap(matched => forkJoin(
@@ -312,26 +266,6 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   }
 
   /**
-   * Load all data, convert to CSV format and provide download.
-   */
-  downloadAsCSV() {
-    // TODO: Implement this as an export format in the filesystem API
-    this.downloadService.requestDownload(
-      this.object.filename,
-      () => from(this.loadAllEntries()).pipe(
-        mergeMap(entries => {
-          const stringEntries = this.convertEntriesToString(entries);
-          let csvFile = '';
-          stringEntries.forEach(entry => csvFile += this.processRowCSV(entry));
-          return of(csvFile);
-        }),
-      ),
-      'application/csv',
-      '.csv',
-    );
-  }
-
-  /**
    * Convert entire table to string.
    * @param entries table entries in TableCell format
    * @returns 2d string array that represents table.
@@ -383,28 +317,6 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
       }
     }, () => {
     });
-  }
-
-  /**
-   * Save the current representation of knowledge model
-   */
-  save() {
-    const contentValue = new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
-      type: MAP_MIMETYPE,
-    });
-
-    // Push to backend to save
-    this.filesystemService.save([this.locator], {
-      contentValue,
-    })
-      .pipe(this.errorHandler.create({label: 'Update map'}))
-      .subscribe(() => {
-        this.unsavedChanges$.next(false);
-        this.emitModuleProperties();
-        this.snackBar.open('Visualisation saved.', null, {
-          duration: 2000,
-        });
-      });
   }
 
   /**
@@ -465,9 +377,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
       });
 
       // Push to backend to save
-      this.filesystemService.save([this.object.hashId], {
-        contentValue,
-      })
+      this.enrichmentService.save()
         .pipe(
           finalize(() => progressDialogRef.close()),
           this.errorHandler.create({label: 'Edit enrichment table'}),
@@ -534,28 +444,6 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
       )
       .subscribe((result: NCBIWrapper[]) => {
         this.getDomains(result, this.importGenes);
-      });
-  }
-
-  /**
-   *  Match list of inputted gene names to NCBI nodes with name stored in Neo4j.
-   */
-  enrichWithGOTerms() {
-    this.loadingData = true;
-    this.enrichmentService
-      .enrichWithGOTerms(this.importGenes, this.taxID)
-      .pipe(
-        catchError((error) => {
-          this.snackBar.open(`Unable to load entries.`, 'Close', {
-            duration: 5000,
-          });
-          this.loadingData = false;
-          return error;
-        }),
-        this.errorHandler.create({label: 'Match NCBI nodes'}),
-      )
-      .subscribe((result: NCBIWrapper[]) => {
-          console.log(result);
       });
   }
 
@@ -822,50 +710,6 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     this.object.addDataTransferData(dataTransfer);
-  }
-
-  openCloneDialog() {
-    const newTarget: FilesystemObject = cloneDeep(this.map);
-    newTarget.public = false;
-    return this.filesystemObjectActions.openCloneDialog(newTarget).then(clone => {
-      this.workspaceManager.navigate(clone.getCommands(), {
-        newTab: true,
-      });
-      this.snackBar.open(`Copied ${getObjectLabel(this.map)} to ${getObjectLabel(clone)}.`, 'Close', {
-        duration: 5000,
-      });
-    }, () => {
-    });
-  }
-
-  openVersionHistoryDialog() {
-    return this.filesystemObjectActions.openVersionHistoryDialog(this.map);
-  }
-
-  openExportDialog() {
-    if (this.unsavedChanges$.getValue()) {
-      this.messageDialog.display({
-        title: 'Save Required',
-        message: 'Please save your changes before exporting.',
-        type: MessageType.Error,
-      });
-    } else {
-      return this.filesystemObjectActions.openExportDialog(this.map);
-    }
-  }
-
-  openShareDialog() {
-    return this.filesystemObjectActions.openShareDialog(this.map);
-  }
-
-  goToReturnUrl() {
-    if (this.shouldConfirmUnload()) {
-      if (confirm('Leave editor? Changes you made may not be saved.')) {
-        this.workspaceManager.navigateByUrl(this.returnUrl);
-      }
-    } else {
-      this.workspaceManager.navigateByUrl(this.returnUrl);
-    }
   }
 }
 

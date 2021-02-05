@@ -52,14 +52,14 @@ export class EnrichmentVisualisationTypeProvider extends AbstractObjectTypeProvi
           dialogRef.componentInstance.submitButtonLabel = 'Next';
           dialogRef.componentInstance.object = object;
           dialogRef.componentInstance.data = {
-            data: '///' + defaultDomains.join(','),
-          } as EnrichmentData;
+            domains: defaultDomains
+          };
 
-          return dialogRef.result.then((result: EnrichmentData) => {
+          return dialogRef.result.then((params) => {
             return this.objectCreationService.openCreateDialog(object, {
               title: 'Name the Enrichment Visualisation',
               request: {
-                contentValue: new Blob([JSON.stringify(result)]),
+                contentValue: new Blob([JSON.stringify(params)]),
               },
               ...(options.createDialog || {}),
             });
