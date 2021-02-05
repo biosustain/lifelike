@@ -145,6 +145,7 @@ def refresh():
             'access_token': access_jwt,
             'refresh_token': refresh_jwt,
             'user': user,
+            'user_id': user.id,
         }))
 
 
