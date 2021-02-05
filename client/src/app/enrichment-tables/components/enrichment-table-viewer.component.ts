@@ -19,6 +19,7 @@ import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-di
 import { TableCSVExporter } from '../../shared/utils/tables/table-csv-exporter';
 import { openDownloadForBlob } from '../../shared/utils/files';
 import { Progress } from '../../interfaces/common-dialog.interface';
+import { ObjectVersion } from '../../file-browser/models/object-version';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -31,6 +32,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
 
   fileId: string;
   object$: Observable<FilesystemObject> = new Subject();
+  contentValue$: Observable<Blob> = new Subject();
   document$: Observable<EnrichmentDocument> = new Subject();
   table$: Observable<EnrichmentTable> = new Subject();
   scrollTopAmount: number;
@@ -55,12 +57,8 @@ export class EnrichmentTableViewerComponent implements OnInit {
       }),
       shareReplay(),
     );
-    this.document$ = this.object$.pipe(
-      mergeMap((object: FilesystemObject) => {
-        return object.contentValue$.pipe(
-          mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).load(blob)),
-        );
-      }),
+    this.document$ = this.filesystemService.getContent(this.fileId).pipe(
+      mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).load(blob)),
       shareReplay(),
     );
     this.table$ = this.document$.pipe(
@@ -78,6 +76,20 @@ export class EnrichmentTableViewerComponent implements OnInit {
 
   onTableScroll(e) {
     this.scrollTopAmount = e.target.scrollTop;
+  }
+
+  restore(version: ObjectVersion) {
+    this.document$ = new EnrichmentDocument(this.worksheetViewerService).load(version.contentValue).pipe(
+      tap(() => this.unsavedChanges$.next(true)),
+      shareReplay(),
+    );
+    this.table$ = this.document$.pipe(
+      mergeMap(document => {
+        return new EnrichmentTable().load(document);
+      }),
+      this.errorHandler.create({label: 'Restore enrichment table'}),
+      shareReplay(),
+    );
   }
 
   refreshData(assumeChanged = false) {
@@ -133,33 +145,6 @@ export class EnrichmentTableViewerComponent implements OnInit {
         {duration: 5000},
       );
     });
-  }
-
-  /**
-   * Load all data, convert to CSV format and provide download.
-   */
-  downloadAsCSV() {
-    const progressDialogRef = this.progressDialog.display({
-      title: 'Generating Export',
-      progressObservable: new BehaviorSubject<Progress>(new Progress({
-        status: 'Generating CSV...',
-      })),
-    });
-
-    combineLatest(
-      this.object$,
-      this.table$.pipe(
-        mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
-      ),
-    ).pipe(
-      take(1),
-      map(([object, blob]) => {
-        openDownloadForBlob(blob, object.filename + '.csv');
-        return true;
-      }),
-      this.errorHandler.create({label: 'Export enrichment table'}),
-      finalize(() => progressDialogRef.close()),
-    ).subscribe();
   }
 
   /**

@@ -1,3 +1,5 @@
+@import 'src/scss/variables';
+
 #modalContainer {
   overflow: auto;
 }
@@ -17,9 +19,9 @@
   margin-bottom: 1rem;
 }
 
-.fixed {
-  position: fixed;
-  bottom: 30px;
-  right: 60px;
-  z-index: 99;
+.top-button {
+  position: absolute;
+  bottom: $window-spacer;
+  right: $window-spacer;
+  z-index: 100;
 }

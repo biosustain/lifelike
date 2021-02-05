@@ -2,9 +2,11 @@ import {
   AbstractObjectTypeProvider,
   CreateActionOptions,
   CreateDialogAction,
+  Exporter,
+  PreviewOptions,
 } from '../../file-browser/services/object-type.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { Injectable } from '@angular/core';
+import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
 import { EnrichmentTableEditDialogComponent } from '../components/enrichment-table-edit-dialog.component';
@@ -13,9 +15,13 @@ import { SearchType } from '../../search/shared';
 import { EnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentTableService } from '../services/enrichment-table.service';
 import { finalize, map, mergeMap } from 'rxjs/operators';
-import { BehaviorSubject, from } from 'rxjs';
+import { BehaviorSubject, from, Observable, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { EnrichmentTablePreviewComponent } from '../components/enrichment-table-preview.component';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { TableCSVExporter } from '../../shared/utils/tables/table-csv-exporter';
+import { EnrichmentTable } from '../models/enrichment-table';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 
@@ -25,12 +31,31 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
   constructor(protected readonly objectCreationService: ObjectCreationService,
               protected readonly modalService: NgbModal,
               protected readonly worksheetViewerService: EnrichmentTableService,
-              protected readonly progressDialog: ProgressDialog) {
+              protected readonly progressDialog: ProgressDialog,
+              protected readonly componentFactoryResolver: ComponentFactoryResolver,
+              protected readonly injector: Injector,
+              protected readonly filesystemService: FilesystemService,
+              protected readonly worksheetService: EnrichmentTableService) {
     super();
   }
 
   handles(object: FilesystemObject): boolean {
     return object.mimeType === ENRICHMENT_TABLE_MIMETYPE;
+  }
+
+  createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
+                         options?: PreviewOptions) {
+    const factory: ComponentFactory<EnrichmentTablePreviewComponent> =
+      this.componentFactoryResolver.resolveComponentFactory(EnrichmentTablePreviewComponent);
+    const componentRef = factory.create(this.injector);
+    const instance: EnrichmentTablePreviewComponent = componentRef.instance;
+    return contentValue$.pipe(
+      mergeMap(blob => new EnrichmentDocument(this.worksheetService).load(blob)),
+      map(document => {
+        instance.document = document;
+        return componentRef;
+      }),
+    );
   }
 
   getCreateDialogOptions(): RankedItem<CreateDialogAction>[] {
@@ -80,6 +105,31 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
     return [
       Object.freeze({id: ENRICHMENT_TABLE_MIMETYPE, name: 'Enrichment Tables'}),
     ];
+  }
+
+  getExporters(object: FilesystemObject): Observable<Exporter[]> {
+    return of([{
+      name: 'CSV',
+      export: () => {
+        return this.filesystemService.getContent(object.hashId).pipe(
+          mergeMap(blob => new EnrichmentDocument(this.worksheetViewerService).load(blob)),
+          mergeMap(document => new EnrichmentTable().load(document)),
+          mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
+          map(blob => {
+            return new File([blob], object.filename + '.csv');
+          }),
+        );
+      },
+    }, {
+      name: 'Lifelike Enrichment Table File',
+      export: () => {
+        return this.filesystemService.getContent(object.hashId).pipe(
+          map(blob => {
+            return new File([blob], object.filename + '.llenrichmenttable.json');
+          }),
+        );
+      },
+    }]);
   }
 
 }
