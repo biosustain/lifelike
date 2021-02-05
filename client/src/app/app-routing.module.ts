@@ -132,7 +132,7 @@ const routes: Routes = [
         canActivate: [AuthGuard],
         data: {
           title: 'Knowledge Graph',
-          fontAwesomeIcon: 'search',
+          fontAwesomeIcon: 'fas fa-chart-network',
         },
       },
       {
@@ -141,7 +141,7 @@ const routes: Routes = [
         canActivate: [AuthGuard],
         data: {
           title: 'Knowledge Graph Upload',
-          fontAwesomeIcon: 'search',
+          fontAwesomeIcon: 'fas fa-chart-network',
         },
       },
     ],
