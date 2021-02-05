@@ -90,11 +90,13 @@ def test_user_can_search_content(
                 'bool': {
                     'must': [
                         {'terms': {'type': ['map', 'pdf']}},
-                        {'bool':
-                            { 'should': [
-                                {'terms': {'project_id': [fix_project.id]}},
-                                {'term': {'public': True}}
-                            ]}
+                        {
+                            'bool': {
+                                'should': [
+                                    {'terms': {'project_id': [fix_project.id]}},
+                                    {'term': {'public': True}}
+                                ]
+                            }
                         }
                     ]
                 }
@@ -154,11 +156,13 @@ def test_user_can_search_content_with_advanced_args(
                 'bool': {
                     'must': [
                         {'terms': {'type': ['map', 'pdf']}},
-                        {'bool':
-                            { 'should': [
-                                {'terms': {'project_id': [fix_project.id]}},
-                                {'term': {'public': True}}
-                            ]}
+                        {
+                            'bool': {
+                                'should': [
+                                    {'terms': {'project_id': [fix_project.id]}},
+                                    {'term': {'public': True}}
+                                ]
+                            }
                         }
                     ]
                 }
@@ -215,11 +219,13 @@ def test_user_can_search_content_with_single_types(
                 'bool': {
                     'must': [
                         {'terms': {'type': ['pdf']}},
-                        {'bool':
-                            { 'should': [
-                                {'terms': {'project_id': [fix_project.id]}},
-                                {'term': {'public': True}}
-                            ]}
+                        {
+                            'bool': {
+                                'should': [
+                                    {'terms': {'project_id': [fix_project.id]}},
+                                    {'term': {'public': True}}
+                                ]
+                            }
                         }
                     ]
                 }
@@ -276,11 +282,13 @@ def test_user_can_search_content_with_multiple_types(
                 'bool': {
                     'must': [
                         {'terms': {'type': ['map', 'pdf']}},
-                        {'bool':
-                            { 'should': [
-                                {'terms': {'project_id': [fix_project.id]}},
-                                {'term': {'public': True}}
-                            ]}
+                        {
+                            'bool': {
+                                'should': [
+                                    {'terms': {'project_id': [fix_project.id]}},
+                                    {'term': {'public': True}}
+                                ]
+                            }
                         }
                     ]
                 }
@@ -337,11 +345,13 @@ def test_user_can_search_content_with_project(
                 'bool': {
                     'must': [
                         {'terms': {'type': ['map', 'pdf']}},
-                        {'bool':
-                            { 'must': [
-                                {'terms': {'project_id': [fix_project.id]}},
-                                {'terms': {'project_id': [fix_project.id]}},
-                            ]}
+                        {
+                            'bool': {
+                                'must': [
+                                    {'terms': {'project_id': [fix_project.id]}},
+                                    {'terms': {'project_id': [fix_project.id]}},
+                                ]
+                            }
                         }
                     ]
                 }
@@ -398,11 +408,13 @@ def test_user_can_search_content_with_phrase(
                 'bool': {
                     'must': [
                         {'terms': {'type': ['map', 'pdf']}},
-                        {'bool':
-                            { 'should': [
-                                {'terms': {'project_id': [fix_project.id]}},
-                                {'term': {'public': True}}
-                            ]}
+                        {
+                            'bool': {
+                                'should': [
+                                    {'terms': {'project_id': [fix_project.id]}},
+                                    {'term': {'public': True}}
+                                ]
+                            }
                         }
                     ]
                 }
@@ -458,11 +470,13 @@ def test_user_can_search_content_with_wildcard(
                 'bool': {
                     'must': [
                         {'terms': {'type': ['map', 'pdf']}},
-                        {'bool':
-                            { 'should': [
-                                {'terms': {'project_id': [fix_project.id]}},
-                                {'term': {'public': True}}
-                            ]}
+                        {
+                            'bool': {
+                                'should': [
+                                    {'terms': {'project_id': [fix_project.id]}},
+                                    {'term': {'public': True}}
+                                ]
+                            }
                         }
                     ]
                 }
