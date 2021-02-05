@@ -122,6 +122,16 @@ export class ErrorHandler {
     });
   }
 
+  createCallback<T>(logInfo?: ErrorLogMeta): (e: any) => void {
+    return error => {
+      if (isNullOrUndefined(logInfo)) {
+        this.showError(error);
+      } else {
+        this.showError(error, logInfo);
+      }
+    };
+  }
+
   create<T>(logInfo?: ErrorLogMeta): UnaryFunction<Observable<T>, Observable<T>> {
     return pipe(catchError(error => {
       if (isNullOrUndefined(logInfo)) {
