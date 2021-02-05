@@ -1,27 +1,41 @@
-import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 
 import { cloneDeep } from 'lodash';
 
-import { makeid } from '../../services';
-import { KnowledgeMap, UniversalGraphNode } from '../../services/interfaces';
+import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
 
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
+import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
 import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
 import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
 import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
 import { PasteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
 import { HistoryKeyboardShortcuts } from '../../../graph-viewer/renderers/canvas/behaviors/history-keyboard-shortcuts';
 import { MapViewComponent } from '../map-view.component';
-import { from, Observable, Subscription, throwError } from 'rxjs';
+import { from, Observable, of, Subscription, throwError } from 'rxjs';
 import { auditTime, catchError, finalize, switchMap } from 'rxjs/operators';
-import { HttpErrorResponse } from '@angular/common/http';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
-import { MapEditDialogComponent } from '../map-edit-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
-import { MapVersionDialogComponent } from '../map-version-dialog.component';
-import { ObjectLock } from '../../../file-browser/models/object-lock';
+import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../../shared/utils/files';
+import {
+  ObjectEditDialogComponent,
+  ObjectEditDialogValue,
+} from '../../../file-browser/components/dialog/object-edit-dialog.component';
+import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
+import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { LockError } from '../../../file-browser/services/filesystem.service';
+import { ObjectLock } from '../../../file-browser/models/object-lock';
+import { makeid } from '../../../shared/utils/identifiers';
+import { MAP_MIMETYPE } from '../../providers/map.type-provider';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -31,7 +45,7 @@ import { LockError } from '../../../file-browser/services/filesystem.service';
     './map-editor.component.scss',
   ],
 })
-export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implements OnInit, AfterViewInit, OnDestroy {
+export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
@@ -48,6 +62,8 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
   private lastLockCheckTime = window.performance.now();
   private lastActivityTime = window.performance.now();
 
+  dropTargeted = false;
+
   ngOnInit() {
     this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
       if (changed) {
@@ -56,6 +72,14 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     });
 
     this.ngZone.runOutsideAngular(() => {
+      this.canvasChild.nativeElement.addEventListener('dragend', e => {
+        this.dragEnd(e);
+      });
+
+      this.canvasChild.nativeElement.addEventListener('dragleave', e => {
+        this.dragLeave(e);
+      });
+
       this.canvasChild.nativeElement.addEventListener('dragover', e => {
         this.dragOver(e);
       });
@@ -83,21 +107,35 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     this.clearLockInterval();
   }
 
-  getExtraSource(): Observable<KnowledgeMap> {
-    return from([this.locator]).pipe(switchMap(locator => {
-      return this.mapService.getBackup(locator.projectName, locator.hashId);
-    }));
+  getExtraSource(): Observable<UniversalGraph | null> {
+    return from([this.locator]).pipe(switchMap(
+      locator => this.filesystemService.getBackupContent(locator)
+        .pipe(
+          switchMap(blob => blob
+            ? of(blob).pipe(
+              mapBlobToBuffer(),
+              mapBufferToJson<UniversalGraph>(),
+            )
+            : of(null)),
+          this.errorHandler.create({label: 'Load map backup'}),
+        ),
+    ));
   }
 
-  handleExtra(backup: KnowledgeMap) {
+  handleExtra(backup: UniversalGraph | null) {
     if (backup != null) {
       this.modalService.open(MapRestoreDialogComponent, {
         container: this.modalContainer.nativeElement,
       }).result.then(() => {
-        this.map = backup;
-        this.unsavedChanges$.next(true);
+        this.graphCanvas.execute(new KnowledgeMapRestore(
+          `Restore map to backup`,
+          this.graphCanvas,
+          backup,
+          cloneDeep(this.graphCanvas.getGraph()),
+        ));
       }, () => {
-        this.mapService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
+        this.filesystemService.deleteBackup(this.locator)
+          .subscribe(); // Need to subscribe so it actually runs
       });
     }
 
@@ -115,53 +153,37 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
 
   save() {
     super.save();
-    this.mapService.deleteBackup(this.locator.projectName, this.locator.hashId).subscribe();
+    this.filesystemService.deleteBackup(this.locator)
+      .subscribe(); // Need to subscribe so it actually runs
   }
 
-  saveBackup() {
+  saveBackup(): Observable<any> {
     if (this.map) {
-      this.map.graph = this.graphCanvas.getGraph();
-      this.map.modified_date = new Date().toISOString();
-      const observable = this.mapService.createOrUpdateBackup(
-        this.locator.projectName, cloneDeep(this.map));
-      observable.subscribe();
+      const observable = this.filesystemService.putBackup({
+        hashId: this.locator,
+        contentValue: new Blob([JSON.stringify(this.graphCanvas.getGraph())], {
+          type: MAP_MIMETYPE,
+        }),
+      });
+      observable.subscribe(); // Need to subscribe so it actually runs
       return observable;
     }
   }
 
-  displayEditDialog() {
-    const dialogRef = this.modalService.open(MapEditDialogComponent);
-    dialogRef.componentInstance.map = cloneDeep(this.map);
-    dialogRef.result.then((newMap: KnowledgeMap) => {
-      this.graphCanvas.execute(new KnowledgeMapUpdate(
-        'Update map properties',
-        this.map, {
-          label: newMap.label,
-          description: newMap.description,
-          public: newMap.public,
-        }, {
-          label: this.map.label,
-          description: this.map.description,
-          public: this.map.public,
-        },
+  restore(version: ObjectVersion) {
+    readBlobAsBuffer(version.contentValue).pipe(
+      mapBufferToJson<UniversalGraph>(),
+      this.errorHandler.create({label: 'Restore map from backup'}),
+    ).subscribe(graph => {
+      this.graphCanvas.execute(new KnowledgeMapRestore(
+        `Restore map to '${version.hashId}'`,
+        this.graphCanvas,
+        graph,
+        cloneDeep(this.graphCanvas.getGraph()),
       ));
-      this.unsavedChanges$.next(true);
-    }, () => {
-    });
-  }
-
-  mapVersionDialog() {
-    const dialogRef = this.modalService.open(MapVersionDialogComponent);
-    dialogRef.componentInstance.map = cloneDeep(this.map);
-    dialogRef.componentInstance.projectName = this.locator.projectName;
-    dialogRef.result.then((newMap: Observable<{ version: KnowledgeMap }>) => {
-      newMap.subscribe(result => {
-        this.graphCanvas.setGraph(result.version.graph);
-        this.snackBar.open('Map reverted to Version from ' + result.version.modified_date, null, {
-          duration: 3000,
-        });
-      });
-    }, () => {
+    }, e => {
+      // Data is corrupt
+      // TODO: Prevent the user from editing or something so the user doesnt lose data?
     });
   }
 
@@ -172,14 +194,33 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     }
   }
 
+  dragEnd(event: DragEvent) {
+    this.ngZone.run(() => {
+      this.dropTargeted = false;
+    });
+  }
+
+  dragLeave(event: DragEvent) {
+    this.ngZone.run(() => {
+      this.dropTargeted = false;
+    });
+  }
+
   dragOver(event: DragEvent) {
     if (event.dataTransfer.types.includes('application/***ARANGO_DB_NAME***-node')) {
+      event.dataTransfer.dropEffect = 'link';
       event.preventDefault();
+      this.ngZone.run(() => {
+        this.dropTargeted = true;
+      });
     }
   }
 
   drop(event: DragEvent) {
     event.preventDefault();
+    this.ngZone.run(() => {
+      this.dropTargeted = false;
+    });
     const data = event.dataTransfer.getData('application/***ARANGO_DB_NAME***-node');
     const node = JSON.parse(data) as UniversalGraphNode;
     const hoverPosition = this.graphCanvas.hoverPosition;
@@ -216,9 +257,7 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
     }
 
     if (this.lockAcquired === false) {
-      this.filesystemService.getLocks(this.locator.hashId).pipe(
-        this.errorHandler.create({label: 'Acquire file lock'}),
-      ).pipe(
+      this.filesystemService.getLocks(this.locator).pipe(
         finalize(() => this.lastLockCheckTime = window.performance.now()),
       ).subscribe(locks => {
         this.ngZone.run(() => {
@@ -226,10 +265,16 @@ export class MapEditorComponent extends MapViewComponent<KnowledgeMap> implement
         });
       });
     } else {
-      this.filesystemService.acquireLock(this.locator.hashId, {
+      this.filesystemService.acquireLock(this.locator, {
         own: true,
       }).pipe(
         finalize(() => this.lastLockCheckTime = window.performance.now()),
+        catchError(error => {
+          if (!(error instanceof LockError)) {
+            this.errorHandler.showError(error);
+          }
+          return throwError(error);
+        }),
       ).subscribe(locks => {
         this.lockAcquired = true;
         this.ngZone.run(() => {
@@ -306,5 +351,24 @@ class KnowledgeMapUpdate implements GraphAction {
 
   rollback(component: GraphActionReceiver) {
     mergeDeep(this.map, this.originalData);
+  }
+}
+
+
+class KnowledgeMapRestore implements GraphAction {
+  constructor(public description: string,
+              public graphCanvas: CanvasGraphView,
+              public updatedData: UniversalGraph,
+              public originalData: UniversalGraph) {
+  }
+
+  apply(component: GraphActionReceiver) {
+    this.graphCanvas.setGraph(cloneDeep(this.updatedData));
+    this.graphCanvas.zoomToFit(0);
+  }
+
+  rollback(component: GraphActionReceiver) {
+    this.graphCanvas.setGraph(cloneDeep(this.originalData));
+    this.graphCanvas.zoomToFit(0);
   }
 }
