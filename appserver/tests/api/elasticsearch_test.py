@@ -13,12 +13,12 @@ def test_user_can_search_content(
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
 
-    resp = client.get(
+    resp = client.post(
         f'/search/content',
         headers=headers,
         data={
             'q': 'BOLA3',
-            'types': 'map;pdf',
+            'mimeTypes': ['vnd.lifelike.document/map', 'application/pdf'],
             'limit': 10,
             'page': 1
         },

@@ -24,7 +24,7 @@ export interface SingleResult<T> {
 }
 
 export interface ResultMapping<T> {
-  results: { [key: string]: T };
+  mapping: { [key: string]: T };
   missing: string[];
 }
 
@@ -32,4 +32,30 @@ export interface ResultList<T> {
   total: number;
   results: T[];
   query?: ResultQuery;
+}
+
+export interface ErrorResponse {
+  message: string;
+  detail?: string;
+  code?: 'validation' | 'permission';
+  apiHttpError?: {
+    name: string;
+    message: string;
+  };
+  version?: string;
+  transactionId?: string;
+  fields?: { [key: string]: string[] };
+}
+
+export interface ErrorLogMeta {
+  label: string;
+  expected?: boolean;
+  url?: string;
+}
+
+export interface ErrorLog extends ErrorLogMeta {
+  title: string;
+  message: string;
+  detail?: string;
+  transactionId: string;
 }

@@ -17,10 +17,6 @@ from neo4japp.models import (
     AccessRuleType,
     AccessControlPolicy,
     AppRole,
-    AppUser,
-    Project as Map,
-    Files,
-    Directory,
     Projects,
     projects_collaborator_role,
 )
