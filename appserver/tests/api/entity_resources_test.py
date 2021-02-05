@@ -5,7 +5,7 @@ def generate_headers(jwt_token):
 
 def test_user_can_get_colors_and_styles(client, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     response = client.get('/entity-resources/style', headers=headers)
     styles = response.get_json()['styles']
@@ -17,7 +17,7 @@ def test_user_can_get_colors_and_styles(client, test_user):
 
 def test_user_can_get_specific_color_and_style(client, test_user):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     get_response = client.get('/entity-resources/style/association', headers=headers)
 
@@ -36,7 +36,7 @@ def test_user_can_get_specific_color_and_style(client, test_user):
 
 def test_user_can_get_uri(client, test_user, uri_fixture):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     headers['content_type'] = 'application/json'
 
     post_payload = {'domain': 'CHEBI', 'term': 'CHEBI:27732'}
@@ -48,7 +48,7 @@ def test_user_can_get_uri(client, test_user, uri_fixture):
 
 def test_user_can_get_many_uris(client, test_user, uri_fixture):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     headers['content_type'] = 'application/json'
 
     post_payload = {'batch': [
