@@ -716,11 +716,3 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
     this.object.addDataTransferData(dataTransfer);
   }
 }
-
-export interface EnrichmentData {
-  /**
-   * @deprecated the filename does this job
-   */
-  name?: string;
-  data: string;
-}
