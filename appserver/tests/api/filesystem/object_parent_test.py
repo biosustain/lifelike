@@ -46,7 +46,7 @@ def test_patch_file_parent_to_object(
         project: Projects,
         mime_type_tree: typing.List[str]):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     assert file_in_project.parent.id == project.***ARANGO_USERNAME***.id
 
@@ -114,7 +114,7 @@ def test_patch_file_parent_to_self(
         file_in_project: Files,
         project: Projects):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     assert file_in_project.parent.id == project.***ARANGO_USERNAME***.id
 
@@ -161,7 +161,7 @@ def test_patch_file_parent_recursively(
         file_in_project: Files,
         project: Projects):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     resp = client.patch(
         f'/filesystem/objects/{quote(file_in_project.parent.hash_id)}',
