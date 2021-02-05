@@ -5,6 +5,7 @@ import { State } from 'app/root-store';
 
 import { downloader } from 'app/shared/utils';
 import { StorageService } from 'app/shared/services/storage.service';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import * as AuthActions from 'app/auth/store/actions';
 import { AuthSelectors } from 'app/auth/store';
@@ -38,6 +39,7 @@ export class AppComponent {
     private readonly ngbModalConfig: NgbModalConfig,
     private readonly ngbPaginationConfig: NgbPaginationConfig,
     private storage: StorageService,
+    private authService: AuthenticationService,
   ) {
     this.ngbModalConfig.backdrop = 'static';
     this.ngbPaginationConfig.maxSize = 5;
@@ -45,6 +47,8 @@ export class AppComponent {
     this.loggedIn$ = store.pipe(select(AuthSelectors.selectAuthLoginState));
     this.appUser$ = store.pipe(select(AuthSelectors.selectAuthUser));
     this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
+
+    this.authService.scheduleRenewal();
 
     // Set the title of the document based on the route
     this.router.events.subscribe(event => {
