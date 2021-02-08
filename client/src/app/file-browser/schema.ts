@@ -265,6 +265,7 @@ export interface AnnotationExclusionChangeData extends AnnotationChangeData {
 
 export interface FileAnnotationChangeData {
   date: string;
+  user: AppUser;
   cause: 'user' | 'user_reannotation' | 'sys_reannotation';
   inclusionChanges: AnnotationInclusionChangeData[];
   exclusionChanges: AnnotationExclusionChangeData[];
