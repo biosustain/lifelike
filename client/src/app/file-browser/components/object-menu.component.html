@@ -1,5 +1,7 @@
-<ng-container *ngIf="showOpen || (object.privileges.writable && (object.isEditable || object.isAnnotatable)) || object.isVersioned">
-  <button ngbDropdownItem (click)="this.objectOpen.next(object)" [disabled]="!object.isOpenable" *ngIf="showOpen">
+<ng-container
+  *ngIf="showOpen || (object.privileges.writable && (object.isEditable || object.isAnnotatable)) || object.isVersioned">
+  <button ngbDropdownItem (click)="this.objectOpen.next(object)" [disabled]="!object.isOpenable"
+          *ngIf="showOpen">
     Open
   </button>
   <ng-container *ngIf="object.privileges.writable">
@@ -43,9 +45,13 @@
 </ng-container>
 
 <ng-container>
-  <button ngbDropdownItem (click)="openExportDialog(object)" *ngIf="object.exportFormats.length">
-    Export...
-  </button>
+  <ng-container *ngIf="(exporters$ | addStatus | async) as exporters">
+    <ng-template [ngIf]="exporters.value && exporters.value.length">
+      <button ngbDropdownItem (click)="openExportDialog(object)">
+        Export...
+      </button>
+    </ng-template>
+  </ng-container>
   <button ngbDropdownItem (click)="openShareDialog(object)">
     Copy{{ nameEntity && object.isDirectory ? ' folder' : ''}} link...
   </button>
