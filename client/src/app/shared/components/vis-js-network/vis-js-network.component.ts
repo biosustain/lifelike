@@ -4,7 +4,7 @@ import { isNullOrUndefined } from 'util';
 
 import { Network } from 'vis-network';
 
-import { uuidv4 } from 'app/drawing-tool/services';
+import { uuidv4 } from 'app/shared/utils';
 import { Neo4jGraphConfig } from 'app/interfaces';
 
 
