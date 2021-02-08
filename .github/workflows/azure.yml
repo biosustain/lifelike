@@ -54,3 +54,9 @@ jobs:
           image_tag: ${{ github.sha }},latest
           context: ./client
           dockerfile: ./Dockerfile
+
+      - name: Deploy Appserver
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: lifelike-appserver
+          images: lifelike.azurecr.io/kg-appserver:${{ github.sha }}

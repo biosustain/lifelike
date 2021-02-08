@@ -36,4 +36,6 @@ RUN echo 'alias python=python3' >> ~/.bashrc && source ~/.bashrc
 
 USER $N4J_USER
 
+EXPOSE 2222
+
 CMD [ "bin/startup.sh" ]
