@@ -55,6 +55,11 @@ jobs:
           context: ./client
           dockerfile: ./Dockerfile
 
+      - name: Azure Login
+        use: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_SERVICE_CREDENTIALS }}
+
       - name: Deploy Appserver
         uses: azure/webapps-deploy@v2
         with:
