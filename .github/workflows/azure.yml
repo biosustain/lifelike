@@ -56,7 +56,7 @@ jobs:
           dockerfile: ./Dockerfile
 
       - name: Azure Login
-        use: azure/login@v1
+        uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_SERVICE_CREDENTIALS }}
 
