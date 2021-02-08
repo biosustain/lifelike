@@ -1,4 +1,4 @@
-<table class="table table-bordered">
+<table class="table table-hover">
   <thead *ngIf="HEADER">
     <ng-container>
       <tr class="table-secondary" *ngFor="let row of HEADER">
@@ -6,7 +6,6 @@
           *ngFor="let col of row"
           class="border-top text-center text-truncate"
           [attr.colspan]="col.span"
-          style="color: black;"
         >
           {{ col.name }}
         </th>

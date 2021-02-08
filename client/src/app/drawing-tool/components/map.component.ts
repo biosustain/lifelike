@@ -3,9 +3,9 @@ import {
   Component,
   EventEmitter,
   Input,
-  NgZone,
+  NgZone, OnChanges,
   OnDestroy,
-  Output,
+  Output, SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -26,7 +26,7 @@ import { WorkspaceManager } from '../../shared/workspace-manager';
 import { tokenizeQuery } from '../../shared/utils/find';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { mapBlobToBuffer, mapBufferToJson } from '../../shared/utils/files';
+import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { SelectableEntity } from '../../graph-viewer/renderers/canvas/behaviors/selectable-entity';
 import { MovableNode } from '../../graph-viewer/renderers/canvas/behaviors/node-move';
@@ -38,18 +38,19 @@ import { MovableNode } from '../../graph-viewer/renderers/canvas/behaviors/node-
     './map.component.scss',
   ],
 })
-export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit {
+export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit, OnChanges {
   @Input() highlightTerms: string[] | undefined;
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   @ViewChild('canvas', {static: true}) canvasChild;
 
-  loadTask: BackgroundTask<string, [FilesystemObject, ExtraResult]>;
+  loadTask: BackgroundTask<string, [FilesystemObject, Blob, ExtraResult]>;
   loadSubscription: Subscription;
 
   _locator: string | undefined;
-  _map: FilesystemObject | undefined;
+  @Input() map: FilesystemObject | undefined;
+  @Input() contentValue: Blob | undefined;
   pendingInitialize = false;
 
   graphCanvas: CanvasGraphView;
@@ -77,15 +78,16 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
-        this.filesystemService.get(hashId, {
-          loadContent: true,
-        }),
+        this.filesystemService.get(hashId),
+        this.filesystemService.getContent(hashId),
         this.getExtraSource(),
       ]);
     });
 
-    this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, extra], value}) => {
+    this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, blob, extra], value}) => {
       this.map = result;
+      this.contentValue = blob;
+      this.initializeMap();
       this.handleExtra(extra);
     });
   }
@@ -123,9 +125,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.emitModuleProperties();
     });
 
-    if (this.pendingInitialize) {
-      this.initializeMap();
-    }
+    this.initializeMap();
   }
 
   @Input()
@@ -140,18 +140,14 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     return this._locator;
   }
 
-  @Input()
-  set map(value: FilesystemObject | undefined) {
-    this._map = value;
-    this.initializeMap();
-  }
-
-  get map(): FilesystemObject {
-    return this._map;
+  ngOnChanges(changes: SimpleChanges) {
+    if ('map' in changes || 'contentValue' in changes) {
+      this.initializeMap();
+    }
   }
 
   private initializeMap() {
-    if (!this.map) {
+    if (!this.map || !this.contentValue) {
       return;
     }
 
@@ -162,8 +158,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
     this.emitModuleProperties();
 
-    this.subscriptions.add(this.map.contentValue$.pipe(
-      mapBlobToBuffer(),
+    this.subscriptions.add(readBlobAsBuffer(this.contentValue).pipe(
       mapBufferToJson<UniversalGraph>(),
       this.errorHandler.create({label: 'Parse map data'}),
     ).subscribe(graph => {

@@ -7,12 +7,14 @@ import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
 import { EnrichmentTableTypeProvider } from './providers/enrichment-table.type-provider';
 import { EnrichmentTableService } from './services/enrichment-table.service';
+import { EnrichmentTablePreviewComponent } from './components/enrichment-table-preview.component';
 
 @NgModule({
   declarations: [
     EnrichmentTableViewerComponent,
     EnrichmentTableEditDialogComponent,
     EnrichmentTableOrderDialogComponent,
+    EnrichmentTablePreviewComponent,
   ],
   imports: [
     SharedModule,
@@ -21,8 +23,11 @@ import { EnrichmentTableService } from './services/enrichment-table.service';
   entryComponents: [
     EnrichmentTableEditDialogComponent,
     EnrichmentTableOrderDialogComponent,
+    EnrichmentTablePreviewComponent,
   ],
-  exports: [],
+  exports: [
+    EnrichmentTablePreviewComponent,
+  ],
   providers: [
     EnrichmentTableService, {
       provide: TYPE_PROVIDER,
