@@ -9,14 +9,7 @@ Create Date: 2020-07-07 15:13:38.895016
 from alembic import context
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.orm.session import Session
 from sqlalchemy_utils.types import TSVectorType
-
-from neo4japp.database import db
-from app import app
-from neo4japp.models import (
-  Project
-)
 
 # revision identifiers, used by Alembic.
 revision = 'cc345dcad75c'

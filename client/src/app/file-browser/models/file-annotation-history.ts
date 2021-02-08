@@ -5,9 +5,10 @@ import {
   FileAnnotationChangeData,
   FileAnnotationHistoryResponse,
 } from '../schema';
-import { CollectionModal } from '../../shared/utils/collection-modal';
+import { CollectionModel } from '../../shared/utils/collection-model';
 import { AnnotationChangeExclusionMeta, Meta } from '../../pdf-viewer/annotation-type';
 import { startCase } from 'lodash';
+import { ModelList } from '../../shared/models';
 
 class AnnotationChange {
   action: 'added' | 'removed';
@@ -91,11 +92,11 @@ export class FileAnnotationChange {
  * A log of changes to annotations for a file.
  * @see FilesystemService#getAnnotationHistory
  */
-export class FileAnnotationHistory {
-  public collectionSize = 0;
-  public readonly results = new CollectionModal<FileAnnotationChange>([], {
-    multipleSelection: false,
-  });
+export class FileAnnotationHistory extends ModelList<FileAnnotationChange> {
+  constructor() {
+    super();
+    this.results.multipleSelection = false;
+  }
 
   update(data: FileAnnotationHistoryResponse): FileAnnotationHistory {
     this.collectionSize = data.total;
