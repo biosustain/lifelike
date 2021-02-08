@@ -18,11 +18,10 @@ from neo4japp.services.annotations.constants import (
     ABBREVIATION_WORD_LENGTH,
     COMMON_TYPOS,
     COMMON_WORDS,
-    SPACE_COORDINATE_FLOAT,
+    PDF_NEW_LINE_THRESHOLD,
     SPECIES_EXCLUSION,
     EntityType,
     EntityIdStr,
-    GREEK_SYMBOLS,
     ManualAnnotationType
 )
 from neo4japp.services.annotations.lmdb_service import LMDBService
@@ -45,9 +44,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     EntityResults,
     Inclusion,
     LMDBMatch,
-    PDFMeta,
     PDFWord,
-    PDFParsedContent,
     PDFTokensList
 )
 from neo4japp.models import AnnotationStopWords, GlobalList
@@ -65,7 +62,6 @@ class EntityRecognitionService:
         self.lmdb = lmdb
         self.graph = graph
         self.db = db
-        self.greek_symbols = tuple([chr(g) for g in GREEK_SYMBOLS])
 
         # for inclusions, structured the same as LMDB
         self._inclusion_type_anatomy: Dict[str, Inclusion] = {}
@@ -604,40 +600,28 @@ class EntityRecognitionService:
             return False
 
         if token.keyword not in self.abbreviations:
-            if all([c.isupper() for c in token.keyword]) and len(token.keyword) in ABBREVIATION_WORD_LENGTH:  # noqa
-                previous_words = token.previous_words.split(' ')
-                abbrev = ''
-                for word in reversed(previous_words):
-                    if '-' in word or '/' in word:
-                        word_split = []
-                        if '-' in word:
-                            word_split = word.split('-')
-                        elif '/' in word:
-                            word_split = word.split('/')
-
-                        for split in reversed(word_split):
-                            if len(abbrev) == len(token.keyword):
-                                break
-                            else:
-                                if split:
-                                    abbrev = split[0] + abbrev
-                        if len(abbrev) == len(token.keyword):
-                            break
-                    else:
-                        if word:
-                            abbrev = word[0] + abbrev
-
-                    if len(abbrev) == len(token.keyword):
-                        break
-
-                if abbrev.lower() != token.keyword.lower():
-                    return False
+            abbrev = ''
+            len_of_word = len(token.keyword)
+            previous_words = token.previous_words.split(' ')
+            for w in previous_words:
+                if '-' in w:
+                    split = w.split('-')
+                    for w2 in split:
+                        if w2:
+                            abbrev += w2[0].upper()
+                elif '/' in w:
+                    split = w.split('/')
+                    for w2 in split:
+                        if w2:
+                            abbrev += w2[0].upper()
                 else:
-                    # is an abbreviation so mark it as so
-                    self.abbreviations.add(token.keyword)
-                    return True
-            else:
-                return False
+                    abbrev += w[0].upper()
+            abbrev = abbrev[-len_of_word:]
+
+            if abbrev == token.keyword:
+                self.abbreviations.add(token.keyword)
+
+            return True if abbrev == token.keyword else False
         else:
             return True
 
@@ -1438,30 +1422,6 @@ class EntityRecognitionService:
         token: PDFWord,
         check_entities: Dict[str, bool],
     ) -> None:
-        if token.keyword.startswith(self.greek_symbols):
-            meta = token.meta
-            counter = 0
-            for c in token.keyword:
-                if c in self.greek_symbols:
-                    counter += 1
-                else:
-                    break
-            for i in range(0, counter):
-                meta.coordinates.pop(i)
-                meta.heights.pop(i)
-                meta.widths.pop(i)
-
-            new_token_keyword = token.keyword[counter:]
-            token = PDFWord(
-                keyword=new_token_keyword,
-                normalized_keyword=normalize_str(new_token_keyword),
-                page_number=token.page_number,
-                cropbox=token.cropbox,
-                meta=meta,
-                previous_words=token.previous_words,
-                token_type=token.token_type
-            )
-
         if check_entities.get(EntityType.ANATOMY.value, False):
             if token.keyword in self.matched_type_anatomy:
                 self.matched_type_anatomy[token.keyword].tokens.append(token)
@@ -1854,28 +1814,63 @@ class EntityRecognitionService:
         for i, _ in enumerate(words):
             while curr_max_words <= max_word_length and end_idx <= max_length:  # noqa
                 words_subset = words[i:end_idx]
-                curr_keyword = ''
+                curr_keyword = ' '.join([word.keyword for word in words_subset])
                 coordinates = []
                 heights = []
                 widths = []
 
+                start_lower_x = 0.0
+                start_lower_y = 0.0
+                end_upper_x = 0.0
+                end_upper_y = 0.0
+                prev_height = 0.0
                 for word in words_subset:
-                    curr_keyword += word.keyword
-                    coordinates += word.meta.coordinates
-                    heights += word.meta.heights
-                    widths += word.meta.widths
+                    # when combining sequential words
+                    # need to merge their coordinates together
+                    # while also keeping in mind words on new lines
+                    for j, coords in enumerate(word.coordinates):
+                        lower_x, lower_y, upper_x, upper_y = coords
 
-                    # space
-                    curr_keyword += ' '
-                    coordinates += [SPACE_COORDINATE_FLOAT]
-                    heights += [SPACE_COORDINATE_FLOAT]
-                    widths += [SPACE_COORDINATE_FLOAT]
+                        if (start_lower_x == 0.0 and
+                                start_lower_y == 0.0 and
+                                end_upper_x == 0.0 and
+                                end_upper_y == 0.0):
+                            start_lower_x = lower_x
+                            start_lower_y = lower_y
+                            end_upper_x = upper_x
+                            end_upper_y = upper_y
+                            prev_height = word.heights[j]
+                        else:
+                            if lower_y != start_lower_y:
+                                diff = abs(lower_y - start_lower_y)
 
-                # remove trailing space
-                curr_keyword = curr_keyword[:-1]
-                coordinates = coordinates[:-1]
-                heights = heights[:-1]
-                widths = widths[:-1]
+                                # if diff is greater than height ratio
+                                # then part of keyword is on a new line
+                                if diff > prev_height * PDF_NEW_LINE_THRESHOLD:
+                                    coordinates.append(
+                                        [start_lower_x, start_lower_y, end_upper_x, end_upper_y])
+
+                                    start_lower_x = lower_x
+                                    start_lower_y = lower_y
+                                    end_upper_x = upper_x
+                                    end_upper_y = upper_y
+                                    prev_height = word.heights[j]
+                                else:
+                                    if upper_y > end_upper_y:
+                                        end_upper_y = upper_y
+
+                                    if upper_x > end_upper_x:
+                                        end_upper_x = upper_x
+                            else:
+                                if upper_y > end_upper_y:
+                                    end_upper_y = upper_y
+
+                                if upper_x > end_upper_x:
+                                    end_upper_x = upper_x
+
+                    heights += word.heights
+                    widths += word.widths
+                coordinates.append([start_lower_x, start_lower_y, end_upper_x, end_upper_y])
 
                 if (curr_keyword.lower() not in COMMON_WORDS and
                     not compiled_regex.match(curr_keyword) and
@@ -1890,13 +1885,11 @@ class EntityRecognitionService:
                         # of page of first word
                         page_number=words_subset[0].page_number,
                         cropbox=words_subset[0].cropbox,
-                        meta=PDFMeta(
-                            lo_location_offset=words_subset[0].meta.lo_location_offset,
-                            hi_location_offset=words_subset[-1].meta.hi_location_offset,
-                            coordinates=coordinates,
-                            heights=heights,
-                            widths=widths
-                        ),
+                        lo_location_offset=words_subset[0].lo_location_offset,
+                        hi_location_offset=words_subset[-1].hi_location_offset,
+                        coordinates=coordinates,
+                        heights=heights,
+                        widths=widths,
                         previous_words=words_subset[0].previous_words
                     )
                     yield token
@@ -1906,7 +1899,7 @@ class EntityRecognitionService:
             curr_max_words = 1
             end_idx = i + 2
 
-    def extract_tokens(self, parsed: PDFParsedContent) -> PDFTokensList:
+    def extract_tokens(self, parsed: List[PDFWord]) -> PDFTokensList:
         """Extract word tokens from the parsed characters.
 
         Returns a token list of sequentially concatentated.
@@ -1916,7 +1909,7 @@ class EntityRecognitionService:
 
         return PDFTokensList(
             tokens=self._combine_sequential_words(
-                words=parsed.words,
+                words=parsed,
                 compiled_regex=compiled_regex,
             )
         )
