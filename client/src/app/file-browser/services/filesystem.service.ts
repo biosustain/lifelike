@@ -1,78 +1,272 @@
 import { Injectable } from '@angular/core';
-import { FilesystemObject, PathLocator } from '../models/filesystem-object';
-import { PdfFilesService } from '../../shared/services/pdf-files.service';
+import { FilesystemObject } from '../models/filesystem-object';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { ProjectPageService } from './project-page.service';
-import { BehaviorSubject, Observable, Subscription, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subscription, throwError } from 'rxjs';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { catchError, map } from 'rxjs/operators';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { catchError, map, mergeMap } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 import { ApiService } from '../../shared/services/api.service';
-import { PaginatedRequestOptions, ResultList } from '../../shared/schemas/common';
-import { FileAnnotationHistoryResponse, ObjectLockData } from '../schema';
-import { ObjectLock } from '../models/object-lock';
-import { FileAnnotationHistory } from '../models/file-annotation-history';
+import {
+  BulkObjectUpdateRequest,
+  FileAnnotationHistoryResponse,
+  FilesystemObjectData,
+  ObjectBackupCreateRequest,
+  ObjectCreateRequest,
+  ObjectExportRequest,
+  ObjectLockData,
+  ObjectSearchRequest,
+  ObjectVersionHistoryResponse,
+} from '../schema';
+import { objectToFormData, objectToMixedFormData } from '../../shared/utils/forms';
+import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
 import { serializePaginatedParams } from '../../shared/utils/params';
+import { FilesystemObjectList } from '../models/filesystem-object-list';
+import {
+  PaginatedRequestOptions,
+  ResultList,
+  ResultMapping,
+  SingleResult,
+} from '../../shared/schemas/common';
+import { FileAnnotationHistory } from '../models/file-annotation-history';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { ObjectLock } from '../models/object-lock';
 
+/**
+ * Endpoints to manage with the filesystem exposed to the user.
+ */
 @Injectable()
 export class FilesystemService {
   protected lmdbsDates = new BehaviorSubject<object>({});
 
-  constructor(protected readonly filesService: PdfFilesService,
-              protected readonly router: Router,
+  constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
               protected readonly progressDialog: ProgressDialog,
               protected readonly errorHandler: ErrorHandler,
               protected readonly route: ActivatedRoute,
-              protected readonly projectPageService: ProjectPageService,
               protected readonly http: HttpClient,
               protected readonly apiService: ApiService) {
-    this.filesService.getLMDBsDates().subscribe(lmdbsDates => {
+    this.getLMDBsDates().subscribe(lmdbsDates => {
       this.lmdbsDates.next(lmdbsDates);
     });
   }
 
-  get(locator: PathLocator): Observable<FilesystemObject> {
-    return this.projectPageService.getDirectory(
-      locator.projectName,
-      locator.directoryId,
-    ).pipe(map(result => {
-      const object = new FilesystemObject();
-      object.type = 'dir';
-      object.locator = {
-        projectName: locator.projectName,
-        directoryId: result.dir.id + '',
-      };
-      object.directory = result.dir;
-      object.path = result.path;
-      object.id = result.dir.id;
-      object.name = result.dir.directoryParentId ? result.dir.name : locator.projectName;
+  private getLMDBsDates(): Observable<object> {
+    // TODO: Type this method
+    return this.http.get<object>(
+      `/api/files/lmdbs_dates`,
+      this.apiService.getHttpOptions(true),
+    );
+  }
 
-      const children = result.objects.map(o => {
-        const child = new FilesystemObject();
-        Object.assign(child, o);
-        if (o.type === 'dir') {
-          child.locator = {
-            projectName: locator.projectName,
-            directoryId: o.id,
-          };
-        } else {
-          child.locator = object.locator;
+  search(options: ObjectSearchRequest): Observable<FilesystemObjectList> {
+    return this.http.post<ResultList<FilesystemObjectData>>(
+      `/api/filesystem/search`,
+      options,
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(data => {
+        const list = new FilesystemObjectList();
+        list.results.replace(data.results.map(itemData => new FilesystemObject().update(itemData)));
+        return list;
+      }),
+    );
+  }
+
+  create(request: ObjectCreateRequest): Observable<HttpEvent<any> & {
+    bodyValue?: FilesystemObject,
+  }> {
+    return this.http.post(
+      `/api/filesystem/objects`,
+      objectToFormData(request), {
+        ...this.apiService.getHttpOptions(true),
+        observe: 'events',
+        reportProgress: true,
+        responseType: 'json',
+      },
+    ).pipe(
+      map(event => {
+        if (event.type === HttpEventType.Response) {
+          const body: SingleResult<FilesystemObjectData> = event.body as SingleResult<FilesystemObjectData>;
+          (event as any).bodyValue = new FilesystemObject().update(body.result);
         }
-        child.directory = object.directory;
-        child.path = [...result.path, result.dir];
-        return child;
-      });
+        return event;
+      }),
+    );
+  }
 
-      object.children.replace(children);
+  get(hashId: string, options: Partial<FetchOptions> = {}): Observable<FilesystemObject> {
+    let result: Observable<FilesystemObject> = this.http.get<SingleResult<FilesystemObjectData>>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}`,
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(data => new FilesystemObject().update(data.result)),
+    );
 
-      return object;
+    result = result.pipe(
+      mergeMap(object => {
+        object.contentValue$ = this.getContent(object.hashId);
+
+        if (options.loadContent) {
+          return this.getContent(object.hashId).pipe(
+            map(content => {
+              object.contentValue$ = of(content);
+              return object;
+            })
+          );
+        } else {
+          object.contentValue$ = this.getContent(object.hashId);
+          return of(object);
+        }
+      }),
+    );
+
+    return result;
+  }
+
+  getContent(hashId: string): Observable<Blob> {
+    return this.http.get(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/content`, {
+        ...this.apiService.getHttpOptions(true),
+        responseType: 'blob',
+      },
+    );
+  }
+
+  generateExport(hashId: string, request: ObjectExportRequest): Observable<Blob> {
+    return this.http.post(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/export`,
+      request, {
+        ...this.apiService.getHttpOptions(true),
+        responseType: 'blob',
+      },
+    );
+  }
+
+  save(hashIds: string[], changes: Partial<BulkObjectUpdateRequest>,
+       updateWithLatest?: { [hashId: string]: FilesystemObject }):
+    Observable<{ [hashId: string]: FilesystemObject }> {
+    return this.http.patch<ResultMapping<FilesystemObjectData>>(
+      `/api/filesystem/objects`, objectToMixedFormData({
+        ...changes,
+        hashIds,
+      }), this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(data => {
+        const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
+        for (const [itemHashId, itemData] of Object.entries(data.mapping)) {
+          if (!(itemHashId in ret)) {
+            ret[itemHashId] = new FilesystemObject();
+          }
+          ret[itemHashId].update(itemData);
+        }
+        return ret;
+      }),
+    );
+  }
+
+  delete(hashIds: string[],
+         updateWithLatest?: { [hashId: string]: FilesystemObject }):
+    Observable<{ [hashId: string]: FilesystemObject }> {
+    return this.http.request<ResultMapping<FilesystemObjectData>>(
+      'DELETE',
+      `/api/filesystem/objects`, {
+        ...this.apiService.getHttpOptions(true, {
+          contentType: 'application/json',
+        }),
+        body: {
+          hashIds,
+        },
+        responseType: 'json',
+      },
+    ).pipe(
+      map(data => {
+        const ret: { [hashId: string]: FilesystemObject } = updateWithLatest || {};
+        for (const [itemHashId, itemData] of Object.entries(data.mapping)) {
+          if (!(itemHashId in ret)) {
+            ret[itemHashId] = new FilesystemObject();
+          }
+          ret[itemHashId].update(itemData);
+        }
+        return ret;
+      }),
+    );
+  }
+
+  getBackupContent(hashId: string): Observable<Blob | null> {
+    return this.http.get(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/backup/content`, {
+        ...this.apiService.getHttpOptions(true),
+        responseType: 'blob',
+      },
+    ).pipe(catchError(e => {
+      // If the backup doesn't exist, don't let the caller have to figure out
+      // that it's a HTTP error and then check the status!
+      // Let's return a null indicating that there's no backup
+      if (e instanceof HttpErrorResponse) {
+        if (e.status === 404) {
+          return of(null);
+        }
+      }
+
+      // If it's any other type of error, we need to propagate it so
+      // the calling code can handle it through its normal error handling
+      return throwError(e);
     }));
+  }
+
+  putBackup(request: ObjectBackupCreateRequest): Observable<{}> {
+    return this.http.put<unknown>(
+      `/api/filesystem/objects/${encodeURIComponent(request.hashId)}/backup`,
+      objectToMixedFormData(request),
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(() => ({})),
+    );
+  }
+
+  deleteBackup(hashId: string): Observable<{}> {
+    return this.http.delete<unknown>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/backup`, {
+        ...this.apiService.getHttpOptions(true),
+      },
+    ).pipe(
+      map(() => ({})),
+    );
+  }
+
+  getVersionHistory(fileHashId: string,
+                    options: PaginatedRequestOptions = {}): Observable<ObjectVersionHistory> {
+    return this.http.get<ObjectVersionHistoryResponse>(
+      `/api/filesystem/objects/${encodeURIComponent(fileHashId)}/versions`, {
+        ...this.apiService.getHttpOptions(true),
+        params: serializePaginatedParams(options, false),
+      },
+    ).pipe(
+      map(data => {
+        const object = new FilesystemObject().update(data.object);
+        const list = new ObjectVersionHistory();
+        list.results.replace(data.results.map(itemData => {
+          const version = new ObjectVersion();
+          version.originalObject = object;
+          version.update(itemData);
+          return version;
+        }));
+        return list;
+      }),
+    );
+  }
+
+  getVersionContent(hashId: string): Observable<Blob> {
+    return this.http.get(
+      `/api/filesystem/versions/${encodeURIComponent(hashId)}/content`, {
+        ...this.apiService.getHttpOptions(true),
+        responseType: 'blob',
+      },
+    );
   }
 
   /**
@@ -150,16 +344,22 @@ export class FilesystemService {
     );
   }
 
-  deleteLock(hashId: string, options: { own: true }): Observable<any> {
+  deleteLock(hashId: string, options: { own: true }): Observable<{}> {
     return this.http.delete<unknown>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/locks?own=true`, {
         ...this.apiService.getHttpOptions(true),
       },
-    ).pipe(map(() => ({})));
+    ).pipe(
+      map(() => ({})),
+    );
   }
 }
 
 export class LockError {
   constructor(public readonly locks: ObjectLock[]) {
   }
+}
+
+export interface FetchOptions {
+  loadContent: boolean;
 }

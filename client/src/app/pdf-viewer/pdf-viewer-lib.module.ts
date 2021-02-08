@@ -16,11 +16,18 @@ import { MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule } from
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { SharedModule } from '../shared/shared.module';
+import { FileViewComponent } from './components/file-view.component';
+import { TYPE_PROVIDER } from '../file-browser/services/object-type.service';
+import { PdfTypeProvider } from './providers/pdf-type-provider';
+import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
-    PdfViewerLibComponent, AnnotationEditDialogComponent, AnnotationExcludeDialogComponent
+    PdfViewerLibComponent,
+    AnnotationEditDialogComponent,
+    AnnotationExcludeDialogComponent,
+    FileViewComponent,
   ],
   imports: [
     PdfViewerModule,
@@ -38,10 +45,23 @@ import { RouterModule } from '@angular/router';
     MatButtonModule,
     MatRadioModule,
     SharedModule,
-    RouterModule.forRoot([])
+    FileBrowserModule,
+    RouterModule.forRoot([]),
   ],
-  entryComponents: [AnnotationEditDialogComponent, AnnotationExcludeDialogComponent],
-  exports: [PdfViewerLibComponent]
+  entryComponents: [
+    FileViewComponent,
+    AnnotationEditDialogComponent,
+    AnnotationExcludeDialogComponent,
+  ],
+  providers: [{
+    provide: TYPE_PROVIDER,
+    useClass: PdfTypeProvider,
+    multi: true,
+  }],
+  exports: [
+    PdfViewerLibComponent,
+    FileViewComponent,
+  ],
 })
 export class PdfViewerLibModule {
 }

@@ -3,27 +3,25 @@ import multiprocessing as mp
 import requests
 import time
 
-from io import BytesIO
 from flask import current_app
 from typing import Any, Dict, List, Tuple
-from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.datastructures import FileStorage
+from string import punctuation
 
 from neo4japp.database import (
-    db,
     get_annotation_service,
-    get_annotation_pdf_parser,
     get_bioc_document_service,
     get_entity_recognition,
     get_manual_annotation_service
 )
 from neo4japp.exceptions import AnnotationError
-from neo4japp.models import FileContent
-from neo4japp.services.annotations.constants import AnnotationMethod, NLP_ENDPOINT
+from neo4japp.services.annotations.constants import (
+    AnnotationMethod,
+    COMMON_WORDS,
+    NLP_ENDPOINT,
+    MAX_ABBREVIATION_WORD_LENGTH
+)
 from neo4japp.services.annotations.data_transfer_objects import (
-    PDFChar,
     PDFWord,
-    PDFParsedContent,
     PDFTokensList,
     SpecifiedOrganismStrain
 )
@@ -152,6 +150,54 @@ def get_nlp_entities(
     return nlp_tokens, nlp_resp
 
 
+def read_pdf_response(resp: dict) -> Tuple[str, List[PDFWord]]:
+    parsed = []
+    pdf_text = ''
+
+    for page in resp['pages']:
+        prev_words: List[str] = []
+        pdf_text += page['pageText']
+        for token in page['tokens']:
+            # for now ignore any rotated words
+            if token['text'] not in punctuation and all([rect['rotation'] == 0 for rect in token['rects']]):  # noqa
+                parsed.append(
+                    PDFWord(
+                        keyword=token['text'],
+                        normalized_keyword=token['text'],  # don't need to normalize yet
+                        page_number=page['pageNo'],
+                        cropbox=(page['cropBox']['height'], page['cropBox']['width']),
+                        lo_location_offset=token['pgIdx'],
+                        hi_location_offset=token['pgIdx'] if len(token['text']) == 1 else token['pgIdx'] + len(token['text']) - 1,  # noqa
+                        heights=[rect['height'] for rect in token['rects']],
+                        widths=[rect['width'] for rect in token['rects']],
+                        coordinates=[
+                            [
+                                rect['lowerLeftPt']['x'],
+                                rect['lowerLeftPt']['y'],
+                                rect['lowerLeftPt']['x'] + rect['width'],
+                                rect['lowerLeftPt']['y'] + rect['height']
+                            ] for rect in token['rects']
+                        ],
+                        previous_words=' '.join(prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]) if token['possibleAbbrev'] else '',  # noqa
+                        token_type='',
+                    )
+                )
+                prev_words.append(token['text'])
+                if len(prev_words) > MAX_ABBREVIATION_WORD_LENGTH:
+                    prev_words = prev_words[1:]
+    return pdf_text, parsed
+
+
+def parse_pdf(file_id: int) -> Tuple[str, List[PDFWord]]:
+    req = requests.get(
+        f'http://pdfparser:7600/token/rect/json/http://appserver:5000/annotations/files/{file_id}', timeout=30)  # noqa
+    resp = req.json()
+    req.close()
+
+    pdf_text, parsed = read_pdf_response(resp)
+    return pdf_text, parsed
+
+
 def _create_annotations(
     annotation_method,
     specified_organism_synonym,
@@ -163,48 +209,29 @@ def _create_annotations(
     manual_annotator = get_manual_annotation_service()
     bioc_service = get_bioc_document_service()
     entity_recog = get_entity_recognition()
-    parser = get_annotation_pdf_parser()
 
     custom_annotations = []
     excluded_annotations = []
-    parsed = None
+    parsed = []
+    pdf_text = ''
 
     start = time.time()
     try:
         if type(document) is str:
-            parsed = parser.parse_text(abstract=document)
+            raise NotImplementedError()
         else:
             custom_annotations = document.custom_annotations
             excluded_annotations = document.excluded_annotations
-            if not document.parsed_content:
-                fp = FileStorage(BytesIO(document.raw_file), filename)
-                parsed = parser.parse_pdf(pdf=fp)
-                fp.close()
-
-                # cache it
-                # bulk_update_mappings does not throw error
-                # perhaps later use separate process
-                # and use the slower normal method
-                current_app.logger.info(
-                    f'Saving pdfminer results to database. JSONB size can ' +
-                    'potentially exceed size limit. If a crash happens on insert, ' +
-                    'change the column type.',
-                    extra=EventLog(event_type='annotations').to_dict()
-                )
-                db.session.bulk_update_mappings(
-                    FileContent,
-                    [
-                        {
-                            'id': document.file_content_id,
-                            'parsed_content': [word.to_dict() for word in parsed.words]
-                        }
-                    ]
-                )
-                db.session.commit()
-    except AnnotationError:
+            pdf_text, parsed = parse_pdf(document.id)
+    except requests.exceptions.ConnectTimeout:
         raise AnnotationError(
-            'Your file could not be parsed. Please check if it is a valid PDF.'
-            'If it is a valid PDF, please try uploading again.')
+            'The request timed out while trying to connect to the PDF service.')
+    except requests.exceptions.Timeout:
+        raise AnnotationError(
+            'The request to the PDF service timed out.')
+    except requests.exceptions.RequestException:
+        raise AnnotationError(
+            'An unexpected error occurred with the PDF service.')
 
     current_app.logger.info(
         f'Time to parse PDF {time.time() - start}',
@@ -212,20 +239,20 @@ def _create_annotations(
     )
 
     start = time.time()
-    if not parsed:
-        parsed = PDFParsedContent(
-            words=[PDFWord.from_dict(d) for d in document.parsed_content]
-        )
-
-    pdf_text = ' '.join([c.keyword for c in parsed.words])
     tokens_list = entity_recog.extract_tokens(parsed)
 
     if annotation_method == AnnotationMethod.RULES.value:
         entity_recog.set_entity_inclusions(custom_annotations=custom_annotations)
         entity_recog.set_entity_exclusions()
+
+        start_lmdb_time = time.time()
         entity_recog.identify_entities(
             tokens=tokens_list.tokens,
             check_entities_in_lmdb=entity_recog.get_entities_to_identify()
+        )
+        current_app.logger.info(
+            f'Total lmdb lookup time {time.time() - start_lmdb_time}',
+            extra=EventLog(event_type='annotations').to_dict()
         )
 
         entity_synonym = ''
@@ -316,11 +343,11 @@ def create_annotations(
     filename
 ):
     _, annotations = _create_annotations(
-        annotation_method,
-        specified_organism_synonym,
-        specified_organism_tax_id,
-        document,
-        filename
+        annotation_method=annotation_method,
+        specified_organism_synonym=specified_organism_synonym,
+        specified_organism_tax_id=specified_organism_tax_id,
+        document=document,
+        filename=filename
     )
     return annotations
 

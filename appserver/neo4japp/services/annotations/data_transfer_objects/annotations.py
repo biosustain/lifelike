@@ -25,59 +25,23 @@ class PDFBase():
         return attr.asdict(self)
 
 
-@attr.s(frozen=False)
-class PDFChar(PDFBase):
-    text: str = attr.ib()
-    height: float = attr.ib()
-    width: float = attr.ib()
-    x0: float = attr.ib()
-    y0: float = attr.ib()
-    x1: float = attr.ib()
-    y1: float = attr.ib()
-    page_number: int = attr.ib()
-    cropbox: Tuple[int, int] = attr.ib()
-    space: bool = attr.ib(default=False)
-
-
-@attr.s(frozen=False)
-class PDFMeta(PDFBase):
-    lo_location_offset: int = attr.ib(default=-1)
-    hi_location_offset: int = attr.ib(default=-1)
-    coordinates: List[List[float]] = attr.ib(default=attr.Factory(list))
-    heights: List[float] = attr.ib(default=attr.Factory(list))
-    widths: List[float] = attr.ib(default=attr.Factory(list))
-
-
 @attr.s(frozen=True)
 class PDFWord(PDFBase):
     keyword: str = attr.ib()
     normalized_keyword: str = attr.ib()
     page_number: int = attr.ib()
     cropbox: Tuple[int, int] = attr.ib()
-    meta: PDFMeta = attr.ib()
+    lo_location_offset: int = attr.ib()
+    hi_location_offset: int = attr.ib()
     # used to determine abbreviations
     # if word is wrapped in parenthesis
     # this attribute will not be empty string
     previous_words: str = attr.ib()
+    heights: List[float] = attr.ib(default=attr.Factory(list))
+    widths: List[float] = attr.ib(default=attr.Factory(list))
+    coordinates: List[List[float]] = attr.ib(default=attr.Factory(list))
     # used with NLP because it returns the type
     token_type: Optional[str] = attr.ib(default=None)
-
-    @classmethod
-    def from_dict(self, d):
-        return self(
-            keyword=d['keyword'],
-            normalized_keyword=d['normalized_keyword'],
-            page_number=d['page_number'],
-            cropbox=(d['cropbox'][0], d['cropbox'][1]),
-            meta=PDFMeta(**d['meta']),
-            previous_words=d['previous_words'],
-            token_type=d['token_type']
-        )
-
-
-@attr.s(frozen=True)
-class PDFParsedContent(PDFBase):
-    words: List[PDFWord] = attr.ib()
 
 
 @attr.s(frozen=True)
