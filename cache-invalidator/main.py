@@ -54,6 +54,8 @@ def cache_data(key, value):
         redis_server = redis.Redis(
             host=os.environ.get("REDIS_HOST"),
             port=os.environ.get("REDIS_PORT"),
+            password=os.environ.get("REDIS_PASSWORD"),
+            ssl=os.environ.get("REDIS_SSL", "False") in ["True", "true"],
             decode_responses=True
         )
         redis_server.set(key, json.dumps(value))

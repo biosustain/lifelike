@@ -6,11 +6,12 @@ import redis
 bp = Blueprint('kg-statistics-api', __name__, url_prefix='/kg-statistics')
 
 redis_server = redis.Redis(
-    connection_pool=redis.BlockingConnectionPool(
         host=os.environ.get("REDIS_HOST"),
         port=os.environ.get("REDIS_PORT"),
-        decode_responses=True)
-)
+        password=os.environ.get("REDIS_PASSWORD"),
+        ssl=os.environ.get("REDIS_SSL", "False") in ["True", "true"],
+        decode_responses=True,
+    )
 
 
 @bp.route('', methods=['GET'])

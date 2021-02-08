@@ -57,6 +57,8 @@ services:
             # Redis
             - REDIS_HOST=redis
             - REDIS_PORT=6379
+            - REDIS_PASSWORD=password
+            - REDIS_SSL=False
             # Other
             - DOMAIN=http://localhost
             # Fetch this using "gsutil cp gs://kg-secrets/ansible_service_account.json ./appserver"
@@ -117,6 +119,7 @@ services:
 
     redis:
         container_name: redis
+        command: redis-server --requirepass password
         networks:
             - backend
 
