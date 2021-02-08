@@ -169,7 +169,7 @@ def test_get_file(
         project: Projects,
         file_in_project: Files):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     resp = client.get(
         f'/filesystem/objects/{quote(file_in_project.hash_id)}',
@@ -214,7 +214,7 @@ def test_get_recycled_file(
         project: Projects,
         file_in_project: Files):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     resp = client.get(
         f'/filesystem/objects/{quote(file_in_project.hash_id)}',
@@ -258,7 +258,7 @@ def test_get_deleted_file(
         project: Projects,
         file_in_project: Files):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     resp = client.get(
         f'/filesystem/objects/{quote(file_in_project.hash_id)}',
@@ -287,7 +287,7 @@ def test_get_file_missing(
         login_password: str,
         user_with_project_roles: AppUser):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     resp = client.get(
         f'/filesystem/objects/test_get_file_missing',
@@ -330,7 +330,7 @@ def test_patch_file_permitted(
         status_code: int,
         file_in_project: Files):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     original_filename = session.query(Files.filename) \
         .filter(Files.id == file_in_project.id) \
@@ -479,7 +479,7 @@ def test_patch_file(
         value: typing.Any,
         expect_success: bool):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     original_file: Files = session.query(Files) \
         .filter(Files.id == file_in_project.id) \
@@ -515,7 +515,7 @@ def test_patch_file_missing(
         login_password: str,
         user_with_project_roles: AppUser):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     resp = client.patch(
         f'/filesystem/objects/test_get_file_missing',
@@ -560,7 +560,7 @@ def test_bulk_patch_files_permitted(
         status_code: int,
         file_in_project: Files):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     original_filename = session.query(Files.filename) \
         .filter(Files.id == file_in_project.id) \
@@ -621,7 +621,7 @@ def test_bulk_patch_files(
         value: typing.Any,
         expect_success: bool):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     original_file: Files = session.query(Files) \
         .filter(Files.id == file_in_project.id) \
@@ -660,7 +660,7 @@ def test_bulk_patch_files_missing(
         login_password: str,
         user_with_project_roles: AppUser):
     login_resp = client.login_as_user(user_with_project_roles.email, login_password)
-    headers = generate_jwt_headers(login_resp['access_jwt'])
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
     resp = client.patch(
         f'/filesystem/objects',
