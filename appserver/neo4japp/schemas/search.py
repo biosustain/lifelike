@@ -24,6 +24,7 @@ class ContentSearchSchema(CamelCaseSchema):
     )
     mime_types = fields.List(fields.String(), min=0, max=100,
                              missing=lambda: ['vnd.lifelike.document/map',
+                                              'vnd.lifelike.document/enrichment-table',
                                               'application/pdf'])
 
 
