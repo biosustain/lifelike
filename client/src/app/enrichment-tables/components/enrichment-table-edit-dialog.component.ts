@@ -98,7 +98,9 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
   getValue(): EnrichmentDocument {
     const value = this.form.value;
     const [taxId, organism] = value.organism.split('/');
+    const fileId = '';
     this.document.setParameters(
+      fileId,
       value.entitiesList.split(/[\/\n\r]/g),
       taxId,
       organism,
