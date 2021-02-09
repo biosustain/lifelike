@@ -5,8 +5,8 @@ import {
     UserCreationRequest,
     UpdateUserRequest,
 } from 'app/interfaces';
-import { map, takeUntil } from 'rxjs/operators';
-import { BehaviorSubject, Subject, Observable } from 'rxjs';
+import { map, takeUntil, catchError } from 'rxjs/operators';
+import { BehaviorSubject, Subject, Observable, throwError } from 'rxjs';
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class AccountService implements OnDestroy {
@@ -46,9 +46,11 @@ export class AccountService implements OnDestroy {
     }
 
     currentUser() {
-        return this.http.get<{result: AppUser}>(
+        return this.http.get<AppUser>(
             `${this.accountApi}/user`,
-        ).pipe(map(resp => resp.result));
+        ).pipe(
+            map(resp => resp),
+        );
     }
 
     updateUser(updateRequest: UpdateUserRequest) {
