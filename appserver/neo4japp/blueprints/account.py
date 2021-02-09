@@ -13,7 +13,12 @@ from neo4japp.database import get_account_service, get_projects_service, db, \
     get_authorization_service
 from neo4japp.exceptions import NotAuthorizedException
 from neo4japp.models import AppRole, AppUser, Projects
-from neo4japp.schemas.account import UserListSchema, UserSearchSchema, UserSchemaWithId
+from neo4japp.schemas.account import (
+    UserListSchema,
+    UserSearchSchema,
+    UserSchemaWithId,
+    UserCreateSchema
+)
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.request import Pagination
@@ -23,31 +28,23 @@ bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
 @bp.route('/', methods=['POST'])
 @auth.login_required
-@jsonify_with_class(UserRequest)
+@use_args(UserCreateSchema)
 @requires_role('admin')
-def create_user(req: UserRequest):
+def create_user(args):
     account_dao = get_account_service()
-    proj_service = get_projects_service()
 
     yield g.current_user
 
     # TODO: Allow for adding specific roles
     new_user = account_dao.create_user(
-        first_name=req.first_name,
-        last_name=req.last_name,
-        username=req.username,
-        email=req.email,
-        password=req.password,
+        first_name=args['first_name'],
+        last_name=args['last_name'],
+        username=args['username'],
+        email=args['email'],
+        password=args['password']
     )
 
-    # TODO: Deprecate this once we have a GUI for adding users to projects
-    # Currently will add any new user to a global project with WRITE permission
-    default_projects = Projects.query.filter(Projects.project_name == 'beta-project').one()
-    write_role = AppRole.query.filter(AppRole.name == 'project-write').one()
-    proj_service.add_collaborator(new_user, write_role, default_projects)
-
-    yield SuccessResponse(
-        result=new_user.to_dict(), status_code=201)
+    yield jsonify(dict(result=new_user.to_dict())), 201
 
 
 @bp.route('/', methods=['GET'])
@@ -67,7 +64,10 @@ def list_users():
     query_dict = dict(zip(fields, filters))
 
     account_dao = get_account_service()
-    users = [user.to_dict() for user in account_dao.get_user_list(query_dict)]
+    users = [
+        {**user.to_dict(), **{'roles': [roles]}}
+        for user, roles in account_dao.get_user_list(query_dict)
+    ]
     return jsonify(result=users, status_code=200)
 
 
@@ -77,11 +77,12 @@ def get_user():
     """ Returns the current user """
     user = g.current_user
     return jsonify(UserSchemaWithId().dump({
+        'id': user.id,
         'hash_id': user.hash_id,
         'username': user.username,
         'first_name': user.first_name,
         'last_name': user.last_name,
-        'roles': user.roles,
+        'roles': [u.name for u in user.roles],
     })), 200
 
 

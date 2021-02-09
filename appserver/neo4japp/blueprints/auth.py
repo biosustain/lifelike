@@ -12,6 +12,7 @@ from neo4japp.exceptions import (
     RecordNotFoundException,
     NotAuthorizedException,
 )
+from neo4japp.schemas.account import UserSchemaWithId
 from neo4japp.schemas.auth import JWTTokenResponse
 from neo4japp.models.auth import AppUser
 from neo4japp.utils.logger import UserEventLog
@@ -144,7 +145,14 @@ def refresh():
         return jsonify(JWTTokenResponse().dump({
             'access_token': access_jwt,
             'refresh_token': refresh_jwt,
-            'user': user,
+            'user': UserSchemaWithId().dump({
+                'hash_id': user.hash_id,
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'id': user.id,
+                'roles': [u.name for u in user.roles],
+            }),
         }))
 
 
@@ -171,7 +179,14 @@ def login():
             return jsonify(JWTTokenResponse().dump({
                 'access_token': access_jwt,
                 'refresh_token': refresh_jwt,
-                'user': user,
+                'user': UserSchemaWithId().dump({
+                    'hash_id': user.hash_id,
+                    'username': user.username,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'id': user.id,
+                    'roles': [u.name for u in user.roles],
+                }),
             }))
         else:
             # Complain about invalid credentials
