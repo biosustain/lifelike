@@ -1,4 +1,4 @@
-<app-word-cloud
+<app-word-cloud *ngIf="!loadingData"
   class="card-body"
-  [data]="cloudData"
+  [data]="data"
 ></app-word-cloud>

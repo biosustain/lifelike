@@ -1,0 +1,41 @@
+# local development overrides
+
+version: '3.5'
+
+services:
+    builder:
+        build: ./appserver
+    appserver:
+        container_name: appserver
+        build: ./.run/assets/
+#        ports:
+#            - "5000:5000"
+#        environment:
+#            - NEO4J_HOST=n4j-database
+#            - NEO4J_AUTH=neo4j/password
+#            - FLASK_DEBUG=1
+#            - FLASK_ENV=development
+#            - FLASK_APP=app
+#            - FLASK_APP_CONFIG=Development
+#            - POSTGRES_HOST=pgdatabase
+#            # Postgres defaults
+#            - POSTGRES_PORT=5432
+#            - POSTGRES_USER=postgres
+#            - POSTGRES_PASSWORD=postgres
+#            - POSTGRES_DB=postgres
+#            - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#            - ELASTIC_FILE_INDEX_ID=file_ci
+#            - GOOGLE_APPLICATION_CREDENTIALS=ansible_service_account.json
+#            - LMDB_HOME_FOLDER=/home/n4j/tests/database/services/annotations
+#        volumes:
+#            - ./appserver/ansible_service_account.json:/home/n4j/ansible_service_account.json
+#            - ./appserver/neo4japp/services/annotations/lmdb:/home/n4j/tests/database/services/annotations/lmdb
+#        networks:
+#            - kg-prototypes_frontend
+#            - kg-prototypes_backend
+#
+#networks:
+#    kg-prototypes_frontend:
+#        external: true
+#    kg-prototypes_backend:
+#        external: true

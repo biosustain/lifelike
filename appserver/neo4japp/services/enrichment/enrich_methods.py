@@ -46,21 +46,15 @@ def main(query, ids, annotations):
 
     df.reset_index(inplace=True)
     return list(df["annotation"]), list(df["query"])
-
-
-# EXAMPLE
-if __name__ == '__main__':
-    query = [1, 2, 5, 3]
-    ids = [5, 2, 1, 5, 3, 5, 3, 2, 4]
-    annotations = ["A", "A", "B", "B", "A", "B", "C", "C", "C"]
-    a, p = main(query, ids, annotations)
-    print(a)
-    print(p)
     
 
 def fisher(geneNames, GOterms, *args, **kwargs):
-    return list(map(wrap_with_random_p_value, geneNames))
-
+    go = pd.DataFrame(GOterms)
+    goGenes = go["geneName"]
+    goId = go['goId']
+    gene, p = main(geneNames, goGenes, goId)
+    r = list(map(lambda gp: {"gene": gp[0], "p-value": -np.log10(gp[1])}, zip(gene, p)))
+    return r
 
 def binom(geneNames, GOterms, *args, **kwargs):
     return list(map(wrap_with_random_p_value, geneNames))

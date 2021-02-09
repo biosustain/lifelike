@@ -28,6 +28,7 @@ import {mapBlobToBuffer, mapBufferToJson} from '../../../shared/utils/files';
 import {ENRICHMENT_TABLE_MIMETYPE} from '../../providers/enrichment-table.type-provider';
 import {Progress} from '../../../interfaces/common-dialog.interface';
 import {ProgressDialog} from '../../../shared/services/progress-dialog.service';
+import {EnrichmentData} from "../visualisation/table/enrichment-table-viewer.component";
 
 
 @Component({

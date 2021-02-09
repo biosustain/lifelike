@@ -39,7 +39,7 @@ export class ChartComponent {
             // suggestedMin: -0.5,
             beginAtZero: true,
             stepSize: 1,
-            callback: (value, index) => index in this.data ? this.data[value]["Term"] : '',
+            callback: (value, index) => index in this.chartData ? this.chartData[index]["gene"] : '',
           },
           offset: true,
           gridLines: {
@@ -47,6 +47,17 @@ export class ChartComponent {
           }
         }
       ]
+    },
+    plugins: {
+      // Change options for ALL labels of THIS CHART
+      datalabels: {
+        display: false
+      }
+    },
+    tooltips: {
+      callbacks: {
+        label: (tooltipItem, data) => `p-value: ${Math.pow(10, -tooltipItem.xLabel)}`
+      }
     }
   };
   public chartType: ChartType = 'bubble';
@@ -54,11 +65,13 @@ export class ChartComponent {
   public chartData: SingleOrMultiDataSet = [];
 
   @Input("data") set data(data: any[]) {
-    this.chartData = data.slice(0, 10).map((d: any, i) => ({
+    this.chartData = data.sort((a, b) => {
+      return a['p-value'] - b['p-value']
+    }).map((d: any, i) => ({
       ...d,
-      x: 1 / d["P-value"],
+      x: d["p-value"],
       y: i,
-      r: 3.75 + 3.75 * d["Adjusted P-value"]
+      // r: 3.75 + 3.75 * d["Adjusted P-value"]
     }));
   }
 

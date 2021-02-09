@@ -6,7 +6,6 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { OrganismAutocomplete } from 'app/interfaces/neo4j.interface';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
 
-import { EnrichmentData } from '../enrichment-table-viewer.component';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -14,6 +13,7 @@ import {getObjectLabel} from '../../../../file-browser/utils/objects';
 import {ErrorHandler} from '../../../../shared/services/error-handler.service';
 import {ProgressDialog} from '../../../../shared/services/progress-dialog.service';
 import {Progress} from '../../../../interfaces/common-dialog.interface';
+import {EnrichmentData} from "../../visualisation/table/enrichment-table-viewer.component";
 
 @Component({
   selector: 'app-enrichment-table-edit-dialog',
