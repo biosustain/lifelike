@@ -4,6 +4,11 @@ from unittest.mock import patch
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.services.elastic import ElasticService
 from neo4japp.services.elastic.constants import ATTACHMENT_PIPELINE_ID
+from neo4japp.services.file_types.providers import (
+    EnrichmentTableTypeProvider,
+    MapTypeProvider,
+    PDFTypeProvider
+)
 
 
 def generate_headers(jwt_token):
@@ -89,7 +94,15 @@ def test_user_can_search_content(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms': {'type': ['map', 'pdf']}},
+                        {'terms':
+                            {
+                                'mime_type': [
+                                    EnrichmentTableTypeProvider.MIME_TYPE,
+                                    MapTypeProvider.MIME_TYPE,
+                                    PDFTypeProvider.MIME_TYPE,
+                                ]
+                            }
+                        },
                         {
                             'bool': {
                                 'should': [
@@ -134,7 +147,7 @@ def test_user_can_search_content_with_advanced_args(
                 'q': 'BOLA3',
                 'limit': 10,
                 'page': 1,
-                'types': 'map;pdf',
+                'types': 'enrichment-table;map;pdf',
                 'projects': '',
                 'phrase': '',
                 'wildcard': '',
@@ -155,7 +168,15 @@ def test_user_can_search_content_with_advanced_args(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms': {'type': ['map', 'pdf']}},
+                        {'terms':
+                            {
+                                'mime_type': [
+                                    EnrichmentTableTypeProvider.MIME_TYPE,
+                                    MapTypeProvider.MIME_TYPE,
+                                    PDFTypeProvider.MIME_TYPE,
+                                ]
+                            }
+                        },
                         {
                             'bool': {
                                 'should': [
@@ -218,7 +239,7 @@ def test_user_can_search_content_with_single_types(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms': {'type': ['pdf']}},
+                        {'terms': {'mime_type': [PDFTypeProvider.MIME_TYPE]}},
                         {
                             'bool': {
                                 'should': [
@@ -261,7 +282,7 @@ def test_user_can_search_content_with_multiple_types(
             headers=headers,
             data={
                 'q': '',
-                'types': 'map;pdf',
+                'types': 'enrichment-table;map;pdf',
                 'limit': 10,
                 'page': 1
             },
@@ -281,7 +302,15 @@ def test_user_can_search_content_with_multiple_types(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms': {'type': ['map', 'pdf']}},
+                        {'terms':
+                            {
+                                'mime_type': [
+                                    EnrichmentTableTypeProvider.MIME_TYPE,
+                                    MapTypeProvider.MIME_TYPE,
+                                    PDFTypeProvider.MIME_TYPE,
+                                ]
+                            }
+                        },
                         {
                             'bool': {
                                 'should': [
@@ -324,7 +353,7 @@ def test_user_can_search_content_with_project(
             headers=headers,
             data={
                 'q': '',
-                'projects': f'{fix_project.id}',
+                'projects': f'{fix_project.name}',
                 'limit': 10,
                 'page': 1
             },
@@ -344,11 +373,18 @@ def test_user_can_search_content_with_project(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms': {'type': ['map', 'pdf']}},
+                        {'terms':
+                            {
+                                'mime_type': [
+                                    EnrichmentTableTypeProvider.MIME_TYPE,
+                                    MapTypeProvider.MIME_TYPE,
+                                    PDFTypeProvider.MIME_TYPE,
+                                ]
+                            }
+                        },
                         {
                             'bool': {
                                 'must': [
-                                    {'terms': {'project_id': [fix_project.id]}},
                                     {'terms': {'project_id': [fix_project.id]}},
                                 ]
                             }
@@ -407,7 +443,15 @@ def test_user_can_search_content_with_phrase(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms': {'type': ['map', 'pdf']}},
+                        {'terms':
+                            {
+                                'mime_type': [
+                                    EnrichmentTableTypeProvider.MIME_TYPE,
+                                    MapTypeProvider.MIME_TYPE,
+                                    PDFTypeProvider.MIME_TYPE,
+                                ]
+                            }
+                        },
                         {
                             'bool': {
                                 'should': [
@@ -469,7 +513,15 @@ def test_user_can_search_content_with_wildcard(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms': {'type': ['map', 'pdf']}},
+                        {'terms':
+                            {
+                                'mime_type': [
+                                    EnrichmentTableTypeProvider.MIME_TYPE,
+                                    MapTypeProvider.MIME_TYPE,
+                                    PDFTypeProvider.MIME_TYPE,
+                                ]
+                            }
+                        },
                         {
                             'bool': {
                                 'should': [
