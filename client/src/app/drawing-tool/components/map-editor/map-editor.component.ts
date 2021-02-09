@@ -13,7 +13,6 @@ import { cloneDeep } from 'lodash';
 import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
 
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
-import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
 import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
 import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
 import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
@@ -26,10 +25,6 @@ import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
 import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../../shared/utils/files';
-import {
-  ObjectEditDialogComponent,
-  ObjectEditDialogValue,
-} from '../../../file-browser/components/dialog/object-edit-dialog.component';
 import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { LockError } from '../../../file-browser/services/filesystem.service';
@@ -63,6 +58,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   private lastLockCheckTime = window.performance.now();
   private lastActivityTime = window.performance.now();
   infoPanel = new InfoPanel();
+  activeTab: string;
 
   dropTargeted = false;
 
@@ -97,9 +93,11 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   ngAfterViewInit() {
     super.ngAfterViewInit();
 
-    this.subscriptions.add(this.graphCanvas.historyChanges$.subscribe(() => {
-      this.unsavedChanges$.next(true);
-    }));
+    Promise.resolve().then(() => {
+      this.subscriptions.add(this.graphCanvas.historyChanges$.subscribe(() => {
+        this.unsavedChanges$.next(true);
+      }));
+    });
   }
 
   ngOnDestroy() {
