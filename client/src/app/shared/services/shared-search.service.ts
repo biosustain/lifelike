@@ -1,33 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
-import {
-  OrganismAutocomplete,
-  OrganismsResult,
-} from 'app/interfaces';
-import { AuthenticationService } from 'app/auth/services/authentication.service';
-import { AbstractService } from './abstract-service';
+import { OrganismAutocomplete, OrganismsResult } from 'app/interfaces';
+import { Observable } from 'rxjs';
+import { ApiService } from './api.service';
 
 @Injectable()
-export class SharedSearchService extends AbstractService {
+export class SharedSearchService {
   readonly searchApi = '/api/search';
 
-  constructor(auth: AuthenticationService, http: HttpClient) {
-    super(auth, http);
+  constructor(protected readonly http: HttpClient,
+              protected readonly apiService: ApiService) {
   }
 
-  getOrganismFromTaxId(organismTaxId: string) {
-    return this.http.get<{ result: OrganismAutocomplete}>(
+  getOrganismFromTaxId(organismTaxId: string): Observable<OrganismAutocomplete> {
+    return this.http.get<{ result: OrganismAutocomplete }>(
       `${this.searchApi}/organism/${organismTaxId}`,
-      {...this.getHttpOptions(true)}
+      this.apiService.getHttpOptions(true),
     ).pipe(map(resp => resp.result));
   }
 
-  getOrganisms(query: string, limit: number = 50) {
+  getOrganisms(query: string, limit: number = 50): Observable<OrganismsResult> {
     return this.http.post<{ result: OrganismsResult }>(
       `${this.searchApi}/organisms`,
       {query, limit},
-      {...this.getHttpOptions(true)}
+      this.apiService.getHttpOptions(true),
     ).pipe(map(resp => resp.result));
   }
 }

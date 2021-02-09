@@ -2,33 +2,44 @@ import html
 import json
 import re
 from collections import defaultdict
-from typing import List
+from typing import List, Optional
+
 
 import sqlalchemy
 from flask import Blueprint, current_app, jsonify, g
 from flask_apispec import use_kwargs
 from sqlalchemy.orm import aliased
+from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
+from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.data_transfer_objects import GeneFilteredRequest
 from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
-from neo4japp.database import get_search_service_dao, db, get_elastic_service
+from neo4japp.database import get_search_service_dao, db, get_elastic_service, get_file_type_service
 from neo4japp.models import (
     Projects,
     AppRole,
-    projects_collaborator_role, AppUser, Directory, Project, Files
+    projects_collaborator_role, Files
 )
-from neo4japp.request_schemas.search import (
+from neo4japp.schemas.common import PaginatedRequestSchema
+from neo4japp.schemas.search import (
     AnnotateRequestSchema,
-    AdvancedContentSearchSchema,
+    ContentSearchSchema,
     OrganismSearchSchema,
-    VizSearchSchema
+    VizSearchSchema, ContentSearchResponseSchema
 )
 from neo4japp.services.annotations.constants import AnnotationMethod
 from neo4japp.services.annotations.pipeline import create_annotations
+from neo4japp.services.file_types.providers import (
+    EnrichmentTableTypeProvider,
+    MapTypeProvider,
+    PDFTypeProvider
+)
 from neo4japp.util import jsonify_with_class, SuccessResponse
+
 from neo4japp.utils.logger import EventLog, UserEventLog
+from neo4japp.utils.request import Pagination
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
@@ -37,12 +48,12 @@ bp = Blueprint('search', __name__, url_prefix='/search')
 @auth.login_required
 @use_kwargs(VizSearchSchema)
 def visualizer_search(
-    query,
-    page,
-    limit,
-    domains,
-    entities,
-    organism
+        query,
+        page,
+        limit,
+        domains,
+        entities,
+        organism
 ):
     search_dao = get_search_service_dao()
     current_app.logger.info(
@@ -119,77 +130,24 @@ def annotate(texts):
     })
 
 
-def hydrate_search_results(es_results):
-    es_mapping = defaultdict(lambda: {})
-
-    for doc in es_results['hits']:
-        es_mapping[doc['_source']['type']][doc['_source']['id']] = doc
-
-    t_owner = aliased(AppUser)
-    t_directory = aliased(Directory)
-    t_project = aliased(Projects)
-
-    map_query = db.session.query(Project.hash_id.label('id'),
-                                 Project.label.label('name'),
-                                 Project.description.label('description'),
-                                 sqlalchemy.literal_column('NULL').label('annotation_date'),
-                                 Project.creation_date.label('creation_date'),
-                                 Project.modified_date.label('modification_date'),
-                                 t_owner.id.label('owner_id'),
-                                 t_owner.username.label('owner_username'),
-                                 t_owner.first_name.label('owner_first_name'),
-                                 t_owner.last_name.label('owner_last_name'),
-                                 t_project.project_name.label('project_name'),
-                                 sqlalchemy.literal_column('\'map\'').label('type')) \
-        .join(t_owner, t_owner.id == Project.user_id) \
-        .join(t_directory, t_directory.id == Project.dir_id) \
-        .join(t_project, t_project.id == t_directory.projects_id) \
-        .filter(Project.hash_id.in_(es_mapping['map'].keys()))
-
-    file_query = db.session.query(Files.file_id.label('id'),
-                                  Files.filename.label('name'),
-                                  Files.description.label('description'),
-                                  Files.annotations_date.label('annotation_date'),
-                                  Files.creation_date.label('creation_date'),
-                                  Files.modified_date.label('modification_date'),
-                                  t_owner.id.label('owner_id'),
-                                  t_owner.username.label('owner_username'),
-                                  t_owner.first_name.label('owner_first_name'),
-                                  t_owner.last_name.label('owner_last_name'),
-                                  t_project.project_name.label('project_name'),
-                                  sqlalchemy.literal_column('\'pdf\'').label('type')) \
-        .join(t_owner, t_owner.id == Files.user_id) \
-        .join(t_directory, t_directory.id == Files.dir_id) \
-        .join(t_project, t_project.id == t_directory.projects_id) \
-        .filter(Files.file_id.in_(es_mapping['pdf'].keys()))
-
-    combined_query = sqlalchemy.union_all(map_query, file_query).alias('combined_results')
-    query = db.session.query(combined_query)
-
-    for row in query.all():
-        row = row._asdict()
-        doc = es_mapping[row['type']][row['id']]
-        doc['_db'] = row
-
-
 # Start Search Helpers #
 
-def empty_params(q, advanced_args):
-    q_exists = q != ''
-    types_exists = advanced_args.get('types', None) is not None and advanced_args['types'] != ''
+def empty_params(params):
+    q_exists = params['q'] != ''
+    types_exists = params.get('types', None) is not None and params['types'] != ''
     projects_exists = (
-        advanced_args.get('projects', None) is not None and
-        advanced_args['projects'] != ''
+        params.get('projects', None) is not None and
+        params['projects'] != ''
     )
-    phrase_exists = advanced_args.get('phrase', None) is not None and advanced_args['phrase'] != ''
+    phrase_exists = params.get('phrase', None) is not None and params['phrase'] != ''
     wildcards_exists = (
-        advanced_args.get('wildcards', None) is not None and
-        advanced_args['wildcards'] != ''
+        params.get('wildcards', None) is not None and
+        params['wildcards'] != ''
     )
     return not (q_exists or types_exists or projects_exists or phrase_exists or wildcards_exists)
 
 
-def get_types_from_params(q, advanced_args):
+def get_types_from_params(q, advanced_args, file_type_service):
     # Get document types from either `q` or `types`
     types = []
     if 'types' in advanced_args and advanced_args['types'] != '':
@@ -201,11 +159,23 @@ def get_types_from_params(q, advanced_args):
     if len(extracted_types) > 0:
         q = re.sub(r'\btype:\S*', '', q)
         for extracted_type in extracted_types:
-            types.add(extracted_type.split(':')[1])
+            types.append(extracted_type.split(':')[1])
+
+    mime_types = []
+    shorthand_to_mime_type_map = file_type_service.get_shorthand_to_mime_type_map()
+    for t in types:
+        if t in shorthand_to_mime_type_map:
+            mime_types.append(shorthand_to_mime_type_map[t])
 
     # If we found any types in the advanced args, or in the query, use them. Otherwise default is
     # all.
-    return q, list(types) if len(types) > 0 else ['map', 'pdf']
+    if len(mime_types) > 0:
+        return q, mime_types
+    else:
+        return q, [
+            provider.MIME_TYPE
+            for provider in file_type_service.providers
+        ]
 
 
 def get_projects_from_params(q, advanced_args):
@@ -220,18 +190,9 @@ def get_projects_from_params(q, advanced_args):
     if len(extracted_projects) > 0:
         q = re.sub(r'\bproject:\S*', '', q)
         for extracted_type in extracted_projects:
-            projects.add(extracted_type.split(':')[1])
+            projects.append(extracted_type.split(':')[1])
 
-    try:
-        return q, [int(project) for project in projects]
-    except ValueError as e:
-        current_app.logger.error(
-            f'Content search was given invalid value for argument "projects": ' +
-            f'{list(projects)}. List values should represent base 10 integers.',
-            exc_info=e,
-            extra=EventLog(event_type='content_search').to_dict()
-        )
-        raise
+    return q, projects
 
 
 def get_wildcards_from_params(q, advanced_args):
@@ -274,20 +235,22 @@ def get_projects_filter(user_id: int, projects: List[int]):
             )
         )
     )
-    accessible_project_ids = [project_id for project_id, in query]
 
     if len(projects) > 0:
+        query = query.filter(
+            t_project.hash_id.in_(projects)
+        )
+        accessible_and_filtered_project_ids = [project_id for project_id, in query]
         return {
             'bool': {
                 'must': [
-                    # If the user has access to the project the document is in...
-                    {'terms': {'project_id': accessible_project_ids}},
-                    # AND the document is in the given list.
-                    {'terms': {'project_id': [project for project in projects]}}
+                    # If the document is in the filtered list of projects...
+                    {'terms': {'project_id': accessible_and_filtered_project_ids}},
                 ]
             }
         }
     else:
+        accessible_project_ids = [project_id for project_id, in query]
         return {
             'bool': {
                 'should': [
@@ -299,141 +262,130 @@ def get_projects_filter(user_id: int, projects: List[int]):
             }
         }
 
-
-def prep_search_results(search_results, search_phrases):
-    highlight_tag_re = re.compile('@@@@(/?)\\$')
-
-    results = []
-    for doc in search_results['hits']:
-        snippets = None
-
-        db_data = doc.get('_db', defaultdict(lambda: None))
-
-        if doc.get('highlight', None) is not None:
-            if doc['highlight'].get('data.content', None) is not None:
-                snippets = doc['highlight']['data.content']
-
-        if snippets:
-            for i, snippet in enumerate(snippets):
-                snippet = html.escape(snippet)
-                snippet = highlight_tag_re.sub('<\\1highlight>', snippet)
-                snippets[i] = f"<snippet>{snippet}</snippet>"
-
-        results.append({
-            'item': {
-                # TODO LL-1723: Need to add complete file path here
-                'type': 'file' if doc['_source']['type'] == 'pdf' else 'map',
-                'id': doc['_source']['id'],
-                'name': db_data['name'] or doc['_source']['filename'],
-                'description': db_data['description'] or doc['_source']['description'],
-                'highlight': snippets,
-                'doi': doc['_source']['doi'],
-                'creation_date': db_data['creation_date'] or doc['_source']['uploaded_date'],
-                'modification_date': db_data['modification_date'],
-                'annotation_date': db_data['annotation_date'],
-                'project': {
-                    'project_name': db_data['project_name'] or doc['_source']['project_name'],
-                },
-                'creator': {
-                    'username': db_data['owner_username'] or doc['_source']['username'],
-                },
-            },
-            'rank': doc['_score'],
-        })
-
-    return ResultList(
-        total=search_results['total'],
-        results=results,
-        query=ResultQuery(phrases=search_phrases),
-    )
-
 # End Search Helpers #
 
 
-@bp.route('/content', methods=['GET'])
-@auth.login_required
-@use_kwargs(AdvancedContentSearchSchema)
-def search(
-    limit,
-    page,
-    q,
-    **advanced_args
-):
-    current_app.logger.info(
-        f'Term: {q}',
-        extra=UserEventLog(
-            username=g.current_user.username, event_type='search contentsearch').to_dict()
-    )
+class ContentSearchView(FilesystemBaseView):
+    decorators = [auth.login_required]
 
-    if empty_params(q, advanced_args):
-        return jsonify(
-            ResultList(
-                total=0,
-                results=[],
-                query=ResultQuery(phrases=[])
-            ).to_dict(),
+    @use_args(ContentSearchSchema)
+    @use_args(PaginatedRequestSchema)
+    def post(self, params: dict, pagination: Pagination):
+        current_app.logger.info(
+            f'Term: {params["q"]}',
+            extra=UserEventLog(
+                username=g.current_user.username, event_type='search contentsearch').to_dict()
         )
 
-    offset = (page - 1) * limit
+        current_user = g.current_user
+        file_type_service = get_file_type_service()
 
-    q, types = get_types_from_params(q, advanced_args)
-    q, projects = get_projects_from_params(q, advanced_args)
-    q = get_wildcards_from_params(q, advanced_args)
-    q = get_phrase_from_params(q, advanced_args)
+        if empty_params(params):
+            return jsonify(ContentSearchResponseSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }).dump({
+            'total': 0,
+            'query': ResultQuery(phrases=[]),
+            'results': [],
+        }))
 
-    # Set the search term once we've parsed 'q' for all advanced options
-    search_term = q.strip()
+        offset = (pagination.page - 1) * pagination.limit
 
-    # Set additional elastic search query options
-    text_fields = ['description', 'data.content', 'filename']
-    text_field_boosts = {'description': 1, 'data.content': 1, 'filename': 3}
-    keyword_fields = []
-    keyword_field_boosts = {}
-    highlight = {
-        'fields': {
-            'data.content': {},
-        },
-        # Need to be very careful with this option. If fragment_size is too large, search
-        # will be slow because elastic has to generate large highlight fragments. Setting
-        # to 0 generates cleaner sentences, but also runs the risk of pulling back huge
-        # sentences.
-        'fragment_size': FRAGMENT_SIZE,
-        'order': 'score',
-        'pre_tags': ['@@@@$'],
-        'post_tags': ['@@@@/$'],
-        'number_of_fragments': 100,
-    }
+        q = params['q']
+        q, types = get_types_from_params(q, params, file_type_service)
+        q, projects = get_projects_from_params(q, params)
+        q = get_wildcards_from_params(q, params)
+        q = get_phrase_from_params(q, params)
 
-    query_filter = {
-        'bool': {
-            'must': [
-                # The document must have the specified type...
-                {'terms': {'type': types}},
-                # ...And must be accessible by the user, and in the specified list of
-                # projects or public if no list is given...
-                get_projects_filter(g.current_user.id, projects),
-            ]
+        # Set the search term once we've parsed 'q' for all advanced options
+        search_term = q.strip()
+
+        text_fields = ['description', 'data.content', 'filename']
+        text_field_boosts = {'description': 1, 'data.content': 1, 'filename': 3}
+        highlight = {
+            'fields': {
+                'data.content': {},
+            },
+            # Need to be very careful with this option. If fragment_size is too large, search
+            # will be slow because elastic has to generate large highlight fragments. Setting
+            # to 0 generates cleaner sentences, but also runs the risk of pulling back huge
+            # sentences.
+            'fragment_size': FRAGMENT_SIZE,
+            'order': 'score',
+            'pre_tags': ['@@@@$'],
+            'post_tags': ['@@@@/$'],
+            'number_of_fragments': 100,
         }
-    }
 
-    elastic_service = get_elastic_service()
-    res, search_phrases = elastic_service.search(
-        index_id=FILE_INDEX_ID,
-        search_term=search_term,
-        offset=offset,
-        limit=limit,
-        text_fields=text_fields,
-        text_field_boosts=text_field_boosts,
-        keyword_fields=keyword_fields,
-        keyword_field_boosts=keyword_field_boosts,
-        query_filter=query_filter,
-        highlight=highlight
-    )
-    res = res['hits']
-    hydrate_search_results(res)
+        query_filter = {
+            'bool': {
+                'must': [
+                    # The document must have the specified type...
+                    {'terms': {'mime_type': types}},
+                    # ...And must be accessible by the user, and in the specified list of
+                    # projects or public if no list is given...
+                    get_projects_filter(g.current_user.id, projects),
+                ]
+            }
+        }
 
-    response = prep_search_results(res, search_phrases)
-    return jsonify(response.to_dict())
+        elastic_service = get_elastic_service()
+        elastic_result, search_phrases = elastic_service.search(
+            index_id=FILE_INDEX_ID,
+            search_term=search_term,
+            offset=offset,
+            limit=pagination.limit,
+            text_fields=text_fields,
+            text_field_boosts=text_field_boosts,
+            keyword_fields=[],
+            keyword_field_boosts={},
+            query_filter=query_filter,
+            highlight=highlight
+        )
+
+        elastic_result = elastic_result['hits']
+
+        highlight_tag_re = re.compile('@@@@(/?)\\$')
+
+        # So while we have the results from Elasticsearch, they don't contain up to date or
+        # complete data about the matched files, so we'll take the hash IDs returned by Elastic
+        # and query our database
+        file_ids = [doc['_source']['id'] for doc in elastic_result['hits']]
+        file_map = {file.id: file for file in
+                    self.get_nondeleted_recycled_files(Files.id.in_(file_ids))}
+
+        results = []
+        for document in elastic_result['hits']:
+            file_id = document['_source']['id']
+            file: Optional[Files] = file_map.get(file_id)
+
+            if file and file.calculated_privileges[current_user.id].readable:
+                file_type = file_type_service.get(file)
+                if file_type.should_highlight_content_text_matches() and \
+                        document.get('highlight') is not None:
+                    if document['highlight'].get('data.content') is not None:
+                        snippets = document['highlight']['data.content']
+                        for i, snippet in enumerate(snippets):
+                            snippet = html.escape(snippet)
+                            snippet = highlight_tag_re.sub('<\\1highlight>', snippet)
+                            snippets[i] = f"<snippet>{snippet}</snippet>"
+                        file.calculated_highlight = snippets
+
+                results.append({
+                    'item': file,
+                    'rank': document['_score'],
+                })
+
+        return jsonify(ContentSearchResponseSchema(context={
+            'user_privilege_filter': g.current_user.id,
+        }).dump({
+            'total': elastic_result['total'],
+            'query': ResultQuery(phrases=search_phrases),
+            'results': results,
+        }))
+
+
+bp.add_url_rule('content', view_func=ContentSearchView.as_view('content_search'))
 
 
 @bp.route('/organism/<string:organism_tax_id>', methods=['GET'])

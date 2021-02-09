@@ -65,7 +65,7 @@ def test_user_can_search_content(
         'search',
         return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
-        resp = client.get(
+        resp = client.post(
             f'/search/content',
             headers=headers,
             data={
@@ -127,7 +127,7 @@ def test_user_can_search_content_with_advanced_args(
         return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
 
-        resp = client.get(
+        resp = client.post(
             f'/search/content',
             headers=headers,
             data={
@@ -193,7 +193,7 @@ def test_user_can_search_content_with_single_types(
         return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
 
-        resp = client.get(
+        resp = client.post(
             f'/search/content',
             headers=headers,
             data={
@@ -256,7 +256,7 @@ def test_user_can_search_content_with_multiple_types(
         return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
 
-        resp = client.get(
+        resp = client.post(
             f'/search/content',
             headers=headers,
             data={
@@ -319,7 +319,7 @@ def test_user_can_search_content_with_project(
         return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
 
-        resp = client.get(
+        resp = client.post(
             f'/search/content',
             headers=headers,
             data={
@@ -382,7 +382,7 @@ def test_user_can_search_content_with_phrase(
         return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
 
-        resp = client.get(
+        resp = client.post(
             f'/search/content',
             headers=headers,
             data={
@@ -445,7 +445,7 @@ def test_user_can_search_content_with_wildcard(
         return_value=({'hits': {'hits': [], 'total': 0}}, [])
     ) as mock_search:
 
-        resp = client.get(
+        resp = client.post(
             f'/search/content',
             headers=headers,
             data={

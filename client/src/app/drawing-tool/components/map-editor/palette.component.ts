@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 
 import { AnnotationStyle, annotationTypes } from 'app/shared/annotation-styles';
-import { NODE_TYPE_ID, UniversalGraphNode } from '../../services/interfaces';
+import { UniversalGraphNode, UniversalGraphNodeTemplate } from '../../services/interfaces';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { createNodeDragImage } from '../../utils/drag';
 
 @Component({
   selector: 'app-palette',
@@ -34,17 +35,29 @@ export class PaletteComponent {
     this.expanded = !this.expanded;
   }
 
-  dragStarted(event: DragEvent, annotationStyle: AnnotationStyle) {
-    const dataTransfer: DataTransfer = event.dataTransfer;
-    dataTransfer.setData('text/plain', annotationStyle.label);
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
+  dragStart(event: DragEvent, annotationStyle: AnnotationStyle) {
+    const copiedNode: UniversalGraphNodeTemplate = {
       display_name: annotationStyle.label,
       label: annotationStyle.label,
       sub_labels: [],
-    } as Partial<UniversalGraphNode>));
+    };
+
+    const dragImageNode: UniversalGraphNode = {
+      ...copiedNode,
+      hash: '',
+      data: {
+        x: 0,
+        y: 0,
+      },
+    };
+
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    createNodeDragImage(dragImageNode).addDataTransferData(dataTransfer);
+    dataTransfer.setData('text/plain', annotationStyle.label);
+    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify(copiedNode));
   }
 
-  clicked() {
+  click() {
     this.snackBar.open('Drag from the palette to the graph to create new nodes.', null, {
       duration: 3000,
     });

@@ -1,20 +1,20 @@
-import random
+from decimal import Decimal
 
 import sqlalchemy as sa
-from decimal import Decimal
+import timeflake
+from marshmallow import fields
+from marshmallow_sqlalchemy.convert import ModelConverter as BaseModelConverter
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.types import TIMESTAMP
+from sqlalchemy_utils.types import TSVectorType
 
 from neo4japp.database import db
 from neo4japp.util import snake_to_camel, camel_to_snake
-from marshmallow import fields
-from marshmallow_sqlalchemy.convert import ModelConverter as BaseModelConverter
-from sqlalchemy_utils.types import TSVectorType
-from sqlalchemy.types import TIMESTAMP
 
 
 def generate_hash_id():
-    length = 36
-    letters = 'abcdefghkmnoprstwxzABCDEFGHJKLMNPQRTWXY34689'
-    return ''.join(random.choice(letters) for i in range(length))
+    # Roughly-ordered identifier with an extremely low chance of collision
+    return timeflake.random().base62
 
 
 class NEO4JBase():
@@ -58,7 +58,7 @@ class RDBMSBase(db.Model):  # type: ignore
     def __get_columns(self):
         return {x.name: x.type for x in sa.inspect(self).mapper.columns}
 
-    def to_dict(self, exclude=None, include=None, only=None, keyfn=None):
+    def to_dict(self, exclude=None, include=None, only=None, keyfn=None, valuefn=None):
         """Returns a dictionary of the model object.
 
         Attribute names (exclude, include, only, etc) are in snake_case.
@@ -97,10 +97,11 @@ class RDBMSBase(db.Model):  # type: ignore
                 attrs = [k for k in columns.keys() if k not in exclude]
 
         keyfn = keyfn or snake_to_camel
+        valuefn = valuefn or snake_to_camel
         retval = {}
         for k in attrs:
             key = keyfn(k)
-            retval[key] = getattr(self, k)
+            retval[key] = valuefn(getattr(self, k))
         return retval
 
     def from_dict(self, data, exclude=None, include=None, only=None, keyfn=None):
@@ -179,5 +180,60 @@ class TimestampMixin:
         TIMESTAMP(timezone=True), default=db.func.now(), nullable=False, onupdate=db.func.now())
 
 
+class FullTimestampMixin(TimestampMixin):
+    """ Tables that need a created/updated """
+    deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
+
+    @declared_attr
+    def creator_id(cls):
+        return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+
+    @declared_attr
+    def creator(cls):
+        return db.relationship('AppUser', foreign_keys=cls.creator_id, uselist=False)
+
+    @declared_attr
+    def modifier_id(cls):
+        return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+
+    @declared_attr
+    def modifier(cls):
+        return db.relationship('AppUser', foreign_keys=cls.modifier_id, uselist=False)
+
+    @declared_attr
+    def deleter_id(cls):
+        return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+
+    @declared_attr
+    def deleter(cls):
+        return db.relationship('AppUser', foreign_keys=cls.deleter_id, uselist=False)
+
+    @property
+    def deleted(self):
+        return self.deletion_date is not None
+
+
+class RecyclableMixin:
+    """
+    A model that is recyclable supports a recycle bin.
+    """
+    recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
+
+    @declared_attr
+    def recycler_id(cls):
+        return db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+
+    @declared_attr
+    def recycler(cls):
+        return db.relationship('AppUser', foreign_keys=cls.recycler_id, uselist=False)
+
+    @property
+    def recycled(self):
+        return self.recycling_date is not None
+
+
 class HashIdMixin:
+    """
+    A model with a roughly-ordered hash ID with a bit of randomness.
+    """
     hash_id = db.Column(db.String(36), unique=True, nullable=False, default=generate_hash_id)

@@ -2,8 +2,9 @@ import { Component, Input, OnInit } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { ProjectData } from 'app/file-browser/schema';
 
-import { ContentSearchOptions, Project, TYPES } from '../content-search';
+import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
 
@@ -21,11 +22,11 @@ export class AdvancedSearchDialogComponent implements OnInit {
       types: params.types ? params.types : [],
       projects: params.projects ? params.projects : [],
       phrase: params.phrase ? params.phrase : '',
-      wildcards: params.wildcards ? params.wildcards : [],
+      wildcards: params.wildcards ? params.wildcards : '',
     });
   }
+  @Input() typeChoices: SearchType[];
 
-  typeChoices: SearchType[] = TYPES.concat().sort((a, b) => a.name.localeCompare(b.name));
   projectIds: string[] = [];
   projectsMap: Map<string, string>;
 
@@ -34,7 +35,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
     types: new FormControl([]),
     projects: new FormControl([]),
     phrase: new FormControl(''),
-    wildcards: new FormControl([]),
+    wildcards: new FormControl(''),
   });
 
   constructor(
@@ -45,14 +46,14 @@ export class AdvancedSearchDialogComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.contentSearchService.getProjects().subscribe((projects: Project[]) => {
+    this.contentSearchService.getProjects().subscribe((projects: ProjectData[]) => {
       projects.forEach(project => {
         // Need to convert to string to match query params
-        const projectIdAsString = project.id.toString();
-        if (!this.projectIds.includes(projectIdAsString)) {
-          this.projectIds.push(projectIdAsString);
+        const projectHashId = project.hashId;
+        if (!this.projectIds.includes(projectHashId)) {
+          this.projectIds.push(projectHashId);
         }
-        this.projectsMap.set(projectIdAsString, project.projectName);
+        this.projectsMap.set(projectHashId, project.name);
       });
 
       // Finally, if the user included any ids in the query params that they DON'T actually have access to, remove them from the form. If
