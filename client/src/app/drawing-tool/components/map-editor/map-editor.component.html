@@ -128,7 +128,7 @@
 
         <ng-container *ngIf="(graphCanvas?.selection.changeObservable | async) as selected">
           <div class="info-panel" *ngIf="selected[0].length === 1">
-            <app-info-panel [selected]="selected[0][0]"
+            <app-info-panel [infoPanel]="infoPanel" [selected]="selected[0][0]"
                             (actionCreated)="graphCanvas.execute($event)">
             </app-info-panel>
           </div>
