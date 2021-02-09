@@ -13,7 +13,7 @@ from neo4japp.database import get_account_service, get_projects_service, db, \
     get_authorization_service
 from neo4japp.exceptions import NotAuthorizedException
 from neo4japp.models import AppRole, AppUser, Projects
-from neo4japp.schemas.account import UserListSchema, UserSearchSchema
+from neo4japp.schemas.account import UserListSchema, UserSearchSchema, UserSchemaWithId
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.request import Pagination
@@ -75,7 +75,14 @@ def list_users():
 @auth.login_required
 def get_user():
     """ Returns the current user """
-    return jsonify(result=g.current_user.to_dict(), status_code=200)
+    user = g.current_user
+    return jsonify(UserSchemaWithId().dump({
+        'hash_id': user.hash_id,
+        'username': user.username,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'roles': user.roles,
+    })), 200
 
 
 @bp.route('/user', methods=['POST', 'PUT'])
