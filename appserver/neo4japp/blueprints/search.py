@@ -215,7 +215,7 @@ def get_phrase_from_params(q, advanced_args):
     return q
 
 
-def get_projects_filter(user_id: int, projects: List[int]):
+def get_projects_filter(user_id: int, projects: List[str]):
     t_project = aliased(Projects)
     t_project_role = aliased(AppRole)
 
@@ -241,8 +241,15 @@ def get_projects_filter(user_id: int, projects: List[int]):
     )
 
     if len(projects) > 0:
+        # TODO: Right now filtering by project name works because project names are unique.
+        # It's likely that in the future this will no longer be the case! When that happens,
+        # We can uniquely identify a project using both the username of the project owner,
+        # AND the project name. E.g., johndoe/project-name is unique.
+
+        # We can further extend this behavior to directories. A directory can be uniquely
+        # identified by its path, with the owner's username as the ***ARANGO_USERNAME***.
         query = query.filter(
-            t_project.hash_id.in_(projects)
+            t_project.name.in_(projects)
         )
         accessible_and_filtered_project_ids = [project_id for project_id, in query]
         return {
