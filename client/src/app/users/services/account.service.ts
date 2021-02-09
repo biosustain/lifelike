@@ -5,8 +5,8 @@ import {
     UserCreationRequest,
     UpdateUserRequest,
 } from 'app/interfaces';
-import { map, takeUntil, catchError } from 'rxjs/operators';
-import { BehaviorSubject, Subject, Observable, throwError } from 'rxjs';
+import { map, takeUntil } from 'rxjs/operators';
+import { BehaviorSubject, Subject, Observable } from 'rxjs';
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class AccountService implements OnDestroy {
