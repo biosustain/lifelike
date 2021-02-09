@@ -36,6 +36,7 @@ import { LockError } from '../../../file-browser/services/filesystem.service';
 import { ObjectLock } from '../../../file-browser/models/object-lock';
 import { makeid } from '../../../shared/utils/identifiers';
 import { MAP_MIMETYPE } from '../../providers/map.type-provider';
+import { InfoPanel } from '../../models/info-panel';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -61,6 +62,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   locks: ObjectLock[] = [];
   private lastLockCheckTime = window.performance.now();
   private lastActivityTime = window.performance.now();
+  infoPanel = new InfoPanel();
 
   dropTargeted = false;
 

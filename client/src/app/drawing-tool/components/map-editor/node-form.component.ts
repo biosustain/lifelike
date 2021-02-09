@@ -8,6 +8,7 @@ import { openPotentialInternalLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
 import { isNullOrUndefined } from 'util';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
+import { InfoPanel } from '../../models/info-panel';
 
 @Component({
   selector: 'app-node-form',
@@ -28,6 +29,7 @@ export class NodeFormComponent implements AfterViewInit {
   originalNode: UniversalGraphNode;
   updatedNode: UniversalGraphNode;
 
+  @Input() infoPanel: InfoPanel;
   @Output() save = new EventEmitter<{
     originalData: RecursivePartial<UniversalGraphNode>,
     updatedData: RecursivePartial<UniversalGraphNode>,
@@ -35,7 +37,6 @@ export class NodeFormComponent implements AfterViewInit {
   @Output() delete = new EventEmitter<object>();
   @Output() sourceOpen = new EventEmitter<string>();
 
-  activeTab: string;
   previousLabel: string;
 
   constructor(protected readonly workspaceManager: WorkspaceManager) {
