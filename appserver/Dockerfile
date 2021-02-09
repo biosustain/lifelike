@@ -2,8 +2,11 @@ FROM fedora:32 as base
 
 # Install dependencies
 RUN dnf install postgresql graphviz python-pip python3-devel which -y \
-    && dnf groupinstall 'Development Tools' -y \
-    && dnf clean packages
+    && dnf groupinstall 'Development Tools' -y
+
+RUN dnf install openssh && \
+    echo "root:Docker!" | chpasswd && \
+    dnf clean packages
 RUN pip install pipenv
 
 ENV N4J_USER n4j
@@ -24,6 +27,7 @@ RUN pipenv install --dev --deploy --system
 
 # ...then copy everything else
 COPY --chown=1000:1000 . .
+COPY sshd_config /etc/ssh/
 
 # TODO: We should consider breaking this apart into dev and prod
 # builds, so we don't build unnecessary packages
