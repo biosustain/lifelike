@@ -18,8 +18,12 @@ class UserSchema(CamelCaseSchema):
     # DO NOT return private information (like email) in this schema
 
 
+class AppRoleSchema(CamelCaseSchema):
+    name = fields.String()
+
 class UserSchemaWithId(UserSchema):
     id = fields.Integer()
+    roles = fields.List(fields.Nested(AppRoleSchema))
 
 
 # Requests
