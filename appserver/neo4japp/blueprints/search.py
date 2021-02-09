@@ -282,12 +282,12 @@ class ContentSearchView(FilesystemBaseView):
 
         if empty_params(params):
             return jsonify(ContentSearchResponseSchema(context={
-            'user_privilege_filter': g.current_user.id,
-        }).dump({
-            'total': 0,
-            'query': ResultQuery(phrases=[]),
-            'results': [],
-        }))
+                'user_privilege_filter': g.current_user.id,
+            }).dump({
+                'total': 0,
+                'query': ResultQuery(phrases=[]),
+                'results': [],
+            }))
 
         offset = (pagination.page - 1) * pagination.limit
 
