@@ -7,7 +7,6 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { Injectable } from '@angular/core';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
-import { EnrichmentData } from '../components/table/enrichment-table-viewer.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   EnrichmentVisualisationEditDialogComponent

@@ -33,9 +33,8 @@ class EnrichmentVisualisationService(KgService):
         try:
             import json
             data = {}
-            with open('./neo4japp/services/go.json') as json_file:
+            with open('./neo4japp/services/enrichment/go.json') as json_file:
                 data = json.load(json_file)
-            print(data)
             return data
         except Exception as e:
             print(e)

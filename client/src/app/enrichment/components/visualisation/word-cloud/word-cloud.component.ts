@@ -64,7 +64,7 @@ function deepCopy(data) {
 const createResizeObserver = (callback, container) => {
   const resize = throttled(async (width, height) => {
     const w = container.clientWidth;
-    await callback(width, height);
+    await callback(width, height - 42);
     if (w < container.clientWidth) {
       // If the container size shrank during chart resize, let's assume
       // scrollbar appeared. So we resize again with the scrollbar visible -
@@ -73,7 +73,7 @@ const createResizeObserver = (callback, container) => {
       // events are ignored during this whole 2 resize process.
       // If we assumed wrong and something else happened, we are resizing
       // twice in a frame (potential performance issue)
-      await callback(container.offsetWidth, container.offsetHeight);
+      await callback(container.offsetWidth, container.offsetHeight - 42);
     }
   });
 
@@ -91,7 +91,7 @@ const createResizeObserver = (callback, container) => {
     resize(width, height);
   });
   //todo
-  // observer.observe(container);
+  observer.observe(container);
   return observer;
 };
 
@@ -191,13 +191,15 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
   updateLayout(callback, data) {
     console.count("updateLayout");
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
-    const maximumCount = Math.max(...data.map(d => d.frequency as number));
+    const freq_values = data.map(d => d.frequency as number);
+    const maximumCount = Math.max(...freq_values);
+    const minimumCount = Math.min(...freq_values);
 
     return new Promise(resolve => {
       // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
       this.layout
         .words(data)
-        .fontSize(d => this.getfontSize((d.frequency - 1) / maximumCount))
+        .fontSize(d => this.getfontSize((d.frequency - minimumCount) / maximumCount))
         .on('end', placedWords => {
           const notPlaced = data.length - placedWords.length;
           if (notPlaced) {

@@ -7,9 +7,9 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { Injectable } from '@angular/core';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
-import { EnrichmentData } from '../components/table/enrichment-table-viewer.component';
 import { EnrichmentTableEditDialogComponent } from '../components/table/dialog/enrichment-table-edit-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import {EnrichmentData} from '../components/visualisation/table/enrichment-table-viewer.component';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 

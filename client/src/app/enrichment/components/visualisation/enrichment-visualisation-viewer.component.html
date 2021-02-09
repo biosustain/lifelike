@@ -41,7 +41,7 @@
         <ng-template #objectLoadedHeader>
           <!-- Breadcrumbs -->
           <div class="module-breadcrumb-bar mb-1">
-            <app-object-path [object]="object.parent" [newTab]="true"></app-object-path>
+            <app-object-path [object]="enrichmentService.object.parent" [newTab]="true"></app-object-path>
           </div>
 
           <div class="d-flex flex-wrap align-items-center">
@@ -122,9 +122,14 @@
           </div>
           <div
             class="card-body" style="overflow-x: scroll;">
-            <app-enrichment-visualisation-table-viewer>
+            <app-enrichment-visualisation-table-viewer *ngIf="organism; else notAvailable"
+                     [geneNames]="geneNames"
+                     [organism]="organism">
 
             </app-enrichment-visualisation-table-viewer>
+            <ng-template #notAvailable>
+              Table is only available in conjunction with organism.
+            </ng-template>
           </div>
 
 
@@ -147,7 +152,7 @@
 
         <div class="card">
           <div class="card-header">
-            Genes for {{ mockedData.data[selectedRow]["Term"] }}
+            Genes for
           </div>
           <app-enrichment-visualisation-cloud-viewer
                      [geneNames]="geneNames"

@@ -78,12 +78,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, Module
   // Enrichment Table and NCBI Matching Results
   domains: string[] = [];
 
-  geneNames: string[];
+  @Input() geneNames: string[];
   @Input() taxID: string;
   @Input() organism: string;
   data: EnrichmentData;
   neo4jId: number;
-  object:any;
+  object: any;
   @Input() importGenes: string[];
   unmatchedGenes: string;
   duplicateGenes: string;
@@ -122,59 +122,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, Module
 
 
   ngOnInit() {
-    this.loadTableTask = new BackgroundTask(() => this.filesystemService.get(this.fileId, {
-      loadContent: true,
-    }).pipe(
-      this.errorHandler.create({label: 'Load enrichment table'}),
-      mergeMap((object: FilesystemObject) => {
-        return object.contentValue$.pipe(
-          mapBlobToBuffer(),
-          mapBufferToJson<EnrichmentData>(),
-          map((data: EnrichmentData) => [object, data] as [FilesystemObject, EnrichmentData]),
-        );
-      }),
-    ));
-    this.loadTableTaskSubscription = this.loadTableTask.results$.subscribe((result) => {
-      const [object, data] = result.result;
-      // parse the file content to get gene list and organism tax id and name
-      this.object = object;
-      this.data = data;
-      this.emitModuleProperties();
-      const resultArray = data.data.split('/');
-      this.importGenes = resultArray[0]
-        .split(',')
-        .filter((gene) => gene !== '');
-      this.taxID = resultArray[1];
-      if (this.taxID === '562' || this.taxID === '83333') {
-        this.taxID = '511145';
-      } else if (this.taxID === '4932') {
-        this.taxID = '559292';
-      }
-      this.organism = resultArray[2];
-      // parse for column order/domain input
-      if (resultArray.length > 3) {
-        if (resultArray[3] !== '') {
-          this.domains = resultArray[3].split(',');
-          this.columnOrder = resultArray[3].split(',');
-          if (this.columnOrder.includes('Regulon')) {
-            const index = this.columnOrder.indexOf('Regulon');
-            this.columnOrder.splice(index + 1, 0, 'Regulon 3');
-            this.columnOrder.splice(index + 1, 0, 'Regulon 2');
-          }
-        }
-      } else {
-        // Default view for existing Visualisations
-        this.domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
-        this.columnOrder = ['Regulon', 'Regulon 2', 'Regulon 3', 'UniProt', 'String', 'GO', 'Biocyc'];
-      }
-      this.initializeHeaders();
-      this.removeDuplicates(this.importGenes);
-      this.matchNCBINodes();
-    });
-    this.loadTableTask.update();
-
+    // Default view for existing Visualisations
+    this.domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
+    this.columnOrder = ['Regulon', 'Regulon 2', 'Regulon 3', 'UniProt', 'String', 'GO', 'Biocyc'];
+    this.initializeHeaders();
+    this.removeDuplicates(this.geneNames);
+    this.matchNCBINodes();
   }
-
 
 
   scrollTop() {
