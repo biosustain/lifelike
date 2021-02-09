@@ -3,6 +3,24 @@ from typing import Dict
 from sqlalchemy import Column
 
 
+class Pagination:
+    __slots__ = ('page', 'limit')
+    page: int
+    limit: int
+
+    def __init__(self, page, limit):
+        self.page = page
+        self.limit = limit
+
+    def __getitem__(self, item):
+        if item == 'page':
+            return self.page
+        elif item == 'limit':
+            return self.limit
+        else:
+            raise KeyError(item)
+
+
 def parse_sort(value: str, choices: Dict[str, Column], default_value: str):
     tokens = (value if value is not None and len(value) else default_value).split(',')
     columns = []

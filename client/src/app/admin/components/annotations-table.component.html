@@ -61,9 +61,7 @@
         <td class="align-middle text-nowrap">{{ object.annotationId }}</td>
         <td class="align-middle text-nowrap">
           <button class="btn"
-                  ngbTooltip="Download file"
-                  (click)="downloadFileReference(object.fileId)">
-            <i class="fa fa-fw fa-file-archive text-muted"></i>
+                  ngbTooltip="Download file" disabled>
           </button>
         </td>
         <td class="align-middle text-nowrap">{{ object.userEmail}}</td>

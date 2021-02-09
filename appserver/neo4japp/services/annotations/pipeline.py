@@ -5,7 +5,7 @@ import time
 
 from io import BytesIO
 from flask import current_app
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.datastructures import FileStorage
 
@@ -18,7 +18,7 @@ from neo4japp.database import (
     get_manual_annotation_service
 )
 from neo4japp.exceptions import AnnotationError
-from neo4japp.models import FileContent
+from neo4japp.models import FileContent, Files
 from neo4japp.services.annotations.constants import AnnotationMethod, NLP_ENDPOINT
 from neo4japp.services.annotations.data_transfer_objects import (
     PDFChar,
@@ -176,8 +176,8 @@ def _create_annotations(
         else:
             custom_annotations = document.custom_annotations
             excluded_annotations = document.excluded_annotations
-            if not document.parsed_content:
-                fp = FileStorage(BytesIO(document.raw_file), filename)
+            if not document.content.parsed_content:
+                fp = FileStorage(BytesIO(document.content.raw_file), filename)
                 parsed = parser.parse_pdf(pdf=fp)
                 fp.close()
 
@@ -195,7 +195,7 @@ def _create_annotations(
                     FileContent,
                     [
                         {
-                            'id': document.file_content_id,
+                            'id': document.content.id,
                             'parsed_content': [word.to_dict() for word in parsed.words]
                         }
                     ]
@@ -214,7 +214,7 @@ def _create_annotations(
     start = time.time()
     if not parsed:
         parsed = PDFParsedContent(
-            words=[PDFWord.from_dict(d) for d in document.parsed_content]
+            words=[PDFWord.from_dict(d) for d in document.content.parsed_content]
         )
 
     pdf_text = ' '.join([c.keyword for c in parsed.words])
