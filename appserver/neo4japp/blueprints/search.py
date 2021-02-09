@@ -172,9 +172,13 @@ def get_types_from_params(q, advanced_args, file_type_service):
     if len(mime_types) > 0:
         return q, mime_types
     else:
+        # If we ever add new *searchable* types to the content search, they should be added here.
+        # We may eventually just use a loop over all providers in the file_type_service, but right
+        # now it doesn't really make sense to include directory in the content search.
         return q, [
-            provider.MIME_TYPE
-            for provider in file_type_service.providers
+            EnrichmentTableTypeProvider.MIME_TYPE,
+            MapTypeProvider.MIME_TYPE,
+            PDFTypeProvider.MIME_TYPE
         ]
 
 

@@ -21,8 +21,8 @@ export class TermHighlightComponent implements OnChanges {
         const phrasePatterns = this.highlightTerms.map(
           phrase => escapeRegExp(phrase)
             .replace(/ +/g, ' +')
-            .replace(/(\\\*)/g, '\\S*')
-            .replace(/(\\\?)/g, '\\S?'),
+            .replace(/(\\\*)/g, '\\w*')
+            .replace(/(\\\?)/g, '\\w?'),
         ).join('|');
         const pattern = this.highlightOptions.wholeWord ? `\\b(${phrasePatterns})\\b` : `(${phrasePatterns})`;
         const regex = new RegExp(pattern, 'gi');
