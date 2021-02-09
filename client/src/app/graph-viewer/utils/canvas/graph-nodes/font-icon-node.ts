@@ -108,8 +108,11 @@ export class FontIconNode implements PlacedNode {
       // TODO: Y offset wrong
       ctx.fillRect(
         this.x - this.labelTextbox.actualWidth / 2,
-        this.minY + this.iconTextbox.actualHeight + this.iconLabelSpacing + this.labelTextbox.actualHeight
-        + this.renderYShift + this.yShift,
+        this.minY + this.iconLabelSpacing
+        + this.iconTextbox.actualHeight
+        + this.labelTextbox.lineMetrics.actualBoundingBoxAscent
+        + this.renderYShift
+        + this.yShift,
         this.labelTextbox.actualWidth,
         this.labelTextbox.actualHeight,
       );
