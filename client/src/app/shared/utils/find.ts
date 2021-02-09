@@ -51,15 +51,15 @@ export function tokenizeQuery(s: string,
 export function compileFind(terms: string[],
                             options: FindOptions = {}):
   (string) => boolean {
-  const wrapper = options.wholeWord ? '' : '[^\\s]*';
+  const wrapper = options.wholeWord ? '\\b' : '';
   let termPatterns;
 
   if (options.keepSearchSpecialChars) {
     termPatterns = terms.map(term => {
       const pat = escapeRegExp(term)
         .replace(' ', ' +')
-        .replace(/(\\\*)/g, '\\S*')
-        .replace(/(\\\?)/g, '\\S?');
+        .replace(/(\\\*)/g, '\\w*')
+        .replace(/(\\\?)/g, '\\w?');
       return wrapper + pat + wrapper;
     });
   } else {
@@ -68,8 +68,7 @@ export function compileFind(terms: string[],
     );
   }
 
-  const pattern = new RegExp(
-    '(?<!\\s)(' + termPatterns.join('|') + ')(?!\\s)', 'i');
+  const pattern = new RegExp(termPatterns.join('|'), 'i');
   return s => pattern.test(s);
 }
 
