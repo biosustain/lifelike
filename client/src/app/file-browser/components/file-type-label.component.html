@@ -1,8 +1,0 @@
-<div [ngSwitch]="object.type" class="text-muted">
-  <div *ngSwitchCase="'dir'"><i class="fa fa-fw fa-folder text-icon"></i> Folder</div>
-  <div *ngSwitchCase="'file'">
-    <div *ngIf="object.name.slice(object.name.length - 11) !== '.enrichment'"><i class="fa fa-fw fa-file text-icon"></i> Document</div>
-    <div *ngIf="object.name.slice(object.name.length - 11) === '.enrichment'"><i class="ffa-fw fa fa-table text-icon"></i> Enrichment Table</div>
-  </div>
-  <div *ngSwitchCase="'map'"><i class="fa fa-fw fa-project-diagram text-icon"></i> Map</div>
-</div>

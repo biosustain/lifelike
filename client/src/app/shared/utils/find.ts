@@ -55,7 +55,7 @@ export function compileFind(terms: string[],
   let termPatterns;
 
   if (options.keepSearchSpecialChars) {
-    termPatterns = terms.map( term => {
+    termPatterns = terms.map(term => {
       const pat = escapeRegExp(term)
         .replace(' ', ' +')
         .replace(/(\\\*)/g, '\\S*')
@@ -69,7 +69,7 @@ export function compileFind(terms: string[],
   }
 
   const pattern = new RegExp(
-    '(?<!\s)(' + termPatterns.join('|') + ')(?!\s)', 'i');
+    '(?<!\\s)(' + termPatterns.join('|') + ')(?!\\s)', 'i');
   return s => pattern.test(s);
 }
 

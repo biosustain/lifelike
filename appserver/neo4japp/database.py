@@ -3,17 +3,19 @@ import os
 
 from elasticsearch import Elasticsearch
 from flask import g, current_app
+from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
 from py2neo import Graph
 from sqlalchemy import MetaData, Table, UniqueConstraint
+
+from neo4japp.utils.flask import scope_flask_app_ctx
 
 
 def trunc_long_constraint_name(name: str) -> str:
     if (len(name) > 59):
         truncated_name = name[:55] + '_' + \
-            hashlib.md5(name[55:].encode('utf-8')).hexdigest()[:4]
+                         hashlib.md5(name[55:].encode('utf-8')).hexdigest()[:4]
         return truncated_name
     return name
 
@@ -131,6 +133,26 @@ def get_visualizer_service():
             session=db.session,
         )
     return g.visualizer_service
+
+
+@scope_flask_app_ctx('file_type_service')
+def get_file_type_service():
+    """
+    Return a service to figure out how to handle a certain type of file in our
+    filesystem. When we add new file types to the system, we need to register
+    its associated provider here.
+
+    :return: the service
+    """
+    from neo4japp.services.file_types.service import FileTypeService
+    from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider, \
+        MapTypeProvider, PDFTypeProvider, DirectoryTypeProvider
+    service = FileTypeService()
+    service.register(DirectoryTypeProvider())
+    service.register(PDFTypeProvider())
+    service.register(MapTypeProvider())
+    service.register(EnrichmentTableTypeProvider())
+    return service
 
 
 def get_enrichment_table_service():

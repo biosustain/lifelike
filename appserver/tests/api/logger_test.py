@@ -20,7 +20,7 @@ def generate_headers(jwt_token):
 ])
 def test_logging_invalid_schemas(client, test_user, payload):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     resp = client.post(
         f'/logging/',
@@ -41,7 +41,7 @@ def test_logging_invalid_schemas(client, test_user, payload):
 ])
 def test_logging_valid_schemas(client, test_user, payload):
     login_resp = client.login_as_user(test_user.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     resp = client.post(
         f'/logging/',

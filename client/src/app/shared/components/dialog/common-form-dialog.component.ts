@@ -5,7 +5,7 @@ import { CommonDialogComponent } from './common-dialog.component';
 /**
  * An abstract component for dialogs that use forms.
  */
-export abstract class CommonFormDialogComponent extends CommonDialogComponent {
+export abstract class CommonFormDialogComponent<T = any, V = any> extends CommonDialogComponent<T, V> {
   form: AbstractControl;
 
   submit(): void {

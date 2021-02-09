@@ -1,11 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ProjectSpaceService } from '../../services/project-space.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { Subscription } from 'rxjs';
-import { CollectionModal } from '../../../shared/utils/collection-modal';
-import { MapService } from '../../../drawing-tool/services';
-import { PublicMap } from '../../../drawing-tool/services/map.service';
-import { ResultList } from '../../../shared/schemas/common';
+import { FilesystemObjectList } from '../../models/filesystem-object-list';
+import { FilesystemService } from '../../services/filesystem.service';
+import { MAP_MIMETYPE } from '../../../drawing-tool/providers/map.type-provider';
 
 @Component({
   selector: 'app-browser-community-list',
@@ -13,28 +11,24 @@ import { ResultList } from '../../../shared/schemas/common';
 })
 export class BrowserCommunityListComponent implements OnInit, OnDestroy {
 
-  readonly loadTask: BackgroundTask<void, ResultList<PublicMap>> = new BackgroundTask(
-    () => this.mapService.getCommunityMaps({
-      sort: '-dateModified,+label',
-      page: 1,
-      limit: 3,
+  readonly loadTask: BackgroundTask<void, FilesystemObjectList> = new BackgroundTask(
+    () => this.filesystemService.search({
+      type: 'public',
+      mimeTypes: [MAP_MIMETYPE],
+      sort: '-creationDate',
+      limit: 5,
     }),
   );
   private loadTaskSubscription: Subscription;
 
-  public collectionSize = 0;
-  public readonly results = new CollectionModal<PublicMap>([], {
-    multipleSelection: true,
-  });
+  list: FilesystemObjectList = new FilesystemObjectList();
 
-  constructor(private readonly projectSpaceService: ProjectSpaceService,
-              private readonly mapService: MapService) {
+  constructor(protected readonly filesystemService: FilesystemService) {
   }
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: maps}) => {
-      this.collectionSize = maps.total;
-      this.results.replace(maps.results);
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: list}) => {
+      this.list = list;
     });
 
     this.refresh();

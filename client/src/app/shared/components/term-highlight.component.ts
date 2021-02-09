@@ -1,5 +1,4 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-
 import { escape, escapeRegExp } from 'lodash';
 
 import { isNullOrUndefined } from 'util';
@@ -14,7 +13,6 @@ export class TermHighlightComponent implements OnChanges {
   @Input() text = '';
   @Input() highlightTerms: string[] = [];
   @Input() highlightOptions: FindOptions = {};
-
   highlight: string;
 
   ngOnChanges(changes: SimpleChanges) {
@@ -26,7 +24,7 @@ export class TermHighlightComponent implements OnChanges {
             .replace(/(\\\*)/g, '\\S*')
             .replace(/(\\\?)/g, '\\S?'),
         ).join('|');
-        const pattern = `\\b(${phrasePatterns})\\b`;
+        const pattern = this.highlightOptions.wholeWord ? `\\b(${phrasePatterns})\\b` : `(${phrasePatterns})`;
         const regex = new RegExp(pattern, 'gi');
         this.highlight = '<snippet>' + escape(this.text)
           .replace(regex, '<highlight>$1</highlight>') + '</snippet>';
