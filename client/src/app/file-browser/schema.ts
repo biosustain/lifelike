@@ -8,6 +8,7 @@ import { AnnotationMethod } from '../interfaces/annotation';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
 import { FilePrivileges, ProjectPrivileges } from './models/filesystem-object';
 import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
+import { EnrichmentResult, EnrichmentTextMapping } from 'app/enrichment-tables/models/enrichment-document';
 
 // ========================================
 // Projects
@@ -218,7 +219,8 @@ export interface AnnotationGenerationRequest {
 export interface TextAnnotationGenerationRequest {
   organism?: OrganismAutocomplete;
   annotationMethod?: AnnotationMethod;
-  texts: string[];
+  texts?: EnrichmentTextMapping[];
+  enrichment?: EnrichmentResult;
 }
 
 // ========================================

@@ -160,11 +160,20 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'),
                         index=True, nullable=False)
     user = db.relationship('AppUser', foreign_keys=user_id)
+    doi = db.Column(db.String(1024), nullable=True)
+    upload_url = db.Column(db.String(2048), nullable=True)
+    public = db.Column(db.Boolean, nullable=False, default=False)
+    deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
+    recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
+
+    """
+    Annotations related columns
+    """
+    # NOTE: for PDFs `annotations` will be one JSON, for Enrichment tables, will be a list of JSON
     annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     custom_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
-    doi = db.Column(db.String(1024), nullable=True)
-    upload_url = db.Column(db.String(2048), nullable=True)
+    enrichment_annotations = db.Column(postgresql.JSONB, nullable=True)
     excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     fallback_organism_id = db.Column(
         db.Integer,
@@ -175,9 +184,6 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         nullable=True,
     )
     fallback_organism = db.relationship('FallbackOrganism', foreign_keys=fallback_organism_id)
-    public = db.Column(db.Boolean, nullable=False, default=False)
-    deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
-    recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
 
     __table_args__ = (
         db.Index('uq_files_unique_filename', 'filename', 'parent_id',
