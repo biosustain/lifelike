@@ -27,8 +27,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
   }
   @Input() typeChoices: SearchType[];
 
-  projectIds: string[] = [];
-  projectsMap: Map<string, string>;
+  projects: string[] = [];
 
   form = new FormGroup({
     q: new FormControl('', [this.whitespaceValidator]),
@@ -41,25 +40,21 @@ export class AdvancedSearchDialogComponent implements OnInit {
   constructor(
     private readonly modal: NgbActiveModal,
     protected readonly contentSearchService: ContentSearchService,
-  ) {
-    this.projectsMap = new Map<string, string>();
-  }
+  ) {}
 
   ngOnInit() {
     this.contentSearchService.getProjects().subscribe((projects: ProjectData[]) => {
       projects.forEach(project => {
-        // Need to convert to string to match query params
-        const projectHashId = project.hashId;
-        if (!this.projectIds.includes(projectHashId)) {
-          this.projectIds.push(projectHashId);
+        const projectName = project.name;
+        if (!this.projects.includes(projectName)) {
+          this.projects.push(projectName);
         }
-        this.projectsMap.set(projectHashId, project.name);
       });
 
-      // Finally, if the user included any ids in the query params that they DON'T actually have access to, remove them from the form. If
-      // we don't do this, there will be "ghost" values in the app-select dropdown that won't be visible.
+      // Finally, if the user included any projects in the query params that they DON'T actually have access to, remove them from the form.
+      // If we don't do this, there will be "ghost" values in the app-select dropdown that won't be visible.
       const formProjectIds = this.form.get('projects').value as string[];
-      this.form.get('projects').setValue(formProjectIds.filter(projectId => this.projectIds.includes(projectId)));
+      this.form.get('projects').setValue(formProjectIds.filter(projectId => this.projects.includes(projectId)));
     });
   }
 
@@ -87,8 +82,8 @@ export class AdvancedSearchDialogComponent implements OnInit {
    * Function used by the 'projects' app-select component to choose which value is displayed in the dropdown list. Creates and returns a
    * closure to allow the app-select component to use the value of 'this.projectsMap'.
    */
-  projectLabel() {
-    return (choice: string) => this.projectsMap.get(choice);
+  projectLabel(choice: string) {
+    return choice;
   }
 
   whitespaceValidator(control: AbstractControl): {[key: string]: any} | null {
