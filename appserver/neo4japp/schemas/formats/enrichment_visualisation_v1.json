@@ -1,8 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
+    "entitiesList"
   ],
   "properties": {
     "name": {
@@ -18,6 +19,18 @@
       "type": "string",
       "minLength": 0,
       "maxLength": 20000
+    },
+    "entitiesList": {
+      "type": "array"
+    },
+    "domainsList": {
+      "type": "array"
+    },
+    "organism": {
+      "type": [
+        "string",
+        "null"
+      ]
     }
   }
 }

@@ -107,8 +107,9 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
   }
 
   getValue(): EnrichmentVisualisationData {
-    const {entitiesList='', ...rest} = this.form.value;
+    const {entitiesList='', organism, ...rest} = this.form.value;
     return {
+      organism: organism || null,
       entitiesList: entitiesList.split(/[\n \t,;]/),
       ...rest
     };

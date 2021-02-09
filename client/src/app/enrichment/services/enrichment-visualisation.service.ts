@@ -1,6 +1,6 @@
-import {Injectable} from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 import {ApiService} from '../../shared/services/api.service';
 import {BackgroundTask} from "../../shared/rxjs/background-task";
 import {FilesystemObject} from "../../file-browser/models/filesystem-object";
@@ -10,12 +10,12 @@ import {FilesystemService} from "../../file-browser/services/filesystem.service"
 import {MatSnackBar} from '@angular/material/snack-bar';
 
 import {map, mergeMap} from 'rxjs/operators';
-import {EnrichmentData} from "../components/table/enrichment-table-viewer.component";
 import {ErrorHandler} from "../../shared/services/error-handler.service";
-import {MAP_MIMETYPE} from "../../drawing-tool/providers/map.type-provider";
+import {EnrichmentData} from "../components/visualisation/table/enrichment-table-viewer.component";
+import {ENRICHMENT_VISUALISATION_MIMETYPE} from "../providers/enrichment-visualisation.type-provider";
 
 @Injectable()
-export class EnrichmentVisualisationService {
+export class EnrichmentVisualisationService implements OnDestroy {
 
   constructor(protected readonly http: HttpClient,
               protected readonly apiService: ApiService,
@@ -28,11 +28,13 @@ export class EnrichmentVisualisationService {
   private currentFileId: string;
   file;
   private data;
+  object;
   loadTask: BackgroundTask<null, [FilesystemObject, EnrichmentData]>;
+  loadSubscription: Subscription;
   unsavedChanges: any;
 
   ngOnDestroy() {
-    this.save()
+    this.save().subscribe();
   }
 
   set fileId(file_id: string) {
@@ -47,10 +49,17 @@ export class EnrichmentVisualisationService {
           return object.contentValue$.pipe(
             mapBlobToBuffer(),
             mapBufferToJson<EnrichmentVisualisationData>(),
-            map((data: EnrichmentVisualisationData) => [object, data] as [FilesystemObject, EnrichmentVisualisationData]),
+            map((data: EnrichmentVisualisationData) => {
+              this.data = data;
+              this.object = object;
+              return {object, data};
+            }),
           );
         }),
       ));
+
+    this.loadSubscription = this.loadTask.results$.subscribe();
+
     this.file = this.loadTask.results$;
 
     this.loadTask.update();
@@ -60,89 +69,32 @@ export class EnrichmentVisualisationService {
     return this.currentFileId;
   }
 
-  loadTableTask() {
-    this.loadTableTask = new BackgroundTask(() => this.filesystemService.get(this.fileId, {
-      loadContent: true,
-    }).pipe(
-      this.errorHandler.create({label: 'Load enrichment table'}),
-      mergeMap((object: FilesystemObject) => {
-        return object.contentValue$.pipe(
-          mapBlobToBuffer(),
-          mapBufferToJson<EnrichmentData>(),
-          map((data: EnrichmentData) => [object, data] as [FilesystemObject, EnrichmentData]),
-        );
-      }),
-    ));
-    this.loadTableTaskSubscription = this.loadTableTask.results$.subscribe((result) => {
-      const [object, data] = result.result;
-      // parse the file content to get gene list and organism tax id and name
-      this.object = object;
-      this.data = data;
-      this.emitModuleProperties();
-      const resultArray = data.data.split('/');
-      this.importGenes = resultArray[0]
-        .split(',')
-        .filter((gene) => gene !== '');
-      this.taxID = resultArray[1];
-      if (this.taxID === '562' || this.taxID === '83333') {
-        this.taxID = '511145';
-      } else if (this.taxID === '4932') {
-        this.taxID = '559292';
-      }
-      this.organism = resultArray[2];
-      // parse for column order/domain input
-      if (resultArray.length > 3) {
-        if (resultArray[3] !== '') {
-          this.domains = resultArray[3].split(',');
-          this.columnOrder = resultArray[3].split(',');
-          if (this.columnOrder.includes('Regulon')) {
-            const index = this.columnOrder.indexOf('Regulon');
-            this.columnOrder.splice(index + 1, 0, 'Regulon 3');
-            this.columnOrder.splice(index + 1, 0, 'Regulon 2');
-          }
-        }
-      } else {
-        // Default view for existing Visualisations
-        this.domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
-        this.columnOrder = ['Regulon', 'Regulon 2', 'Regulon 3', 'UniProt', 'String', 'GO', 'Biocyc'];
-      }
-      this.initializeHeaders();
-      this.removeDuplicates(this.importGenes);
-      this.matchNCBINodes();
-    });
-    this.loadTableTask.update();
-
-
-    let existing = this.data && this.data.enrichmentTable && this.data.enrichmentTable[organism + geneNames.sort()];
-    if (existing) {
-      return new Observable(() => existing)
-    }
-    return this.http.post<{ result: [] }>(
-      `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
-      {geneNames, organism},
-      this.apiService.getHttpOptions(true),
-    ).pipe(
-      map((resp: any) => this.data.enrichmentTable[organism + geneNames.sort()] = resp.result)
-    );
-
-  }
-
   /**
    * Match gene names to NCBI nodes with same name and has given taxonomy ID.
    * @param geneNames list of input gene names to match to
    * @param organism tax id of organism
    */
-  enrichWithGOTerms(geneNames: string[], organism: string): Observable<[]> {
-    let existing = this.data && this.data.enrichWithGOTerms && this.data.enrichWithGOTerms[organism + geneNames.sort()];
+  enrichWithGOTerms(): Observable<[]> {
+    const geneNames = this.data.entitiesList;
+    const organism = !!this.data.organism ? this.data.organism : null;
+    let existing = this.data.enrichWithGOTerms && this.data.enrichWithGOTerms[organism + geneNames.sort()];
     if (existing) {
-      return new Observable(() => existing)
+      return new Observable(subscriber => subscriber.next(existing));
     }
     return this.http.post<{ result: [] }>(
-      `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
+      `/api/enrichment-visualisation/enrich-with-go-terms`,
       {geneNames, organism},
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map((resp: any) => this.data.enrichWithGOTerms[organism + geneNames.sort()] = resp.result)
+      map((resp: any) => {
+        if (!this.data) {
+          this.data = {};
+        }
+        if (!this.data.enrichWithGOTerms) {
+          this.data.enrichWithGOTerms = {};
+        }
+        return this.data.enrichWithGOTerms[organism + geneNames.sort()] = resp.result;
+      })
     );
   }
 
@@ -170,7 +122,7 @@ export class EnrichmentVisualisationService {
    */
   save() {
     const contentValue = new Blob([JSON.stringify(this.data)], {
-      type: MAP_MIMETYPE,
+      type: ENRICHMENT_VISUALISATION_MIMETYPE,
     });
 
     // Push to backend to save
@@ -180,10 +132,10 @@ export class EnrichmentVisualisationService {
       .pipe(
         this.errorHandler.create({label: 'Update enrichment visualisation'}),
         map(() => {
-          this.unsavedChanges.next(false)
+          this.unsavedChanges.next(false);
           this.snackBar.open('Visualisation saved.', null, {
             duration: 2000,
-          })
+          });
         })
       );
   }
