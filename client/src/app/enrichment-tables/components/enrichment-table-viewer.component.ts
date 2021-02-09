@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
-import { finalize, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
+import { mergeMap, shareReplay, take, tap } from 'rxjs/operators';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { EnrichmentTableService } from '../services/enrichment-table.service';
@@ -16,9 +16,6 @@ import { EnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentTable } from '../models/enrichment-table';
 import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
 import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
-import { TableCSVExporter } from '../../shared/utils/tables/table-csv-exporter';
-import { openDownloadForBlob } from '../../shared/utils/files';
-import { Progress } from '../../interfaces/common-dialog.interface';
 import { ObjectVersion } from '../../file-browser/models/object-version';
 
 @Component({
@@ -58,7 +55,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
       shareReplay(),
     );
     this.document$ = this.filesystemService.getContent(this.fileId).pipe(
-      mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).load(blob)),
+      mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).load(blob, this.fileId)),
       shareReplay(),
     );
     this.table$ = this.document$.pipe(
@@ -79,7 +76,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
   }
 
   restore(version: ObjectVersion) {
-    this.document$ = new EnrichmentDocument(this.worksheetViewerService).load(version.contentValue).pipe(
+    this.document$ = new EnrichmentDocument(this.worksheetViewerService).load(version.contentValue, this.fileId).pipe(
       tap(() => this.unsavedChanges$.next(true)),
       shareReplay(),
     );

@@ -6,6 +6,7 @@ from neo4japp.models import FallbackOrganism
 from neo4japp.models.files import AnnotationChangeCause
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import ResultListSchema
+from neo4japp.schemas.enrichment import EnrichmentTableSchema, EnrichmentTextMapping
 from neo4japp.services.annotations.constants import AnnotationMethod
 
 
@@ -42,7 +43,8 @@ class AnnotationGenerationRequestSchema(CamelCaseSchema):
 class TextAnnotationGenerationRequestSchema(CamelCaseSchema):
     organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     annotation_method = EnumField(AnnotationMethod, by_value=True)
-    texts = fields.List(fields.String())
+    texts = fields.List(fields.Nested(EnrichmentTextMapping), allow_none=True)
+    enrichment = fields.Nested(EnrichmentTableSchema, allow_none=True)
 
 
 # Responses

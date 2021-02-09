@@ -41,13 +41,22 @@ export class EnrichmentTableService {
     );
   }
 
-  annotateEnrichment(request: TextAnnotationGenerationRequest): Observable<any> {
+  annotateEnrichment(hashIds: string[], request: TextAnnotationGenerationRequest): Observable<any> {
     return this.http.post(
       `/api/filesystem/annotations/text/generate`,
-      {...request},
+      {hashIds, ...request},
       this.apiService.getHttpOptions(true)
     ).pipe(
-      map((resp: any) => resp.result)
+      map((resp: any) => resp.results)
+    );
+  }
+
+  getAnnotatedEnrichment(hashId: string): Observable<any> {
+    return this.http.get(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/enrichment/annotations`,
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map((resp: any) => resp.results),
     );
   }
 }
