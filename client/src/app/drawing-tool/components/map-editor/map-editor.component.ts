@@ -58,6 +58,7 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   locks: ObjectLock[] = [];
   private lastLockCheckTime = window.performance.now();
   private lastActivityTime = window.performance.now();
+  reloadPopupDismissed = false;
   infoPanel = new InfoPanel();
   activeTab: string;
 
@@ -336,6 +337,10 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     } else {
       doReload();
     }
+  }
+
+  dismissReloadPopup() {
+    this.reloadPopupDismissed = true;
   }
 
   @HostListener('window:mousemove', ['$event'])
