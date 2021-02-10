@@ -448,6 +448,8 @@ class TextAnnotationsGenerationView(FilesystemBaseView):
         highlight_add_tag_re = re.compile('^%%%%%-(.+)-%%%%%$', re.IGNORECASE)
 
         organism = None
+        # TODO: enrichment param should ALWAYS be the default enrichment
+        # if it is not present, then do not annotate
         enrichment = params.get('enrichment', [])
         method = params.get('method', AnnotationMethod.RULES)
         texts = params.get('texts', [])
@@ -465,11 +467,12 @@ class TextAnnotationsGenerationView(FilesystemBaseView):
         for file in files:
             all_annotations = []
             if file.annotations:
-                all_annotations = json.loads(file.annotations)
+                all_annotations = file.annotations
 
             if file.enrichment_annotations:
-                print('file.enrichment_annotations', file.enrichment_annotations)
-                enrichment = file.enrichment_annotations
+                for i in range(0, len(file.enrichment_annotations['genes'])):
+                    # file.enrichment_annotations should always be equal length or shorter
+                    enrichment['genes'][i] = file.enrichment_annotations['genes'][i]
 
             for text_mapping in texts:
                 # Remove the outer document tag

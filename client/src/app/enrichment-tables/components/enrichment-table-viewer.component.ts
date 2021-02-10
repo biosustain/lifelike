@@ -173,6 +173,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
   openEnrichmentTableEditDialog(document: EnrichmentDocument): Promise<any> {
     const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
     dialogRef.componentInstance.document = document;
+    dialogRef.componentInstance.fileId = this.fileId;
     return dialogRef.result.then((result: Document) => {
       this.unsavedChanges$.next(true);
       this.refreshData(true);
