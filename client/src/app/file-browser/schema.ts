@@ -210,15 +210,16 @@ export interface AnnotationGenerationResultData {
 
 // Requests
 // ----------------------------------------
-
 export interface AnnotationGenerationRequest {
+  refresh?: boolean;
+}
+
+export interface PDFAnnotationGenerationRequest extends AnnotationGenerationRequest {
   organism?: OrganismAutocomplete;
   annotationMethod?: AnnotationMethod;
 }
 
-export interface TextAnnotationGenerationRequest {
-  organism?: OrganismAutocomplete;
-  annotationMethod?: AnnotationMethod;
+export interface TextAnnotationGenerationRequest extends AnnotationGenerationRequest {
   texts?: EnrichmentTextMapping[];
   enrichment?: EnrichmentResult;
 }
