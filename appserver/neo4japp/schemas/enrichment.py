@@ -26,8 +26,11 @@ class DomainInfo(CamelCaseSchema):
 class EnrichmentTextMapping(CamelCaseSchema):
     text = fields.String(required=True)
     row = fields.Integer(required=True)
-    domain = fields.String(required=True)
-    category = fields.String(required=True)
+    domain = fields.String(allow_none=True)
+    label = fields.String(allow_none=True)
+    matched = fields.Boolean(allow_none=True)
+    imported = fields.Boolean(allow_none=True)
+    full_name = fields.Boolean(allow_none=True)
 
 
 # Requests
