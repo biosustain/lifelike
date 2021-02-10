@@ -112,17 +112,22 @@
             </div>
           </ng-container>
           <ng-template #locksReleased>
-            <div class="lock-panel alert alert-warning">
-              <div>
-                Please reload to get the latest changes.
-              </div>
+            <ng-container *ngIf="!reloadPopupDismissed">
+              <div class="lock-panel alert alert-warning">
+                <div>
+                  Please reload to get the latest changes.
+                </div>
 
-              <div class="mt-2">
-                <button type="button" class="btn btn-primary" (click)="reload()">
-                  Reload
-                </button>
+                <div class="mt-2">
+                  <button type="button" class="btn btn-primary" (click)="reload()">
+                    Reload
+                  </button>
+                  <button type="button" class="btn btn-secondary ml-2" (click)="dismissReloadPopup()">
+                    Dismiss
+                  </button>
+                </div>
               </div>
-            </div>
+            </ng-container>
           </ng-template>
         </ng-container>
 
