@@ -14,21 +14,6 @@ export class DropdownController {
     this.parentNode = dropdownElement.parentNode;
   }
 
-  /**
-   * Move the menu back to the original container.
-   */
-  private removeFromBody() {
-    this.renderer.appendChild(this.parentNode, this.dropdownElement);
-  }
-
-  /**
-   * Move the menu to <body> so it doesn't get ruined by elements with overflow.
-   */
-  private placeInBody() {
-    this.removeFromBody();
-    this.renderer.appendChild(document.body, this.dropdownElement);
-  }
-
   openRelative(element: HTMLElement, options: RelativeOpenOptions = {}) {
     const inputRect = element.getBoundingClientRect();
     const x = inputRect.left;
@@ -128,6 +113,21 @@ export class DropdownController {
     dropdownElement.classList.remove('show');
 
     this.removeFromBody();
+  }
+
+  /**
+   * Move the menu back to the original container.
+   */
+  private removeFromBody() {
+    this.renderer.appendChild(this.parentNode, this.dropdownElement);
+  }
+
+  /**
+   * Move the menu to <body> so it doesn't get ruined by elements with overflow.
+   */
+  private placeInBody() {
+    this.removeFromBody();
+    this.renderer.appendChild(document.body, this.dropdownElement);
   }
 }
 

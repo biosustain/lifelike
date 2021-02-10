@@ -1,10 +1,10 @@
-<div draggable="true" (dragstart)="dragStarted($event)">
+<div (dragstart)="dragStarted($event)" draggable="true">
   <div class="search-results-item-header">
     <h5>
       <a
-        href='/kg-visualizer/graph'
         [appLink]="['/kg-visualizer/graph']"
         [queryParams]="getVisualizerQueryParams({ data: nodeURL })"
+        href='/kg-visualizer/graph'
       >{{ node.node.displayName }}</a>
       <span
         [ngStyle]="{
@@ -33,44 +33,44 @@
     <div [ngSwitch]="node.node.label">
       <div *ngSwitchCase="'BiologicalProcess'">
         <span>ID:
-          <a target="_blank"
-             href="http://amigo.geneontology.org/amigo/term/{{node.node.data.id}}">{{node.node.data.id}}</a>
+          <a href="http://amigo.geneontology.org/amigo/term/{{node.node.data.id}}"
+             target="_blank">{{node.node.data.id}}</a>
           <i class="link-icon fa fa-external-link"></i>
         </span>
       </div>
       <div *ngSwitchCase="'CellularComponent'">
         <span>ID:
-          <a target="_blank"
-             href="http://amigo.geneontology.org/amigo/term/{{node.node.data.id}}">{{node.node.data.id}}</a>
+          <a href="http://amigo.geneontology.org/amigo/term/{{node.node.data.id}}"
+             target="_blank">{{node.node.data.id}}</a>
           <i class="link-icon fa fa-external-link"></i>
         </span>
       </div>
       <div *ngSwitchCase="'Chemical'">
         <div [ngSwitch]="node.node.data.id.split(':')[0]">
-          <span *ngSwitchCase="'CHEBI'">ID: <a target="_blank"
-                                               href="http://identifiers.org/chebi/{{node.node.data.id}}">{{ node.node.data.id.split(':')[1] }}</a></span>
-          <span *ngSwitchCase="'MESH'">ID: <a target="_blank"
-                                              href="https://meshb.nlm.nih.gov/record/ui?ui={{node.node.data.id.split(':')[1]}}">{{ node.node.data.id.split(':')[1] }}</a></span>
+          <span *ngSwitchCase="'CHEBI'">ID: <a href="http://identifiers.org/chebi/{{node.node.data.id}}"
+                                               target="_blank">{{ node.node.data.id.split(':')[1] }}</a></span>
+          <span *ngSwitchCase="'MESH'">ID: <a href="https://meshb.nlm.nih.gov/record/ui?ui={{node.node.data.id.split(':')[1]}}"
+                                              target="_blank">{{ node.node.data.id.split(':')[1] }}</a></span>
           <i class="link-icon fa fa-external-link"></i>
         </div>
       </div>
       <div *ngSwitchCase="'Disease'">
           <span>ID:
-            <a target="_blank"
-               href="https://meshb.nlm.nih.gov/record/ui?ui={{node.node.data.id.split(':')[1]}}">{{ node.node.data.id.split(':')[1] }}</a>
+            <a href="https://meshb.nlm.nih.gov/record/ui?ui={{node.node.data.id.split(':')[1]}}"
+               target="_blank">{{ node.node.data.id.split(':')[1] }}</a>
             <i class="link-icon fa fa-external-link"></i>
           </span>
       </div>
       <div *ngSwitchCase="'Gene'">
           <span>
-            ID: <a target="_blank"
-                   href="https://www.ncbi.nlm.nih.gov/gene/{{node.node.data.id}}">{{ node.node.data.id }}</a>
+            ID: <a href="https://www.ncbi.nlm.nih.gov/gene/{{node.node.data.id}}"
+                   target="_blank">{{ node.node.data.id }}</a>
             <i class="link-icon fa fa-external-link"></i>
           </span>
         <br>
         <span>
-            Taxonomy ID: <a target="_blank"
-                            href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{node.taxonomyId}}">{{ node.taxonomyId }}</a>
+            Taxonomy ID: <a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{node.taxonomyId}}"
+                            target="_blank">{{ node.taxonomyId }}</a>
             <i class="link-icon fa fa-external-link"></i>
           </span>
         <br>
@@ -78,24 +78,24 @@
       </div>
       <div *ngSwitchCase="'MolecularFunction'">
         <span>ID:
-          <a target="_blank"
-             href="http://amigo.geneontology.org/amigo/term/{{node.node.data.id}}">{{node.node.data.id}}</a>
+          <a href="http://amigo.geneontology.org/amigo/term/{{node.node.data.id}}"
+             target="_blank">{{node.node.data.id}}</a>
           <i class="link-icon fa fa-external-link"></i>
         </span>
       </div>
       <div *ngSwitchCase="'Protein'">
         <div *ngIf="node.node.data.uniprotId">
           <span>ID:
-            <a target="_blank"
-               href="https://uniprot.org/uniprot/{{node.node.data.id}}">{{node.node.data.id}}</a>
+            <a href="https://uniprot.org/uniprot/{{node.node.data.id}}"
+               target="_blank">{{node.node.data.id}}</a>
             <i class="link-icon fa fa-external-link"></i>
           </span>
         </div>
       </div>
       <div *ngSwitchCase="'Taxonomy'">
         <span>ID:
-          <a target="_blank"
-             href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{node.node.data.id}}">{{node.node.data.id}}</a>
+          <a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{node.node.data.id}}"
+             target="_blank">{{node.node.data.id}}</a>
           <i class="link-icon fa fa-external-link"></i>
         </span>
       </div>

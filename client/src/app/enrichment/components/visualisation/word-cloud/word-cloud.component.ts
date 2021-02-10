@@ -180,7 +180,7 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
   }
 
   getfontSize(normSize) {
-    return this.MIN_FONT + normSize * (this.MAX_FONT - this.MIN_FONT);
+    return this.MIN_FONT + (normSize || 0) * (this.MAX_FONT - this.MIN_FONT);
   }
 
   /**

@@ -1,4 +1,4 @@
-<form [formGroup]="form" (ngSubmit)="submit()">
+<form (ngSubmit)="submit()" [formGroup]="form">
   <div class="form-group">
     <div class="input-group">
     <span class="input-group-prepend">
@@ -16,14 +16,14 @@
   <div class="mt-2">
     <div class="d-flex w-100">
       <div class="form-group d-flex align-items-start mb-0">
-        <label for="mime-types" class="my-0 mr-2 mt-2">
+        <label class="my-0 mr-2 mt-2" for="mime-types">
           File Types:
         </label>
         <div class="d-flex flex-column">
-          <app-select formId="mime-types" [choices]="typeChoices" style="width: 200px"
-                      [values]="form.value.mimeTypes" (valuesChange)="form.get('mimeTypes').setValue($event)"
-                      (touch)="form.get('mimeTypes').markAsTouched()"
-                      [choiceLabel]="choiceLabel">
+          <app-select (touch)="form.get('mimeTypes').markAsTouched()" (valuesChange)="form.get('mimeTypes').setValue($event)" [choiceLabel]="choiceLabel"
+                      [choices]="typeChoices" [values]="form.value.mimeTypes"
+                      formId="mime-types"
+                      style="width: 200px">
           </app-select>
 
           <app-form-input-feedback [control]="form.get('types')"></app-form-input-feedback>
@@ -31,7 +31,7 @@
       </div>
 
       <div class="ml-auto">
-        <button type="submit" class="btn btn-primary">Search</button>
+        <button class="btn btn-primary" type="submit">Search</button>
       </div>
     </div>
   </div>

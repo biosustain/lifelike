@@ -1,19 +1,19 @@
-import {Component, Input} from '@angular/core';
-import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
-import {FormArray, FormControl, FormGroup, Validators} from '@angular/forms';
-import {CommonFormDialogComponent} from 'app/shared/components/dialog/common-form-dialog.component';
-import {MessageDialog} from 'app/shared/services/message-dialog.service';
-import {OrganismAutocomplete} from 'app/interfaces/neo4j.interface';
-import {SharedSearchService} from 'app/shared/services/shared-search.service';
+import { Component, Input } from '@angular/core';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { OrganismAutocomplete } from 'app/interfaces/neo4j.interface';
+import { SharedSearchService } from 'app/shared/services/shared-search.service';
 
-import {BehaviorSubject, Observable, of} from 'rxjs';
-import {finalize, map} from 'rxjs/operators';
-import {FilesystemObject} from 'app/file-browser/models/filesystem-object';
-import {EnrichmentVisualisationData} from '../enrichment-visualisation-viewer.component';
-import {getObjectLabel} from '../../../../file-browser/utils/objects';
-import {ErrorHandler} from '../../../../shared/services/error-handler.service';
-import {ProgressDialog} from '../../../../shared/services/progress-dialog.service';
-import {Progress} from '../../../../interfaces/common-dialog.interface';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { finalize, map } from 'rxjs/operators';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { EnrichmentVisualisationData } from '../enrichment-visualisation-viewer.component';
+import { getObjectLabel } from '../../../../file-browser/utils/objects';
+import { ErrorHandler } from '../../../../shared/services/error-handler.service';
+import { ProgressDialog } from '../../../../shared/services/progress-dialog.service';
+import { Progress } from '../../../../interfaces/common-dialog.interface';
 
 @Component({
   selector: 'app-enrichment-visualisation-edit-dialog',
@@ -26,8 +26,8 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
 
   form: FormGroup = new FormGroup({
     organism: new FormControl(''),
-    entitiesList: new FormControl('', Validators.required),
-    domainsList: new FormArray([]),
+    genes: new FormControl('', Validators.required),
+    domains: new FormArray([]),
   });
 
   organismTaxId: string;
@@ -61,13 +61,13 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
 
   @Input()
   set data({
-             importGenes,
-             organismTaxId,
+             genes,
+             organism,
              domains = []
            }) {
 
-    this.organismTaxId = organismTaxId;
-    this.domains = domains
+    this.organismTaxId = organism;
+    this.domains = domains;
 
     const progressDialogRef = this.progressDialog.display({
       title: `Loading Parameters`,
@@ -83,7 +83,7 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
     organismObservable.pipe(
       finalize(() => progressDialogRef.close()),
       map(searchResult => {
-        this.form.get('entitiesList').setValue(importGenes.join('\n') || '');
+        this.form.get('genes').setValue(genes.join('\n') || '');
         this.setOrganism(searchResult);
         this.setDomains();
         return searchResult;
@@ -98,7 +98,7 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
   }
 
   private setDomains() {
-    const formArray: FormArray = this.form.get('domainsList') as FormArray;
+    const formArray: FormArray = this.form.get('domains') as FormArray;
     this.domains.forEach((domain) => formArray.push(new FormControl(domain)));
   }
 
@@ -107,18 +107,17 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
   }
 
   getValue(): EnrichmentVisualisationData {
-    const {entitiesList='', organism, ...rest} = this.form.value;
+    const {genes = '', organism, ...rest} = this.form.value;
     return {
       organism: organism || null,
-      entitiesList: entitiesList.split(/[\n \t,;]/),
+      genes: genes.split(/[\n \t,;]/),
       ...rest
     };
   }
 
 
-
   onCheckChange(event) {
-    const formArray: FormArray = this.form.get('domainsList') as FormArray;
+    const formArray: FormArray = this.form.get('domains') as FormArray;
 
     /* Selected */
     if (event.target.checked) {

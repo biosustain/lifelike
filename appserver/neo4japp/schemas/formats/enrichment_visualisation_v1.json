@@ -3,34 +3,38 @@
   "type": "object",
   "additionalProperties": true,
   "required": [
-    "entitiesList"
+    "parameters",
+    "cachedResults"
   ],
   "properties": {
-    "name": {
-      "type": [
-        "string",
-        "null"
+    "parameters": {
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "genes"
       ],
-      "minLength": 0,
-      "maxLength": 2000,
-      "$comment": "deprecated (the filename is the new name)"
+      "properties": {
+        "genes": {
+          "type": "array"
+        },
+        "domains": {
+          "type": "array"
+        },
+        "organism": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
     },
-    "data": {
-      "type": "string",
-      "minLength": 0,
-      "maxLength": 20000
-    },
-    "entitiesList": {
-      "type": "array"
-    },
-    "domainsList": {
-      "type": "array"
-    },
-    "organism": {
-      "type": [
-        "string",
-        "null"
-      ]
+    "cachedResults": {
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "type": "object",
+      "additionalProperties": true,
+      "required": [],
+      "properties": {}
     }
   }
 }

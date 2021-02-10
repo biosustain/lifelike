@@ -23,8 +23,8 @@ export class EnrichmentVisualisationCreateDialogComponent extends CommonFormDial
     name: new FormControl('', Validators.required),
     description: new FormControl(''),
     organism: new FormControl(''),
-    entitiesList: new FormControl('', Validators.required),
-    domainsList: new FormArray([]),
+    genes: new FormControl('', Validators.required),
+    domains: new FormArray([]),
   });
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
