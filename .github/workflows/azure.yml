@@ -64,5 +64,5 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: lifelike-app
-          configuration-file: docker-compose.azure.yml
+          configuration-file: ./deployment/azure/docker-compose.azure.yml
 

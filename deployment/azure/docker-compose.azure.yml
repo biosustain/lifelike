@@ -1,0 +1,14 @@
+version: '2.4'
+
+services:
+  appserver:
+    image: lifelike.azurecr.io/kg-appserver:latest
+    ports:
+      - 5000:5000
+
+  webserver:
+    image: lifelike.azurecr.io/kg-webserver:latest
+    ports:
+      - 80:80
+    depends_on:
+      - appserver
