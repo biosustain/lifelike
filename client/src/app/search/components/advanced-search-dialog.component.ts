@@ -25,7 +25,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
       wildcards: params.wildcards ? params.wildcards : '',
     });
   }
-  @Input() typeChoices: SearchType[];
+  @Input() typeChoices: SearchType[] = [];
 
   projects: string[] = [];
 
