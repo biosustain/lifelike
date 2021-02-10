@@ -38,13 +38,12 @@ class AnnotationGenerationRequestSchema(CamelCaseSchema):
     """Request for initial annotation or re-annotation."""
     organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     annotation_method = EnumField(AnnotationMethod, by_value=True)
-
-
-class TextAnnotationGenerationRequestSchema(CamelCaseSchema):
-    organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
-    annotation_method = EnumField(AnnotationMethod, by_value=True)
     texts = fields.List(fields.Nested(EnrichmentTextMapping), allow_none=True)
     enrichment = fields.Nested(EnrichmentTableSchema, allow_none=True)
+
+
+class RefreshEnrichmentAnnotationsRequestSchema(CamelCaseSchema):
+    refresh = fields.Boolean(required=True)
 
 
 # Responses
