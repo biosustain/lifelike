@@ -617,8 +617,8 @@ export class CanvasGraphView extends GraphView {
         this.nextAssetsLoadCheckTime = null;
       } else {
         this.nextAssetsLoadCheckTime = now + 1000;
-        this.requestRender();
       }
+      this.requestRender();
     }
 
     // Instead of rendering on every animation frame, we keep track of a flag
