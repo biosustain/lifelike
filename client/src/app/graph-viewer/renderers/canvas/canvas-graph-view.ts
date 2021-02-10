@@ -180,8 +180,9 @@ export class CanvasGraphView extends GraphView {
 
     this.canvas = canvas;
     this.canvas.tabIndex = 0;
-    this.canvas.width = this.canvas.clientWidth;
-    this.canvas.height = this.canvas.clientHeight;
+    // Many things break if the canvas dimensions become 0
+    this.canvas.width = Math.max(1, this.canvas.clientWidth);
+    this.canvas.height = Math.max(1, this.canvas.clientHeight);
 
     this.zoom = d3.zoom()
       .on('zoom', this.canvasZoomed.bind(this))
@@ -340,11 +341,15 @@ export class CanvasGraphView extends GraphView {
     if (this.canvas.width !== width || this.canvas.height !== height) {
       const centerX = this.transform.invertX(this.canvas.width / 2);
       const centerY = this.transform.invertY(this.canvas.height / 2);
-      this.canvas.width = width;
-      this.canvas.height = height;
+      // If the canvas was barely shown, the zoom may be out of whack so we should force
+      // a zoom to fit
+      const canvasWasSmall = this.canvas.width <= 1 || this.canvas.height <= 1;
+      // Many things break if the canvas dimensions become 0
+      this.canvas.width = Math.max(1, width);
+      this.canvas.height = Math.max(1, height);
       super.setSize(width, height);
       this.invalidateAll();
-      if (window.performance.now() - this.previousZoomToFitTime < 500) {
+      if (window.performance.now() - this.previousZoomToFitTime < 500 || canvasWasSmall) {
         this.applyZoomToFit(0, this.previousZoomToFitPadding);
       } else {
         const newCenterX = this.transform.invertX(this.canvas.width / 2);
