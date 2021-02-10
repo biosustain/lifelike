@@ -21,6 +21,9 @@
             <span class='d-table-cell' style="width: inherit;">Hyperlinks:</span>
             <span (click)='addHyperlink()' class='d-tabble-cell badge badge-primary'><i class="fa fa-plus"></i></span>
           </label>
+          <div class="mb-2">
+            <app-sources (executeFileSource)="goToSource($event)" [links]="edge.data?.sources"></app-sources>
+          </div>
           <div *ngFor='let h of hyperlinks; let i = index;'>
             <div class="input-group mb-2">
               <div class="input-group-prepend">
@@ -37,7 +40,6 @@
               </div>
             </div>
           </div>
-          <app-sources (executeFileSource)="goToSource($event)" [links]="edge.data?.sources"></app-sources>
 
           <div class="mt-4">
             <fieldset class="fieldset-properties"
