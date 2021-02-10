@@ -1,18 +1,21 @@
-import {Injectable, OnDestroy} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable, Subscription} from 'rxjs';
-import {ApiService} from '../../shared/services/api.service';
-import {BackgroundTask} from "../../shared/rxjs/background-task";
-import {FilesystemObject} from "../../file-browser/models/filesystem-object";
-import {mapBlobToBuffer, mapBufferToJson} from "../../shared/utils/files";
-import {EnrichmentVisualisationData} from "../components/visualisation/enrichment-visualisation-viewer.component";
-import {FilesystemService} from "../../file-browser/services/filesystem.service";
-import {MatSnackBar} from '@angular/material/snack-bar';
+import { Injectable, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, ObservedValueOf, Subscription } from 'rxjs';
+import { ApiService } from '../../shared/services/api.service';
+import { BackgroundTask } from '../../shared/rxjs/background-task';
+import { FilesystemObject } from '../../file-browser/models/filesystem-object';
+import { mapBlobToBuffer, mapBufferToJson } from '../../shared/utils/files';
+import {
+  EnrichmentVisualisationData,
+  EnrichmentVisualisationParameters
+} from '../components/visualisation/enrichment-visualisation-viewer.component';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
-import {map, mergeMap} from 'rxjs/operators';
-import {ErrorHandler} from "../../shared/services/error-handler.service";
-import {EnrichmentData} from "../components/visualisation/table/enrichment-table-viewer.component";
-import {ENRICHMENT_VISUALISATION_MIMETYPE} from "../providers/enrichment-visualisation.type-provider";
+import { map, mergeMap } from 'rxjs/operators';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { EnrichmentData } from '../components/visualisation/table/enrichment-table-viewer.component';
+import { ENRICHMENT_VISUALISATION_MIMETYPE } from '../providers/enrichment-visualisation.type-provider';
 
 @Injectable()
 export class EnrichmentVisualisationService implements OnDestroy {
@@ -26,10 +29,14 @@ export class EnrichmentVisualisationService implements OnDestroy {
   }
 
   private currentFileId: string;
-  file;
-  private data;
+  cachedResults;
+  parameters;
   object;
-  loadTask: BackgroundTask<null, [FilesystemObject, EnrichmentData]>;
+  loadTask: BackgroundTask<null, ObservedValueOf<Observable<{
+    parameters: EnrichmentVisualisationParameters;
+    object: FilesystemObject;
+    cachedResults: object;
+  }>>>;
   loadSubscription: Subscription;
   unsavedChanges: any;
 
@@ -37,30 +44,29 @@ export class EnrichmentVisualisationService implements OnDestroy {
     this.save().subscribe();
   }
 
-  set fileId(file_id: string) {
-    this.currentFileId = file_id;
+  set fileId(fileId: string) {
+    this.currentFileId = fileId;
     this.loadTask = new BackgroundTask(() =>
       this.filesystemService.get(
         this.fileId,
         {loadContent: true}
       ).pipe(
-        this.errorHandler.create({label: 'Load enrichment table'}),
+        this.errorHandler.create({label: 'Load enrichment visualisation'}),
         mergeMap((object: FilesystemObject) => {
           return object.contentValue$.pipe(
             mapBlobToBuffer(),
             mapBufferToJson<EnrichmentVisualisationData>(),
-            map((data: EnrichmentVisualisationData) => {
-              this.data = data;
+            map(({parameters, cachedResults}: EnrichmentVisualisationData) => {
+              this.cachedResults = cachedResults;
+              this.parameters = parameters;
               this.object = object;
-              return {object, data};
+              return {object, parameters, cachedResults};
             }),
           );
         }),
       ));
 
     this.loadSubscription = this.loadTask.results$.subscribe();
-
-    this.file = this.loadTask.results$;
 
     this.loadTask.update();
   }
@@ -75,9 +81,9 @@ export class EnrichmentVisualisationService implements OnDestroy {
    * @param organism tax id of organism
    */
   enrichWithGOTerms(): Observable<[]> {
-    const geneNames = this.data.entitiesList;
-    const organism = !!this.data.organism ? this.data.organism : null;
-    let existing = this.data.enrichWithGOTerms && this.data.enrichWithGOTerms[organism + geneNames.sort()];
+    const geneNames = this.parameters.genes;
+    const organism = !!this.parameters.organism ? this.parameters.organism : null;
+    const existing = this.cachedResults.enrichWithGOTerms && this.cachedResults.enrichWithGOTerms[organism + geneNames.sort()];
     if (existing) {
       return new Observable(subscriber => subscriber.next(existing));
     }
@@ -87,13 +93,13 @@ export class EnrichmentVisualisationService implements OnDestroy {
       this.apiService.getHttpOptions(true),
     ).pipe(
       map((resp: any) => {
-        if (!this.data) {
-          this.data = {};
+        if (!this.cachedResults) {
+          this.cachedResults = {};
         }
-        if (!this.data.enrichWithGOTerms) {
-          this.data.enrichWithGOTerms = {};
+        if (!this.cachedResults.enrichWithGOTerms) {
+          this.cachedResults.enrichWithGOTerms = {};
         }
-        return this.data.enrichWithGOTerms[organism + geneNames.sort()] = resp.result;
+        return this.cachedResults.enrichWithGOTerms[organism + geneNames.sort()] = resp.result;
       })
     );
   }
@@ -104,16 +110,17 @@ export class EnrichmentVisualisationService implements OnDestroy {
    * @param taxID tax id of organism
    */
   getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<[]> {
-    let existing = this.data && this.data.NCBIEnrichmentDomains && this.data.NCBIEnrichmentDomains[taxID + nodeIds.sort()];
+    const uid = taxID + nodeIds.sort();
+    const existing = this.cachedResults.NCBIEnrichmentDomains && this.cachedResults.NCBIEnrichmentDomains[uid];
     if (existing) {
-      return new Observable(() => existing)
+      return new Observable(() => existing);
     }
     return this.http.post<{ result: [] }>(
       `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
       {nodeIds, taxID},
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map((resp: any) => this.data.NCBIEnrichmentDomains[taxID + nodeIds.sort()] = resp.result),
+      map((resp: any) => this.cachedResults.NCBIEnrichmentDomains[uid] = resp.result),
     );
   }
 
@@ -121,7 +128,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
    * Save the current representation of knowledge model
    */
   save() {
-    const contentValue = new Blob([JSON.stringify(this.data)], {
+    const contentValue = new Blob([JSON.stringify(this.cachedResults)], {
       type: ENRICHMENT_VISUALISATION_MIMETYPE,
     });
 
@@ -141,9 +148,9 @@ export class EnrichmentVisualisationService implements OnDestroy {
   }
 
   matchNCBINodes(importGenes: string[], taxID: string) {
-    let existing = this.data && this.data.NCBINodes && this.data.NCBINodes[taxID + importGenes.sort()];
+    const existing = this.cachedResults && this.cachedResults.NCBINodes && this.cachedResults.NCBINodes[taxID + importGenes.sort()];
     if (existing) {
-      return new Observable(() => existing)
+      return new Observable(() => existing);
     }
     return this.http.post<{ result: [] }>(
       `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
@@ -151,8 +158,8 @@ export class EnrichmentVisualisationService implements OnDestroy {
       this.apiService.getHttpOptions(true),
     ).pipe(
       map((resp: any) => {
-        this.data.NCBINodes[taxID + importGenes.sort()] = resp.result
-        return this.data.NCBINodes[taxID + importGenes.sort()]
+        this.cachedResults.NCBINodes[taxID + importGenes.sort()] = resp.result;
+        return this.cachedResults.NCBINodes[taxID + importGenes.sort()];
       }),
     );
   }

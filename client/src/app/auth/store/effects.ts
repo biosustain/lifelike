@@ -6,14 +6,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthenticationService } from '../services/authentication.service';
 
 import { from } from 'rxjs';
-import {
-  catchError,
-  exhaustMap,
-  map,
-  tap,
-  withLatestFrom,
-} from 'rxjs/operators';
-import { Actions, ofType, createEffect } from '@ngrx/effects';
+import { catchError, exhaustMap, map, tap, withLatestFrom, } from 'rxjs/operators';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
 
 import * as AuthActions from './actions';
 import * as AuthSelectors from './selectors';
@@ -21,25 +15,13 @@ import { State } from './state';
 
 import * as SnackbarActions from 'app/shared/store/snackbar-actions';
 import { MatSnackBar } from '@angular/material';
-import {
-  TermsOfServiceDialogComponent,
-} from 'app/users/components/terms-of-service-dialog.component';
+import { TermsOfServiceDialogComponent, } from 'app/users/components/terms-of-service-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TERMS_OF_SERVICE } from '../../users/components/terms-of-service-text.component';
 import { ErrorResponse } from '../../shared/schemas/common';
 
 @Injectable()
 export class AuthEffects {
-  constructor(
-    private readonly actions$: Actions,
-    private readonly router: Router,
-    private readonly store$: Store<State>,
-    private readonly authService: AuthenticationService,
-    private readonly modalService: NgbModal,
-    private readonly snackbar: MatSnackBar,
-  ) {
-  }
-
   checkTermsOfService$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.checkTermsOfService),
     map(({credential}) => {
@@ -69,11 +51,9 @@ export class AuthEffects {
       }
     }),
   ));
-
   termsOfSerivceAgreeing$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.termsOfSerivceAgreeing),
   ), {dispatch: false});
-
   agreeTermsOfService$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.agreeTermsOfService),
     exhaustMap(({
@@ -86,7 +66,6 @@ export class AuthEffects {
       ]);
     }),
   ));
-
   disagreeTermsOfService$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.disagreeTermsOfService),
     exhaustMap(() => {
@@ -101,7 +80,6 @@ export class AuthEffects {
       ]);
     }),
   ));
-
   login$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.login),
     exhaustMap(({credential}) => {
@@ -123,18 +101,15 @@ export class AuthEffects {
       );
     }),
   ));
-
   loginSuccess$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.loginSuccess),
     withLatestFrom(this.store$.pipe(select(AuthSelectors.selectAuthRedirectUrl))),
     tap(([_, url]) => this.router.navigate([url])),
   ), {dispatch: false});
-
   loginRedirect$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.loginRedirect),
     tap(_ => this.router.navigate(['/login'])),
   ), {dispatch: false});
-
   logout$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.logout),
     map(_ => {
@@ -151,4 +126,14 @@ export class AuthEffects {
       );
     }),
   ));
+
+  constructor(
+    private readonly actions$: Actions,
+    private readonly router: Router,
+    private readonly store$: Store<State>,
+    private readonly authService: AuthenticationService,
+    private readonly modalService: NgbModal,
+    private readonly snackbar: MatSnackBar,
+  ) {
+  }
 }

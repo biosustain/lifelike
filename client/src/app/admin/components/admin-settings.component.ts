@@ -9,73 +9,74 @@ import { StorageService } from 'app/shared/services/storage.service';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 
 @Component({
-    selector: 'app-admin-settings-view',
-    templateUrl: 'admin-settings.component.html',
+  selector: 'app-admin-settings-view',
+  templateUrl: 'admin-settings.component.html',
 })
 export class AdminSettingsComponent {
 
-    readonly form: FormGroup = new FormGroup({
-        files: new FormControl(''),
+  readonly form: FormGroup = new FormGroup({
+    files: new FormControl(''),
+  });
+
+  constructor(
+    private readonly progressDialog: ProgressDialog,
+    private readonly errorHandler: ErrorHandler,
+    private readonly snackBar: MatSnackBar,
+    private storage: StorageService,
+  ) {
+  }
+
+  fileChanged(event) {
+    if (event.target.files.length) {
+      const file = event.target.files[0];
+      this.form.get('files').setValue([file]);
+    } else {
+      this.form.get('files').setValue(null);
+    }
+  }
+
+  submit() {
+    const progressObservable = new BehaviorSubject<Progress>(new Progress({
+      status: 'Uploading user manual...',
+    }));
+    const progressDialogRef = this.progressDialog.display({
+      title: 'Saving manual as lifelike-user-manual.pdf...',
+      progressObservable,
     });
-
-    constructor(
-        private readonly progressDialog: ProgressDialog,
-        private readonly errorHandler: ErrorHandler,
-        private readonly snackBar: MatSnackBar,
-        private storage: StorageService,
-    ) {}
-
-    fileChanged(event) {
-        if (event.target.files.length) {
-            const file = event.target.files[0];
-            this.form.get('files').setValue([file]);
-        } else {
-            this.form.get('files').setValue(null);
-        }
-    }
-
-    submit() {
-        const progressObservable = new BehaviorSubject<Progress>(new Progress({
-            status: 'Uploading user manual...',
-        }));
-        const progressDialogRef = this.progressDialog.display({
-            title: 'Saving manual as lifelike-user-manual.pdf...',
-            progressObservable,
-        });
-        const data = {...this.form.value};
-        const file: File = data.files[0];
-        this.storage
-          .uploadUserManual(file)
-          .pipe(this.errorHandler.create({label: 'Upload user manual'}))
-          .subscribe(
-            (event) => {
-              if (event.type === HttpEventType.UploadProgress) {
-                if (event.loaded >= event.total) {
-                  progressObservable.next(
-                    new Progress({
-                      mode: ProgressMode.Buffer,
-                      status: 'Processing file...',
-                      value: event.loaded / event.total,
-                    }));
-                } else {
-                  progressObservable.next(
-                    new Progress({
-                      mode: ProgressMode.Determinate,
-                      status: 'Uploading file...',
-                      value: event.loaded / event.total,
-                    }));
-                }
-              } else if (event.type === HttpEventType.Response) {
-                progressDialogRef.close();
-                this.snackBar.open(`User manual uploaded`, 'Close', {
-                  duration: 5000,
-                });
-              }
-            },
-            (err) => {
-              progressDialogRef.close();
-              return throwError(err);
+    const data = {...this.form.value};
+    const file: File = data.files[0];
+    this.storage
+      .uploadUserManual(file)
+      .pipe(this.errorHandler.create({label: 'Upload user manual'}))
+      .subscribe(
+        (event) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            if (event.loaded >= event.total) {
+              progressObservable.next(
+                new Progress({
+                  mode: ProgressMode.Buffer,
+                  status: 'Processing file...',
+                  value: event.loaded / event.total,
+                }));
+            } else {
+              progressObservable.next(
+                new Progress({
+                  mode: ProgressMode.Determinate,
+                  status: 'Uploading file...',
+                  value: event.loaded / event.total,
+                }));
             }
-          );
-    }
+          } else if (event.type === HttpEventType.Response) {
+            progressDialogRef.close();
+            this.snackBar.open(`User manual uploaded`, 'Close', {
+              duration: 5000,
+            });
+          }
+        },
+        (err) => {
+          progressDialogRef.close();
+          return throwError(err);
+        }
+      );
+  }
 }

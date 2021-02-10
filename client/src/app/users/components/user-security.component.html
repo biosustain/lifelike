@@ -1,18 +1,21 @@
-<form [formGroup]="form" (ngSubmit)="changePassword()">
-  <app-form-row for="old-password" label="Old Password" [control]="form.get('oldPassword')">
-    <input type="password" formControlName="oldPassword" id="old-password" [appFormInput]="form.get('oldPassword')" appAutoFocus>
+<form (ngSubmit)="changePassword()" [formGroup]="form">
+  <app-form-row [control]="form.get('oldPassword')" for="old-password" label="Old Password">
+    <input [appFormInput]="form.get('oldPassword')" appAutoFocus formControlName="oldPassword" id="old-password"
+           type="password">
   </app-form-row>
 
-  <app-form-row for="password" label="Password" [control]="form.get('password')">
-    <input type="password" formControlName="password" id="password" [appFormInput]="form.get('password')">
+  <app-form-row [control]="form.get('password')" for="password" label="Password">
+    <input [appFormInput]="form.get('password')" formControlName="password" id="password" type="password">
   </app-form-row>
 
-  <app-form-row for="confirm-password" label="Confirm Password" [control]="form.get('passwordConfirm')" [errors]="errors">
-    <input type="password" formControlName="passwordConfirm" id="confirm-password" [appFormInput]="form.get('passwordConfirm')">
+  <app-form-row [control]="form.get('passwordConfirm')" [errors]="errors" for="confirm-password"
+                label="Confirm Password">
+    <input [appFormInput]="form.get('passwordConfirm')" formControlName="passwordConfirm" id="confirm-password"
+           type="password">
   </app-form-row>
 
   <div class="mt-4">
-    <button type="submit" class="btn btn-primary">
+    <button class="btn btn-primary" type="submit">
       Change Password
     </button>
   </div>

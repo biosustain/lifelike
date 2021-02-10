@@ -3,7 +3,7 @@ import * as AuthSelectors from './selectors';
 import * as AuthState from './state';
 
 export {
-    AuthActions,
-    AuthSelectors,
-    AuthState,
+  AuthActions,
+  AuthSelectors,
+  AuthState,
 };

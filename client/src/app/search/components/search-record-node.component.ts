@@ -13,23 +13,21 @@ import { GraphSearchParameters } from '../graph-search';
 })
 export class SearchRecordNodeComponent {
 
-  private currentNode: FTSQueryRecord;
   nodeURL: string;
   normalizedNodeLabel: string;
-
   @Input() params: GraphSearchParameters;
-
   @Input() legend: Map<string, string>;
+  private currentNode: FTSQueryRecord;
+
+  get node(): FTSQueryRecord {
+    return this.currentNode;
+  }
 
   @Input()
   set node(value: FTSQueryRecord) {
     this.currentNode = value;
     this.normalizedNodeLabel = value.node.label.toLowerCase();
     this.nodeURL = stringToHex(value.node.id.toString());
-  }
-
-  get node(): FTSQueryRecord {
-    return this.currentNode;
   }
 
   dragStarted(event: DragEvent) {

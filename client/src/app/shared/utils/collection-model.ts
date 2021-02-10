@@ -2,23 +2,48 @@ import { Subject } from 'rxjs';
 
 export class CollectionModel<T> {
   multipleSelection = false;
-  _filter: (item: T) => boolean;
-  _sort: (a: T, b: T) => number;
-
-  private _items = new Set<T>();
-  private viewOutdated = true;
-  private _filteredItems = [];
-  private _selection = new Set<T>();
   readonly itemChanges$ = new Subject<CollectionChange<T>>();
   readonly selectionChanges$ = new Subject<CollectionChange<T>>();
+  private viewOutdated = true;
+  private _filteredItems = [];
 
   constructor(items: T[] = [], options: CollectionModalOptions<T> = {}) {
     Object.assign(this, options);
     this.replace(items);
   }
 
+  _filter: (item: T) => boolean;
+
+  get filter(): ((item: T) => boolean) | undefined {
+    return this._filter;
+  }
+
+  set filter(filter: ((item: T) => boolean) | undefined) {
+    this.viewOutdated = true;
+    this._filter = filter;
+  }
+
+  _sort: (a: T, b: T) => number;
+
+  get sort(): ((a: T, b: T) => number) | undefined {
+    return this._sort;
+  }
+
+  set sort(sort: ((a: T, b: T) => number) | undefined) {
+    this.viewOutdated = true;
+    this._sort = sort;
+  }
+
+  private _items = new Set<T>();
+
   get items(): readonly T[] {
     return Object.freeze([...this._items]);
+  }
+
+  private _selection = new Set<T>();
+
+  get selection(): readonly T[] {
+    return Object.freeze([...this._selection]);
   }
 
   get view(): T[] {
@@ -40,26 +65,21 @@ export class CollectionModel<T> {
     return this._filteredItems;
   }
 
-  get selection(): readonly T[] {
-    return Object.freeze([...this._selection]);
+  get lastSelection(): T | undefined {
+    const selection = this.selection;
+    if (selection.length) {
+      return selection[selection.length - 1];
+    } else {
+      return null;
+    }
   }
 
-  get filter(): ((item: T) => boolean) | undefined {
-    return this._filter;
+  get length(): number {
+    return this._items.size;
   }
 
-  set filter(filter: ((item: T) => boolean) | undefined) {
-    this.viewOutdated = true;
-    this._filter = filter;
-  }
-
-  get sort(): ((a: T, b: T) => number) | undefined {
-    return this._sort;
-  }
-
-  set sort(sort: ((a: T, b: T) => number) | undefined) {
-    this.viewOutdated = true;
-    this._sort = sort;
+  get viewLength(): number {
+    return this.view.length;
   }
 
   push(item: T): void {
@@ -235,23 +255,6 @@ export class CollectionModel<T> {
 
   isSelected(item: T) {
     return this._selection.has(item);
-  }
-
-  get lastSelection(): T | undefined {
-    const selection = this.selection;
-    if (selection.length) {
-      return selection[selection.length - 1];
-    } else {
-      return null;
-    }
-  }
-
-  get length(): number {
-    return this._items.size;
-  }
-
-  get viewLength(): number {
-    return this.view.length;
   }
 }
 

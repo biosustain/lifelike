@@ -1,6 +1,5 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { merge, isObject } from 'lodash';
-import Timer = NodeJS.Timer;
+import { isObject, merge } from 'lodash';
 
 export enum TaskState {
   Idle = 'idle',
@@ -74,24 +73,8 @@ export class BackgroundTask<T, R> {
   });
   public results$ = new Subject<TaskResult<T, R>>();
   public errors$ = new Subject<any>();
-
-  private started = false;
-  private currentState: TaskState = TaskState.Idle;
-  private futureValue = null;
-  private futureRunQueued = false;
-  private retryCount = 0;
-
   public pendingValue: T = null;
   public latestSuccessfulValue: T = null;
-  private initialRunCompleted = false;
-  private error = false;
-  private latestError: any;
-
-  private delayedRunning = false;
-  private delayedRunningStartTime: number | undefined;
-  private delayedRunningTimer: any;
-  private delayedRunningClearTimer: any;
-
   readonly reducer: (newData: T, existingData: T) => T = ((newData, existingData) => {
     if (existingData == null || newData == null) {
       return newData;
@@ -103,6 +86,18 @@ export class BackgroundTask<T, R> {
       return newData;
     }
   });
+  private started = false;
+  private currentState: TaskState = TaskState.Idle;
+  private futureValue = null;
+  private futureRunQueued = false;
+  private retryCount = 0;
+  private initialRunCompleted = false;
+  private error = false;
+  private latestError: any;
+  private delayedRunning = false;
+  private delayedRunningStartTime: number | undefined;
+  private delayedRunningTimer: any;
+  private delayedRunningClearTimer: any;
 
   constructor(private readonly project: (value: T) => Observable<R>,
               options: BackgroundTaskOptions<T, R> = {}) {
@@ -123,6 +118,35 @@ export class BackgroundTask<T, R> {
       }
     }
     this.currentState = state;
+  }
+
+  update(value: T = null): void {
+    this.futureValue = this.reducer(value, this.futureValue);
+    this.futureRunQueued = true;
+    this.retryCount = 0;
+
+    this.values$.next(this.futureValue);
+
+    switch (this.state) {
+      case TaskState.RetryLimitExceeded:
+        this.error = false;
+      // tslint:disable-next-line:no-switch-case-fall-through
+      case TaskState.Idle:
+        this.state = TaskState.Delaying;
+        this.pendingValue = this.futureValue;
+        setTimeout(this.startRun.bind(this), !this.started ? this.initialDelay : this.delay);
+        this.started = true;
+        this.nextStatus();
+        break;
+      case TaskState.Delaying:
+      case TaskState.Retrying:
+        this.pendingValue = this.futureValue;
+        break;
+      case TaskState.Running:
+        break;
+      default:
+        throw new Error('invalid state');
+    }
   }
 
   private nextStatus() {
@@ -241,34 +265,5 @@ export class BackgroundTask<T, R> {
         }
       },
     );
-  }
-
-  update(value: T = null): void {
-    this.futureValue = this.reducer(value, this.futureValue);
-    this.futureRunQueued = true;
-    this.retryCount = 0;
-
-    this.values$.next(this.futureValue);
-
-    switch (this.state) {
-      case TaskState.RetryLimitExceeded:
-        this.error = false;
-      // tslint:disable-next-line:no-switch-case-fall-through
-      case TaskState.Idle:
-        this.state = TaskState.Delaying;
-        this.pendingValue = this.futureValue;
-        setTimeout(this.startRun.bind(this), !this.started ? this.initialDelay : this.delay);
-        this.started = true;
-        this.nextStatus();
-        break;
-      case TaskState.Delaying:
-      case TaskState.Retrying:
-        this.pendingValue = this.futureValue;
-        break;
-      case TaskState.Running:
-        break;
-      default:
-        throw new Error('invalid state');
-    }
   }
 }
