@@ -22,7 +22,6 @@ if [ "${FLASK_ENV}" = "development" ]; then
 elif [ "${FLASK_ENV}" = "production" ]; then
     __dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     ${__dir__}/migrate-db --upgrade --data-migrate
-    /usr/sbin/sshd
     gunicorn -b 0.0.0.0:5000 -w 4 app:app --timeout 1200
 else
     echo "No environment setup for ${FLASK_ENV}"
