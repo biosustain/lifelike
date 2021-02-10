@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '../../shared/services/api.service';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
+import { EnrichmentResult } from '../models/enrichment-document';
 
 @Injectable()
 export class EnrichmentTableService {
@@ -51,7 +52,7 @@ export class EnrichmentTableService {
     );
   }
 
-  getAnnotatedEnrichment(hashId: string): Observable<any> {
+  getAnnotatedEnrichment(hashId: string): Observable<EnrichmentResult> {
     return this.http.get(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/enrichment/annotations`,
       this.apiService.getHttpOptions(true),
