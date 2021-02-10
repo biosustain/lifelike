@@ -77,6 +77,11 @@ export class CanvasGraphView extends GraphView {
   // ---------------------------------
 
   /**
+   * The next time to check to see if assets have been loaded.
+   */
+  protected nextAssetsLoadCheckTime: number | undefined = 0;
+
+  /**
    * The transform represents the current zoom of the graph, which must be
    * taken into consideration whenever mapping between graph coordinates and
    * viewport coordinates.
@@ -558,6 +563,21 @@ export class CanvasGraphView extends GraphView {
     this.canvas.focus();
   }
 
+  protected testAssetsLoaded() {
+    const dummyText = '\uf279\uf1c1';
+    const ctx = this.canvas.getContext('2d');
+    ctx.font = `18px \'Dummy Lifelike Font ${Math.random()}\'`;
+    const defaultMetrics = ctx.measureText(dummyText);
+    ctx.font = '18px \'Font Awesome 5 Pro\'';
+    const faMetrics = ctx.measureText(dummyText);
+    for (const key of ['width', 'fontBoundingBoxAscent', 'hangingBaseline']) {
+      if (defaultMetrics[key] !== faMetrics[key]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Fired from requestAnimationFrame() and used to render the graph
    * in the background as necessary.
@@ -568,11 +588,22 @@ export class CanvasGraphView extends GraphView {
       return;
     }
 
+    const now = window.performance.now();
+
+    // Keep re-rendering until Font Awesome has loaded
+    if (this.nextAssetsLoadCheckTime != null && this.nextAssetsLoadCheckTime < now) {
+      const loaded = this.testAssetsLoaded();
+      if (loaded) {
+        this.nextAssetsLoadCheckTime = null;
+      } else {
+        this.nextAssetsLoadCheckTime = now + 1000;
+        this.requestRender();
+      }
+    }
+
     // Instead of rendering on every animation frame, we keep track of a flag
     // that gets set to true whenever the graph changes and so we need to re-draw it
     if (this.renderingRequested) {
-      const now = window.performance.now();
-
       // But even then, we'll still throttle the number of times we restart rendering
       // in case the flag is set to true too frequently in a period
       if (now - this.previousRenderQueueCreationTime > this.renderMinimumInterval) {
