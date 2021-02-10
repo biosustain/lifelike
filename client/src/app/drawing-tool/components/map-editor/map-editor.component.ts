@@ -42,6 +42,7 @@ import { InfoPanel } from '../../models/info-panel';
   ],
 })
 export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('infoPanelSidebar', {static: false}) infoPanelSidebarElementRef: ElementRef;
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
@@ -236,6 +237,16 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
           },
         }, true,
       ));
+      this.graphCanvas.focus();
+
+      // Focus the input on the sidebar
+      setTimeout(() => {
+        const initialFocusElement = this.infoPanelSidebarElementRef.nativeElement.querySelector('.map-editor-initial-focus');
+        if (initialFocusElement) {
+          initialFocusElement.focus();
+          initialFocusElement.select();
+        }
+      }, 100);
     }
   }
 
