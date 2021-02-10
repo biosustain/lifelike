@@ -141,9 +141,16 @@ export class EnrichmentDocument {
             .pipe(
             mergeMap((newResult: EnrichmentResult) => {
               const annotationRequests = [];
+              if (refresh) {
+                annotationRequests.push(
+                  this.worksheetViewerService.refreshEnrichmentAnnotations([this.fileId], refresh));
+              }
               let rowCounter = 0;
               for (const gene of newResult.genes) {
                 const texts: EnrichmentTextMapping[] = [];
+                texts.push({text: gene.imported, row: rowCounter, imported: true});
+                texts.push({text: gene.matched, row: rowCounter, matched: true});
+                texts.push({text: gene.fullName, row: rowCounter, fullName: true});
                 for (const [entryDomain, entryData] of Object.entries(gene.domains)) {
                   switch (entryDomain) {
                     case (Domain.Biocyc):
@@ -151,28 +158,28 @@ export class EnrichmentDocument {
                         text: entryData.Pathways.text,
                         row: rowCounter,
                         domain: entryDomain,
-                        category: 'Pathways'});
+                        label: 'Pathways'});
                       break;
                     case (Domain.GO):
                       texts.push({
                         text: entryData.Annotation.text,
                         row: rowCounter,
                         domain: entryDomain,
-                        category: 'Annotation'});
+                        label: 'Annotation'});
                       break;
                     case (Domain.String):
                       texts.push({
                         text: entryData.Annotation.text,
                         row: rowCounter,
                         domain: entryDomain,
-                        category: 'Annotation'});
+                        label: 'Annotation'});
                       break;
                     case (Domain.Uniprot):
                       texts.push({
                         text: entryData.Function.text,
                         row: rowCounter,
                         domain: entryDomain,
-                        category: 'Function'});
+                        label: 'Function'});
                       break;
                   }
                 }
@@ -380,12 +387,14 @@ export class EnrichmentDocument {
 export interface EnrichmentTextMapping {
     text: string;
     row: number;
-    domain: string;
-    // TODO: correct term to use?
+    domain?: string;
     // this is the Biocyc: Pathways
     // UniProt: Function
     // etc
-    category: string;
+    label?: string;
+    matched?: boolean;
+    imported?: boolean;
+    fullName?: boolean;
 }
 
 export interface DomainInfo {

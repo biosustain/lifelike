@@ -52,6 +52,16 @@ export class EnrichmentTableService {
     );
   }
 
+  refreshEnrichmentAnnotations(hashIds: string[], refresh: boolean): Observable<any> {
+    return this.http.post(
+      `/api/filesystem/annotations/refresh`,
+      {hashIds, refresh},
+      this.apiService.getHttpOptions(true)
+    ).pipe(
+      map((resp: any) => resp.results)
+    );
+  }
+
   getAnnotatedEnrichment(hashId: string): Observable<EnrichmentResult> {
     return this.http.get(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/enrichment/annotations`,

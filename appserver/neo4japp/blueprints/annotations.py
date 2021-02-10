@@ -386,8 +386,9 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 if file.enrichment_annotations:
                     for i in range(0, len(file.enrichment_annotations['genes'])):
                         # update enrichment with previously enriched
-                        # TODO: this will not work if user change the
-                        # order of genes in enrichment edit dialog
+                        # enrichment tables are annotated by rows
+                        # each row is its own PDF in a sense, so multiple API calls
+                        # need to consolidate them
                         enrichment['genes'][i] = file.enrichment_annotations['genes'][i]
 
                 for text_mapping in texts:
@@ -418,10 +419,21 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                             original_text=text,
                             annotations=annotations['documents'][0]['passages'][0]['annotations']
                         )
-                        enrichment[
-                            'genes'][text_mapping[
-                                'row']]['domains'][text_mapping[
-                                    'domain']][text_mapping['category']]['annotated_text'] = snippet
+                        if text_mapping.get('imported'):
+                            enrichment['genes'][text_mapping[
+                                'row']]['imported'] = snippet
+                        elif text_mapping.get('matched'):
+                            enrichment['genes'][text_mapping[
+                                'row']]['matched'] = snippet
+                        elif text_mapping.get('full_name'):
+                            enrichment['genes'][text_mapping[
+                                'row']]['full_name'] = snippet
+                        else:
+                            enrichment[
+                                'genes'][text_mapping[
+                                    'row']]['domains'][text_mapping[
+                                        'domain']][text_mapping[
+                                            'label']]['annotated_text'] = snippet
                 if all_annotations:
                     update = {
                         'id': file.id,
