@@ -12,9 +12,9 @@ export class AddStatusPipe implements PipeTransform {
     error?: any
   }> {
     return observable.pipe(
-        map((value: any) => ({loading: false, value})),
-        startWith({loading: true}),
-        catchError(error => of({loading: false, error})),
+      map((value: any) => ({loading: false, value})),
+      startWith({loading: true}),
+      catchError(error => of({loading: false, error})),
     );
   }
 }

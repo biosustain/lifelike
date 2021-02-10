@@ -1,6 +1,6 @@
 import { Platform } from '@angular/cdk/platform';
 import { Component } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { Store } from '@ngrx/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';

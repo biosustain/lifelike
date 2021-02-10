@@ -1,10 +1,10 @@
-<form [formGroup]="form" (ngSubmit)="submit()">
+<form (ngSubmit)="submit()" [formGroup]="form">
   <div class="form-group">
     <label for="file">Upload user manual</label>
-    <input type="file" name="file" class="form-control-file" id="file"
-            accept="application/pdf" (change)="fileChanged($event)">
+    <input (change)="fileChanged($event)" accept="application/pdf" class="form-control-file" id="file"
+           name="file" type="file">
   </div>
-  <button type="submit" class="btn btn-primary">
+  <button class="btn btn-primary" type="submit">
     Upload
   </button>
 </form>

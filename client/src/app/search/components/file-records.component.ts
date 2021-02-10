@@ -1,5 +1,5 @@
-import {Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
-import {PDFResult} from '../../interfaces';
+import { Component, Input, OnInit, ViewEncapsulation } from '@angular/core';
+import { PDFResult } from '../../interfaces';
 
 @Component({
   selector: 'app-file-records',

@@ -1,22 +1,18 @@
-import {Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {getObjectCommands, getObjectMatchExistingTab} from 'app/file-browser/utils/objects';
-import {DirectoryObject} from 'app/interfaces/projects.interface';
-import {PDFResult, PDFSnippets} from 'app/interfaces';
-import {PaginatedResultListComponent} from 'app/shared/components/base/paginated-result-list.component';
-import {ModuleProperties} from 'app/shared/modules';
+import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
+import { DirectoryObject } from 'app/interfaces/projects.interface';
+import { PDFResult, PDFSnippets } from 'app/interfaces';
+import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
+import { ModuleProperties } from 'app/shared/modules';
 import { CollectionModel } from 'app/shared/utils/collection-model';
-import {
-  deserializePaginatedParams,
-  getChoicesFromQuery,
-  serializePaginatedParams,
-} from 'app/shared/utils/params';
-import {WorkspaceManager} from 'app/shared/workspace-manager';
+import { deserializePaginatedParams, getChoicesFromQuery, serializePaginatedParams, } from 'app/shared/utils/params';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { ContentSearchOptions, TYPES_MAP } from '../content-search';
-import {ContentSearchService} from '../services/content-search.service';
-import {HighlightDisplayLimitChange} from '../../file-browser/components/object-info.component';
-import {FileViewComponent} from '../../pdf-viewer/components/file-view.component';
+import { ContentSearchService } from '../services/content-search.service';
+import { HighlightDisplayLimitChange } from '../../file-browser/components/object-info.component';
+import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
 import { RankedItem, ResultList } from '../../shared/schemas/common';
 import { map } from 'rxjs/operators';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
@@ -31,12 +27,11 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   RankedItem<FilesystemObject>> implements OnInit, OnDestroy {
   @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
-
-  private readonly defaultLimit = 20;
   public results = new CollectionModel<RankedItem<FilesystemObject>>([], {
     multipleSelection: false,
   });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
+  private readonly defaultLimit = 20;
 
   constructor(protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,

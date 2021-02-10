@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 
 import { AccountService } from 'app/users/services/account.service';
-import { AppUser, UserCreationRequest } from 'app/interfaces';
+import { AppUser } from 'app/interfaces';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { SelectionModel } from '@angular/cdk/collections';
@@ -69,10 +69,6 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  private updateFilter() {
-    this.shownUsers = this.filterQuery.length ? this.users.filter(user => user.username.includes(this.filterQuery)) : this.users;
-  }
-
   displayCreateDialog() {
     const modalRef = this.modalService.open(UserCreateDialogComponent);
     modalRef.result.then(newUser => {
@@ -99,5 +95,9 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
         });
     }, () => {
     });
+  }
+
+  private updateFilter() {
+    this.shownUsers = this.filterQuery.length ? this.users.filter(user => user.username.includes(this.filterQuery)) : this.users;
   }
 }

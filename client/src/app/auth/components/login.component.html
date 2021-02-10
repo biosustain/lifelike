@@ -3,16 +3,16 @@
     Login to Lifelike
   </div>
   <div class="card-body">
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <app-form-row for="email" label="Email" [control]="form.get('email')">
-        <input type="email" formControlName="email" id="email" [appFormInput]="form.get('email')" appAutoFocus>
+    <form (ngSubmit)="submit()" [formGroup]="form">
+      <app-form-row [control]="form.get('email')" for="email" label="Email">
+        <input [appFormInput]="form.get('email')" appAutoFocus formControlName="email" id="email" type="email">
       </app-form-row>
 
-      <app-form-row for="password" label="Password" [control]="form.get('label')">
-        <input type="password" formControlName="password" id="password" [appFormInput]="form.get('password')">
+      <app-form-row [control]="form.get('label')" for="password" label="Password">
+        <input [appFormInput]="form.get('password')" formControlName="password" id="password" type="password">
       </app-form-row>
 
-      <button type="submit" class="btn btn-primary">
+      <button class="btn btn-primary" type="submit">
         Login
       </button>
     </form>
@@ -20,7 +20,7 @@
   <div *ngIf="unsupportedBrowser" class="alert alert-warning m-0">
     <p>
       You seem to be using a browser which might provide a diminished experience within Lifelike.
-      For the best experience, please use <a target="_blank" href="https://www.google.com/chrome/">Google Chrome</a>.
+      For the best experience, please use <a href="https://www.google.com/chrome/" target="_blank">Google Chrome</a>.
     </p>
   </div>
 </div>

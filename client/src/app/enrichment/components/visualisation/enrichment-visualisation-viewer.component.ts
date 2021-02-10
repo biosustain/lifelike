@@ -3,7 +3,7 @@ import {ActivatedRoute} from '@angular/router';
 
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
-import {Subscription} from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import {ModuleAwareComponent, ModuleProperties} from 'app/shared/modules';
 import {BackgroundTask} from 'app/shared/rxjs/background-task';
 import {ErrorHandler} from 'app/shared/services/error-handler.service';
@@ -20,6 +20,11 @@ import {WorkspaceManager} from '../../../shared/workspace-manager';
 import {FilesystemObjectActions} from '../../../file-browser/services/filesystem-object-actions';
 import {MatSnackBar} from '@angular/material';
 import {EnrichmentVisualisationService} from '../../services/enrichment-visualisation.service';
+import { EnrichmentData } from './table/enrichment-table-viewer.component';
+import { ENRICHMENT_TABLE_MIMETYPE } from '../../providers/enrichment-table.type-provider';
+import { Progress } from '../../../interfaces/common-dialog.interface';
+import { finalize } from 'rxjs/operators';
+import { EnrichmentVisualisationEditDialogComponent } from './dialog/enrichment-visualisation-edit-dialog.component';
 
 @Component({
   selector: 'app-enrichment-visualisation-viewer',
@@ -85,7 +90,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   }
 
   ngOnDestroy() {
-    console.log("sagr")
+    console.log('sagr');
     // todo
   }
 
@@ -101,6 +106,46 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
     });
   }
 
+  /**
+   * Edit enrichment params (essentially the file content) and updates table.
+   */
+  openEnrichmentVisualisationEditDialog(): Promise<any> {
+    const dialogRef = this.modalService.open(EnrichmentVisualisationEditDialogComponent);
+    dialogRef.componentInstance.object = this.enrichmentService.object;
+    dialogRef.componentInstance.data = this.enrichmentService.data;
+    return dialogRef.result.then((result: EnrichmentData) => {
+      const updated_file = Object.assign(this.enrichmentService.data, result);
+      const contentValue = new Blob([JSON.stringify(updated_file)], {
+        type: ENRICHMENT_TABLE_MIMETYPE,
+      });
+
+      const progressDialogRef = this.progressDialog.display({
+        title: `Saving Parameters`,
+        progressObservable: new BehaviorSubject<Progress>(new Progress({
+          status: 'Updating enrichment visualisation parameters...',
+        })),
+      });
+
+      // Push to backend to save
+      this.filesystemService.save([this.object.hashId], {
+        contentValue,
+      })
+        .pipe(
+          finalize(() => progressDialogRef.close()),
+          this.errorHandler.create({label: 'Edit enrichment visualisation'}),
+        )
+        .subscribe(() => {
+          this.emitModuleProperties();
+          this.snackBar.open('Enrichment visualisation updated.', null, {
+            duration: 2000,
+          });
+          this.tableEntries = [];
+          this.loadTask.update();
+        });
+    }, () => {
+    });
+  }
+
 
   // End of changing enrichment params section.
 
@@ -112,10 +157,14 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   }
 }
 
+
+export interface EnrichmentVisualisationParameters {
+  genes: any;
+  domains?: any;
+  organism?: any;
+}
+
 export interface EnrichmentVisualisationData {
-  /**
-   * @deprecated the filename does this job
-   */
-  name?: string;
-  data: string;
+  parameters: EnrichmentVisualisationParameters;
+  cachedResults: object;
 }

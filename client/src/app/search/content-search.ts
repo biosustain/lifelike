@@ -2,7 +2,6 @@ import { SearchType } from './shared';
 import { StandardRequestOptions } from '../shared/schemas/common';
 import { MAP_MIMETYPE } from '../drawing-tool/providers/map.type-provider';
 import { PDF_MIMETYPE } from '../pdf-viewer/providers/pdf-type-provider';
-import { DIRECTORY_MIMETYPE } from '../file-browser/providers/directory.type-provider';
 
 export const TYPES: readonly SearchType[] = Object.freeze([
   Object.freeze({id: MAP_MIMETYPE, name: 'Maps'}),

@@ -65,6 +65,7 @@
               </div>
               <div class="btn-group ml-2">
                 <button class="btn btn-secondary"
+                         (click)="openEnrichmentVisualisationEditDialog()"
                         [disabled]="!object.privileges.writable">
                   Edit Parameters
                 </button>

@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { AnnotationRequestOptions, AnnotationResponse } from '../content-search';
-import { RankedItem, ResultList, ResultQuery } from '../../shared/schemas/common';
+import { RankedItem, ResultList } from '../../shared/schemas/common';
 import { ApiService } from '../../shared/services/api.service';
 import { ContentSearchRequest } from '../schema';
 import { ModelList } from '../../shared/models';
