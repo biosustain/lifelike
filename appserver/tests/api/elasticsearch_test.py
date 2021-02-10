@@ -94,8 +94,8 @@ def test_user_can_search_content(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms':
-                            {
+                        {
+                            'terms': {
                                 'mime_type': [
                                     EnrichmentTableTypeProvider.MIME_TYPE,
                                     MapTypeProvider.MIME_TYPE,
@@ -168,8 +168,8 @@ def test_user_can_search_content_with_advanced_args(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms':
-                            {
+                        {
+                            'terms': {
                                 'mime_type': [
                                     EnrichmentTableTypeProvider.MIME_TYPE,
                                     MapTypeProvider.MIME_TYPE,
@@ -302,8 +302,8 @@ def test_user_can_search_content_with_multiple_types(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms':
-                            {
+                        {
+                            'terms': {
                                 'mime_type': [
                                     EnrichmentTableTypeProvider.MIME_TYPE,
                                     MapTypeProvider.MIME_TYPE,
@@ -373,8 +373,8 @@ def test_user_can_search_content_with_project(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms':
-                            {
+                        {
+                            'terms': {
                                 'mime_type': [
                                     EnrichmentTableTypeProvider.MIME_TYPE,
                                     MapTypeProvider.MIME_TYPE,
@@ -443,8 +443,8 @@ def test_user_can_search_content_with_phrase(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms':
-                            {
+                        {
+                            'terms': {
                                 'mime_type': [
                                     EnrichmentTableTypeProvider.MIME_TYPE,
                                     MapTypeProvider.MIME_TYPE,
@@ -513,8 +513,8 @@ def test_user_can_search_content_with_wildcard(
             query_filter={
                 'bool': {
                     'must': [
-                        {'terms':
-                            {
+                        {
+                            'terms': {
                                 'mime_type': [
                                     EnrichmentTableTypeProvider.MIME_TYPE,
                                     MapTypeProvider.MIME_TYPE,
