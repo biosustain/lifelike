@@ -274,7 +274,7 @@ export class CanvasGraphView extends GraphView {
     // Handle resizing of the canvas, but doing it with a throttled stream
     // so we don't burn extra CPU cycles resizing repeatedly unnecessarily
     this.canvasResizePendingSubscription = this.canvasResizePendingSubject
-      .pipe(debounceTime(250, asyncScheduler))
+      .pipe(debounceTime(20, asyncScheduler))
       .subscribe(([width, height]) => {
         this.setSize(width, height);
       });
