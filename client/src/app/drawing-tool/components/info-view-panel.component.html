@@ -29,10 +29,12 @@
   </div>
 
   <div class="module-body border-top">
-    <div class="mb-4" *ngIf="selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length">
-      <h5>Hyperlinks</h5>
+    <div class="mb-4" *ngIf="(selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)
+    || (selected.entity.data?.sources && selected.entity.data?.sources.length)">
+      <h5>Links</h5>
 
-      <ul class="list-unstyled m-0">
+      <app-sources (executeFileSource)="goToSource($event)" [links]="selected.entity.data?.sources"></app-sources>
+      <ul class="list-unstyled m-0" *ngIf="(selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)">
         <li *ngFor='let h of selected.entity.data?.hyperlinks; let i = index;' class="text-truncate">
           <a [href]="h.url" (click)="goToLink(h.url); $event.preventDefault()"
              [ngbTooltip]="h.url" container="body">{{ h.url }}</a>
@@ -45,12 +47,6 @@
       <h5>Quick Search</h5>
 
       <app-quick-search [query]="name" [links]="selected.entity.data?.search"></app-quick-search>
-    </div>
-
-    <div class="mb-4" *ngIf="selected.entity.data?.sources && selected.entity.data?.sources.length">
-      <h5>Sources</h5>
-
-      <app-sources (executeFileSource)="goToSource($event)" [links]="selected.entity.data?.sources"></app-sources>
     </div>
   </div>
 </div>
