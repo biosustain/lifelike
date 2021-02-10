@@ -89,6 +89,21 @@ export class CanvasGraphView extends GraphView {
   protected d3Transform = d3.zoomIdentity;
 
   /**
+   * Keeps track of where the drag started so we can ignore drags that are too short.
+   */
+  dragStartPosition: { x: number, y: number } | undefined;
+
+  /**
+   * The distance the user must move the mouse before a drag is actually started.
+   */
+  dragDistanceSqThreshold = Math.pow(3, 2);
+
+  /**
+   * Set to true once the drag distance threshold has been reached.
+   */
+  dragStarted = false;
+
+  /**
    * The current position of the mouse (graph coordinates) if the user is
    * hovering over the canvas.
    */
@@ -1027,6 +1042,9 @@ export class CanvasGraphView extends GraphView {
 
   canvasDragStarted(): void {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
+    this.dragStartPosition = {x: mouseX, y: mouseY};
+    this.dragStarted = false;
+
     const subject: CanvasSubject = d3.event.subject;
     const behaviorEvent: DragBehaviorEvent = {
       event: d3.event.sourceEvent,
@@ -1048,23 +1066,37 @@ export class CanvasGraphView extends GraphView {
 
   canvasDragged(): void {
     const [mouseX, mouseY] = d3.mouse(this.canvas);
-    const subject: CanvasSubject = d3.event.subject;
-    const behaviorEvent: DragBehaviorEvent = {
-      event: d3.event.sourceEvent,
-      entity: subject.entity,
-    };
+    let dragStarted = this.dragStarted;
 
-    this.behaviors.apply(behavior => behavior.drag(behaviorEvent));
+    if (!dragStarted) {
+      const distanceSq = Math.pow(mouseX - this.dragStartPosition.x, 2)
+        + Math.pow(mouseY - this.dragStartPosition.y, 2);
+      dragStarted = distanceSq >= this.dragDistanceSqThreshold;
+    }
 
-    this.touchPosition = {
-      position: {
-        x: this.transform.invertX(mouseX),
-        y: this.transform.invertY(mouseY),
-      },
-      entity: subject.entity,
-    };
+    if (dragStarted) {
+      try {
+        const subject: CanvasSubject = d3.event.subject;
+        const behaviorEvent: DragBehaviorEvent = {
+          event: d3.event.sourceEvent,
+          entity: subject.entity,
+        };
 
-    this.requestRender();
+        this.behaviors.apply(behavior => behavior.drag(behaviorEvent));
+
+        this.touchPosition = {
+          position: {
+            x: this.transform.invertX(mouseX),
+            y: this.transform.invertY(mouseY),
+          },
+          entity: subject.entity,
+        };
+
+        this.requestRender();
+      } finally {
+        this.dragStarted = true;
+      }
+    }
   }
 
   canvasDragEnded(): void {
