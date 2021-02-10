@@ -50,7 +50,6 @@ export class EdgeFormComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    setTimeout(() => this.focus(), 10);
   }
 
   get edge() {
@@ -71,8 +70,6 @@ export class EdgeFormComponent implements AfterViewInit {
     this.updatedEdge = cloneDeep(edge);
     this.updatedEdge.data = this.updatedEdge.data || {};
     this.updatedEdge.style = this.updatedEdge.style || {};
-
-    setTimeout(() => this.focus(), 10);
   }
 
   doSave() {
