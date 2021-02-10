@@ -43,7 +43,6 @@ export class NodeFormComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    setTimeout(() => this.focus(), 10);
   }
 
   get nodeSubtypeChoices() {
@@ -73,8 +72,6 @@ export class NodeFormComponent implements AfterViewInit {
 
     this.updatedNode = cloneDeep(node);
     this.updatedNode.style = this.updatedNode.style || {};
-
-    setTimeout(() => this.focus(), 10);
   }
 
   handleTypeChange() {

@@ -180,6 +180,8 @@ export class CanvasGraphView extends GraphView {
       .on('dragover', () => {
         canvasMouseMoveSubject.next();
       })
+      .on('focus', this.canvasFocused.bind(this))
+      .on('blur', this.canvasBlurred.bind(this))
       .on('mouseleave', this.canvasMouseLeave.bind(this))
       .on('mouseup', this.canvasMouseUp.bind(this))
       .call(d3.drag()
@@ -551,6 +553,10 @@ export class CanvasGraphView extends GraphView {
   // ========================================
   // Rendering
   // ========================================
+
+  focus() {
+    this.canvas.focus();
+  }
 
   /**
    * Fired from requestAnimationFrame() and used to render the graph
@@ -968,6 +974,14 @@ export class CanvasGraphView extends GraphView {
     }
 
     this.updateMouseCursor();
+  }
+
+  canvasFocused() {
+    this.requestRender();
+  }
+
+  canvasBlurred() {
+    this.requestRender();
   }
 
   canvasMouseLeave() {
