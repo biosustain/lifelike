@@ -5,23 +5,20 @@ import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-f
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { OrganismAutocomplete } from 'app/interfaces/neo4j.interface';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { EnrichmentData } from './enrichment-table-viewer.component';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { finalize, map } from 'rxjs/operators';
-import { getObjectLabel } from '../../file-browser/utils/objects';
+import { EnrichmentDocument } from '../models/enrichment-document';
 
 @Component({
   selector: 'app-enrichment-table-edit-dialog',
   templateUrl: './enrichment-table-edit-dialog.component.html',
 })
-export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponent<EnrichmentData> {
-  @Input() object: FilesystemObject;
+export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponent<EnrichmentDocument> {
+  _document: EnrichmentDocument;
   @Input() submitButtonLabel = 'Save';
-  private _data: EnrichmentData;
 
   form: FormGroup = new FormGroup({
     organism: new FormControl('', Validators.required),
@@ -40,7 +37,7 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
     'Biocyc',
   ];
 
-  @Input() title: string | ((object: FilesystemObject) => string) = o => `Edit Enrichment Parameters for ${getObjectLabel(o)}`;
+  @Input() title = 'Edit Enrichment Parameters';
 
   constructor(modal: NgbActiveModal,
               messageDialog: MessageDialog,
@@ -50,53 +47,23 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
     super(modal, messageDialog);
   }
 
-  get effectiveTitle(): string {
-    return typeof this.title === 'string' ? this.title : this.title(this.object);
-  }
-
-  get data() {
-    return this._data;
+  get document() {
+    return this._document;
   }
 
   @Input()
-  set data(value: EnrichmentData) {
-    this._data = value;
+  set document(value: EnrichmentDocument) {
+    this._document = value;
 
-    const resultArray = value.data.split('/');
-    const importGenes: string = resultArray[0].split(',').filter(gene => gene !== '').join('\n');
-    this.organismTaxId = resultArray[1];
-    if (resultArray.length > 3) {
-      if (resultArray[3] !== '') {
-        this.domains = resultArray[3].split(',');
-      }
-    }
-
-    const progressDialogRef = this.progressDialog.display({
-      title: `Loading Parameters`,
-      progressObservable: new BehaviorSubject<Progress>(new Progress({
-        status: 'Loading parameters...',
-      })),
-    });
-
-    const organismObservable: Observable<OrganismAutocomplete> = this.organismTaxId ?
-      this.search.getOrganismFromTaxId(this.organismTaxId) :
-      of(null);
-
-    organismObservable.pipe(
-      finalize(() => progressDialogRef.close()),
-      map(searchResult => {
-        this.form.get('entitiesList').setValue(importGenes || '');
-        this.setOrganism(searchResult);
-        this.setDomains();
-        return searchResult;
-      }),
-      this.errorHandler.createFormErrorHandler(this.form),
-      this.errorHandler.create({label: 'Get organism for enrichment table'}),
-    ).subscribe(() => {
-    }, () => {
-      // If an error happened, we need to close the dialog because it is totally broken now
-      this.cancel();
-    });
+    this.organismTaxId = value.taxID;
+    this.domains = value.domains;
+    this.form.get('entitiesList').setValue(value.importGenes.join('\n'));
+    this.setOrganism(value.organism ? {
+      organism_name: value.organism,
+      synonym: value.organism,
+      tax_id: value.taxID,
+    } : null);
+    this.setDomains();
   }
 
   private setDomains() {
@@ -108,11 +75,16 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
     this.form.get('organism').setValue(organism ? organism.tax_id + '/' + organism.organism_name : null);
   }
 
-  getValue(): EnrichmentData {
+  getValue(): EnrichmentDocument {
     const value = this.form.value;
-    return {
-      data: value.entitiesList.replace(/[\/\n\r]/g, ',') + '/' + value.organism + '/' + value.domainsList.join(','),
-    };
+    const [taxId, organism] = value.organism.split('/');
+    this.document.setParameters(
+      value.entitiesList.split(/[\/\n\r]/g),
+      taxId,
+      organism,
+      value.domainsList,
+    );
+    return this.document;
   }
 
   onCheckChange(event) {
