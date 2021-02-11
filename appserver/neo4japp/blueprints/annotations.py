@@ -487,7 +487,8 @@ def export_global_exclusions():
 @bp.route('/global-list', methods=['GET'])
 @auth.login_required
 @requires_role('admin')
-def get_annotations():
+def get_annotation_global_list():
+
     yield g.current_user
 
     # Exclusions
@@ -596,6 +597,23 @@ def delete_global_annotations(pids):
                 username=g.current_user.username, event_type='global annotation delete').to_dict()
         )
     yield jsonify(dict(result='success'))
+
+
+@bp.route('/files/<int:file_id>', methods=['GET'])
+def get_pdf_to_annotate(file_id):
+    """This endpoint is sent by the annotation pipeline to the
+    pdfparse service, and acts as a resource pull.
+    """
+
+    doc = Files.query.get(file_id)
+
+    if not doc:
+        raise RecordNotFoundException(f'File with file id {file_id} not found.')
+
+    res = make_response(doc.content.raw_file)
+    res.headers['Content-Type'] = 'application/pdf'
+    res.headers['Content-Disposition'] = f'attachment;filename={doc.filename}.pdf'
+    return res
 
 
 filesystem_bp.add_url_rule(
