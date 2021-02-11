@@ -22,11 +22,21 @@ stages:
 - stage: Build
   displayName: Build and push stage
   jobs:
+
   - job: Build
     displayName: Build
     pool:
       vmImage: $(vmImageName)
     steps:
+
+    - script: "docker pull $(dockerRegistryServiceConnection)/kg-appserver:latest"
+      displayName: Pull latest appserver image for caching
+      continueOnError: true
+
+    - script: "docker pull $(dockerRegistryServiceConnection)/kg-webserver:latest"
+      displayName: Pull latest webserver image for caching
+      continueOnError: true
+
     - task: Docker@2
       displayName: Build Appserver Image
       inputs:
@@ -36,6 +46,8 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
+          latest
+
     - task: Docker@2
       displayName: Build Webserver Image
       inputs:
@@ -45,3 +57,4 @@ stages:
        containerRegistry: $(dockerRegistryServiceConnection)
        tags: |
          $(tag)
+         latest
