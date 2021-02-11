@@ -1,0 +1,185 @@
+{
+  "name": "test_no_annotation_for_abbreviation.pdf",
+  "pages": [
+    {
+      "cropBox": {
+        "height": 792,
+        "lowerLeftPt": {
+          "x": 0,
+          "y": 0
+        },
+        "pivotPt": {
+          "x": 0,
+          "y": 0
+        },
+        "rotation": 0,
+        "width": 612
+      },
+      "mediaBox": {
+        "height": 792,
+        "lowerLeftPt": {
+          "x": 0,
+          "y": 0
+        },
+        "pivotPt": {
+          "x": 0,
+          "y": 0
+        },
+        "rotation": 0,
+        "width": 612
+      },
+      "pageNo": 1,
+      "pageText": "  pentose phosphate pathway (PPP) pentose-phosphate pathway (PPP) ",
+      "tokens": [
+        {
+          "pgIdx": 2,
+          "possibleAbbrev": false,
+          "rects": [
+            {
+              "height": 10,
+              "lowerLeftPt": {
+                "x": 76.89540100097656,
+                "y": 707.709228515625
+              },
+              "pivotPt": {
+                "x": 76.89540100097656,
+                "y": 710.209228515625
+              },
+              "rotation": 0,
+              "width": 29.908920288085938
+            }
+          ],
+          "shapes": [],
+          "text": "pentose"
+        },
+        {
+          "pgIdx": 10,
+          "possibleAbbrev": false,
+          "rects": [
+            {
+              "height": 10,
+              "lowerLeftPt": {
+                "x": 109.25006103515625,
+                "y": 707.709228515625
+              },
+              "pivotPt": {
+                "x": 109.25006103515625,
+                "y": 710.209228515625
+              },
+              "rotation": 0,
+              "width": 39.69972229003906
+            }
+          ],
+          "shapes": [],
+          "text": "phosphate"
+        },
+        {
+          "pgIdx": 20,
+          "possibleAbbrev": false,
+          "rects": [
+            {
+              "height": 10,
+              "lowerLeftPt": {
+                "x": 151.39552307128906,
+                "y": 707.709228515625
+              },
+              "pivotPt": {
+                "x": 151.39552307128906,
+                "y": 710.209228515625
+              },
+              "rotation": 0,
+              "width": 33.16731262207031
+            }
+          ],
+          "shapes": [],
+          "text": "pathway"
+        },
+        {
+          "pgIdx": 29,
+          "possibleAbbrev": true,
+          "rects": [
+            {
+              "height": 10,
+              "lowerLeftPt": {
+                "x": 190.2708740234375,
+                "y": 707.709228515625
+              },
+              "pivotPt": {
+                "x": 190.2708740234375,
+                "y": 710.209228515625
+              },
+              "rotation": 0,
+              "width": 16.334945678710938
+            }
+          ],
+          "shapes": [],
+          "text": "PPP"
+        },
+        {
+          "pgIdx": 34,
+          "possibleAbbrev": false,
+          "rects": [
+            {
+              "height": 10,
+              "lowerLeftPt": {
+                "x": 76.89540100097656,
+                "y": 694.981201171875
+              },
+              "pivotPt": {
+                "x": 76.89540100097656,
+                "y": 697.481201171875
+              },
+              "rotation": 0,
+              "width": 72.86701965332031
+            }
+          ],
+          "shapes": [],
+          "text": "pentose-phosphate"
+        },
+        {
+          "pgIdx": 52,
+          "possibleAbbrev": false,
+          "rects": [
+            {
+              "height": 10,
+              "lowerLeftPt": {
+                "x": 152.20816040039062,
+                "y": 694.981201171875
+              },
+              "pivotPt": {
+                "x": 152.20816040039062,
+                "y": 697.481201171875
+              },
+              "rotation": 0,
+              "width": 33.16729736328125
+            }
+          ],
+          "shapes": [],
+          "text": "pathway"
+        },
+        {
+          "pgIdx": 61,
+          "possibleAbbrev": true,
+          "rects": [
+            {
+              "height": 10,
+              "lowerLeftPt": {
+                "x": 191.08349609375,
+                "y": 694.981201171875
+              },
+              "pivotPt": {
+                "x": 191.08349609375,
+                "y": 697.481201171875
+              },
+              "rotation": 0,
+              "width": 16.3349609375
+            }
+          ],
+          "shapes": [],
+          "text": "PPP"
+        }
+      ]
+    }
+  ],
+  "processedDate": "2021-01-14 13:27:03"
+}
