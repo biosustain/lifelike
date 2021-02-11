@@ -57,33 +57,13 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
 
     this.organismTaxId = value.taxID;
     this.domains = value.domains;
-
-    const progressDialogRef = this.progressDialog.display({
-      title: `Loading Parameters`,
-      progressObservable: new BehaviorSubject<Progress>(new Progress({
-        status: 'Loading parameters...',
-      })),
-    });
-
-    const organismObservable: Observable<OrganismAutocomplete> = this.organismTaxId ?
-      this.search.getOrganismFromTaxId(this.organismTaxId) :
-      of(null);
-
-    organismObservable.pipe(
-      finalize(() => progressDialogRef.close()),
-      map(searchResult => {
-        this.form.get('entitiesList').setValue(value.importGenes.join('\n'));
-        this.setOrganism(searchResult);
-        this.setDomains();
-        return searchResult;
-      }),
-      this.errorHandler.createFormErrorHandler(this.form),
-      this.errorHandler.create({label: 'Get organism for enrichment table'}),
-    ).subscribe(() => {
-    }, () => {
-      // If an error happened, we need to close the dialog because it is totally broken now
-      this.cancel();
-    });
+    this.form.get('entitiesList').setValue(value.importGenes.join('\n'));
+    this.setOrganism(value.organism ? {
+      organism_name: value.organism,
+      synonym: value.organism,
+      tax_id: value.taxID,
+    } : null);
+    this.setDomains();
   }
 
   private setDomains() {
