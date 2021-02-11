@@ -25,3 +25,9 @@
   right: $window-spacer;
   z-index: 100;
 }
+
+.table-container {
+  display: inline-block;
+  min-width: 100%;
+  margin: $module-body-padding-x;
+}

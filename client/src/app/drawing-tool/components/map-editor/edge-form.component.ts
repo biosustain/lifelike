@@ -9,6 +9,7 @@ import { openPotentialInternalLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
 import { isNullOrUndefined } from 'util';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
+import { InfoPanel } from '../../models/info-panel';
 
 @Component({
   selector: 'app-edge-form',
@@ -16,6 +17,7 @@ import { WorkspaceManager } from '../../../shared/workspace-manager';
 })
 export class EdgeFormComponent implements AfterViewInit {
 
+  @Input() infoPanel: InfoPanel;
   @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
 
   lineTypeChoices = [
@@ -44,13 +46,10 @@ export class EdgeFormComponent implements AfterViewInit {
   @Output() delete = new EventEmitter<object>();
   @Output() sourceOpen = new EventEmitter<string>();
 
-  activeTab: string;
-
   constructor(protected readonly workspaceManager: WorkspaceManager) {
   }
 
   ngAfterViewInit() {
-    setTimeout(() => this.focus(), 10);
   }
 
   get edge() {
@@ -71,8 +70,6 @@ export class EdgeFormComponent implements AfterViewInit {
     this.updatedEdge = cloneDeep(edge);
     this.updatedEdge.data = this.updatedEdge.data || {};
     this.updatedEdge.style = this.updatedEdge.style || {};
-
-    setTimeout(() => this.focus(), 10);
   }
 
   doSave() {
