@@ -37,6 +37,8 @@ export class ProgressDialogComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.progressSubscription.unsubscribe();
+    if (this.progressSubscription != null) {
+      this.progressSubscription.unsubscribe();
+    }
   }
 }

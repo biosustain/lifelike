@@ -1,16 +1,21 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { map } from 'rxjs/operators';
-import { AppUser } from 'app/interfaces';
+import { Injectable, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { AppUser, JWTTokenResponse } from 'app/interfaces';
 import { isNullOrUndefined } from 'util';
+import { of, timer, Subscription } from 'rxjs';
+import { map, mergeMap } from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthenticationService {
+@Injectable({providedIn: 'root'})
+export class AuthenticationService implements OnDestroy {
   readonly baseUrl = '/api/auth';
 
+  private refreshSubscription: Subscription;
+
   constructor(private http: HttpClient) { }
+
+  ngOnDestroy() {
+    this.refreshSubscription.unsubscribe();
+  }
 
   getAuthHeader(): string | void {
     const token = localStorage.getItem('access_jwt');
@@ -19,18 +24,42 @@ export class AuthenticationService {
     }
   }
 
+  public isAuthenticated(): boolean {
+    const expirationTime = new Date(localStorage.getItem('expires_at')).getTime();
+    const currentTime = new Date().getTime();
+    return currentTime < expirationTime;
+  }
+
+  public scheduleRenewal() {
+    if (!this.isAuthenticated()) {
+      return;
+    }
+    const expirationTime = new Date(localStorage.getItem('expires_at')).getTime();
+    const source = of(expirationTime).pipe(mergeMap((expiresAt) => {
+      const now = new Date().getTime();
+      const refreshAt = expiresAt - (1000 * 60);
+      return timer(Math.max(1, refreshAt - now)).pipe(
+        mergeMap(() => this.refresh()));
+    }));
+
+    this.refreshSubscription = source.subscribe(() => {});
+  }
+
   /**
    * Authenticate users to get a JWT
    */
   public login(email: string, password: string) {
-    return this.http.post<{user: AppUser, access_jwt: string, refresh_jwt: string}>(
+    return this.http.post<JWTTokenResponse>(
       this.baseUrl + '/login',
       {email, password},
     ).pipe(
-      map((resp: any) => {
-        localStorage.setItem('auth', resp.user);
-        localStorage.setItem('access_jwt', resp.access_jwt);
-        localStorage.setItem('refresh_jwt', resp.refresh_jwt);
+      map((resp: JWTTokenResponse) => {
+        localStorage.setItem('authId', resp.user.id.toString());
+        localStorage.setItem('access_jwt', resp.accessToken.token);
+        localStorage.setItem('expires_at', resp.accessToken.exp);
+        // TODO: Move this out of localStorage
+        localStorage.setItem('refresh_jwt', resp.refreshToken.token);
+        this.scheduleRenewal();
         return resp;
       })
     );
@@ -43,8 +72,9 @@ export class AuthenticationService {
   public logout() {
     localStorage.removeItem('refresh_jwt');
     localStorage.removeItem('access_jwt');
+    localStorage.removeItem('expires_at');
     // See root-store module where this is set
-    localStorage.removeItem('auth');
+    localStorage.removeItem('authId');
   }
 
   /**
@@ -52,26 +82,29 @@ export class AuthenticationService {
    */
   public refresh() {
     const jwt = localStorage.getItem('refresh_jwt');
-    return this.http.post<{access_jwt: string, refresh_jwt: string}>(
+    return this.http.post<JWTTokenResponse>(
       this.baseUrl + '/refresh',
       { jwt },
     ).pipe(
-        map((resp: {access_jwt: string, refresh_jwt: string}) => {
-          localStorage.setItem('access_jwt', resp.access_jwt);
-          localStorage.setItem('refresh_jwt', resp.refresh_jwt);
+        map((resp) => {
+          localStorage.setItem('access_jwt', resp.accessToken.token);
+          localStorage.setItem('expires_at', resp.accessToken.exp);
+          // TODO: Remove refresh token from localStorage
+          localStorage.setItem('refresh_jwt', resp.refreshToken.token);
+          this.scheduleRenewal();
           return resp;
         }),
       );
   }
 
   public whoAmI(): number {
-    const auth = JSON.parse(localStorage.getItem('auth'));
+    const authId = JSON.parse(localStorage.getItem('authId'));
 
     if (
-      isNullOrUndefined(auth)
+      isNullOrUndefined(authId)
     ) { return; }
 
-    return auth.user.id;
+    return authId;
   }
 
   public getAccessToken() {

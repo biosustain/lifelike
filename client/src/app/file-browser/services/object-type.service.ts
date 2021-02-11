@@ -29,6 +29,11 @@ export interface PreviewOptions {
   highlightTerms?: string[] | undefined;
 }
 
+export interface Exporter {
+  name: string;
+  export(): Observable<File>;
+}
+
 /**
  * A file type provider knows how to handle a certain or set of object types. Instances
  * are used by the application to discover operations on objects stored within Lifelike.
@@ -45,9 +50,11 @@ export interface ObjectTypeProvider {
    * Create a component to preview the given object, although null can be returned
    * for the observable if the file type cannot be previewed.
    * @param object the object
+   * @param contentValue$ the content to use
    * @param options extra options for the preview
    */
-  createPreviewComponent(object: FilesystemObject, options?: PreviewOptions): Observable<ComponentRef<any> | undefined>;
+  createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
+                         options?: PreviewOptions): Observable<ComponentRef<any> | undefined>;
 
   /**
    * Get a list of options for creating this type of file.
@@ -61,6 +68,11 @@ export interface ObjectTypeProvider {
    */
   getSearchTypes(): SearchType[];
 
+  /**
+   * Get a list of ways to export this object.
+   */
+  getExporters(object: FilesystemObject): Observable<Exporter[]>;
+
 }
 
 /**
@@ -69,7 +81,8 @@ export interface ObjectTypeProvider {
 export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   abstract handles(object: FilesystemObject): boolean;
 
-  createPreviewComponent(object: FilesystemObject, options?: PreviewOptions): Observable<ComponentRef<any> | undefined> {
+  createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
+                         options?: PreviewOptions): Observable<ComponentRef<any> | undefined> {
     return of(null);
   }
 
@@ -79,6 +92,10 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
 
   getSearchTypes(): SearchType[] {
     return [];
+  }
+
+  getExporters(object: FilesystemObject): Observable<Exporter[]> {
+    return of([]);
   }
 
 }
@@ -91,10 +108,6 @@ export class DefaultObjectTypeProvider extends AbstractObjectTypeProvider {
 
   handles(object: FilesystemObject): boolean {
     return true;
-  }
-
-  createPreviewComponent(object: FilesystemObject, options?: PreviewOptions) {
-    return of(null);
   }
 
 }
@@ -131,4 +144,7 @@ export class ObjectTypeService {
     return of(this.injector.get(TYPE_PROVIDER));
   }
 
+  getDefault(): Observable<ObjectTypeProvider> {
+    return of(this.defaultProvider);
+  }
 }

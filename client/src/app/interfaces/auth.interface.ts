@@ -28,3 +28,24 @@ export interface Credential {
   email: string;
   password: string;
 }
+
+export interface JWTToken {
+    sub: string;
+    iat: string;
+    exp: string;
+    tokenType: string;
+    token: string;
+}
+
+export interface LoginResp {
+    id: number;
+    username: string;
+    firstName: string;
+    lastName: string;
+}
+
+export interface JWTTokenResponse {
+    accessToken: JWTToken;
+    refreshToken: JWTToken;
+    user: LoginResp;
+}
