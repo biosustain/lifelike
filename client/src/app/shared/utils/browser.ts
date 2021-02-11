@@ -47,12 +47,12 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
   if (openInternally) {
     let m;
 
-    m = pathSearchHash.match(/^\/projects\/[^\/]+\/(files|maps)\/([^\/#?]+)/);
+    m = pathSearchHash.match(/^\/projects\/[^\/]+\/([^\/]+)\/([^\/#?]+)/);
     if (m != null) {
       workspaceManager.navigateByUrl(pathSearchHash, {
         newTab: true,
         sideBySide: true,
-        matchExistingTab: `^/+projects/[^/]+/files/${escapeRegExp(m[2])}.*`,
+        matchExistingTab: `^/+projects/[^/]+/([^/]+)/${escapeRegExp(m[2])}.*`,
         shouldReplaceTab: component => {
           if (m[1] === 'files') {
             const fileViewComponent = component as FileViewComponent;
