@@ -1,5 +1,5 @@
 import {
-  DETAIL_NODE_LABELS, Hyperlink, Source,
+  DETAIL_NODE_LABELS,
   UniversalEdgeStyle,
   UniversalGraphEdge,
   UniversalGraphNode,
@@ -40,6 +40,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   private readonly defaultTargetLineEndDescriptor = 'arrow';
   private readonly lineEndBaseSize = 16;
   private readonly maxWidthIfUnsized = 400;
+  private readonly maxIconNodeWidthIfUnsized = 200;
   private readonly maxHeightIfUnsized = 400;
   private readonly detailTypeBackgrounds = new Map([
     ['note', '#FFF6D5'],
@@ -175,11 +176,11 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
 
       // Textbox for the label below the icon
       const labelTextbox = new TextElement(ctx, {
-        maxWidth: this.maxWidthIfUnsized,
-        maxLines: 1,
+        maxWidth: this.maxIconNodeWidthIfUnsized,
         text: d.display_name,
         font: labelFont,
         fillStyle: iconLabelColor,
+        horizontalAlign: TextAlignment.Center,
       });
 
       return new FontIconNode(ctx, {
