@@ -54,3 +54,8 @@
     margin-top: $spacer * 0.5;
   }
 }
+
+.drop-target {
+  outline: 2px solid black;
+  outline-offset: -2px;
+}

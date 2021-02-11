@@ -1,9 +1,5 @@
-import { CollectionModal } from '../../shared/utils/collection-modal';
-import { Project } from '../services/project-space.service';
+import { ProjectImpl } from './filesystem-object';
+import { ModelList } from '../../shared/models';
 
-export class ProjectList {
-  public collectionSize = 0;
-  public readonly results = new CollectionModal<Project>([], {
-    multipleSelection: true,
-  });
+export class ProjectList extends ModelList<ProjectImpl> {
 }

@@ -52,9 +52,22 @@ export function compileFind(terms: string[],
                             options: FindOptions = {}):
   (string) => boolean {
   const wrapper = options.wholeWord ? '' : '[^\\s]*';
-  const termPatterns = terms.map(
-    term => wrapper + escapeRegExp(term).replace(' ', ' +') + wrapper,
-  );
+  let termPatterns;
+
+  if (options.keepSearchSpecialChars) {
+    termPatterns = terms.map( term => {
+      const pat = escapeRegExp(term)
+        .replace(' ', ' +')
+        .replace(/(\\\*)/g, '\\S*')
+        .replace(/(\\\?)/g, '\\S?');
+      return wrapper + pat + wrapper;
+    });
+  } else {
+    termPatterns = terms.map(
+      term => wrapper + escapeRegExp(term).replace(' ', ' +') + wrapper
+    );
+  }
+
   const pattern = new RegExp(
     '(?<!\s)(' + termPatterns.join('|') + ')(?!\s)', 'i');
   return s => pattern.test(s);
@@ -66,4 +79,5 @@ export interface TokenizationOptions {
 
 export interface FindOptions {
   wholeWord?: boolean;
+  keepSearchSpecialChars?: boolean;
 }

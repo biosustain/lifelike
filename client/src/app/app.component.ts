@@ -5,12 +5,13 @@ import { State } from 'app/root-store';
 
 import { downloader } from 'app/shared/utils';
 import { StorageService } from 'app/shared/services/storage.service';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import * as AuthActions from 'app/auth/store/actions';
 import { AuthSelectors } from 'app/auth/store';
 import { Observable } from 'rxjs';
 
-import { AppUser } from 'app/interfaces';
+import { LoginResp } from 'app/interfaces';
 import { Title } from '@angular/platform-browser';
 import { NgbModal, NgbModalConfig, NgbPaginationConfig } from '@ng-bootstrap/ng-bootstrap';
 import { AppVersionDialogComponent } from './app-version-dialog.component';
@@ -24,7 +25,7 @@ import { AppVersionDialogComponent } from './app-version-dialog.component';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  readonly appUser$: Observable<AppUser>;
+  readonly appUser$: Observable<LoginResp>;
   readonly userRoles$: Observable<string[]>;
   readonly loggedIn$: Observable<boolean>;
   helpDeskUrl = 'https://sbrgsoftware.atlassian.net/servicedesk/customer/portal/1/group/1/create/9';
@@ -38,6 +39,7 @@ export class AppComponent {
     private readonly ngbModalConfig: NgbModalConfig,
     private readonly ngbPaginationConfig: NgbPaginationConfig,
     private storage: StorageService,
+    private authService: AuthenticationService,
   ) {
     this.ngbModalConfig.backdrop = 'static';
     this.ngbPaginationConfig.maxSize = 5;
@@ -45,6 +47,8 @@ export class AppComponent {
     this.loggedIn$ = store.pipe(select(AuthSelectors.selectAuthLoginState));
     this.appUser$ = store.pipe(select(AuthSelectors.selectAuthUser));
     this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
+
+    this.authService.scheduleRenewal();
 
     // Set the title of the document based on the route
     this.router.events.subscribe(event => {

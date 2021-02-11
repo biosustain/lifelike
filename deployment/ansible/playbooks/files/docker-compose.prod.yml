@@ -31,6 +31,15 @@ services:
         networks:
             - backend
 
+    pdfparser:
+        ports:
+            - "7600:7600"
+        # tty: true - this is a hack for grizzly as it expects input;
+        # without it, container will exit right away due to docker not accepting input by default
+        tty: true
+        networks:
+            - backend
+
     cache-invalidator:
         env_file:
             - ./.env

@@ -68,11 +68,20 @@ def snake_to_camel_dict(d, new_dict: dict) -> dict:
     return new_dict
 
 
-def snake_to_camel(s):
-    if not s:
-        return s
-    parts = s.split('_')
-    return parts[0] + ''.join(x.capitalize() or '_' for x in parts[1:])
+def snake_to_camel(v):
+    if v is None:
+        return None
+    if callable(getattr(v, 'to_dict', None)):
+        return v.to_dict()
+    elif type(v) is list:
+        return [snake_to_camel(item) for item in v]
+    elif type(v) is dict:
+        return {snake_to_camel(k): snake_to_camel(v) for k, v in v.items()}
+    elif type(v) is str:
+        parts = v.split('_')
+        return parts[0] + ''.join(x.capitalize() or '_' for x in parts[1:])
+    else:
+        return v
 
 
 def camel_to_snake(s):
@@ -393,34 +402,6 @@ def compute_hash(data: dict, **kwargs) -> str:
     if 'limit' in kwargs:
         return hexdigest[:kwargs['limit']]
     return hexdigest
-
-
-def generate_jwt_token(
-        sub: str,
-        secret: str,
-        token_type: str = 'access',
-        time_offset: int = 1,
-        time_unit: str = 'hours',
-        algorithm: str = 'HS256'
-):
-    """
-    Generates an authentication or refresh JWT Token
-
-    Args:
-        sub - the subject of the token (e.g. user email)
-        secret - secret that should not be shared for encryption
-        token_type - one of 'access' or 'refresh'
-        time_offset - the difference in time before token expiration
-        time_unit - time offset for expiration (days, hours, etc) (see datetime docs)
-        algorithm - jwt.encode compatible algorithms (see docs)
-    """
-    time_now = datetime.utcnow()
-    return jwt.encode({
-        'iat': time_now,
-        'sub': sub,
-        'exp': time_now + timedelta(**{time_unit: time_offset}),
-        'type': token_type,
-    }, secret, algorithm=algorithm)
 
 
 def get_first_known_label_from_node(node: Node):
