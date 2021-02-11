@@ -1,9 +1,14 @@
 import { AbstractCanvasBehavior } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
 import { NodeCreation } from '../../../actions/nodes';
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../../../drawing-tool/services/interfaces';
+import {
+  GraphEntity,
+  GraphEntityType,
+  UniversalGraphNode,
+} from '../../../../drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from '../../../actions/actions';
 import { makeid } from '../../../../shared/utils/identifiers';
+import { isClipboardEventNativelyHandled } from '../../../../shared/utils/clipboard';
 
 /**
  * We use this string to know that it's our own JSON.
@@ -84,6 +89,10 @@ export class PasteKeyboardShortcut extends AbstractCanvasBehavior {
   }
 
   paste(event) {
+    if (isClipboardEventNativelyHandled(event)) {
+      return;
+    }
+
     const content = event.clipboardData.getData('text/plain');
     if (content) {
       const position = this.graphView.currentHoverPosition;
