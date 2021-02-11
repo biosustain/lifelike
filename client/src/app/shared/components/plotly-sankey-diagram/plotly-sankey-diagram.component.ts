@@ -38,6 +38,10 @@ export class PlotlySankeyDiagramComponent implements AfterViewInit {
     });
   }
 
+  styleLinks(links, style: any) {
+    Object.keys(style).forEach(property => links.style(property, style[property]));
+  }
+
   styleLinksConnectedToNode(nodeId: number, style: any) {
     const links = d3
       .selectAll('path.sankey-link')
@@ -51,8 +55,21 @@ export class PlotlySankeyDiagramComponent implements AfterViewInit {
   setupEvents() {
     // Capture all "node" elements on the canvas and setup on-hover behavio
     const nodeBoxes = d3.selectAll('.node-capture');
-    nodeBoxes.on('mouseover', (d) => {
-      this.styleLinksConnectedToNode(d.index, {fill: '#0c8caa'});
+    nodeBoxes.on('mouseover', (node) => {
+      const incomingLinks = d3
+        .selectAll('path.sankey-link')
+        .filter((link) => {
+          return link.link.target.index === node.index;
+        });
+
+      const outgoingLinks = d3
+        .selectAll('path.sankey-link')
+        .filter((link) => {
+          return link.link.source.index === node.index;
+        });
+
+      this.styleLinks(incomingLinks, {fill: 'red'});
+      this.styleLinks(outgoingLinks, {fill: '#0c8caa'});
     });
     nodeBoxes.on('mouseout', (d) => {
       this.styleLinksConnectedToNode(d.index, {fill: 'black'});
@@ -60,8 +77,21 @@ export class PlotlySankeyDiagramComponent implements AfterViewInit {
 
     // Do the same for node labels (these also trigger on-hover behavior for links)
     const nodeLabels = d3.selectAll('.node-entered');
-    nodeLabels.on('mouseover', (d) => {
-      this.styleLinksConnectedToNode(d.index, {fill: '#0c8caa'});
+    nodeLabels.on('mouseover', (node) => {
+      const incomingLinks = d3
+        .selectAll('path.sankey-link')
+        .filter((link) => {
+          return link.link.target.index === node.index;
+        });
+
+      const outgoingLinks = d3
+        .selectAll('path.sankey-link')
+        .filter((link) => {
+          return link.link.source.index === node.index;
+        });
+
+      this.styleLinks(incomingLinks, {fill: 'red'});
+      this.styleLinks(outgoingLinks, {fill: '#0c8caa'});
     });
     nodeLabels.on('mouseout', (d) => {
       this.styleLinksConnectedToNode(d.index, {fill: 'black'});
