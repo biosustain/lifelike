@@ -1,20 +1,20 @@
-import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {ActivatedRoute} from '@angular/router';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
 
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import {BehaviorSubject, forkJoin, from, of, Subscription} from 'rxjs';
-import {catchError, finalize, flatMap, map, mergeMap} from 'rxjs/operators';
+import { BehaviorSubject, forkJoin, from, of, Subscription } from 'rxjs';
+import { catchError, finalize, flatMap, map, mergeMap } from 'rxjs/operators';
 
-import {TableCell, TableHeader } from 'app/shared/components/table/generic-table.component';
-import {ModuleProperties} from 'app/shared/modules';
-import {BackgroundTask} from 'app/shared/rxjs/background-task';
-import {ErrorHandler} from 'app/shared/services/error-handler.service';
-import {DownloadService} from 'app/shared/services/download.service';
+import { TableCell, TableHeader } from 'app/shared/components/table/generic-table.component';
+import { ModuleProperties } from 'app/shared/modules';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { DownloadService } from 'app/shared/services/download.service';
 
-import {EnrichmentTableEditDialogComponent} from './dialog/enrichment-table-edit-dialog.component';
-import {EnrichmentTableOrderDialogComponent} from './dialog/enrichment-table-order-dialog.component';
+import { EnrichmentTableEditDialogComponent } from './dialog/enrichment-table-edit-dialog.component';
+import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
 import {
   EnrichmentTableService,
   EnrichmentWrapper,
@@ -22,13 +22,15 @@ import {
   NCBINode,
   NCBIWrapper,
 } from '../../services/enrichment-table.service';
-import {FilesystemObject} from '../../../file-browser/models/filesystem-object';
-import {FilesystemService} from '../../../file-browser/services/filesystem.service';
-import {mapBlobToBuffer, mapBufferToJson} from '../../../shared/utils/files';
-import {ENRICHMENT_TABLE_MIMETYPE} from '../../providers/enrichment-table.type-provider';
-import {Progress} from '../../../interfaces/common-dialog.interface';
-import {ProgressDialog} from '../../../shared/services/progress-dialog.service';
-import {EnrichmentData} from "../visualisation/table/enrichment-table-viewer.component";
+import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+import { FilesystemService } from '../../../file-browser/services/filesystem.service';
+import { mapBlobToBuffer, mapBufferToJson } from '../../../shared/utils/files';
+import { ENRICHMENT_TABLE_MIMETYPE } from '../../providers/enrichment-table.type-provider';
+import { Progress } from '../../../interfaces/common-dialog.interface';
+import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
+import { EnrichmentData } from "../visualisation/table/enrichment-table-viewer.component";
+import { EnrichmentVisualisationEditDialogComponent } from "../visualisation/dialog/enrichment-visualisation-edit-dialog.component";
+import { ENRICHMENT_VISUALISATION_MIMETYPE } from "../../providers/enrichment-visualisation.type-provider";
 
 
 @Component({
@@ -246,6 +248,31 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       finalVal += result;
     }
     return finalVal + '\n';
+  }
+
+  createVisualisation() {
+    const dialogRef = this.modalService.open(EnrichmentVisualisationEditDialogComponent);
+    dialogRef.componentInstance.title = 'New Enrichment Visualisation Parameters';
+    dialogRef.componentInstance.submitButtonLabel = 'Next';
+    const object = new FilesystemObject();
+    object.filename = 'Untitled Enrichment Visualisation';
+    object.mimeType = ENRICHMENT_VISUALISATION_MIMETYPE;
+    object.parent = this.object.parent;
+    dialogRef.componentInstance.object = object;
+    dialogRef.componentInstance.data = {
+      domains: this.domains,
+      genes: this.importGenes,
+      organism: this.organism
+    };
+
+    return dialogRef.result.then((parameters) => {
+      return this.objectCreationService.openCreateDialog(object, {
+        title: 'Name the Enrichment Visualisation',
+        request: {
+          contentValue: new Blob([JSON.stringify({parameters, cachedResults:{}})]),
+        }
+      });
+    });
   }
 
   /**

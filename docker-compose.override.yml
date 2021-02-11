@@ -14,16 +14,15 @@ services:
 
     database:
         container_name: n4j-database
-#        user: "100"
         build: ./neo4j
         environment:
             - NEO4J_AUTH=neo4j/password
-#        volumes:
-#            - ./neo4j/data:/data
-#            - ./neo4j/logs:/logs
-#            - ./neo4j/import:/import
-#            - ./neo4j/plugins:/plugins
-#            - ./neo4j/backups:/backups
+        volumes:
+            - ./neo4j/data:/data
+            - ./neo4j/logs:/logs
+            - ./neo4j/import:/import
+            - ./neo4j/plugins:/plugins
+            - ./neo4j/backups:/backups
         ports:
             - "7474:7474"
             - "7687:7687"
@@ -77,6 +76,7 @@ services:
             - database
             - pgdatabase
             - redis
+            - pdfparser
 
     nlpapi:
         container_name: nlpapi
@@ -121,6 +121,16 @@ services:
         networks:
             - backend
 
+    pdfparser:
+        container_name: pdfparser
+        ports:
+            - "7600:7600"
+        # tty: true - this is a hack for grizzly as it expects input;
+        # without it, container will exit right away due to docker not accepting input by default
+        tty: true
+        networks:
+            - backend
+
     cache-invalidator:
         container_name: cache-invalidator
         build: ./cache-invalidator
@@ -161,7 +171,7 @@ services:
 
     kibana:
         container_name: kibana
-        image: docker.elastic.co/kibana/kibana:7.3.1
+        image: docker.elastic.co/kibana/kibana:7.10.1
         ports:
             - "5601:5601"
         environment:
@@ -177,7 +187,7 @@ services:
         build:
             context: logstash/
         volumes:
-            - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+            - ./logstash/config:/usr/share/logstash/config
             - ./logstash/pipeline:/usr/share/logstash/pipeline
         ports:
             - "5044:5044"

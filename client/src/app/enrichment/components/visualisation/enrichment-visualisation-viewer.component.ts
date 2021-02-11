@@ -1,25 +1,25 @@
-import {Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { BehaviorSubject, Subscription } from 'rxjs';
-import {ModuleAwareComponent, ModuleProperties} from 'app/shared/modules';
-import {BackgroundTask} from 'app/shared/rxjs/background-task';
-import {ErrorHandler} from 'app/shared/services/error-handler.service';
-import {DownloadService} from 'app/shared/services/download.service';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { DownloadService } from 'app/shared/services/download.service';
 
-import {WordCloudComponent} from './word-cloud/word-cloud.component';
-import {FilesystemObject} from '../../../file-browser/models/filesystem-object';
-import {FilesystemService} from '../../../file-browser/services/filesystem.service';
-import {ProgressDialog} from '../../../shared/services/progress-dialog.service';
+import { WordCloudComponent } from './word-cloud/word-cloud.component';
+import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+import { FilesystemService } from '../../../file-browser/services/filesystem.service';
+import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
 
-import {EnrichmentTableService} from '../../services/enrichment-table.service';
-import {MessageDialog} from '../../../shared/services/message-dialog.service';
-import {WorkspaceManager} from '../../../shared/workspace-manager';
-import {FilesystemObjectActions} from '../../../file-browser/services/filesystem-object-actions';
-import {MatSnackBar} from '@angular/material';
-import {EnrichmentVisualisationService} from '../../services/enrichment-visualisation.service';
+import { EnrichmentTableService } from '../../services/enrichment-table.service';
+import { MessageDialog } from '../../../shared/services/message-dialog.service';
+import { WorkspaceManager } from '../../../shared/workspace-manager';
+import { FilesystemObjectActions } from '../../../file-browser/services/filesystem-object-actions';
+import { MatSnackBar } from '@angular/material';
+import { EnrichmentVisualisationService } from '../../services/enrichment-visualisation.service';
 import { EnrichmentData } from './table/enrichment-table-viewer.component';
 import { ENRICHMENT_TABLE_MIMETYPE } from '../../providers/enrichment-table.type-provider';
 import { Progress } from '../../../interfaces/common-dialog.interface';
@@ -114,7 +114,10 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
     dialogRef.componentInstance.object = this.enrichmentService.object;
     dialogRef.componentInstance.data = this.enrichmentService.data;
     return dialogRef.result.then((result: EnrichmentData) => {
-      const updated_file = Object.assign(this.enrichmentService.data, result);
+      const updated_file = {
+        parameters: Object.assign(this.enrichmentService.parameters),
+        cachedResults: this.enrichmentService.cachedResults
+      };
       const contentValue = new Blob([JSON.stringify(updated_file)], {
         type: ENRICHMENT_TABLE_MIMETYPE,
       });
@@ -139,7 +142,6 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
           this.snackBar.open('Enrichment visualisation updated.', null, {
             duration: 2000,
           });
-          this.tableEntries = [];
           this.loadTask.update();
         });
     }, () => {

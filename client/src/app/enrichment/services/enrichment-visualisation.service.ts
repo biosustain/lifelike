@@ -14,7 +14,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { map, mergeMap } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { EnrichmentData } from '../components/visualisation/table/enrichment-table-viewer.component';
 import { ENRICHMENT_VISUALISATION_MIMETYPE } from '../providers/enrichment-visualisation.type-provider';
 
 @Injectable()
@@ -128,7 +127,10 @@ export class EnrichmentVisualisationService implements OnDestroy {
    * Save the current representation of knowledge model
    */
   save() {
-    const contentValue = new Blob([JSON.stringify(this.cachedResults)], {
+    const contentValue = new Blob([JSON.stringify({
+      parameters: this.parameters,
+      cachedResults: this.cachedResults
+    })], {
       type: ENRICHMENT_VISUALISATION_MIMETYPE,
     });
 

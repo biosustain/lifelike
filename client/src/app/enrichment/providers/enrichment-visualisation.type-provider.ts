@@ -54,11 +54,11 @@ export class EnrichmentVisualisationTypeProvider extends AbstractObjectTypeProvi
             domains: defaultDomains
           };
 
-          return dialogRef.result.then((params) => {
+          return dialogRef.result.then((parameters) => {
             return this.objectCreationService.openCreateDialog(object, {
               title: 'Name the Enrichment Visualisation',
               request: {
-                contentValue: new Blob([JSON.stringify(params)]),
+                contentValue: new Blob([JSON.stringify({parameters, cachedResults:{}})]),
               },
               ...(options.createDialog || {}),
             });
