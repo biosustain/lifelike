@@ -1,7 +1,7 @@
 """unified file schema
 
 Revision ID: 62fd9aa6405a
-Revises: 2105594e7b33
+Revises: 559b17bb1045
 Create Date: 2020-09-22 22:23:44.017103
 
 """
@@ -23,7 +23,7 @@ from sqlalchemy.orm.exc import NoResultFound
 logger = logging.getLogger("alembic.runtime.migration." + __name__)
 
 revision = '62fd9aa6405a'
-down_revision = 'e58082ac34b8'
+down_revision = '559b17bb1045'
 branch_labels = None
 depends_on = None
 

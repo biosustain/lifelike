@@ -15,7 +15,7 @@ def test_user_can_get_gene_annotations_from_pdf(
         mock_get_organisms_from_gene_ids_result,
 ):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.hash_id
 
     response = client.post(
@@ -36,7 +36,7 @@ def test_user_can_get_all_annotations_from_pdf(
         mock_get_combined_annotations_result,
 ):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.hash_id
 
     response = client.post(
@@ -57,7 +57,7 @@ def test_user_can_get_global_inclusions(
         mock_global_compound_inclusion,
 ):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     response = client.get(
         f'/annotations/global-list/inclusions',
@@ -76,7 +76,7 @@ def test_user_can_get_global_exclusions(
         mock_global_gene_exclusion,
 ):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     response = client.get(
         f'/annotations/global-list/exclusions',
@@ -95,7 +95,7 @@ def test_user_can_get_global_list(
         mock_global_list,
 ):
     login_resp = client.login_as_user(fix_api_owner.email, 'password')
-    headers = generate_headers(login_resp['access_jwt'])
+    headers = generate_headers(login_resp['accessToken']['token'])
 
     response = client.get(
         f'/annotations/global-list',

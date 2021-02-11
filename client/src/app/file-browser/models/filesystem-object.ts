@@ -106,7 +106,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   mimeType: string;
   doi: string;
   public: boolean;
-  contentValue$: Observable<Blob> | undefined;
   uploadUrl: string;
   annotationsDate: string;
   creationDate: string;
@@ -148,7 +147,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isAnnotatable() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === 'application/pdf';
+    return this.mimeType === 'application/pdf' || this.mimeType === 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
   }
 
   get isMovable() {
@@ -168,7 +167,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isVersioned() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === MAP_MIMETYPE;
+    return this.mimeType === MAP_MIMETYPE || this.mimeType === ENRICHMENT_TABLE_MIMETYPE;
   }
 
   get isNavigable() {
@@ -545,28 +544,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       }
     }
     return this;
-  }
-
-  get exportFormats(): string[] {
-    // TODO: Move this method to ObjectTypeProvider
-    if (this.mimeType === MAP_MIMETYPE) {
-      return ['pdf', 'png', 'svg', 'llmap.json'];
-    } else if (this.mimeType === PDF_MIMETYPE) {
-      return ['pdf'];
-    } else {
-      return [];
-    }
-  }
-
-  get originalFormat(): string | undefined {
-    // TODO: Move this method to ObjectTypeProvider
-    if (this.mimeType === MAP_MIMETYPE) {
-      return 'llmap.json';
-    } else if (this.mimeType === PDF_MIMETYPE) {
-      return 'pdf';
-    } else {
-      return null;
-    }
   }
 
   get ***ARANGO_USERNAME***(): FilesystemObject {

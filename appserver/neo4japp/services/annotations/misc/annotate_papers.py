@@ -25,7 +25,7 @@ def main():
             data=json.dumps({'email': 'admin@example.com', 'password': 'password'}),
             headers={'Content-type': 'application/json'})
 
-        access_token = json.loads(req.text)['access_jwt']
+        access_token = json.loads(req.text)['accessToken']['token']
 
         hash_ids = set()
 
