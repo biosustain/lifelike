@@ -11,7 +11,7 @@ export class GlobalErrorHandler implements ErrorHandler {
     constructor(private errorHandlerService: ErrorHandlerService) {}
 
     // Used to prevent error dialogs for specific HTTP codes
-    KNOWN_HTTP_ERROR_CODES = [401];
+    KNOWN_HTTP_ERROR_CODES = [0, 401];
 
     handleError(error: Error | HttpErrorResponse) {
         if (!(error instanceof HttpErrorResponse && this.KNOWN_HTTP_ERROR_CODES.includes(error.status))) {
