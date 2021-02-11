@@ -1,7 +1,6 @@
 import html
 import json
 import re
-from collections import defaultdict
 from typing import Optional
 
 import sqlalchemy
@@ -15,7 +14,12 @@ from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.data_transfer_objects import GeneFilteredRequest
 from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
-from neo4japp.database import get_search_service_dao, db, get_elastic_service, get_file_type_service
+from neo4japp.database import (
+    db,
+    get_search_service_dao,
+    get_elastic_service,
+    get_file_type_service
+)
 from neo4japp.models import (
     Projects,
     AppRole,
@@ -23,13 +27,11 @@ from neo4japp.models import (
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.search import (
-    AnnotateRequestSchema,
     ContentSearchSchema,
     OrganismSearchSchema,
-    VizSearchSchema, ContentSearchResponseSchema
+    VizSearchSchema,
+    ContentSearchResponseSchema
 )
-from neo4japp.services.annotations.constants import AnnotationMethod
-from neo4japp.services.annotations.pipeline import create_annotations_from_pdf
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.request import Pagination
