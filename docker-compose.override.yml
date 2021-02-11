@@ -76,6 +76,7 @@ services:
             - database
             - pgdatabase
             - redis
+            - pdfparser
 
     nlpapi:
         container_name: nlpapi
@@ -120,6 +121,16 @@ services:
         networks:
             - backend
 
+    pdfparser:
+        container_name: pdfparser
+        ports:
+            - "7600:7600"
+        # tty: true - this is a hack for grizzly as it expects input;
+        # without it, container will exit right away due to docker not accepting input by default
+        tty: true
+        networks:
+            - backend
+
     cache-invalidator:
         container_name: cache-invalidator
         build: ./cache-invalidator
@@ -160,7 +171,7 @@ services:
 
     kibana:
         container_name: kibana
-        image: docker.elastic.co/kibana/kibana:7.3.1
+        image: docker.elastic.co/kibana/kibana:7.10.1
         ports:
             - "5601:5601"
         environment:

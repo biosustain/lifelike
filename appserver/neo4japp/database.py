@@ -9,6 +9,8 @@ from flask_sqlalchemy import SQLAlchemy
 from py2neo import Graph
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
+from neo4japp.utils.flask import scope_flask_app_ctx
+
 
 def trunc_long_constraint_name(name: str) -> str:
     if (len(name) > 59):
@@ -133,6 +135,26 @@ def get_visualizer_service():
     return g.visualizer_service
 
 
+@scope_flask_app_ctx('file_type_service')
+def get_file_type_service():
+    """
+    Return a service to figure out how to handle a certain type of file in our
+    filesystem. When we add new file types to the system, we need to register
+    its associated provider here.
+
+    :return: the service
+    """
+    from neo4japp.services.file_types.service import FileTypeService
+    from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider, \
+        MapTypeProvider, PDFTypeProvider, DirectoryTypeProvider
+    service = FileTypeService()
+    service.register(DirectoryTypeProvider())
+    service.register(PDFTypeProvider())
+    service.register(MapTypeProvider())
+    service.register(EnrichmentTableTypeProvider())
+    return service
+
+
 def get_enrichment_table_service():
     if 'enrichment_table_service' not in g:
         from neo4japp.services import EnrichmentTableService
@@ -237,11 +259,6 @@ def get_sorted_annotation_service(sort_id):
             graph=AnnotationGraphService()
         )
     )
-
-
-def get_annotation_pdf_parser():
-    from neo4japp.services.annotations import AnnotationPDFParser
-    return AnnotationPDFParser()
 
 
 def get_bioc_document_service():

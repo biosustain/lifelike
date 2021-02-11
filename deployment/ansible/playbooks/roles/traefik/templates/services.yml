@@ -45,6 +45,24 @@ http:
         certResolver: "le"
         domains:
           - main: "elk.***ARANGO_DB_NAME***.bio"
+    ***ARANGO_DB_NAME***-demo:
+      entryPoints:
+        - websecure
+      rule: "Host(`demo.***ARANGO_DB_NAME***.bio`)"
+      service: ***ARANGO_DB_NAME***-demo-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "demo.***ARANGO_DB_NAME***.bio"
+    ***ARANGO_DB_NAME***-sandbox:
+      entryPoints:
+        - websecure
+      rule: "Host(`sandbox.***ARANGO_DB_NAME***.bio`)"
+      service: ***ARANGO_DB_NAME***-sandbox-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "sandbox.***ARANGO_DB_NAME***.bio"
 
   services:
     ***ARANGO_DB_NAME***-qa-service:
@@ -63,6 +81,14 @@ http:
       loadBalancer:
         servers:
           - url: "http://10.128.15.244"
+    ***ARANGO_DB_NAME***-sandbox-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.15.216"
+    ***ARANGO_DB_NAME***-demo-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.128.0.63"
 
   middlewares:
     admin-auth:

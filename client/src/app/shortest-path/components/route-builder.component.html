@@ -39,7 +39,7 @@
       <div *ngIf="status.resultsShown && !status.failedErrorShown">
         <label class="text-white">Pre-defined Queries:</label>
         <select class="custom-select" (change)="requestQueryLoadFromParent($event)">
-          <option *ngFor="let query of queries | keyvalue" [value]="query.key">{{ query.value }}</option>
+          <option *ngFor="let query of queries" [value]="query[0]">{{ query[1] }}</option>
         </select>
       </div>
     </div>

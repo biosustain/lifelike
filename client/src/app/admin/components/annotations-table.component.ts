@@ -1,11 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { GlobalAnnotationService } from 'app/shared/services/global-annotation-service';
-import { PdfFilesService } from 'app/shared/services/pdf-files.service';
 import { GlobalAnnotation } from 'app/interfaces/annotation';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { CollectionModal } from 'app/shared/utils/collection-modal';
+import { CollectionModel } from 'app/shared/utils/collection-model';
 import { tap } from 'rxjs/operators';
 import { FormControl, FormGroup } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
@@ -14,7 +13,13 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { HttpEventType } from '@angular/common/http';
 import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { PaginatedRequestOptions, ResultList, StandardRequestOptions } from '../../shared/schemas/common';
+import {
+  PaginatedRequestOptions,
+  ResultList,
+  StandardRequestOptions,
+} from '../../shared/schemas/common';
+import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
+import { FilesystemService } from '../../file-browser/services/filesystem.service';
 
 @Component({
     selector: 'app-annotations-table',
@@ -46,7 +51,7 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
         ...this.defaultLocator,
     };
 
-    readonly results = new CollectionModal<GlobalAnnotation>([], {
+    readonly results = new CollectionModel<GlobalAnnotation>([], {
         multipleSelection: true,
     });
 
@@ -66,10 +71,11 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
 
     constructor(
         private globalAnnotationService: GlobalAnnotationService,
-        private pdfFilesService: PdfFilesService,
         private readonly route: ActivatedRoute,
         private readonly errorHandler: ErrorHandler,
         private readonly progressDialog: ProgressDialog,
+        private readonly filesystemService: FilesystemService,
+        private readonly filesystemObjectActions: FilesystemObjectActions,
     ) {}
 
     ngOnInit() {
@@ -193,13 +199,6 @@ export class AnnotationTableComponent implements OnInit, OnDestroy {
                 const filename = event.headers.get('content-disposition').split('=')[1];
                 downloader(event.body, 'application/vnd.ms-excel', filename);
             }
-        }));
-    }
-
-    downloadFileReference(pid: number) {
-        this.subscriptions.add(this.pdfFilesService.downloadFile(pid).pipe().subscribe(resp => {
-            const filename = resp.headers.get('content-disposition').split('=')[1];
-            downloader(resp.body, 'application/pdf', filename);
         }));
     }
 }

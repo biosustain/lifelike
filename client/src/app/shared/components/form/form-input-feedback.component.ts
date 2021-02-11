@@ -9,6 +9,10 @@ import { getTopParent } from '../../utils/forms';
 export class FormInputFeedbackComponent {
   @Input() control: AbstractControl | undefined;
   @Input() errors = {};
+  /**
+   * Indicates whether this component is being used for the form itself.
+   */
+  @Input() formLevel = false;
 
   get dirty() {
     return this.control != null && (this.control.dirty || getTopParent(this.control).dirty);

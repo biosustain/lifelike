@@ -13,13 +13,8 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils.types import TSVectorType
 from neo4japp.models import (
     AppRole,
-    AppUser,
-    AccessControlPolicy,
     AccessActionType,
     AccessRuleType,
-    Directory,
-    Files,
-    Project,
     Projects,
     projects_collaborator_role,
 )
