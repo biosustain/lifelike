@@ -55,7 +55,6 @@ from neo4japp.utils.logger import UserEventLog
 from .filesystem import bp as filesystem_bp
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from neo4japp.schemas.annotations import (
-    CombinedAnnotationListSchema,
     AnnotationGenerationRequestSchema,
     RefreshEnrichmentAnnotationsRequestSchema,
     MultipleAnnotationGenerationResponseSchema,
@@ -386,9 +385,9 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 if file.enrichment_annotations:
                     for i in range(0, len(file.enrichment_annotations['genes'])):
                         # update enrichment with previously enriched
-                        # enrichment tables are annotated by rows
-                        # each row is its own PDF in a sense, so multiple API calls
-                        # need to consolidate them
+                        # enrichment tables are annotated by rows and cells
+                        # each cell is its own PDF in a sense, so multiple API calls
+                        # per row, thus need to consolidate them
                         enrichment['genes'][i] = file.enrichment_annotations['genes'][i]
 
                 for text_mapping in texts:
