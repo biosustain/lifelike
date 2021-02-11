@@ -18,6 +18,8 @@ export class ContentSearchService {
               protected readonly apiService: ApiService) {
   }
 
+  // TODO: Use endpoint `'annotations/generate'` instead
+  // then add an if block for mime_type?
   annotate(params: AnnotationRequestOptions): Observable<AnnotationResponse> {
     return this.http.post<AnnotationResponse>(
       `/api/filesystem/annotations/text/generate`,

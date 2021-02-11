@@ -55,9 +55,8 @@ from neo4japp.utils.logger import UserEventLog
 from .filesystem import bp as filesystem_bp
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from neo4japp.schemas.annotations import (
-    CombinedAnnotationListSchema,
     AnnotationGenerationRequestSchema,
-    TextAnnotationGenerationRequestSchema,
+    RefreshEnrichmentAnnotationsRequestSchema,
     MultipleAnnotationGenerationResponseSchema,
     GlobalAnnotationsDeleteSchema,
     CustomAnnotationCreateSchema,
@@ -69,6 +68,7 @@ from neo4japp.schemas.annotations import (
     CustomAnnotationListSchema
 )
 from neo4japp.schemas.filesystem import BulkFileRequestSchema
+from neo4japp.schemas.enrichment import EnrichmentTableSchema
 from neo4japp.services.annotations import AnnotationGraphService
 from neo4japp.utils.http import make_cacheable_file_response
 
@@ -113,6 +113,26 @@ class FileAnnotationsView(FilesystemBaseView):
             'results': results,
             'total': len(results),
         }))
+
+
+class EnrichmentAnnotationsView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    def get(self, hash_id: str):
+        """Fetch annotations for enrichment table."""
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+
+        if file.enrichment_annotations:
+            annotations = file.enrichment_annotations
+        else:
+            annotations = None
+
+        return jsonify({
+            'results': EnrichmentTableSchema().dump(annotations)
+        })
 
 
 class FileCustomAnnotationsListView(FilesystemBaseView):
@@ -318,6 +338,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
         organism = None
         method = params.get('method', AnnotationMethod.RULES)
+        enrichment = params.get('enrichment', None)
+        texts = params.get('texts', [])
 
         if params.get('organism'):
             organism = params['organism']
@@ -355,6 +377,84 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         'attempted': True,
                         'success': True,
                     }
+            elif file.mime_type == 'vnd.lifelike.document/enrichment-table' and enrichment:
+                all_annotations = []
+                if file.annotations:
+                    all_annotations = file.annotations
+
+                if file.enrichment_annotations:
+                    for i in range(0, len(file.enrichment_annotations['genes'])):
+                        # update enrichment with previously enriched
+                        # enrichment tables are annotated by rows and cells
+                        # each cell is its own PDF in a sense, so multiple API calls
+                        # per row, thus need to consolidate them
+                        enrichment['genes'][i] = file.enrichment_annotations['genes'][i]
+
+                for text_mapping in texts:
+                    text = text_mapping['text']
+                    try:
+                        annotations = self._annotate_text(
+                            method=method,
+                            organism=organism,
+                            text=text
+                        )
+                    except AnnotationError as e:
+                        current_app.logger.error(
+                            'Could not re-annotate file: %s, %s, %s', file.hash_id, file.filename, e)  # noqa
+                        results[file.hash_id] = {
+                            'attempted': True,
+                            'success': False,
+                        }
+                    else:
+                        current_app.logger.debug(
+                            'File successfully re-annotated: %s, %s', file.hash_id, file.filename)
+                        all_annotations.append(annotations)
+                        results[file.hash_id] = {
+                            'attempted': True,
+                            'success': True,
+                        }
+
+                        snippet = self._highlight_annotations(
+                            original_text=text,
+                            annotations=annotations['documents'][0]['passages'][0]['annotations']
+                        )
+                        if text_mapping.get('imported'):
+                            enrichment['genes'][text_mapping[
+                                'row']]['imported'] = snippet
+                        elif text_mapping.get('matched'):
+                            enrichment['genes'][text_mapping[
+                                'row']]['matched'] = snippet
+                        elif text_mapping.get('full_name'):
+                            enrichment['genes'][text_mapping[
+                                'row']]['full_name'] = snippet
+                        else:
+                            enrichment[
+                                'genes'][text_mapping[
+                                    'row']]['domains'][text_mapping[
+                                        'domain']][text_mapping[
+                                            'label']]['annotated_text'] = snippet
+                if all_annotations:
+                    update = {
+                        'id': file.id,
+                        'annotations': all_annotations,
+                        'annotations_date': datetime.now(TIMEZONE),
+                        'enrichment_annotations': enrichment
+                    }
+
+                    if organism.id != file.fallback_organism_id:
+                        update['fallback_organism'] = organism
+                        update['fallback_organism_id'] = organism.id
+
+                    updated_files.append(update)
+
+                    version = {
+                        'file_id': file.id,
+                        'cause': AnnotationChangeCause.SYSTEM_REANNOTATION,
+                        'custom_annotations': file.custom_annotations,
+                        'excluded_annotations': file.excluded_annotations,
+                        'user_id': current_user.id,
+                    }
+                    versions.append(version)
             else:
                 results[file.hash_id] = {
                     'attempted': False,
@@ -405,69 +505,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
         return update, version
 
-
-class TextAnnotationsGenerationView(FilesystemBaseView):
-    decorators = [auth.login_required]
-
-    @use_args(lambda request: TextAnnotationGenerationRequestSchema())
-    def post(self, params):
-        """Generate annotations for one or more files."""
-        current_user = g.current_user
-
-        # If done right, we would parse the XML but the built-in XML libraries in Python
-        # are susceptible to some security vulns, but because this is an internal API,
-        # we can accept that it can be janky
-        container_tag_re = re.compile("^<snippet>(.*)</snippet>$", re.DOTALL | re.IGNORECASE)
-        highlight_strip_tag_re = re.compile("^<highlight>([^<]+)</highlight>$", re.IGNORECASE)
-        highlight_add_tag_re = re.compile("^%%%%%-(.+)-%%%%%$", re.IGNORECASE)
-
-        results = []
-
-        organism = None
-        method = params.get('method', AnnotationMethod.RULES)
-        texts = params.get('texts', [])
-
-        if params.get('organism'):
-            organism = params['organism']
-
-        for text in texts:
-            annotations = []
-
-            # Remove the outer document tag
-            text = container_tag_re.sub("\\1", text)
-            # Remove the highlight tags to help the annotation parser
-            text = highlight_strip_tag_re.sub("%%%%%-\\1-%%%%%", text)
-
-            try:
-                annotations = self._annotate(
-                    method=method,
-                    organism=organism,
-                    text=text
-                )['documents'][0]['passages'][0]['annotations']
-            except AnnotationError as e:
-                current_app.logger.error('Could not annotate text.', e)
-
-            for annotation in annotations:
-                keyword = annotation['keyword']
-                text = re.sub(
-                    # Replace but outside tags (shh @ regex)
-                    f"({re.escape(keyword)})(?![^<]*>|[^<>]*</)",
-                    f'<annotation type="{annotation["meta"]["type"]}" '
-                    f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
-                    f'>\\1</annotation>',
-                    text,
-                    flags=re.IGNORECASE)
-
-            # Re-add the highlight tags
-            text = highlight_add_tag_re.sub("<highlight>\\1</highlight>", text)
-            # Re-wrap with document tags
-            text = f"<snippet>{text}</snippet>"
-
-            results.append(text)
-
-        return jsonify({'result': results})
-
-    def _annotate(
+    def _annotate_text(
         self,
         text: str,
         organism: Optional[FallbackOrganism] = None,
@@ -480,6 +518,68 @@ class TextAnnotationsGenerationView(FilesystemBaseView):
             text=text
         )
         return annotations_json
+
+    def _highlight_annotations(self, original_text: str, annotations: List[dict]):
+        # If done right, we would parse the XML but the built-in XML libraries in Python
+        # are susceptible to some security vulns, but because this is an internal API,
+        # we can accept that it can be janky
+        container_tag_re = re.compile('^<snippet>(.*)</snippet>$', re.DOTALL | re.IGNORECASE)
+        highlight_strip_tag_re = re.compile('^<highlight>([^<]+)</highlight>$', re.IGNORECASE)
+        highlight_add_tag_re = re.compile('^%%%%%-(.+)-%%%%%$', re.IGNORECASE)
+
+        # Remove the outer document tag
+        text = container_tag_re.sub('\\1', original_text)
+        # Remove the highlight tags to help the annotation parser
+        text = highlight_strip_tag_re.sub('%%%%%-\\1-%%%%%', text)
+
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # TODO: See JIRA BUG LL-2451
+        #
+        for annotation in annotations:
+            keyword = annotation['keyword']
+            text = re.sub(
+                # Replace but outside tags (shh @ regex)
+                f'({re.escape(keyword)})(?![^<]*>|[^<>]*</)',
+                f'<annotation type="{annotation["meta"]["type"]}" '
+                f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
+                f'>\\1</annotation>',
+                text,
+                flags=re.IGNORECASE)
+
+        # Re-add the highlight tags
+        text = highlight_add_tag_re.sub('<highlight>\\1</highlight>', text)
+        # Re-wrap with document tags
+        return f'<snippet>{text}</snippet>'
+
+
+class RefreshEnrichmentAnnotationsView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    @use_args(lambda request: BulkFileRequestSchema())
+    @use_args(lambda request: RefreshEnrichmentAnnotationsRequestSchema())
+    def post(self, targets, params):
+        """Clear out the annotations."""
+        current_user = g.current_user
+
+        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']),
+                                                   lazy_load_content=True)
+        self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
+
+        refresh = params.get('refresh', False)
+
+        updated_files = []
+        if refresh:
+            for file in files:
+                update = {
+                    'id': file.id,
+                    'annotations': [],
+                    'annotations_date': None,
+                    'enrichment_annotations': None
+                }
+                updated_files.append(update)
+            db.session.bulk_update_mappings(Files, updated_files)
+            db.session.commit()
+        return jsonify({'results': refresh})
 
 
 @bp.route('/global-list/inclusions')
@@ -708,6 +808,9 @@ filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations',
     view_func=FileAnnotationsView.as_view('file_annotations_list'))
 filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/enrichment/annotations',
+    view_func=EnrichmentAnnotationsView.as_view('enrichment_file_annotations_list'))
+filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/custom',
     view_func=FileCustomAnnotationsListView.as_view('file_custom_annotations_list'))
 filesystem_bp.add_url_rule(
@@ -726,5 +829,6 @@ filesystem_bp.add_url_rule(
     'annotations/generate',
     view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'))
 filesystem_bp.add_url_rule(
-    'annotations/text/generate',
-    view_func=TextAnnotationsGenerationView.as_view('text_annotation_generation'))
+    'annotations/refresh',
+    # TODO: this can potentially become a generic annotations refresh
+    view_func=RefreshEnrichmentAnnotationsView.as_view('refresh_annotations'))

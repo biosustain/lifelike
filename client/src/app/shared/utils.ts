@@ -1,4 +1,8 @@
 import { OperatingSystems } from 'app/interfaces/shared.interface';
+import { catchError } from 'rxjs/operators';
+import { from, Observable, throwError, pipe } from 'rxjs';
+import { UnaryFunction } from 'rxjs/src/internal/types';
+import { HttpErrorResponse } from '@angular/common/http';
 
 export function getRandomColor() {
   const letters = '0123456789ABCDEF';
@@ -180,4 +184,20 @@ export function downloader(blobData: any, mimeType: string, saveAs: string) {
     window.URL.revokeObjectURL(data);
     link.remove();
   }, 100);
+}
+
+/**
+ * Catches and swallows 404 errors, preventing it
+ * from bubbling up.
+ */
+export function ignore404Errors<T>(): UnaryFunction<Observable<T>, Observable<T>> {
+  return pipe(catchError(error => {
+    if (error instanceof HttpErrorResponse) {
+      const res = error as HttpErrorResponse;
+      if (res.status === 404) {
+        return from([null]);
+      }
+    }
+    return throwError(error);
+  }));
 }
