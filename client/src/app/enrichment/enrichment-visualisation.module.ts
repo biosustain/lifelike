@@ -7,11 +7,11 @@ import {EnrichmentVisualisationEditDialogComponent} from './components/visualisa
 import {EnrichmentVisualisationOrderDialogComponent} from './components/visualisation/dialog/enrichment-visualisation-order-dialog.component';
 import {EnrichmentVisualisationService} from './services/enrichment-visualisation.service';
 import {EnrichmentVisualisationTypeProvider} from './providers/enrichment-visualisation.type-provider';
-import {ChartModule} from "./components/visualisation/chart/chart.module";
-import {WordCloudModule} from "./components/visualisation/word-cloud/word-cloud.module";
-import {EnrichmentTableViewerComponent} from "./components/visualisation/table/enrichment-table-viewer.component";
-import {EnrichmentVisualisationChartViewerComponent} from "./components/visualisation/enrichment-visualisation-chart-viewer.component";
-import {EnrichmentVisualisationCloudViewerComponent} from "./components/visualisation/enrichment-visualisation-cloud-viewer.component";
+import {ChartModule} from './components/visualisation/chart/chart.module';
+import {WordCloudModule} from './components/visualisation/word-cloud/word-cloud.module';
+import {EnrichmentTableViewerComponent} from './components/visualisation/table/enrichment-table-viewer.component';
+import {EnrichmentVisualisationChartViewerComponent} from './components/visualisation/enrichment-visualisation-chart-viewer.component';
+import {EnrichmentVisualisationCloudViewerComponent} from './components/visualisation/enrichment-visualisation-cloud-viewer.component';
 
 @NgModule({
   declarations: [
