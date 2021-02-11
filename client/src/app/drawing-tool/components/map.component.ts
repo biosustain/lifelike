@@ -102,30 +102,32 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   // ========================================
 
   ngAfterViewInit() {
-    const style = new KnowledgeMapStyle();
-    this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
-      nodeRenderStyle: style,
-      edgeRenderStyle: style,
+    Promise.resolve().then(() => {
+      const style = new KnowledgeMapStyle();
+      this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
+        nodeRenderStyle: style,
+        edgeRenderStyle: style,
+      });
+
+      this.registerGraphBehaviors();
+
+      this.graphCanvas.startParentFillResizeListener();
+      this.ngZone.runOutsideAngular(() => {
+        this.graphCanvas.startAnimationLoop();
+      });
+
+      this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
+        this.search();
+      });
+
+      this.unsavedChangesSubscription = this.unsavedChanges$.subscribe(value => {
+        this.emitModuleProperties();
+      });
+
+      if (this.pendingInitialize) {
+        this.initializeMap();
+      }
     });
-
-    this.registerGraphBehaviors();
-
-    this.graphCanvas.startParentFillResizeListener();
-    this.ngZone.runOutsideAngular(() => {
-      this.graphCanvas.startAnimationLoop();
-    });
-
-    this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
-      this.search();
-    });
-
-    this.unsavedChangesSubscription = this.unsavedChanges$.subscribe(value => {
-      this.emitModuleProperties();
-    });
-
-    if (this.pendingInitialize) {
-      this.initializeMap();
-    }
   }
 
   @Input()

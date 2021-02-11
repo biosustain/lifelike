@@ -1155,7 +1155,8 @@ class FileAnnotationHistoryView(FilesystemBaseView):
 
         query = db.session.query(FileAnnotationsVersion) \
             .filter(FileAnnotationsVersion.file == file) \
-            .order_by(desc(FileAnnotationsVersion.creation_date))
+            .order_by(desc(FileAnnotationsVersion.creation_date)) \
+            .options(joinedload(FileAnnotationsVersion.user))
 
         per_page = pagination['limit']
         page = pagination['page']
@@ -1174,6 +1175,7 @@ class FileAnnotationHistoryView(FilesystemBaseView):
         for newer, older in window(items):
             results.append({
                 'date': older.creation_date,
+                'user': newer.user,
                 'cause': older.cause,
                 'inclusion_changes': self._get_annotation_changes(
                     older.custom_annotations, newer.custom_annotations, 'inclusion'),
