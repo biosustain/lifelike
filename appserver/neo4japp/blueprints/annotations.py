@@ -14,6 +14,7 @@ from flask import (
     jsonify,
 )
 from flask_apispec import use_kwargs
+from marshmallow import validate, fields
 from sqlalchemy.exc import SQLAlchemyError
 from webargs.flaskparser import use_args
 
@@ -26,7 +27,7 @@ from neo4japp.constants import TIMEZONE
 from neo4japp.data_transfer_objects.common import ResultList
 from neo4japp.database import (
     db,
-    get_excel_export_service, get_manual_annotation_service,
+    get_excel_export_service, get_manual_annotation_service, get_sorted_annotation_service,
 )
 from neo4japp.exceptions import (
     AnnotationError
@@ -58,6 +59,8 @@ from ..schemas.annotations import CombinedAnnotationListSchema, \
     CustomAnnotationListSchema
 from ..schemas.filesystem import BulkFileRequestSchema
 from ..services.annotations import AnnotationGraphService
+from ..services.annotations.sorted_annotation_service import default_sorted_annotation, \
+    sorted_annotations_dict
 from ..utils.http import make_cacheable_file_response
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
@@ -237,6 +240,78 @@ class FileAnnotationCountsView(FilesystemBaseView):
         buffer = io.StringIO()
         writer = csv.writer(buffer, delimiter="\t", quotechar='"')
         for row in self.get_rows(files):
+            writer.writerow(row)
+
+        result = buffer.getvalue().encode('utf-8')
+
+        return make_cacheable_file_response(
+            request,
+            result,
+            etag=hashlib.sha256(result).hexdigest(),
+            filename=f'{file.filename} - Annotations.tsv',
+            mime_type='text/tsv'
+        )
+
+
+class FileAnnotationCountsSortView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    def get_rows(self, files, sort):
+        annotation_service = get_sorted_annotation_service(sort)
+        counts = annotation_service.get_annotations(files)
+
+        yield [
+            'entity_id',
+            'type',
+            'text',
+            'primary_name',
+            'count',
+        ]
+
+        count_keys = sorted(
+            counts,
+            key=lambda key: counts[key]['count'],
+            reverse=True
+        )
+
+        for key in count_keys:
+            annotation = counts[key]['annotation']
+            meta = annotation['meta']
+            if annotation.get('keyword', None) is not None:
+                text = annotation['keyword'].strip()
+            else:
+                text = annotation['meta']['allText'].strip()
+            yield [
+                meta['id'],
+                meta['type'],
+                text,
+                annotation.get('primaryName', '').strip(),
+                counts[key]['count']
+            ]
+
+    @use_args({
+        "sort": fields.Str(
+            missing=default_sorted_annotation.id,
+            validate=validate.OneOf(sorted_annotations_dict)
+        ),
+        "hash_id": fields.Str()
+    })
+    def post(self, args: any, hash_id: str):
+        print(args)
+        sort = args['sort']
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+        files = self.get_nondeleted_recycled_children(
+            Files.id == file.id,
+            children_filter=Files.mime_type == 'application/pdf',
+            lazy_load_content=True
+        )
+
+        buffer = io.StringIO()
+        writer = csv.writer(buffer, delimiter="\t", quotechar='"')
+        for row in self.get_rows(files, sort):
             writer.writerow(row)
 
         result = buffer.getvalue().encode('utf-8')
@@ -631,6 +706,9 @@ filesystem_bp.add_url_rule(
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/counts',
     view_func=FileAnnotationCountsView.as_view('file_annotation_counts'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/counts-sort',
+    view_func=FileAnnotationCountsSortView.as_view('file_annotation_counts_sort'))
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/gene-counts',
     view_func=FileAnnotationGeneCountsView.as_view('file_annotation_gene_counts'))
