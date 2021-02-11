@@ -4,7 +4,7 @@ import {Subscription} from 'rxjs';
 import {ModuleAwareComponent, ModuleProperties} from 'app/shared/modules';
 import {ErrorHandler} from 'app/shared/services/error-handler.service';
 
-import {EnrichmentVisualisationService,} from '../../services/enrichment-visualisation.service';
+import {EnrichmentVisualisationService} from '../../services/enrichment-visualisation.service';
 
 import {WordCloudComponent} from './word-cloud/word-cloud.component';
 
@@ -43,7 +43,7 @@ export class EnrichmentVisualisationCloudViewerComponent implements OnInit, OnDe
   }
 
   ngOnDestroy() {
-    console.log("dsfgaf")
+    // todo
   }
 
   shouldConfirmUnload() {
