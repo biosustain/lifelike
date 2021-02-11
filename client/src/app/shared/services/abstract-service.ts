@@ -1,6 +1,9 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthenticationService } from '../../auth/services/authentication.service';
 
+/**
+ * @deprecated Angular makes inheritance very difficult so use ApiService (see FilesystemService)
+ */
 export abstract class AbstractService {
   constructor(
     readonly auth: AuthenticationService,
@@ -8,6 +11,9 @@ export abstract class AbstractService {
   ) {
   }
 
+  /**
+   * @deprecated Angular makes inheritance very difficult so use ApiService (see FilesystemService)
+   */
   protected getHttpOptions(authenticated = false, options: ServiceCallOptions = {}) {
     const headers: { [k: string]: string } = {};
 

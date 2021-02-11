@@ -4,6 +4,7 @@
             "analyzer": {
               "filename_analyzer": {
                 "tokenizer": "standard",
+                "filter": ["lowercase"],
                 "char_filter": [
                   "replace_dot"
                 ]
@@ -45,6 +46,9 @@
             "project_id": {
                 "type": "integer"
             },
+            "project_hash_id": {
+                "type": "keyword"
+            },
             "project_name": {
                 "type": "text"
             },
@@ -55,10 +59,16 @@
                 "type": "boolean"
             },
             "id": {
+                "type": "integer"
+            },
+            "hash_id": {
                 "type": "keyword"
             },
-            "type": {
+            "mime_type": {
                 "type": "keyword"
+            },
+            "data_ok": {
+                "type": "boolean"
             }
         }
     }
