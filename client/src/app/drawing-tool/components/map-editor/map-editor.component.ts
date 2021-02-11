@@ -13,7 +13,6 @@ import { cloneDeep } from 'lodash';
 import { KnowledgeMap, UniversalGraph, UniversalGraphNode } from '../../services/interfaces';
 
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
-import { MovableNode } from 'app/graph-viewer/renderers/canvas/behaviors/node-move';
 import { InteractiveEdgeCreation } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation';
 import { HandleResizable } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable';
 import { DeleteKeyboardShortcut } from '../../../graph-viewer/renderers/canvas/behaviors/delete-keyboard-shortcut';
@@ -26,16 +25,13 @@ import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { GraphAction, GraphActionReceiver } from '../../../graph-viewer/actions/actions';
 import { mergeDeep } from '../../../graph-viewer/utils/objects';
 import { mapBlobToBuffer, mapBufferToJson, readBlobAsBuffer } from '../../../shared/utils/files';
-import {
-  ObjectEditDialogComponent,
-  ObjectEditDialogValue,
-} from '../../../file-browser/components/dialog/object-edit-dialog.component';
 import { CanvasGraphView } from '../../../graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { LockError } from '../../../file-browser/services/filesystem.service';
 import { ObjectLock } from '../../../file-browser/models/object-lock';
 import { makeid } from '../../../shared/utils/identifiers';
 import { MAP_MIMETYPE } from '../../providers/map.type-provider';
+import { InfoPanel } from '../../models/info-panel';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -46,6 +42,7 @@ import { MAP_MIMETYPE } from '../../providers/map.type-provider';
   ],
 })
 export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefined> implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('infoPanelSidebar', {static: false}) infoPanelSidebarElementRef: ElementRef;
   @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
   autoSaveDelay = 5000;
   autoSaveSubscription: Subscription;
@@ -61,6 +58,9 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   locks: ObjectLock[] = [];
   private lastLockCheckTime = window.performance.now();
   private lastActivityTime = window.performance.now();
+  reloadPopupDismissed = false;
+  infoPanel = new InfoPanel();
+  activeTab: string;
 
   dropTargeted = false;
 
@@ -95,9 +95,11 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
   ngAfterViewInit() {
     super.ngAfterViewInit();
 
-    this.subscriptions.add(this.graphCanvas.historyChanges$.subscribe(() => {
-      this.unsavedChanges$.next(true);
-    }));
+    Promise.resolve().then(() => {
+      this.subscriptions.add(this.graphCanvas.historyChanges$.subscribe(() => {
+        this.unsavedChanges$.next(true);
+      }));
+    });
   }
 
   ngOnDestroy() {
@@ -236,6 +238,16 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
           },
         }, true,
       ));
+      this.graphCanvas.focus();
+
+      // Focus the input on the sidebar
+      setTimeout(() => {
+        const initialFocusElement = this.infoPanelSidebarElementRef.nativeElement.querySelector('.map-editor-initial-focus');
+        if (initialFocusElement) {
+          initialFocusElement.focus();
+          initialFocusElement.select();
+        }
+      }, 100);
     }
   }
 
@@ -325,6 +337,10 @@ export class MapEditorComponent extends MapViewComponent<UniversalGraph | undefi
     } else {
       doReload();
     }
+  }
+
+  dismissReloadPopup() {
+    this.reloadPopupDismissed = true;
   }
 
   @HostListener('window:mousemove', ['$event'])
