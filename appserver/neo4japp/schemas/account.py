@@ -18,6 +18,10 @@ class UserSchema(CamelCaseSchema):
     # DO NOT return private information (like email) in this schema
 
 
+class UserSchemaWithId(UserSchema):
+    id = fields.Integer()
+
+
 # Requests
 # ----------------------------------------
 

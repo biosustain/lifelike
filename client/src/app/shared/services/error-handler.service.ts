@@ -1,4 +1,4 @@
-import { Observable, pipe, throwError } from 'rxjs';
+import { Observable, pipe, throwError, EMPTY } from 'rxjs';
 import { catchError, first } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessageDialog } from './message-dialog.service';
@@ -110,7 +110,7 @@ export class ErrorHandler {
       {title, message, detail, transactionId, ...logInfo}
     ).pipe(
       first(),
-      catchError(() => throwError('Client logging is currently not working.'))
+      catchError(() => EMPTY)
     ).subscribe();
 
     this.messageDialog.display({
