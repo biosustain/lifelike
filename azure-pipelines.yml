@@ -29,6 +29,11 @@ stages:
       vmImage: $(vmImageName)
     steps:
 
+    - task: Docker@v2
+      inputs:
+        containerRegistry: "$(containerRegistry)"
+        command: 'login'
+
     - script: "docker pull $(dockerRegistryServiceConnection)/kg-appserver:latest"
       displayName: Pull latest appserver image for caching
       continueOnError: true
@@ -43,6 +48,7 @@ stages:
         command: buildAndPush
         repository: kg-appserver
         dockerfile: appserver/Dockerfile
+        arguments: '--cache-from=$(dockerRegistryServiceConnection)/kg-appserver:latest'
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
@@ -54,6 +60,7 @@ stages:
        command: buildAndPush
        repository: kg-webserver
        dockerfile: client/Dockerfile
+       arguments: '--cache-from=$(dockerRegistryServiceConnection)/kg-appserver:latest'
        containerRegistry: $(dockerRegistryServiceConnection)
        tags: |
          $(tag)
