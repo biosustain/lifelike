@@ -93,7 +93,7 @@
                       <h5 class="text-truncate" [style.padding]="'1px 0'">
                         <app-file-type-label [object]="result.item" [showLabel]="false"
                           class="mr-1"></app-file-type-label>
-                        <a [appLink]="getObjectCommands(result.item)" [newTab]="true" [sideBySide]="true">
+                        <a [appLink]="result.item.getCommands(false)" [newTab]="true" [sideBySide]="true">
                           <app-term-highlight
                             [text]="result.item.name"
                             [highlightTerms]="resultQuery ? resultQuery.phrases : []"
