@@ -1,12 +1,9 @@
 from typing import Dict, Tuple
 
+from neo4japp.services.annotations import ManualAnnotationService
 from numpy import log
 from pandas import DataFrame
-from sqlalchemy import and_
 from scipy.stats import mannwhitneyu
-
-from neo4japp.models import Files
-from neo4japp.services.annotations import ManualAnnotationService
 
 
 class SortedAnnotation:
@@ -35,33 +32,46 @@ class SortedAnnotation:
 class SumLogCountSA(SortedAnnotation):
     id = 'sum_log_count'
 
-    def get_annotations(self, project_id) -> Dict[Tuple[str, str, str], float]:
-        files_annotations = self.annotation_service.get_files_annotations_in_project(project_id)
+    def get_annotations(self, files) -> Dict[Tuple[str, str, str], float]:
+        files_annotations = [];
+        key_map = {}
+        for file in files:
+            annotations = self.annotation_service.get_file_annotations(file)
+            for annotation in annotations:
+                key = annotation['meta']['id']
+                key_map[key] = annotation
+                files_annotations.append((file.hash_id, key))
         df = DataFrame(
-            [
-                (file_id, SortedAnnotation.meta_to_id_tuple(annotation))
-                for (file_id, annotations) in files_annotations.items()
-                for annotation in annotations
-            ],
-            columns=['file_id', 'annotation']
+            files_annotations,
+            columns=['file_id', 'key']
         )
-        gdf = df.groupby(["annotation", "file_id"])
-        return log(gdf.size()).sum(level="annotation").to_dict()
+        gdf = df.groupby(["key", "file_id"])
+        distinct_annotations = {}
+        for key, count in log(gdf.size()).sum(level="key").items():
+            distinct_annotations[key] = {
+                'annotation': key_map[key],
+                'count': count
+            }
+        return distinct_annotations
 
 
 class FrequencySA(SortedAnnotation):
     id = 'frequency'
 
-    def get_annotations(self, project_id) -> Dict[Tuple[str, str, str], float]:
+    def get_annotations(self, files) -> Dict[Tuple[str, str, str], float]:
         distinct_annotations: Dict[Tuple[str, str, str], float] = {}
-        for annotation in map(
-                SortedAnnotation.meta_to_id_tuple,
-                self.annotation_service.get_combined_annotations_in_project(project_id)
-        ):
-            if annotation in distinct_annotations:
-                distinct_annotations[annotation] += 1
-            else:
-                distinct_annotations[annotation] = 1
+
+        for file in files:
+            annotations = self.annotation_service.get_file_annotations(file)
+            for annotation in annotations:
+                key = annotation['meta']['id']
+                if key in distinct_annotations:
+                    distinct_annotations[key]['count'] += 1
+                else:
+                    distinct_annotations[key] = {
+                        'annotation': annotation,
+                        'count': 1
+                    }
 
         return distinct_annotations
 
@@ -69,26 +79,34 @@ class FrequencySA(SortedAnnotation):
 class MannWhitneyUSA(SortedAnnotation):
     id = 'mwu'
 
-    def get_annotations(self, project_id) -> Dict[Tuple[str, str, str], float]:
-        files_annotations = self.annotation_service.get_files_annotations_in_project(project_id)
+    def get_annotations(self, files) -> Dict[Tuple[str, str, str], float]:
+        files_annotations = [];
+        key_map = {}
+        for file in files:
+            annotations = self.annotation_service.get_file_annotations(file)
+            for annotation in annotations:
+                key = annotation['meta']['id']
+                key_map[key] = annotation
+                files_annotations.append((file.hash_id, key))
+
         df = DataFrame(
-                [
-                    (file_id, SortedAnnotation.meta_to_id_tuple(annotation))
-                    for (file_id, annotations) in files_annotations.items()
-                    for annotation in annotations
-                ],
-                columns=['file_id', 'annotation']
-            )\
-            .groupby(["annotation", "file_id"])\
+            files_annotations,
+            columns=['file_id', 'key']
+        ) \
+            .groupby(["key", "file_id"]) \
             .size()
         distinct_annotations = {}
-        for annotation, group in df.groupby('annotation'):
-            distinct_annotations[annotation] = -log(
-                mannwhitneyu(
-                    group,
-                    df[df.index.get_level_values('annotation') != annotation]
-                ).pvalue
-            )
+        for key, group in df.groupby('key'):
+            distinct_annotations[key] = {
+                'annotation': key_map[key],
+                'count': -log(
+                    mannwhitneyu(
+                        group,
+                        df[df.index.get_level_values('key') != key]
+                    ).pvalue
+                )
+            }
+
         return distinct_annotations
 
 

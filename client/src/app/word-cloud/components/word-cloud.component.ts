@@ -10,9 +10,10 @@ import { LegendService } from 'app/shared/services/legend.service';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
-import {defaultSortingAlgorithm, SortingAlgorithm} from './sorting-algorithms';
+import {defaultSortingAlgorithm, SortingAlgorithm} from '../sorting/sorting-algorithms';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
+import { WordCloudService } from '../services/word-cloud.service';
 
 @Component({
   selector: 'app-word-cloud',
@@ -44,7 +45,7 @@ export class WordCloudComponent {
 
   keywordsShown = true;
 
-  constructor(protected readonly pdfAnnotationService: AnnotationsService,
+  constructor(protected readonly wordCloudService: WordCloudService,
               protected readonly legendService: LegendService) {
     this.initWordCloud();
   }
@@ -53,7 +54,7 @@ export class WordCloudComponent {
     this.loadTask = new BackgroundTask(() => {
       return combineLatest(
         this.legendService.getAnnotationLegend(),
-        this.wordCloudService.getSortedCombinedAnnotations(this.projectName, this.fileId, this.sorting.id),
+        this.wordCloudService.getSortedCombinedAnnotations(this.object.hashId, this.sorting.id),
       );
     });
   }
