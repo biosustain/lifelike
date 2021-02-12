@@ -1,6 +1,15 @@
-import { Component, Input } from '@angular/core';
+import { Component, ElementRef, Input } from '@angular/core';
 import { annotationTypesMap } from '../annotation-styles';
-import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
+import {
+  Hyperlink,
+  Reference,
+  Source,
+  UniversalGraphNode,
+  UniversalGraphNodeTemplate,
+} from '../../drawing-tool/services/interfaces';
+import Color from 'color';
+import { createNodeDragImage } from '../../drawing-tool/utils/drag';
+import { isCtrlOrMetaPressed } from '../utils';
 
 @Component({
   selector: 'app-highlight-text',
@@ -10,7 +19,10 @@ import { UniversalGraphNode } from '../../drawing-tool/services/interfaces';
   ],
 })
 export class HighlightTextComponent {
-  node: Element;
+  node: Node | Element;
+
+  constructor(private readonly elementRef: ElementRef) {
+  }
 
   @Input()
   set highlight(data) {
@@ -30,8 +42,12 @@ export class HighlightTextComponent {
   }
 
   get annotationColor() {
-    if (this.node.tagName === 'annotation') {
-      const typeId = this.node.getAttribute('type').toLowerCase();
+    if (!this.node || this.node.nodeType !== Node.ELEMENT_NODE) {
+      return;
+    }
+    const element = this.node as Element;
+    if (element.tagName === 'annotation') {
+      const typeId = element.getAttribute('type').toLowerCase();
       const type = annotationTypesMap.get(typeId);
       if (type != null) {
         return type.color;
@@ -40,28 +56,40 @@ export class HighlightTextComponent {
     return null;
   }
 
-  dragStarted(event: DragEvent) {
-    if (!this.node) {
+  get annotationBackgroundColor() {
+    const color = this.annotationColor;
+    if (color != null) {
+      const colorObj = Color(color);
+      const rgb = colorObj.object();
+      return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
+    } else {
+      return null;
+    }
+  }
+
+  dragStart(event: DragEvent) {
+    if (!this.node || this.node.nodeType !== Node.ELEMENT_NODE) {
       return;
     }
-    const rawTypeId = this.node.getAttribute('type');
+    const element = this.node as Element;
+    const rawTypeId = element.getAttribute('type');
     if (rawTypeId == null) {
       return;
     }
 
     const typeId = rawTypeId.toLowerCase();
-    const fileId = this.node.getAttribute('file-id');
-    const url = this.node.getAttribute('url');
-    const doi = this.node.getAttribute('doi');
-    const uploadUrl = this.node.getAttribute('upload-url');
-    const metaData = this.node.getAttribute('meta');
+    const fileId = element.getAttribute('file-id');
+    const url = element.getAttribute('url');
+    const doi = element.getAttribute('doi');
+    const uploadUrl = element.getAttribute('upload-url');
+    const metaData = element.getAttribute('meta');
     let search = [];
-    let text = this.node.textContent;
+    let text = element.textContent;
     let hyperlink = '';
 
-    const sources = [];
-    const references = [];
-    const hyperlinks = [];
+    const sources: Source[] = [];
+    const references: Reference[] = [];
+    const hyperlinks: Hyperlink[] = [];
 
     if (fileId != null) {
       references.push({
@@ -101,7 +129,9 @@ export class HighlightTextComponent {
         };
       });
 
-      text = meta.allText;
+      if (meta.allText != null) {
+        text = meta.allText;
+      }
       hyperlink = meta.idHyperlink || '';
     }
 
@@ -111,17 +141,16 @@ export class HighlightTextComponent {
       hyperlinks.push({
         domain: 'Annotation URL',
         url: hyperlink,
+        isDatabase: false,
       });
 
       references.push({
         type: 'DATABASE',
-        url: hyperlink,
+        id: hyperlink,
       });
     }
 
-    const dataTransfer: DataTransfer = event.dataTransfer;
-    dataTransfer.setData('text/plain', text);
-    dataTransfer.setData('application/lifelike-node', JSON.stringify({
+    const copiedNode: UniversalGraphNodeTemplate = {
       display_name: text,
       label: typeId,
       sub_labels: [],
@@ -135,6 +164,42 @@ export class HighlightTextComponent {
       style: {
         showDetail: typeId === 'link',
       },
-    } as Partial<UniversalGraphNode>));
+    };
+
+    const dragImageNode: UniversalGraphNode = {
+      ...copiedNode,
+      hash: '',
+      data: {
+        ...copiedNode.data,
+        x: 0,
+        y: 0,
+      },
+    };
+
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    createNodeDragImage(dragImageNode).addDataTransferData(dataTransfer);
+    dataTransfer.setData('text/plain', text);
+    dataTransfer.setData('application/lifelike-node', JSON.stringify(copiedNode));
+
+    this.selectText();
+
+    event.stopPropagation();
   }
+
+  mouseDown(event: MouseEvent) {
+    if (isCtrlOrMetaPressed(event) && this.node && this.node.nodeType === Node.ELEMENT_NODE
+      && (this.node as Element).getAttribute('type')) {
+      this.selectText();
+      event.stopPropagation();
+    }
+  }
+
+  private selectText() {
+    const range = document.createRange();
+    range.selectNode(this.elementRef.nativeElement);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+
 }

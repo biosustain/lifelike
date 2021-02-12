@@ -100,11 +100,14 @@ def annotate(texts):
         except Exception as e:
             pass
 
-        for annotation in annotations:
+        # Sort so longer keywords come first because the replacement is greedy
+        sorted_annotations = sorted(annotations, key=lambda annotation: -len(annotation['keyword']))
+
+        for annotation in sorted_annotations:
             keyword = annotation['keyword']
             text = re.sub(
                 # Replace but outside tags (shh @ regex)
-                f"({re.escape(keyword)})(?![^<]*>|[^<>]*</)",
+                f"(?<!\\w)({re.escape(keyword)})(?!\\w)(?![^<]*>|[^<>]*</)",
                 f'<annotation type="{annotation["meta"]["type"]}" '
                 f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
                 f'>\\1</annotation>',
