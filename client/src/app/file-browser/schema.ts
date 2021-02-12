@@ -219,7 +219,7 @@ export interface PDFAnnotationGenerationRequest extends AnnotationGenerationRequ
   annotationMethod?: AnnotationMethod;
 }
 
-export interface TextAnnotationGenerationRequest extends AnnotationGenerationRequest {
+export interface TextAnnotationGenerationRequest extends PDFAnnotationGenerationRequest {
   texts?: EnrichmentTextMapping[];
   enrichment?: EnrichmentResult;
 }
