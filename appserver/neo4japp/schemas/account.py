@@ -9,6 +9,14 @@ from neo4japp.schemas.common import ResultListSchema
 # Users
 # ========================================
 
+class UserCreateSchema(CamelCaseSchema):
+    first_name = fields.String()
+    last_name = fields.String()
+    username = fields.String()
+    email = fields.Email()
+    password = fields.String()
+
+
 class UserSchema(CamelCaseSchema):
     """Generic schema for returning public information about a user."""
     hash_id = fields.String()
@@ -20,6 +28,7 @@ class UserSchema(CamelCaseSchema):
 
 class UserSchemaWithId(UserSchema):
     id = fields.Integer()
+    roles = fields.List(fields.String())
 
 
 # Requests
