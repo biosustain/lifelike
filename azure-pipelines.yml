@@ -32,11 +32,11 @@ stages:
               containerRegistry: $(dockerRegistryServiceConnection)
               command: "login"
 
-          - script: "docker pull $(dockerRegistryServiceConnection)/kg-appserver:latest"
+          - script: "docker pull $(containerRegistry)/kg-appserver:latest"
             displayName: Pull latest appserver image for caching
             continueOnError: true
 
-          - script: "docker pull $(dockerRegistryServiceConnection)/kg-webserver:latest"
+          - script: "docker pull $(containerRegistry)/kg-webserver:latest"
             displayName: Pull latest webserver image for caching
             continueOnError: true
 
@@ -46,7 +46,7 @@ stages:
               command: buildAndPush
               repository: kg-appserver
               dockerfile: appserver/Dockerfile
-              arguments: "--cache-from=$(dockerRegistryServiceConnection)/kg-appserver:latest"
+              arguments: "--cache-from=$(containerRegistry)/kg-appserver:latest"
               containerRegistry: $(dockerRegistryServiceConnection)
               tags: |
                 $(tag)
@@ -58,7 +58,7 @@ stages:
               command: buildAndPush
               repository: kg-webserver
               dockerfile: client/Dockerfile
-              arguments: "--cache-from=$(dockerRegistryServiceConnection)/kg-appserver:latest"
+              arguments: "--cache-from=$(containerRegistry)/kg-appserver:latest"
               containerRegistry: $(dockerRegistryServiceConnection)
               tags: |
                 $(tag)
