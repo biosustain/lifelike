@@ -43,7 +43,7 @@ stages:
           - task: Docker@2
             displayName: Build Appserver Image
             inputs:
-              command: buildAndPush
+              command: build
               repository: kg-appserver
               dockerfile: appserver/Dockerfile
               arguments: "--cache-from=$(containerRegistry)/kg-appserver:latest"
@@ -53,12 +53,32 @@ stages:
                 latest
 
           - task: Docker@2
+            displayName: Push Appserver Image
+            inputs:
+              command: push
+              repository: kg-appserver
+              containerRegistry: $(dockerRegistryServiceConnection)
+              tags: |
+                $(tag)
+                latest
+
+          - task: Docker@2
             displayName: Build Webserver Image
             inputs:
-              command: buildAndPush
+              command: build
               repository: kg-webserver
               dockerfile: client/Dockerfile
               arguments: "--cache-from=$(containerRegistry)/kg-webserver:latest"
+              containerRegistry: $(dockerRegistryServiceConnection)
+              tags: |
+                $(tag)
+                latest
+
+          - task: Docker@2
+            displayName: Push Webserver Image
+            inputs:
+              command: push
+              repository: kg-webserver
               containerRegistry: $(dockerRegistryServiceConnection)
               tags: |
                 $(tag)
