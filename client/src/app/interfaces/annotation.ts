@@ -25,4 +25,7 @@ export interface GlobalAnnotation {
     comment: string;
 }
 
-export type AnnotationMethod = 'NLP' | 'Rules Based';
+export type AnnotationMethods = 'NLP' | 'Rules Based';
+export const ANNOTATIONMODELS = new Set(
+    ['Anatomy', 'Chemical', 'Compound', 'Disease', 'Food', 'Gene',
+    'Phenomena', 'Phenotype', 'Phenotype', 'Protein', 'Species']);

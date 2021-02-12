@@ -4,7 +4,7 @@ import {
   AnnotationChangeExclusionMeta,
   Meta,
 } from '../pdf-viewer/annotation-type';
-import { AnnotationMethod } from '../interfaces/annotation';
+import { AnnotationMethods } from '../interfaces/annotation';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
 import { FilePrivileges, ProjectPrivileges } from './models/filesystem-object';
 import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
@@ -216,7 +216,7 @@ export interface AnnotationGenerationRequest {
 
 export interface PDFAnnotationGenerationRequest extends AnnotationGenerationRequest {
   organism?: OrganismAutocomplete;
-  annotationMethod?: AnnotationMethod;
+  annotationMethod?: AnnotationMethods;
 }
 
 export interface TextAnnotationGenerationRequest extends AnnotationGenerationRequest {
