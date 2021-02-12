@@ -19,7 +19,7 @@ import { isCtrlOrMetaPressed } from '../utils';
   ],
 })
 export class HighlightTextComponent {
-  node: Node | Element;
+  node: Node;
 
   constructor(private readonly elementRef: ElementRef) {
   }
@@ -39,6 +39,10 @@ export class HighlightTextComponent {
 
   get childNodes() {
     return Array.from(this.node.childNodes);
+  }
+
+  get element(): Element | undefined {
+    return this.node.nodeType === Node.ELEMENT_NODE ? this.node as Element : null;
   }
 
   get annotationColor() {
