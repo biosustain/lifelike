@@ -89,24 +89,18 @@
           ></app-organism-autocomplete>
         </app-form-row>
 
-        <ng-container *ngIf="(userRoles$ | async)?.includes('admin')">
-          <app-form-row class="mt-2" for="annotationMethod" label="Annotations"
-                        [control]="form.get('annotationMethod')">
-            <div *ngFor="let method of annotationMethodChoices">
-              <div class="custom-control custom-checkbox">
-                <input type="checkbox" class="custom-control-input"
-                       id="annotation-type-{{method.replace(' ', '-') | lowercase}}"
-                       (change)="onAnnotationMethodPick(method, $event.target.checked)"
-                       [checked]="form.get('annotationMethod').value === method"
-                       [disabled]="method === 'NLP'">
-                <label class="custom-control-label d-flex align-items-center"
-                       for="annotation-type-{{method.replace(' ', '-') | lowercase}}">
-                  {{ method }}
-                </label>
-              </div>
-            </div>
-          </app-form-row>
-        </ng-container>
+        <app-form-row>
+          <ngb-accordion>
+            <ngb-panel title="Annotation Configurations">
+              <ng-template ngbPanelContent>
+                <app-annotation-config-table
+                  [headers]="annotationMethods"
+                  [models]="annotationModels"
+                  [form]="form.get('annotationConfigs')"></app-annotation-config-table>
+              </ng-template>
+            </ngb-panel>
+          </ngb-accordion>
+        </app-form-row>
       </fieldset>
     </ng-container>
   </app-modal-body>
