@@ -119,7 +119,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
           };
         case 'contentUrl':
           return {
-            contentValue: value.contentValue,
+            contentUrl: value.contentUrl,
           };
         default:
           return {};
