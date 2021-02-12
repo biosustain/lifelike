@@ -114,7 +114,7 @@ export class ObjectCreationService {
         ...value.request,
         ...(options.request || {}),
       }, {
-        annotationMethod: value.annotationMethod,
+        annotationMethod: value.annotationConfigs,
         organism: value.organism,
       }).toPromise();
     });

@@ -11,7 +11,8 @@ import { AuthSelectors } from '../../../auth/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 import { Observable } from 'rxjs';
 import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
-import { AnnotationMethod } from '../../../interfaces/annotation';
+import { AnnotationMethods, ANNOTATIONMODELS } from '../../../interfaces/annotation';
+import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 
 @Component({
   selector: 'app-object-edit-dialog',
@@ -28,7 +29,9 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   @Input() forceAnnotationOptions = false;
   @Input() promptParent = false;
 
-  readonly annotationMethodChoices: AnnotationMethod[] = ['NLP', 'Rules Based'];
+  readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
+  readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(
+    key => ANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
   readonly userRoles$: Observable<string[]>;
 
   private _object: FilesystemObject;
@@ -42,7 +45,14 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     filename: new FormControl('', Validators.required),
     description: new FormControl(),
     public: new FormControl(false),
-    annotationMethod: new FormControl(this.annotationMethodChoices[1], [Validators.required]),
+    annotationConfigs: new FormGroup(
+      this.annotationModels.reduce(
+        (obj, key) => ({...obj, [key]: new FormGroup(
+          {
+            nlp: new FormControl(false),
+            rulesBased: new FormControl(true),
+            disabled: new FormControl(false)
+          })}), {}), [Validators.required]),
     organism: new FormControl(null),
     mimeType: new FormControl(null),
   }, (group: FormGroup): ValidationErrors | null => {
@@ -157,7 +167,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       object: this.object,
       objectChanges,
       request,
-      annotationMethod: value.annotationMethod,
+      annotationConfigs: value.annotationConfigs,
       organism: value.organism,
     };
   }
@@ -251,6 +261,6 @@ export interface ObjectEditDialogValue {
   object: FilesystemObject;
   objectChanges: Partial<FilesystemObject>;
   request: ObjectCreateRequest;
-  annotationMethod: AnnotationMethod;
+  annotationConfigs: FormGroup;
   organism: OrganismAutocomplete;
 }
