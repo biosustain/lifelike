@@ -29,7 +29,7 @@ stages:
         steps:
           - task: Docker@2
             inputs:
-              containerRegistry: "$(containerRegistry)"
+              containerRegistry: $(dockerRegistryServiceConnection)
               command: "login"
 
           - script: "docker pull $(dockerRegistryServiceConnection)/kg-appserver:latest"
