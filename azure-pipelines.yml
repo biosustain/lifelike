@@ -58,7 +58,7 @@ stages:
               command: buildAndPush
               repository: kg-webserver
               dockerfile: client/Dockerfile
-              arguments: "--cache-from=$(containerRegistry)/kg-appserver:latest"
+              arguments: "--cache-from=$(containerRegistry)/kg-webserver:latest"
               containerRegistry: $(dockerRegistryServiceConnection)
               tags: |
                 $(tag)
