@@ -223,8 +223,6 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
    */
   private updateDOM(words) {
-    console.count('updateDOM');
-    console.log(this);
     // Get the word elements
     const wordElements = d3.select(this.g.nativeElement)
       .selectAll('text')

@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output} from '@angular/core';
+import { Component, EventEmitter, Input, NgZone, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
@@ -25,7 +25,7 @@ import {MatSnackBar} from '@angular/material';
   templateUrl: './enrichment-visualisation-chart-viewer.component.html',
   styleUrls: ['./enrichment-visualisation-viewer.component.scss']
 })
-export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDestroy, ModuleAwareComponent {
+export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDestroy, ModuleAwareComponent, OnChanges {
   @Input() titleVisible = true;
 
   paramsSubscription: Subscription;
@@ -37,6 +37,7 @@ export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDe
 
   @Input() geneNames: string[];
   @Input() organism: string;
+  @Input() analysis: string;
   object: FilesystemObject;
   data: { gene: string, 'p-value': number }[];
   neo4jId: number;
@@ -88,13 +89,20 @@ export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDe
     }
   }
 
+
   ngOnInit() {
-    this.enrichmentService.enrichWithGOTerms().subscribe((result) => {
+    this.enrichmentService.enrichWithGOTerms(this.analysis).subscribe((result) => {
       this.data = result;
       this.loadingData = false;
     });
   }
 
+  ngOnChanges() {
+    this.enrichmentService.enrichWithGOTerms(this.analysis).subscribe((result) => {
+      this.data = result;
+      this.loadingData = false;
+    });
+  }
 
   scrollTop() {
     this.scrollTopAmount = 0;

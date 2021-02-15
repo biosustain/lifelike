@@ -79,16 +79,17 @@ export class EnrichmentVisualisationService implements OnDestroy {
    * @param geneNames list of input gene names to match to
    * @param organism tax id of organism
    */
-  enrichWithGOTerms(): Observable<[]> {
+  enrichWithGOTerms(analysis = 'fisher'): Observable<[]> {
     const geneNames = this.parameters.genes;
     const organism = !!this.parameters.organism ? this.parameters.organism : null;
-    const existing = this.cachedResults.enrichWithGOTerms && this.cachedResults.enrichWithGOTerms[organism + geneNames.sort()];
+    const uid = analysis + organism + geneNames.sort();
+    const existing = this.cachedResults.enrichWithGOTerms && this.cachedResults.enrichWithGOTerms[uid];
     if (existing) {
       return new Observable(subscriber => subscriber.next(existing));
     }
     return this.http.post<{ result: [] }>(
       `/api/enrichment-visualisation/enrich-with-go-terms`,
-      {geneNames, organism},
+      {geneNames, organism, analysis},
       this.apiService.getHttpOptions(true),
     ).pipe(
       map((resp: any) => {
@@ -98,7 +99,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
         if (!this.cachedResults.enrichWithGOTerms) {
           this.cachedResults.enrichWithGOTerms = {};
         }
-        return this.cachedResults.enrichWithGOTerms[organism + geneNames.sort()] = resp.result;
+        return this.cachedResults.enrichWithGOTerms[uid] = resp.result;
       })
     );
   }
@@ -141,7 +142,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
       .pipe(
         this.errorHandler.create({label: 'Update enrichment visualisation'}),
         map(() => {
-          this.unsavedChanges.next(false);
+          // this.unsavedChanges.next(false);
           this.snackBar.open('Visualisation saved.', null, {
             duration: 2000,
           });

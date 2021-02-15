@@ -1,12 +1,12 @@
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 
-import {Subscription} from 'rxjs';
-import {ModuleAwareComponent, ModuleProperties} from 'app/shared/modules';
-import {ErrorHandler} from 'app/shared/services/error-handler.service';
+import { Subscription } from 'rxjs';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
-import {EnrichmentVisualisationService} from '../../services/enrichment-visualisation.service';
+import { EnrichmentVisualisationService } from '../../services/enrichment-visualisation.service';
 
-import {WordCloudComponent} from './word-cloud/word-cloud.component';
+import { WordCloudComponent } from './word-cloud/word-cloud.component';
 
 
 @Component({
@@ -14,7 +14,7 @@ import {WordCloudComponent} from './word-cloud/word-cloud.component';
   templateUrl: './enrichment-visualisation-cloud-viewer.component.html',
   styleUrls: ['./enrichment-visualisation-viewer.component.scss']
 })
-export class EnrichmentVisualisationCloudViewerComponent implements OnInit, OnDestroy, ModuleAwareComponent {
+export class EnrichmentVisualisationCloudViewerComponent implements OnInit, OnDestroy, ModuleAwareComponent, OnChanges {
   @Input() titleVisible = true;
 
   paramsSubscription: Subscription;
@@ -26,6 +26,7 @@ export class EnrichmentVisualisationCloudViewerComponent implements OnInit, OnDe
 
   @Input() geneNames: string[];
   @Input() organism: string;
+  @Input() analysis: string;
   wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
   clickableWords = false;
   @ViewChild(WordCloudComponent, {static: false})
@@ -65,8 +66,18 @@ export class EnrichmentVisualisationCloudViewerComponent implements OnInit, OnDe
 
   ngOnInit() {
     this.loadingData = true;
-    this.enrichmentService.enrichWithGOTerms().subscribe((result) => {
-      this.data = result.map(d => ({text: d.gene, frequency: d['p-value']}));
+    this.enrichmentService.enrichWithGOTerms(this.analysis).subscribe((result) => {
+      // tslint:disable-next-line:no-string-literal
+      this.data = result.map(d => ({text: d['gene'], frequency: d['p-value']}));
+      this.loadingData = false;
+    });
+  }
+
+  ngOnChanges() {
+    this.loadingData = true;
+    this.enrichmentService.enrichWithGOTerms(this.analysis).subscribe((result) => {
+      // tslint:disable-next-line:no-string-literal
+      this.data = result.map(d => ({text: d['gene'], frequency: d['p-value']}));
       this.loadingData = false;
     });
   }
