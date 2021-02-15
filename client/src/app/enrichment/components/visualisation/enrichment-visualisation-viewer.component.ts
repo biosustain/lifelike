@@ -25,6 +25,7 @@ import { ENRICHMENT_TABLE_MIMETYPE } from '../../providers/enrichment-table.type
 import { Progress } from '../../../interfaces/common-dialog.interface';
 import { finalize } from 'rxjs/operators';
 import { EnrichmentVisualisationEditDialogComponent } from './dialog/enrichment-visualisation-edit-dialog.component';
+import { default_analysis } from "../../analyses";
 
 @Component({
   selector: 'app-enrichment-visualisation-viewer',
@@ -94,6 +95,18 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
     // todo
   }
 
+  chartAnalysis = default_analysis.id;
+
+  updateChartParams(analysis) {
+    this.chartAnalysis = analysis;
+  }
+
+  wordCloudAnalysis = default_analysis.id;
+
+  updateWordCloudParams(analysis) {
+    this.wordCloudAnalysis = analysis;
+  }
+
   shouldConfirmUnload() {
     return !!this.enrichmentService.unsavedChanges;
   }
@@ -142,7 +155,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
           this.snackBar.open('Enrichment visualisation updated.', null, {
             duration: 2000,
           });
-          this.loadTask.update();
+          this.enrichmentService.loadTask.update();
         });
     }, () => {
     });

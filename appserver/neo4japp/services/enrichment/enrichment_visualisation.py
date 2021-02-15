@@ -25,9 +25,12 @@ class EnrichmentVisualisationService(KgService):
     def __init__(self, graph, session):
         super().__init__(graph=graph, session=session)
 
-    def enrich_go(self, geneNames: List[str]):
-        from neo4japp.services.enrichment.enrich_methods import fisher
-        return fisher(geneNames, self.get_GO_terms())
+    def enrich_go(self, geneNames: List[str], analysis):
+        if analysis == 'fisher':
+            from neo4japp.services.enrichment.enrich_methods import fisher as analysis
+        elif analysis == 'binomial':
+            from neo4japp.services.enrichment.enrich_methods import binomial as analysis
+        return analysis(geneNames, self.get_GO_terms())
 
     def get_GO_terms(self):
         try:

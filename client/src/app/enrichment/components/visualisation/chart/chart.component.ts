@@ -39,7 +39,7 @@ export class ChartComponent {
             // suggestedMin: -0.5,
             beginAtZero: true,
             stepSize: 1,
-            callback: (value, index) => index in this.chartData ? this.chartData[index].gene : '',
+            callback: (value, index) => index in this.chartData ? this.chartData[index]['gene'] : '',
           },
           offset: true,
           gridLines: {
