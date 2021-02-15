@@ -2,7 +2,7 @@ import {moduleMetadata, Story} from '@storybook/angular';
 import {withKnobs} from '@storybook/addon-knobs';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
-import {WordCloudComponent} from "../word-cloud.component";
+import {WordCloudComponent} from '../word-cloud.component';
 
 // This exports the Stories group for this component
 export default {
@@ -24,7 +24,9 @@ export default {
       ]
     }),
   ]
-};// This creates a Story for the component
+};
+
+// This creates a Story for the component
 
 const Template: Story<WordCloudComponent> = (args) => ({
   component: WordCloudComponent,
@@ -38,15 +40,15 @@ const Template: Story<WordCloudComponent> = (args) => ({
   `,
 });
 
-export const Default = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+export const Default = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 Default.args = {
   data: [
     {
-      text: "sfagrsg",
+      text: 'sfagrsg',
       frequency: 1
     },
     {
-      text: "sfafwefwgrsg",
+      text: 'sfafwefwgrsg',
       frequency: 16
     },
     {
@@ -56,16 +58,16 @@ Default.args = {
   ]
 };
 
-export const ArrayOfStrings = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+export const ArrayOfStrings = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 ArrayOfStrings.args = {
   data: [
-    "sfagrsg", "sfafwefwgrsg","", String("fasdf")
+    'sfagrsg', 'sfafwefwgrsg', '', String('fasdf')
   ]
 };
 
-export const ArrayOfEverything = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+export const ArrayOfEverything = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 ArrayOfEverything.args = {
   data: [
-    "sfagrsg", "sfafwefwgrsg","",null, undefined, NaN, 123, {}
+    'sfagrsg', 'sfafwefwgrsg', '', null, undefined, NaN, 123, {}
   ]
 };

@@ -8,9 +8,7 @@ import { Injectable } from '@angular/core';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import {
-  EnrichmentVisualisationEditDialogComponent
-} from '../components/visualisation/dialog/enrichment-visualisation-edit-dialog.component';
+import { EnrichmentVisualisationEditDialogComponent } from '../components/visualisation/dialog/enrichment-visualisation-edit-dialog.component';
 
 export const ENRICHMENT_VISUALISATION_MIMETYPE = 'vnd.lifelike.document/enrichment-visualisation';
 
@@ -58,7 +56,7 @@ export class EnrichmentVisualisationTypeProvider extends AbstractObjectTypeProvi
             return this.objectCreationService.openCreateDialog(object, {
               title: 'Name the Enrichment Visualisation',
               request: {
-                contentValue: new Blob([JSON.stringify({parameters, cachedResults:{}})]),
+                contentValue: new Blob([JSON.stringify({parameters, cachedResults: {}})]),
               },
               ...(options.createDialog || {}),
             });

@@ -99,7 +99,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   }
 
   ngOnInit() {
-    this.enrichmentService.loadTask.results$.subscribe(({result: {object, data}}) => {
+    this.enrichmentService.loadTask.results$.subscribe(({result: {object}}) => {
       this.object = object;
       this.loadingData = false;
       this.emitModuleProperties();
@@ -112,13 +112,13 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   openEnrichmentVisualisationEditDialog(): Promise<any> {
     const dialogRef = this.modalService.open(EnrichmentVisualisationEditDialogComponent);
     dialogRef.componentInstance.object = this.enrichmentService.object;
-    dialogRef.componentInstance.data = this.enrichmentService.data;
+    dialogRef.componentInstance.data = this.enrichmentService.parameters;
     return dialogRef.result.then((result: EnrichmentData) => {
-      const updated_file = {
-        parameters: Object.assign(this.enrichmentService.parameters),
+      const updatedFile = {
+        parameters: Object.assign(this.enrichmentService.parameters, result),
         cachedResults: this.enrichmentService.cachedResults
       };
-      const contentValue = new Blob([JSON.stringify(updated_file)], {
+      const contentValue = new Blob([JSON.stringify(updatedFile)], {
         type: ENRICHMENT_TABLE_MIMETYPE,
       });
 

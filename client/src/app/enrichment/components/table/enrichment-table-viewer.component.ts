@@ -28,9 +28,10 @@ import { mapBlobToBuffer, mapBufferToJson } from '../../../shared/utils/files';
 import { ENRICHMENT_TABLE_MIMETYPE } from '../../providers/enrichment-table.type-provider';
 import { Progress } from '../../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
-import { EnrichmentData } from "../visualisation/table/enrichment-table-viewer.component";
-import { EnrichmentVisualisationEditDialogComponent } from "../visualisation/dialog/enrichment-visualisation-edit-dialog.component";
-import { ENRICHMENT_VISUALISATION_MIMETYPE } from "../../providers/enrichment-visualisation.type-provider";
+import { EnrichmentData } from '../visualisation/table/enrichment-table-viewer.component';
+import { EnrichmentVisualisationEditDialogComponent } from '../visualisation/dialog/enrichment-visualisation-edit-dialog.component';
+import { ENRICHMENT_VISUALISATION_MIMETYPE } from '../../providers/enrichment-visualisation.type-provider';
+import { ObjectCreationService } from '../../../file-browser/services/object-creation.service';
 
 
 @Component({
@@ -99,6 +100,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
               protected readonly modalService: NgbModal,
               protected readonly errorHandler: ErrorHandler,
               protected readonly downloadService: DownloadService,
+              protected readonly objectCreationService: ObjectCreationService,
               protected readonly filesystemService: FilesystemService,
               protected readonly progressDialog: ProgressDialog) {
     this.projectName = this.route.snapshot.params.project_name || '';
@@ -269,7 +271,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
       return this.objectCreationService.openCreateDialog(object, {
         title: 'Name the Enrichment Visualisation',
         request: {
-          contentValue: new Blob([JSON.stringify({parameters, cachedResults:{}})]),
+          contentValue: new Blob([JSON.stringify({parameters, cachedResults: {}})]),
         }
       });
     });

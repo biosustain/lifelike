@@ -2,7 +2,7 @@ import {moduleMetadata, Story} from '@storybook/angular';
 import {withKnobs} from '@storybook/addon-knobs';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
-import {ChartComponent} from "../chart.component";
+import {ChartComponent} from '../chart.component';
 import { ChartsModule } from 'ng2-charts';
 
 // This exports the Stories group for this component
@@ -26,8 +26,11 @@ export default {
       ]
     }),
   ]
-};// This creates a Story for the component
+};
 
+// This creates a Story for the component
+
+// tslint:disable-next-line:variable-name
 const Template: Story<ChartComponent> = (args) => ({
   component: ChartComponent,
   props: args,
@@ -40,22 +43,23 @@ const Template: Story<ChartComponent> = (args) => ({
   `,
 });
 
-export const Default = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+// tslint:disable-next-line:variable-name
+export const Default = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 Default.args = {
   data: [
     {
-      name: "sfagrsg",
-      "P-value": 2
+      name: 'sfagrsg',
+      'P-value': 2
     },
     {
-      name: "sfafwefwgrsg",
-      "P-value": 0.16,
-      "Adjusted P-value": 1/10
+      name: 'sfafwefwgrsg',
+      'P-value': 0.16,
+      'Adjusted P-value': 1 / 10
     },
     {
-      name: "Sdrgerg",
-      "Adjusted P-value": 1/12,
-      "P-value": 0.123
+      name: 'Sdrgerg',
+      'Adjusted P-value': 1 / 12,
+      'P-value': 0.123
     }
   ]
 };

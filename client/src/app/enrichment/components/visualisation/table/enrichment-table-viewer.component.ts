@@ -1,32 +1,31 @@
-import {Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output} from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {ActivatedRoute} from '@angular/router';
+import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
 
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import {BehaviorSubject, forkJoin, from, of, Subscription} from 'rxjs';
-import {catchError, finalize, flatMap, map, mergeMap} from 'rxjs/operators';
+import { BehaviorSubject, forkJoin, Subscription } from 'rxjs';
+import { catchError, finalize, flatMap, map } from 'rxjs/operators';
 
-import {TableCell, TableHeader} from 'app/shared/components/table/generic-table.component';
-import {ModuleAwareComponent, ModuleProperties} from 'app/shared/modules';
-import {ErrorHandler} from 'app/shared/services/error-handler.service';
-import {DownloadService} from 'app/shared/services/download.service';
-import {WorkspaceManager} from "../../../../shared/workspace-manager";
-import {ProgressDialog} from "../../../../shared/services/progress-dialog.service";
-import {MessageDialog} from "../../../../shared/services/message-dialog.service";
+import { TableCell, TableHeader } from 'app/shared/components/table/generic-table.component';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { DownloadService } from 'app/shared/services/download.service';
+import { WorkspaceManager } from '../../../../shared/workspace-manager';
+import { ProgressDialog } from '../../../../shared/services/progress-dialog.service';
+import { MessageDialog } from '../../../../shared/services/message-dialog.service';
 import {
   EnrichmentTableService,
-  EnrichmentWrapper, GoNode,
+  EnrichmentWrapper,
+  GoNode,
   NCBINode,
   NCBIWrapper
-} from "../../../services/enrichment-table.service";
-import {EnrichmentVisualisationService} from "../../../services/enrichment-visualisation.service";
-import {EnrichmentTableOrderDialogComponent} from "../../table/dialog/enrichment-table-order-dialog.component";
-import {EnrichmentTableEditDialogComponent} from "../../table/dialog/enrichment-table-edit-dialog.component";
-import {Progress} from "../../../../interfaces/common-dialog.interface";
-import {BackgroundTask} from "../../../../shared/rxjs/background-task";
-import {FilesystemObject} from "../../../../file-browser/models/filesystem-object";
-import {mapBlobToBuffer, mapBufferToJson} from "../../../../shared/utils/files";
+} from '../../../services/enrichment-table.service';
+import { EnrichmentVisualisationService } from '../../../services/enrichment-visualisation.service';
+import { EnrichmentTableOrderDialogComponent } from '../../table/dialog/enrichment-table-order-dialog.component';
+import { EnrichmentTableEditDialogComponent } from '../../table/dialog/enrichment-table-edit-dialog.component';
+import { Progress } from '../../../../interfaces/common-dialog.interface';
+
 
 export const ENRICHMENT_VISUALISATION_MIMETYPE = 'vnd.lifelike.document/enrichment-visualisation';
 
