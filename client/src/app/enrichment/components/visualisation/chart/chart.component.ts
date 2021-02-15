@@ -4,7 +4,7 @@ import {
   Output, EventEmitter
 } from '@angular/core';
 import {ChartOptions, ChartType} from 'chart.js';
-import {SingleOrMultiDataSet} from "ng2-charts/lib/base-chart.directive";
+import { SingleOrMultiDataSet } from 'ng2-charts';
 
 @Component({
   selector: 'app-chart',
@@ -39,7 +39,7 @@ export class ChartComponent {
             // suggestedMin: -0.5,
             beginAtZero: true,
             stepSize: 1,
-            callback: (value, index) => index in this.chartData ? this.chartData[index]["gene"] : '',
+            callback: (value, index) => index in this.chartData ? this.chartData[index].gene : '',
           },
           offset: true,
           gridLines: {
@@ -64,12 +64,12 @@ export class ChartComponent {
   legend = false;
   public chartData: SingleOrMultiDataSet = [];
 
-  @Input("data") set data(data: any[]) {
+  @Input('data') set data(data: any[]) {
     this.chartData = data.sort((a, b) => {
-      return a['p-value'] - b['p-value']
+      return a['p-value'] - b['p-value'];
     }).map((d: any, i) => ({
       ...d,
-      x: d["p-value"],
+      x: d['p-value'],
       y: i,
       // r: 3.75 + 3.75 * d["Adjusted P-value"]
     }));
@@ -79,7 +79,7 @@ export class ChartComponent {
     return this.chartData;
   }
 
-  @Output("chartClick") chartClick: EventEmitter<any> = new EventEmitter();
-  @Output("chartHover") chartHover: EventEmitter<any> = new EventEmitter();
+  @Output() chartClick: EventEmitter<any> = new EventEmitter();
+  @Output() chartHover: EventEmitter<any> = new EventEmitter();
 
 }

@@ -13,7 +13,7 @@ import {getObjectLabel} from '../../../../file-browser/utils/objects';
 import {ErrorHandler} from '../../../../shared/services/error-handler.service';
 import {ProgressDialog} from '../../../../shared/services/progress-dialog.service';
 import {Progress} from '../../../../interfaces/common-dialog.interface';
-import {EnrichmentData} from "../../visualisation/table/enrichment-table-viewer.component";
+import {EnrichmentData} from '../../visualisation/table/enrichment-table-viewer.component';
 
 @Component({
   selector: 'app-enrichment-table-edit-dialog',
