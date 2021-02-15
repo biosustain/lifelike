@@ -34,20 +34,16 @@ import { GlobalErrorHandler } from './global-error-handler';
 import { EnrichmentVisualisationsModule } from './enrichment/enrichment-visualisation.module';
 
 
-const providers = [
+let providers = [
   httpInterceptorProviders,
   Title,
   WorkspaceManager,
-  UnloadConfirmationGuard
-];
-
-if (process.env.NODE_ENV === 'production') {
-  // noinspection TypeScriptValidateTypes
-  providers.push({
+  UnloadConfirmationGuard,
+  {
     provide: ErrorHandler,
     useClass: GlobalErrorHandler,
-  });
-}
+  }
+];
 
 @NgModule({
   declarations: [
