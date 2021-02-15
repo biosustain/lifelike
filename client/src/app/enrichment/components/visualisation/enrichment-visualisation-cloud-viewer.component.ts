@@ -34,7 +34,7 @@ export class EnrichmentVisualisationCloudViewerComponent implements OnInit, OnDe
 
   loadingData: boolean;
 
-  data: string[] = [];
+  data: { text: any; frequency: any }[] = [];
 
   selectedRow = 0;
 
@@ -66,7 +66,7 @@ export class EnrichmentVisualisationCloudViewerComponent implements OnInit, OnDe
   ngOnInit() {
     this.loadingData = true;
     this.enrichmentService.enrichWithGOTerms().subscribe((result) => {
-      this.data = result.map(d => ({text: d['gene'], frequency: d['p-value']}));
+      this.data = result.map(d => ({text: d.gene, frequency: d['p-value']}));
       this.loadingData = false;
     });
   }

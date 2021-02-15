@@ -1,25 +1,16 @@
-import {
-  AfterViewInit,
-  Component,
-  Input,
-  ElementRef,
-  ViewChild,
-  ViewEncapsulation, SimpleChanges, OnChanges, OnDestroy, OnInit
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
 
-import {uniqueId} from 'lodash';
-
-import {WordCloudFilterEntity} from 'app/interfaces/filter.interface';
+import { WordCloudFilterEntity } from 'app/interfaces/filter.interface';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
 
 /**
  * Throttles calling `fn` once per animation frame
- * Latest argments are used on the actual call
- * @param {function} fn
+ * Latest arguments are used on the actual call
+ * @param fn - function which calls should be throttled
  */
-export function throttled(fn) {
+export function throttled(fn: (...r: any[]) => void) {
   let ticking = false;
   let args = [];
   return (...rest) => {
@@ -31,14 +22,6 @@ export function throttled(fn) {
         fn.apply(window, args);
       });
     }
-  };
-}
-
-function throttle(): any {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
-    descriptor.value = throttled(originalMethod);
-    return descriptor;
   };
 }
 
@@ -90,7 +73,7 @@ const createResizeObserver = (callback, container) => {
     }
     resize(width, height);
   });
-  //todo
+  // todo
   observer.observe(container);
   return observer;
 };
@@ -102,12 +85,12 @@ const createResizeObserver = (callback, container) => {
   encapsulation: ViewEncapsulation.None,
 })
 export class WordCloudComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('cloudWrapper', {static: false}) cloudWrapper!: ElementRef<any>;
-  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef<any>;
-  @ViewChild('svg', {static: false}) svg!: ElementRef<any>;
-  @ViewChild('g', {static: false}) g!: ElementRef<any>;
+  @ViewChild('cloudWrapper', {static: false}) cloudWrapper!: ElementRef;
+  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
+  @ViewChild('svg', {static: false}) svg!: ElementRef;
+  @ViewChild('g', {static: false}) g!: ElementRef;
 
-  private _data: Node[] = [];
+  private _data: (string | Node)[] = [];
 
   clickableWords = false;
   WORD_CLOUD_MARGIN = 10;
@@ -128,19 +111,22 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
   constructor() {
     this.layout = cloud()
       .padding(1)
+      // ~~ faster substitute for Math.floor() for positive numbers
+      // http://rocha.la/JavaScript-bitwise-operators-in-practice
+      // tslint:disable-next-line:no-bitwise
       .rotate(d => d.rotate || (~~(Math.random() * 6) - 3) * 30);
   }
 
   @Input('data') set data(data) {
-    console.count("set data");
+    console.count('set data');
     const count: any = {};
-    if (Array.isArray(data) && data.every(d => typeof d === "string" && (count[d] = (count[d] || 0) + 1))) {
+    if (Array.isArray(data) && data.every(d => typeof d === 'string' && (count[d] = (count[d] || 0) + 1))) {
       this._data = Object.entries(count).map(([text, frequency]) => ({text, frequency}));
     } else {
       this._data = deepCopy(data);
     }
-    if(this.svg) {
-      this.updateLayout(this.updateDOM, this._data);
+    if (this.svg) {
+      this.updateLayout(this._data).then(this.updateDOM.bind(this));
     }
   }
 
@@ -150,21 +136,21 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
 
 
   ngAfterViewInit() {
-    console.count("ngAfterViewInit");
+    console.count('ngAfterViewInit');
     const {width, height} = this.getCloudSvgDimensions();
     this.layout.canvas(this.hiddenTextAreaWrapper.nativeElement);
-    this.onResize(width, height);
+    this.onResize(width, height).then();
     this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.cloudWrapper.nativeElement);
   }
 
   ngOnDestroy() {
-    console.count("ngOnDestroy");
+    console.count('ngOnDestroy');
     this.resizeObserver.disconnect();
     delete this.resizeObserver;
   }
 
   onResize(width, height) {
-    console.count("onResize");
+    console.count('onResize');
     // Get the svg element and update
     d3.select(this.svg.nativeElement)
       .attr('width', width)
@@ -176,36 +162,35 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
 
     this.layout.size([width, height]);
 
-    return this.updateLayout(this.updateDOM, this.data);
+    return this.updateLayout(this.data).then(this.updateDOM.bind(this));
   }
 
-  getfontSize(normSize) {
+  getFontSize(normSize) {
     return this.MIN_FONT + (normSize || 0) * (this.MAX_FONT - this.MIN_FONT);
   }
 
   /**
    * Draws a word cloud with the given FilterEntity inputs using the d3.layout.cloud library.
    * @param data represents a collection of FilterEntity data
-   * @param initial - is it first render?
    */
-  updateLayout(callback, data) {
-    console.count("updateLayout");
+  updateLayout(data) {
+    console.count('updateLayout');
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
-    const freq_values = data.map(d => d.frequency as number);
-    const maximumCount = Math.max(...freq_values);
-    const minimumCount = Math.min(...freq_values);
+    const freqValues = data.map(d => d.frequency as number);
+    const maximumCount = Math.max(...freqValues);
+    const minimumCount = Math.min(...freqValues);
 
     return new Promise(resolve => {
       // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
       this.layout
         .words(data)
-        .fontSize(d => this.getfontSize((d.frequency - minimumCount) / maximumCount))
+        .fontSize(d => this.getFontSize((d.frequency - minimumCount) / maximumCount))
         .on('end', placedWords => {
           const notPlaced = data.length - placedWords.length;
           if (notPlaced) {
             console.warn(`${notPlaced} words did not fit into cloud`);
           }
-          resolve(callback.bind(this)(placedWords));
+          resolve(placedWords);
         })
         .start();
     });
@@ -238,7 +223,7 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
    * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
    */
   private updateDOM(words) {
-    console.count("updateDOM");
+    console.count('updateDOM');
     console.log(this);
     // Get the word elements
     const wordElements = d3.select(this.g.nativeElement)

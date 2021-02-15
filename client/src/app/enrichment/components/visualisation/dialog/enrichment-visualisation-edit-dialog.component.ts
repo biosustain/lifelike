@@ -9,7 +9,9 @@ import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { EnrichmentVisualisationData } from '../enrichment-visualisation-viewer.component';
+import {
+  EnrichmentVisualisationParameters
+} from '../enrichment-visualisation-viewer.component';
 import { getObjectLabel } from '../../../../file-browser/utils/objects';
 import { ErrorHandler } from '../../../../shared/services/error-handler.service';
 import { ProgressDialog } from '../../../../shared/services/progress-dialog.service';
@@ -22,7 +24,7 @@ import { Progress } from '../../../../interfaces/common-dialog.interface';
 export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialogComponent {
   @Input() object: FilesystemObject;
   @Input() submitButtonLabel = 'Save';
-  private _data: EnrichmentVisualisationData;
+  private _data: EnrichmentVisualisationParameters;
 
   form: FormGroup = new FormGroup({
     organism: new FormControl(''),
@@ -106,7 +108,7 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
     this.form.get('organism').setValue(organism ? organism.tax_id + '/' + organism.organism_name : null);
   }
 
-  getValue(): EnrichmentVisualisationData {
+  getValue(): EnrichmentVisualisationParameters {
     const {genes = '', organism, ...rest} = this.form.value;
     return {
       organism: organism || null,

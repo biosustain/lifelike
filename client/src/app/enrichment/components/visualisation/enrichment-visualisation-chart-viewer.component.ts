@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
@@ -38,7 +38,7 @@ export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDe
   @Input() geneNames: string[];
   @Input() organism: string;
   object: FilesystemObject;
-  data: EnrichmentVisualisationData;
+  data: { gene: string, 'p-value': number }[];
   neo4jId: number;
   importGenes: string[];
   unmatchedGenes: string;
@@ -73,7 +73,7 @@ export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDe
   }
 
   ngOnDestroy() {
-    console.log('asfgdsa')
+    console.log('asfgdsa');
   }
 
   shouldConfirmUnload() {

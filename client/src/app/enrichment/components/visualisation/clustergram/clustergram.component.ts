@@ -35,11 +35,6 @@ interface Node {
   encapsulation: ViewEncapsulation.None,
 })
 export class ClustergramComponent implements AfterViewInit {
-  id = uniqueId('WordCloudComponent-');
-
-  @Output() wordOpen = new EventEmitter<WordCloudFilterEntity>();
-
-  @ViewChild('cloudWrapper', {static: false}) cloudWrapper!: ElementRef<any>;
 
   @Input('data') set data(data) {
     this._data = data.slice(10).map(d => ({...d, Genes: d.Genes.split(';')}));
@@ -48,6 +43,11 @@ export class ClustergramComponent implements AfterViewInit {
   get data() {
     return this._data;
   }
+  id = uniqueId('WordCloudComponent-');
+
+  @Output() wordOpen = new EventEmitter<WordCloudFilterEntity>();
+
+  @ViewChild('cloudWrapper', {static: false}) cloudWrapper!: ElementRef<any>;
 
   private _data: any[] = [];
 
@@ -61,6 +61,9 @@ export class ClustergramComponent implements AfterViewInit {
     left: this.WORD_CLOUD_MARGIN
   };
 
+  MIN_FONT = 12;
+  MAX_FONT = 48;
+
   ngAfterViewInit() {
     this.drawWordCloud(this.getDataDeepCopy(), true);
   }
@@ -69,11 +72,8 @@ export class ClustergramComponent implements AfterViewInit {
     return d.id + d.type + d.text;
   }
 
-  MIN_FONT = 12;
-  MAX_FONT = 48;
-
-  getfontSize(norm_size) {
-    return this.MIN_FONT + norm_size * (this.MAX_FONT - this.MIN_FONT);
+  getfontSize(normSize) {
+    return this.MIN_FONT + normSize * (this.MAX_FONT - this.MIN_FONT);
   }
 
   /**

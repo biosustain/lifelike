@@ -2,8 +2,8 @@ import {moduleMetadata, Story} from '@storybook/angular';
 import {withKnobs} from '@storybook/addon-knobs';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
-import {ClustergramComponent} from "../clustergram.component";
-import mockedData from "../../stories/assets/mocked_data.json";
+import {ClustergramComponent} from '../clustergram.component';
+import mockedData from '../../stories/assets/mocked_data.json';
 
 // This exports the Stories group for this component
 export default {
@@ -25,8 +25,11 @@ export default {
       ]
     }),
   ]
-};// This creates a Story for the component
+};
 
+// This creates a Story for the component
+
+// tslint:disable-next-line:variable-name
 const Template: Story<ClustergramComponent> = (args) => ({
   component: ClustergramComponent,
   props: args,
@@ -39,21 +42,24 @@ const Template: Story<ClustergramComponent> = (args) => ({
   `,
 });
 
-export const Default = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+// tslint:disable-next-line:variable-name
+export const Default = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 Default.args = {
   data: mockedData.data
 };
 
-export const ArrayOfStrings = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+// tslint:disable-next-line:variable-name
+export const ArrayOfStrings = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 ArrayOfStrings.args = {
   data: [
-    "sfagrsg", "sfafwefwgrsg","", String("fasdf")
+    'sfagrsg', 'sfafwefwgrsg', '', String('fasdf')
   ]
 };
 
-export const ArrayOfEverything = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+// tslint:disable-next-line:variable-name
+export const ArrayOfEverything = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 ArrayOfEverything.args = {
   data: [
-    "sfagrsg", "sfafwefwgrsg","",null, undefined, NaN, 123, {}
+    'sfagrsg', 'sfafwefwgrsg', '', null, undefined, NaN, 123, {}
   ]
 };
