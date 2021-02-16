@@ -6,15 +6,15 @@ import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
   KnowledgeMap,
+  UniversalEntityData,
   UniversalGraph,
   UniversalGraphNode,
 } from '../../drawing-tool/services/interfaces';
 import { AppUser, User } from '../../interfaces';
 import { FilesystemObjectData, ProjectData } from '../schema';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
-import { Observable } from 'rxjs';
-import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
 import { createObjectDragImage } from '../utils/drag';
+import { FilePrivileges, ProjectPrivileges } from './privileges';
 
 // These are legacy mime type definitions that have to exist in this file until
 // all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
@@ -22,12 +22,6 @@ const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
 const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
 const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
-
-export interface ProjectPrivileges {
-  readable: boolean;
-  writable: boolean;
-  administrable: boolean;
-}
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {
@@ -85,12 +79,6 @@ export class ProjectImpl implements Project {
     }
     return hash % 100 / 100;
   }
-}
-
-export interface FilePrivileges {
-  readable: boolean;
-  writable: boolean;
-  commentable: boolean;
 }
 
 /**
@@ -430,12 +418,13 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   addDataTransferData(dataTransfer: DataTransfer) {
     createObjectDragImage(this).addDataTransferData(dataTransfer);
-    dataTransfer.effectAllowed = 'all';
-    dataTransfer.setData('text/plain', this.name);
-    dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify({
+
+    const filesystemObjectTransfer: FilesystemObjectTransferData = {
       hashId: this.hashId,
-    } as FilesystemObjectTransferData));
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
+      privileges: this.privileges,
+    };
+
+    const node: Partial<Omit<UniversalGraphNode, 'data'>> & {data: Partial<UniversalEntityData>} = {
       display_name: this.name,
       label: this.type === 'map' ? 'map' : 'link',
       sub_labels: [],
@@ -449,7 +438,12 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
           url: this.getCommands().join('/'),
         }],
       },
-    } as Partial<UniversalGraphNode>));
+    };
+
+    dataTransfer.effectAllowed = 'all';
+    dataTransfer.setData('text/plain', this.name);
+    dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify(filesystemObjectTransfer));
+    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify(node));
   }
 
   private getId(): any {
