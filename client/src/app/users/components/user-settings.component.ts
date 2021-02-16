@@ -5,14 +5,14 @@ import { AuthSelectors } from 'app/auth/store';
 import { Observable } from 'rxjs';
 
 import { State } from 'app/root-store';
-import { LoginResp } from 'app/interfaces';
+import { AppUser } from 'app/interfaces';
 
 @Component({
   selector: 'app-user-settings',
   templateUrl: './user-settings.component.html',
 })
 export class UserSettingsComponent {
-  currentUsers$: Observable<LoginResp>;
+  currentUsers$: Observable<AppUser>;
   activeTab: 'profile' | 'security';
 
   constructor(private store: Store<State>) {
