@@ -112,6 +112,9 @@ export class FilesystemObjectTargetDirective {
           request: {
             contentValue: file,
           },
+        }).then(value => {
+          this.refreshRequest.emit();
+          return value;
         });
       }
     }
