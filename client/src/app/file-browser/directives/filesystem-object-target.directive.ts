@@ -45,6 +45,7 @@ export class FilesystemObjectTargetDirective {
     if (this.dropTargeted) {
       event.dataTransfer.dropEffect = 'move';
       event.preventDefault();
+      event.stopPropagation();
     }
   }
 
@@ -61,6 +62,8 @@ export class FilesystemObjectTargetDirective {
   @HostListener('drop', ['$event'])
   drop(event: DragEvent) {
     event.preventDefault();
+    event.stopPropagation();
+
     this.dropTargeted = false;
 
     const valid = this.canAcceptDrop(event);
