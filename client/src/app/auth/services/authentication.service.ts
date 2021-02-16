@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { JWTTokenResponse } from 'app/interfaces';
+import { AppUser, JWTTokenResponse } from 'app/interfaces';
 import { isNullOrUndefined } from 'util';
 import { of, timer, Subscription } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
@@ -53,8 +53,8 @@ export class AuthenticationService implements OnDestroy {
       this.baseUrl + '/login',
       {email, password},
     ).pipe(
-      map((resp) => {
-        localStorage.setItem('auth', resp.user.username);
+      map((resp: JWTTokenResponse) => {
+        localStorage.setItem('authId', resp.user.id.toString());
         localStorage.setItem('access_jwt', resp.accessToken.token);
         localStorage.setItem('expires_at', resp.accessToken.exp);
         // TODO: Move this out of localStorage
@@ -74,7 +74,7 @@ export class AuthenticationService implements OnDestroy {
     localStorage.removeItem('access_jwt');
     localStorage.removeItem('expires_at');
     // See ***ARANGO_USERNAME***-store module where this is set
-    localStorage.removeItem('auth');
+    localStorage.removeItem('authId');
   }
 
   /**
@@ -98,13 +98,13 @@ export class AuthenticationService implements OnDestroy {
   }
 
   public whoAmI(): number {
-    const auth = JSON.parse(localStorage.getItem('auth'));
+    const authId = JSON.parse(localStorage.getItem('authId'));
 
     if (
-      isNullOrUndefined(auth)
+      isNullOrUndefined(authId)
     ) { return; }
 
-    return auth.user.id;
+    return authId;
   }
 
   public getAccessToken() {
