@@ -4,6 +4,7 @@ from marshmallow_enum import EnumField
 
 from neo4japp.models import FallbackOrganism
 from neo4japp.models.files import AnnotationChangeCause
+from neo4japp.schemas.account import UserSchema
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import ResultListSchema
 from neo4japp.services.annotations.constants import AnnotationMethod
@@ -228,6 +229,7 @@ class AnnotationExclusionChangeSchema(CamelCaseSchema):
 
 class FileAnnotationChangeSchema(CamelCaseSchema):
     date = fields.DateTime()
+    user = fields.Nested(UserSchema)
     cause = EnumField(AnnotationChangeCause, by_value=True)
     inclusion_changes = fields.List(fields.Nested(AnnotationInclusionChangeSchema))
     exclusion_changes = fields.List(fields.Nested(AnnotationExclusionChangeSchema))

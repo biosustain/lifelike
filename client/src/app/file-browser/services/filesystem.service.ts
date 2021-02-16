@@ -98,33 +98,13 @@ export class FilesystemService {
     );
   }
 
-  get(hashId: string, options: Partial<FetchOptions> = {}): Observable<FilesystemObject> {
-    let result: Observable<FilesystemObject> = this.http.get<SingleResult<FilesystemObjectData>>(
+  get(hashId: string): Observable<FilesystemObject> {
+    return this.http.get<SingleResult<FilesystemObjectData>>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}`,
       this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => new FilesystemObject().update(data.result)),
     );
-
-    result = result.pipe(
-      mergeMap(object => {
-        object.contentValue$ = this.getContent(object.hashId);
-
-        if (options.loadContent) {
-          return this.getContent(object.hashId).pipe(
-            map(content => {
-              object.contentValue$ = of(content);
-              return object;
-            })
-          );
-        } else {
-          object.contentValue$ = this.getContent(object.hashId);
-          return of(object);
-        }
-      }),
-    );
-
-    return result;
   }
 
   getContent(hashId: string): Observable<Blob> {
