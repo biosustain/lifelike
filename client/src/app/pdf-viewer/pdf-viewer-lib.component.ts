@@ -39,7 +39,7 @@ declare enum FindState {
   NOT_FOUND = 1,
   WRAPPED = 2,
   PENDING = 3,
-};
+}
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -64,7 +64,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   foundHighlightAnnotations: Annotation[] = [];
   currentHighlightAnnotationsIndex = 0;
   private filterChangeSubscription: Subscription;
-  searching: boolean = false;
+  searching = false;
 
   @Input()
   set addedAnnotations(annotations: Annotation[]) {
