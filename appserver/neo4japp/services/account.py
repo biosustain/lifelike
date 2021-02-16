@@ -63,7 +63,7 @@ class AccountService(RDBMSBaseDao):
         self.session.delete(user)
         self.commit_or_flush(commit_now)
 
-    def get_user_list(self, query_dict={}) -> Sequence[AppUser]:
+    def get_user_list(self, query_dict={}, limit=10) -> Sequence[AppUser]:
         username = query_dict.get("username", "")
 
         if len(username) > 0:
@@ -71,12 +71,12 @@ class AccountService(RDBMSBaseDao):
                 .join(AppUser.roles, isouter=True) \
                 .options(contains_eager(AppUser.roles)) \
                 .filter(AppUser.username.ilike(f'%{username}%')) \
-                .order_by(AppUser.username).limit(10).all()
+                .order_by(AppUser.username).limit(limit).all()
         else:
             return self.session.query(AppUser, AppRole.name) \
                 .join(AppUser.roles, isouter=True) \
                 .options(contains_eager(AppUser.roles)) \
-                .order_by(AppUser.username).limit(10).all()
+                .order_by(AppUser.username).all()
 
     def update_user(self, user: AppUser, changes: UserUpdateRequest, commit_now=True) -> AppUser:
         # TODO: 'user roll' updates will have to be handled separately
