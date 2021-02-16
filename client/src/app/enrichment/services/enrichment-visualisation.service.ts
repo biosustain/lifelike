@@ -1,20 +1,17 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, ObservedValueOf, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { ApiService } from '../../shared/services/api.service';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { mapBlobToBuffer, mapBufferToJson } from '../../shared/utils/files';
-import {
-  EnrichmentVisualisationData,
-  EnrichmentVisualisationParameters
-} from '../components/visualisation/enrichment-visualisation-viewer.component';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { map, mergeMap } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ENRICHMENT_VISUALISATION_MIMETYPE } from '../providers/enrichment-visualisation.type-provider';
+import { mapBlobToBuffer, mapBufferToJson } from '../../shared/utils/files';
+import { EnrichmentVisualisationData } from '../components/visualisation/enrichment-visualisation-viewer.component';
 
 @Injectable()
 export class EnrichmentVisualisationService implements OnDestroy {
@@ -31,11 +28,8 @@ export class EnrichmentVisualisationService implements OnDestroy {
   cachedResults;
   parameters;
   object;
-  loadTask: BackgroundTask<null, ObservedValueOf<Observable<{
-    parameters: EnrichmentVisualisationParameters;
-    object: FilesystemObject;
-    cachedResults: object;
-  }>>>;
+  loadTask: BackgroundTask<null, any>;
+  loadTaskMetaData: BackgroundTask<null, any>;
   loadSubscription: Subscription;
   unsavedChanges: any;
 
@@ -45,28 +39,33 @@ export class EnrichmentVisualisationService implements OnDestroy {
 
   set fileId(fileId: string) {
     this.currentFileId = fileId;
-    this.loadTask = new BackgroundTask(() =>
+    this.loadTaskMetaData = new BackgroundTask(() =>
       this.filesystemService.get(
         this.fileId,
-        {loadContent: true}
       ).pipe(
         this.errorHandler.create({label: 'Load enrichment visualisation'}),
-        mergeMap((object: FilesystemObject) => {
-          return object.contentValue$.pipe(
-            mapBlobToBuffer(),
-            mapBufferToJson<EnrichmentVisualisationData>(),
-            map(({parameters, cachedResults}: EnrichmentVisualisationData) => {
-              this.cachedResults = cachedResults;
-              this.parameters = parameters;
-              this.object = object;
-              return {object, parameters, cachedResults};
-            }),
-          );
+        map((value: FilesystemObject, index) => {
+          this.object = value;
+          return value;
         }),
+      ));
+    this.loadTask = new BackgroundTask(() =>
+      this.filesystemService.getContent(
+        this.fileId,
+      ).pipe(
+        this.errorHandler.create({label: 'Load enrichment visualisation'}),
+        mapBlobToBuffer(),
+        mapBufferToJson<EnrichmentVisualisationData>(),
+        map(({parameters, cachedResults}: EnrichmentVisualisationData) => {
+          this.cachedResults = cachedResults;
+          this.parameters = parameters;
+          return {parameters, cachedResults};
+        })
       ));
 
     this.loadSubscription = this.loadTask.results$.subscribe();
 
+    this.loadTaskMetaData.update();
     this.loadTask.update();
   }
 
@@ -100,7 +99,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
           this.cachedResults.enrichWithGOTerms = {};
         }
         return this.cachedResults.enrichWithGOTerms[uid] = resp.result;
-      })
+      }),
     );
   }
 
@@ -130,7 +129,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
   save() {
     const contentValue = new Blob([JSON.stringify({
       parameters: this.parameters,
-      cachedResults: this.cachedResults
+      cachedResults: this.cachedResults,
     })], {
       type: ENRICHMENT_VISUALISATION_MIMETYPE,
     });
@@ -146,7 +145,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
           this.snackBar.open('Visualisation saved.', null, {
             duration: 2000,
           });
-        })
+        }),
       );
   }
 

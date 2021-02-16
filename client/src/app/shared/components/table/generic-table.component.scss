@@ -1,3 +1,5 @@
+@import 'src/scss/variables';
+
 .error {
   color: gray;
 }
@@ -11,15 +13,42 @@ ul {
   padding-inline-start: 20px;
 }
 
-table, th, td {
-  border: 1px ridge black !important;
+.table {
+  border: 1px solid $gray-500;
   border-collapse: separate;
   border-spacing: 0;
+  margin: 0;
+
+  th, td {
+    border: 0;
+    border-bottom: 1px solid $gray-500;
+    border-right: 1px solid $gray-500;
+
+    &:last-child {
+      border-right: 0;
+    }
+  }
+
+  tr:last-child {
+    td {
+      border-bottom: 0;
+    }
+  }
 }
 
-th {
-  background-color: #dddfdf;
+.table thead th {
+  background-color: $gray-200;
+  color: $black;
 }
 
-thead tr:nth-child(1) th { position: sticky; top: 0; }
-thead tr:nth-child(2) th { position: sticky; top: 33px; }
+thead tr:nth-child(1) th, thead tr:nth-child(2) th {
+  position: sticky;
+}
+
+thead tr:nth-child(1) th {
+  top: 0;
+}
+
+thead tr:nth-child(2) th {
+  top: 34px;
+}

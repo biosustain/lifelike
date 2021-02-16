@@ -1,6 +1,6 @@
-import {HttpErrorResponse} from '@angular/common/http';
-import {ErrorHandler, Injectable} from '@angular/core';
-import {ErrorHandler as ErrorHandlerService} from 'app/shared/services/error-handler.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ErrorHandler, Injectable } from '@angular/core';
+import { ErrorHandler as ErrorHandlerService } from 'app/shared/services/error-handler.service';
 
 @Injectable()
 /**
@@ -8,19 +8,14 @@ import {ErrorHandler as ErrorHandlerService} from 'app/shared/services/error-han
  * errors that only occur client side.
  */
 export class GlobalErrorHandler implements ErrorHandler {
-  constructor(private errorHandlerService: ErrorHandlerService) {
-  }
+    constructor(private errorHandlerService: ErrorHandlerService) {}
 
-  // Used to prevent error dialogs for specific HTTP codes
-  KNOWN_HTTP_ERROR_CODES = [401];
+    // Used to prevent error dialogs for specific HTTP codes
+    KNOWN_HTTP_ERROR_CODES = [0, 401];
 
-  handleError(error: Error | HttpErrorResponse) {
-    if (!(error instanceof HttpErrorResponse && this.KNOWN_HTTP_ERROR_CODES.includes(error.status))) {
-      try {
-        this.errorHandlerService.showError(error, {label: 'Uncaught exception', expected: false});
-      } catch (e) {
-        console.error(error);
-      }
+    handleError(error: Error | HttpErrorResponse) {
+        if (!(error instanceof HttpErrorResponse && this.KNOWN_HTTP_ERROR_CODES.includes(error.status))) {
+            this.errorHandlerService.showError(error, {label: 'Uncaught exception', expected: false});
+        }
     }
-  }
 }

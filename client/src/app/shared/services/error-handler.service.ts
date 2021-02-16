@@ -1,4 +1,4 @@
-import { Observable, pipe, throwError } from 'rxjs';
+import { Observable, pipe, throwError, EMPTY } from 'rxjs';
 import { catchError, first } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessageDialog } from './message-dialog.service';
@@ -111,7 +111,7 @@ export class ErrorHandler {
       {title, message, detail, transactionId, ...logInfo}
     ).pipe(
       first(),
-      catchError(() => throwError('Client logging is currently not working.'))
+      catchError(() => EMPTY)
     ).subscribe();
 
     this.messageDialog.display({
@@ -121,6 +121,16 @@ export class ErrorHandler {
       transactionId,
       type: MessageType.Error,
     });
+  }
+
+  createCallback<T>(logInfo?: ErrorLogMeta): (e: any) => void {
+    return error => {
+      if (isNullOrUndefined(logInfo)) {
+        this.showError(error);
+      } else {
+        this.showError(error, logInfo);
+      }
+    };
   }
 
   create<T>(logInfo?: ErrorLogMeta): UnaryFunction<Observable<T>, Observable<T>> {

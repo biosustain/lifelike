@@ -3,6 +3,7 @@ import {FilesystemObject} from '../models/filesystem-object';
 import {Observable, of} from 'rxjs';
 import { RankedItem } from '../../shared/schemas/common';
 import { CreateDialogOptions } from './object-creation.service';
+import { SearchType } from '../../search/shared';
 
 export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>('objectTypeProvider');
 
@@ -24,6 +25,15 @@ export interface CreateDialogAction {
   create(options?: CreateActionOptions): Promise<FilesystemObject>;
 }
 
+export interface PreviewOptions {
+  highlightTerms?: string[] | undefined;
+}
+
+export interface Exporter {
+  name: string;
+  export(): Observable<File>;
+}
+
 /**
  * A file type provider knows how to handle a certain or set of object types. Instances
  * are used by the application to discover operations on objects stored within Lifelike.
@@ -40,8 +50,11 @@ export interface ObjectTypeProvider {
    * Create a component to preview the given object, although null can be returned
    * for the observable if the file type cannot be previewed.
    * @param object the object
+   * @param contentValue$ the content to use
+   * @param options extra options for the preview
    */
-  createPreviewComponent(object: FilesystemObject): Observable<ComponentRef<any> | undefined>;
+  createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
+                         options?: PreviewOptions): Observable<ComponentRef<any> | undefined>;
 
   /**
    * Get a list of options for creating this type of file.
@@ -49,6 +62,16 @@ export interface ObjectTypeProvider {
    * @return a list of actions, with ranking, where the highest number ranks appear first
    */
   getCreateDialogOptions(): RankedItem<CreateDialogAction>[];
+
+  /**
+   * Get a list of search types for the content search.
+   */
+  getSearchTypes(): SearchType[];
+
+  /**
+   * Get a list of ways to export this object.
+   */
+  getExporters(object: FilesystemObject): Observable<Exporter[]>;
 
 }
 
@@ -58,12 +81,21 @@ export interface ObjectTypeProvider {
 export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   abstract handles(object: FilesystemObject): boolean;
 
-  createPreviewComponent(object: FilesystemObject): Observable<ComponentRef<any> | undefined> {
+  createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
+                         options?: PreviewOptions): Observable<ComponentRef<any> | undefined> {
     return of(null);
   }
 
   getCreateDialogOptions(options?: CreateDialogOptions) {
     return [];
+  }
+
+  getSearchTypes(): SearchType[] {
+    return [];
+  }
+
+  getExporters(object: FilesystemObject): Observable<Exporter[]> {
+    return of([]);
   }
 
 }
@@ -76,10 +108,6 @@ export class DefaultObjectTypeProvider extends AbstractObjectTypeProvider {
 
   handles(object: FilesystemObject): boolean {
     return true;
-  }
-
-  createPreviewComponent(object: FilesystemObject) {
-    return of(null);
   }
 
 }
@@ -116,4 +144,7 @@ export class ObjectTypeService {
     return of(this.injector.get(TYPE_PROVIDER));
   }
 
+  getDefault(): Observable<ObjectTypeProvider> {
+    return of(this.defaultProvider);
+  }
 }

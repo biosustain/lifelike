@@ -1,5 +1,6 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FilesystemObject} from '../models/filesystem-object';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { FilesystemObject } from '../models/filesystem-object';
+import { FindOptions } from '../../shared/utils/find';
 
 @Component({
   selector: 'app-object-info',
@@ -7,7 +8,6 @@ import {FilesystemObject} from '../models/filesystem-object';
 })
 export class ObjectInfoComponent implements OnInit {
   @Input() defaultHighlightLimit = 5;
-  highlightLimit = this.defaultHighlightLimit;
   @Input() highlightTerms: string[] | undefined;
   @Input() objectControls = true;
   @Input() forEditing = true;
@@ -18,6 +18,8 @@ export class ObjectInfoComponent implements OnInit {
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
   _object: FilesystemObject | undefined;
+  highlightLimit = this.defaultHighlightLimit;
+  highlightOptions: FindOptions = {keepSearchSpecialChars: true};
 
   @Input()
   set object(object: FilesystemObject | undefined) {

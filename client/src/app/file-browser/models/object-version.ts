@@ -5,6 +5,7 @@ import { CollectionModel } from '../../shared/utils/collection-model';
 import { FilesystemObject } from './filesystem-object';
 import { cloneDeep } from 'lodash';
 import { ModelList } from '../../shared/models';
+import { of } from 'rxjs';
 
 export class ObjectVersion {
   hashId: string;
@@ -44,12 +45,10 @@ export class ObjectVersion {
   }
 
   toObject(): FilesystemObject {
-    if (!this.originalObject || !this.contentValue) {
-      throw new Error('need originalObject and contentValue to generate a fake object');
+    if (!this.originalObject) {
+      throw new Error('need originalObject to generate a fake object');
     }
-    const object = cloneDeep(this.originalObject);
-    object.contentValue = this.contentValue;
-    return object;
+    return cloneDeep(this.originalObject);
   }
 
   update(data: RecursivePartial<ObjectVersionData>): ObjectVersion {
