@@ -16,7 +16,7 @@ import {
   ObjectTypeProvider,
   ObjectTypeService,
 } from 'app/file-browser/services/object-type.service';
-import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
+import { getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
@@ -197,14 +197,10 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     });
   }
 
-  getObjectCommands(object: DirectoryObject) {
-    return getObjectCommands(object);
-  }
-
-  highlightClicked(object: DirectoryObject, highlight: string) {
+  highlightClicked(object: FilesystemObject, highlight: string) {
     const parser = new DOMParser();
     const text = parser.parseFromString(highlight, 'application/xml').documentElement.textContent;
-    const commands = this.getObjectCommands(object);
+    const commands = object.getCommands(false);
     this.workspaceManager.navigate(commands, {
       matchExistingTab: getObjectMatchExistingTab(object),
       shouldReplaceTab: component => {

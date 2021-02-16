@@ -27,6 +27,7 @@ class ContentSearchSchema(CamelCaseSchema):
     phrase = ma.String(default='', required=False)
     wildcards = ma.String(default='', required=False)
 
+
 # Response
 # ----------------------------------------
 

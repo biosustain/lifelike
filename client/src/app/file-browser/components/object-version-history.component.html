@@ -56,7 +56,7 @@
       <div class="split-view-right flex-fill d-flex flex-column">
         <ng-container *ngIf="log.results.lastSelection">
           <ng-container *ngIf="log.results.lastSelection.object; else previewLoading">
-            <app-object-preview [object]="log.results.lastSelection.object" class="flex-fill"></app-object-preview>
+            <app-object-preview [object]="log.results.lastSelection.object" [contentValue]="log.results.lastSelection.contentValue" class="flex-fill"></app-object-preview>
           </ng-container>
           <ng-template #previewLoading>
             <div class="d-flex flex-fill align-items-center justify-content-center">

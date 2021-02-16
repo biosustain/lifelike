@@ -1,17 +1,23 @@
+import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
+
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
 import {
   AbstractObjectTypeProvider,
   CreateActionOptions,
   CreateDialogAction,
+  Exporter,
   PreviewOptions,
-} from '../../file-browser/services/object-type.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
+} from 'app/file-browser/services/object-type.service';
+import { SearchType } from 'app/search/shared';
+import { RankedItem } from 'app/shared/schemas/common';
+
 import { MapComponent } from '../components/map.component';
-import { of } from 'rxjs';
-import { RankedItem } from '../../shared/schemas/common';
-import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
 import { UniversalGraph } from '../services/interfaces';
-import { SearchType } from '../../search/shared';
 
 export const MAP_MIMETYPE = 'vnd.lifelike.document/map';
 export const MAP_SHORTHAND = 'map';
@@ -21,7 +27,8 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
 
   constructor(protected readonly componentFactoryResolver: ComponentFactoryResolver,
               protected readonly injector: Injector,
-              protected readonly objectCreationService: ObjectCreationService) {
+              protected readonly objectCreationService: ObjectCreationService,
+              protected readonly filesystemService: FilesystemService) {
     super();
   }
 
@@ -29,14 +36,20 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
     return object.mimeType === MAP_MIMETYPE;
   }
 
-  createPreviewComponent(object: FilesystemObject, options?: PreviewOptions) {
-    const factory: ComponentFactory<MapComponent<any>> =
-      this.componentFactoryResolver.resolveComponentFactory(MapComponent);
-    const componentRef = factory.create(this.injector);
-    const instance: MapComponent = componentRef.instance;
-    instance.highlightTerms = options ? options.highlightTerms : null;
-    instance.locator = object.hashId;
-    return of(componentRef);
+  createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
+                         options?: PreviewOptions) {
+    return contentValue$.pipe(
+      map(contentValue => {
+        const factory: ComponentFactory<MapComponent<any>> =
+          this.componentFactoryResolver.resolveComponentFactory(MapComponent);
+        const componentRef = factory.create(this.injector);
+        const instance: MapComponent = componentRef.instance;
+        instance.highlightTerms = options ? options.highlightTerms : null;
+        instance.map = object;
+        instance.contentValue = contentValue;
+        return componentRef;
+      }),
+    );
   }
 
   getCreateDialogOptions(): RankedItem<CreateDialogAction>[] {
@@ -69,6 +82,30 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
     return [
       Object.freeze({id: MAP_MIMETYPE, shorthand: 'map', name: 'Maps'}),
     ];
+  }
+
+  getExporters(object: FilesystemObject): Observable<Exporter[]> {
+    return of([...(
+      ['pdf', 'png', 'svg'].map(format => ({
+        name: format.toUpperCase(),
+        export: () => {
+          return this.filesystemService.generateExport(object.hashId, {format}).pipe(
+            map(blob => {
+              return new File([blob], object.filename + '.' + format);
+            }),
+          );
+        },
+      }))
+    ), {
+      name: 'Lifelike Map File',
+      export: () => {
+        return this.filesystemService.getContent(object.hashId).pipe(
+          map(blob => {
+            return new File([blob], object.filename + '.llmap.json');
+          }),
+        );
+      },
+    }]);
   }
 
 }

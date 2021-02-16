@@ -1,5 +1,5 @@
 <div class="d-flex flex-column h-100">
-  <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs nav-sidebar-tabs">
+  <ul ngbNav #nav="ngbNav" [(activeId)]="infoPanel.activeTab" class="nav-tabs nav-sidebar-tabs">
     <li ngbNavItem="properties">
       <a ngbNavLink>Properties</a>
       <ng-template ngbNavContent>
@@ -8,13 +8,13 @@
             <label for="label">
               Node Label:
             </label>
-            <input [(ngModel)]="node.display_name" class="form-control" (change)="doSave()" id="label" maxlength="2000"
+            <input [(ngModel)]="node.display_name" class="form-control map-editor-initial-focus" (change)="doSave()" id="label" maxlength="2000"
                    #displayName>
           </div>
 
           <div class="form-group">
             <label for="detail">Detail:</label>
-            <textarea [(ngModel)]="node.data.detail" class="form-control" (change)="doSave()" id="detail" rows="5"
+            <textarea [(ngModel)]="node.data.detail" class="form-control" (change)="doSave()" id="detail" rows="10"
                       maxlength="5000"></textarea>
           </div>
 
@@ -59,13 +59,16 @@
             >Search in Knowledge Graph</button>
             <button class="btn btn-primary w-100 mt-1"
                     (click)="searchMapNodeInContent(node)"
-            >Search in User Content</button>
+            >Search in File Content</button>
           </div>
 
           <label class='d-table w-100'>
             <span class='d-table-cell' style="width: inherit;">Hyperlinks:</span>
             <span (click)='addHyperlink()' class='d-tabble-cell badge badge-primary'><i class="fa fa-plus"></i></span>
           </label>
+          <div class="mb-2">
+            <app-sources (executeFileSource)="goToSource($event)" [links]="node.data?.sources"></app-sources>
+          </div>
           <div *ngFor='let h of hyperlinks; let i = index;'>
             <div class="input-group mb-2">
               <div class="input-group-prepend">
@@ -88,13 +91,6 @@
             <legend>Quick Search <i class="fas fa-external-link-alt ml-1"></i></legend>
 
             <app-quick-search [query]="node.display_name" [links]="node.data?.search"></app-quick-search>
-          </fieldset>
-
-          <fieldset class="fieldset-properties mt-4"
-                    *ngIf="node.data?.sources">
-            <legend>Sources <i class="fas fa-external-link-alt ml-1"></i></legend>
-
-            <app-sources (executeFileSource)="goToSource($event)" [links]="node.data?.sources"></app-sources>
           </fieldset>
 
           <div class="mt-4">

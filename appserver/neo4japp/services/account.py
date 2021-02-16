@@ -1,5 +1,6 @@
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import AppRole, AppUser
+from sqlalchemy.orm import contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from neo4japp.exceptions import DuplicateRecord, NotAuthorizedException
 from neo4japp.data_transfer_objects import UserUpdateRequest
@@ -66,11 +67,16 @@ class AccountService(RDBMSBaseDao):
         username = query_dict.get("username", "")
 
         if len(username) > 0:
-            return AppUser.query.filter(
-                AppUser.username.ilike(f'%{username}%')
-            ).order_by(AppUser.username).limit(10).all()
+            return self.session.query(AppUser, AppRole.name) \
+                .join(AppUser.roles, isouter=True) \
+                .options(contains_eager(AppUser.roles)) \
+                .filter(AppUser.username.ilike(f'%{username}%')) \
+                .order_by(AppUser.username).limit(10).all()
         else:
-            return AppUser.query.order_by(AppUser.username).all()
+            return self.session.query(AppUser, AppRole.name) \
+                .join(AppUser.roles, isouter=True) \
+                .options(contains_eager(AppUser.roles)) \
+                .order_by(AppUser.username).limit(10).all()
 
     def update_user(self, user: AppUser, changes: UserUpdateRequest, commit_now=True) -> AppUser:
         # TODO: 'user roll' updates will have to be handled separately
