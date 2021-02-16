@@ -23,11 +23,12 @@ export class FontIconNode implements PlacedNode {
 
   readonly minimumBBoxSize = 10;
 
+  readonly renderYShift = -12;
   readonly yShift = 7; // Older renderer was a little off?
-  readonly iconLabelSpacing = 2;
+  readonly iconLabelSpacing = 16;
   readonly totalHeight: number;
   readonly minY: number;
-  readonly bbox: {minX: number, minY: number, maxX: number, maxY: number};
+  readonly bbox: { minX: number, minY: number, maxX: number, maxY: number };
 
   constructor(private ctx: CanvasRenderingContext2D, options: IconNodeOptions) {
     Object.assign(this, options);
@@ -40,9 +41,9 @@ export class FontIconNode implements PlacedNode {
     const bboxHeight = Math.max(this.totalHeight, this.minimumBBoxSize);
     this.bbox = {
       minX: this.x - bboxWidth / 2,
-      minY: this.minY + this.yShift,
+      minY: this.minY,
       maxX: this.x + bboxWidth / 2,
-      maxY: this.minY + bboxHeight + this.yShift,
+      maxY: this.minY + bboxHeight,
     };
   }
 
@@ -89,26 +90,31 @@ export class FontIconNode implements PlacedNode {
     // Draw icon
     this.iconTextbox.draw(
       this.x - this.iconTextbox.actualWidth / 2,
-      this.minY + this.iconTextbox.actualHeight / 2 - this.yShift,
+      this.minY + this.iconTextbox.actualHeight / 2 + this.renderYShift + this.yShift,
     );
 
     // Either draw the text or draw a box representing the text
     if (highDetailLevel) {
       this.labelTextbox.draw(
         this.x - this.labelTextbox.actualWidth / 2,
-        this.minY + this.iconTextbox.actualHeight + this.iconLabelSpacing
-        + this.labelTextbox.actualHeight / 2
+        this.minY + this.iconLabelSpacing
+        + this.iconTextbox.actualHeight
         + this.labelTextbox.lineMetrics.actualBoundingBoxAscent
-        - this.yShift,
+        + this.renderYShift
+        + this.yShift,
       );
     } else {
       ctx.fillStyle = '#ccc';
       // TODO: Y offset wrong
       ctx.fillRect(
         this.x - this.labelTextbox.actualWidth / 2,
-        this.minY + this.iconTextbox.actualHeight + this.iconLabelSpacing + this.labelTextbox.actualHeight / 2 + this.yShift,
+        this.minY + this.iconLabelSpacing
+        + this.iconTextbox.actualHeight
+        + this.labelTextbox.lineMetrics.actualBoundingBoxAscent
+        + this.renderYShift
+        + this.yShift,
         this.labelTextbox.actualWidth,
-        this.labelTextbox.actualHeight
+        this.labelTextbox.actualHeight,
       );
     }
 

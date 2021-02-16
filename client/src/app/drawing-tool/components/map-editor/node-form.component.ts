@@ -8,6 +8,7 @@ import { openPotentialInternalLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
 import { isNullOrUndefined } from 'util';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
+import { InfoPanel } from '../../models/info-panel';
 
 @Component({
   selector: 'app-node-form',
@@ -28,6 +29,7 @@ export class NodeFormComponent implements AfterViewInit {
   originalNode: UniversalGraphNode;
   updatedNode: UniversalGraphNode;
 
+  @Input() infoPanel: InfoPanel;
   @Output() save = new EventEmitter<{
     originalData: RecursivePartial<UniversalGraphNode>,
     updatedData: RecursivePartial<UniversalGraphNode>,
@@ -35,14 +37,12 @@ export class NodeFormComponent implements AfterViewInit {
   @Output() delete = new EventEmitter<object>();
   @Output() sourceOpen = new EventEmitter<string>();
 
-  activeTab: string;
   previousLabel: string;
 
   constructor(protected readonly workspaceManager: WorkspaceManager) {
   }
 
   ngAfterViewInit() {
-    setTimeout(() => this.focus(), 10);
   }
 
   get nodeSubtypeChoices() {
@@ -72,8 +72,6 @@ export class NodeFormComponent implements AfterViewInit {
 
     this.updatedNode = cloneDeep(node);
     this.updatedNode.style = this.updatedNode.style || {};
-
-    setTimeout(() => this.focus(), 10);
   }
 
   handleTypeChange() {
@@ -228,11 +226,15 @@ export class NodeFormComponent implements AfterViewInit {
     // TODO: This is a temp fix to make searching compoounds/species easier. Sometime in the future it's expected that these types will be
     // squashed down into a single type.
     let entityType = node.label;
+    let organism = '';
 
     if (entityType === 'compound') {
       entityType = 'chemical';
     } else if (entityType === 'species') {
       entityType = 'taxonomy';
+    // TODO: Temp change to allow users to quickly find genes. We will likely remove this once entity IDs are included in the node metadata.
+    } else if (entityType === 'gene') {
+      organism = '9606';
     }
 
     this.workspaceManager.navigate(['/search'], {
@@ -241,7 +243,20 @@ export class NodeFormComponent implements AfterViewInit {
         page: 1,
         entities: entityType,
         domains: '',
-        organism: ''
+        organism
+      },
+      sideBySide: true,
+      newTab: true,
+    });
+  }
+
+  searchMapNodeInContent(node) {
+    this.workspaceManager.navigate(['/search/content'], {
+      queryParams: {
+        q: node.display_name,
+        types: 'map;pdf',
+        limit: 20,
+        page: 1
       },
       sideBySide: true,
       newTab: true,

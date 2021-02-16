@@ -92,7 +92,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   highlightAnnotationIds: Observable<string> = this.highlightAnnotations.pipe(
     map((value) => value ? value.id : null),
   );
-  loadTask: BackgroundTask<[string, Location], [[FilesystemObject, ArrayBuffer], Annotation[]]>;
+  loadTask: BackgroundTask<[string, Location], [FilesystemObject, ArrayBuffer, Annotation[]]>;
   pendingScroll: Location;
   pendingAnnotationHighlightId: string;
   openPdfSub: Subscription;
@@ -131,12 +131,10 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   ) {
     this.loadTask = new BackgroundTask(([hashId, loc]) => {
       return combineLatest(
-        this.filesystemService.get(hashId, {
-          loadContent: true,
-        }).pipe(mergeMap(object => combineLatest(
-          of(object),
-          object.contentValue$.pipe(mapBlobToBuffer()),
-        ))),
+        this.filesystemService.get(hashId),
+        this.filesystemService.getContent(hashId).pipe(
+          mapBlobToBuffer(),
+        ),
         this.pdfAnnService.getAnnotations(hashId));
     });
 
@@ -146,7 +144,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
 
     // Listener for file open
     this.openPdfSub = this.loadTask.results$.subscribe(({
-                                                          result: [[object, content], ann],
+                                                          result: [object, content, ann],
                                                           value: [file, loc],
                                                         }) => {
       this.pdfData = {data: new Uint8Array(content)};

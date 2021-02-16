@@ -1,13 +1,23 @@
-import { AfterViewInit, Component, EventEmitter, Input, NgZone, OnDestroy, Output, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  NgZone, OnChanges,
+  OnDestroy,
+  Output, SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
-import { GraphEntity, UniversalGraph, UniversalGraphNode } from '../services/interfaces';
+import { GraphEntity, UniversalGraph } from '../services/interfaces';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ModuleProperties } from '../../shared/modules';
-import { ActivatedRoute } from '@angular/router';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
@@ -28,18 +38,19 @@ import { MovableNode } from '../../graph-viewer/renderers/canvas/behaviors/node-
     './map.component.scss',
   ],
 })
-export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit {
+export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit, OnChanges {
   @Input() highlightTerms: string[] | undefined;
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   @ViewChild('canvas', {static: true}) canvasChild;
 
-  loadTask: BackgroundTask<string, [FilesystemObject, ExtraResult]>;
+  loadTask: BackgroundTask<string, [FilesystemObject, Blob, ExtraResult]>;
   loadSubscription: Subscription;
 
   _locator: string | undefined;
-  _map: FilesystemObject | undefined;
+  @Input() map: FilesystemObject | undefined;
+  @Input() contentValue: Blob | undefined;
   pendingInitialize = false;
 
   graphCanvas: CanvasGraphView;
@@ -67,15 +78,16 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   ) {
     this.loadTask = new BackgroundTask((hashId) => {
       return combineLatest([
-        this.filesystemService.get(hashId, {
-          loadContent: true,
-        }),
+        this.filesystemService.get(hashId),
+        this.filesystemService.getContent(hashId),
         this.getExtraSource(),
       ]);
     });
 
-    this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, extra], value}) => {
+    this.loadSubscription = this.loadTask.results$.subscribe(({result: [result, blob, extra], value}) => {
       this.map = result;
+      this.contentValue = blob;
+      this.initializeMap();
       this.handleExtra(extra);
     });
   }
@@ -92,30 +104,30 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   // ========================================
 
   ngAfterViewInit() {
-    const style = new KnowledgeMapStyle();
-    this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
-      nodeRenderStyle: style,
-      edgeRenderStyle: style,
-    });
+    Promise.resolve().then(() => {
+      const style = new KnowledgeMapStyle();
+      this.graphCanvas = new CanvasGraphView(this.canvasChild.nativeElement as HTMLCanvasElement, {
+        nodeRenderStyle: style,
+        edgeRenderStyle: style,
+      });
 
-    this.registerGraphBehaviors();
+      this.registerGraphBehaviors();
 
-    this.graphCanvas.startParentFillResizeListener();
-    this.ngZone.runOutsideAngular(() => {
-      this.graphCanvas.startAnimationLoop();
-    });
+      this.graphCanvas.startParentFillResizeListener();
+      this.ngZone.runOutsideAngular(() => {
+        this.graphCanvas.startAnimationLoop();
+      });
 
-    this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
-      this.search();
-    });
+      this.historyChangesSubscription = this.graphCanvas.historyChanges$.subscribe(() => {
+        this.search();
+      });
 
-    this.unsavedChangesSubscription = this.unsavedChanges$.subscribe(value => {
-      this.emitModuleProperties();
-    });
+      this.unsavedChangesSubscription = this.unsavedChanges$.subscribe(value => {
+        this.emitModuleProperties();
+      });
 
-    if (this.pendingInitialize) {
       this.initializeMap();
-    }
+    });
   }
 
   @Input()
@@ -130,18 +142,14 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     return this._locator;
   }
 
-  @Input()
-  set map(value: FilesystemObject | undefined) {
-    this._map = value;
-    this.initializeMap();
-  }
-
-  get map(): FilesystemObject {
-    return this._map;
+  ngOnChanges(changes: SimpleChanges) {
+    if ('map' in changes || 'contentValue' in changes) {
+      this.initializeMap();
+    }
   }
 
   private initializeMap() {
-    if (!this.map) {
+    if (!this.map || !this.contentValue) {
       return;
     }
 
@@ -150,19 +158,20 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       return;
     }
 
-    if (this.highlightTerms != null && this.highlightTerms.length) {
-      this.graphCanvas.highlighting.replace(this.graphCanvas.findMatching(this.highlightTerms));
-    }
-
     this.emitModuleProperties();
 
-    this.subscriptions.add(this.map.contentValue$.pipe(
-      mapBlobToBuffer(),
+    this.subscriptions.add(readBlobAsBuffer(this.contentValue).pipe(
       mapBufferToJson<UniversalGraph>(),
       this.errorHandler.create({label: 'Parse map data'}),
     ).subscribe(graph => {
       this.graphCanvas.setGraph(graph);
       this.graphCanvas.zoomToFit(0);
+
+      if (this.highlightTerms != null && this.highlightTerms.length) {
+        this.graphCanvas.highlighting.replace(
+          this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true}),
+        );
+      }
     }, e => {
       // Data is corrupt
       // TODO: Prevent the user from editing or something so the user doesnt lose data?

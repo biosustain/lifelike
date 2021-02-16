@@ -8,6 +8,7 @@ import {
 import { AnnotationChangeExclusionMeta, Meta } from '../../pdf-viewer/annotation-type';
 import { startCase } from 'lodash';
 import { ModelList } from '../../shared/models';
+import { AppUser } from '../../interfaces';
 
 class AnnotationChange {
   action: 'added' | 'removed';
@@ -56,6 +57,7 @@ export class AnnotationExclusionChange extends AnnotationChange {
  */
 export class FileAnnotationChange {
   date: string;
+  user: AppUser;
   cause: 'user' | 'user_reannotation' | 'sys_reannotation';
   inclusionChanges: AnnotationInclusionChange[];
   exclusionChanges: AnnotationExclusionChange[];
@@ -76,8 +78,15 @@ export class FileAnnotationChange {
     }
   }
 
+  get isReannotation() {
+    // Use type checker to catch added types
+    const cause: 'user' | 'user_reannotation' | 'sys_reannotation' = this.cause;
+    return cause === 'user_reannotation' || cause === 'sys_reannotation';
+  }
+
   update(data: FileAnnotationChangeData): FileAnnotationChange {
     this.date = data.date;
+    this.user = data.user;
     this.cause = data.cause;
     this.inclusionChanges = data.inclusionChanges.map(
       itemData => new AnnotationInclusionChange().update(itemData));
