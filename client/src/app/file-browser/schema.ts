@@ -6,8 +6,8 @@ import {
 } from '../pdf-viewer/annotation-type';
 import { AnnotationMethod } from '../interfaces/annotation';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
-import { FilePrivileges, ProjectPrivileges } from './models/filesystem-object';
 import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
+import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 
 // ========================================
 // Projects
