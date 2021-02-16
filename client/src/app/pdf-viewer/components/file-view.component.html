@@ -80,6 +80,7 @@
               <app-search-control [disabled]="!ready"
                                   [(ngModel)]="searchQuery" (ngModelChange)="searchQueryChanged()"
                                   (enterPress)="findNext()"
+                                  [searching]="pdfViewerLib?.searching || false"
                                   [resultIndex]="(pdfViewerLib?.matchesCount.current || 1) - 1"
                                   [resultCount]="pdfViewerLib?.matchesCount.total || 0"
                                   (previous)="findPrevious()" (next)="findNext()"
@@ -168,7 +169,7 @@
           </div>
         </div>
         <div class="flex-fill overflow-auto" id="pdf-viewer-lib-wrapper">
-          <div *ngIf="ready">
+          <div *ngIf="ready"  style="height: 100%;">
             <!-- PDF Viewer -->
             <lib-pdf-viewer-lib
               id='pdf-viewer'

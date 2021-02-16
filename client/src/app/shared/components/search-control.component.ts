@@ -19,6 +19,7 @@ export class SearchControlComponent implements ControlValueAccessor {
   @Input() disabled = false;
   @Input() resultIndex = 0;
   @Input() resultCount = 0;
+  @Input() searching = false;
   @Output() previous = new EventEmitter<number>();
   @Output() next = new EventEmitter<number>();
   @Output() enterPress = new EventEmitter();
