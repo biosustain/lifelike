@@ -15,7 +15,6 @@ import {
 } from '../schema';
 import { map } from 'rxjs/operators';
 import { ResultList, ResultMapping } from '../../shared/schemas/common';
-import { defaultSortingAlgorithm } from '../../word-cloud/sorting/sorting-algorithms';
 
 @Injectable()
 export class AnnotationsService {
@@ -36,16 +35,6 @@ export class AnnotationsService {
     return this.http.post(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations/counts`, {}, {
         ...this.apiService.getHttpOptions(true),
-        responseType: 'text',
-      },
-    );
-  }
-
-  getSortedAnnotationCounts(hashId: string, sort: string = defaultSortingAlgorithm.id): Observable<string> {
-    return this.http.post(
-      `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations/counts`, {}, {
-        ...this.apiService.getHttpOptions(true),
-        params: {sort},
         responseType: 'text',
       },
     );
@@ -93,7 +82,7 @@ export class AnnotationsService {
       request,
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map(() => ({})),
+      map(() => ({}))
     );
   }
 
@@ -108,7 +97,7 @@ export class AnnotationsService {
         responseType: 'json',
       },
     ).pipe(
-      map(() => ({})),
+      map(() => ({}))
     );
   }
 
