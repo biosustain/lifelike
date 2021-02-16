@@ -17,6 +17,8 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ObjectCreationService } from '../services/object-creation.service';
 import { FilesystemObject } from '../models/filesystem-object';
+import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageType } from '../../interfaces/message-dialog.interface';
 
 @Directive({
   selector: '[appFSObjectTarget]',
@@ -33,7 +35,8 @@ export class FilesystemObjectTargetDirective {
               protected readonly errorHandler: ErrorHandler,
               protected readonly snackBar: MatSnackBar,
               protected readonly elementRef: ElementRef,
-              protected readonly objectCreationService: ObjectCreationService) {
+              protected readonly objectCreationService: ObjectCreationService,
+              protected readonly messageDialog: MessageDialog) {
   }
 
   @HostListener('dragover', ['$event'])
@@ -66,24 +69,32 @@ export class FilesystemObjectTargetDirective {
       if (data !== '') {
         const transferData: FilesystemObjectTransferData = JSON.parse(data);
 
-        const progressDialogRef = this.progressDialog.display({
-          title: 'Working...',
-          progressObservable: new BehaviorSubject<Progress>(new Progress({
-            status: 'Moving...',
-          })),
-        });
-
-        this.filesystemService.save([transferData.hashId], {
-          parentHashId: this.appFSObjectTarget.hashId,
-        }).pipe(
-          tap(() => this.refreshRequest.emit()),
-          finalize(() => progressDialogRef.close()),
-          this.errorHandler.create({label: 'Move object from drag and drop'}),
-        ).subscribe(() => {
-          this.snackBar.open(`Moved item to new folder.`, 'Close', {
-            duration: 5000,
+        if (transferData.privileges.writable) {
+          const progressDialogRef = this.progressDialog.display({
+            title: 'File Move',
+            progressObservable: new BehaviorSubject<Progress>(new Progress({
+              status: 'Moving to the new folder...',
+            })),
           });
-        });
+
+          this.filesystemService.save([transferData.hashId], {
+            parentHashId: this.appFSObjectTarget.hashId,
+          }).pipe(
+            tap(() => this.refreshRequest.emit()),
+            finalize(() => progressDialogRef.close()),
+            this.errorHandler.create({label: 'Move object from drag and drop'}),
+          ).subscribe(() => {
+            this.snackBar.open(`Moved item to new folder.`, 'Close', {
+              duration: 5000,
+            });
+          });
+        } else {
+          this.messageDialog.display({
+            title: 'Cannot Move Here',
+            message: 'You do not have permission to put files here.',
+            type: MessageType.Error,
+          });
+        }
       } else if (event.dataTransfer.files.length) {
         const file = event.dataTransfer.files[0];
         const object = new FilesystemObject();
