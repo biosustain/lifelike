@@ -40,6 +40,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
   private readonly defaultTargetLineEndDescriptor = 'arrow';
   private readonly lineEndBaseSize = 16;
   private readonly maxWidthIfUnsized = 400;
+  private readonly maxIconNodeWidthIfUnsized = 200;
   private readonly maxHeightIfUnsized = 400;
   private readonly detailTypeBackgrounds = new Map([
     ['note', '#FFF6D5'],
@@ -133,8 +134,38 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
 
       const iconLabelColor = nullCoalesce(d.icon ? d.icon.color : null, textColor);
       const iconSize = nullCoalesce(d.icon ? d.icon.size : null, 50);
-      const iconFontFace = nullCoalesce(d.icon ? d.icon.face : null, 'FontAwesome');
+      const iconFontFace = nullCoalesce(d.icon ? d.icon.face : null, '\'Font Awesome 5 Pro\'');
       const iconFont = `${iconSize}px ${iconFontFace}`;
+
+      // Override icon for link types
+      if (d.label === 'link') {
+        const links: string[] = [
+          ...(d.data && d.data.sources ? d.data.sources.map(item => item.url || '') : []),
+          ...(d.data && d.data.hyperlinks ? d.data.hyperlinks.map(item => item.url || '') : []),
+        ];
+
+        for (const link of links) {
+          try {
+            const url = new URL(link, window.location.href);
+            if (url.pathname.match(/^\/projects\/([^\/]+)\/enrichment-table\//)) {
+              iconCode = '\uf0ce';
+              break;
+            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/maps\//)) {
+              iconCode = '\uf542';
+              break;
+            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/files\//)) {
+              iconCode = '\uf15b';
+              break;
+            } else if (url.pathname.match(/^\/projects\/([^\/]+)\/?$/)) {
+              iconCode = '\uf5fd';
+              break;
+            } else if (url.protocol.match(/^mailto:$/i)) {
+              iconCode = '\uf0e0';
+            }
+          } catch (e) {
+          }
+        }
+      }
 
       // Textbox to draw the icon
       const iconTextbox = new TextElement(ctx, {
@@ -145,11 +176,11 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle {
 
       // Textbox for the label below the icon
       const labelTextbox = new TextElement(ctx, {
-        maxWidth: this.maxWidthIfUnsized,
-        maxLines: 1,
+        maxWidth: this.maxIconNodeWidthIfUnsized,
         text: d.display_name,
         font: labelFont,
         fillStyle: iconLabelColor,
+        horizontalAlign: TextAlignment.Center,
       });
 
       return new FontIconNode(ctx, {

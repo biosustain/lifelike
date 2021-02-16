@@ -15,13 +15,13 @@ import { debounceTime } from 'rxjs/operators';
 import {
   AddedAnnotationExclusion,
   Annotation,
-  RemovedAnnotationExclusion,
   Location,
   Meta,
   Rect,
+  RemovedAnnotationExclusion,
 } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
-import {PdfViewerComponent, RenderTextMode} from './pdf-viewer/pdf-viewer.component';
+import { PdfViewerComponent, RenderTextMode } from './pdf-viewer/pdf-viewer.component';
 import { PDFPageViewport } from 'pdfjs-dist';
 import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -174,9 +174,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   private pdfComponent: PdfViewerComponent;
 
   constructor(
-      private readonly modalService: NgbModal,
-      private zone: NgZone,
-      private snackBar: MatSnackBar,
+    private readonly modalService: NgbModal,
+    private zone: NgZone,
+    private snackBar: MatSnackBar,
   ) {
   }
 
@@ -233,7 +233,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
 
     this.searchChangedSub = this.searchChanged.pipe(
-        debounceTime(250)).subscribe((sb) => {
+      debounceTime(250)).subscribe((sb) => {
       this.searchQueryChanged(sb);
     });
   }
@@ -306,8 +306,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       });
       overlayDiv.dataset.annotationId = annotation.meta.id;
       overlayDiv.setAttribute('class', 'system-annotation'
-          + (this.currentHighlightAnnotationId === annotation.meta.id
-              ? ' annotation-highlight' : ''));
+        + (this.currentHighlightAnnotationId === annotation.meta.id
+          ? ' annotation-highlight' : ''));
       overlayDiv.setAttribute('location', JSON.stringify(location));
       overlayDiv.setAttribute('meta', JSON.stringify(annotation.meta));
       top = this.normalizeTopCoordinate(top, annotation);
@@ -320,29 +320,29 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       elementRefs.push(overlayDiv);
       jQuery(overlayDiv).css('cursor', 'move');
       (jQuery(overlayDiv) as any).qtip(
-          {
-            content: this.prepareTooltipContent(annotation),
-            position: {
-              my: 'top center',
-              at: 'bottom center',
-              viewport: true,
-              target: this,
-            },
-            style: {
-              classes: 'qtip-bootstrap',
-              tip: {
-                width: 16,
-                height: 8,
-              },
-            },
-            show: {
-              delay: 10,
-            },
-            hide: {
-              fixed: true,
-              delay: 150,
+        {
+          content: this.prepareTooltipContent(annotation),
+          position: {
+            my: 'top center',
+            at: 'bottom center',
+            viewport: true,
+            target: this,
+          },
+          style: {
+            classes: 'qtip-bootstrap',
+            tip: {
+              width: 16,
+              height: 8,
             },
           },
+          show: {
+            delay: 10,
+          },
+          hide: {
+            fixed: true,
+            delay: 150,
+          },
+        },
       );
     }
     if (this.pendingHighlights[pageNum]) {
@@ -397,7 +397,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       <div class="collapse" id="${collapseTargetId}">
     `;
     // links should be sorted in the order that they appear in SEARCH_LINKS
-    for (const { domain, url} of SEARCH_LINKS) {
+    for (const {domain, url} of SEARCH_LINKS) {
       const link = an.meta.links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(an.meta.allText));
       collapseHtml += `<a target="_blank" href="${escape(link)}">${escape(domain)}</a><br/>`;
     }
@@ -563,7 +563,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const elements: any[] = Array.from(clonedSelection.children);
     elements.forEach((org_span: any) => {
       const span = org_span.cloneNode(true);
-      const { transform  } = span.style;
+      const {transform} = span.style;
       const transform_match = transform.match(/[\d\.]+/);
 
       // decompose https://github.com/mozilla/pdf.js/blob/b1d3b6eb12b471af060c40a2d1fe479b1878ceb7/src/display/text_layer.js#L679:L739
@@ -658,7 +658,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     jQuery.each(fixedSelectedRects, (idx, r) => {
 
       const rect = viewport.convertToPdfPoint(r.left - pageRect.left, r.top - pageRect.top)
-          .concat(viewport.convertToPdfPoint(r.right - pageRect.left, r.bottom - pageRect.top));
+        .concat(viewport.convertToPdfPoint(r.right - pageRect.left, r.bottom - pageRect.top));
       that.selectedTextCoords.push(rect);
       const bounds = viewport.convertToViewportRectangle(rect);
       let left = Math.min(bounds[0], bounds[2]);
@@ -710,32 +710,32 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
       jQuery(el).css('cursor', 'move');
       (jQuery(el) as any).qtip(
-          {
+        {
 
-            content: `<img src="assets/images/annotate.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()">
+          content: `<img src="assets/images/annotate.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()">
                 <img src="assets/images/copy.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].copySelectedText()">`,
-            position: {
-              my: 'bottom center',
-              target: 'mouse',
-              adjust: {
-                mouse: false,
-              },
-            },
-            style: {
-              classes: 'qtip-bootstrap',
-              tip: {
-                width: 16,
-                height: 8,
-              },
-            },
-            show: {
-              delay: 10,
-            },
-            hide: {
-              fixed: true,
-              delay: 200,
+          position: {
+            my: 'bottom center',
+            target: 'mouse',
+            adjust: {
+              mouse: false,
             },
           },
+          style: {
+            classes: 'qtip-bootstrap',
+            tip: {
+              width: 16,
+              height: 8,
+            },
+          },
+          show: {
+            delay: 10,
+          },
+          hide: {
+            fixed: true,
+            delay: 200,
+          },
+        },
       );
     });
 
@@ -777,7 +777,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     dialogRef.componentInstance.text = annExclusion.text;
     dialogRef.componentInstance.type = annExclusion.type;
     dialogRef.result.then(exclusionData => {
-      this.annotationExclusionAdded.emit({ ...exclusionData, ...annExclusion });
+      this.annotationExclusionAdded.emit({...exclusionData, ...annExclusion});
     }, () => {
     });
   }
@@ -957,14 +957,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       if (foundHighlightAnnotations.length) {
         this.snackBar.open(
           `Highlighted ${foundHighlightAnnotations.length} instance${foundHighlightAnnotations.length === 1 ? '' : 's'}  `
-            + (firstAnnotation != null ? `of '${firstAnnotation.meta.allText}' ` : '')
-            + `in the document, starting on page ${firstPageNumber}.`,
-            'Close', {duration: 5000});
+          + (firstAnnotation != null ? `of '${firstAnnotation.meta.allText}' ` : '')
+          + `in the document, starting on page ${firstPageNumber}.`,
+          'Close', {duration: 5000});
 
         this.scrollToPage(firstPageNumber, firstAnnotation.rects[0]);
       } else {
         this.snackBar.open(`The annotation could not be found in the document.`,
-            'Close', {duration: 5000});
+          'Close', {duration: 5000});
       }
     }
   }
@@ -1016,7 +1016,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const overlayContainer = pdfPageView.div;
     const overlayDiv = document.createElement('div');
     overlayDiv.setAttribute('style', `border: 2px solid red; position:absolute;` +
-        'left:' + (left - 4) + 'px;top:' + (top - 4) + 'px;width:' + (width + 8) + 'px;height:' + (height + 8) + 'px;');
+      'left:' + (left - 4) + 'px;top:' + (top - 4) + 'px;width:' + (width + 8) + 'px;height:' + (height + 8) + 'px;');
     overlayContainer.appendChild(overlayDiv);
     overlayDiv.scrollIntoView({block: 'center'});
     jQuery(overlayDiv).effect('highlight', {}, 1000);

@@ -5,7 +5,8 @@
       Loading map...
     </app-module-progress>
 
-    <app-module-error *ngIf="status.failedErrorShown" class="position-absolute w-100 h-100 bg-white p-4"
+    <app-module-error *ngIf="status.failedErrorShown"
+                      class="position-absolute w-100 h-100 bg-white p-4"
                       style="z-index: 2" [error]="status.error">
       <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
     </app-module-error>
@@ -21,7 +22,8 @@
 
         <div class="d-flex flex-wrap align-items-center">
           <div class="module-title-bar mr-4">
-            <button type="button" class="module-title-bar-back mr-2" (click)="goToReturnUrl()" *ngIf="returnUrl">
+            <button type="button" class="module-title-bar-back mr-2" (click)="goToReturnUrl()"
+                    *ngIf="returnUrl">
               <i class="fa fa-fw fa-arrow-left"></i>
             </button>
             <h1 class="module-title text-truncate" draggable="true"
@@ -30,7 +32,8 @@
             </h1>
 
             <div ngbDropdown class="d-inline-block ml-1" container="body">
-              <a href="#" class="dropdown-no-arrow" ngbDropdownToggle (click)="$event.preventDefault()">
+              <a href="#" class="dropdown-no-arrow" ngbDropdownToggle
+                 (click)="$event.preventDefault()">
                 <i class="fas fa-chevron-down fa-fw text-icon"></i>
               </a>
               <div ngbDropdownMenu>
@@ -51,8 +54,7 @@
 
             <div class="btn-group ml-2">
               <button type="button" class="btn btn-secondary"
-                      ngbTooltip="Save" placement="bottom" container="body" (click)="save()"
-                      [disabled]="!unsavedChanges$.value">
+                      ngbTooltip="Save" placement="bottom" container="body" (click)="save()">
                 <i class="fa fa-fw fa-save"></i>
               </button>
             </div>
@@ -84,7 +86,8 @@
               </div>
 
               <app-search-control [(ngModel)]="entitySearchTerm" (ngModelChange)="search()"
-                                  [resultIndex]="entitySearchListIdx" [resultCount]="entitySearchList.length"
+                                  [resultIndex]="entitySearchListIdx"
+                                  [resultCount]="entitySearchList.length"
                                   (previous)="previous()" (next)="next()">
               </app-search-control>
             </div>
@@ -93,10 +96,6 @@
       </div>
 
       <div class="position-relative overflow-hidden flex-fill">
-        <div class="graph-container">
-          <canvas #canvas class="graph-view" [class.drop-target]="dropTargeted"></canvas>
-        </div>
-
         <ng-container *ngIf="map && (lockAcquired === false || !lockCheckingActive)">
           <ng-container *ngIf="locks.length && lockCheckingActive; else locksReleased">
             <div class="lock-panel alert alert-danger">
@@ -113,27 +112,77 @@
             </div>
           </ng-container>
           <ng-template #locksReleased>
-            <div class="lock-panel alert alert-warning">
-              <div>
-                Please reload to get the latest changes.
-              </div>
+            <ng-container *ngIf="!reloadPopupDismissed">
+              <div class="lock-panel alert alert-warning">
+                <div>
+                  Please reload to get the latest changes.
+                </div>
 
-              <div class="mt-2">
-                <button type="button" class="btn btn-primary" (click)="reload()">
-                  Reload
-                </button>
+                <div class="mt-2">
+                  <button type="button" class="btn btn-primary" (click)="reload()">
+                    Reload
+                  </button>
+                  <button type="button" class="btn btn-secondary ml-2" (click)="dismissReloadPopup()">
+                    Dismiss
+                  </button>
+                </div>
               </div>
-            </div>
+            </ng-container>
           </ng-template>
         </ng-container>
 
-        <ng-container *ngIf="(graphCanvas?.selection.changeObservable | async) as selected">
-          <div class="info-panel" *ngIf="selected[0].length === 1">
-            <app-info-panel [selected]="selected[0][0]"
-                            (actionCreated)="graphCanvas.execute($event)">
-            </app-info-panel>
-          </div>
-        </ng-container>
+        <as-split unit="pixel"
+                  direction="horizontal"
+                  [gutterSize]="2">
+          <as-split-area [order]="0" class="overflow-hidden">
+            <div class="graph-container">
+              <canvas #canvas class="graph-view" [class.drop-target]="dropTargeted"></canvas>
+            </div>
+          </as-split-area>
+          <as-split-area size="250"
+                         [order]="1" #infoPanelSidebar>
+            <ng-container
+              *ngIf="(graphCanvas?.selection.changeObservable | async) as selected; else graphInfo">
+              <div class="info-panel" *ngIf="selected[0].length === 1; else graphInfo">
+                <app-info-panel [infoPanel]="infoPanel" [selected]="selected[0][0]"
+                                (actionCreated)="graphCanvas.execute($event)">
+                </app-info-panel>
+              </div>
+            </ng-container>
+
+            <ng-template #graphInfo>
+              <ng-container *ngIf="graphCanvas">
+                <div class="d-flex flex-column h-100">
+                  <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab"
+                      class="nav-tabs nav-sidebar-tabs">
+                    <li ngbNavItem="graph">
+                      <a ngbNavLink>Graph</a>
+                      <ng-template ngbNavContent>
+                        <div class="module-body">
+                          <div class="row align-items-center mb-0">
+                            <div class="col-sm-6">Node Count:</div>
+                            <div class="col-sm-6 text-right">
+                              {{ graphCanvas.nodes.length | number }}
+                            </div>
+                          </div>
+
+                          <div class="row align-items-center">
+                            <div class="col-sm-6">Edge Count:</div>
+                            <div class="col-sm-6 text-right">
+                              {{ graphCanvas.edges.length | number }}
+                            </div>
+                          </div>
+                        </div>
+                      </ng-template>
+                    </li>
+                  </ul>
+
+                  <div [ngbNavOutlet]="nav" class="flex-fill overflow-auto"></div>
+                </div>
+              </ng-container>
+            </ng-template>
+          </as-split-area>
+        </as-split>
       </div>
     </div>
 

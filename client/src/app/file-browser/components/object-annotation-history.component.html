@@ -4,27 +4,35 @@
     There is no history to show for this file.
   </div>
   <ng-container *ngIf="log.results.length">
-    <table class="table">
+    <table class="table" style="table-layout: fixed">
       <colgroup>
-        <col style="width: 1%">
-        <col style="width: 1%">
+        <col style="width: 140px">
+        <col style="width: 145px">
       </colgroup>
       <thead>
       <tr>
-        <th>When</th>
-        <th>Cause</th>
+        <th>Date</th>
+        <th>User</th>
         <th>Changes</th>
       </tr>
       </thead>
       <tbody>
       <tr *ngFor="let change of log.results.view">
-        <td class="text-nowrap">
+        <td class="text-truncate">
           {{ change.date | date: 'short' }}
         </td>
-        <td class="text-nowrap">
-          {{ change.causeLabel }}
+        <td class="text-truncate">
+          <ng-container *ngIf="change.user; else noUser">
+            <app-user [user]="change.user"></app-user>
+          </ng-container>
+          <ng-template #noUser>
+            <em>System</em>
+          </ng-template>
         </td>
         <td>
+          <div class="mb-2" *ngIf="change.isReannotation">
+            <span class="badge badge-pill badge-secondary">Re-Annotation</span>
+          </div>
           <div *ngIf="!change.inclusionChanges.length && !change.exclusionChanges.length" class="text-muted">
             <em>No changes.</em>
           </div>
@@ -85,8 +93,8 @@
     </colgroup>
     <thead>
     <tr>
-      <th><span class="placeholder-box">When</span></th>
-      <th><span class="placeholder-box">Cause</span></th>
+      <th><span class="placeholder-box">Date</span></th>
+      <th><span class="placeholder-box">User</span></th>
       <th><span class="placeholder-box">Changes</span></th>
     </tr>
     </thead>

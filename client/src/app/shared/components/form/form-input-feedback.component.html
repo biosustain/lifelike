@@ -14,6 +14,9 @@
   <div *ngIf="control.hasError('email')">
     The provided email is not valid.
   </div>
+  <div *ngIf="control.hasError('whitespace')">
+    This field cannot contain only whitespace characters.
+  </div>
   <div *ngIf="control.hasError('serverValidated')">
     <div *ngFor="let error of control.getError('serverValidated')">
       {{ error }}

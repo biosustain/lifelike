@@ -1,16 +1,20 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/operators';
-import { AppUser } from 'app/interfaces';
+import { AppUser, JWTTokenResponse } from 'app/interfaces';
 import { isNullOrUndefined } from 'util';
+import { of, timer, Subscription } from 'rxjs';
+import { map, mergeMap } from 'rxjs/operators';
 
-@Injectable({
-  providedIn: '***ARANGO_USERNAME***'
-})
-export class AuthenticationService {
+@Injectable({providedIn: '***ARANGO_USERNAME***'})
+export class AuthenticationService implements OnDestroy {
   readonly baseUrl = '/api/auth';
 
-  constructor(private http: HttpClient) {
+  private refreshSubscription: Subscription;
+
+  constructor(private http: HttpClient) { }
+
+  ngOnDestroy() {
+    this.refreshSubscription.unsubscribe();
   }
 
   getAuthHeader(): string | void {
@@ -20,18 +24,42 @@ export class AuthenticationService {
     }
   }
 
+  public isAuthenticated(): boolean {
+    const expirationTime = new Date(localStorage.getItem('expires_at')).getTime();
+    const currentTime = new Date().getTime();
+    return currentTime < expirationTime;
+  }
+
+  public scheduleRenewal() {
+    if (!this.isAuthenticated()) {
+      return;
+    }
+    const expirationTime = new Date(localStorage.getItem('expires_at')).getTime();
+    const source = of(expirationTime).pipe(mergeMap((expiresAt) => {
+      const now = new Date().getTime();
+      const refreshAt = expiresAt - (1000 * 60);
+      return timer(Math.max(1, refreshAt - now)).pipe(
+        mergeMap(() => this.refresh()));
+    }));
+
+    this.refreshSubscription = source.subscribe(() => {});
+  }
+
   /**
    * Authenticate users to get a JWT
    */
   public login(email: string, password: string) {
-    return this.http.post<{ user: AppUser, access_jwt: string, refresh_jwt: string }>(
+    return this.http.post<JWTTokenResponse>(
       this.baseUrl + '/login',
       {email, password},
     ).pipe(
-      map((resp: any) => {
-        localStorage.setItem('auth', resp.user);
-        localStorage.setItem('access_jwt', resp.access_jwt);
-        localStorage.setItem('refresh_jwt', resp.refresh_jwt);
+      map((resp: JWTTokenResponse) => {
+        localStorage.setItem('authId', resp.user.id.toString());
+        localStorage.setItem('access_jwt', resp.accessToken.token);
+        localStorage.setItem('expires_at', resp.accessToken.exp);
+        // TODO: Move this out of localStorage
+        localStorage.setItem('refresh_jwt', resp.refreshToken.token);
+        this.scheduleRenewal();
         return resp;
       })
     );
@@ -44,8 +72,9 @@ export class AuthenticationService {
   public logout() {
     localStorage.removeItem('refresh_jwt');
     localStorage.removeItem('access_jwt');
+    localStorage.removeItem('expires_at');
     // See ***ARANGO_USERNAME***-store module where this is set
-    localStorage.removeItem('auth');
+    localStorage.removeItem('authId');
   }
 
   /**
@@ -53,28 +82,29 @@ export class AuthenticationService {
    */
   public refresh() {
     const jwt = localStorage.getItem('refresh_jwt');
-    return this.http.post<{ access_jwt: string, refresh_jwt: string }>(
+    return this.http.post<JWTTokenResponse>(
       this.baseUrl + '/refresh',
-      {jwt},
+      { jwt },
     ).pipe(
-      map((resp: { access_jwt: string, refresh_jwt: string }) => {
-        localStorage.setItem('access_jwt', resp.access_jwt);
-        localStorage.setItem('refresh_jwt', resp.refresh_jwt);
-        return resp;
-      }),
-    );
+        map((resp) => {
+          localStorage.setItem('access_jwt', resp.accessToken.token);
+          localStorage.setItem('expires_at', resp.accessToken.exp);
+          // TODO: Remove refresh token from localStorage
+          localStorage.setItem('refresh_jwt', resp.refreshToken.token);
+          this.scheduleRenewal();
+          return resp;
+        }),
+      );
   }
 
   public whoAmI(): number {
-    const auth = JSON.parse(localStorage.getItem('auth'));
+    const authId = JSON.parse(localStorage.getItem('authId'));
 
     if (
-      isNullOrUndefined(auth)
-    ) {
-      return;
-    }
+      isNullOrUndefined(authId)
+    ) { return; }
 
-    return auth.user.id;
+    return authId;
   }
 
   public getAccessToken() {
@@ -87,32 +117,26 @@ export class AuthenticationService {
    * @param value - value for cookie to store
    * @param days - how long should cookie exist
    */
-  setCookie(name, value, days = 30) {
+  setCookie(name, value, days= 30) {
     let expires = '';
     if (days) {
-      const date = new Date();
-      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-      expires = '; expires=' + date.toUTCString();
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = '; expires=' + date.toUTCString();
     }
-    document.cookie = name + '=' + (value || '') + expires + '; path=/';
+    document.cookie = name + '=' + (value || '')  + expires + '; path=/';
   }
-
   getCookie(name) {
     const nameEQ = name + '=';
     const ca = document.cookie.split(';');
     // tslint:disable-next-line: prefer-for-of
     for (let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) === ' ') {
-        c = c.substring(1, c.length);
-      }
-      if (c.indexOf(nameEQ) === 0) {
-        return c.substring(nameEQ.length, c.length);
-      }
+        let c = ca[i];
+        while (c.charAt(0) === ' ') { c = c.substring(1, c.length); }
+        if (c.indexOf(nameEQ) === 0) { return c.substring(nameEQ.length, c.length); }
     }
     return null;
   }
-
   eraseCookie(name) {
     document.cookie = name + '=; Max-Age=-99999999;';
   }

@@ -112,8 +112,8 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   }
 
   ngOnInit() {
-    this.enrichmentService.loadTask.results$.subscribe(({result: {object}}) => {
-      this.object = object;
+    this.enrichmentService.loadTaskMetaData.results$.subscribe(({result}) => {
+      this.object = result;
       this.loadingData = false;
       this.emitModuleProperties();
     });

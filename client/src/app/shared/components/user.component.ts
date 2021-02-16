@@ -10,7 +10,7 @@ import {AppUser} from '../../interfaces';
         <ng-container *ngIf="highlightTerms.length; else noHighlight">
           <app-term-highlight [text]="user.firstName + ' ' + user.lastName"
                               [highlightTerms]="highlightTerms"
-                              [wholeWord]="false"></app-term-highlight>
+                              [highlightOptions]="{wholeWord: true}"></app-term-highlight>
         </ng-container>
         <ng-template #noHighlight>
           {{ user.firstName }} {{ user.lastName }}

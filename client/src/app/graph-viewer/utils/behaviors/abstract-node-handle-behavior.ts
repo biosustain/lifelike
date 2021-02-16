@@ -1,7 +1,15 @@
 // @ts-ignore
 import * as d3 from 'd3';
-import { AbstractCanvasBehavior, BehaviorResult, DragBehaviorEvent } from '../../renderers/behaviors';
-import { GraphEntity, GraphEntityType, UniversalGraphNode } from '../../../drawing-tool/services/interfaces';
+import {
+  AbstractCanvasBehavior,
+  BehaviorResult,
+  DragBehaviorEvent,
+} from '../../renderers/behaviors';
+import {
+  GraphEntity,
+  GraphEntityType,
+  UniversalGraphNode,
+} from '../../../drawing-tool/services/interfaces';
 import { PlacedNode } from '../../styles/styles';
 import { CanvasGraphView } from '../../renderers/canvas/canvas-graph-view';
 
@@ -91,10 +99,15 @@ export abstract class AbstractNodeHandleBehavior<T extends Handle> extends Abstr
   }
 
   drawHandle(ctx: CanvasRenderingContext2D, transform: any, {minX, minY, maxX, maxY}: T) {
-    ctx.fillStyle = '#000';
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1 / transform.scale(1).k;
     ctx.rect(minX, minY, maxX - minX, maxY - minY);
+    if (document.activeElement === this.graphView.canvas) {
+      ctx.fillStyle = '#000';
+      ctx.strokeStyle = '#fff';
+    } else {
+      ctx.fillStyle = '#CCC';
+      ctx.strokeStyle = '#999';
+    }
     ctx.fill();
     ctx.stroke();
   }

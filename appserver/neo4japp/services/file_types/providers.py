@@ -242,6 +242,43 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
         data = json.loads(buffer.read())
         validate_enrichment_table(data)
 
+    def to_indexable_content(self, buffer: BufferedIOBase):
+        data = json.load(buffer)
+        content = io.StringIO()
+
+        data_tokens = data['data'].split('/')
+        genes = data_tokens[0].split(',')
+        organism = data_tokens[2]
+        content.write(', '.join(genes))
+        content.write('\r\n\r\n')
+        content.write(organism)
+        content.write('\r\n\r\n')
+
+        if 'result' in data:
+            genes = data['result']['genes']
+            for gene in genes:
+                content.write('\u2022 ')
+                content.write(gene['imported'])
+                if 'matched' in gene:
+                    content.write(': ')
+                    content.write(gene['matched'])
+                if 'fullName' in gene:
+                    content.write(' (')
+                    content.write(gene['fullName'])
+                    content.write(')')
+                if 'domains' in gene:
+                    for gene_domain in gene['domains'].values():
+                        for value in gene_domain.values():
+                            if len(value['text']):
+                                content.write('\n\u2192 ')
+                                content.write(value['text'])
+                content.write('.\r\n\r\n')
+
+        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode('utf-8')))
+
+    def should_highlight_content_text_matches(self) -> bool:
+        return True
+
 class EnrichmentVisualisationTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-visualisation'
     mime_types = (MIME_TYPE,)

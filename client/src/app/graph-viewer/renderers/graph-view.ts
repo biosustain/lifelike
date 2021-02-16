@@ -1,23 +1,26 @@
+import * as d3 from 'd3';
+
+import { Subject } from 'rxjs';
+
+import * as cola from 'webcola';
+import { InputNode, Layout } from 'webcola';
+import { Group, Link } from 'webcola/WebCola/src/layout';
+
 import {
   GraphEntity,
   GraphEntityType,
   UniversalGraph,
   UniversalGraphEdge,
   UniversalGraphEntity,
-  UniversalGraphNode
+  UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
-import * as d3 from 'd3';
-import * as cola from 'webcola';
-import { InputNode, Layout } from 'webcola';
-import { Group, Link } from 'webcola/WebCola/src/layout';
+import { emptyIfNull } from 'app/shared/utils/types';
+import { compileFind, FindOptions } from 'app/shared/utils/find';
+
 import { PlacedEdge, PlacedNode, PlacedObject } from '../styles/styles';
 import { GraphAction, GraphActionReceiver } from '../actions/actions';
-import { BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
-import { Subject } from 'rxjs';
-import { emptyIfNull } from '../../shared/utils/types';
-import { escapeRegExp } from 'lodash';
-import { compileFind, FindOptions } from '../../shared/utils/find';
+import { BehaviorList } from './behaviors';
 
 /**
  * A rendered view of a graph.
@@ -201,7 +204,7 @@ export abstract class GraphView implements GraphActionReceiver {
     // We need O(1) lookup of nodes
     this.nodeHashMap = graph.nodes.reduce(
       (map, node) => map.set(node.hash, node),
-      new Map()
+      new Map(),
     );
 
     this.nodePositionOverrideMap.clear();
@@ -634,6 +637,11 @@ export abstract class GraphView implements GraphActionReceiver {
   // ========================================
 
   /**
+   * Focus on the element.
+   */
+  abstract focus(): void;
+
+  /**
    * Get the current transform object that is based on the current
    * zoom and pan, which can be used to convert between viewport space and
    * graph space.
@@ -931,7 +939,7 @@ export abstract class GraphView implements GraphActionReceiver {
         leaves: [],
         groups: [],
         padding: 10,
-      }
+      },
     ];
 
     for (const node of layoutNodes) {

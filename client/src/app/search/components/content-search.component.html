@@ -1,23 +1,29 @@
 <ng-container *ngIf="(loadTask.status$ | async) as status">
-  <div appContainerBreakpoints class="module">
+  <div class="module" appContainerBreakpoints>
     <div class="module-header">
       <div class="module-title-bar">
-        <h1 class="module-title">
-          Search
-          <ng-container *ngIf="valid">
-            Results for "{{ params.q }}"
-          </ng-container>
-        </h1>
+        <div class="d-flex justify-content-between w-100">
+          <h1 class="module-title">
+            Search
+            <ng-container *ngIf="valid">
+              Results for "{{ params.q }}"
+            </ng-container>
+          </h1>
+          <div class="fake-link" (click)="openAdvancedSearchOptions()">Advanced Search Options</div>
+        </div>
       </div>
 
       <div class="module-toolbar mt-2">
-        <app-content-search-form (formResult)="search($event)" [params]="params" class="w-100">
-        </app-content-search-form>
+        <ng-container *ngIf="(searchTypes$ | async) as searchTypes">
+          <app-content-search-form class="w-100" [params]="params" (formResult)="search($event)"
+            [typeChoices]="searchTypes">
+          </app-content-search-form>
+        </ng-container>
       </div>
     </div>
 
     <div class="module-body-split module-body-preview-split overflow-auto">
-      <div #body class="module-body-split-main overflow-auto">
+      <div class="module-body-split-main overflow-auto" #body>
         <ng-container *ngIf="!valid; else searchEntered">
           <div class="module-body">
             <div class="text-center my-4 px-4">
@@ -70,35 +76,39 @@
               <div class="module-body text-muted">
                 <div class="mb-3">
                   <app-results-summary
-                    [collectionSize]="!(fileResults.total > 0) ? collectionSize
-                      : collectionSize + fileResults.total"
-                    [pageSize]="params.limit"
-                    [page]="params.page"></app-results-summary>
+                      [page]="params.page"
+                      [pageSize]="params.limit"
+                      [collectionSize]="!(fileResults.total > 0) ? collectionSize
+                      : collectionSize + fileResults.total"></app-results-summary>
                 </div>
 
                 <div class="search-results search-results-selectable">
-                  <div (appTabSelectable)="results.select(result)" *ngFor="let result of results.view"
-                       [class.active]="results.isSelected(result)"
-                       class="search-results-item">
+                  <div *ngFor="let result of results.view" class="search-results-item"
+                       (appTabSelectable)="results.select(result)"
+                       [class.active]="results.isSelected(result)">
                     <div class="text-truncate mb-1">
-                      <app-object-path [newTab]="true" [object]="result.item.parent"></app-object-path>
+                      <app-object-path [object]="result.item.parent" [newTab]="true"></app-object-path>
                     </div>
                     <div class="search-results-item-header text-truncate">
-                      <h5 [style.padding]="'1px 0'" class="text-truncate">
+                      <h5 class="text-truncate" [style.padding]="'1px 0'">
                         <app-file-type-label [object]="result.item" [showLabel]="false"
-                                             class="mr-1"></app-file-type-label>
-                        <a [appLink]="getObjectCommands(result.item)" [newTab]="true" [sideBySide]="true">
-                          <app-term-highlight [highlightTerms]="resultQuery ? resultQuery.phrases : []"
-                                              [text]="result.item.name"></app-term-highlight>
+                          class="mr-1"></app-file-type-label>
+                        <a [appLink]="result.item.getCommands(false)" [newTab]="true" [sideBySide]="true">
+                          <app-term-highlight
+                            [text]="result.item.name"
+                            [highlightTerms]="resultQuery ? resultQuery.phrases : []"
+                            [highlightOptions]="highlightOptions"
+                          ></app-term-highlight>
                         </a>
                       </h5>
                     </div>
-                    <div class="mt-2 text-truncate"><i>Created by
-                      <app-user [user]="result.item.user"></app-user>
-                      on {{ result.item.creationDate | date: 'fullDate'}}</i></div>
+                    <div class="mt-2 text-truncate"><i>Created by <app-user [user]="result.item.user"></app-user> on {{ result.item.creationDate | date: 'fullDate'}}</i></div>
                     <div class="mt-2 paragraph-truncate-3">
-                      <app-term-highlight [highlightTerms]="resultQuery ? resultQuery.phrases : []"
-                                          [text]="result.item.description"></app-term-highlight>
+                      <app-term-highlight
+                        [text]="result.item.description"
+                        [highlightTerms]="resultQuery ? resultQuery.phrases : []"
+                        [highlightOptions]="highlightOptions"
+                      ></app-term-highlight>
                     </div>
                     <ng-container *ngIf="result.item.highlight">
                       <div class="dropdown-divider"></div>
@@ -107,19 +117,19 @@
                       </div>
                       <div class="d-flex align-items-center justify-content-end">
                         <a
-                          *ngIf="result.item.doi"
-                          [href]="result.item.doi"
-                          target="_blank">DOI Link</a>
+                        *ngIf="result.item.doi"
+                        [href]="result.item.doi"
+                        target="_blank">DOI Link</a>
                       </div>
                     </ng-container>
                   </div>
                 </div>
                 <div class="mt-4">
                   <ngb-pagination
-                    (pageChange)="goToPage($event)"
-                    [collectionSize]="collectionSize"
-                    [pageSize]="params.limit"
-                    [page]="params.page"></ngb-pagination>
+                      [page]="params.page"
+                      [pageSize]="params.limit"
+                      [collectionSize]="collectionSize"
+                      (pageChange)="goToPage($event)"></ngb-pagination>
                 </div>
               </div>
             </ng-container>
@@ -135,12 +145,12 @@
       </div>
       <div class="module-body-split-sidebar">
         <ng-container *ngIf="results.selection.length">
-          <app-object-info (highlightClick)="highlightClicked(results.selection[0].item, $event)"
+          <app-object-info [forEditing]="false"
+                           (highlightClick)="highlightClicked(results.selection[0].item, $event)"
                            (highlightDisplayLimitChange)="highlightDisplayLimitChanged(results.selection[0].item, $event)"
+                           [object]="results.selection[0].item"
                            (objectOpen)="openObject($event)"
-                           [forEditing]="false"
-                           [highlightTerms]="resultQuery.phrases"
-                           [object]="results.selection[0].item"></app-object-info>
+                           [highlightTerms]="resultQuery.phrases"></app-object-info>
         </ng-container>
       </div>
     </div>
