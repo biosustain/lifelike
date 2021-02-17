@@ -31,11 +31,22 @@ multiple steps needed in the annotation pipeline.
 """
 
 
+def call_nlp_service(model: str, text: str) -> dict:
+    req = requests.post(
+        'https://nlp-api.lifelike.bio/v1/predict',
+        data=json.dumps({'model': model, 'sentence': text}),
+        headers={
+            'Content-type': 'application/json',
+            'secret': '***NLP_SERVICE_SECRET***'},
+        timeout=60)
+
+    resp = req.json()
+    req.close()
+    return resp
+
+
 def get_nlp_entities(text: str, entities: Set[str]):
     """Makes a call to the NLP service.
-    There is a memory issue with the NLP service, so for now
-    the REST call is broken into one per PDF page.
-
     Returns the set of entity types in which the token was found.
     """
     if not entities:
@@ -70,7 +81,7 @@ def get_nlp_entities(text: str, entities: Set[str]):
         'offsets_found': set()
     }
 
-    if all([model in nlp_models for model in entities]):
+    if all([model in entities for model in nlp_models]):
         # use `all`
         req = requests.post(
             'https://nlp-api.lifelike.bio/v1/predict',
@@ -79,10 +90,10 @@ def get_nlp_entities(text: str, entities: Set[str]):
                 'Content-type': 'application/json',
                 'secret': '***NLP_SERVICE_SECRET***'})
 
-        resp = req.json()
+        models = req.json()
         req.close()
 
-        for results in resp['results']:
+        for results in models['results']:
             for token in results['annotations']:
                 token_offset = (token['start_pos'], token['end_pos']-1)
                 entity_results['offsets_found'].add(token_offset)
@@ -98,7 +109,27 @@ def get_nlp_entities(text: str, entities: Set[str]):
                 entity_results[EntityType.PROTEIN.value].add(token_offset)
                 entity_results[EntityType.SPECIES.value].add(token_offset)
     else:
-        raise NotImplementedError()
+        combined = []
+        with mp.Pool(processes=4) as pool:
+            combined = pool.starmap(
+                call_nlp_service, [(nlp_models[model], text) for model in entities])
+
+        for model in combined:
+            for results in model['results']:
+                for token in results['annotations']:
+                    token_offset = (token['start_pos'], token['end_pos']-1)
+                    entity_results['offsets_found'].add(token_offset)
+                    entity_results[nlp_model_types[results['model']]].add(token_offset)
+
+                    # NOTE: currently do not have these models
+                    # so add to them like this for now
+                    entity_results[EntityType.ANATOMY.value].add(token_offset)
+                    entity_results[EntityType.COMPOUND.value].add(token_offset)
+                    entity_results[EntityType.FOOD.value].add(token_offset)
+                    entity_results[EntityType.PHENOMENA.value].add(token_offset)
+                    entity_results[EntityType.PHENOTYPE.value].add(token_offset)
+                    entity_results[EntityType.PROTEIN.value].add(token_offset)
+                    entity_results[EntityType.SPECIES.value].add(token_offset)
 
     return NLPResults(
         anatomy=entity_results[EntityType.ANATOMY.value],
