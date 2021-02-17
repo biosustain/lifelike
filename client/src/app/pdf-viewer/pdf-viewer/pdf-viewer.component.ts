@@ -1,25 +1,25 @@
 import {
-  AfterViewChecked,
   Component,
+  Input,
+  Output,
   ElementRef,
   EventEmitter,
-  HostListener,
-  Input,
   OnChanges,
-  OnDestroy,
-  OnInit,
-  Output,
   SimpleChanges,
+  OnInit,
+  HostListener,
+  OnDestroy,
   ViewChild,
+  AfterViewChecked
 } from '@angular/core';
 import {
   PDFDocumentProxy,
+  PDFViewerParams,
   PDFPageProxy,
   PDFPageViewport,
-  PDFProgressData,
-  PDFPromise,
   PDFSource,
-  PDFViewerParams,
+  PDFProgressData,
+  PDFPromise
 } from 'pdfjs-dist';
 
 import { createEventBus } from '../utils/event-bus-utils';
@@ -51,11 +51,11 @@ export enum RenderTextMode {
 @Component({
   selector: 'app-pdf-viewer-lib',
   template: `
-    <div #pdfViewerContainer style="height: 100%;" class="ng2-pdf-viewer-container">
+    <div #pdfViewerContainer class="ng2-pdf-viewer-container">
       <div class="pdfViewer"></div>
     </div>
   `,
-  styleUrls: ['./pdf-viewer.component.scss'],
+  styleUrls: ['./pdf-viewer.component.scss']
 })
 export class PdfViewerComponent
   implements OnChanges, OnInit, OnDestroy, AfterViewChecked {
@@ -65,7 +65,7 @@ export class PdfViewerComponent
     this.internalCMapsUrl = cMapsUrl;
   }
 
-  @Input('page')
+ @Input('page')
   set page(page) {
     page = parseInt(page, 10) || 1;
     const orginalPage = page;
@@ -87,9 +87,9 @@ export class PdfViewerComponent
 
   @Input('render-text-mode')
   set renderTextMode(renderTextMode: RenderTextMode) {
-    if (renderTextMode !== undefined) {
-      this.internalRenderTextMode = renderTextMode;
-    }
+      if (renderTextMode !== undefined) {
+          this.internalRenderTextMode = renderTextMode;
+      }
   }
 
   @Input('original-size')
@@ -227,11 +227,15 @@ export class PdfViewerComponent
   private loadingTask: any;
 
   // tslint:disable-next-line
-  @Output('after-load-complete') afterLoadComplete = new EventEmitter<PDFDocumentProxy>();
+  @Output('after-load-complete') afterLoadComplete = new EventEmitter<
+    PDFDocumentProxy
+  >();
   // tslint:disable-next-line
   @Output('page-rendered') pageRendered = new EventEmitter<CustomEvent>();
   // tslint:disable-next-line
-  @Output('text-layer-rendered') textLayerRendered = new EventEmitter<CustomEvent>();
+  @Output('text-layer-rendered') textLayerRendered = new EventEmitter<
+    CustomEvent
+  >();
   // tslint:disable-next-line
   @Output('matches-count-updated') matchesCountUpdated = new EventEmitter<any>();
   // tslint:disable-next-line
@@ -286,7 +290,7 @@ export class PdfViewerComponent
 
       setTimeout(() => {
         this.ngOnInit();
-        this.ngOnChanges({src: this.src} as any);
+        this.ngOnChanges({ src: this.src } as any);
       });
     }
   }
@@ -343,7 +347,7 @@ export class PdfViewerComponent
 
         // New form of page changing: The viewer will now jump to the specified page when it is changed.
         // This behavior is introducedby using the PDFSinglePageViewer
-        this.getCurrentViewer().scrollPageIntoView({pageNumber: this.internalPage});
+        this.getCurrentViewer().scrollPageIntoView({ pageNumber: this.internalPage });
       }
 
       this.update();
@@ -353,29 +357,29 @@ export class PdfViewerComponent
   public convertCoordinates(pageNum: number, rect: number[]): Promise<any> {
     return new Promise((resolve, reject) => {
       this.internalPdf.getPage(pageNum)
-        .then((page: PDFPageProxy) => {
-          const rotation = this.internalRotation || page.rotate;
-          const viewPort: PDFPageViewport =
-            (page as any).getViewport({
-              scale: this.internalZoom,
-              rotation,
-            });
-
-          const bounds = viewPort.convertToViewportRectangle(rect);
-          const left = Math.min(bounds[0], bounds[2]);
-          const top = Math.min(bounds[1], bounds[3]);
-          const width = Math.abs(bounds[0] - bounds[2]);
-          const height = Math.abs(bounds[1] - bounds[3]);
-          resolve({
-            left,
-            top,
-            width,
-            height,
+      .then((page: PDFPageProxy) => {
+        const rotation = this.internalRotation || page.rotate;
+        const viewPort: PDFPageViewport =
+          (page as any).getViewport({
+            scale: this.internalZoom,
+            rotation
           });
-          // var x = Math.min(screenRect[0], screenRect[2]), width = Math.abs(screenRect[0] - screenRect[2]);
-          // var y = Math.min(screenRect[1], screenRect[3]), height = Math.abs(screenRect[1] - screenRect[3]);
-          // resolve([x,y,width,height]);
+
+        const bounds = viewPort.convertToViewportRectangle(rect);
+        const left = Math.min(bounds[0], bounds[2]);
+        const top = Math.min(bounds[1], bounds[3]);
+        const width = Math.abs(bounds[0] - bounds[2]);
+        const height = Math.abs(bounds[1] - bounds[3]);
+        resolve({
+          left,
+          top,
+          width,
+          height
         });
+        // var x = Math.min(screenRect[0], screenRect[2]), width = Math.abs(screenRect[0] - screenRect[2]);
+        // var y = Math.min(screenRect[1], screenRect[3]), height = Math.abs(screenRect[1] - screenRect[3]);
+        // resolve([x,y,width,height]);
+      });
     });
 
   }
@@ -394,7 +398,7 @@ export class PdfViewerComponent
         const viewportWidth =
           (page as any).getViewport({
             scale: this.internalZoom,
-            rotation,
+            rotation
           }).width * PdfViewerComponent.CSS_UNITS;
         let scale = this.internalZoom;
         let stickToPage = true;
@@ -406,8 +410,8 @@ export class PdfViewerComponent
             viewportWidth > this.pdfViewerContainer.nativeElement.clientWidth)
         ) {
           scale = this.getScale(
-            (page as any).getViewport({scale: 1, rotation})
-              .width,
+            (page as any).getViewport({ scale: 1, rotation })
+              .width
           );
           stickToPage = !this.internalStickToPage;
         }
@@ -435,7 +439,7 @@ export class PdfViewerComponent
     }
   }
 
-  private setupMultiPageViewer(value?: T) {
+  private setupMultiPageViewer(value?) {
     (PDFJS as any).disableTextLayer = !this.internalRenderText;
 
     PdfViewerComponent.setExternalLinkTarget(this.internalExternalLinkTarget);
@@ -475,10 +479,10 @@ export class PdfViewerComponent
       this.findControlStateUpdated.emit(e);
     });
 
-    this.pdfMultiPageLinkService = new pdfjsViewer.PDFLinkService({eventBus});
+    this.pdfMultiPageLinkService = new pdfjsViewer.PDFLinkService({ eventBus });
     this.pdfMultiPageFindController = new pdfjsViewer.PDFFindController({
       linkService: this.pdfMultiPageLinkService,
-      eventBus,
+      eventBus
     });
 
     const pdfOptions: PDFViewerParams | any = {
@@ -489,7 +493,7 @@ export class PdfViewerComponent
       textLayerMode: this.internalRenderText
         ? this.internalRenderTextMode
         : RenderTextMode.DISABLED,
-      findController: this.pdfMultiPageFindController,
+      findController: this.pdfMultiPageFindController
     };
 
     this.pdfMultiPageViewer = new pdfjsViewer.PDFViewer(pdfOptions);
@@ -527,11 +531,11 @@ export class PdfViewerComponent
     });
 
     this.pdfSinglePageLinkService = new pdfjsViewer.PDFLinkService({
-      eventBus,
+      eventBus
     });
     this.pdfSinglePageFindController = new pdfjsViewer.PDFFindController({
       linkService: this.pdfSinglePageLinkService,
-      eventBus,
+      eventBus
     });
 
     const pdfOptions: PDFViewerParams | any = {
@@ -542,7 +546,7 @@ export class PdfViewerComponent
       textLayerMode: this.internalRenderText
         ? this.internalRenderTextMode
         : RenderTextMode.DISABLED,
-      findController: this.pdfSinglePageFindController,
+      findController: this.pdfSinglePageFindController
     };
 
     this.pdfSinglePageViewer = new pdfjsViewer.PDFSinglePageViewer(pdfOptions);
@@ -573,7 +577,7 @@ export class PdfViewerComponent
 
     const params: any = {
       cMapUrl: this.internalCMapsUrl,
-      cMapPacked: true,
+      cMapPacked: true
     };
 
     if (srcType === 'string') {
@@ -626,7 +630,7 @@ export class PdfViewerComponent
       },
       (error: any) => {
         this.onError.emit(error);
-      },
+      }
     );
   }
 
