@@ -40,7 +40,6 @@ from neo4japp.models import (
     FallbackOrganism
 )
 from neo4japp.services.annotations.constants import (
-    AnnotationMethod,
     EntityType,
     ManualAnnotationType,
 )
@@ -55,6 +54,7 @@ from neo4japp.utils.logger import UserEventLog
 from .filesystem import bp as filesystem_bp
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from neo4japp.schemas.annotations import (
+    AnnotationMethod,
     AnnotationGenerationRequestSchema,
     RefreshEnrichmentAnnotationsRequestSchema,
     MultipleAnnotationGenerationResponseSchema,
@@ -337,7 +337,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
 
         organism = None
-        method = params.get('method', AnnotationMethod.RULES)
+        annotation_configs = params.get('annotation_configs', None)
         enrichment = params.get('enrichment', None)
         texts = params.get('texts', [])
 
@@ -357,7 +357,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     annotations, version = self._annotate(
                         file=file,
                         cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
-                        method=method,
+                        method=annotation_configs,
                         organism=organism or file.fallback_organism,
                         user_id=current_user.id,
                     )
@@ -394,7 +394,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     text = text_mapping['text']
                     try:
                         annotations = self._annotate_text(
-                            method=method,
+                            method=annotation_configs,
                             organism=organism,
                             text=text
                         )
@@ -473,10 +473,10 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
     def _annotate(self, file: Files,
                   cause: AnnotationChangeCause,
                   organism: Optional[FallbackOrganism] = None,
-                  method: AnnotationMethod = AnnotationMethod.RULES,
+                  method: Dict[str, AnnotationMethod] = None,
                   user_id: int = None):
         annotations_json = create_annotations_from_pdf(
-            annotation_method=method.value,
+            annotation_method=method,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
             document=file,
@@ -509,10 +509,10 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         self,
         text: str,
         organism: Optional[FallbackOrganism] = None,
-        method: AnnotationMethod = AnnotationMethod.RULES
+        method: Dict[str, AnnotationMethod] = None
     ):
         annotations_json = create_annotations_from_text(
-            annotation_method=method.value,
+            annotation_method=method,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
             text=text

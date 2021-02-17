@@ -53,7 +53,7 @@ def annotate_pdf(
         custom_annotations=custom_annotations,
         tokens=parsed
     )
-    return annotation_service.create_rules_based_annotations(
+    return annotation_service.create_annotations(
         custom_annotations=custom_annotations,
         excluded_annotations=excluded_annotations,
         entity_results=entity_results,

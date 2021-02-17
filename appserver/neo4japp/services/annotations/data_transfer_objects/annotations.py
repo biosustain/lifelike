@@ -1,6 +1,6 @@
 import attr
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from neo4japp.util import CamelDictMixin
 
@@ -25,6 +25,21 @@ class PDFBase():
         return attr.asdict(self)
 
 
+@attr.s(frozen=True)
+class NLPResults():
+    anatomy: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    chemicals: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    compounds: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    diseases: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    foods: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    genes: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    phenomenas: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    phenotypes: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    proteins: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    species: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    offsets_found: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+
+
 @attr.s(frozen=False)
 class PDFWord(PDFBase):
     keyword: str = attr.ib()
@@ -39,8 +54,6 @@ class PDFWord(PDFBase):
     heights: List[float] = attr.ib(default=attr.Factory(list))
     widths: List[float] = attr.ib(default=attr.Factory(list))
     coordinates: List[List[float]] = attr.ib(default=attr.Factory(list))
-    # used with NLP because it returns the type
-    token_type: Optional[str] = attr.ib(default=None)
     # type is itself, not sure how that works so set to Any for now
     next: Optional[Any] = attr.ib(default=None)
 
