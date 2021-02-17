@@ -87,7 +87,7 @@ stages:
                 $(tag)
                 latest
 
-      - deployment: VM Deploy
+      - deployment: VMDeploy
         displayName: QA Deployment
         environment: 'lifelike-qa'
         pool:
