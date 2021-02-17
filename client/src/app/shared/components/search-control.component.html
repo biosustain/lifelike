@@ -12,7 +12,13 @@
   </div>
   <div *ngIf="resultCount" class="input-group-append">
               <span class="input-group-text" id="increment-btn">
-                {{resultIndex + 1}} of {{resultCount}}<span *ngIf="searching" style="display:block; text-align: center;" class="ml-1"><i style="display:block; text-align: center;" class="fa fa-spinner fa-spin text-dark"></i></span>
+                {{resultIndex + 1}} of {{resultCount}}
+                <span *ngIf="searching" style="display:block; text-align: center;" class="ml-1">
+                  <i
+                    style="display:block; text-align: center;"
+                    class="fa fa-spinner fa-spin text-dark"
+                  ></i>
+                </span>
               </span>
   </div>
   <div class="input-group-append" id="decrement-btn">
