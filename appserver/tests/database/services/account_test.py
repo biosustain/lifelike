@@ -60,3 +60,22 @@ def test_can_update_password(session, account_service):
     updated_user = AppUser.query.get(user.id)
 
     assert updated_user.password_hash != old_password_hash
+
+
+@pytest.mark.parametrize('filter', [
+    ({'username': 'test-user'}),
+    ({'username': 'bloblob'})
+])
+def test_can_filter_users(session, account_service, filter):
+
+    user = AppUser(
+        username=filter['username'],
+        first_name='firstname',
+        last_name='lastname',
+        email=f'{filter["username"]}@***ARANGO_DB_NAME***.bio'
+    )
+    session.add(user)
+    session.flush()
+
+    all_users = [user for user, _ in account_service.get_user_list(filter)]
+    assert all_users[0].username == user.username
