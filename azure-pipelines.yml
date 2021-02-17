@@ -84,19 +84,19 @@ stages:
                 $(tag)
                 latest
 
-      - deployment: VMDeploy
-        displayName: QA Deployment
-        environment: 'lifelike-qa'
-        pool:
-          vmImage: 'ubuntu-latest'
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - task: DockerCompose@0
-                  displayName: Container registry login
-                  inputs:
-                    containerregistrytype: Azure Container Registry
-                    azureSubscriptionEndpoint: lifelike-cicd
-                    azureContainerRegistry: lifelike.azurecr.io
-                    dockerComposeFile: docker-compose.prod.yml
+          - deployment: VMDeploy
+            displayName: QA Deployment
+            environment: 'lifelike-qa'
+            pool:
+              vmImage: 'ubuntu-latest'
+            strategy:
+              runOnce:
+                deploy:
+                  steps:
+                    - task: DockerCompose@0
+                      displayName: Container registry login
+                      inputs:
+                        containerregistrytype: Azure Container Registry
+                        azureSubscriptionEndpoint: lifelike-cicd
+                        azureContainerRegistry: lifelike.azurecr.io
+                        dockerComposeFile: docker-compose.prod.yml
