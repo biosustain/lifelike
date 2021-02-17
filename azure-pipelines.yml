@@ -20,7 +20,7 @@ variables:
 
 stages:
   - stage: Build
-    displayName: Build and push stage
+    displayName: Build and push stage docker images
     jobs:
       - job: Build
         displayName: Build
@@ -83,3 +83,22 @@ stages:
               tags: |
                 $(tag)
                 latest
+
+      - deployment: VM Deploy
+        displayName: QA Deployment
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              variables:
+                azureContainerRegistry: lifelike.azurecr.io
+                azureSubscriptionEndpoint: lifelike
+              steps:
+                - task: DockerCompose@0
+                  displayName: Container registry login
+                  inputs:
+                    containerregistrytype: Azure Container Registry
+                    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+                    azureContainerRegistry: $(azureContainerRegistry)
+                    dockerComposeFile: docker-compose.prod.yml
