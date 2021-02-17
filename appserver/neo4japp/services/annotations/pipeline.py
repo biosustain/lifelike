@@ -4,7 +4,7 @@ import requests
 import time
 
 from flask import current_app
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 from string import punctuation
 
 from neo4japp.database import (
@@ -14,11 +14,11 @@ from neo4japp.database import (
 )
 from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.constants import (
-    AnnotationMethod,
-    NLP_ENDPOINT,
+    EntityType,
     MAX_ABBREVIATION_WORD_LENGTH
 )
 from neo4japp.services.annotations.data_transfer_objects import (
+    NLPResults,
     PDFWord,
     SpecifiedOrganismStrain
 )
@@ -31,120 +31,88 @@ multiple steps needed in the annotation pipeline.
 """
 
 
-# def process_nlp(
-#     page: int,
-#     page_text: str,
-#     pages_to_index: Dict[int, int],
-#     min_idx_in_page: Dict[int, int]
-# ):
-#     nlp_tokens = []  # type: ignore
-#     combined_nlp_resp = []  # type: ignore
+def get_nlp_entities(text: str, entities: Set[str]):
+    """Makes a call to the NLP service.
+    There is a memory issue with the NLP service, so for now
+    the REST call is broken into one per PDF page.
 
-#     # try:
-#     #     req = requests.post(NLP_ENDPOINT, json={'text': page_text}, timeout=30)
-#     #     nlp_resp = req.json()
+    Returns the set of entity types in which the token was found.
+    """
+    if not entities:
+        return NLPResults()
 
-#     #     for predicted in nlp_resp:
-#     #         # TODO: nlp only checks for Bacteria right now
-#     #         # replace with Species in the future
-#     #         if predicted['type'] != 'Bacteria':
-#     #             # need to do offset here because index resets
-#     #             # after each text string for page
-#     #             offset = pages_to_index[page]
-#     #             curr_char_idx_mappings = {
-#     #                 i+offset: char for i, char in zip(
-#     #                     range(predicted['low_index'], predicted['high_index']),
-#     #                     predicted['item'],
-#     #                 )
-#     #             }
+    nlp_models = {
+        EntityType.CHEMICAL.value: 'bc2gm_v1_chem',
+        EntityType.GENE.value: 'bc2gm_v1_gene',
+        # TODO: disease has two models
+        # for now use ncbi because it has better results
+        EntityType.DISEASE.value: 'bc2gm_v1_ncbi_disease'
+    }
 
-#     #             # determine page keyword is on
-#     #             page_idx = -1
-#     #             min_page_idx_list = list(min_idx_in_page)
-#     #             for min_page_idx in min_page_idx_list:
-#     #                 # include offset here, see above
-#     #                 if predicted['high_index']+offset <= min_page_idx:
-#     #                     # reminder: can break here because dict in python 3.8+ are
-#     #                     # insertion order
-#     #                     break
-#     #                 else:
-#     #                     page_idx = min_page_idx
-#     #             token = PDFTokenPositions(
-#     #                 page_number=min_idx_in_page[page_idx],
-#     #                 keyword=predicted['item'],
-#     #                 normalized_keyword=normalize_str(predicted['item']),
-#     #                 char_positions=curr_char_idx_mappings,
-#     #                 token_type=predicted['type'],
-#     #             )
-#     #             nlp_tokens.append(token)
+    nlp_model_types = {
+        'bc2gm_v1_chem': EntityType.CHEMICAL.value,
+        'bc2gm_v1_gene': EntityType.GENE.value,
+        'bc2gm_v1_ncbi_disease': EntityType.DISEASE.value,
+        'bc2gm_v1_bc5cdr_disease': EntityType.DISEASE.value
+    }
 
-#     #             offset_predicted = {k: v for k, v in predicted.items()}
-#     #             offset_predicted['high_index'] += offset
-#     #             offset_predicted['low_index'] += offset
+    entity_results: Dict[str, set] = {
+        EntityType.ANATOMY.value: set(),
+        EntityType.CHEMICAL.value: set(),
+        EntityType.COMPOUND.value: set(),
+        EntityType.DISEASE.value: set(),
+        EntityType.FOOD.value: set(),
+        EntityType.GENE.value: set(),
+        EntityType.PHENOMENA.value: set(),
+        EntityType.PHENOTYPE.value: set(),
+        EntityType.PROTEIN.value: set(),
+        EntityType.SPECIES.value: set(),
+        'offsets_found': set()
+    }
 
-#     #             combined_nlp_resp.append(offset_predicted)
+    if all([model in nlp_models for model in entities]):
+        # use `all`
+        req = requests.post(
+            'https://nlp-api.lifelike.bio/v1/predict',
+            data=json.dumps({'model': 'all', 'sentence': text}),
+            headers={
+                'Content-type': 'application/json',
+                'secret': 'dGhpcyBpcyB2ZXJ5IHNlY3JldCBmb3IgbmxwIGFwaQ=='})
 
-#     #     req.close()
-#     # except requests.exceptions.ConnectTimeout:
-#     #     raise AnnotationError(
-#     #         'The request timed out while trying to connect to the NLP service.')
-#     # except requests.exceptions.Timeout:
-#     #     raise AnnotationError(
-#     #         'The request to the NLP service timed out.')
-#     # except requests.exceptions.RequestException:
-#     #     raise AnnotationError(
-#     #         'An unexpected error occurred with the NLP service.')
+        resp = req.json()
+        req.close()
 
-#     return nlp_tokens, combined_nlp_resp
+        for results in resp['results']:
+            for token in results['annotations']:
+                token_offset = (token['start_pos'], token['end_pos']-1)
+                entity_results['offsets_found'].add(token_offset)
+                entity_results[nlp_model_types[results['model']]].add(token_offset)
 
+                # NOTE: currently do not have these models
+                # so add to them like this for now
+                entity_results[EntityType.ANATOMY.value].add(token_offset)
+                entity_results[EntityType.COMPOUND.value].add(token_offset)
+                entity_results[EntityType.FOOD.value].add(token_offset)
+                entity_results[EntityType.PHENOMENA.value].add(token_offset)
+                entity_results[EntityType.PHENOTYPE.value].add(token_offset)
+                entity_results[EntityType.PROTEIN.value].add(token_offset)
+                entity_results[EntityType.SPECIES.value].add(token_offset)
+    else:
+        raise NotImplementedError()
 
-# def get_nlp_entities(
-#     page_index: Dict[int, int],
-#     text: str,
-#     tokens: PDFTokensList,
-# ):
-#     """Makes a call to the NLP service.
-#     There is a memory issue with the NLP service, so for now
-#     the REST call is broken into one per PDF page.
-
-#     Returns the NLP tokens and combined NLP response.
-#     """
-#     nlp_resp: List[dict] = []
-#     nlp_tokens: List[Any] = []
-#     pages_to_index = {v: k for k, v in page_index.items()}
-#     pages = list(pages_to_index)
-#     text_in_page: List[Tuple[int, str]] = []
-
-#     # TODO: Breaking the request into pages
-#     # because doing the entire PDF seem to cause
-#     # the NLP service container to crash with no
-#     # errors and exit code of 247... (memory related)
-#     length = len(pages) - 1
-#     for i, page in enumerate(pages):
-#         if i == length:
-#             text_in_page.append((page, text[pages_to_index[page]:]))
-#         else:
-#             text_in_page.append((page, text[pages_to_index[page]:pages_to_index[page+1]]))
-
-#     # with mp.Pool(processes=3) as pool:
-#     #     resources = []
-#     #     for page, page_text in text_in_page:
-#     #         resources.append(
-#     #             (page, page_text, pages_to_index, tokens.min_idx_in_page)
-#     #         )
-
-#     #     results = pool.starmap(process_nlp, resources)
-
-#     #     for result_tokens, resp in results:
-#     #         nlp_tokens += result_tokens
-#     #         nlp_resp += resp
-
-#     # current_app.logger.info(
-#     #     f'NLP Response Output: {json.dumps(nlp_resp)}',
-#     #     extra=EventLog(event_type='annotations').to_dict()
-#     # )
-
-#     return nlp_tokens, nlp_resp
+    return NLPResults(
+        anatomy=entity_results[EntityType.ANATOMY.value],
+        chemicals=entity_results[EntityType.CHEMICAL.value],
+        compounds=entity_results[EntityType.COMPOUND.value],
+        diseases=entity_results[EntityType.DISEASE.value],
+        foods=entity_results[EntityType.FOOD.value],
+        genes=entity_results[EntityType.GENE.value],
+        phenomenas=entity_results[EntityType.PHENOMENA.value],
+        phenotypes=entity_results[EntityType.PHENOTYPE.value],
+        proteins=entity_results[EntityType.PROTEIN.value],
+        species=entity_results[EntityType.SPECIES.value],
+        offsets_found=entity_results['offsets_found'],
+    )
 
 
 def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
@@ -163,7 +131,8 @@ def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
                     normalized_keyword=token['text'],  # don't need to normalize yet
                     page_number=page['pageNo'],
                     lo_location_offset=token['pgIdx'],
-                    hi_location_offset=token['pgIdx'] if len(token['text']) == 1 else token['pgIdx'] + len(token['text']) - 1,  # noqa
+                    hi_location_offset=token['pgIdx'] if len(
+                        token['text']) == 1 else token['pgIdx'] + len(token['text']) - 1,  # noqa
                     heights=[rect['height'] for rect in token['rects']],
                     widths=[rect['width'] for rect in token['rects']],
                     coordinates=[
@@ -174,8 +143,8 @@ def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
                             rect['lowerLeftPt']['y'] + rect['height']
                         ] for rect in token['rects']
                     ],
-                    previous_words=' '.join(prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]) if token['possibleAbbrev'] else '',  # noqa
-                    token_type=''
+                    previous_words=' '.join(
+                        prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]) if token['possibleAbbrev'] else '',  # noqa
                 )
                 if prev_pdf_word:
                     prev_pdf_word.next = pdf_word
@@ -208,14 +177,14 @@ def parse_text(text: str) -> Tuple[str, List[PDFWord]]:
 
 
 def _create_annotations(
-    annotation_method: str,
     specified_organism_synonym: str,
     specified_organism_tax_id: str,
     filename: str,
     parsed: List[PDFWord],
     pdf_text: str,
     excluded_annotations: List[dict],
-    custom_annotations: List[dict]
+    custom_annotations: List[dict],
+    annotation_method: Dict[str, dict]
 ):
     annotator = get_annotation_service()
     bioc_service = get_bioc_document_service()
@@ -223,90 +192,50 @@ def _create_annotations(
 
     start = time.time()
 
-    if annotation_method == AnnotationMethod.RULES.value:
-        start_lmdb_time = time.time()
-        entity_results = entity_recog.identify(
-            custom_annotations=custom_annotations,
-            tokens=parsed
-        )
-        current_app.logger.info(
-            f'Total LMDB lookup time {time.time() - start_lmdb_time}',
-            extra=EventLog(event_type='annotations').to_dict()
-        )
+    # identify entities w/ NLP first
+    nlp_results = get_nlp_entities(
+        text=pdf_text,
+        entities=set(k for k, v in annotation_method.items() if v['nlp']))
 
-        entity_synonym = ''
-        entity_id = ''
-        entity_category = ''
+    start_lmdb_time = time.time()
+    entity_results = entity_recog.identify(
+        custom_annotations=custom_annotations,
+        tokens=parsed,
+        nlp_results=nlp_results
+    )
+    current_app.logger.info(
+        f'Total LMDB lookup time {time.time() - start_lmdb_time}',
+        extra=EventLog(event_type='annotations').to_dict()
+    )
 
-        if specified_organism_synonym and specified_organism_tax_id:
-            entity_synonym = normalize_str(specified_organism_synonym)
-            entity_id = specified_organism_tax_id
-            try:
-                entity_category = json.loads(
-                    entity_recog.lmdb_session.species_txn.get(
-                        entity_synonym.encode('utf-8')))['category']
-            except (TypeError, Exception):
-                # could not get data from lmdb
-                current_app.logger.info(
-                    f'Failed to get category for fallback organism "{specified_organism_synonym}".',
-                    extra=EventLog(event_type='annotations').to_dict()
-                )
-                entity_category = 'Uncategorized'
+    entity_synonym = ''
+    entity_id = ''
+    entity_category = ''
 
-        annotations = annotator.create_rules_based_annotations(
-            custom_annotations=custom_annotations,
-            excluded_annotations=excluded_annotations,
-            entity_results=entity_results,
-            entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                synonym=entity_synonym, organism_id=entity_id, category=entity_category)
-        )
-    elif annotation_method == AnnotationMethod.NLP.value:
-        raise NotImplementedError()
-        # TODO: fix this once it's enabled for users again
-        #
-        # nlp_tokens, nlp_resp = get_nlp_entities(
-        #     page_index=parsed.min_idx_in_page,
-        #     text=pdf_text,
-        #     tokens=tokens_list
-        # )
+    if specified_organism_synonym and specified_organism_tax_id:
+        entity_synonym = normalize_str(specified_organism_synonym)
+        entity_id = specified_organism_tax_id
+        try:
+            entity_category = json.loads(
+                entity_recog.lmdb_session.species_txn.get(
+                    entity_synonym.encode('utf-8')))['category']
+        except (TypeError, Exception):
+            # could not get data from lmdb
+            current_app.logger.info(
+                f'Failed to get category for fallback organism "{specified_organism_synonym}".',
+                extra=EventLog(event_type='annotations').to_dict()
+            )
+            entity_category = 'Uncategorized'
 
-        # # for NLP first annotate species using rules based
-        # # with tokens from PDF
-        # entity_recog.identify_entities(
-        #     tokens=tokens_list.tokens,
-        #     check_entities_in_lmdb=entity_recog.get_entities_to_identify(
-        #         anatomy=False, chemical=False, compound=False, disease=False,
-        #         food=False, gene=False, phenotype=False, protein=False
-        #     )
-        # )
+    annotations = annotator.create_annotations(
+        custom_annotations=custom_annotations,
+        excluded_annotations=excluded_annotations,
+        entity_results=entity_results,
+        entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
+        specified_organism=SpecifiedOrganismStrain(
+            synonym=entity_synonym, organism_id=entity_id, category=entity_category)
+    )
 
-        # species_annotations = annotator.create_rules_based_annotations(
-        #     tokens=tokens_list,
-        #     custom_annotations=[],
-        #     excluded_annotations=[],
-        #     entity_results=entity_recog.get_entity_match_results(),
-        #     entity_type_and_id_pairs=annotator.get_entities_to_annotate(
-        #         anatomy=False, chemical=False, compound=False, disease=False,
-        #         food=False, gene=False, phenotype=False, protein=False
-        #     )
-        # )
-
-        # # now annotate using results from NLP
-        # entity_recog.identify_entities(
-        #     tokens=nlp_tokens,
-        #     check_entities_in_lmdb=entity_recog.get_entities_to_identify(species=False)
-        # )
-
-        # annotations = annotator.create_nlp_annotations(
-        #     nlp_resp=nlp_resp,
-        #     species_annotations=species_annotations,
-        #     custom_annotations=custom_annotations,
-        #     excluded_annotations=excluded_annotations,
-        #     entity_type_and_id_pairs=annotator.get_entities_to_annotate(species=False),
-        # )
-    else:
-        raise AnnotationError(f'Your file {filename} could not be annotated.')
     bioc = bioc_service.read(text=pdf_text, file_uri=filename)
 
     current_app.logger.info(
@@ -335,7 +264,7 @@ def create_annotations_from_pdf(
     except requests.exceptions.Timeout:
         raise AnnotationError(
             'The request to the parsing service timed out.')
-    except requests.exceptions.RequestException:
+    except (requests.exceptions.RequestException, Exception):
         raise AnnotationError(
             'An unexpected error occurred with the parsing service.')
 
@@ -375,7 +304,7 @@ def create_annotations_from_text(
     except requests.exceptions.Timeout:
         raise AnnotationError(
             'The request to the parsing service timed out.')
-    except requests.exceptions.RequestException:
+    except (requests.exceptions.RequestException, Exception):
         raise AnnotationError(
             'An unexpected error occurred with the parsing service.')
 

@@ -214,12 +214,20 @@ export interface AnnotationGenerationRequest {
   refresh?: boolean;
 }
 
-export interface PDFAnnotationGenerationRequest extends AnnotationGenerationRequest {
-  organism?: OrganismAutocomplete;
-  annotationMethod?: AnnotationMethods;
+export interface AnnotationConfigs {
+  [model: string]: {
+    nlp: boolean;
+    rulesBased: boolean;
+    disabled: boolean;
+  };
 }
 
-export interface TextAnnotationGenerationRequest extends AnnotationGenerationRequest {
+export interface PDFAnnotationGenerationRequest extends AnnotationGenerationRequest {
+  organism?: OrganismAutocomplete;
+  annotationConfigs?: AnnotationConfigs;
+}
+
+export interface TextAnnotationGenerationRequest extends PDFAnnotationGenerationRequest {
   texts?: EnrichmentTextMapping[];
   enrichment?: EnrichmentResult;
 }

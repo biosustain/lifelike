@@ -981,7 +981,7 @@ class AnnotationService:
 
         return unified_annotations
 
-    def create_rules_based_annotations(
+    def create_annotations(
         self,
         custom_annotations: List[dict],
         excluded_annotations: List[dict],
@@ -989,7 +989,6 @@ class AnnotationService:
         entity_type_and_id_pairs: List[Tuple[str, str]],
         specified_organism: SpecifiedOrganismStrain,
     ) -> List[Annotation]:
-        """Create annotations based on semantic rules."""
         self.matched_type_anatomy = entity_results.matched_type_anatomy
         self.matched_type_chemical = entity_results.matched_type_chemical
         self.matched_type_compound = entity_results.matched_type_compound
@@ -1019,55 +1018,6 @@ class AnnotationService:
         # query the KG for the primary names after the
         # duplicates/overlapping intervals are removed
         return self.add_primary_name(annotations=cleaned)
-
-    # def create_nlp_annotations(
-    #     self,
-    #     nlp_resp: List[dict],
-    #     species_annotations: List[Annotation],
-    #     custom_annotations: List[dict],
-    #     excluded_annotations: List[dict],
-    #     entity_type_and_id_pairs: List[Tuple[str, str]]
-    # ) -> List[Annotation]:
-    #     """Create annotations based on NLP."""
-    #     nlp_annotations = self._create_annotations(
-    #         types_to_annotate=entity_type_and_id_pairs,
-    #         custom_annotations=custom_annotations,
-    #         excluded_annotations=excluded_annotations
-    #     )
-
-    #     unified_annotations = species_annotations + nlp_annotations
-
-    #     # TODO: TEMP to keep track of things not matched in LMDB
-    #     matched: Set[str] = set()
-    #     predicted_set: Set[str] = set()
-    #     for predicted in nlp_resp:
-    #         predicted_str = predicted['item']
-    #         predicted_type = predicted['type']
-    #         predicted_hashstr = f'{predicted_str},{predicted_type}'
-    #         predicted_set.add(predicted_hashstr)
-
-    #     for anno in unified_annotations:
-    #         # TODO: temp for now as NLP only use Bacteria
-    #         if anno.meta.type == 'Species':
-    #             keyword_type = 'Bacteria'
-    #         else:
-    #             keyword_type = anno.meta.type
-    #         hashstr = f'{anno.text_in_document},{keyword_type}'
-    #         matched.add(hashstr)
-
-    #     not_matched = predicted_set - matched
-
-    #     current_app.logger.info(
-    #         f'NLP TOKENS NOT MATCHED TO LMDB {not_matched}',
-    #         extra=EventLog(event_type='annotations').to_dict()
-    #     )
-    #     cleaned = self._clean_annotations(
-    #         annotations=unified_annotations)
-    #     # update the annotations with the common primary name
-    #     # do this after cleaning because it's easier to
-    #     # query the KG for the primary names after the
-    #     # duplicates/overlapping intervals are removed
-    #     return self.add_primary_name(annotations=cleaned)
 
     def _clean_annotations(
         self,

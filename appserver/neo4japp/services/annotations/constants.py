@@ -14,9 +14,6 @@ PHENOTYPES_CUSTOM_LMDB = 'phenotypes_custom'
 PROTEINS_UNIPROT_LMDB = 'proteins_uniprot'
 SPECIES_NCBI_LMDB = 'species_ncbi'
 
-# NLP endpoint
-NLP_ENDPOINT = 'http://nlpapi:5001/infer/v1'
-
 HOMO_SAPIENS_TAX_ID = '9606'
 
 ORGANISM_DISTANCE_THRESHOLD = 200
@@ -151,11 +148,6 @@ class DatabaseType(Enum):
     NCBI = 'NCBI'
     BIOCYC = 'BIOCYC'
     PUBCHEM = 'PUBCHEM'
-
-
-class AnnotationMethod(Enum):
-    NLP = 'NLP'
-    RULES = 'Rules Based'
 
 
 class ManualAnnotationType(Enum):
