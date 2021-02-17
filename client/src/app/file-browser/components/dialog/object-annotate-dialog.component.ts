@@ -15,7 +15,7 @@ import { AuthSelectors } from '../../../auth/store';
 import { State } from 'app/root-store';
 import { Observable } from 'rxjs';
 import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
-import { AnnotationMethod } from '../../../interfaces/annotation';
+import { AnnotationMethods } from '../../../interfaces/annotation';
 
 @Component({
   selector: 'app-object-annotate-dialog',
@@ -25,7 +25,7 @@ export class ObjectAnnotateDialogComponent extends CommonFormDialogComponent<Obj
   @Input() objects: FilesystemObject[] = [];
   @Input() title = 'Annotation Options';
 
-  readonly annotationMethodChoices: AnnotationMethod[] = ['NLP', 'Rules Based'];
+  readonly annotationMethodChoices: AnnotationMethods[] = ['NLP', 'Rules Based'];
   readonly userRoles$: Observable<string[]>;
 
   readonly form: FormGroup = new FormGroup({
@@ -46,10 +46,10 @@ export class ObjectAnnotateDialogComponent extends CommonFormDialogComponent<Obj
 
     return {
       request: {
-        annotationMethod: value.annotationMethod,
+        annotationMethod: value.annotationConfigs,
         organism: value.organism,
       },
-      annotationMethod: value.annotationMethod,
+      annotationMethod: value.annotationConfigs,
       organism: value.organism,
     };
   }
@@ -71,6 +71,6 @@ export class ObjectAnnotateDialogComponent extends CommonFormDialogComponent<Obj
 
 export interface ObjectAnnotateDialogValue {
   request: PDFAnnotationGenerationRequest;
-  annotationMethod: AnnotationMethod;
+  annotationMethod: AnnotationMethods;
   organism: OrganismAutocomplete;
 }

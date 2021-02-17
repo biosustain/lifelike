@@ -51,7 +51,7 @@ import { ShareDialogComponent } from './components/dialog/share-dialog.component
 import { AnnotationFilterComponent } from './components/annotation-filter/annotation-filter.component';
 import { WordCloudAnnotationFilterComponent } from './components/word-cloud-annotation-filter/word-cloud-annotation-filter.component';
 import { GenericTableComponent } from './components/table/generic-table.component';
-import { AnnotationConfigurationTableComponent } from './components/table/select-options-table.component';
+import { AnnotationConfigurationTableComponent } from './components/table/annotation-config-table.component';
 import { HighlightTextComponent } from './components/highlight-text.component';
 import { AddStatusPipe } from './pipes/add-status.pipe';
 import { TermHighlightComponent } from './components/term-highlight.component';

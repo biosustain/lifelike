@@ -4,7 +4,7 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../../shared/services/message-dialog.service';
 import { FilesystemObject } from '../../models/filesystem-object';
 import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
-import { ObjectContentSource, ObjectCreateRequest } from '../../schema';
+import { AnnotationConfigs, ObjectContentSource, ObjectCreateRequest } from '../../schema';
 import { OrganismAutocomplete } from '../../../interfaces';
 import { select, Store } from '@ngrx/store';
 import { AuthSelectors } from '../../../auth/store';
@@ -163,11 +163,22 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       ...this.getFileContentRequest(value),
     };
 
+    const annotationConfigs = {};
+    for (const [modelName, config] of Object.entries(value.annotationConfigs)) {
+      const model = {};
+      for (const key of Object.keys(config)) {
+        if (key !== 'disabled') {
+          model[key] = config[key];
+        }
+      }
+      annotationConfigs[modelName] = model;
+    }
+
     return {
       object: this.object,
       objectChanges,
       request,
-      annotationConfigs: value.annotationConfigs,
+      annotationConfigs,
       organism: value.organism,
     };
   }
@@ -261,6 +272,6 @@ export interface ObjectEditDialogValue {
   object: FilesystemObject;
   objectChanges: Partial<FilesystemObject>;
   request: ObjectCreateRequest;
-  annotationConfigs: FormGroup;
+  annotationConfigs: AnnotationConfigs;
   organism: OrganismAutocomplete;
 }
