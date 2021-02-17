@@ -89,6 +89,7 @@ stages:
 
       - deployment: VM Deploy
         displayName: QA Deployment
+        environment: 'lifelike-qa'
         pool:
           vmImage: 'ubuntu-latest'
         strategy:
