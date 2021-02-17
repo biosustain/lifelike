@@ -21,9 +21,6 @@ variables:
 stages:
   - stage: Build
     displayName: Build and push stage docker images
-    variables:
-      azureContainerRegistry: lifelike.azurecr.io
-      azureSubscriptionEndpoint: lifelike
     jobs:
       - job: Build
         displayName: Build
@@ -100,6 +97,6 @@ stages:
                   displayName: Container registry login
                   inputs:
                     containerregistrytype: Azure Container Registry
-                    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
-                    azureContainerRegistry: $(azureContainerRegistry)
+                    azureSubscriptionEndpoint: lifelike-cicd
+                    azureContainerRegistry: lifelike.azurecr.io
                     dockerComposeFile: docker-compose.prod.yml
