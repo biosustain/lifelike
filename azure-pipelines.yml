@@ -32,61 +32,64 @@ stages:
               containerRegistry: $(dockerRegistryServiceConnection)
               command: "login"
 
-          - script: "docker pull $(containerRegistry)/kg-appserver:latest"
-            displayName: Pull latest appserver image for caching
-            continueOnError: true
+          - publish: $(System.DefaultWorkingDirectory)/docker-compose.prod.yml
+            artifact: DockerComposeProd
 
-          - script: "docker pull $(containerRegistry)/kg-webserver:latest"
-            displayName: Pull latest webserver image for caching
-            continueOnError: true
+          # - script: "docker pull $(containerRegistry)/kg-appserver:latest"
+          #   displayName: Pull latest appserver image for caching
+          #   continueOnError: true
 
-          - task: Docker@2
-            displayName: Build Appserver Image
-            inputs:
-              command: build
-              repository: kg-appserver
-              dockerfile: appserver/Dockerfile
-              arguments: "--cache-from=$(containerRegistry)/kg-appserver:latest"
-              containerRegistry: $(dockerRegistryServiceConnection)
-              tags: |
-                $(tag)
-                latest
+          # - script: "docker pull $(containerRegistry)/kg-webserver:latest"
+          #   displayName: Pull latest webserver image for caching
+          #   continueOnError: true
 
-          - task: Docker@2
-            displayName: Push Appserver Image
-            inputs:
-              command: push
-              repository: kg-appserver
-              containerRegistry: $(dockerRegistryServiceConnection)
-              tags: |
-                $(tag)
-                latest
+          # - task: Docker@2
+          #   displayName: Build Appserver Image
+          #   inputs:
+          #     command: build
+          #     repository: kg-appserver
+          #     dockerfile: appserver/Dockerfile
+          #     arguments: "--cache-from=$(containerRegistry)/kg-appserver:latest"
+          #     containerRegistry: $(dockerRegistryServiceConnection)
+          #     tags: |
+          #       $(tag)
+          #       latest
 
-          - task: Docker@2
-            displayName: Build Webserver Image
-            inputs:
-              command: build
-              repository: kg-webserver
-              dockerfile: client/Dockerfile
-              arguments: "--cache-from=$(containerRegistry)/kg-webserver:latest"
-              containerRegistry: $(dockerRegistryServiceConnection)
-              tags: |
-                $(tag)
-                latest
+          # - task: Docker@2
+          #   displayName: Push Appserver Image
+          #   inputs:
+          #     command: push
+          #     repository: kg-appserver
+          #     containerRegistry: $(dockerRegistryServiceConnection)
+          #     tags: |
+          #       $(tag)
+          #       latest
 
-          - task: Docker@2
-            displayName: Push Webserver Image
-            inputs:
-              command: push
-              repository: kg-webserver
-              containerRegistry: $(dockerRegistryServiceConnection)
-              tags: |
-                $(tag)
-                latest
+          # - task: Docker@2
+          #   displayName: Build Webserver Image
+          #   inputs:
+          #     command: build
+          #     repository: kg-webserver
+          #     dockerfile: client/Dockerfile
+          #     arguments: "--cache-from=$(containerRegistry)/kg-webserver:latest"
+          #     containerRegistry: $(dockerRegistryServiceConnection)
+          #     tags: |
+          #       $(tag)
+          #       latest
+
+          # - task: Docker@2
+          #   displayName: Push Webserver Image
+          #   inputs:
+          #     command: push
+          #     repository: kg-webserver
+          #     containerRegistry: $(dockerRegistryServiceConnection)
+          #     tags: |
+          #       $(tag)
+          #       latest
 
   - stage: Deploy
     displayName: Deploy the containers
-    dependsOn: Build
+    # dependsOn: Build
     jobs:
       - deployment: VMDeploy
         displayName: QA Deployment
@@ -97,10 +100,7 @@ stages:
           runOnce:
             deploy:
               steps:
-                - task: DockerCompose@0
-                  displayName: Container registry login
-                  inputs:
-                    containerregistrytype: Azure Container Registry
-                    azureSubscriptionEndpoint: lifelike-cicd
-                    azureContainerRegistry: lifelike.azurecr.io
-                    dockerComposeFile: docker-compose.prod.yml
+                - download: current
+                  artifact: DockerComposeProd
+
+                - script: echo $(pwd)
