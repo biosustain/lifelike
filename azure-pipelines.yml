@@ -21,6 +21,9 @@ variables:
 stages:
   - stage: Build
     displayName: Build and push stage docker images
+    variables:
+      azureContainerRegistry: lifelike.azurecr.io
+      azureSubscriptionEndpoint: lifelike
     jobs:
       - job: Build
         displayName: Build
@@ -91,9 +94,6 @@ stages:
         strategy:
           runOnce:
             deploy:
-              variables:
-                azureContainerRegistry: lifelike.azurecr.io
-                azureSubscriptionEndpoint: lifelike
               steps:
                 - task: DockerCompose@0
                   displayName: Container registry login
