@@ -103,4 +103,5 @@ stages:
                 - download: current
                   artifact: DockerComposeProd
 
-                - script: echo $(pwd)
+                - script: |
+                    touch "test.txt"
