@@ -1,29 +1,39 @@
-import { Component, EventEmitter, Input, NgZone, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  NgZone,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import {Subscription} from 'rxjs';
-import {ModuleAwareComponent, ModuleProperties} from 'app/shared/modules';
-import {ErrorHandler} from 'app/shared/services/error-handler.service';
-import {DownloadService} from 'app/shared/services/download.service';
+import { Subscription } from 'rxjs';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { DownloadService } from 'app/shared/services/download.service';
 
-import {EnrichmentVisualisationService} from '../../services/enrichment-visualisation.service';
+import { EnrichmentVisualisationService } from '../../services/enrichment-visualisation.service';
 
-import {FilesystemObject} from '../../../file-browser/models/filesystem-object';
-import {FilesystemService} from '../../../file-browser/services/filesystem.service';
-import {ProgressDialog} from '../../../shared/services/progress-dialog.service';
+import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+import { FilesystemService } from '../../../file-browser/services/filesystem.service';
+import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
 
-import {MessageDialog} from '../../../shared/services/message-dialog.service';
-import {WorkspaceManager} from '../../../shared/workspace-manager';
-import {FilesystemObjectActions} from '../../../file-browser/services/filesystem-object-actions';
-import {MatSnackBar} from '@angular/material';
+import { MessageDialog } from '../../../shared/services/message-dialog.service';
+import { WorkspaceManager } from '../../../shared/workspace-manager';
+import { FilesystemObjectActions } from '../../../file-browser/services/filesystem-object-actions';
+import { MatSnackBar } from '@angular/material';
+import { BackgroundTask } from '../../../shared/rxjs/background-task';
 
 
 @Component({
   selector: 'app-enrichment-visualisation-chart-viewer',
   templateUrl: './enrichment-visualisation-chart-viewer.component.html',
-  styleUrls: ['./enrichment-visualisation-viewer.component.scss']
+  styleUrls: ['./enrichment-visualisation-viewer.component.scss'],
 })
 export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDestroy, ModuleAwareComponent, OnChanges {
   @Input() titleVisible = true;
@@ -54,6 +64,8 @@ export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDe
   scrollTopAmount: number;
 
   loadingData: boolean;
+  loadTask: BackgroundTask<string, any>;
+  loadSubscription: Subscription;
 
 
   selectedRow = 0;
@@ -70,7 +82,14 @@ export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDe
               protected readonly snackBar: MatSnackBar,
               protected readonly filesystemService: FilesystemService,
               protected readonly progressDialog: ProgressDialog) {
-    this.loadingData = true;
+    this.loadTask = new BackgroundTask((analysis) =>
+      this.enrichmentService.enrichWithGOTerms(analysis),
+    );
+
+    this.loadSubscription = this.loadTask.results$.subscribe((result) => {
+      this.data = result.result;
+      this.loadingData = false;
+    });
   }
 
   ngOnDestroy() {
@@ -91,17 +110,13 @@ export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDe
 
 
   ngOnInit() {
-    this.enrichmentService.enrichWithGOTerms(this.analysis).subscribe((result) => {
-      this.data = result;
-      this.loadingData = false;
-    });
+    this.loadingData = true;
+    this.loadTask.update(this.analysis);
   }
 
   ngOnChanges() {
-    this.enrichmentService.enrichWithGOTerms(this.analysis).subscribe((result) => {
-      this.data = result;
-      this.loadingData = false;
-    });
+    this.loadingData = true;
+    this.loadTask.update(this.analysis);
   }
 
   scrollTop() {
