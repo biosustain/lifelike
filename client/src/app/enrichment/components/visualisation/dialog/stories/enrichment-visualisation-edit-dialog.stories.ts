@@ -4,18 +4,18 @@ import {withKnobs} from '@storybook/addon-knobs';
 import {NgbActiveModal, NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {EffectsModule} from '@ngrx/effects';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {SharedNgrxEffects} from "../../../../../shared/store/effects";
-import {MapEditorComponent} from "../../../../../drawing-tool/components/map-editor/map-editor.component";
-import {MapRestoreDialogComponent} from "../../../../../drawing-tool/components/map-restore-dialog.component";
-import {EnrichmentVisualisationEditDialogComponent} from "../enrichment-visualisation-edit-dialog.component";
-import {RootStoreModule} from "../../../../../root-store";
-import {PaletteComponent} from "../../../../../drawing-tool/components/map-editor/palette.component";
-import {SharedModule} from "../../../../../shared/shared.module";
-import {MapViewComponent} from "../../../../../drawing-tool/components/map-view.component";
-import {MapComponent} from "../../../../../drawing-tool/components/map.component";
-import {NodeFormComponent} from "../../../../../drawing-tool/components/map-editor/node-form.component";
-import {EdgeFormComponent} from "../../../../../drawing-tool/components/map-editor/edge-form.component";
-import {InfoPanelComponent} from "../../../../../drawing-tool/components/map-editor/info-panel.component";
+import {SharedNgrxEffects} from '../../../../../shared/store/effects';
+import {MapEditorComponent} from '../../../../../drawing-tool/components/map-editor/map-editor.component';
+import {MapRestoreDialogComponent} from '../../../../../drawing-tool/components/map-restore-dialog.component';
+import {EnrichmentVisualisationEditDialogComponent} from '../enrichment-visualisation-edit-dialog.component';
+import {RootStoreModule} from '../../../../../root-store';
+import {PaletteComponent} from '../../../../../drawing-tool/components/map-editor/palette.component';
+import {SharedModule} from '../../../../../shared/shared.module';
+import {MapViewComponent} from '../../../../../drawing-tool/components/map-view.component';
+import {MapComponent} from '../../../../../drawing-tool/components/map.component';
+import {NodeFormComponent} from '../../../../../drawing-tool/components/map-editor/node-form.component';
+import {EdgeFormComponent} from '../../../../../drawing-tool/components/map-editor/edge-form.component';
+import {InfoPanelComponent} from '../../../../../drawing-tool/components/map-editor/info-panel.component';
 
 // This exports the Stories group for this component
 export default {
@@ -53,6 +53,7 @@ export default {
   ]
 }; // This creates a Story for the component
 
+// tslint:disable-next-line:variable-name
 const Template: Story<EnrichmentVisualisationEditDialogComponent> = (args) => ({
   component: EnrichmentVisualisationEditDialogComponent,
   props: {
@@ -68,5 +69,6 @@ const Template: Story<EnrichmentVisualisationEditDialogComponent> = (args) => ({
             </app-enrichment-visualisation-edit-dialog>`,
 });
 
-export const Default = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+// tslint:disable-next-line:variable-name
+export const Default = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 Default.args = {};

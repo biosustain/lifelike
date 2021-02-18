@@ -279,6 +279,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     def should_highlight_content_text_matches(self) -> bool:
         return True
 
+
 class EnrichmentVisualisationTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.document/enrichment-visualisation'
     mime_types = (MIME_TYPE,)

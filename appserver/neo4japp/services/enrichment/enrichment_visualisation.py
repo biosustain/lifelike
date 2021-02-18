@@ -1,50 +1,58 @@
+import logging
 from typing import List
 
-from neo4japp.constants import DISPLAY_NAME_MAP
-from neo4japp.data_transfer_objects.visualization import (
-    Direction,
-    DuplicateEdgeConnectionData,
-    EdgeConnectionData,
-    GetClusterSnippetsResult,
-    GetEdgeSnippetsResult,
-    GetReferenceTableDataResult,
-    GetSnippetsFromEdgeResult,
-    ReferenceTablePair,
-    ReferenceTableRow,
-    Snippet,
-)
-from neo4japp.models import (
-    DomainURLsMap,
-)
-from neo4japp.models import GraphNode, GraphRelationship
 from neo4japp.services import KgService
-from neo4japp.util import get_first_known_label_from_node
+
+logging.getLogger("py2neo.client.bolt").setLevel(logging.INFO)
 
 
 class EnrichmentVisualisationService(KgService):
     def __init__(self, graph, session):
         super().__init__(graph=graph, session=session)
 
-    def enrich_go(self, geneNames: List[str], analysis):
+    def enrich_go(self, gene_names: List[str], analysis, organism):
         if analysis == 'fisher':
-            from neo4japp.services.enrichment.enrich_methods import fisher as analysis
+            from neo4japp.services.enrichment.enrich_methods import fisher
+            return fisher(gene_names, self.get_GO_terms(organism))
         elif analysis == 'binomial':
-            from neo4japp.services.enrichment.enrich_methods import binomial as analysis
-        return analysis(geneNames, self.get_GO_terms())
+            from neo4japp.services.enrichment.enrich_methods import binomial
+            return binomial(gene_names, self.get_GO_terms(organism))
 
-    def get_GO_terms(self):
+    def get_GO_terms(self, organism):
         try:
+            id, name = organism.split('/')
+            return self.graph.run(
+                """
+                MATCH (:Taxonomy {id:$id,name:$name})-
+                       [:HAS_TAXONOMY]-(n:Gene)-[:GO_LINK]-(g:db_GO)
+                WITH n, g, labels(g) AS go_labels
+                RETURN
+                    n.id AS geneId, n.name AS geneName, g.id AS goId, g.name AS goTerm,
+                    [lbl IN go_labels WHERE lbl<> 'db_GO'] AS goLabel
+                LIMIT 35000
+                """,
+                id=id,
+                name=name
+            ).data()
+        except Exception as e:
+            print(e)
             import json
             data = {}
             with open('./neo4japp/services/enrichment/go.json') as json_file:
                 data = json.load(json_file)
             return data
-        except Exception as e:
-            print(e)
-            return self.graph.run(
-                """
-                match (n:Gene)-[:GO_LINK]-(g:db_GO)
-                with n, g, labels(g) as go_labels
-                return n.id as geneId, n.name as geneName, g.id as goId, g.name as goTerm, [lbl in go_labels where lbl<> 'db_GO'] as goLabel
-                """
-            ).data()
+
+    def get_GO_significance(self, gene_names, organism):
+        id, name = organism.split('/')
+        data = self.graph.run(
+            """
+            match (:Taxonomy {id:$id, name:$name})-[tl:HAS_TAXONOMY]-(n:Gene)-[nl:GO_LINK]-(g:db_GO)
+            where n.name in $gene_names
+            return n.name as gene, count(nl) as n_related_GO_terms
+            limit 1000
+            """,
+            id=id,
+            name=name,
+            gene_names=gene_names
+        ).data()
+        return data
