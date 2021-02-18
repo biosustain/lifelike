@@ -89,6 +89,13 @@
         chdir: "{{ deploy_dir }}"
         cmd: "docker-compose -f docker-compose.yml -f docker-compose.prod.yml down"
 
+    - name: Pull latest docker images (if any)
+      shell:
+        chdir: "{{ deploy_dir }}"
+        cmd: "docker-compose pull"
+      tags:
+        - deploy
+
     - name: Start docker
       shell:
         chdir: "{{ deploy_dir }}"
