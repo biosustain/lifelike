@@ -99,6 +99,8 @@ stages:
           tags: qa-deploy
         pool:
           vmImage: 'ubuntu-latest'
+        workspace:
+          clean: all
         strategy:
           runOnce:
             deploy:
