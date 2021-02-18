@@ -352,6 +352,9 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         missing = self.get_missing_hash_ids(targets['hash_ids'], files)
 
         for file in files:
+            if not file.annotation_configs:
+                file.annotation_configs = annotations_configs
+
             if file.mime_type == 'application/pdf':
                 try:
                     annotations, version = self._annotate(
