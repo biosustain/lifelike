@@ -93,7 +93,10 @@ stages:
     jobs:
       - deployment: VMDeploy
         displayName: QA Deployment
-        environment: 'lifelike-qa'
+        environment:
+          name: lifelike-qa
+          resourceType: VirtualMachine
+          tags: qa-deploy
         pool:
           vmImage: 'ubuntu-latest'
         strategy:
