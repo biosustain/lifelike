@@ -19,6 +19,11 @@ class Base():
     POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
     POSTGRES_DB = os.environ.get('POSTGRES_DB')
 
+    REDIS_HOST = os.environ.get('REDIS_HOST')
+    REDIS_PORT = os.environ.get('REDIS_PORT')
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+    REDIS_SSL = os.environ.get('REDIS_SSL', 'false')
+
     NEO4J_HOST = os.environ.get('NEO4J_HOST')
     NEO4J_AUTH = os.environ.get('NEO4J_AUTH')
 
