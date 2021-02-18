@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, ViewEncapsulation } from '@angular/core';
 
 import { uniqueId } from 'lodash';
 
@@ -19,7 +19,7 @@ import { AnnotationsService } from '../../file-browser/services/annotations.serv
   styleUrls: ['./word-cloud.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class WordCloudComponent {
+export class WordCloudComponent implements OnDestroy {
   id = uniqueId('WordCloudComponent-');
 
   @Input() title = 'Entity Cloud';
@@ -44,6 +44,10 @@ export class WordCloudComponent {
   constructor(protected readonly pdfAnnotationService: AnnotationsService,
               protected readonly legendService: LegendService) {
     this.initWordCloud();
+  }
+
+  ngOnDestroy() {
+    this.annotationsLoadedSub.unsubscribe();
   }
 
   initDataFetch() {
