@@ -11,7 +11,9 @@
 // import {FormRowComponent} from '../../../shared/components/form/form-row.component';
 // import {SharedNgrxEffects} from '../../../shared/store/effects';
 // import {MapEditorComponent} from '../../../drawing-tool/components/map-editor/map-editor.component';
-// import {EnrichmentVisualisationCreateDialogComponent} from '../enrichment/visualisation/dialog/enrichment-visualisation-create-dialog.component';
+// import {
+// EnrichmentVisualisationCreateDialogComponent
+// } from '../enrichment/visualisation/dialog/enrichment-visualisation-create-dialog.component';
 // import {MapRestoreDialogComponent} from '../../../drawing-tool/components/map-restore-dialog.component';
 // import {RootStoreModule} from '../../../***ARANGO_USERNAME***-store';
 // import {PaletteComponent} from '../../../drawing-tool/components/map-editor/palette.component';

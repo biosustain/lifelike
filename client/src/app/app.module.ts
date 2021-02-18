@@ -34,17 +34,6 @@ import { GlobalErrorHandler } from './global-error-handler';
 import { EnrichmentVisualisationsModule } from './enrichment/enrichment-visualisation.module';
 
 
-let providers = [
-  httpInterceptorProviders,
-  Title,
-  WorkspaceManager,
-  UnloadConfirmationGuard,
-  {
-    provide: ErrorHandler,
-    useClass: GlobalErrorHandler,
-  }
-];
-
 @NgModule({
   declarations: [
     AppComponent,
@@ -80,7 +69,16 @@ let providers = [
     EnrichmentTablesModule,
     EnrichmentVisualisationsModule,
   ],
-  providers,
+  providers: [
+    httpInterceptorProviders,
+    Title,
+    WorkspaceManager,
+    UnloadConfirmationGuard,
+    {
+      provide: ErrorHandler,
+      useClass: GlobalErrorHandler,
+    },
+  ],
   exports: [],
   bootstrap: [AppComponent],
 })

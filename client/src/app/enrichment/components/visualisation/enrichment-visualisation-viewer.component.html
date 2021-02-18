@@ -139,7 +139,7 @@
           <div class="card-header d-flex flex-wrap align-items-center">
             P-values
             <app-chart-controls class="module-toolbar d-flex align-items-center ml-auto"
-            (change)="updateChartParams($event)">
+                                (changed)="updateChartParams($event)">
             </app-chart-controls>
           </div>
           <app-enrichment-visualisation-chart-viewer
@@ -156,7 +156,7 @@
           <div class="card-header">
             Genes for
             <app-chart-controls class="module-toolbar d-flex align-items-center ml-auto"
-            (change)="updateWordCloudParams($event)">
+                                (changed)="updateWordCloudParams($event)">
             </app-chart-controls>
           </div>
           <app-enrichment-visualisation-cloud-viewer

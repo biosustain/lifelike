@@ -27,11 +27,11 @@ export class ChartControlsComponent {
   analyses: Analysis[] = analyses;
   selected: Analysis = this.analyses[0];
 
-  @Output() change: EventEmitter<Analysis> = new EventEmitter();
+  @Output() changed: EventEmitter<Analysis> = new EventEmitter();
 
   changeSelection(analysis) {
     this.selected = analysis;
-    this.change.emit(analysis.id);
+    this.changed.emit(analysis.id);
   }
 }
 

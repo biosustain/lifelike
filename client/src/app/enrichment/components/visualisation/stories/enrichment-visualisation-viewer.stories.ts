@@ -21,14 +21,14 @@ import {EdgeFormComponent} from '../../../../drawing-tool/components/map-editor/
 import {PdfFilesService} from '../../../../../shared/services/pdf-files.service';
 import {InfoPanelComponent} from '../../../../drawing-tool/components/map-editor/info-panel.component';
 import {EnrichmentVisualisationOrderDialogComponent} from '../dialog/enrichment-visualisation-order-dialog.component';
-import {WordCloudModule} from "../word-cloud/word-cloud.module";
-import {ObjectPathComponent} from "../../../../file-browser/components/object-path.component";
+import {WordCloudModule} from '../word-cloud/word-cloud.module';
+import {ObjectPathComponent} from '../../../../file-browser/components/object-path.component';
 
-import mockedData from "./assets/mocked_data.json";
-import {ChartModule} from "../chart/chart.module";
-import {ChartsModule} from "ng2-charts";
-import {ObjectMenuComponent} from "../../../../file-browser/components/object-menu.component";
-import {ProjectIconComponent} from "../../../../file-browser/components/project-icon.component";
+import mockedData from './assets/mocked_data.json';
+import {ChartModule} from '../chart/chart.module';
+import {ChartsModule} from 'ng2-charts';
+import {ObjectMenuComponent} from '../../../../file-browser/components/object-menu.component';
+import {ProjectIconComponent} from '../../../../file-browser/components/project-icon.component';
 // This exports the Stories group for this component
 export default {
   // The title defines the name and where in the structure of
@@ -163,6 +163,7 @@ export default {
   ]
 }; // This creates a Story for the component
 
+// tslint:disable-next-line:variable-name
 const Template: Story<EnrichmentVisualisationViewerComponent> = (args) => ({
   component: EnrichmentVisualisationViewerComponent,
   props: {
@@ -183,6 +184,7 @@ const Template: Story<EnrichmentVisualisationViewerComponent> = (args) => ({
   `,
 });
 
+// tslint:disable-next-line:variable-name
 export const Default = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 Default.args = {
   data: mockedData
