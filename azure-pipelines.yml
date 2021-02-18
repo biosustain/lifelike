@@ -100,8 +100,5 @@ stages:
           runOnce:
             deploy:
               steps:
-                - download: current
-                  artifact: DockerComposeProd
-
-                - script: |
-                    touch "test.txt"
+                - checkout: self
+                - script: echo $(ls)
