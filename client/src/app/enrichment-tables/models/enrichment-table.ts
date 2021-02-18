@@ -89,7 +89,7 @@ export class EnrichmentTable {
               const geneDomainResult = resultGene.domains[domainId] && resultGene.domains[domainId][label];
               if (geneDomainResult) {
                 row.push({
-                  text: geneDomainResult.text,
+                  text: geneDomainResult.annotatedText,  // if enrichment is not annotated, annotatedText == text
                   singleLink: {
                     link: geneDomainResult.link,
                     linkText: `${domainId} Link`,
