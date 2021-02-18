@@ -363,14 +363,14 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     )
                 except AnnotationError as e:
                     current_app.logger.error(
-                        'Could not re-annotate file: %s, %s, %s', file.hash_id, file.filename, e)
+                        'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e)
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': False,
                     }
                 else:
                     current_app.logger.debug(
-                        'File successfully re-annotated: %s, %s', file.hash_id, file.filename)
+                        'File successfully annotated: %s, %s', file.hash_id, file.filename)
                     updated_files.append(annotations)
                     versions.append(version)
                     results[file.hash_id] = {
@@ -390,14 +390,14 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         )
                     except AnnotationError as e:
                         current_app.logger.error(
-                            'Could not re-annotate file: %s, %s, %s', file.hash_id, file.filename, e)  # noqa
+                            'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e)  # noqa
                         results[file.hash_id] = {
                             'attempted': True,
                             'success': False,
                         }
                     else:
                         current_app.logger.debug(
-                            'File successfully re-annotated: %s, %s', file.hash_id, file.filename)
+                            'File successfully annotated: %s, %s', file.hash_id, file.filename)
                         all_annotations.append(annotations)
                         results[file.hash_id] = {
                             'attempted': True,
@@ -472,8 +472,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             document=file,
             filename=file.filename
         )
-
-        current_app.logger.debug(f'File successfully annotated: {file.hash_id}, {file.filename}')
 
         update = {
             'id': file.id,
