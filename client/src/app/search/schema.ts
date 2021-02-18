@@ -14,14 +14,7 @@ export interface ContentSearchRequest extends StandardRequestOptions {
   wildcards?: string;
 }
 
-// ========================================
-// Content Search
-// ========================================
-
-// Requests
-// ----------------------------------------
-
-export interface AnnotationRequest {
+export interface AnnotationRequestOptions {
   texts: string[];
 }
 

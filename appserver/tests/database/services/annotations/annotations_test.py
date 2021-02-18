@@ -10,7 +10,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     SpecifiedOrganismStrain
 )
 from neo4japp.services.annotations.constants import EntityType, OrganismCategory
-from neo4japp.services.annotations.pipeline import read_pdf_response
+from neo4japp.services.annotations.pipeline import read_parser_response
 
 
 # reference to this directory
@@ -49,33 +49,16 @@ def annotate_pdf(
     if excluded_annotations is None:
         excluded_annotations = []
 
-    tokens = entity_service.extract_tokens(parsed=parsed)
-    lookup_entities(
-        entity_service=entity_service,
-        tokens_list=tokens,
-        custom_annotations=custom_annotations
+    entity_results = entity_service.identify(
+        custom_annotations=custom_annotations,
+        tokens=parsed
     )
     return annotation_service.create_rules_based_annotations(
-        tokens=tokens,
         custom_annotations=custom_annotations,
         excluded_annotations=excluded_annotations,
-        entity_results=entity_service.get_entity_match_results(),
+        entity_results=entity_results,
         entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
         specified_organism=specified_organism
-    )
-
-
-def lookup_entities(
-    entity_service,
-    tokens_list,
-    custom_annotations=[],
-    excluded_annotations=[]
-):
-    entity_service.set_entity_inclusions(custom_annotations)
-    entity_service.set_entity_exclusions()
-    entity_service.identify_entities(
-        tokens=tokens_list.tokens,
-        check_entities_in_lmdb=entity_service.get_entities_to_identify()
     )
 
 
@@ -285,7 +268,7 @@ def test_gene_organism_escherichia_coli_pdf(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -327,7 +310,7 @@ def test_protein_organism_escherichia_coli_pdf(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -383,7 +366,7 @@ def test_local_inclusion_organism_gene_crossmatch(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -432,7 +415,7 @@ def test_local_exclusion_organism_gene_crossmatch(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -460,7 +443,7 @@ def test_human_gene_pdf(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -494,7 +477,7 @@ def test_foods_pdf(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -525,7 +508,7 @@ def test_anatomy_pdf(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -564,7 +547,7 @@ def test_genes_vs_proteins(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -686,7 +669,7 @@ def test_gene_annotation_crossmatch_human_fish(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -714,7 +697,7 @@ def test_gene_annotation_crossmatch_human_rat(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -736,6 +719,7 @@ def test_global_excluded_chemical_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    entity_service.exclusion_type_chemical = mock_global_chemical_exclusion
 
     pdf = path.join(
         directory,
@@ -744,7 +728,7 @@ def test_global_excluded_chemical_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -763,6 +747,7 @@ def test_global_excluded_compound_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    entity_service.exclusion_type_compound = mock_compound_exclusion
 
     pdf = path.join(
         directory,
@@ -771,7 +756,7 @@ def test_global_excluded_compound_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -790,6 +775,7 @@ def test_global_excluded_disease_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    entity_service.exclusion_type_disease = mock_disease_exclusion
 
     pdf = path.join(
         directory,
@@ -798,7 +784,7 @@ def test_global_excluded_disease_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -818,6 +804,7 @@ def test_global_excluded_gene_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    entity_service.exclusion_type_gene = mock_gene_exclusion
 
     pdf = path.join(
         directory,
@@ -826,7 +813,7 @@ def test_global_excluded_gene_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -845,6 +832,7 @@ def test_global_excluded_phenotype_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    entity_service.exclusion_type_phenotype = mock_phenotype_exclusion
 
     pdf = path.join(
         directory,
@@ -853,7 +841,7 @@ def test_global_excluded_phenotype_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -872,6 +860,7 @@ def test_global_excluded_protein_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    entity_service.exclusion_type_protein = mock_protein_exclusion
 
     pdf = path.join(
         directory,
@@ -880,7 +869,7 @@ def test_global_excluded_protein_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -899,6 +888,7 @@ def test_global_excluded_species_annotations(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    entity_service.exclusion_type_species = mock_species_exclusion
 
     pdf = path.join(
         directory,
@@ -907,7 +897,7 @@ def test_global_excluded_species_annotations(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -926,6 +916,7 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
 ):
     annotation_service = get_annotation_service
     entity_service = get_entity_service
+    entity_service.exclusion_type_chemical = mock_global_chemical_exclusion
 
     pdf = path.join(
         directory,
@@ -934,7 +925,7 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -964,7 +955,7 @@ def test_global_chemical_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -992,7 +983,7 @@ def test_global_compound_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -1023,7 +1014,7 @@ def test_global_gene_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -1053,7 +1044,7 @@ def test_global_disease_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -1081,7 +1072,7 @@ def test_global_phenomena_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -1109,7 +1100,7 @@ def test_global_phenotype_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -1137,7 +1128,7 @@ def test_global_protein_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -1165,7 +1156,7 @@ def test_global_species_inclusion_annotation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -1196,7 +1187,7 @@ def test_primary_organism_strain(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -1234,7 +1225,7 @@ def test_no_annotation_for_abbreviation(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -1262,7 +1253,7 @@ def test_delta_gene_deletion_detected(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -1291,7 +1282,7 @@ def test_gene_primary_name(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
@@ -1328,7 +1319,7 @@ def test_user_source_database_input_priority(
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
 
-    _, parsed = read_pdf_response(parsed)
+    _, parsed = read_parser_response(parsed)
     annotations = annotate_pdf(
         annotation_service=annotation_service,
         entity_service=entity_service,
