@@ -714,7 +714,7 @@ class EntityRecognitionService:
         if entities:
             anatomy_found.append(
                 LMDBMatch(
-                    entities=entities,  # type: ignore
+                    entities=entities,
                     token=current_token,
                     id_type=id_type or '',
                     id_hyperlink=id_hyperlink or ''
@@ -725,8 +725,10 @@ class EntityRecognitionService:
         self,
         token: PDFWord,
         chemicals_found: List[LMDBMatch],
+        nlp_chemicals: Set[Tuple[int, int]],
         cursor
     ) -> None:
+        offset_key = (token.lo_location_offset, token.hi_location_offset)
         current_token = token
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
@@ -735,25 +737,39 @@ class EntityRecognitionService:
         id_type = None
         id_hyperlink = None
 
+        found_inclusion = False
+
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
         else:
             # didn't find in LMDB so look in global inclusion
             found = self.inclusion_type_chemical.get(lookup_term, None)
             if found:
+                found_inclusion = True
                 entities = found.entities
                 id_type = found.entity_id_type
                 id_hyperlink = found.entity_id_hyperlink
 
+        # only want those in inclusion or identified by NLP
         if entities:
-            chemicals_found.append(
-                LMDBMatch(
-                    entities=entities,  # type: ignore
-                    token=current_token,
-                    id_type=id_type or '',
-                    id_hyperlink=id_hyperlink or ''
+            if not nlp_chemicals:
+                chemicals_found.append(
+                    LMDBMatch(
+                        entities=entities,
+                        token=current_token,
+                        id_type=id_type or '',
+                        id_hyperlink=id_hyperlink or ''
+                    )
                 )
-            )
+            elif found_inclusion or offset_key in nlp_chemicals:
+                chemicals_found.append(
+                    LMDBMatch(
+                        entities=entities,
+                        token=current_token,
+                        id_type=id_type or '',
+                        id_hyperlink=id_hyperlink or ''
+                    )
+                )
 
     def identify_compound(
         self,
@@ -782,7 +798,7 @@ class EntityRecognitionService:
         if entities:
             compounds_found.append(
                 LMDBMatch(
-                    entities=entities,  # type: ignore
+                    entities=entities,
                     token=current_token,
                     id_type=id_type or '',
                     id_hyperlink=id_hyperlink or ''
@@ -793,8 +809,10 @@ class EntityRecognitionService:
         self,
         token: PDFWord,
         diseases_found: List[LMDBMatch],
+        nlp_diseases: Set[Tuple[int, int]],
         cursor
     ) -> None:
+        offset_key = (token.lo_location_offset, token.hi_location_offset)
         current_token = token
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
@@ -803,25 +821,39 @@ class EntityRecognitionService:
         id_type = None
         id_hyperlink = None
 
+        found_inclusion = False
+
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
         else:
             # didn't find in LMDB so look in global inclusion
             found = self.inclusion_type_disease.get(lookup_term, None)
             if found:
+                found_inclusion = True
                 entities = found.entities
                 id_type = found.entity_id_type
                 id_hyperlink = found.entity_id_hyperlink
 
+        # only want those in inclusion or identified by NLP (if any)
         if entities:
-            diseases_found.append(
-                LMDBMatch(
-                    entities=entities,  # type: ignore
-                    token=current_token,
-                    id_type=id_type or '',
-                    id_hyperlink=id_hyperlink or ''
+            if not nlp_diseases:
+                diseases_found.append(
+                    LMDBMatch(
+                        entities=entities,
+                        token=current_token,
+                        id_type=id_type or '',
+                        id_hyperlink=id_hyperlink or ''
+                    )
                 )
-            )
+            elif found_inclusion or offset_key in nlp_diseases:
+                diseases_found.append(
+                    LMDBMatch(
+                        entities=entities,
+                        token=current_token,
+                        id_type=id_type or '',
+                        id_hyperlink=id_hyperlink or ''
+                    )
+                )
 
     def identify_food(
         self,
@@ -861,8 +893,10 @@ class EntityRecognitionService:
         self,
         token: PDFWord,
         genes_found: List[LMDBMatch],
+        nlp_genes: Set[Tuple[int, int]],
         cursor
     ) -> None:
+        offset_key = (token.lo_location_offset, token.hi_location_offset)
         current_token = token
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
@@ -871,25 +905,39 @@ class EntityRecognitionService:
         id_type = None
         id_hyperlink = None
 
+        found_inclusion = False
+
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
         else:
             # didn't find in LMDB so look in global inclusion
             found = self.inclusion_type_gene.get(lookup_term, None)
             if found:
+                found_inclusion = True
                 entities = found.entities
                 id_type = found.entity_id_type
                 id_hyperlink = found.entity_id_hyperlink
 
+        # only want those in inclusion or identified by NLP (if any)
         if entities:
-            genes_found.append(
-                LMDBMatch(
-                    entities=entities,
-                    token=current_token,
-                    id_type=id_type or '',
-                    id_hyperlink=id_hyperlink or ''
+            if not nlp_genes:
+                genes_found.append(
+                    LMDBMatch(
+                        entities=entities,
+                        token=current_token,
+                        id_type=id_type or '',
+                        id_hyperlink=id_hyperlink or ''
+                    )
                 )
-            )
+            elif found_inclusion or offset_key in nlp_genes:
+                genes_found.append(
+                    LMDBMatch(
+                        entities=entities,
+                        token=current_token,
+                        id_type=id_type or '',
+                        id_hyperlink=id_hyperlink or ''
+                    )
+                )
 
     def identify_phenomena(
         self,
@@ -918,7 +966,7 @@ class EntityRecognitionService:
         if entities:
             phenomenas_found.append(
                 LMDBMatch(
-                    entities=entities,  # type: ignore
+                    entities=entities,
                     token=current_token,
                     id_type=id_type or '',
                     id_hyperlink=id_hyperlink or ''
@@ -952,7 +1000,7 @@ class EntityRecognitionService:
         if entities:
             phenotypes_found.append(
                 LMDBMatch(
-                    entities=entities,  # type: ignore
+                    entities=entities,
                     token=current_token,
                     id_type=id_type or '',
                     id_hyperlink=id_hyperlink or ''
@@ -989,7 +1037,7 @@ class EntityRecognitionService:
         if entities:
             proteins_found.append(
                 LMDBMatch(
-                    entities=entities,  # type: ignore
+                    entities=entities,
                     token=current_token,
                     id_type=id_type or '',
                     id_hyperlink=id_hyperlink or ''
@@ -1024,7 +1072,7 @@ class EntityRecognitionService:
         if entities:
             species_found.append(
                 LMDBMatch(
-                    entities=entities,  # type: ignore
+                    entities=entities,
                     token=current_token,
                     id_type=id_type or '',
                     id_hyperlink=id_hyperlink or ''
@@ -1038,7 +1086,7 @@ class EntityRecognitionService:
 
                 species_local_found.append(
                     LMDBMatch(
-                        entities=entities,  # type: ignore
+                        entities=entities,
                         token=current_token,
                         id_type=id_type,
                         id_hyperlink=id_hyperlink
@@ -1088,206 +1136,141 @@ class EntityRecognitionService:
         regex = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
 
         for token in tokens:
-            matched_nlp = False
-            offset_key = (token.lo_location_offset, token.hi_location_offset)
-            if offset_key in nlp_results.offsets_found:
-                matched_nlp = True
+            for current_token in self.generate_tokens(token, self.gene_max_words):
+                if (current_token.keyword.lower() in COMMON_WORDS or
+                    regex.match(current_token.keyword) or
+                    current_token.keyword in ascii_letters or
+                    current_token.keyword in digits or
+                    len(current_token.normalized_keyword) <= 2 or
+                    self.is_abbrev(current_token)
+                ):  # noqa
+                    continue
 
-            if matched_nlp:
-                # was previously identified by NLP
-                for current_token in self.generate_tokens(token):
-                    if (current_token.keyword.lower() in COMMON_WORDS or
-                        regex.match(current_token.keyword) or
-                        current_token.keyword in ascii_letters or
-                        current_token.keyword in digits or
-                        len(current_token.normalized_keyword) <= 2 or
-                        self.is_abbrev(current_token)
-                    ):  # noqa
-                        continue
+                if not self.is_gene_exclusion(current_token.keyword):
+                    self.identify_gene(
+                        token=current_token,
+                        genes_found=genes_found,
+                        nlp_genes=nlp_results.genes,
+                        cursor=genes_cur)
 
-                    if offset_key in nlp_results.anatomy and not self.is_anatomy_exclusion(current_token.keyword):  # noqa
-                        self.identify_anatomy(
-                            token=current_token,
-                            anatomy_found=anatomy_found,
-                            cursor=anatomy_cur)
-                    if offset_key in nlp_results.chemicals and not self.is_chemical_exclusion(current_token.keyword):  # noqa
-                        self.identify_chemical(
-                            token=current_token,
-                            chemicals_found=chemicals_found,
-                            cursor=chemicals_cur)
-                    if offset_key in nlp_results.compounds and not self.is_compound_exclusion(current_token.keyword):  # noqa
-                        self.identify_compound(
-                            token=current_token,
-                            compounds_found=compounds_found,
-                            cursor=compounds_cur)
-                    if offset_key in nlp_results.diseases and not self.is_disease_exclusion(current_token.keyword):  # noqa
-                        self.identify_disease(
-                            token=current_token,
-                            diseases_found=diseases_found,
-                            cursor=diseases_cur)
-                    if offset_key in nlp_results.foods and not self.is_food_exclusion(current_token.keyword):  # noqa
-                        self.identify_food(
-                            token=current_token,
-                            foods_found=foods_found,
-                            cursor=foods_cur)
-                    if offset_key in nlp_results.genes and not self.is_gene_exclusion(current_token.keyword):  # noqa
-                        self.identify_gene(
-                            token=current_token,
-                            genes_found=genes_found,
-                            cursor=genes_cur)
-                    if offset_key in nlp_results.phenomenas and not self.is_phenomena_exclusion(current_token.keyword):  # noqa
-                        self.identify_phenomena(
-                            token=current_token,
-                            phenomenas_found=phenomenas_found,
-                            cursor=phenomenas_cur)
-                    if offset_key in nlp_results.phenotypes and not self.is_phenotype_exclusion(current_token.keyword):  # noqa
-                        self.identify_phenotype(
-                            token=current_token,
-                            phenotypes_found=phenotypes_found,
-                            cursor=phenotypes_cur)
-                    if offset_key in nlp_results.proteins and not self.is_protein_exclusion(current_token.keyword):  # noqa
-                        self.identify_protein(
-                            token=current_token,
-                            proteins_found=proteins_found,
-                            cursor=proteins_cur)
-                    if offset_key in nlp_results.species and not self.is_species_exclusion(current_token.keyword):  # noqa
-                        self.identify_species(
-                            token=current_token,
-                            species_found=species_found,
-                            species_local_found=species_local_found,
-                            cursor=species_cur)
-            else:
-                for current_token in self.generate_tokens(token, self.gene_max_words):
-                    if (current_token.keyword.lower() in COMMON_WORDS or
-                        regex.match(current_token.keyword) or
-                        current_token.keyword in ascii_letters or
-                        current_token.keyword in digits or
-                        len(current_token.normalized_keyword) <= 2 or
-                        self.is_abbrev(current_token)
-                    ):  # noqa
-                        continue
+            for current_token in self.generate_tokens(token, self.food_max_words):
+                if (current_token.keyword.lower() in COMMON_WORDS or
+                    regex.match(current_token.keyword) or
+                    current_token.keyword in ascii_letters or
+                    current_token.keyword in digits or
+                    len(current_token.normalized_keyword) <= 2 or
+                    self.is_abbrev(current_token)
+                ):  # noqa
+                    continue
 
-                    if not self.is_gene_exclusion(current_token.keyword):
-                        self.identify_gene(
-                            token=current_token, genes_found=genes_found, cursor=genes_cur)
+                if not self.is_food_exclusion(current_token.keyword):
+                    self.identify_food(
+                        token=current_token, foods_found=foods_found, cursor=foods_cur)
 
-                for current_token in self.generate_tokens(token, self.food_max_words):
-                    if (current_token.keyword.lower() in COMMON_WORDS or
-                        regex.match(current_token.keyword) or
-                        current_token.keyword in ascii_letters or
-                        current_token.keyword in digits or
-                        len(current_token.normalized_keyword) <= 2 or
-                        self.is_abbrev(current_token)
-                    ):  # noqa
-                        continue
+            for current_token in self.generate_tokens(token, self.entity_max_words):
+                if (current_token.keyword.lower() in COMMON_WORDS or
+                    regex.match(current_token.keyword) or
+                    current_token.keyword in ascii_letters or
+                    current_token.keyword in digits or
+                    len(current_token.normalized_keyword) <= 2 or
+                    self.is_abbrev(current_token)
+                ):  # noqa
+                    continue
 
-                    if not self.is_food_exclusion(current_token.keyword):
-                        self.identify_food(
-                            token=current_token, foods_found=foods_found, cursor=foods_cur)
+                if not self.is_anatomy_exclusion(current_token.keyword):
+                    self.identify_anatomy(
+                        token=current_token,
+                        anatomy_found=anatomy_found,
+                        cursor=anatomy_cur)
 
-                for current_token in self.generate_tokens(token, self.entity_max_words):
-                    if (current_token.keyword.lower() in COMMON_WORDS or
-                        regex.match(current_token.keyword) or
-                        current_token.keyword in ascii_letters or
-                        current_token.keyword in digits or
-                        len(current_token.normalized_keyword) <= 2 or
-                        self.is_abbrev(current_token)
-                    ):  # noqa
-                        continue
+                if not self.is_chemical_exclusion(current_token.keyword):
+                    self.identify_chemical(
+                        token=current_token,
+                        chemicals_found=chemicals_found,
+                        nlp_chemicals=nlp_results.chemicals,
+                        cursor=chemicals_cur)
 
-                    if not self.is_anatomy_exclusion(current_token.keyword):
-                        self.identify_anatomy(
-                            token=current_token,
-                            anatomy_found=anatomy_found,
-                            cursor=anatomy_cur)
+                if not self.is_compound_exclusion(current_token.keyword):
+                    self.identify_compound(
+                        token=current_token,
+                        compounds_found=compounds_found,
+                        cursor=compounds_cur)
 
-                    if not self.is_chemical_exclusion(current_token.keyword):
-                        self.identify_chemical(
-                            token=current_token,
-                            chemicals_found=chemicals_found,
-                            cursor=chemicals_cur)
+                if not self.is_disease_exclusion(current_token.keyword):
+                    self.identify_disease(
+                        token=current_token,
+                        diseases_found=diseases_found,
+                        nlp_diseases=nlp_results.diseases,
+                        cursor=diseases_cur)
 
-                    if not self.is_compound_exclusion(current_token.keyword):
-                        self.identify_compound(
-                            token=current_token,
-                            compounds_found=compounds_found,
-                            cursor=compounds_cur)
+                if not self.is_phenomena_exclusion(current_token.keyword):
+                    self.identify_phenomena(
+                        token=current_token,
+                        phenomenas_found=phenomenas_found,
+                        cursor=phenomenas_cur)
 
-                    if not self.is_disease_exclusion(current_token.keyword):
-                        self.identify_disease(
-                            token=current_token,
-                            diseases_found=diseases_found,
-                            cursor=diseases_cur)
+                if not self.is_phenotype_exclusion(current_token.keyword):
+                    self.identify_phenotype(
+                        token=current_token,
+                        phenotypes_found=phenotypes_found,
+                        cursor=phenotypes_cur)
 
-                    if not self.is_phenomena_exclusion(current_token.keyword):
-                        self.identify_phenomena(
-                            token=current_token,
-                            phenomenas_found=phenomenas_found,
-                            cursor=phenomenas_cur)
+                if not self.is_protein_exclusion(current_token.keyword):
+                    self.identify_protein(
+                        token=current_token,
+                        proteins_found=proteins_found,
+                        cursor=proteins_cur)
 
-                    if not self.is_phenotype_exclusion(current_token.keyword):
-                        self.identify_phenotype(
-                            token=current_token,
-                            phenotypes_found=phenotypes_found,
-                            cursor=phenotypes_cur)
+                if not self.is_species_exclusion(current_token.keyword):
+                    self.identify_species(
+                        token=current_token,
+                        species_found=species_found,
+                        species_local_found=species_local_found,
+                        cursor=species_cur)
 
-                    if not self.is_protein_exclusion(current_token.keyword):
-                        self.identify_protein(
-                            token=current_token,
-                            proteins_found=proteins_found,
-                            cursor=proteins_cur)
+                if not self.is_company_exclusion(current_token.keyword):
+                    entities = None
+                    id_type = None
+                    id_hyperlink = None
 
-                    if not self.is_species_exclusion(current_token.keyword):
-                        self.identify_species(
-                            token=current_token,
-                            species_found=species_found,
-                            species_local_found=species_local_found,
-                            cursor=species_cur)
+                    found = self.inclusion_type_company.get(
+                        current_token.normalized_keyword, None)
+                    if found:
+                        entities = found.entities
+                        id_type = found.entity_id_type
+                        id_hyperlink = found.entity_id_hyperlink
 
-                    term = current_token.keyword
-                    lookup_term = current_token.normalized_keyword
-
-                    if not self.is_company_exclusion(term):
-                        entities = None
-                        id_type = None
-                        id_hyperlink = None
-
-                        found = self.inclusion_type_company.get(lookup_term, None)
-                        if found:
-                            entities = found.entities
-                            id_type = found.entity_id_type
-                            id_hyperlink = found.entity_id_hyperlink
-
-                        if entities:
-                            companies_found.append(
-                                LMDBMatch(
-                                    entities=entities,  # type: ignore
-                                    token=current_token,
-                                    id_type=id_type or '',
-                                    id_hyperlink=id_hyperlink or ''
-                                )
+                    if entities:
+                        companies_found.append(
+                            LMDBMatch(
+                                entities=entities,
+                                token=current_token,
+                                id_type=id_type or '',
+                                id_hyperlink=id_hyperlink or ''
                             )
+                        )
 
-                    if not self.is_entity_exclusion(term):
-                        entities = None
-                        id_type = None
-                        id_hyperlink = None
+                if not self.is_entity_exclusion(current_token.keyword):
+                    entities = None
+                    id_type = None
+                    id_hyperlink = None
 
-                        found = self.inclusion_type_entity.get(lookup_term, None)
-                        if found:
-                            entities = found.entities
-                            id_type = found.entity_id_type
-                            id_hyperlink = found.entity_id_hyperlink
+                    found = self.inclusion_type_entity.get(
+                        current_token.normalized_keyword, None)
+                    if found:
+                        entities = found.entities
+                        id_type = found.entity_id_type
+                        id_hyperlink = found.entity_id_hyperlink
 
-                        if entities:
-                            entities_found.append(
-                                LMDBMatch(
-                                    entities=entities,  # type: ignore
-                                    token=current_token,
-                                    id_type=id_type or '',
-                                    id_hyperlink=id_hyperlink or ''
-                                )
+                    if entities:
+                        entities_found.append(
+                            LMDBMatch(
+                                entities=entities,
+                                token=current_token,
+                                id_type=id_type or '',
+                                id_hyperlink=id_hyperlink or ''
                             )
+                        )
 
         return EntityResults(
             matched_type_anatomy=anatomy_found,

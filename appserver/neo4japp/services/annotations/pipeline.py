@@ -77,8 +77,7 @@ def get_nlp_entities(text: str, entities: Set[str]):
         EntityType.PHENOMENA.value: set(),
         EntityType.PHENOTYPE.value: set(),
         EntityType.PROTEIN.value: set(),
-        EntityType.SPECIES.value: set(),
-        'offsets_found': set()
+        EntityType.SPECIES.value: set()
     }
 
     if all([model in entities for model in nlp_models]):
@@ -96,18 +95,7 @@ def get_nlp_entities(text: str, entities: Set[str]):
         for results in models['results']:
             for token in results['annotations']:
                 token_offset = (token['start_pos'], token['end_pos']-1)
-                entity_results['offsets_found'].add(token_offset)
                 entity_results[nlp_model_types[results['model']]].add(token_offset)
-
-                # NOTE: currently do not have these models
-                # so add to them like this for now
-                entity_results[EntityType.ANATOMY.value].add(token_offset)
-                entity_results[EntityType.COMPOUND.value].add(token_offset)
-                entity_results[EntityType.FOOD.value].add(token_offset)
-                entity_results[EntityType.PHENOMENA.value].add(token_offset)
-                entity_results[EntityType.PHENOTYPE.value].add(token_offset)
-                entity_results[EntityType.PROTEIN.value].add(token_offset)
-                entity_results[EntityType.SPECIES.value].add(token_offset)
     else:
         combined = []
         with mp.Pool(processes=4) as pool:
@@ -118,18 +106,7 @@ def get_nlp_entities(text: str, entities: Set[str]):
             for results in model['results']:
                 for token in results['annotations']:
                     token_offset = (token['start_pos'], token['end_pos']-1)
-                    entity_results['offsets_found'].add(token_offset)
                     entity_results[nlp_model_types[results['model']]].add(token_offset)
-
-                    # NOTE: currently do not have these models
-                    # so add to them like this for now
-                    entity_results[EntityType.ANATOMY.value].add(token_offset)
-                    entity_results[EntityType.COMPOUND.value].add(token_offset)
-                    entity_results[EntityType.FOOD.value].add(token_offset)
-                    entity_results[EntityType.PHENOMENA.value].add(token_offset)
-                    entity_results[EntityType.PHENOTYPE.value].add(token_offset)
-                    entity_results[EntityType.PROTEIN.value].add(token_offset)
-                    entity_results[EntityType.SPECIES.value].add(token_offset)
 
     return NLPResults(
         anatomy=entity_results[EntityType.ANATOMY.value],
@@ -142,7 +119,6 @@ def get_nlp_entities(text: str, entities: Set[str]):
         phenotypes=entity_results[EntityType.PHENOTYPE.value],
         proteins=entity_results[EntityType.PROTEIN.value],
         species=entity_results[EntityType.SPECIES.value],
-        offsets_found=entity_results['offsets_found'],
     )
 
 
@@ -222,6 +198,21 @@ def _create_annotations(
     entity_recog = get_entity_recognition()
 
     start = time.time()
+
+    if not annotation_method:
+        # default to rules based
+        annotation_method = {
+            EntityType.ANATOMY.value: {'nlp': False, 'rules_based': True},
+            EntityType.CHEMICAL.value: {'nlp': False, 'rules_based': True},
+            EntityType.COMPOUND.value: {'nlp': False, 'rules_based': True},
+            EntityType.DISEASE.value: {'nlp': False, 'rules_based': True},
+            EntityType.FOOD.value: {'nlp': False, 'rules_based': True},
+            EntityType.GENE.value: {'nlp': False, 'rules_based': True},
+            EntityType.PHENOMENA.value: {'nlp': False, 'rules_based': True},
+            EntityType.PHENOTYPE.value: {'nlp': False, 'rules_based': True},
+            EntityType.PROTEIN.value: {'nlp': False, 'rules_based': True},
+            EntityType.SPECIES.value: {'nlp': False, 'rules_based': True}
+        }
 
     # identify entities w/ NLP first
     nlp_results = get_nlp_entities(

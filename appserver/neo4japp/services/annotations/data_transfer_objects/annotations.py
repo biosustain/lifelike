@@ -37,7 +37,6 @@ class NLPResults():
     phenotypes: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
     proteins: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
     species: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
-    offsets_found: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
 
 
 @attr.s(frozen=False)
