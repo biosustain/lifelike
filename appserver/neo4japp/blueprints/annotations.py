@@ -379,16 +379,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     }
             elif file.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table' and enrichment:
                 all_annotations = []
-                if file.annotations:
-                    all_annotations = file.annotations
-
-                if file.enrichment_annotations:
-                    for i in range(0, len(file.enrichment_annotations['genes'])):
-                        # update enrichment with previously enriched
-                        # enrichment tables are annotated by rows and cells
-                        # each cell is its own PDF in a sense, so multiple API calls
-                        # per row, thus need to consolidate them
-                        enrichment['genes'][i] = file.enrichment_annotations['genes'][i]
 
                 for text_mapping in texts:
                     text = text_mapping['text']
