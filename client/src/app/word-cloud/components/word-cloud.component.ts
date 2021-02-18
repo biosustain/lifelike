@@ -71,12 +71,7 @@ export class WordCloudComponent implements OnDestroy {
       });
 
       this.setAnnotationData(annotationExport);
-
-      // Need a slight delay between the data having been loaded and drawing the word cloud, seems like the BackgroundTask doesn't quite
-      // adhere to the normal change detection cycle.
-      setTimeout(() => {
-        this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), true);
-      }, 10);
+      this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), true);
     });
 
     this.getAnnotations();
