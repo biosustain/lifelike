@@ -194,7 +194,7 @@ def get_wildcards_from_params(q, advanced_args):
     if 'wildcards' in advanced_args and advanced_args['wildcards'] != '':
         wildcards = advanced_args['wildcards'].split(';')
 
-    return ' '.join([q] + list(wildcards))
+    return ' '.join([q] + wildcards)
 
 
 def get_phrase_from_params(q, advanced_args):

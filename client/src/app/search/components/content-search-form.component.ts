@@ -15,7 +15,7 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
   @Output() formResult = new EventEmitter<ContentSearchOptions>();
 
   form = new FormGroup({
-    q: new FormControl('', [this.whitespaceValidator]),
+    q: new FormControl(''),
   });
 
   constructor(messageDialog: MessageDialog) {
@@ -48,10 +48,5 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
     }
 
     return q.join(' ');
-  }
-
-  whitespaceValidator(control: AbstractControl): { [key: string]: any } | null {
-    const val = control.value as string;
-    return val.length > 0 && val.match(/.*\S.*/) === null ? {whitespace: {value: control.value}} : null;
   }
 }
