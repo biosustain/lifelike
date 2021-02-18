@@ -131,6 +131,8 @@ class FileSchema(CamelCaseSchema):
     highlight = fields.Method('get_highlight')
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
+    fallback_organism_id = fields.String()
+    annotation_configs = fields.Dict()
 
     def get_user_privilege_filter(self):
         try:

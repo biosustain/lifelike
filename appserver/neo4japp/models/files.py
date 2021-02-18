@@ -171,6 +171,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     """
     # NOTE: for PDFs `annotations` will be one JSON, for Enrichment tables, will be a list of JSON
     annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
+    annotation_configs = db.Column(postgresql.JSONB, nullable=True)
     annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     custom_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     enrichment_annotations = db.Column(postgresql.JSONB, nullable=True)
