@@ -63,7 +63,7 @@ export class EnrichmentVisualisationEditDialogComponent extends CommonFormDialog
 
   @Input()
   set data({
-             genes,
+             genes = [],
              organism,
              domains = []
            }) {

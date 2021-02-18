@@ -48,13 +48,36 @@ def main(query, ids, annotations):
     return list(df["annotation"]), list(df["query"])
 
 
+def statistically_significat(r):
+    return r < 0.05
+
 def fisher(geneNames, GOterms, *args, **kwargs):
     go = pd.DataFrame(GOterms)
     goGenes = go["geneName"]
     goId = go['goId']
-    gene, p = main(geneNames, goGenes, goId)
-    r = list(map(lambda gp: { "gene": gp[0], "p-value": -np.log10(gp[1]) }, zip(gene, p)))
-    return r
+    # gene, p = main(geneNames, goGenes, goId)
+
+
+    df = pd.DataFrame({ "id": goGenes, "annotation": goId }).drop_duplicates()
+    query = pd.unique(geneNames)
+    df["query"] = np.in1d(df.id, query).astype(float)
+    M = df["id"].nunique()
+    N = len(query)
+
+    df.drop(columns="id", inplace=True)
+    df = df.groupby("annotation").agg(lambda q: fisher_p(q.sum(), M, len(q), N))
+
+    df = df[df['query'] < 1].sort_values(by='query')
+    df['query'] = df['query']
+    merged = df.merge(go.drop_duplicates(subset=['goId']), 'left', left_index=True, right_on="goId")
+
+    merged['p-value'] = merged['query'].astype(float)
+    merged['gene'] = merged.apply(lambda m: f"{m['goTerm']} ({m['goId']})", axis=1)
+
+    return merged.to_json(orient='records')
+
+    # r = list(map(lambda gp: { "gene": gp[0], "p-value": -np.log10(gp[1]) }, zip(gene, p)))
+    # return r
 
 
 def binom_p(x, n, N, M):

@@ -25,7 +25,7 @@ import { ENRICHMENT_TABLE_MIMETYPE } from '../../providers/enrichment-table.type
 import { Progress } from '../../../interfaces/common-dialog.interface';
 import { finalize } from 'rxjs/operators';
 import { EnrichmentVisualisationEditDialogComponent } from './dialog/enrichment-visualisation-edit-dialog.component';
-import { default_analysis } from "../../analyses";
+import { defaultAnalysis } from '../../analyses';
 
 @Component({
   selector: 'app-enrichment-visualisation-viewer',
@@ -34,6 +34,23 @@ import { default_analysis } from "../../analyses";
   providers: [EnrichmentVisualisationService]
 })
 export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy, ModuleAwareComponent {
+
+  constructor(protected readonly messageDialog: MessageDialog,
+              protected readonly ngZone: NgZone,
+              protected readonly workspaceManager: WorkspaceManager,
+              protected readonly filesystemObjectActions: FilesystemObjectActions,
+              protected readonly route: ActivatedRoute,
+              protected readonly worksheetViewerService: EnrichmentTableService,
+              readonly enrichmentService: EnrichmentVisualisationService,
+              protected readonly modalService: NgbModal,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly downloadService: DownloadService,
+              protected readonly snackBar: MatSnackBar,
+              protected readonly filesystemService: FilesystemService,
+              protected readonly progressDialog: ProgressDialog) {
+    this.enrichmentService.fileId = this.route.snapshot.params.file_id || '';
+    this.loadingData = true;
+  }
   @Input() titleVisible = true;
 
   paramsSubscription: Subscription;
@@ -53,7 +70,6 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   importGenes: string[];
   unmatchedGenes: string;
   duplicateGenes: string;
-  columnOrder: string[] = [];
   wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
   legend: Map<string, string> = new Map<string, string>();
   filtersPanelOpened = false;
@@ -69,39 +85,19 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   cloudData: string[] = [];
 
   loadTask: BackgroundTask<string, [FilesystemObject]>;
-  loadSubscription: Subscription;
 
-  selectedRow = 0;
+  chartAnalysis = defaultAnalysis.id;
 
-  constructor(protected readonly messageDialog: MessageDialog,
-              protected readonly ngZone: NgZone,
-              protected readonly workspaceManager: WorkspaceManager,
-              protected readonly filesystemObjectActions: FilesystemObjectActions,
-              protected readonly route: ActivatedRoute,
-              protected readonly worksheetViewerService: EnrichmentTableService,
-              readonly enrichmentService: EnrichmentVisualisationService,
-              protected readonly modalService: NgbModal,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly downloadService: DownloadService,
-              protected readonly snackBar: MatSnackBar,
-              protected readonly filesystemService: FilesystemService,
-              protected readonly progressDialog: ProgressDialog) {
-    this.enrichmentService.fileId = this.route.snapshot.params.file_id || '';
-    this.loadingData = true;
-  }
+  wordCloudAnalysis = defaultAnalysis.id;
 
   ngOnDestroy() {
     console.log('sagr');
     // todo
   }
 
-  chartAnalysis = default_analysis.id;
-
   updateChartParams(analysis) {
     this.chartAnalysis = analysis;
   }
-
-  wordCloudAnalysis = default_analysis.id;
 
   updateWordCloudParams(analysis) {
     this.wordCloudAnalysis = analysis;

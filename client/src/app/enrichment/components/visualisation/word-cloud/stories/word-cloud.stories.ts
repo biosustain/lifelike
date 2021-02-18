@@ -28,6 +28,7 @@ export default {
 
 // This creates a Story for the component
 
+// tslint:disable-next-line:variable-name
 const Template: Story<WordCloudComponent> = (args) => ({
   component: WordCloudComponent,
   props: args,
@@ -40,6 +41,7 @@ const Template: Story<WordCloudComponent> = (args) => ({
   `,
 });
 
+// tslint:disable-next-line:variable-name
 export const Default = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 Default.args = {
   data: [
@@ -58,6 +60,7 @@ Default.args = {
   ]
 };
 
+// tslint:disable-next-line:variable-name
 export const ArrayOfStrings = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 ArrayOfStrings.args = {
   data: [
@@ -65,6 +68,7 @@ ArrayOfStrings.args = {
   ]
 };
 
+// tslint:disable-next-line:variable-name
 export const ArrayOfEverything = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 ArrayOfEverything.args = {
   data: [

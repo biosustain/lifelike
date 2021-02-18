@@ -9,6 +9,8 @@ import { mergeMap, shareReplay, take, tap } from 'rxjs/operators';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ObjectCreationService } from '../../../file-browser/services/object-creation.service';
+import { EnrichmentVisualisationEditDialogComponent } from '../visualisation/dialog/enrichment-visualisation-edit-dialog.component';
+import { ENRICHMENT_VISUALISATION_MIMETYPE } from '../visualisation/table/enrichment-table-viewer.component';
 import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
 import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
@@ -16,8 +18,6 @@ import { EnrichmentTableService } from '../../services/enrichment-table.service'
 import { FilesystemService } from '../../../file-browser/services/filesystem.service';
 import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
 import { ObjectVersion } from '../../../file-browser/models/object-version';
-import { EnrichmentVisualisationEditDialogComponent } from '../visualisation/dialog/enrichment-visualisation-edit-dialog.component';
-import { ENRICHMENT_VISUALISATION_MIMETYPE } from '../visualisation/table/enrichment-table-viewer.component';
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
 import { EnrichmentTableEditDialogComponent } from './dialog/enrichment-table-edit-dialog.component';
 
@@ -132,7 +132,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
     const object = new FilesystemObject();
     object.filename = 'Untitled Enrichment Visualisation';
     object.mimeType = ENRICHMENT_VISUALISATION_MIMETYPE;
-    object.parent = this.object$.parent;
+    // object.parent = this.object$.parent;
     dialogRef.componentInstance.object = object;
     dialogRef.componentInstance.data = {
       // domains: this.domains,

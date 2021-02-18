@@ -59,7 +59,7 @@ import { VisJsNetworkComponent } from './components/vis-js-network/vis-js-networ
 import { PlotlySankeyDiagramComponent } from './components/plotly-sankey-diagram/plotly-sankey-diagram.component';
 import { SearchControlComponent } from './components/search-control.component';
 import {FilterComponent} from './components/filter/filter.component';
-import {WordCloudFilterComponent} from "./components/word-cloud-filter/word-cloud-filter.component";
+import {WordCloudFilterComponent} from './components/word-cloud-filter/word-cloud-filter.component';
 import { UserComponent } from './components/user.component';
 import { SelectInputComponent } from './components/form/select-input.component';
 import { UserSelectComponent } from './components/form/user-select.component';

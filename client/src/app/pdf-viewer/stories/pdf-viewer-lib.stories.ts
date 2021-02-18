@@ -3,8 +3,8 @@ import {moduleMetadata, Story} from '@storybook/angular';
 import {PdfViewerLibComponent} from 'app/pdf-viewer/pdf-viewer-lib.component';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
-import {PdfViewerModule} from "../pdf-viewer/pdf-viewer.module";
-import {SharedModule} from "../../shared/shared.module";
+import {PdfViewerModule} from '../pdf-viewer/pdf-viewer.module';
+import {SharedModule} from '../../shared/shared.module';
 import {FormsModule} from '@angular/forms';
 import {FlexLayoutModule} from '@angular/flex-layout';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
@@ -14,9 +14,9 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatChipsModule, MatDialogModule, MatInputModule, MatSelectModule} from '@angular/material';
 import {MatButtonModule} from '@angular/material/button';
 import {MatRadioModule} from '@angular/material/radio';
-import {SharedNgrxEffects} from "../../shared/store/effects";
+import {SharedNgrxEffects} from '../../shared/store/effects';
 import {EffectsModule} from '@ngrx/effects';
-import {RootStoreModule} from "../../root-store";
+import {RootStoreModule} from '../../root-store';
 import {Subject} from 'rxjs';
 import {Location} from '../annotation-type';
 import {withKnobs} from '@storybook/addon-knobs';
@@ -60,8 +60,10 @@ export default {
       ],
     }),
   ]
-};// This creates a Story for the component
+};
+// This creates a Story for the component
 
+// tslint:disable-next-line:variable-name
 const Template: Story<PdfViewerLibComponent> = (args) => ({
   component: PdfViewerLibComponent,
   props: {
@@ -99,14 +101,15 @@ const Template: Story<PdfViewerLibComponent> = (args) => ({
             </lib-pdf-viewer-lib>`,
 });
 
-export const Default = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+// tslint:disable-next-line:variable-name
+export const Default = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 Default.args = {
   debugMode: true,
   pdfSrc: './assets/pdfs/sample.pdf'
 };
 
 // https://sbrgsoftware.atlassian.net/browse/LL-2157?atlOrigin=eyJpIjoiZWQzYjY3Mzk5YmExNDc0ZjgzZmFhNDhiOWFkNTY4MmUiLCJwIjoiaiJ9
-export const LL_2157 = Template.bind({});// Other stories could be added here as well, all you have to do is export them along!
+export const LL_2157 = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 LL_2157.args = {
   debugMode: true,
   pdfSrc: './assets/pdfs/20200916_DDB1_iModulons.pdf'

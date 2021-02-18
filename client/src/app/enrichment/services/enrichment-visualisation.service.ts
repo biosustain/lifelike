@@ -7,7 +7,7 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { map, mergeMap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ENRICHMENT_VISUALISATION_MIMETYPE } from '../providers/enrichment-visualisation.type-provider';
 import { mapBlobToBuffer, mapBufferToJson } from '../../shared/utils/files';
@@ -44,7 +44,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
         this.fileId,
       ).pipe(
         this.errorHandler.create({label: 'Load enrichment visualisation'}),
-        map((value: FilesystemObject, index) => {
+        map((value: FilesystemObject, _) => {
           this.object = value;
           return value;
         }),
@@ -75,8 +75,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
 
   /**
    * Match gene names to NCBI nodes with same name and has given taxonomy ID.
-   * @param geneNames list of input gene names to match to
-   * @param organism tax id of organism
+   * @param analysis - analysis ID to be used
    */
   enrichWithGOTerms(analysis = 'fisher'): Observable<[]> {
     const geneNames = this.parameters.genes;
@@ -102,27 +101,6 @@ export class EnrichmentVisualisationService implements OnDestroy {
       }),
     );
   }
-
-  /**
-   * Match enrichment domains to given node ids.
-   * @param nodeIds list of node ids to match to enrichment domains
-   * @param taxID tax id of organism
-   */
-  getNCBIEnrichmentDomains(nodeIds, taxID: string): Observable<[]> {
-    const uid = taxID + nodeIds.sort();
-    const existing = this.cachedResults.NCBIEnrichmentDomains && this.cachedResults.NCBIEnrichmentDomains[uid];
-    if (existing) {
-      return new Observable(() => existing);
-    }
-    return this.http.post<{ result: [] }>(
-      `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
-      {nodeIds, taxID},
-      this.apiService.getHttpOptions(true),
-    ).pipe(
-      map((resp: any) => this.cachedResults.NCBIEnrichmentDomains[uid] = resp.result),
-    );
-  }
-
   /**
    * Save the current representation of knowledge model
    */

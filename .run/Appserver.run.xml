@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Appserver" type="Python.FlaskServer">
-    <option name="additionalOptions" value="--host=0.0.0.0 --port=5000 --no-debugger --no-reload" />
+    <option name="additionalOptions" value="--host=0.0.0.0 --port=5000 --no-debugger" />
     <option name="flaskDebug" value="true" />
     <module name="kg-prototypes" />
     <option name="target" value="app" />

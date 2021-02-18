@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 import { WordCloudFilterEntity } from 'app/interfaces/filter.interface';
 import {FilterComponent} from '../filter/filter.component';
-import {AnnotationFilterComponent} from "../annotation-filter/annotation-filter.component";
+import {AnnotationFilterComponent} from '../annotation-filter/annotation-filter.component';
 
 @Component({
   selector: 'app-word-cloud-filter',

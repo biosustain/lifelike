@@ -11,5 +11,5 @@ const analyses = [
 
 export default analyses;
 
-export const default_analysis = analyses[0];
+export const defaultAnalysis = analyses[0];
 

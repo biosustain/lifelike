@@ -56,6 +56,7 @@ export default {
   ]
 }; // This creates a Story for the component
 
+// tslint:disable-next-line:variable-name
 const Template: Story<EnrichmentVisualisationOrderDialogComponent> = (args) => ({
   component: EnrichmentVisualisationOrderDialogComponent,
   props: {
@@ -71,5 +72,6 @@ const Template: Story<EnrichmentVisualisationOrderDialogComponent> = (args) => (
             </app-enrichment-visualisation-order-dialog>`,
 });
 
+// tslint:disable-next-line:variable-name
 export const Default = Template.bind({}); // Other stories could be added here as well, all you have to do is export them along!
 Default.args = {};
