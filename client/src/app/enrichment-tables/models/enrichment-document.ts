@@ -146,8 +146,8 @@ export class EnrichmentDocument {
                   this.worksheetViewerService.refreshEnrichmentAnnotations([this.fileId], refresh));
               }
               let rowCounter = 0;
+              const texts: EnrichmentTextMapping[] = [];
               for (const gene of newResult.genes) {
-                const texts: EnrichmentTextMapping[] = [];
                 texts.push({text: gene.imported, row: rowCounter, imported: true});
                 texts.push({text: gene.matched, row: rowCounter, matched: true});
                 texts.push({text: gene.fullName, row: rowCounter, fullName: true});
@@ -184,27 +184,20 @@ export class EnrichmentDocument {
                   }
                 }
                 rowCounter += 1;
-                annotationRequests.push(
-                  this.worksheetViewerService.annotateEnrichment(
-                    [this.fileId],
-                    {
-                      texts,
-                      organism: {
-                        organism_name: this.organism,
-                        synonym: this.organism,
-                        tax_id: this.taxID
-                      },
-                      enrichment: newResult
-                    } as TextAnnotationGenerationRequest
-                  )
-                );
               }
 
-              const annotated$ = concat(annotationRequests).pipe(
-                concatMap(res => merge(res)),
-                toArray(),
-              );
-              return annotated$.pipe(
+              return this.worksheetViewerService.annotateEnrichment(
+                [this.fileId],
+                {
+                  texts,
+                  organism: {
+                    organism_name: this.organism,
+                    synonym: this.organism,
+                    tax_id: this.taxID
+                  },
+                  enrichment: newResult
+                } as TextAnnotationGenerationRequest
+              ).pipe(
                 first(),
                 map(res => res),
                 switchMap(_ => this.worksheetViewerService.getAnnotatedEnrichment(
