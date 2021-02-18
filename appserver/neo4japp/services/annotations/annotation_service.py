@@ -32,7 +32,6 @@ from neo4japp.services.annotations.data_transfer_objects import (
     LMDBMatch,
     OrganismAnnotation,
     PDFWord,
-    PDFTokensList,
     SpecifiedOrganismStrain
 )
 from neo4japp.exceptions import AnnotationError
@@ -238,7 +237,7 @@ class AnnotationService:
 
     def _get_annotation(
         self,
-        tokens: Dict[str, LMDBMatch],
+        matches_list: List[LMDBMatch],
         token_type: str,
         id_str: str,
     ) -> List[Annotation]:
@@ -265,49 +264,47 @@ class AnnotationService:
         Returns list of matched annotations
         """
         matches: List[Annotation] = []
-        tokens_lowercased = set([normalize_str(s) for s in list(tokens.keys())])
+        tokens_lowercased = set([match.token.normalized_keyword for match in matches_list])  # noqa
+        synonym_common_names_dict: Dict[str, Set[str]] = {}
 
-        for word, lmdb_match in tokens.items():
-            for token in lmdb_match.tokens:
-                synonym_common_names_dict: Dict[str, Set[str]] = {}
+        for match in matches_list:
+            for entity in match.entities:
+                entity_synonym = entity['synonym']
+                entity_common_name = entity['name']
+                if entity_synonym in synonym_common_names_dict:
+                    synonym_common_names_dict[entity_synonym].add(normalize_str(entity_common_name))  # noqa
+                else:
+                    synonym_common_names_dict[entity_synonym] = {normalize_str(entity_common_name)}  # noqa
 
-                for entity in lmdb_match.entities:
-                    entity_synonym = entity['synonym']
-                    entity_common_name = entity['name']
-                    if entity_synonym in synonym_common_names_dict:
-                        synonym_common_names_dict[entity_synonym].add(normalize_str(entity_common_name))  # noqa
-                    else:
-                        synonym_common_names_dict[entity_synonym] = {normalize_str(entity_common_name)}  # noqa
+            for entity in match.entities:
+                entity_synonym = entity['synonym']
+                common_names_referenced_by_synonym = synonym_common_names_dict[entity_synonym]
+                if len(common_names_referenced_by_synonym) > 1:
+                    # synonym used by multiple different common names
+                    #
+                    # for synonyms that are used by more than one common names
+                    # if none of those common names appear in the document
+                    # or if more than one of those common names appear in the document
+                    # do not annotate because cannot infer
+                    common_names_in_document = [n for n in common_names_referenced_by_synonym if n in tokens_lowercased]  # noqa
 
-                for entity in lmdb_match.entities:
-                    entity_synonym = entity['synonym']
-                    common_names_referenced_by_synonym = synonym_common_names_dict[entity_synonym]
-                    if len(common_names_referenced_by_synonym) > 1:
-                        # synonym used by multiple different common names
-                        #
-                        # for synonyms that are used by more than one common names
-                        # if none of those common names appear in the document
-                        # or if more than one of those common names appear in the document
-                        # do not annotate because cannot infer
-                        common_names_in_document = [n for n in common_names_referenced_by_synonym if n in tokens_lowercased]  # noqa
-
-                        if len(common_names_in_document) != 1:
-                            continue
-
-                    try:
-                        annotation = self._create_annotation_object(
-                            token=token,
-                            token_type=token_type,
-                            entity=entity,
-                            entity_id=entity[id_str],
-                            entity_id_type=lmdb_match.id_type,
-                            entity_id_hyperlink=lmdb_match.id_hyperlink,
-                            entity_category=entity.get('category', '')
-                        )
-                    except KeyError:
+                    if len(common_names_in_document) != 1:
                         continue
-                    else:
-                        matches.append(annotation)
+
+                try:
+                    annotation = self._create_annotation_object(
+                        token=match.token,
+                        token_type=token_type,
+                        entity=entity,
+                        entity_id=entity[id_str],
+                        entity_id_type=match.id_type,
+                        entity_id_hyperlink=match.id_hyperlink,
+                        entity_category=entity.get('category', '')
+                    )
+                except KeyError:
+                    continue
+                else:
+                    matches.append(annotation)
         return matches
 
     def _get_closest_entity_organism_pair(
@@ -400,20 +397,19 @@ class AnnotationService:
 
         Returns list of matched annotations
         """
-        tokens: Dict[str, LMDBMatch] = self.matched_type_gene
+        matches_list: List[LMDBMatch] = self.matched_type_gene
 
         matches: List[Annotation] = []
 
         entity_token_pairs = []
         gene_names: Set[str] = set()
-        for word, lmdb_match in tokens.items():
-            for token in lmdb_match.tokens:
-                for entity in lmdb_match.entities:
-                    entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
-                    gene_names.add(entity_synonym)
 
-                    entity_token_pairs.append(
-                        (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token))
+        for match in matches_list:
+            for entity in match.entities:
+                entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
+                gene_names.add(entity_synonym)
+                entity_token_pairs.append(
+                    (entity, match.id_type, match.id_hyperlink, match.token))
 
         gene_names_list = list(gene_names)
         organism_ids = list(self.organism_frequency.keys())
@@ -443,7 +439,7 @@ class AnnotationService:
                     matched_organism_ids=[self.specified_organism.organism_id],
                 )
 
-        for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
+        for (entity, entity_id_type, entity_id_hyperlink, token) in entity_token_pairs:
             gene_id = None
             category = None
             try:
@@ -528,7 +524,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_anatomy,
+            matches_list=self.matched_type_anatomy,
             token_type=EntityType.ANATOMY.value,
             id_str=entity_id_str
         )
@@ -538,7 +534,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_chemical,
+            matches_list=self.matched_type_chemical,
             token_type=EntityType.CHEMICAL.value,
             id_str=entity_id_str
         )
@@ -548,7 +544,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_compound,
+            matches_list=self.matched_type_compound,
             token_type=EntityType.COMPOUND.value,
             id_str=entity_id_str
         )
@@ -558,7 +554,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_disease,
+            matches_list=self.matched_type_disease,
             token_type=EntityType.DISEASE.value,
             id_str=entity_id_str
         )
@@ -568,7 +564,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_food,
+            matches_list=self.matched_type_food,
             token_type=EntityType.FOOD.value,
             id_str=entity_id_str
         )
@@ -578,7 +574,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_phenotype,
+            matches_list=self.matched_type_phenotype,
             token_type=EntityType.PHENOTYPE.value,
             id_str=entity_id_str
         )
@@ -588,7 +584,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_phenomena,
+            matches_list=self.matched_type_phenomena,
             token_type=EntityType.PHENOMENA.value,
             id_str=entity_id_str
         )
@@ -602,19 +598,18 @@ class AnnotationService:
         was not matched in the knowledge graph, then keep the original
         protein_id.
         """
-        tokens: Dict[str, LMDBMatch] = self.matched_type_protein
+        matches_list: List[LMDBMatch] = self.matched_type_protein
 
         matches: List[Annotation] = []
 
         entity_token_pairs = []
         protein_names: Set[str] = set()
-        for word, lmdb_match in tokens.items():
-            for token_positions in lmdb_match.tokens:
-                for entity in lmdb_match.entities:
-                    protein_names.add(entity['synonym'])
-
-                    entity_token_pairs.append(
-                        (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token_positions))
+        for match in matches_list:
+            for entity in match.entities:
+                entity_synonym = entity['synonym']
+                protein_names.add(entity_synonym)
+                entity_token_pairs.append(
+                    (entity, match.id_type, match.id_hyperlink, match.token))
 
         protein_names_list = list(protein_names)
 
@@ -639,7 +634,7 @@ class AnnotationService:
                     organisms=[self.specified_organism.organism_id],
                 )
 
-        for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
+        for (entity, entity_id_type, entity_id_hyperlink, token) in entity_token_pairs:
             category = entity.get('category', '')
             try:
                 protein_id = entity[EntityIdStr.PROTEIN.value]
@@ -690,27 +685,26 @@ class AnnotationService:
         user wants these custom species annotations to be
         annotated.
         """
-        tokens = self.matched_type_species_local
+        matches = self.matched_type_species_local
 
         custom_annotations: List[Annotation] = []
 
-        for word, lmdb_match in tokens.items():
-            for token in lmdb_match.tokens:
-                for entity in lmdb_match.entities:
-                    try:
-                        annotation = self._create_annotation_object(
-                            token=token,
-                            token_type=EntityType.SPECIES.value,
-                            entity=entity,
-                            entity_id=entity[EntityIdStr.SPECIES.value],
-                            entity_id_type=lmdb_match.id_type,
-                            entity_id_hyperlink=lmdb_match.id_hyperlink,
-                            entity_category=entity.get('category', '')
-                        )
-                    except KeyError:
-                        continue
-                    else:
-                        custom_annotations.append(annotation)
+        for match in matches:
+            for entity in match.entities:
+                try:
+                    annotation = self._create_annotation_object(
+                        token=match.token,
+                        token_type=EntityType.SPECIES.value,
+                        entity=entity,
+                        entity_id=entity[EntityIdStr.SPECIES.value],
+                        entity_id_type=match.id_type,
+                        entity_id_hyperlink=match.id_hyperlink,
+                        entity_category=entity.get('category', '')
+                    )
+                except KeyError:
+                    continue
+                else:
+                    custom_annotations.append(annotation)
         return custom_annotations
 
     def _annotate_type_species(
@@ -720,7 +714,7 @@ class AnnotationService:
         excluded_annotations: List[dict]
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
-            tokens=self.matched_type_species,
+            matches_list=self.matched_type_species,
             token_type=EntityType.SPECIES.value,
             id_str=entity_id_str
         )
@@ -798,7 +792,7 @@ class AnnotationService:
 
     def _annotate_type_company(self, entity_id_str: str) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_company,
+            matches_list=self.matched_type_company,
             token_type=EntityType.COMPANY.value,
             id_str=entity_id_str
         )
@@ -808,43 +802,10 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_entity,
+            matches_list=self.matched_type_entity,
             token_type=EntityType.ENTITY.value,
             id_str=entity_id_str
         )
-
-    def annotate(
-        self,
-        annotation_type: str,
-        entity_id_str: str,
-        custom_annotations: List[dict],
-        excluded_annotations: List[dict]
-    ) -> List[Annotation]:
-        funcs = {
-            EntityType.ANATOMY.value: self._annotate_anatomy,
-            EntityType.CHEMICAL.value: self._annotate_type_chemical,
-            EntityType.COMPOUND.value: self._annotate_type_compound,
-            EntityType.DISEASE.value: self._annotate_type_disease,
-            EntityType.FOOD.value: self._annotate_type_food,
-            EntityType.PHENOMENA.value: self._annotate_type_phenomena,
-            EntityType.PHENOTYPE.value: self._annotate_type_phenotype,
-            EntityType.SPECIES.value: self._annotate_type_species,
-            EntityType.PROTEIN.value: self._annotate_type_protein,
-            EntityType.GENE.value: self._annotate_type_gene,
-            EntityType.COMPANY.value: self._annotate_type_company,
-            EntityType.ENTITY.value: self._annotate_type_entity
-        }
-
-        annotate_entities = funcs[annotation_type]
-        if annotation_type == EntityType.SPECIES.value:
-            return annotate_entities(
-                entity_id_str=entity_id_str,
-                custom_annotations=custom_annotations,
-                excluded_annotations=excluded_annotations
-            )  # type: ignore
-        else:
-            return annotate_entities(
-                entity_id_str=entity_id_str)  # type: ignore
 
     def _update_entity_frequency_map(
         self,
@@ -991,14 +952,33 @@ class AnnotationService:
         """
         unified_annotations: List[Annotation] = []
 
-        for entity_type, entity_id_str in types_to_annotate:
-            annotations = self.annotate(
-                annotation_type=entity_type,
-                entity_id_str=entity_id_str,
-                custom_annotations=custom_annotations,
-                excluded_annotations=excluded_annotations
-            )
-            unified_annotations.extend(annotations)
+        funcs = {
+            EntityType.ANATOMY.value: self._annotate_anatomy,
+            EntityType.CHEMICAL.value: self._annotate_type_chemical,
+            EntityType.COMPOUND.value: self._annotate_type_compound,
+            EntityType.DISEASE.value: self._annotate_type_disease,
+            EntityType.FOOD.value: self._annotate_type_food,
+            EntityType.PHENOMENA.value: self._annotate_type_phenomena,
+            EntityType.PHENOTYPE.value: self._annotate_type_phenotype,
+            EntityType.SPECIES.value: self._annotate_type_species,
+            EntityType.PROTEIN.value: self._annotate_type_protein,
+            EntityType.GENE.value: self._annotate_type_gene,
+            EntityType.COMPANY.value: self._annotate_type_company,
+            EntityType.ENTITY.value: self._annotate_type_entity
+        }
+
+        for (entity_type, entity_id_str) in types_to_annotate:
+            annotate_entities = funcs[entity_type]
+            if entity_type == EntityType.SPECIES.value:
+                annotations = annotate_entities(
+                    entity_id_str=entity_id_str,
+                    custom_annotations=custom_annotations,
+                    excluded_annotations=excluded_annotations
+                )  # type: ignore
+                unified_annotations.extend(annotations)
+            else:
+                annotations = annotate_entities(entity_id_str=entity_id_str)  # type: ignore
+                unified_annotations.extend(annotations)
 
         return unified_annotations
 
@@ -1006,7 +986,6 @@ class AnnotationService:
         self,
         custom_annotations: List[dict],
         excluded_annotations: List[dict],
-        tokens: PDFTokensList,
         entity_results: EntityResults,
         entity_type_and_id_pairs: List[Tuple[str, str]],
         specified_organism: SpecifiedOrganismStrain,
@@ -1042,54 +1021,54 @@ class AnnotationService:
         # duplicates/overlapping intervals are removed
         return self.add_primary_name(annotations=cleaned)
 
-    def create_nlp_annotations(
-        self,
-        nlp_resp: List[dict],
-        species_annotations: List[Annotation],
-        custom_annotations: List[dict],
-        excluded_annotations: List[dict],
-        entity_type_and_id_pairs: List[Tuple[str, str]]
-    ) -> List[Annotation]:
-        """Create annotations based on NLP."""
-        nlp_annotations = self._create_annotations(
-            types_to_annotate=entity_type_and_id_pairs,
-            custom_annotations=custom_annotations,
-            excluded_annotations=excluded_annotations
-        )
+    # def create_nlp_annotations(
+    #     self,
+    #     nlp_resp: List[dict],
+    #     species_annotations: List[Annotation],
+    #     custom_annotations: List[dict],
+    #     excluded_annotations: List[dict],
+    #     entity_type_and_id_pairs: List[Tuple[str, str]]
+    # ) -> List[Annotation]:
+    #     """Create annotations based on NLP."""
+    #     nlp_annotations = self._create_annotations(
+    #         types_to_annotate=entity_type_and_id_pairs,
+    #         custom_annotations=custom_annotations,
+    #         excluded_annotations=excluded_annotations
+    #     )
 
-        unified_annotations = species_annotations + nlp_annotations
+    #     unified_annotations = species_annotations + nlp_annotations
 
-        # TODO: TEMP to keep track of things not matched in LMDB
-        matched: Set[str] = set()
-        predicted_set: Set[str] = set()
-        for predicted in nlp_resp:
-            predicted_str = predicted['item']
-            predicted_type = predicted['type']
-            predicted_hashstr = f'{predicted_str},{predicted_type}'
-            predicted_set.add(predicted_hashstr)
+    #     # TODO: TEMP to keep track of things not matched in LMDB
+    #     matched: Set[str] = set()
+    #     predicted_set: Set[str] = set()
+    #     for predicted in nlp_resp:
+    #         predicted_str = predicted['item']
+    #         predicted_type = predicted['type']
+    #         predicted_hashstr = f'{predicted_str},{predicted_type}'
+    #         predicted_set.add(predicted_hashstr)
 
-        for anno in unified_annotations:
-            # TODO: temp for now as NLP only use Bacteria
-            if anno.meta.type == 'Species':
-                keyword_type = 'Bacteria'
-            else:
-                keyword_type = anno.meta.type
-            hashstr = f'{anno.text_in_document},{keyword_type}'
-            matched.add(hashstr)
+    #     for anno in unified_annotations:
+    #         # TODO: temp for now as NLP only use Bacteria
+    #         if anno.meta.type == 'Species':
+    #             keyword_type = 'Bacteria'
+    #         else:
+    #             keyword_type = anno.meta.type
+    #         hashstr = f'{anno.text_in_document},{keyword_type}'
+    #         matched.add(hashstr)
 
-        not_matched = predicted_set - matched
+    #     not_matched = predicted_set - matched
 
-        current_app.logger.info(
-            f'NLP TOKENS NOT MATCHED TO LMDB {not_matched}',
-            extra=EventLog(event_type='annotations').to_dict()
-        )
-        cleaned = self._clean_annotations(
-            annotations=unified_annotations)
-        # update the annotations with the common primary name
-        # do this after cleaning because it's easier to
-        # query the KG for the primary names after the
-        # duplicates/overlapping intervals are removed
-        return self.add_primary_name(annotations=cleaned)
+    #     current_app.logger.info(
+    #         f'NLP TOKENS NOT MATCHED TO LMDB {not_matched}',
+    #         extra=EventLog(event_type='annotations').to_dict()
+    #     )
+    #     cleaned = self._clean_annotations(
+    #         annotations=unified_annotations)
+    #     # update the annotations with the common primary name
+    #     # do this after cleaning because it's easier to
+    #     # query the KG for the primary names after the
+    #     # duplicates/overlapping intervals are removed
+    #     return self.add_primary_name(annotations=cleaned)
 
     def _clean_annotations(
         self,
@@ -1184,6 +1163,7 @@ class AnnotationService:
         """
         updated_unified_annotations: List[Annotation] = []
         annotation_interval_dict: Dict[Tuple[int, int], List[Annotation]] = {}
+        annotation_interval_set: Set[Tuple[int, int]] = set()
 
         for unified in unified_annotations:
             if unified.lo_location_offset == unified.hi_location_offset:
@@ -1196,15 +1176,16 @@ class AnnotationService:
                     annotation_interval_dict[interval_pair].append(unified)
                 else:
                     annotation_interval_dict[interval_pair] = [unified]
+                annotation_interval_set.add(interval_pair)
 
         # it's faster to create an interval tree with just
         # intervals, rather than a tree with intervals and data
         # because the data are viewed as unique, so the tree is bigger
-        tree = AnnotationIntervalTree([
+        tree = AnnotationIntervalTree(
             AnnotationInterval(
                 begin=lo,
                 end=hi
-            ) for lo, hi in list(annotation_interval_dict)])
+            ) for lo, hi in annotation_interval_set)
 
         # first clean all annotations with equal intervals
         # this means the same keyword was mapped to multiple entities
@@ -1240,17 +1221,6 @@ class AnnotationService:
             updated_unified_annotations.append(chosen_annotation)  # type: ignore
 
         return updated_unified_annotations
-
-    def create_annotation_tree(
-        self,
-        annotation_intervals: List[Tuple[int, int]]
-    ) -> AnnotationIntervalTree:
-        return AnnotationIntervalTree(
-            [AnnotationInterval(
-                begin=lo,
-                end=hi
-            ) for lo, hi in annotation_intervals]
-        )
 
     def determine_entity_precedence(
         self,
@@ -1336,13 +1306,13 @@ class AnnotationService:
         self,
         keyword: str,
         is_case_insensitive: bool,
-        tokens_list: PDFTokensList
+        tokens_list: List[PDFWord]
     ):
         """Returns coordinate positions and page numbers
         for all matching terms in the document
         """
         matches = []
-        for token in tokens_list.tokens:
+        for token in tokens_list:
             if not is_case_insensitive:
                 if token.keyword != keyword:
                     continue
