@@ -1,10 +1,13 @@
+import json
 import logging
 from typing import List
-
 from neo4japp.services import KgService
+
+from neo4japp.services.redis import redis_server
 
 logging.getLogger("py2neo.client.bolt").setLevel(logging.INFO)
 
+CACHE_EXPIRATION_TIME = 3600 * 24
 
 class EnrichmentVisualisationService(KgService):
     def __init__(self, graph, session):
@@ -19,9 +22,14 @@ class EnrichmentVisualisationService(KgService):
             return binomial(gene_names, self.get_GO_terms(organism))
 
     def get_GO_terms(self, organism):
+        cache_id = f"go_{organism}"
+        cached_result = redis_server.get(cache_id)
+        if cached_result:
+            return json.loads(cached_result)
+
+        id, name = organism.split('/')
         try:
-            id, name = organism.split('/')
-            return self.graph.run(
+            result = self.graph.run(
                 """
                 MATCH (:Taxonomy {id:$id,name:$name})-
                        [:HAS_TAXONOMY]-(n:Gene)-[:GO_LINK]-(g:db_GO)
@@ -29,18 +37,18 @@ class EnrichmentVisualisationService(KgService):
                 RETURN
                     n.id AS geneId, n.name AS geneName, g.id AS goId, g.name AS goTerm,
                     [lbl IN go_labels WHERE lbl<> 'db_GO'] AS goLabel
-                LIMIT 35000
+                LIMIT 100000
                 """,
                 id=id,
                 name=name
             ).data()
+
+            redis_server.set(cache_id, json.dumps(result))
+            redis_server.expire(cache_id, CACHE_EXPIRATION_TIME)
+
+            return result
         except Exception as e:
-            print(e)
-            import json
-            data = {}
-            with open('./neo4japp/services/enrichment/go.json') as json_file:
-                data = json.load(json_file)
-            return data
+            return e
 
     def get_GO_significance(self, gene_names, organism):
         id, name = organism.split('/')

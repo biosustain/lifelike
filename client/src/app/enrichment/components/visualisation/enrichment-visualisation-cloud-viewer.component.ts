@@ -7,6 +7,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { EnrichmentVisualisationService } from '../../services/enrichment-visualisation.service';
 
 import { WordCloudComponent } from './word-cloud/word-cloud.component';
+import { BackgroundTask } from '../../../shared/rxjs/background-task';
 
 
 @Component({
@@ -38,9 +39,20 @@ export class EnrichmentVisualisationCloudViewerComponent implements OnInit, OnDe
   data: { text: any; frequency: any }[] = [];
 
   selectedRow = 0;
+  loadTask: BackgroundTask<string, any>;
+  loadSubscription: Subscription;
 
   constructor(protected readonly enrichmentService: EnrichmentVisualisationService,
               protected readonly errorHandler: ErrorHandler) {
+    this.loadTask = new BackgroundTask(() =>
+      this.enrichmentService.getGOSignificance(),
+    );
+
+    this.loadSubscription = this.loadTask.results$.subscribe((result) => {
+     // tslint:disable-next-line:no-string-literal
+      this.data = result.result.map(d => ({text: d['gene'], frequency: d['n_related_GO_terms']}));
+      this.loadingData = false;
+    });
   }
 
   ngOnDestroy() {
@@ -66,19 +78,11 @@ export class EnrichmentVisualisationCloudViewerComponent implements OnInit, OnDe
 
   ngOnInit() {
     this.loadingData = true;
-    this.enrichmentService.enrichWithGOTerms(this.analysis).subscribe((result) => {
-      // tslint:disable-next-line:no-string-literal
-      this.data = result.map(d => ({text: d['gene'], frequency: d['p-value']}));
-      this.loadingData = false;
-    });
+    this.loadTask.update();
   }
 
   ngOnChanges() {
     this.loadingData = true;
-    this.enrichmentService.enrichWithGOTerms(this.analysis).subscribe((result) => {
-      // tslint:disable-next-line:no-string-literal
-      this.data = result.map(d => ({text: d['gene'], frequency: d['p-value']}));
-      this.loadingData = false;
-    });
+    this.loadTask.update();
   }
 }

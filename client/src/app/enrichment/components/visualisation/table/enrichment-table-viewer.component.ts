@@ -4,8 +4,8 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { BehaviorSubject, forkJoin, Subscription } from 'rxjs';
-import { catchError, finalize, flatMap, map } from 'rxjs/operators';
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { catchError, finalize, map } from 'rxjs/operators';
 
 import { TableCell, TableHeader } from 'app/shared/components/table/generic-table.component';
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
@@ -19,12 +19,13 @@ import {
   EnrichmentWrapper,
   GoNode,
   NCBINode,
-  NCBIWrapper
+  NCBIWrapper,
 } from '../../../services/enrichment-table.service';
 import { EnrichmentVisualisationService } from '../../../services/enrichment-visualisation.service';
 import { EnrichmentTableOrderDialogComponent } from '../../table/dialog/enrichment-table-order-dialog.component';
 import { EnrichmentTableEditDialogComponent } from '../../table/dialog/enrichment-table-edit-dialog.component';
 import { Progress } from '../../../../interfaces/common-dialog.interface';
+import { BackgroundTask } from '../../../../shared/rxjs/background-task';
 
 
 export const ENRICHMENT_VISUALISATION_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-visualisation';
@@ -34,7 +35,7 @@ export const ENRICHMENT_VISUALISATION_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.docum
   templateUrl: './enrichment-table-viewer.component.html',
   styleUrls: ['./enrichment-table-viewer.component.scss'],
 })
-export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, ModuleAwareComponent {
+export class EnrichmentTableViewerComponent implements OnInit, OnChanges, OnDestroy, ModuleAwareComponent {
   @Input() titleVisible = true;
 
   paramsSubscription: Subscription;
@@ -80,6 +81,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, Module
   @Input() geneNames: string[];
   @Input() taxID: string;
   @Input() organism: string;
+  @Input() analysis: string;
   data: EnrichmentData;
   neo4jId: number;
   object: any;
@@ -99,6 +101,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, Module
   selectedRow = 0;
   private loadTableTaskSubscription: Promise<PushSubscription>;
   private loadTableTask: any;
+  loadTask: BackgroundTask<string, any>;
+  loadSubscription: Subscription;
 
   constructor(protected readonly messageDialog: MessageDialog,
               protected readonly ngZone: NgZone,
@@ -111,7 +115,16 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, Module
               protected readonly errorHandler: ErrorHandler,
               protected readonly downloadService: DownloadService,
               protected readonly progressDialog: ProgressDialog) {
+    this.loadTask = new BackgroundTask((analysis) =>
+      this.enrichmentService.enrichWithGOTerms(analysis),
+    );
 
+    this.loadSubscription = this.loadTask.results$.subscribe((result) => {
+      this.data = result.result;
+      this.tableHeader = [Object.keys(result.result[0]).map(header => ({name: header, span: 1}))];
+      this.tableEntries = result.result.map(row => Object.values(row).map(cell => ({text: '' + cell})));
+      this.loadingData = false;
+    });
   }
 
   ngOnDestroy() {
@@ -121,13 +134,23 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, Module
 
 
   ngOnInit() {
-    // Default view for existing Visualisations
-    this.domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
-    this.columnOrder = ['Regulon', 'Regulon 2', 'Regulon 3', 'UniProt', 'String', 'GO', 'Biocyc'];
-    this.initializeHeaders();
-    this.removeDuplicates(this.geneNames);
-    this.matchNCBINodes();
+    this.loadingData = true;
+    this.loadTask.update(this.analysis);
   }
+
+  ngOnChanges() {
+    this.loadingData = true;
+    this.loadTask.update(this.analysis);
+  }
+
+  // ngOnInit() {
+  //   // Default view for existing Visualisations
+  //   this.domains = ['Regulon', 'UniProt', 'String', 'GO', 'Biocyc'];
+  //   this.columnOrder = ['Regulon', 'Regulon 2', 'Regulon 3', 'UniProt', 'String', 'GO', 'Biocyc'];
+  //   this.initializeHeaders();
+  //   this.removeDuplicates(this.geneNames);
+  //   this.matchNCBINodes();
+  // }
 
 
   scrollTop() {
@@ -145,51 +168,43 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, Module
    */
   loadAllEntries(): Promise<TableCell[][]> {
     return this.enrichmentService
-      .matchNCBINodes(this.importGenes, this.taxID)
+      .enrichWithGOTerms('fisher')
       .pipe(
-        flatMap(matched => forkJoin(
-          [matched.map((wrapper) => wrapper.s)],
-          [matched.map((wrapper) => wrapper.x)],
-          [matched.map((wrapper) => wrapper.link)],
-          [matched.map((wrapper) => wrapper.neo4jID)],
-          this.worksheetViewerService.getNCBIEnrichmentDomains(
-            matched.map((wrapper) => wrapper.neo4jID), this.taxID),
-        )),
-        map(([synonyms, ncbiNodes, ncbiLinks, ncbiIds, domains]) => {
-          const tableEntries = domains.map((wrapper) =>
-            this.processEnrichmentNodeArray(wrapper, ncbiNodes, ncbiIds),
-          );
-          for (let i = 0; i < ncbiNodes.length; i++) {
-            tableEntries[i].unshift({
-              text: ncbiNodes[i].full_name,
-              singleLink: {
-                link: ncbiLinks[i],
-                linkText: 'NCBI Link',
-              },
-            });
-            tableEntries[i].unshift({text: ncbiNodes[i].name});
-            tableEntries[i].unshift({text: synonyms[i].name});
-          }
-          const geneNames = synonyms.map((node) => node.name);
-          const unmatchedGenes = this.importGenes.filter(
-            (gene) => !geneNames.includes(gene),
-          );
-          unmatchedGenes.forEach((gene) => {
-            const cell: TableCell[] = [];
-            cell.push({text: gene, highlight: true});
-            cell.push({text: 'No match found.', highlight: true});
-            const colNum = Math.max.apply(
-              null,
-              this.tableHeader.map((x) =>
-                x.reduce((a, b) => a + parseInt(b.span, 10), 0),
-              ),
-            );
-            for (let i = 0; i < colNum - 2; i++) {
-              cell.push({text: '', highlight: true});
-            }
-            tableEntries.push(cell);
-          });
-          return tableEntries;
+        map((results) => {
+          // const tableEntries = domains.map((wrapper) =>
+          //   this.processEnrichmentNodeArray(wrapper, ncbiNodes, ncbiIds),
+          // );
+          // for (let i = 0; i < ncbiNodes.length; i++) {
+          //   tableEntries[i].unshift({
+          //     text: ncbiNodes[i].full_name,
+          //     singleLink: {
+          //       link: ncbiLinks[i],
+          //       linkText: 'NCBI Link',
+          //     },
+          //   });
+          //   tableEntries[i].unshift({text: ncbiNodes[i].name});
+          //   tableEntries[i].unshift({text: synonyms[i].name});
+          // }
+          // const geneNames = synonyms.map((node) => node.name);
+          // const unmatchedGenes = this.importGenes.filter(
+          //   (gene) => !geneNames.includes(gene),
+          // );
+          // unmatchedGenes.forEach((gene) => {
+          //   const cell: TableCell[] = [];
+          //   cell.push({text: gene, highlight: true});
+          //   cell.push({text: 'No match found.', highlight: true});
+          //   const colNum = Math.max.apply(
+          //     null,
+          //     this.tableHeader.map((x) =>
+          //       x.reduce((a, b) => a + parseInt(b.span, 10), 0),
+          //     ),
+          //   );
+          //   for (let i = 0; i < colNum - 2; i++) {
+          //     cell.push({text: '', highlight: true});
+          //   }
+          //   tableEntries.push(cell);
+          // });
+          return [];
         }),
       ).toPromise();
   }
