@@ -30,7 +30,7 @@ export class AdvancedSearchDialogComponent implements OnInit {
   projects: string[] = [];
 
   form = new FormGroup({
-    q: new FormControl('', [this.whitespaceValidator]),
+    q: new FormControl(''),
     types: new FormControl([]),
     projects: new FormControl([]),
     phrase: new FormControl(''),
@@ -84,10 +84,5 @@ export class AdvancedSearchDialogComponent implements OnInit {
    */
   projectLabel(choice: string) {
     return choice;
-  }
-
-  whitespaceValidator(control: AbstractControl): {[key: string]: any} | null {
-    const val =  control.value as string;
-    return val.length > 0 && val.match(/.*\S.*/) === null ? {whitespace: {value: control.value}} : null;
   }
 }
