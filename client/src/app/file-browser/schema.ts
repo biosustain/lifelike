@@ -95,6 +95,8 @@ export interface FilesystemObjectData {
   recycled: boolean;
   effectivelyRecycled: boolean;
   highlight?: string[];
+  fallbackOrganismId: string;
+  annotationConfigs: AnnotationConfigs;
 }
 
 interface ObjectContentValueRequest {
