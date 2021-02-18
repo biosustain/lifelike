@@ -1,0 +1,2 @@
+app_environment: qa
+elastic_file_content_index_id: file_qa

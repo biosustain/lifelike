@@ -8,6 +8,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from py2neo import Graph
 from sqlalchemy import MetaData, Table, UniqueConstraint
+from redis import Redis
 
 from neo4japp.utils.flask import scope_flask_app_ctx
 
@@ -60,6 +61,17 @@ def connect_to_neo4j():
             auth=current_app.config.get('NEO4J_AUTH').split('/'),
         )
     return g.neo4j
+
+def connect_to_redis():
+    if 'redis' not in g:
+        g.redis = Redis(
+            host=current_app.config.get('REDIS_HOST'),
+            port=current_app.config.get('REDIS_PORT'),
+            password=current_app.config.get('REDIS_PASSWORD'),
+            ssl=current_app.config.get('REDIS_SSL').lower() == 'true',
+            decode_responses=True
+        )
+    return g.redis
 
 
 def connect_to_lmdb():
@@ -257,6 +269,18 @@ def get_excel_export_service():
     return ExcelExportService()
 
 
+def get_kg_statistics_service():
+    if 'kg_statistics_service' not in g:
+        from neo4japp.services.kg_statistics import KgStatisticsService
+        graph = connect_to_neo4j()
+        redis_conn = connect_to_redis()
+        g.kg_statistics_service = KgStatisticsService(
+            graph=graph,
+            redis_conn=redis_conn
+        )
+    return g.kg_statistics_service
+
+
 def reset_dao():
     """ Cleans up DAO bound to flask request context
 
@@ -272,6 +296,7 @@ def reset_dao():
         'projects_service',
         'visualizer_service',
         'neo4j',
+        'redis',
     ]:
         if dao in g:
             g.pop(dao)
