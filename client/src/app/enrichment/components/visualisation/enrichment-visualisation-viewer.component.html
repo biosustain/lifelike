@@ -123,8 +123,9 @@
           </div>
           <div
             class="card-body" style="overflow-x: scroll;">
-            <app-enrichment-visualisation-table-viewer *ngIf="organism; else notAvailable"
-                                                       [geneNames]="geneNames"
+            <app-enrichment-visualisation-table-viewer
+                   [analysis]="chartAnalysis"
+                [geneNames]="geneNames"
                                                        [organism]="organism">
 
             </app-enrichment-visualisation-table-viewer>
@@ -154,10 +155,7 @@
 
         <div class="card">
           <div class="card-header">
-            Genes for
-            <app-chart-controls class="module-toolbar d-flex align-items-center ml-auto"
-                                (changed)="updateWordCloudParams($event)">
-            </app-chart-controls>
+            Genes importance by number of GO terms
           </div>
           <app-enrichment-visualisation-cloud-viewer
             [analysis]="wordCloudAnalysis"

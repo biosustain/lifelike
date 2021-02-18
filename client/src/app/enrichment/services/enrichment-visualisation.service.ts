@@ -101,6 +101,36 @@ export class EnrichmentVisualisationService implements OnDestroy {
       }),
     );
   }
+
+  /**
+   * Match gene names to NCBI nodes with same name and has given taxonomy ID.
+   * @param analysis - analysis ID to be used
+   */
+  getGOSignificance(): Observable<[]> {
+    const geneNames = this.parameters.genes;
+    const organism = !!this.parameters.organism ? this.parameters.organism : null;
+    const uid = organism + geneNames.sort();
+    const existing = this.cachedResults.GOSignificance && this.cachedResults.GOSignificance[uid];
+    if (existing) {
+      return new Observable(subscriber => subscriber.next(existing));
+    }
+    return this.http.post<{ result: [] }>(
+      `/api/enrichment-visualisation/get_GO_significance`,
+      {geneNames, organism},
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map((resp: any) => {
+        if (!this.cachedResults) {
+          this.cachedResults = {};
+        }
+        if (!this.cachedResults.GOSignificance) {
+          this.cachedResults.GOSignificance = {};
+        }
+        return this.cachedResults.GOSignificance[uid] = resp.result;
+      }),
+    );
+  }
+
   /**
    * Save the current representation of knowledge model
    */

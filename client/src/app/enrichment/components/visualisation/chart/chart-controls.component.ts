@@ -7,7 +7,7 @@ import analyses from 'app/enrichment/analyses';
     <div ngbDropdown class="module-toolbar d-flex align-items-center ml-auto d-inline-block">
       <div class="btn-group" role="group">
         <button class="btn btn-secondary" id="dropdownBasic1" ngbDropdownToggle>
-          Analysis: {{ selected.description }}
+          By: {{ selected.description }}
         </button>
         <div ngbDropdownMenu class="ml-auto" aria-labelledby="dropdownBasic1">
           <button

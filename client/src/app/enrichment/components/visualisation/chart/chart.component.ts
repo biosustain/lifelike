@@ -67,10 +67,10 @@ export class ChartComponent {
 
   @Input('data') set data(data: any[]) {
     this.chartData = data.sort((a, b) => {
-      return a['p-value'] - b['p-value'];
+      return b['p-value'] - a['p-value'];
     }).map((d: any, i) => ({
       ...d,
-      x: d['p-value'],
+      x: -Math.log10(d['p-value']),
       y: i,
       // r: 3.75 + 3.75 * d["Adjusted P-value"]
     }));
