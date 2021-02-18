@@ -133,18 +133,7 @@ def annotate(texts):
 # Start Search Helpers #
 
 def empty_params(params):
-    q_exists = params['q'] != ''
-    types_exists = params.get('types', None) is not None and params['types'] != ''
-    projects_exists = (
-        params.get('projects', None) is not None and
-        params['projects'] != ''
-    )
-    phrase_exists = params.get('phrase', None) is not None and params['phrase'] != ''
-    wildcards_exists = (
-        params.get('wildcards', None) is not None and
-        params['wildcards'] != ''
-    )
-    return not (q_exists or types_exists or projects_exists or phrase_exists or wildcards_exists)
+    return not any([params[key] for key in params.keys()])
 
 
 def get_types_from_params(q, advanced_args, file_type_service):
@@ -216,29 +205,7 @@ def get_phrase_from_params(q, advanced_args):
 
 
 def get_projects_filter(user_id: int, projects: List[str]):
-    t_project = aliased(Projects)
-    t_project_role = aliased(AppRole)
-
-    # Role table used to check if we have permission
-    query = db.session.query(
-        t_project.id
-    ).join(
-        projects_collaborator_role,
-        sqlalchemy.and_(
-            projects_collaborator_role.c.projects_id == t_project.id,
-            projects_collaborator_role.c.appuser_id == user_id,
-        )
-    ).join(
-        t_project_role,
-        sqlalchemy.and_(
-            t_project_role.id == projects_collaborator_role.c.app_role_id,
-            sqlalchemy.or_(
-                t_project_role.name == 'project-read',
-                t_project_role.name == 'project-write',
-                t_project_role.name == 'project-admin'
-            )
-        )
-    )
+    query = Projects.user_has_permission_to_projects(user_id, projects)
 
     if len(projects) > 0:
         # TODO: Right now filtering by project name works because project names are unique.
@@ -248,6 +215,7 @@ def get_projects_filter(user_id: int, projects: List[str]):
 
         # We can further extend this behavior to directories. A directory can be uniquely
         # identified by its path, with the owner's username as the ***ARANGO_USERNAME***.
+        t_project = aliased(Projects)
         query = query.filter(
             t_project.name.in_(projects)
         )

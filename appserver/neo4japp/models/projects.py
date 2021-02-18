@@ -1,11 +1,12 @@
 import re
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, List
 
 from sqlalchemy import (
     and_,
     event,
     join,
+    or_,
     select
 )
 from sqlalchemy.orm import validates
@@ -89,6 +90,28 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
             AppUser, AppUser.id == projects_collaborator_role.c.appuser_id,
         ).filter(
             AppUser.id == user_id
+        )
+
+    @classmethod
+    def user_has_permission_to_projects(cls, user_id: int, projects: List[str]) -> Query:
+        return db.session.query(
+            Projects.id
+        ).join(
+            projects_collaborator_role,
+            and_(
+                projects_collaborator_role.c.projects_id == Projects.id,
+                projects_collaborator_role.c.appuser_id == user_id,
+            )
+        ).join(
+            AppRole,
+            and_(
+                AppRole.id == projects_collaborator_role.c.app_role_id,
+                or_(
+                    AppRole.name == 'project-read',
+                    AppRole.name == 'project-write',
+                    AppRole.name == 'project-admin'
+                )
+            )
         )
 
 
