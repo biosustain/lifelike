@@ -65,18 +65,18 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
           });
         }
       }
-
-      if (this.promptParent) {
-        const control = group.get('parent');
-        if (!control.value) {
-          control.setErrors({
-            required: {},
-          });
-        }
-      }
-
-      return null;
     }
+
+    if (this.promptParent) {
+      const control = group.get('parent');
+      if (!control.value) {
+        control.setErrors({
+          required: {},
+        });
+      }
+    }
+
+    return null;
   });
 
   constructor(modal: NgbActiveModal,
