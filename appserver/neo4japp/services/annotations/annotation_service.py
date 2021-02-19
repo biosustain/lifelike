@@ -1208,10 +1208,11 @@ class AnnotationService:
                         gene_protein_precedence_result = anno2
 
                     # no match so far
-                    if len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
-                        gene_protein_precedence_result = anno1
-                    elif len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
-                        gene_protein_precedence_result = anno2
+                    if gene_protein_precedence_result is None:
+                        if len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
+                            gene_protein_precedence_result = anno1
+                        elif len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):  # noqa
+                            gene_protein_precedence_result = anno2
                 else:
                     if anno2.text_in_document == anno2.keyword:
                         gene_protein_precedence_result = anno2
@@ -1219,10 +1220,11 @@ class AnnotationService:
                         gene_protein_precedence_result = anno1
 
                     # no match so far
-                    if len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
-                        gene_protein_precedence_result = anno2
-                    elif len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
-                        gene_protein_precedence_result = anno1
+                    if gene_protein_precedence_result is None:
+                        if len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
+                            gene_protein_precedence_result = anno2
+                        elif len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):  # noqa
+                            gene_protein_precedence_result = anno1
 
                 if gene_protein_precedence_result is not None:
                     return gene_protein_precedence_result
