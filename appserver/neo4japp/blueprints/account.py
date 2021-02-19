@@ -2,17 +2,17 @@ import re
 
 from flask import Blueprint, g, jsonify, request
 from flask.views import MethodView
-from sqlalchemy import or_, func
+from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
-from neo4japp.data_transfer_objects import UserRequest, UserUpdateRequest
-from neo4japp.database import get_account_service, get_projects_service, db, \
+from neo4japp.data_transfer_objects import UserUpdateRequest
+from neo4japp.database import get_account_service, db, \
     get_authorization_service
 from neo4japp.exceptions import NotAuthorizedException
-from neo4japp.models import AppRole, AppUser, Projects
+from neo4japp.models import AppUser
 from neo4japp.schemas.account import (
     UserListSchema,
     UserSearchSchema,
