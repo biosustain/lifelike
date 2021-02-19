@@ -29,9 +29,13 @@ export function deserializePaginatedParams(params: { [key: string]: string }, de
 
 export function serializePaginatedParams<O extends PaginatedRequestOptions>(
   params: O, restartPagination: boolean): Record<keyof PaginatedRequestOptions, string> {
-  return {
+  return params != null ? {
     page: restartPagination ? '1' : (params.page != null ? params.page + '' : ''),
     limit: params.limit != null ? params.limit + '' : '',
     sort: params.sort != null ? params.sort : '',
+  } : {
+    page: '1',
+    limit: '50',
+    sort: '',
   };
 }
