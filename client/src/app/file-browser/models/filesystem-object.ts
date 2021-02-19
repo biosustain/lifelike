@@ -135,7 +135,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isAnnotatable() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === 'application/pdf';
+    return this.mimeType === 'application/pdf' || this.mimeType === 'vnd.lifelike.document/enrichment-table';
   }
 
   get isMovable() {
