@@ -579,7 +579,7 @@ class EntityRecognitionService:
         else:
             return True
 
-    def generate_tokens(self, token: PDFWord, max_words: int = 1) -> List[PDFWord]:
+    def generate_tokens(self, token: PDFWord, max_words) -> List[PDFWord]:
         num_words = 0
         current_token = token
         tokens_list = []
