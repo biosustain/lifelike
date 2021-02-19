@@ -200,19 +200,8 @@ def _create_annotations(
     start = time.time()
 
     if not annotation_method:
-        # default to rules based
-        annotation_method = {
-            EntityType.ANATOMY.value: {'nlp': False, 'rules_based': True},
-            EntityType.CHEMICAL.value: {'nlp': False, 'rules_based': True},
-            EntityType.COMPOUND.value: {'nlp': False, 'rules_based': True},
-            EntityType.DISEASE.value: {'nlp': False, 'rules_based': True},
-            EntityType.FOOD.value: {'nlp': False, 'rules_based': True},
-            EntityType.GENE.value: {'nlp': False, 'rules_based': True},
-            EntityType.PHENOMENA.value: {'nlp': False, 'rules_based': True},
-            EntityType.PHENOTYPE.value: {'nlp': False, 'rules_based': True},
-            EntityType.PROTEIN.value: {'nlp': False, 'rules_based': True},
-            EntityType.SPECIES.value: {'nlp': False, 'rules_based': True}
-        }
+        # will cause default to rules based
+        annotation_method = {}
 
     # identify entities w/ NLP first
     nlp_results = get_nlp_entities(
@@ -223,7 +212,8 @@ def _create_annotations(
     entity_results = entity_recog.identify(
         custom_annotations=custom_annotations,
         tokens=parsed,
-        nlp_results=nlp_results
+        nlp_results=nlp_results,
+        annotation_method=annotation_method
     )
     current_app.logger.info(
         f'Total LMDB lookup time {time.time() - start_lmdb_time}',

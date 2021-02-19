@@ -353,7 +353,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
         for file in files:
             if not file.annotation_configs:
-                file.annotation_configs = annotations_configs
+                file.annotation_configs = annotation_configs
 
             if file.mime_type == 'application/pdf':
                 try:
