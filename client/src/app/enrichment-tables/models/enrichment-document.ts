@@ -148,56 +148,67 @@ export class EnrichmentDocument {
               let rowCounter = 0;
               const texts: EnrichmentTextMapping[] = [];
               for (const gene of newResult.genes) {
-                texts.push({text: gene.imported, row: rowCounter, imported: true});
-                texts.push({text: gene.matched, row: rowCounter, matched: true});
-                texts.push({text: gene.fullName, row: rowCounter, fullName: true});
-                for (const [entryDomain, entryData] of Object.entries(gene.domains)) {
-                  switch (entryDomain) {
-                    case (Domain.Biocyc):
-                      texts.push({
-                        text: entryData.Pathways.text,
-                        row: rowCounter,
-                        domain: entryDomain,
-                        label: 'Pathways'});
-                      break;
-                    case (Domain.GO):
-                      texts.push({
-                        text: entryData.Annotation.text,
-                        row: rowCounter,
-                        domain: entryDomain,
-                        label: 'Annotation'});
-                      break;
-                    case (Domain.String):
-                      texts.push({
-                        text: entryData.Annotation.text,
-                        row: rowCounter,
-                        domain: entryDomain,
-                        label: 'Annotation'});
-                      break;
-                    case (Domain.Uniprot):
-                      texts.push({
-                        text: entryData.Function.text,
-                        row: rowCounter,
-                        domain: entryDomain,
-                        label: 'Function'});
-                      break;
+                // genes that did not match will not have domains
+                if (gene.hasOwnProperty('domains')) {
+                  texts.push({text: gene.imported, row: rowCounter, imported: true});
+                  texts.push({text: gene.matched, row: rowCounter, matched: true});
+                  texts.push({text: gene.fullName, row: rowCounter, fullName: true});
+                  for (const [entryDomain, entryData] of Object.entries(gene.domains)) {
+                    switch (entryDomain) {
+                      case (Domain.Biocyc):
+                        texts.push({
+                          text: entryData.Pathways.text,
+                          row: rowCounter,
+                          domain: entryDomain,
+                          label: 'Pathways'});
+                        break;
+                      case (Domain.GO):
+                        texts.push({
+                          text: entryData.Annotation.text,
+                          row: rowCounter,
+                          domain: entryDomain,
+                          label: 'Annotation'});
+                        break;
+                      case (Domain.String):
+                        texts.push({
+                          text: entryData.Annotation.text,
+                          row: rowCounter,
+                          domain: entryDomain,
+                          label: 'Annotation'});
+                        break;
+                      case (Domain.Uniprot):
+                        texts.push({
+                          text: entryData.Function.text,
+                          row: rowCounter,
+                          domain: entryDomain,
+                          label: 'Function'});
+                        break;
+                    }
                   }
+                  rowCounter += 1;
                 }
-                rowCounter += 1;
               }
 
-              return this.worksheetViewerService.annotateEnrichment(
-                [this.fileId],
-                {
-                  texts,
-                  organism: {
-                    organism_name: this.organism,
-                    synonym: this.organism,
-                    tax_id: this.taxID
-                  },
-                  enrichment: newResult
-                } as TextAnnotationGenerationRequest
-              ).pipe(
+              annotationRequests.push(
+                this.worksheetViewerService.annotateEnrichment(
+                  [this.fileId],
+                  {
+                    texts,
+                    organism: {
+                      organism_name: this.organism,
+                      synonym: this.organism,
+                      tax_id: this.taxID
+                    },
+                    enrichment: newResult
+                  } as TextAnnotationGenerationRequest
+                )
+              );
+
+              const annotated$ = concat(annotationRequests).pipe(
+                concatMap(res => merge(res)),
+                toArray(),
+              );
+              return annotated$.pipe(
                 first(),
                 map(res => res),
                 switchMap(_ => this.worksheetViewerService.getAnnotatedEnrichment(
