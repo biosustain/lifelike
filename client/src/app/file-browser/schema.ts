@@ -95,7 +95,7 @@ export interface FilesystemObjectData {
   recycled: boolean;
   effectivelyRecycled: boolean;
   highlight?: string[];
-  fallbackOrganismId: string;
+  fallbackOrganism: OrganismAutocomplete;
   annotationConfigs: AnnotationConfigs;
 }
 
@@ -220,7 +220,7 @@ export interface AnnotationConfigs {
   [model: string]: {
     nlp: boolean;
     rulesBased: boolean;
-    disabled: boolean;
+    disabled?: boolean;
   };
 }
 

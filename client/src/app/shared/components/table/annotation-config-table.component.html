@@ -1,14 +1,12 @@
 <table class="table">
   <thead>
-    <tr class="text-middle">
+    <tr>
       <th scope="col">Model</th>
-      <span *ngFor="let header of headers; index as i">
-        <th scope="col">{{header}}</th>
-      </span>
+      <th *ngFor="let header of headers" scope="col">{{header}}</th>
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let model of models; index as i">
+    <tr *ngFor="let model of models">
       <th scope="row">{{model}}</th>
       <td>
         <div class="custom-control custom-checkbox">

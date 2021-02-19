@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { BehaviorSubject, from, of } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { finalize, map, mergeMap, take } from 'rxjs/operators';
 import { MessageType } from '../../interfaces/message-dialog.interface';
@@ -265,11 +265,19 @@ export class FilesystemObjectActions {
 
   reannotate(targets: FilesystemObject[]): Promise<any> {
     const progressDialogRef = this.createProgressDialog('Identifying annotations...');
-    return this.annotationsService.generateAnnotations(targets.map(object => object.hashId))
-      .pipe(
-        finalize(() => progressDialogRef.close()),
-        this.errorHandler.create({label: 'Re-annotate object'}),
-      )
-      .toPromise();
+    // it's better to have separate service calls for each file
+    // and let each finish independently
+    const annotationRequests = targets.map(
+      object => {
+        const annotationConfigs = object.annotationConfigs;
+        const organism = object.fallbackOrganism;
+        return this.annotationsService.generateAnnotations(
+          [object.hashId], {annotationConfigs, organism});
+      });
+
+    return forkJoin(annotationRequests).pipe(
+      finalize(() => progressDialogRef.close()),
+      this.errorHandler.create({label: 'Re-annotate object'}),
+    ).toPromise();
   }
 }
