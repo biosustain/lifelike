@@ -726,6 +726,7 @@ class EntityRecognitionService:
         token: PDFWord,
         chemicals_found: List[LMDBMatch],
         nlp_chemicals: Set[Tuple[int, int]],
+        used_nlp: bool,
         cursor
     ) -> None:
         offset_key = (token.lo_location_offset, token.hi_location_offset)
@@ -752,7 +753,7 @@ class EntityRecognitionService:
 
         # only want those in inclusion or identified by NLP
         if entities:
-            if not nlp_chemicals:
+            if not used_nlp:
                 chemicals_found.append(
                     LMDBMatch(
                         entities=entities,
@@ -810,6 +811,7 @@ class EntityRecognitionService:
         token: PDFWord,
         diseases_found: List[LMDBMatch],
         nlp_diseases: Set[Tuple[int, int]],
+        used_nlp: bool,
         cursor
     ) -> None:
         offset_key = (token.lo_location_offset, token.hi_location_offset)
@@ -836,7 +838,7 @@ class EntityRecognitionService:
 
         # only want those in inclusion or identified by NLP (if any)
         if entities:
-            if not nlp_diseases:
+            if not used_nlp:
                 diseases_found.append(
                     LMDBMatch(
                         entities=entities,
@@ -894,6 +896,7 @@ class EntityRecognitionService:
         token: PDFWord,
         genes_found: List[LMDBMatch],
         nlp_genes: Set[Tuple[int, int]],
+        used_nlp: bool,
         cursor
     ) -> None:
         offset_key = (token.lo_location_offset, token.hi_location_offset)
@@ -920,7 +923,7 @@ class EntityRecognitionService:
 
         # only want those in inclusion or identified by NLP (if any)
         if entities:
-            if not nlp_genes:
+            if not used_nlp:
                 genes_found.append(
                     LMDBMatch(
                         entities=entities,
@@ -1102,7 +1105,8 @@ class EntityRecognitionService:
         self,
         custom_annotations: List[dict],
         tokens: List[PDFWord],
-        nlp_results: NLPResults
+        nlp_results: NLPResults,
+        annotation_method: Dict[str, dict]
     ) -> EntityResults:
         self.set_entity_exclusions()
         self.set_entity_inclusions(custom_annotations)
@@ -1151,6 +1155,8 @@ class EntityRecognitionService:
                         token=current_token,
                         genes_found=genes_found,
                         nlp_genes=nlp_results.genes,
+                        used_nlp=annotation_method.get(
+                            EntityType.GENE.value, {}).get('nlp', False),
                         cursor=genes_cur)
 
             for current_token in self.generate_tokens(token, self.food_max_words):
@@ -1188,6 +1194,8 @@ class EntityRecognitionService:
                         token=current_token,
                         chemicals_found=chemicals_found,
                         nlp_chemicals=nlp_results.chemicals,
+                        used_nlp=annotation_method.get(
+                            EntityType.CHEMICAL.value, {}).get('nlp', False),
                         cursor=chemicals_cur)
 
                 if not self.is_compound_exclusion(current_token.keyword):
@@ -1201,6 +1209,8 @@ class EntityRecognitionService:
                         token=current_token,
                         diseases_found=diseases_found,
                         nlp_diseases=nlp_results.diseases,
+                        used_nlp=annotation_method.get(
+                            EntityType.DISEASE.value, {}).get('nlp', False),
                         cursor=diseases_cur)
 
                 if not self.is_phenomena_exclusion(current_token.keyword):
