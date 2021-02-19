@@ -15,11 +15,15 @@ export class GlobalErrorHandler implements ErrorHandler {
   KNOWN_HTTP_ERROR_CODES = [0, 401];
 
   handleError(error: Error | HttpErrorResponse) {
-    if (!(error instanceof HttpErrorResponse && this.KNOWN_HTTP_ERROR_CODES.includes(error.status))) {
-      this.errorHandlerService.logError(error, {label: 'Uncaught exception', expected: false});
-
-      // We are logging the error but are not changing how errors are handled
-      throw error;
+    try {
+      if (!(error instanceof HttpErrorResponse && this.KNOWN_HTTP_ERROR_CODES.includes(error.status))) {
+        this.errorHandlerService.logError(error, {label: 'Uncaught exception', expected: false});
+      }
+    } catch (e) {
+      console.error('Failed to log Lifelike error', e);
     }
+
+    // We are logging the error but are not changing how errors are handled
+    throw error;
   }
 }
