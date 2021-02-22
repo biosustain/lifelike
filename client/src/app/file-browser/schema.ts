@@ -224,7 +224,6 @@ export interface AnnotationConfigs {
   [model: string]: {
     nlp: boolean;
     rulesBased: boolean;
-    disabled?: boolean;
   };
 }
 
