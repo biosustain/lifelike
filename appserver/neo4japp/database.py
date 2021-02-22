@@ -64,8 +64,8 @@ def connect_to_neo4j():
 
 def connect_to_lmdb():
     if 'lmdb' not in g:
-        from neo4japp.services.annotations.lmdb_access import LMDB
-        g.lmdb = LMDB()
+        from neo4japp.services.annotations.lmdb_access import LMDBAccess
+        g.lmdb = LMDBAccess()
         g.lmdb.open_envs()
     return g.lmdb
 
