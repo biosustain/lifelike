@@ -1,7 +1,6 @@
 import html
 import json
 import re
-from collections import defaultdict
 from typing import Optional
 
 import sqlalchemy
@@ -15,7 +14,12 @@ from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.data_transfer_objects import GeneFilteredRequest
 from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
-from neo4japp.database import get_search_service_dao, db, get_elastic_service, get_file_type_service
+from neo4japp.database import (
+    db,
+    get_search_service_dao,
+    get_elastic_service,
+    get_file_type_service
+)
 from neo4japp.models import (
     Projects,
     AppRole,
@@ -23,13 +27,11 @@ from neo4japp.models import (
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.search import (
-    AnnotateRequestSchema,
     ContentSearchSchema,
     OrganismSearchSchema,
-    VizSearchSchema, ContentSearchResponseSchema
+    VizSearchSchema,
+    ContentSearchResponseSchema
 )
-from neo4japp.services.annotations.constants import AnnotationMethod
-from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.logger import UserEventLog
 from neo4japp.utils.request import Pagination
@@ -65,64 +67,6 @@ def visualizer_search(
     )
     return jsonify({
         'result': results.to_dict(),
-    })
-
-
-@bp.route('/annotate', methods=['POST'])
-@auth.login_required
-@use_kwargs(AnnotateRequestSchema)
-def annotate(texts):
-    # If done right, we would parse the XML but the built-in XML libraries in Python
-    # are susceptible to some security vulns, but because this is an internal API,
-    # we can accept that it can be janky
-    container_tag_re = re.compile("^<snippet>(.*)</snippet>$", re.DOTALL | re.IGNORECASE)
-    highlight_strip_tag_re = re.compile("^<highlight>([^<]+)</highlight>$", re.IGNORECASE)
-    highlight_add_tag_re = re.compile("^%%%%%-(.+)-%%%%%$", re.IGNORECASE)
-
-    results = []
-
-    for text in texts:
-        annotations = []
-
-        # Remove the outer document tag
-        text = container_tag_re.sub("\\1", text)
-        # Remove the highlight tags to help the annotation parser
-        text = highlight_strip_tag_re.sub("%%%%%-\\1-%%%%%", text)
-
-        try:
-            annotations = create_annotations(
-                annotation_method=AnnotationMethod.RULES.value,
-                document=text,
-                filename='snippet.pdf',
-                specified_organism_synonym='',
-                specified_organism_tax_id='',
-            )['documents'][0]['passages'][0]['annotations']
-        except Exception as e:
-            pass
-
-        # Sort so longer keywords come first because the replacement is greedy
-        sorted_annotations = sorted(annotations, key=lambda annotation: -len(annotation['keyword']))
-
-        for annotation in sorted_annotations:
-            keyword = annotation['keyword']
-            text = re.sub(
-                # Replace but outside tags (shh @ regex)
-                f"(?<!\\w)({re.escape(keyword)})(?!\\w)(?![^<]*>|[^<>]*</)",
-                f'<annotation type="{annotation["meta"]["type"]}" '
-                f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
-                f'>\\1</annotation>',
-                text,
-                flags=re.IGNORECASE)
-
-        # Re-add the highlight tags
-        text = highlight_add_tag_re.sub("<highlight>\\1</highlight>", text)
-        # Re-wrap with document tags
-        text = f"<snippet>{text}</snippet>"
-
-        results.append(text)
-
-    return jsonify({
-        'texts': results,
     })
 
 

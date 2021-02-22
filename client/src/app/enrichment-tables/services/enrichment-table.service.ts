@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '../../shared/services/api.service';
+import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
+import { EnrichmentResult } from '../models/enrichment-document';
 
 @Injectable()
 export class EnrichmentTableService {
@@ -37,6 +39,35 @@ export class EnrichmentTableService {
       this.apiService.getHttpOptions(true),
     ).pipe(
       map((resp: any) => resp.result),
+    );
+  }
+
+  annotateEnrichment(hashIds: string[], request: TextAnnotationGenerationRequest): Observable<any> {
+    return this.http.post(
+      `/api/filesystem/annotations/generate`,
+      {hashIds, ...request},
+      this.apiService.getHttpOptions(true)
+    ).pipe(
+      map((resp: any) => resp.results)
+    );
+  }
+
+  refreshEnrichmentAnnotations(hashIds: string[], refresh: boolean): Observable<any> {
+    return this.http.post(
+      `/api/filesystem/annotations/refresh`,
+      {hashIds, refresh},
+      this.apiService.getHttpOptions(true)
+    ).pipe(
+      map((resp: any) => resp.results)
+    );
+  }
+
+  getAnnotatedEnrichment(hashId: string): Observable<EnrichmentResult> {
+    return this.http.get(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/enrichment/annotations`,
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map((resp: any) => resp.results),
     );
   }
 }
