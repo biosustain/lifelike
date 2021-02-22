@@ -192,6 +192,10 @@ export interface ObjectVersionHistoryResponse extends ResultList<ObjectVersionDa
   object: FilesystemObjectData;
 }
 
+export interface AnnotationSelectionResponse {
+  annotationConfigs: AnnotationConfigs;
+}
+
 // ========================================
 // Locks
 // ========================================

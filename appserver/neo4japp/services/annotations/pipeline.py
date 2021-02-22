@@ -15,6 +15,7 @@ from neo4japp.database import (
 from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.constants import (
     EntityType,
+    DEFAULT_ANNOTATION_CONFIGS,
     MAX_ABBREVIATION_WORD_LENGTH
 )
 from neo4japp.services.annotations.data_transfer_objects import (
@@ -201,7 +202,7 @@ def _create_annotations(
 
     if not annotation_method:
         # will cause default to rules based
-        annotation_method = {}
+        annotation_method = DEFAULT_ANNOTATION_CONFIGS
 
     # identify entities w/ NLP first
     nlp_results = get_nlp_entities(
