@@ -13,7 +13,7 @@ import { select, Store } from '@ngrx/store';
 import { AuthSelectors } from '../../../auth/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 import { Observable } from 'rxjs';
-import { AnnotationMethods, ANNOTATIONMODELS } from '../../../interfaces/annotation';
+import { AnnotationMethods, NLPANNOTATIONMODELS } from '../../../interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 
 @Component({
@@ -26,7 +26,7 @@ export class ObjectAnnotateDialogComponent extends CommonFormDialogComponent<Obj
 
   readonly annotationMethodChoices: AnnotationMethods[] = ['NLP', 'Rules Based'];
   readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(
-    key => ANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
+    key => NLPANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
   readonly userRoles$: Observable<string[]>;
 
   readonly form: FormGroup = new FormGroup({
@@ -35,8 +35,7 @@ export class ObjectAnnotateDialogComponent extends CommonFormDialogComponent<Obj
         (obj, key) => ({...obj, [key]: new FormGroup(
           {
             nlp: new FormControl(false),
-            rulesBased: new FormControl(true),
-            disabled: new FormControl(false)
+            rulesBased: new FormControl(true)
           })}), {}), [Validators.required]),
     organism: new FormControl(null),
   });

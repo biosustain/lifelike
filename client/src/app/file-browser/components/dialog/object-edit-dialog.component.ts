@@ -11,7 +11,7 @@ import { AuthSelectors } from '../../../auth/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 import { Observable } from 'rxjs';
 import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
-import { AnnotationMethods, ANNOTATIONMODELS } from '../../../interfaces/annotation';
+import { AnnotationMethods, NLPANNOTATIONMODELS } from '../../../interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 
 @Component({
@@ -31,7 +31,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
   readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(
-    key => ANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
+    key => NLPANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
   readonly userRoles$: Observable<string[]>;
 
   private _object: FilesystemObject;
@@ -50,8 +50,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         (obj, key) => ({...obj, [key]: new FormGroup(
           {
             nlp: new FormControl(false),
-            rulesBased: new FormControl(true),
-            disabled: new FormControl(false)
+            rulesBased: new FormControl(true)
           })}), {}), [Validators.required]),
     organism: new FormControl(null),
     mimeType: new FormControl(null),
@@ -121,7 +120,9 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     if (value) {
       const ctrl = (this.form.get('annotationConfigs') as FormControl);
       for (const [modelName, config] of Object.entries(value)) {
-        ctrl.get(modelName).patchValue(config);
+        if (ctrl.get(modelName)) {
+          ctrl.get(modelName).patchValue(config);
+        }
       }
     }
   }
