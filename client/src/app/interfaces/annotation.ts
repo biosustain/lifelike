@@ -26,6 +26,4 @@ export interface GlobalAnnotation {
 }
 
 export type AnnotationMethods = 'NLP' | 'Rules Based';
-export const ANNOTATIONMODELS = new Set(
-    ['Anatomy', 'Chemical', 'Compound', 'Disease', 'Food', 'Gene',
-    'Phenomena', 'Phenotype', 'Phenotype', 'Protein', 'Species']);
+export const NLPANNOTATIONMODELS = new Set(['Chemical', 'Disease', 'Gene']);
