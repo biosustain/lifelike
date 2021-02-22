@@ -178,3 +178,16 @@ ENTITY_HYPERLINKS = {
     DatabaseType.BIOCYC.value: 'https://biocyc.org/compound?orgid=META&id=',
     DatabaseType.CUSTOM.value: SEARCH_LINKS['google'],
 }
+
+DEFAULT_ANNOTATION_CONFIGS = {
+    EntityType.ANATOMY.value: {'nlp': False, 'rules_based': True},
+    EntityType.CHEMICAL.value: {'nlp': False, 'rules_based': True},
+    EntityType.COMPOUND.value: {'nlp': False, 'rules_based': True},
+    EntityType.DISEASE.value: {'nlp': False, 'rules_based': True},
+    EntityType.FOOD.value: {'nlp': False, 'rules_based': True},
+    EntityType.GENE.value: {'nlp': False, 'rules_based': True},
+    EntityType.PHENOMENA.value: {'nlp': False, 'rules_based': True},
+    EntityType.PHENOTYPE.value: {'nlp': False, 'rules_based': True},
+    EntityType.PROTEIN.value: {'nlp': False, 'rules_based': True},
+    EntityType.SPECIES.value: {'nlp': False, 'rules_based': True}
+}

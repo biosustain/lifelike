@@ -25,7 +25,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   @Input() title = 'Edit Item';
   @Input() parentLabel = 'Location';
   @Input() promptUpload = false;
-  @Input() promptAnnotationOptions = false;
+  @Input() promptAnnotationOptions = true;
   @Input() forceAnnotationOptions = false;
   @Input() promptParent = false;
 
@@ -113,6 +113,16 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     });
     if (!value.parent) {
       this.promptParent = true;
+    }
+  }
+
+  @Input()
+  set configs(value: AnnotationConfigs) {
+    if (value) {
+      const ctrl = (this.form.get('annotationConfigs') as FormControl);
+      for (const [modelName, config] of Object.entries(value)) {
+        ctrl.get(modelName).patchValue(config);
+      }
     }
   }
 

@@ -40,6 +40,7 @@ from neo4japp.models import (
     FallbackOrganism
 )
 from neo4japp.services.annotations.constants import (
+    DEFAULT_ANNOTATION_CONFIGS,
     EntityType,
     ManualAnnotationType,
 )
@@ -113,6 +114,23 @@ class FileAnnotationsView(FilesystemBaseView):
             'results': results,
             'total': len(results),
         }))
+
+
+class AnnotationSelectionView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    def get(self, hash_id: str):
+        """Fetch annotation selection configs for file."""
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+
+        configs = {'annotation_configs': file.annotation_configs}
+
+        return jsonify({
+            'results': AnnotationGenerationRequestSchema().dump(configs)
+        })
 
 
 class EnrichmentAnnotationsView(FilesystemBaseView):
@@ -337,7 +355,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
 
         organism = None
-        annotation_configs = params.get('annotation_configs', None)
+        annotation_configs = params.get('annotation_configs')
         enrichment = params.get('enrichment', None)
         texts = params.get('texts', [])
 
@@ -345,6 +363,9 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             organism = params['organism']
             db.session.add(organism)
             db.session.flush()
+
+        if not annotation_configs:
+            annotation_configs = DEFAULT_ANNOTATION_CONFIGS
 
         updated_files = []
         versions = []
@@ -823,3 +844,6 @@ filesystem_bp.add_url_rule(
     'annotations/refresh',
     # TODO: this can potentially become a generic annotations refresh
     view_func=RefreshEnrichmentAnnotationsView.as_view('refresh_annotations'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/configs',
+    view_func=AnnotationSelectionView.as_view('file_annotation_configs'))

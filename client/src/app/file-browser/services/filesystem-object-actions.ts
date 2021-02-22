@@ -180,17 +180,20 @@ export class FilesystemObjectActions {
   openEditDialog(target: FilesystemObject): Promise<any> {
     const dialogRef = this.modalService.open(ObjectEditDialogComponent);
     dialogRef.componentInstance.object = target;
-    dialogRef.componentInstance.accept = ((changes: ObjectEditDialogValue) => {
-      const progressDialogRef = this.createProgressDialog(`Saving changes to ${getObjectLabel(target)}...`);
-      return this.filesystemService.save([target.hashId], changes.request, {
-        [target.hashId]: target,
-      })
-        .pipe(
-          finalize(() => progressDialogRef.close()),
-          this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
-          this.errorHandler.create({label: 'Edit object'}),
-        )
-        .toPromise();
+    this.annotationsService.getAnnotationSelections(target.hashId).subscribe(configs => {
+      dialogRef.componentInstance.configs = configs.annotationConfigs;
+      dialogRef.componentInstance.accept = ((changes: ObjectEditDialogValue) => {
+        const progressDialogRef = this.createProgressDialog(`Saving changes to ${getObjectLabel(target)}...`);
+        return this.filesystemService.save([target.hashId], changes.request, {
+          [target.hashId]: target,
+        })
+          .pipe(
+            finalize(() => progressDialogRef.close()),
+            this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
+            this.errorHandler.create({label: 'Edit object'}),
+          )
+          .toPromise();
+      });
     });
     return dialogRef.result;
   }
