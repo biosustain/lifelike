@@ -1,6 +1,8 @@
 .ng2-pdf-viewer-container {
   position: relative;
   overflow: auto;
+
+  height: 100%;
 }
 
 :host ::ng-deep {
