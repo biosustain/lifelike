@@ -6,17 +6,18 @@ import { SharedModule } from 'app/shared/shared.module';
 import {SortingAlgorithmsComponent} from './sorting/sorting-algorithms.component';
 import { WordCloudComponent } from './components/word-cloud.component';
 
-const declarations = [
+const components = [
   WordCloudComponent,
   SortingAlgorithmsComponent,
 ];
 
 @NgModule({
-  declarations,
+  declarations: components,
   imports: [
     CommonModule,
     SharedModule,
   ],
-  exports: declarations,
+  exports: components,
 })
-export class WordCloudModule { }
+export class WordCloudModule {
+}
