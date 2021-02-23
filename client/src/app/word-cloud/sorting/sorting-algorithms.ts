@@ -20,8 +20,7 @@ export const sortingAlgorithms: SortingAlgorithm[] = [
   {
     id: SortingAlgorithmId.frequency,
     name: 'Occurrence count',
-    title: 'Occurrence count',
-    // description: 'No description',
+    description: 'Word size will be adjusted by number of times it has been annotated in project files.',
     valueDescription: 'Entity Frequency',
     min: 0,
     step: 1,
@@ -31,7 +30,10 @@ export const sortingAlgorithms: SortingAlgorithm[] = [
     id: SortingAlgorithmId.sum_log_count,
     name: 'Log transformed count',
     // title: 'No title',
-    description: 'No title. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin mattis posuere diam, ut fringilla leo scelerisque non. Suspendisse a rutrum nibh, vitae condimentum lectus. Curabitur ac tortor ipsum. Proin fringilla.',
+    description: `
+    Word size will be adjusted by sum of log transformed count of times it has been mentioned in each paper.<br/>
+    This method mitigates an issue of "Occurrence count" where repeated mentions in one publication would falsely emphasise term relevance for whole project.
+    `,
     valueDescription: 'Sum log of frequency per file',
     min: 0,
     step: 0.1,
@@ -40,8 +42,11 @@ export const sortingAlgorithms: SortingAlgorithm[] = [
   {
     id: SortingAlgorithmId.mwu,
     name: 'Mann–Whitney U test',
-    title: 'Title for description',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ultricies aliquet risus, nec lacinia justo pretium luctus. Quisque ut lorem eget sapien commodo ultricies. Donec a feugiat arcu, in egestas augue. Duis tempor a neque sit amet condimentum. Quisque luctus.',
+    // title: 'Title for description',
+    description: `
+    This method uses Mann–Whitney U test quantify if term mention distribution differentiate from the whole dataset.<br/>
+    The words becomes scaled by minus log of p-value to emphasise results close to 0.
+    `,
     valueDescription: '-log(p-value)',
     min: 0,
     step: 0.25,

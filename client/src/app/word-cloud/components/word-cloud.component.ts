@@ -10,10 +10,10 @@ import { LegendService } from 'app/shared/services/legend.service';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
-import {defaultSortingAlgorithm, SortingAlgorithm} from '../sorting/sorting-algorithms';
+import { defaultSortingAlgorithm, SortingAlgorithm } from '../sorting/sorting-algorithms';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
-import { WordCloudService } from '../services/word-cloud.service';
+import { NodeLegend } from '../../interfaces';
 
 @Component({
   selector: 'app-word-cloud',
@@ -29,7 +29,7 @@ export class WordCloudComponent {
   @Input() clickableWords = false;
   @Output() wordOpen = new EventEmitter<WordCloudAnnotationFilterEntity>();
 
-  loadTask: BackgroundTask<[], any>;
+  loadTask: BackgroundTask<[], [NodeLegend, string]>;
   annotationsLoadedSub: Subscription;
 
   wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
@@ -45,7 +45,7 @@ export class WordCloudComponent {
 
   keywordsShown = true;
 
-  constructor(protected readonly wordCloudService: WordCloudService,
+  constructor(protected readonly annotationsService: AnnotationsService,
               protected readonly legendService: LegendService) {
     this.initWordCloud();
   }
@@ -54,7 +54,7 @@ export class WordCloudComponent {
     this.loadTask = new BackgroundTask(() => {
       return combineLatest(
         this.legendService.getAnnotationLegend(),
-        this.wordCloudService.getSortedCombinedAnnotations(this.object.hashId, this.sorting.id),
+        this.annotationsService.getSortedAnnotations(this.object.hashId, this.sorting.id),
       );
     });
   }
@@ -63,7 +63,6 @@ export class WordCloudComponent {
     this.initDataFetch();
     this.annotationsLoadedSub = this.loadTask.results$.subscribe(({
                                                                     result: [legend, annotationExport],
-                                                                    value: [],
                                                                   }) => {
       // Reset legend
       Object.keys(legend).forEach(label => {
@@ -98,7 +97,7 @@ export class WordCloudComponent {
     this.initWordCloud();
   }
 
-  setAnnotationData(annotationExport: any) {
+  setAnnotationData(annotationExport: string) {
     // Reset annotation data
     this.annotationData = [];
     this.wordVisibilityMap.clear();
@@ -111,7 +110,7 @@ export class WordCloudComponent {
     // remove empty line at the end of the tsv response
     annotationList.pop();
     annotationList.forEach(e => {
-      //  entity_id	  type	  text	  primary_name  count
+      //  entity_id	  type	  text	  primary_name  value
       //  col[0]      col[1]  col[2]  col[3]        col[4]
       const cols = e.split('\t');
       const uniquePair = cols[0] === '' ? cols[1] + cols[2] : cols[0] + cols[1];
@@ -129,7 +128,7 @@ export class WordCloudComponent {
         } as WordCloudAnnotationFilterEntity;
         this.wordVisibilityMap.set(
           this.getAnnotationIdentifier(annotation),
-          this.sorting.min === undefined || annotation.frequency >= this.sorting.min
+          this.sorting.min === undefined || annotation.frequency >= this.sorting.min,
         );
         this.annotationData.push(annotation);
         uniquePairMap.set(uniquePair, this.annotationData.length - 1);
@@ -414,8 +413,9 @@ export class WordCloudComponent {
   drawWordCloud(data: WordCloudAnnotationFilterEntity[], initial: boolean) {
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
     const {width, height} = this.getCloudSvgDimensions();
-    const maximumCount = Math.max(...data.map(annotation => annotation.frequency as number));
-    const minimumCount = Math.min(...data.map(annotation => annotation.frequency as number));
+    const frequencies = data.map(annotation => annotation.frequency as number);
+    const maximum = Math.max(...frequencies);
+    const minimum = Math.min(...frequencies);
 
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
     const layout = cloud()
@@ -423,7 +423,7 @@ export class WordCloudComponent {
       .words(data)
       .padding(3)
       // max ~48px, min ~12px
-      .fontSize((d) => (((d.frequency - minimumCount) / (maximumCount - minimumCount)) * 36) + 12)
+      .fontSize((d) => (((d.frequency - minimum) / (maximum - minimum)) * 36) + 12)
       .rotate(() => 0)
       // TODO: Maybe in the future we can allow the user to define their own rotation intervals,
       // but for now just keep it simple and don't rotate the words

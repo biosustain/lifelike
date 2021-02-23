@@ -1,11 +1,11 @@
+import binascii
 import json
 import hashlib
-import json
 import os
 import types
-from datetime import datetime
-
+import hashlib
 import pytest
+from datetime import date, datetime
 
 from neo4japp.models import (
     AppRole,
@@ -16,6 +16,7 @@ from neo4japp.models import (
     FileContent,
     Files,
     DomainURLsMap,
+    AnnotationStyle,
     FallbackOrganism
 )
 from neo4japp.services import AccountService
@@ -147,84 +148,6 @@ def mock_get_combined_annotations_result(monkeypatch):
         ManualAnnotationService,
         'get_file_annotations',
         get_combined_annotations_result,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_get_combined_annotations_in_project_result(monkeypatch):
-    def get_combined_annotations_in_project_result(*args, **kwargs):
-        return [
-            {
-                'meta': {
-                    'type': EntityType.GENE.value,
-                    'id': '59272',
-                },
-                'keyword': 'ace2',
-                'primaryName': 'ACE2',
-            },
-            {
-                'meta': {
-                    'type': EntityType.SPECIES.value,
-                    'id': '9606',
-                },
-                'keyword': 'human',
-                'primaryName': 'Homo Sapiens',
-            },
-        ]
-
-    monkeypatch.setattr(
-        ManualAnnotationService,
-        'get_combined_annotations_in_project',
-        get_combined_annotations_in_project_result,
-    )
-
-
-@pytest.fixture(scope='function')
-def mock_get_files_annotations_in_project_result(monkeypatch):
-    def get_files_annotations_in_project_result(*args, **kwargs):
-        return {
-            "a": [
-                {
-                    'meta': {
-                        'type': EntityType.GENE.value,
-                        'id': '59272',
-                    },
-                    'keyword': 'ace2',
-                    'primaryName': 'ACE2',
-                },
-                {
-                    'meta': {
-                        'type': EntityType.SPECIES.value,
-                        'id': '9606',
-                    },
-                    'keyword': 'human',
-                    'primaryName': 'Homo Sapiens',
-                }
-            ],
-            "b": [
-                {
-                    'meta': {
-                        'type': EntityType.SPECIES.value,
-                        'id': '9606',
-                    },
-                    'keyword': 'human',
-                    'primaryName': 'Homo Sapiens',
-                },
-                {
-                    'meta': {
-                        'type': EntityType.SPECIES.value,
-                        'id': '9606',
-                    },
-                    'keyword': 'human',
-                    'primaryName': 'Homo Sapiens',
-                }
-            ],
-        }
-
-    monkeypatch.setattr(
-        ManualAnnotationService,
-        'get_files_annotations_in_project',
-        get_files_annotations_in_project_result,
     )
 
 
@@ -410,72 +333,6 @@ def fix_project(test_user: AppUser, session) -> Projects:
 
 
 @pytest.fixture(scope='function')
-def fix_directory(fix_project, test_user, session):
-    directory = Directory(
-        name='/',
-        directory_parent_id=None,
-        projects_id=fix_project.id,
-        user_id=test_user.id,
-    )
-    session.add(directory)
-    session.flush()
-    return directory
-
-
-@pytest.fixture(scope='function')
-def private_fix_map(fix_api_owner, fix_directory, session) -> Project:
-    example_data = {
-        "edges": [],
-        "nodes": [
-            {
-                "data": {
-                    "x": -251,
-                    "y": -323,
-                    "hyperlink": "https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=511145",  # noqa
-                    "detail": "dddd",
-                    "source":
-                    "/dt/pdf/0df1c8e0-50a4-4770-9942-621bc1f1cb28/" + \
-                    "1/98.064/706.8/121.47984/717.8399999999999",
-                    # noqa
-                    "search": [
-                        {
-                            "domain": "google",
-                            "url": "https://www.google.com/search?q=E. coli"
-                        },
-                        {
-                            "domain": "ncbi",
-                            "url": "https://www.ncbi.nlm.nih.gov/gene/?query=E. coli"
-                        },
-                        {
-                            "domain": "mesh",
-                            "url": "https://www.ncbi.nlm.nih.gov/mesh/?term=E. coli"
-                        },
-                        {
-                            "domain": "chebi",
-                            "url": "https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=E. coli"  # noqa
-                        },
-                        {
-                            "domain": "pubchem",
-                            "url": "https://pubchem.ncbi.nlm.nih.gov/#query=E. coli"
-                        },
-                        {
-                            "domain": "uniprot",
-                            "url": "https://www.uniprot.org/uniprot/?sort=score&query=E. coli"
-                        },
-                        {
-                            "domain": "wikipedia",
-                            "url": "https://www.google.com/search?q=site:+wikipedia.org+E. coli"
-                        }
-                    ]
-                },
-                "display_name": "E. coli",
-                "hash": "dae84a2f-17ef-444e-b875-13b732a71794",
-                "shape": "box",
-                "label": "species",
-                "sub_labels": []
-            }
-        ]
-    }
 def fix_directory(session, test_user: AppUser) -> Files:
     dir = Files(
         filename='/',
