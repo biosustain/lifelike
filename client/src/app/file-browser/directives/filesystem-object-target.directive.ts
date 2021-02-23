@@ -59,6 +59,15 @@ export class FilesystemObjectTargetDirective {
     this.dropTargeted = false;
   }
 
+  @HostListener('body:***ARANGO_DB_NAME***objectupdate', ['$event'])
+  ***ARANGO_DB_NAME***ObjectUpdate(event) {
+    if (this.appFSObjectTarget) {
+      if (this.isAffectedObject(event.detail.hashId)) {
+        this.refreshRequest.emit();
+      }
+    }
+  }
+
   @HostListener('drop', ['$event'])
   drop(event: DragEvent) {
     event.preventDefault();
@@ -83,7 +92,19 @@ export class FilesystemObjectTargetDirective {
           this.filesystemService.save([transferData.hashId], {
             parentHashId: this.appFSObjectTarget.hashId,
           }).pipe(
-            tap(() => this.refreshRequest.emit()),
+            tap(() => {
+              const affectedHashIds = new Set([
+                transferData.hashId,
+                this.appFSObjectTarget.hashId,
+              ]);
+              for (const hashId of affectedHashIds) {
+                document.body.dispatchEvent(new CustomEvent('***ARANGO_DB_NAME***objectupdate', {
+                  detail: {
+                    hashId,
+                  },
+                }));
+              }
+            }),
             finalize(() => progressDialogRef.close()),
             this.errorHandler.create({label: 'Move object from drag and drop'}),
           ).subscribe(() => {
@@ -120,19 +141,31 @@ export class FilesystemObjectTargetDirective {
     }
   }
 
+  isAffectedObject(hashId: string) {
+    if (hashId === this.appFSObjectTarget.hashId) {
+      return true;
+    }
+    for (const child of this.appFSObjectTarget.children.items) {
+      if (child.hashId === hashId) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   canAcceptDrop(event: DragEvent): boolean {
     return this.appFSObjectTarget != null
       && this.appFSObjectTarget.privileges.writable
       && ((
-        event.dataTransfer.types.includes(FILESYSTEM_OBJECT_TRANSFER_TYPE)
-        && event.target instanceof Element
-        && (event.target === this.elementRef.nativeElement
-          || event.target.closest('[data-filesystem-object-target-directive]') === this.elementRef.nativeElement)
-      )
-      || (
-        event.dataTransfer.types
-        && event.dataTransfer.types.includes('Files')
-      ));
+          event.dataTransfer.types.includes(FILESYSTEM_OBJECT_TRANSFER_TYPE)
+          && event.target instanceof Element
+          && (event.target === this.elementRef.nativeElement
+            || event.target.closest('[data-filesystem-object-target-directive]') === this.elementRef.nativeElement)
+        )
+        || (
+          event.dataTransfer.types
+          && event.dataTransfer.types.includes('Files')
+        ));
   }
 
 }
