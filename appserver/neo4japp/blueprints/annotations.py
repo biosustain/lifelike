@@ -253,29 +253,29 @@ class FileAnnotationCountsView(FilesystemBaseView):
         )
 
 
-class FileAnnotationCountsSortView(FilesystemBaseView):
+class FileAnnotationSortedView(FilesystemBaseView):
     decorators = [auth.login_required]
 
     def get_rows(self, files, sort):
         annotation_service = get_sorted_annotation_service(sort)
-        counts = annotation_service.get_annotations(files)
+        values = annotation_service.get_annotations(files)
 
         yield [
             'entity_id',
             'type',
             'text',
             'primary_name',
-            'count',
+            'value',
         ]
 
-        count_keys = sorted(
-            counts,
-            key=lambda key: counts[key]['count'],
+        value_keys = sorted(
+            values,
+            key=lambda key: values[key]['value'],
             reverse=True
         )
 
-        for key in count_keys:
-            annotation = counts[key]['annotation']
+        for key in value_keys:
+            annotation = values[key]['annotation']
             meta = annotation['meta']
             if annotation.get('keyword', None) is not None:
                 text = annotation['keyword'].strip()
@@ -286,7 +286,7 @@ class FileAnnotationCountsSortView(FilesystemBaseView):
                 meta['type'],
                 text,
                 annotation.get('primaryName', '').strip(),
-                counts[key]['count']
+                values[key]['value']
             ]
 
     @use_args({
@@ -707,8 +707,8 @@ filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/counts',
     view_func=FileAnnotationCountsView.as_view('file_annotation_counts'))
 filesystem_bp.add_url_rule(
-    'objects/<string:hash_id>/annotations/counts-sort',
-    view_func=FileAnnotationCountsSortView.as_view('file_annotation_counts_sort'))
+    'objects/<string:hash_id>/annotations/sorted',
+    view_func=FileAnnotationSortedView.as_view('file_annotation_sorted'))
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/gene-counts',
     view_func=FileAnnotationGeneCountsView.as_view('file_annotation_gene_counts'))

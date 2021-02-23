@@ -6,6 +6,7 @@ import {defaultSortingAlgorithm, SortingAlgorithm, sortingAlgorithms} from './so
 @Component({
   selector: 'app-sorting-algorithms',
   templateUrl: './sorting-algorithms.component.html',
+  styleUrls: ['./sorting-algorithms.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
 export class SortingAlgorithmsComponent {

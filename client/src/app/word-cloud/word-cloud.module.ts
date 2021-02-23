@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 
 import { SharedModule } from 'app/shared/shared.module';
 
-import { WordCloudService } from './services/word-cloud.service';
 import {SortingAlgorithmsComponent} from './sorting/sorting-algorithms.component';
 import { WordCloudComponent } from './components/word-cloud.component';
 
@@ -17,9 +16,6 @@ const declarations = [
   imports: [
     CommonModule,
     SharedModule,
-  ],
-  providers: [
-    WordCloudService
   ],
   exports: declarations,
 })
