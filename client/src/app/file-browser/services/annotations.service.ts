@@ -8,7 +8,7 @@ import { ApiService } from '../../shared/services/api.service';
 import {
   AnnotationExclusionCreateRequest,
   AnnotationExclusionDeleteRequest,
-  AnnotationGenerationRequest,
+  PDFAnnotationGenerationRequest,
   AnnotationGenerationResultData,
   CustomAnnotationCreateRequest,
   CustomAnnotationDeleteRequest,
@@ -46,7 +46,7 @@ export class AnnotationsService {
     );
   }
 
-  generateAnnotations(hashIds: string[], request: AnnotationGenerationRequest = {}):
+  generateAnnotations(hashIds: string[], request: PDFAnnotationGenerationRequest = {}):
     Observable<ResultMapping<AnnotationGenerationResultData>> {
     return this.http.post<ResultMapping<AnnotationGenerationResultData>>(
       `/api/filesystem/annotations/generate`, {
@@ -88,7 +88,7 @@ export class AnnotationsService {
       request,
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map(() => ({})),
+      map(() => ({}))
     );
   }
 
@@ -103,7 +103,7 @@ export class AnnotationsService {
         responseType: 'json',
       },
     ).pipe(
-      map(() => ({})),
+      map(() => ({}))
     );
   }
 

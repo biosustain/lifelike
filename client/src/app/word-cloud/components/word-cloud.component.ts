@@ -40,6 +40,7 @@ export class WordCloudComponent {
   legend: Map<string, string> = new Map<string, string>();
 
   WORD_CLOUD_MARGIN = 10;
+  MAX_ALGO_INPUT = 1000;
 
   sorting: SortingAlgorithm = defaultSortingAlgorithm;
 
@@ -413,14 +414,16 @@ export class WordCloudComponent {
   drawWordCloud(data: WordCloudAnnotationFilterEntity[], initial: boolean) {
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
     const {width, height} = this.getCloudSvgDimensions();
-    const frequencies = data.map(annotation => annotation.frequency as number);
+
+    const maxAlgoInputSlice = data.length > this.MAX_ALGO_INPUT ? data.slice(0, this.MAX_ALGO_INPUT) : data;
+    const frequencies = maxAlgoInputSlice.map(annotation => annotation.frequency as number);
     const maximum = Math.max(...frequencies);
     const minimum = Math.min(...frequencies);
 
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
     const layout = cloud()
       .size([width, height])
-      .words(data)
+      .words(maxAlgoInputSlice)
       .padding(3)
       // max ~48px, min ~12px
       .fontSize((d) => (((d.frequency - minimum) / (maximum - minimum)) * 36) + 12)
