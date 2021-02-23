@@ -123,6 +123,7 @@ def get_kg_service():
         )
     return g.kg_service
 
+
 def get_visualizer_service():
     if 'visualizer_service' not in g:
         from neo4japp.services import VisualizerService
@@ -144,8 +145,7 @@ def get_file_type_service():
     :return: the service
     """
     from neo4japp.services.file_types.service import FileTypeService
-    from neo4japp.services.file_types.providers import \
-        EnrichmentTableTypeProvider, \
+    from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider, \
         MapTypeProvider, PDFTypeProvider, DirectoryTypeProvider
     service = FileTypeService()
     service.register(DirectoryTypeProvider())
@@ -164,16 +164,6 @@ def get_enrichment_table_service():
             session=db.session,
         )
     return g.enrichment_table_service
-
-def get_enrichment_visualisation_service():
-    if 'enrichment_visualisation_service' not in g:
-        from neo4japp.services import EnrichmentVisualisationService
-        graph = connect_to_neo4j()
-        g.enrichment_visualisation_service = EnrichmentVisualisationService(
-            graph=graph,
-            session=db.session,
-        )
-    return g.enrichment_visualisation_service
 
 
 def get_user_file_import_service():
@@ -269,10 +259,6 @@ def get_sorted_annotation_service(sort_id):
             graph=AnnotationGraphService()
         )
     )
-
-def get_annotation_pdf_parser():
-    from neo4japp.services.annotations import AnnotationPDFParser
-    return AnnotationPDFParser()
 
 
 def get_bioc_document_service():
