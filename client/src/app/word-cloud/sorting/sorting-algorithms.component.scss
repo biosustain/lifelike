@@ -7,6 +7,7 @@ button {
   left: auto !important;
   right: 0;
   transform: translateY(-100%) !important;
+  width: max-content;
 
   .arrow {
     left: auto !important;
@@ -15,5 +16,9 @@ button {
 
   .popover-header {
     color: black;
+  }
+
+  .popover-body {
+    text-align: justify;
   }
 }
