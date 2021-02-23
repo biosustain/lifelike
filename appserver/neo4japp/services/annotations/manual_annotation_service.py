@@ -277,7 +277,7 @@ class ManualAnnotationService:
             )).all()
         annotations = []
         for fi in files:
-            annotations.extend(self._get_file_annotations(fi))
+            annotations.extend(self.get_file_annotations(fi))
         return annotations
 
     def get_files_annotations_in_project(self, project_id: str) -> Dict[str, List]:
@@ -288,7 +288,7 @@ class ManualAnnotationService:
             )).all()
         files_annotations = {}
         for fi in files:
-            files_annotations[fi.file_id] = self._get_file_annotations(fi)
+            files_annotations[fi.file_id] = self.get_file_annotations(fi)
         return files_annotations
 
     def add_to_global_list(self, annotation, annotation_type, file_id):
