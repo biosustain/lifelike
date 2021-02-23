@@ -15,9 +15,6 @@ from flask import (
 )
 from flask_apispec import use_kwargs
 from marshmallow import validate, fields
-from sqlalchemy.exc import SQLAlchemyError
-from webargs.flaskparser import use_args
-
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.blueprints.permissions import (
@@ -49,10 +46,12 @@ from neo4japp.services.annotations.data_transfer_objects import (
 )
 from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.utils.logger import UserEventLog
+from sqlalchemy.exc import SQLAlchemyError
+from webargs.flaskparser import use_args
+
 from .filesystem import bp as filesystem_bp
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
-from ..schemas.annotations import CombinedAnnotationListSchema, \
-    AnnotationGenerationRequestSchema, \
+from ..schemas.annotations import AnnotationGenerationRequestSchema, \
     MultipleAnnotationGenerationResponseSchema, GlobalAnnotationsDeleteSchema, \
     CustomAnnotationCreateSchema, CustomAnnotationDeleteSchema, AnnotationUUIDListSchema, \
     AnnotationExclusionCreateSchema, AnnotationExclusionDeleteSchema, SystemAnnotationListSchema, \
@@ -296,8 +295,7 @@ class FileAnnotationSortedView(FilesystemBaseView):
         ),
         "hash_id": fields.Str()
     })
-    def post(self, args: any, hash_id: str):
-        print(args)
+    def post(self, args: Dict[str, str], hash_id: str):
         sort = args['sort']
         current_user = g.current_user
 
@@ -563,7 +561,6 @@ def export_global_exclusions():
 @auth.login_required
 @requires_role('admin')
 def get_annotation_global_list():
-
     yield g.current_user
 
     # Exclusions

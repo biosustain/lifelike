@@ -31,8 +31,11 @@ export const sortingAlgorithms: SortingAlgorithm[] = [
     name: 'Log transformed count',
     // title: 'No title',
     description: `
-    Word size will be adjusted by sum of log transformed count of times it has been mentioned in each paper.<br/>
-    This method mitigates an issue of "Occurrence count" where repeated mentions in one publication would falsely emphasise term relevance for whole project.
+    Word size will be adjusted by sum of log transformed count
+    of times it has been mentioned in each paper.<br/>
+    This method mitigates an issue of "Occurrence count"
+    where repeated mentions in one publication would falsely
+     emphasise term relevance for whole project.
     `,
     valueDescription: 'Sum log of frequency per file',
     min: 0,
@@ -44,7 +47,8 @@ export const sortingAlgorithms: SortingAlgorithm[] = [
     name: 'Mann–Whitney U test',
     // title: 'Title for description',
     description: `
-    This method uses Mann–Whitney U test quantify if term mention distribution differentiate from the whole dataset.<br/>
+    This method uses Mann–Whitney U test quantify if
+    term mention distribution differentiate from the whole dataset.<br/>
     The words becomes scaled by minus log of p-value to emphasise results close to 0.
     `,
     valueDescription: '-log(p-value)',
