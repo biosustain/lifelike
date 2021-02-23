@@ -40,7 +40,9 @@ export interface UniversalGraphNode {
   style?: UniversalNodeStyle;
 }
 
-export type UniversalGraphNodeTemplate = Pick<UniversalGraphNode, 'display_name' | 'label' | 'sub_labels'>;
+export type UniversalGraphNodeTemplate =
+  Pick<UniversalGraphNode, 'display_name' | 'label' | 'sub_labels'>
+  & { data?: Partial<UniversalEntityData>, style?: Partial<UniversalNodeStyle> };
 
 export interface UniversalEdgeStyle {
   fontSizeScale?: number;
