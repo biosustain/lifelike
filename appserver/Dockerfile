@@ -20,7 +20,7 @@ WORKDIR $N4J_HOME
 # Copy Pipfiles and install dependencies FIRST to better apply Docker layer cache
 COPY --chown=1000:1000 Pipfile .
 COPY --chown=1000:1000 Pipfile.lock .
-RUN pipenv install --dev --deploy --system || pipenv --python python3 lock && pipenv install --dev --deploy --system
+RUN pipenv install --dev --deploy --system
 
 # ...then copy everything else
 COPY --chown=1000:1000 . .
