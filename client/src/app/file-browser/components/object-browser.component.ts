@@ -228,9 +228,8 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
           newTab: true,
         });
       }
-    }, this.errorHandler.createCallback({
-      label: 'Create action',
-    }));
+    }, () => {
+    });
   }
 
 }
