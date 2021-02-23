@@ -5,7 +5,7 @@ import { MessageDialog } from '../../../shared/services/message-dialog.service';
 import { FilesystemObject } from '../../models/filesystem-object';
 import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
 import {
-  AnnotationGenerationRequest,
+  PDFAnnotationGenerationRequest,
   ObjectContentSource,
   ObjectCreateRequest,
 } from '../../schema';
@@ -70,7 +70,7 @@ export class ObjectAnnotateDialogComponent extends CommonFormDialogComponent<Obj
 }
 
 export interface ObjectAnnotateDialogValue {
-  request: AnnotationGenerationRequest;
+  request: PDFAnnotationGenerationRequest;
   annotationMethod: AnnotationMethod;
   organism: OrganismAutocomplete;
 }
