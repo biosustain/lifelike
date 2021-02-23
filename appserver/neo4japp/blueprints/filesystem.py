@@ -24,7 +24,7 @@ from neo4japp.database import db, get_file_type_service, get_authorization_servi
 from neo4japp.exceptions import RecordNotFoundException, AccessRequestRequiredError
 from neo4japp.models import Projects, Files, FileContent, AppUser, \
     FileVersion, FileBackup
-from neo4japp.models.files import FileLock, FileAnnotationsVersion
+from neo4japp.models.files import FileLock, FileAnnotationsVersion, FallbackOrganism
 from neo4japp.models.files_queries import FileHierarchy, \
     build_file_hierarchy_query, build_file_children_cte, add_file_user_role_columns
 from neo4japp.models.projects_queries import add_project_user_role_columns
@@ -288,6 +288,9 @@ class FilesystemBaseView(MethodView):
             raise NotImplementedError(
                 "Cannot update the content of multiple files with this method")
 
+        if params.get('fallback_organism'):
+            db.session.add(params['fallback_organism'])
+
         # ========================================
         # Apply
         # ========================================
@@ -336,6 +339,10 @@ class FilesystemBaseView(MethodView):
                             file.public != params['public']:
                         file.public = params['public']
                         changed_fields.add('public')
+
+                if 'fallback_organism' in params:
+                    file.fallback_organism = params['fallback_organism']
+                    changed_fields.add('fallback_organism')
 
                 if 'content_value' in params:
                     buffer = params['content_value']
@@ -576,6 +583,14 @@ class FileListView(FilesystemBaseView):
             if size:
                 file.content_id = FileContent.get_or_create(buffer)
                 buffer.seek(0)  # Must rewind
+
+        # ========================================
+        # Annotation options
+        # ========================================
+
+        if params.get('fallback_organism'):
+            db.session.add(params['fallback_organism'])
+            file.fallback_organism = params['fallback_organism']
 
         # ========================================
         # Commit and filename conflict resolution

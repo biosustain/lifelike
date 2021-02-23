@@ -6,6 +6,7 @@ from neo4japp.models import Files, Projects
 from neo4japp.models.files import FilePrivileges, FileLock
 from neo4japp.models.projects import ProjectPrivileges
 from neo4japp.schemas.account import UserSchema
+from neo4japp.schemas.annotations import FallbackOrganismSchema
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import ResultListSchema, ResultMappingSchema, SingleResultSchema, \
     RankedItemSchema
@@ -121,6 +122,7 @@ class FileSchema(CamelCaseSchema):
     upload_url = fields.String()
     public = fields.Boolean()
     annotations_date = fields.DateTime()
+    fallback_organism = fields.Nested(FallbackOrganismSchema)
     creation_date = fields.DateTime()
     modified_date = fields.DateTime()
     recycling_date = fields.DateTime()
@@ -218,12 +220,11 @@ class FileSearchRequestSchema(CamelCaseSchema):
 
 
 class BulkFileUpdateRequestSchema(CamelCaseSchema):
-    filename = NiceFilenameString(required=True,
-                                  validate=marshmallow.validate.Length(min=1, max=200))
-    parent_hash_id = fields.String(required=True,
-                                   validate=marshmallow.validate.Length(min=1, max=36))
+    filename = NiceFilenameString(validate=marshmallow.validate.Length(min=1, max=200))
+    parent_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
     description = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
+    fallback_organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     public = fields.Boolean(default=False)
     content_value = fields.Field(required=False)
 
@@ -233,6 +234,10 @@ class FileUpdateRequestSchema(BulkFileUpdateRequestSchema):
 
 
 class FileCreateRequestSchema(FileUpdateRequestSchema):
+    filename = NiceFilenameString(required=True,
+                                  validate=marshmallow.validate.Length(min=1, max=200))
+    parent_hash_id = fields.String(required=True,
+                                   validate=marshmallow.validate.Length(min=1, max=36))
     mime_type = fields.String(validate=marshmallow.validate.Length(min=1, max=2048))
     content_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
     content_url = fields.URL()

@@ -9,7 +9,7 @@ import {
   UniversalGraph,
   UniversalGraphNode,
 } from '../../drawing-tool/services/interfaces';
-import { AppUser, User } from '../../interfaces';
+import { AppUser, OrganismAutocomplete, User } from '../../interfaces';
 import { FilesystemObjectData, ProjectData } from '../schema';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
 import { Observable } from 'rxjs';
@@ -118,6 +118,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     sort: this.defaultSort,
   });
   privileges: FilePrivileges;
+  fallbackOrganism?: OrganismAutocomplete;
   recycled: boolean;
   effectivelyRecycled: boolean;
 
@@ -507,7 +508,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
     for (const key of [
       'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
-      'annotationsDate', 'uploadUrl', 'highlight',
+      'annotationsDate', 'uploadUrl', 'highlight', 'fallbackOrganism',
       'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
       'effectivelyRecycled']) {
       if (key in data) {
