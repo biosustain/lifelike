@@ -3,23 +3,12 @@ from marshmallow import fields, validate, ValidationError
 from neo4japp.database import ma
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import ResultListSchema
+from neo4japp.schemas.fields import SearchQuery
 from neo4japp.schemas.filesystem import RankedFileSchema
-
 
 # ========================================
 # Content Search
 # ========================================
-
-# Fields
-# ----------------------------------------
-
-class SearchQuery(fields.Field):
-    def _deserialize(self, value, attr, data, **kwargs):
-        try:
-            return str(value).strip()
-        except ValueError as error:
-            raise ValidationError('Search query must be a string!') from error
-
 
 # Requests
 # ----------------------------------------
