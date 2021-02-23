@@ -120,7 +120,7 @@ class LMDB:
                 readonly=True,
                 max_dbs=2,
             )
-        except Exception as e:
+        except Exception:
             raise LMDBError('An error occurred opening LMDB environment.')
         else:
             """

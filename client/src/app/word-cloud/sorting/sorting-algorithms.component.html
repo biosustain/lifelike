@@ -1,8 +1,15 @@
 <button
-  class="dropdown-item"
+  class="dropdown-item d-flex justify-content-between"
   [ngClass]="{'active': selected == algorithm}"
   (click)="changeSorting.emit(algorithm)"
   *ngFor="let algorithm of algorithms"
 >
-  {{ algorithm.description }}
+  {{ algorithm.name }}
+  <i class="fa fa-info-circle ml-3"
+     placement="top"
+     *ngIf="algorithm.description"
+     triggers="mouseenter:mouseleave"
+     [openDelay]="300"
+     [ngbPopover]="algorithm.description"
+     [popoverTitle]="algorithm.title"></i>
 </button>
