@@ -62,6 +62,7 @@ import { UserComponent } from './components/user.component';
 import { SelectInputComponent } from './components/form/select-input.component';
 import { UserSelectComponent } from './components/form/user-select.component';
 import { AccountsService } from './services/accounts.service';
+import { OrganismComponent } from './components/organism.component';
 import { ResultControlComponent } from './components/result-control.component';
 
 const components = [
@@ -104,6 +105,7 @@ const components = [
   UserComponent,
   SelectInputComponent,
   UserSelectComponent,
+  OrganismComponent,
   ResultControlComponent,
 ];
 

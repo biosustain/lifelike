@@ -93,7 +93,6 @@ export class FilesystemObjectTargetDirective {
           title: 'Upload File',
           promptUpload: false,
           promptParent: true,
-          promptAnnotationOptions: true,
           forceAnnotationOptions: true, // This is not correct (we should detect this value)
           request: {
             contentValue: file,
