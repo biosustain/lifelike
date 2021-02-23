@@ -35,7 +35,6 @@ export class WordCloudComponent {
   wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
   annotationData: WordCloudAnnotationFilterEntity[] = [];
   filtersPanelOpened = false;
-  sortingPanelOpened = false;
 
   legend: Map<string, string> = new Map<string, string>();
 
@@ -170,10 +169,6 @@ export class WordCloudComponent {
 
   toggleFiltersPanel() {
     this.filtersPanelOpened = !this.filtersPanelOpened;
-  }
-
-  toggleSortingPanel() {
-    this.sortingPanelOpened = !this.sortingPanelOpened;
   }
 
   toggleShownText() {

@@ -76,7 +76,6 @@ from neo4japp.utils.http import make_cacheable_file_response
 from neo4japp.services.annotations.sorted_annotation_service import \
     default_sorted_annotation, \
     sorted_annotations_dict
-from ..utils.http import make_cacheable_file_response
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 

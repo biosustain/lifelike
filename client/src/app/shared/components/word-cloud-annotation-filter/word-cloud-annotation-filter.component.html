@@ -159,10 +159,10 @@
       <div class="d-flex align-items-center text-overflow">
         <div class="custom-control custom-checkbox">
           <input [id]="id + 'filter-' + data.identifier"
-                 class="custom-control-input"
-                 type="checkbox"
-                 [checked]="data.visible"
-                 (change)="changeWordVisibility(data.identifier, $event)">
+                class="custom-control-input"
+                type="checkbox"
+                [checked]="data.visible"
+                (change)="changeWordVisibility(data.identifier, $event)">
           <label class="custom-control-label text-nowrap" [for]="id + 'filter-' + data.identifier">
             <ng-container *ngIf="!clickableWords; else showClickableWords">
               <div class="text-overflow">
