@@ -24,7 +24,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   @Input() title = 'Edit Item';
   @Input() parentLabel = 'Location';
   @Input() promptUpload = false;
-  @Input() promptAnnotationOptions = false;
   @Input() forceAnnotationOptions = false;
   @Input() promptParent = false;
 
@@ -100,6 +99,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       description: value.description || '',
       public: value.public || false,
       mimeType: value.mimeType,
+      organism: value.fallbackOrganism,
     });
     if (!value.parent) {
       this.promptParent = true;
@@ -136,12 +136,13 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   getValue(): ObjectEditDialogValue {
     const value = this.form.value;
 
-    const objectChanges = {
+    const objectChanges: Partial<FilesystemObject> = {
       parent: value.parent,
       filename: value.filename,
       description: value.description,
       public: value.public,
       mimeType: value.mimeType,
+      fallbackOrganism: value.organism,
     };
 
     const request: ObjectCreateRequest = {
@@ -150,6 +151,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       description: value.description,
       public: value.public,
       mimeType: value.mimeType,
+      fallbackOrganism: value.organism,
       ...this.getFileContentRequest(value),
     };
 
@@ -158,7 +160,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       objectChanges,
       request,
       annotationMethod: value.annotationMethod,
-      organism: value.organism,
     };
   }
 
@@ -252,5 +253,4 @@ export interface ObjectEditDialogValue {
   objectChanges: Partial<FilesystemObject>;
   request: ObjectCreateRequest;
   annotationMethod: AnnotationMethod;
-  organism: OrganismAutocomplete;
 }

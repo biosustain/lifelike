@@ -83,6 +83,7 @@ export interface FilesystemObjectData {
   description: string;
   mimeType: string;
   doi: string;
+  fallbackOrganism?: OrganismAutocomplete;
   public: boolean;
   annotationsDate: string;
   creationDate: string;
@@ -132,6 +133,7 @@ export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueReque
   description?: string;
   uploadUrl?: string;
   public?: boolean;
+  fallbackOrganism?: OrganismAutocomplete;
 }
 
 /**
@@ -210,6 +212,7 @@ export interface AnnotationGenerationResultData {
 
 // Requests
 // ----------------------------------------
+
 export interface AnnotationGenerationRequest {
   refresh?: boolean;
 }
