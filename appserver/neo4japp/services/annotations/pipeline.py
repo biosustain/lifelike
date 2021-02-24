@@ -175,8 +175,8 @@ def parse_pdf(file_id: int) -> Tuple[str, List[PDFWord]]:
 
 
 def parse_text(text: str) -> Tuple[str, List[PDFWord]]:
-    req = requests.get(
-        f'http://pdfparser:7600/token/rect/json', params={'text': text}, timeout=30)
+    req = requests.post(
+        f'http://pdfparser:7600/token/rect/json', data={'text': text}, timeout=30)
     resp = req.json()
     req.close()
 
@@ -192,7 +192,8 @@ def _create_annotations(
     pdf_text: str,
     excluded_annotations: List[dict],
     custom_annotations: List[dict],
-    annotation_method: Dict[str, dict]
+    annotation_method: Dict[str, dict],
+    enrichment_mappings: Dict[int, dict] = None
 ):
     annotator = get_annotation_service()
     bioc_service = get_bioc_document_service()
@@ -335,5 +336,47 @@ def create_annotations_from_text(
         pdf_text=pdf_text,
         custom_annotations=[],
         excluded_annotations=[]
+    )
+    return annotations
+
+
+def create_annotations_from_enrichment_table(
+    annotation_method,
+    specified_organism_synonym,
+    specified_organism_tax_id,
+    enrichment_mappings,
+    text
+):
+    pdf_text = ''
+    parsed = None
+
+    start = time.time()
+    try:
+        pdf_text, parsed = parse_text(text)
+    except requests.exceptions.ConnectTimeout:
+        raise AnnotationError(
+            'The request timed out while trying to connect to the parsing service.')
+    except requests.exceptions.Timeout:
+        raise AnnotationError(
+            'The request to the parsing service timed out.')
+    except (requests.exceptions.RequestException, Exception):
+        raise AnnotationError(
+            'An unexpected error occurred with the parsing service.')
+
+    current_app.logger.info(
+        f'Time to parse text {time.time() - start}',
+        extra=EventLog(event_type='annotations').to_dict()
+    )
+
+    annotations = _create_annotations(
+        annotation_method=annotation_method,
+        specified_organism_synonym=specified_organism_synonym,
+        specified_organism_tax_id=specified_organism_tax_id,
+        filename='text-extract',
+        parsed=parsed,
+        pdf_text=pdf_text,
+        custom_annotations=[],
+        excluded_annotations=[],
+        enrichment_mappings=enrichment_mappings
     )
     return annotations
