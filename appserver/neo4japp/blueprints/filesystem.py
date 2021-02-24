@@ -733,9 +733,11 @@ class FileSearchView(FilesystemBaseView):
             query = db.session.query(Files.id) \
                 .filter(Files.recycling_date.is_(None),
                         Files.deletion_date.is_(None),
-                        Files.public.is_(True),
-                        Files.mime_type.in_(params['mime_types'])) \
+                        Files.public.is_(True)) \
                 .order_by(*params['sort'])
+
+            if 'mime_types' in params:
+                query = query.filter(Files.mime_type.in_(params['mime_types']))
 
             result = query.paginate(pagination['page'], pagination['limit'])
 
