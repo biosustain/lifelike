@@ -107,7 +107,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     return this._showExcludedAnnotations;
   }
 
-  @Output() loadCompleted = new EventEmitter();
+  // @Output() loadCompleted = new EventEmitter();
   @Output() annotationDragStart = new EventEmitter<any>();
   // tslint:disable
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
@@ -192,10 +192,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     };
 
     this.goToPosition.subscribe((sub) => {
-      if (!this.isLoadCompleted && sub) {
-        // Pdf viewer is not ready to go to a position
-        return;
-      }
+      // if (!this.isLoadCompleted && sub) {
+      //   // Pdf viewer is not ready to go to a position
+      //   return;
+      // }
       if (sub != null) {
         if (sub.pageNumber != null) {
           this.scrollToPage(sub.pageNumber, sub.rect);
@@ -213,10 +213,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     });
 
     this.highlightAnnotations.subscribe((sub) => {
-      if (!this.isLoadCompleted && sub) {
-        // Pdf viewer is not ready to go to a position
-        return;
-      }
+      // if (!this.isLoadCompleted && sub) {
+      //   // Pdf viewer is not ready to go to a position
+      //   return;
+      // }
       this.highlightAllAnnotations(sub);
     });
 
@@ -232,8 +232,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       this.filterChangeSubscription = this.filterChanges.subscribe(() => this.renderFilterSettings());
     }
 
-    this.searchChangedSub = this.searchChanged.pipe(
-      debounceTime(250)).subscribe((sb) => {
+    this.searchChangedSub = this.searchChanged.subscribe((sb) => {
       this.searchQueryChanged(sb);
     });
   }

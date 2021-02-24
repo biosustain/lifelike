@@ -18,13 +18,22 @@ export class SearchControlComponent implements ControlValueAccessor {
 
   @Input() disabled = false;
   @Input() resultIndex = 0;
-  @Input() resultCount = 0;
+  _resultCount = 0;
+  @Input()
+  set resultCount(v) {
+    this._resultCount = v;
+  }
+
+  get resultCount() {
+    return this._resultCount;
+  }
+
   @Input() searching = false;
   @Output() previous = new EventEmitter<number>();
   @Output() next = new EventEmitter<number>();
   @Output() enterPress = new EventEmitter();
 
-  @ViewChild('searchInput', {static: false}) searchElement: ElementRef;
+  @ViewChild('searchInput', { static: false }) searchElement: ElementRef;
 
   changed() {
     if (this.changeCallback) {
