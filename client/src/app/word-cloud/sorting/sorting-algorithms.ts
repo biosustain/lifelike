@@ -19,8 +19,11 @@ export interface SortingAlgorithm {
 export const sortingAlgorithms: SortingAlgorithm[] = [
   {
     id: SortingAlgorithmId.frequency,
-    name: 'Occurrence count',
-    description: 'Word size will be adjusted by number of times it has been annotated in project files.',
+    name: 'Frequency',
+    description: `
+      Standard word cloud with word size determined from total word count.<br/>
+      <q>weight = sum_i(count_i)</q>
+    `,
     valueDescription: 'Entity Frequency',
     min: 0,
     step: 1,
@@ -28,14 +31,12 @@ export const sortingAlgorithms: SortingAlgorithm[] = [
   },
   {
     id: SortingAlgorithmId.sum_log_count,
-    name: 'Log transformed count',
+    name: 'Log transformed frequency',
     // title: 'No title',
     description: `
-    Word size will be adjusted by sum of log transformed count
-    of times it has been mentioned in each paper.<br/>
-    This method mitigates an issue of "Occurrence count"
-    where repeated mentions in one publication would falsely
-     emphasise term relevance for whole project.
+    Log transformed counts. Method emphasizes terms appearing across multiple sources
+    over similar counts collected from a single source.<br/>
+    <q>weight = sum_i(log(count_i))</q>
     `,
     valueDescription: 'Sum log of frequency per file',
     min: 0,
@@ -47,9 +48,9 @@ export const sortingAlgorithms: SortingAlgorithm[] = [
     name: 'Mann–Whitney U test',
     // title: 'Title for description',
     description: `
-    This method uses Mann–Whitney U test quantify if
-    term mention distribution differentiate from the whole dataset.<br/>
-    The words becomes scaled by minus log of p-value to emphasise results close to 0.
+    Each word are weighted according to a one-sided MWU test that assesses whether a count
+    for that specific term tends to be larger than a count from any other term.<br/>
+    <q>weight = -log(p-value)</q>
     `,
     valueDescription: '-log(p-value)',
     min: 0,
