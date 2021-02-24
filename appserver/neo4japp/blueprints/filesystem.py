@@ -198,7 +198,7 @@ class FilesystemBaseView(MethodView):
                      joinedload(Files.fallback_organism)) \
             .order_by(q_hierarchy.c.level)
 
-        if children_filter:
+        if children_filter is not None:
             query = query.filter(children_filter)
 
         if lazy_load_content:
