@@ -191,4 +191,11 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
     }
   }
 
+  openUploadUrl(object: FilesystemObject) {
+    window.open(object.uploadUrl, '');
+  }
+
+  openDoi(object: FilesystemObject) {
+    window.open(object.doi, '');
+  }
 }
