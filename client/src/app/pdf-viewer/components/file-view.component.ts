@@ -106,7 +106,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   addAnnotationSub: Subscription;
   removedAnnotationIds: string[];
   removeAnnotationSub: Subscription;
-  pdfFileLoaded = false;
+  // pdfFileLoaded = false;
   sortedEntityTypeEntries: EntityTypeEntry[] = [];
   entityTypeVisibilityChanged = false;
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
@@ -295,6 +295,20 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     this.updateSortedEntityTypeEntries();
   }
 
+  matchesCountUpdated({matchesCount, ready = true}) {
+    if (this.searchCommand !== 'find') {
+      return;
+    }
+    this.searching = !ready;
+    this.matchesCount = matchesCount;
+  }
+  
+  matchesCount = {
+    current: 0,
+    total: 0,
+  };
+  searching = false;
+  
   annotationRemoved(uuid) {
     const dialogRef = this.modalService.open(ConfirmDialogComponent);
     dialogRef.componentInstance.message = 'Do you want to remove all matching annotations from the file as well?';
@@ -464,7 +478,7 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     }
     this.pendingScroll = loc;
     this.pendingAnnotationHighlightId = annotationHighlightId;
-    this.pdfFileLoaded = false;
+    // this.pdfFileLoaded = false;
     this.ready = false;
 
     this.loadTask.update([hashId, loc]);
@@ -492,19 +506,19 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   scrollInPdf(loc: Location) {
-    if (!this.pdfFileLoaded) {
-      console.log('File in the pdf viewer is not loaded yet. So, I cant scroll');
-      this.pendingScroll = loc;
-      return;
-    }
+    // if (!this.pdfFileLoaded) {
+    //   console.log('File in the pdf viewer is not loaded yet. So, I cant scroll');
+    //   this.pendingScroll = loc;
+    //   return;
+    // }
     this.goToPosition.next(loc);
   }
 
   highlightAnnotation(annotationId: string) {
-    if (!this.pdfFileLoaded) {
-      this.pendingAnnotationHighlightId = annotationId;
-      return;
-    }
+    // if (!this.pdfFileLoaded) {
+    //   this.pendingAnnotationHighlightId = annotationId;
+    //   return;
+    // }
     let text = annotationId;
     if (annotationId != null) {
       for (const annotation of this.annotations) {
@@ -523,17 +537,18 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
   }
 
   loadCompleted(status) {
-    this.pdfFileLoaded = status;
-    if (this.pdfFileLoaded) {
-      if (this.pendingScroll) {
-        this.scrollInPdf(this.pendingScroll);
-        this.pendingScroll = null;
-      }
-      if (this.pendingAnnotationHighlightId) {
-        this.highlightAnnotation(this.pendingAnnotationHighlightId);
-        this.pendingAnnotationHighlightId = null;
-      }
-    }
+    //todo
+    // this.pdfFileLoaded = status;
+    // if (this.pdfFileLoaded) {
+    //   if (this.pendingScroll) {
+    //     this.scrollInPdf(this.pendingScroll);
+    //     this.pendingScroll = null;
+    //   }
+    //   if (this.pendingAnnotationHighlightId) {
+    //     this.highlightAnnotation(this.pendingAnnotationHighlightId);
+    //     this.pendingAnnotationHighlightId = null;
+    //   }
+    // }
   }
 
   close() {
