@@ -25,6 +25,9 @@ def parse_sort(value: str, choices: Dict[str, Column], default_value: str):
     tokens = (value if value is not None and len(value) else default_value).split(',')
     columns = []
 
+    if not len(value):
+        return []
+
     for token in tokens:
         if not len(token):
             raise ValueError('bad sort token')
