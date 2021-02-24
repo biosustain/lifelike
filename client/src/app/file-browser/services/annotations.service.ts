@@ -17,9 +17,8 @@ import { map } from 'rxjs/operators';
 import { ResultList, ResultMapping } from '../../shared/schemas/common';
 import {
   defaultSortingAlgorithm,
-  SortingAlgorithm, SortingAlgorithmId,
+  SortingAlgorithmId
 } from '../../word-cloud/sorting/sorting-algorithms';
-import { deprecate } from 'util';
 
 @Injectable()
 export class AnnotationsService {

@@ -4,7 +4,6 @@ import html
 import io
 import json
 import re
-
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
@@ -38,24 +37,6 @@ from neo4japp.models import (
     GlobalList,
     FallbackOrganism
 )
-from neo4japp.services.annotations.constants import (
-    AnnotationMethod,
-    EntityType,
-    ManualAnnotationType,
-)
-from neo4japp.services.annotations.data_transfer_objects import (
-    GlobalAnnotationData
-)
-from neo4japp.services.annotations.pipeline import (
-    create_annotations_from_pdf,
-    create_annotations_from_text
-)
-from neo4japp.utils.logger import UserEventLog
-from sqlalchemy.exc import SQLAlchemyError
-from webargs.flaskparser import use_args
-
-from .filesystem import bp as filesystem_bp
-from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from neo4japp.schemas.annotations import (
     AnnotationGenerationRequestSchema,
     RefreshEnrichmentAnnotationsRequestSchema,
@@ -69,13 +50,32 @@ from neo4japp.schemas.annotations import (
     SystemAnnotationListSchema,
     CustomAnnotationListSchema
 )
-from neo4japp.schemas.filesystem import BulkFileRequestSchema
 from neo4japp.schemas.enrichment import EnrichmentTableSchema
+from neo4japp.schemas.filesystem import BulkFileRequestSchema
 from neo4japp.services.annotations import AnnotationGraphService
-from neo4japp.utils.http import make_cacheable_file_response
+from neo4japp.services.annotations.constants import (
+    AnnotationMethod,
+    EntityType,
+    ManualAnnotationType,
+)
+from neo4japp.services.annotations.data_transfer_objects import (
+    GlobalAnnotationData
+)
+from neo4japp.services.annotations.pipeline import (
+    create_annotations_from_pdf,
+    create_annotations_from_text
+)
 from neo4japp.services.annotations.sorted_annotation_service import \
     default_sorted_annotation, \
     sorted_annotations_dict
+from neo4japp.utils.http import make_cacheable_file_response
+from neo4japp.utils.logger import UserEventLog
+from sqlalchemy import and_
+from sqlalchemy.exc import SQLAlchemyError
+from webargs.flaskparser import use_args
+
+from .filesystem import bp as filesystem_bp
+from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
@@ -338,7 +338,10 @@ class FileAnnotationSortedView(FilesystemBaseView):
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
         files = self.get_nondeleted_recycled_children(
             Files.id == file.id,
-            children_filter=Files.mime_type == 'application/pdf',
+            children_filter=and_(
+                (Files.mime_type == 'application/pdf'),
+                Files.recycling_date.is_(None)
+            ),
             lazy_load_content=True
         )
 
@@ -353,7 +356,7 @@ class FileAnnotationSortedView(FilesystemBaseView):
             request,
             result,
             etag=hashlib.sha256(result).hexdigest(),
-            filename=f'{file.filename} - Annotations.tsv',
+            filename=f'{file.filename} - {sort} - Annotations.tsv',
             mime_type='text/tsv'
         )
 
@@ -496,9 +499,9 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         else:
                             enrichment[
                                 'genes'][text_mapping[
-                                    'row']]['domains'][text_mapping[
-                                        'domain']][text_mapping[
-                                            'label']]['annotated_text'] = snippet
+                                'row']]['domains'][text_mapping[
+                                'domain']][text_mapping[
+                                'label']]['annotated_text'] = snippet
                 if all_annotations:
                     update = {
                         'id': file.id,
@@ -537,10 +540,10 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         }))
 
     def _annotate(self, file: Files,
-                  cause: AnnotationChangeCause,
-                  organism: Optional[FallbackOrganism] = None,
-                  method: AnnotationMethod = AnnotationMethod.RULES,
-                  user_id: int = None):
+            cause: AnnotationChangeCause,
+            organism: Optional[FallbackOrganism] = None,
+            method: AnnotationMethod = AnnotationMethod.RULES,
+            user_id: int = None):
         annotations_json = create_annotations_from_pdf(
             annotation_method=method.value,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
@@ -570,10 +573,10 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         return update, version
 
     def _annotate_text(
-        self,
-        text: str,
-        organism: Optional[FallbackOrganism] = None,
-        method: AnnotationMethod = AnnotationMethod.RULES
+            self,
+            text: str,
+            organism: Optional[FallbackOrganism] = None,
+            method: AnnotationMethod = AnnotationMethod.RULES
     ):
         annotations_json = create_annotations_from_text(
             annotation_method=method.value,
