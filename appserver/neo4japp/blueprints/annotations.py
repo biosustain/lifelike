@@ -42,7 +42,7 @@ from neo4japp.models import (
     FallbackOrganism
 )
 from neo4japp.services.annotations.constants import (
-    AnnotationMethod,
+    DEFAULT_ANNOTATION_CONFIGS,
     EntityType,
     ManualAnnotationType,
 )
@@ -57,6 +57,7 @@ from neo4japp.utils.logger import UserEventLog
 from .filesystem import bp as filesystem_bp
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from neo4japp.schemas.annotations import (
+    AnnotationMethod,
     AnnotationGenerationRequestSchema,
     RefreshEnrichmentAnnotationsRequestSchema,
     MultipleAnnotationGenerationResponseSchema,
@@ -119,6 +120,23 @@ class FileAnnotationsView(FilesystemBaseView):
             'results': results,
             'total': len(results),
         }))
+
+
+class AnnotationSelectionView(FilesystemBaseView):
+    decorators = [auth.login_required]
+
+    def get(self, hash_id: str):
+        """Fetch annotation selection configs for file."""
+        current_user = g.current_user
+
+        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
+        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+
+        configs = {'annotation_configs': file.annotation_configs}
+
+        return jsonify({
+            'results': AnnotationGenerationRequestSchema().dump(configs)
+        })
 
 
 class EnrichmentAnnotationsView(FilesystemBaseView):
@@ -417,7 +435,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
 
         organism = None
-        method = params.get('method', AnnotationMethod.RULES)
+        annotation_configs = params.get('annotation_configs')
         enrichment = params.get('enrichment', None)
         texts = params.get('texts', [])
 
@@ -426,18 +444,24 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             db.session.add(organism)
             db.session.flush()
 
+        if not annotation_configs:
+            annotation_configs = DEFAULT_ANNOTATION_CONFIGS
+
         updated_files = []
         versions = []
         results = {}
         missing = self.get_missing_hash_ids(targets['hash_ids'], files)
 
         for file in files:
+            if not file.annotation_configs:
+                file.annotation_configs = annotation_configs
+
             if file.mime_type == 'application/pdf':
                 try:
                     annotations, version = self._annotate(
                         file=file,
                         cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
-                        method=method,
+                        method=annotation_configs,
                         organism=organism or file.fallback_organism,
                         user_id=current_user.id,
                     )
@@ -464,7 +488,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     text = text_mapping['text']
                     try:
                         annotations = self._annotate_text(
-                            method=method,
+                            method=annotation_configs,
                             organism=organism,
                             text=text
                         )
@@ -543,10 +567,10 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
     def _annotate(self, file: Files,
                   cause: AnnotationChangeCause,
                   organism: Optional[FallbackOrganism] = None,
-                  method: AnnotationMethod = AnnotationMethod.RULES,
+                  method: Dict[str, AnnotationMethod] = None,
                   user_id: int = None):
         annotations_json = create_annotations_from_pdf(
-            annotation_method=method.value,
+            annotation_method=method,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
             document=file,
@@ -577,10 +601,10 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         self,
         text: str,
         organism: Optional[FallbackOrganism] = None,
-        method: AnnotationMethod = AnnotationMethod.RULES
+        method: Dict[str, AnnotationMethod] = None
     ):
         annotations_json = create_annotations_from_text(
-            annotation_method=method.value,
+            annotation_method=method,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
             text=text
@@ -903,3 +927,6 @@ filesystem_bp.add_url_rule(
     'annotations/refresh',
     # TODO: this can potentially become a generic annotations refresh
     view_func=RefreshEnrichmentAnnotationsView.as_view('refresh_annotations'))
+filesystem_bp.add_url_rule(
+    'objects/<string:hash_id>/annotations/configs',
+    view_func=AnnotationSelectionView.as_view('file_annotation_configs'))
