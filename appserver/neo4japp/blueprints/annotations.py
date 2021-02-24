@@ -49,7 +49,8 @@ from neo4japp.services.annotations.data_transfer_objects import (
 )
 from neo4japp.services.annotations.pipeline import (
     create_annotations_from_pdf,
-    create_annotations_from_text
+    create_annotations_from_text,
+    create_annotations_from_enrichment_table
 )
 from neo4japp.utils.logger import UserEventLog
 from .filesystem import bp as filesystem_bp
@@ -404,33 +405,58 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             elif file.mime_type == 'vnd.lifelike.document/enrichment-table' and enrichment:
                 all_annotations = []
 
+                enrichment_mappings = {}
+                curr_idx = 0
+                enrichment_text = ''
+
+                # combine all text to process at once
                 for text_mapping in texts:
                     text = text_mapping['text']
-                    try:
-                        annotations = self._annotate_text(
-                            method=annotation_configs,
-                            organism=organism,
-                            text=text
-                        )
-                    except AnnotationError as e:
-                        current_app.logger.error(
-                            'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e)  # noqa
-                        results[file.hash_id] = {
-                            'attempted': True,
-                            'success': False,
-                        }
-                    else:
-                        current_app.logger.debug(
-                            'File successfully annotated: %s, %s', file.hash_id, file.filename)
-                        all_annotations.append(annotations)
-                        results[file.hash_id] = {
-                            'attempted': True,
-                            'success': True,
-                        }
+                    enrichment_text += text
+                    curr_idx = len(enrichment_text)
+                    enrichment_mappings[curr_idx-1] = text_mapping
+                    enrichment_text += ' '  # to separate prev text
+
+                # remove trailing white space
+                # shouldn't matter but let's see how it does...
+                enrichment_text = enrichment_text[:-1]
+
+                try:
+                    annotations = self._annotate_enrichment_texts(
+                        text=enrichment_text,
+                        enrichment_mappings=enrichment_mappings,
+                        method=annotation_configs,
+                        organism=organism,
+                    )
+                except AnnotationError as e:
+                    current_app.logger.error(
+                        'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e)  # noqa
+                    results[file.hash_id] = {
+                        'attempted': True,
+                        'success': False,
+                    }
+                else:
+                    current_app.logger.debug(
+                        'File successfully annotated: %s, %s', file.hash_id, file.filename)
+                    all_annotations.append(annotations)
+                    results[file.hash_id] = {
+                        'attempted': True,
+                        'success': True,
+                    }
+
+                    annotations_list = annotations['documents'][0]['passages'][0]['annotations']  # noqa
+
+                    prev_k = -1
+                    for k, text_mapping in enrichment_mappings.items():
+                        annotations_to_process = [anno for anno in annotations_list if anno.get(
+                            'hiLocationOffset', None) and anno.get(
+                                'loLocationOffset') > prev_k and anno.get('hiLocationOffset') <= k]
+
+                        prev_k = k
 
                         snippet = self._highlight_annotations(
-                            original_text=text,
-                            annotations=annotations['documents'][0]['passages'][0]['annotations']
+                            original_text=text_mapping['text'],
+                            annotations=annotations_to_process
                         )
                         if text_mapping.get('imported'):
                             enrichment['genes'][text_mapping[
@@ -489,6 +515,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                   organism: Optional[FallbackOrganism] = None,
                   method: Dict[str, AnnotationMethod] = None,
                   user_id: int = None):
+        """Annotate PDF files."""
         annotations_json = create_annotations_from_pdf(
             annotation_method=method,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
@@ -523,11 +550,30 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         organism: Optional[FallbackOrganism] = None,
         method: Dict[str, AnnotationMethod] = None
     ):
+        """Annotate text string."""
         annotations_json = create_annotations_from_text(
             annotation_method=method,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
             text=text
+        )
+        return annotations_json
+
+    def _annotate_enrichment_texts(
+        self,
+        text: str,
+        enrichment_mappings: Dict[int, dict],
+        organism: Optional[FallbackOrganism] = None,
+        method: Dict[str, AnnotationMethod] = None
+    ):
+        """Annotate all text in enrichment table."""
+
+        annotations_json = create_annotations_from_enrichment_table(
+            annotation_method=method,
+            specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
+            specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
+            text=text,
+            enrichment_mappings=enrichment_mappings
         )
         return annotations_json
 
