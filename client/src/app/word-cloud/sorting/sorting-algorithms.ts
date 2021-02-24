@@ -22,7 +22,7 @@ export const sortingAlgorithms: SortingAlgorithm[] = [
     name: 'Frequency',
     description: `
       Standard word cloud with word size determined from total word count.<br/>
-      <q>weight = sum_i(count_i)</q>
+      <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = 𝙨𝙪𝙢<sub>𝙞</sub> (𝙘𝙤𝙪𝙣𝙩<sub>𝙞</sub> )</p>
     `,
     valueDescription: 'Entity Frequency',
     min: 0,
@@ -36,7 +36,7 @@ export const sortingAlgorithms: SortingAlgorithm[] = [
     description: `
     Log transformed counts. Method emphasizes terms appearing across multiple sources
     over similar counts collected from a single source.<br/>
-    <q>weight = sum_i(log(count_i))</q>
+    <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = 𝙨𝙪𝙢<sub>𝙞</sub> (𝙡𝙤𝙜 (𝙘𝙤𝙪𝙣𝙩<sub>𝙞</sub> ))</p>
     `,
     valueDescription: 'Sum log of frequency per file',
     min: 0,
@@ -50,7 +50,7 @@ export const sortingAlgorithms: SortingAlgorithm[] = [
     description: `
     Each word are weighted according to a one-sided MWU test that assesses whether a count
     for that specific term tends to be larger than a count from any other term.<br/>
-    <q>weight = -log(p-value)</q>
+    <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = -𝙡𝙤𝙜 (𝙥 -𝙫𝙖𝙡𝙪𝙚 )</p>
     `,
     valueDescription: '-log(p-value)',
     min: 0,
