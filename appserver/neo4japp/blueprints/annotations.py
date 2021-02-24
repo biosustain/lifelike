@@ -597,7 +597,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             keyword = annotation['keyword']
             text = re.sub(
                 # Replace but outside tags (shh @ regex)
-                f'({re.escape(keyword)})(?![^<]*>|[^<>]*</)',
+                f"(?<!\\w)({re.escape(keyword)})(?!\\w)(?![^<]*>|[^<>]*</)",
                 f'<annotation type="{annotation["meta"]["type"]}" '
                 f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
                 f'>\\1</annotation>',
