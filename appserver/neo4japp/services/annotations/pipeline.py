@@ -81,33 +81,23 @@ def get_nlp_entities(text: str, entities: Set[str]):
         EntityType.SPECIES.value: set()
     }
 
+    models = []
     if all([model in entities for model in nlp_models]):
-        # use `all`
-        req = requests.post(
-            'https://nlp-api.lifelike.bio/v1/predict',
-            data=json.dumps({'model': 'all', 'sentence': text}),
-            headers={
-                'Content-type': 'application/json',
-                'secret': 'dGhpcyBpcyB2ZXJ5IHNlY3JldCBmb3IgbmxwIGFwaQ=='})
+        req = call_nlp_service(model='all', text=text)
+        models = [req]
+    else:
+        with mp.Pool(processes=4) as pool:
+            models = pool.starmap(
+                call_nlp_service, [(
+                    nlp_models[model],
+                    text
+                ) for model in entities if nlp_models.get(model, None)])
 
-        models = req.json()
-        req.close()
-
-        for results in models['results']:
+    for model in models:
+        for results in model['results']:
             for token in results['annotations']:
                 token_offset = (token['start_pos'], token['end_pos']-1)
                 entity_results[nlp_model_types[results['model']]].add(token_offset)
-    else:
-        combined = []
-        with mp.Pool(processes=4) as pool:
-            combined = pool.starmap(
-                call_nlp_service, [(nlp_models[model], text) for model in entities])
-
-        for model in combined:
-            for results in model['results']:
-                for token in results['annotations']:
-                    token_offset = (token['start_pos'], token['end_pos']-1)
-                    entity_results[nlp_model_types[results['model']]].add(token_offset)
 
     return NLPResults(
         anatomy=entity_results[EntityType.ANATOMY.value],
