@@ -555,7 +555,7 @@ class FileListView(FilesystemBaseView):
                     'Your file could not be processed because it is too large.')
 
             # Save the URL
-            file.url = url
+            file.upload_url = url
 
             # Detect mime type
             if params.get('mime_type'):
