@@ -988,6 +988,7 @@ class AnnotationService:
         entity_results: EntityResults,
         entity_type_and_id_pairs: List[Tuple[str, str]],
         specified_organism: SpecifiedOrganismStrain,
+        enrichment_mappings: Dict[int, dict] = None
     ) -> List[Annotation]:
         self.matched_type_anatomy = entity_results.matched_type_anatomy
         self.matched_type_chemical = entity_results.matched_type_chemical
@@ -1012,7 +1013,8 @@ class AnnotationService:
         )
 
         cleaned = self._clean_annotations(
-            annotations=annotations)
+            annotations=annotations,
+            enrichment_mappings=enrichment_mappings)
         # update the annotations with the common primary name
         # do this after cleaning because it's easier to
         # query the KG for the primary names after the
@@ -1021,14 +1023,35 @@ class AnnotationService:
 
     def _clean_annotations(
         self,
-        annotations: List[Annotation]
+        annotations: List[Annotation],
+        enrichment_mappings: Dict[int, dict] = None
     ) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=annotations)
 
-        fixed_unified_annotations = self.fix_conflicting_annotations(
-            unified_annotations=fixed_unified_annotations,
-        )
+        if enrichment_mappings:
+            # need to split up the annotations otherwise
+            # a text in a cell could be removed due to
+            # overlapping with an adjacent cell
+            split: Dict[int, List[Annotation]] = {k: list() for k in enrichment_mappings}
+            for anno in fixed_unified_annotations:
+                for i in split:
+                    # append annotation to list that is greater
+                    # than hi_location_offset
+                    # this means the annotation is part of that sublist
+                    if anno.hi_location_offset <= i:
+                        split[i].append(anno)
+                        break
+
+            combined: List[Annotation] = []
+            for _, v in split.items():
+                combined += self.fix_conflicting_annotations(
+                    unified_annotations=v)
+
+            fixed_unified_annotations = combined
+        else:
+            fixed_unified_annotations = self.fix_conflicting_annotations(
+                unified_annotations=fixed_unified_annotations)
         return fixed_unified_annotations
 
     def add_primary_name(self, annotations: List[Annotation]) -> List[Annotation]:
