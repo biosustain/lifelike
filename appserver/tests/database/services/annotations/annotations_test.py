@@ -7,6 +7,7 @@ from typing import List, Tuple
 from neo4japp.services.annotations.data_transfer_objects import (
     Annotation,
     GeneAnnotation,
+    NLPResults,
     SpecifiedOrganismStrain
 )
 from neo4japp.services.annotations.constants import EntityType, OrganismCategory
@@ -51,9 +52,11 @@ def annotate_pdf(
 
     entity_results = entity_service.identify(
         custom_annotations=custom_annotations,
-        tokens=parsed
+        tokens=parsed,
+        nlp_results=NLPResults(),
+        annotation_method={}
     )
-    return annotation_service.create_rules_based_annotations(
+    return annotation_service.create_annotations(
         custom_annotations=custom_annotations,
         excluded_annotations=excluded_annotations,
         entity_results=entity_results,
