@@ -55,6 +55,12 @@
   <button ngbDropdownItem (click)="openShareDialog(object)">
     Copy{{ nameEntity && object.isDirectory ? ' folder' : ''}} link...
   </button>
+  <button *ngIf="object.uploadUrl" ngbDropdownItem (click)="openUploadUrl(object)">
+    Open source URL...
+  </button>
+  <button *ngIf="object.doi" ngbDropdownItem (click)="openDoi(object)">
+    Open DOI...
+  </button>
   <ng-container *ngIf="object.isNavigable">
     <button ngbDropdownItem [appLink]="['/file-navigator', object.project.name, object.hashId]"
             [newTab]="true" [sideBySide]="true">
