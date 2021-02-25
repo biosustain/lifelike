@@ -7,6 +7,7 @@ from sqlalchemy import (
     join,
     orm,
     select,
+    and_,
     or_,
 )
 from sqlalchemy.orm import validates
