@@ -6,10 +6,6 @@ import { FilesystemObject } from '../../models/filesystem-object';
 import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
 import { AnnotationConfigs, ObjectContentSource, ObjectCreateRequest } from '../../schema';
 import { OrganismAutocomplete } from '../../../interfaces';
-import { select, Store } from '@ngrx/store';
-import { AuthSelectors } from '../../../auth/store';
-import { State } from 'app/root-store';
-import { Observable } from 'rxjs';
 import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from '../../../interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
@@ -32,7 +28,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
   readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(
     key => NLPANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
-  readonly userRoles$: Observable<string[]>;
 
   private _object: FilesystemObject;
   private filePossiblyAnnotatable = false;
@@ -90,10 +85,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   constructor(modal: NgbActiveModal,
               messageDialog: MessageDialog,
-              store: Store<State>,
               protected readonly modalService: NgbModal) {
     super(modal, messageDialog);
-    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
   }
 
   get object() {
