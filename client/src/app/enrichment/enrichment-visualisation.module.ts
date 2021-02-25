@@ -20,6 +20,7 @@ import {
 import {
   EnrichmentVisualisationCloudViewerComponent
 } from './components/visualisation/enrichment-visualisation-cloud-viewer.component';
+import { EnrichmentVisualisationGroupComponent } from './components/visualisation/enrichment-visualisation-group.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import {
     EnrichmentTableViewerComponent,
     EnrichmentVisualisationChartViewerComponent,
     EnrichmentVisualisationCloudViewerComponent,
+    EnrichmentVisualisationGroupComponent
   ],
   imports: [
     SharedModule,
