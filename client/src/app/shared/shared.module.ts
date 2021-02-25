@@ -64,6 +64,7 @@ import { SelectInputComponent } from './components/form/select-input.component';
 import { UserSelectComponent } from './components/form/user-select.component';
 import { AccountsService } from './services/accounts.service';
 import { ResultControlComponent } from './components/result-control.component';
+import { PaginationComponent } from './components/pagination.component';
 
 const components = [
   VisJsNetworkComponent,
@@ -107,6 +108,7 @@ const components = [
   SelectInputComponent,
   UserSelectComponent,
   ResultControlComponent,
+  PaginationComponent,
 ];
 
 @NgModule({
