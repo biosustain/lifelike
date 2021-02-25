@@ -192,8 +192,16 @@ def downgrade():
     # (i.e. "downgrade forward"!)
 
 
-def data_upgrades():
-    """Add optional data upgrade migrations here"""
+def migration_fix():
+    """
+    Keeping this data migration for legacy purposes. It's mostly
+    likely not needed, but having it within the data migration process
+    at the moment prevents our test from being idempotent as it continously
+    adds a user each time we spin up a test environment.
+
+    We could potentially also have our start up script not run
+    data migrations when running unit tests via environmental variables.
+    """
 
     conn = op.get_bind()
 
@@ -368,6 +376,11 @@ def data_upgrades():
                      .update()
                      .where(t_project.c.id == proj_id[0])
                      .values(dir_id=directory_id))
+
+def data_upgrades():
+    """Add optional data upgrade migrations here"""
+    pass
+
 
 
 def data_downgrades():

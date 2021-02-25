@@ -56,3 +56,11 @@ class SortField(fields.String):
 class FileUploadField(fields.Field):
     pass
     # TODO: validate
+
+
+class SearchQuery(fields.Field):
+    def _deserialize(self, value, attr, data, **kwargs):
+        try:
+            return str(value).strip()
+        except ValueError as error:
+            raise ValidationError('Search query must be a string!') from error
