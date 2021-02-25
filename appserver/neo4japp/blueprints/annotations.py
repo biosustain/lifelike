@@ -913,7 +913,7 @@ filesystem_bp.add_url_rule(
     view_func=FileAnnotationExclusionsListView.as_view('file_annotation_exclusions_list'))
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/counts',
-    view_func=FileAnnotationSortedView.as_view('file_annotation_sorted'))
+    view_func=FileAnnotationSortedView.as_view('file_annotation_counts'))
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/sorted',
     view_func=FileAnnotationSortedView.as_view('file_annotation_sorted'))
