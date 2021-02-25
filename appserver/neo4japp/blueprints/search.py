@@ -1,7 +1,6 @@
 import html
 import json
 import re
-from collections import defaultdict
 from typing import List, Optional
 
 
@@ -16,7 +15,12 @@ from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.data_transfer_objects import GeneFilteredRequest
 from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
-from neo4japp.database import get_search_service_dao, db, get_elastic_service, get_file_type_service
+from neo4japp.database import (
+    db,
+    get_search_service_dao,
+    get_elastic_service,
+    get_file_type_service
+)
 from neo4japp.models import (
     Projects,
     AppRole,
@@ -24,13 +28,11 @@ from neo4japp.models import (
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.search import (
-    AnnotateRequestSchema,
     ContentSearchSchema,
     OrganismSearchSchema,
-    VizSearchSchema, ContentSearchResponseSchema
+    VizSearchSchema,
+    ContentSearchResponseSchema
 )
-from neo4japp.services.annotations.constants import AnnotationMethod
-from neo4japp.services.annotations.pipeline import create_annotations
 from neo4japp.services.file_types.providers import (
     EnrichmentTableTypeProvider,
     MapTypeProvider,
@@ -75,76 +77,10 @@ def visualizer_search(
     })
 
 
-@bp.route('/annotate', methods=['POST'])
-@auth.login_required
-@use_kwargs(AnnotateRequestSchema)
-def annotate(texts):
-    # If done right, we would parse the XML but the built-in XML libraries in Python
-    # are susceptible to some security vulns, but because this is an internal API,
-    # we can accept that it can be janky
-    container_tag_re = re.compile("^<snippet>(.*)</snippet>$", re.DOTALL | re.IGNORECASE)
-    highlight_strip_tag_re = re.compile("^<highlight>([^<]+)</highlight>$", re.IGNORECASE)
-    highlight_add_tag_re = re.compile("^%%%%%-(.+)-%%%%%$", re.IGNORECASE)
-
-    results = []
-
-    for text in texts:
-        annotations = []
-
-        # Remove the outer document tag
-        text = container_tag_re.sub("\\1", text)
-        # Remove the highlight tags to help the annotation parser
-        text = highlight_strip_tag_re.sub("%%%%%-\\1-%%%%%", text)
-
-        try:
-            annotations = create_annotations(
-                annotation_method=AnnotationMethod.RULES.value,
-                document=text,
-                filename='snippet.pdf',
-                specified_organism_synonym='',
-                specified_organism_tax_id='',
-            )['documents'][0]['passages'][0]['annotations']
-        except Exception as e:
-            pass
-
-        for annotation in annotations:
-            keyword = annotation['keyword']
-            text = re.sub(
-                # Replace but outside tags (shh @ regex)
-                f"({re.escape(keyword)})(?![^<]*>|[^<>]*</)",
-                f'<annotation type="{annotation["meta"]["type"]}" '
-                f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
-                f'>\\1</annotation>',
-                text,
-                flags=re.IGNORECASE)
-
-        # Re-add the highlight tags
-        text = highlight_add_tag_re.sub("<highlight>\\1</highlight>", text)
-        # Re-wrap with document tags
-        text = f"<snippet>{text}</snippet>"
-
-        results.append(text)
-
-    return jsonify({
-        'texts': results,
-    })
-
-
 # Start Search Helpers #
 
 def empty_params(params):
-    q_exists = params['q'] != ''
-    types_exists = params.get('types', None) is not None and params['types'] != ''
-    projects_exists = (
-        params.get('projects', None) is not None and
-        params['projects'] != ''
-    )
-    phrase_exists = params.get('phrase', None) is not None and params['phrase'] != ''
-    wildcards_exists = (
-        params.get('wildcards', None) is not None and
-        params['wildcards'] != ''
-    )
-    return not (q_exists or types_exists or projects_exists or phrase_exists or wildcards_exists)
+    return not any([params[key] for key in params.keys()])
 
 
 def get_types_from_params(q, advanced_args, file_type_service):
@@ -205,7 +141,7 @@ def get_wildcards_from_params(q, advanced_args):
     if 'wildcards' in advanced_args and advanced_args['wildcards'] != '':
         wildcards = advanced_args['wildcards'].split(';')
 
-    return ' '.join([q] + list(wildcards))
+    return ' '.join([q] + wildcards)
 
 
 def get_phrase_from_params(q, advanced_args):
@@ -216,29 +152,7 @@ def get_phrase_from_params(q, advanced_args):
 
 
 def get_projects_filter(user_id: int, projects: List[str]):
-    t_project = aliased(Projects)
-    t_project_role = aliased(AppRole)
-
-    # Role table used to check if we have permission
-    query = db.session.query(
-        t_project.id
-    ).join(
-        projects_collaborator_role,
-        sqlalchemy.and_(
-            projects_collaborator_role.c.projects_id == t_project.id,
-            projects_collaborator_role.c.appuser_id == user_id,
-        )
-    ).join(
-        t_project_role,
-        sqlalchemy.and_(
-            t_project_role.id == projects_collaborator_role.c.app_role_id,
-            sqlalchemy.or_(
-                t_project_role.name == 'project-read',
-                t_project_role.name == 'project-write',
-                t_project_role.name == 'project-admin'
-            )
-        )
-    )
+    query = Projects.user_has_permission_to_projects(user_id, projects)
 
     if len(projects) > 0:
         # TODO: Right now filtering by project name works because project names are unique.
@@ -248,6 +162,7 @@ def get_projects_filter(user_id: int, projects: List[str]):
 
         # We can further extend this behavior to directories. A directory can be uniquely
         # identified by its path, with the owner's username as the root.
+        t_project = aliased(Projects)
         query = query.filter(
             t_project.name.in_(projects)
         )

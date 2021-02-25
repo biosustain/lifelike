@@ -19,6 +19,7 @@ import { EnrichmentDocument } from '../models/enrichment-document';
 export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponent<EnrichmentDocument> {
   _document: EnrichmentDocument;
   @Input() submitButtonLabel = 'Save';
+  @Input() fileId: string;
 
   form: FormGroup = new FormGroup({
     organism: new FormControl('', Validators.required),
@@ -79,6 +80,7 @@ export class EnrichmentTableEditDialogComponent extends CommonFormDialogComponen
     const value = this.form.value;
     const [taxId, organism] = value.organism.split('/');
     this.document.setParameters(
+      this.fileId || '',
       value.entitiesList.split(/[\/\n\r]/g),
       taxId,
       organism,
