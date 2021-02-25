@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 
 import { AccountService } from 'app/users/services/account.service';
-import { AppUser, UserCreationRequest } from 'app/interfaces';
+import { AppUser, PrivateAppUser, UserCreationRequest } from 'app/interfaces';
+import { ResultList } from 'app/shared/schemas/common';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { SelectionModel } from '@angular/cdk/collections';
@@ -12,6 +13,7 @@ import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 
+
 @Component({
   selector: 'app-users-view',
   templateUrl: 'user-browser.component.html',
@@ -20,7 +22,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
   users: AppUser[];
   shownUsers: AppUser[] = [];
   filterQuery = '';
-  loadTask: BackgroundTask<void, AppUser[]> = new BackgroundTask(() => this.accountService.listOfUsers());
+  loadTask: BackgroundTask<void, ResultList<PrivateAppUser>> = new BackgroundTask(() => this.accountService.listOfUsers());
   loadTaskSubscription: Subscription;
   selection = new SelectionModel<AppUser>(true, []);
 
@@ -32,8 +34,8 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: users}) => {
-      this.users = users;
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: data}) => {
+      this.users = data.results;
       this.updateFilter();
     });
 

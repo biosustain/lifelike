@@ -1,6 +1,6 @@
 from marshmallow import fields
 from neo4japp.schemas.base import CamelCaseSchema
-from neo4japp.schemas.account import UserSchemaWithId
+from neo4japp.schemas.account import UserProfileSchema
 
 
 class JWTTokenSchema(CamelCaseSchema):
@@ -14,4 +14,4 @@ class JWTTokenSchema(CamelCaseSchema):
 class JWTTokenResponse(CamelCaseSchema):
     access_token = fields.Nested(JWTTokenSchema)
     refresh_token = fields.Nested(JWTTokenSchema)
-    user = fields.Nested(UserSchemaWithId)
+    user = fields.Nested(UserProfileSchema)
