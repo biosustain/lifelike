@@ -1,8 +1,6 @@
-import io
 import uuid
 
 from datetime import datetime
-from sqlalchemy import and_
 
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
@@ -17,13 +15,11 @@ from neo4japp.exceptions import (
 )
 from neo4japp.models import (
     Files,
-    FileContent,
     GlobalList, AppUser,
 )
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.services.annotations.annotation_graph_service import AnnotationGraphService
 from neo4japp.services.annotations.constants import (
-    DatabaseType,
     EntityType,
     ManualAnnotationType
 )
