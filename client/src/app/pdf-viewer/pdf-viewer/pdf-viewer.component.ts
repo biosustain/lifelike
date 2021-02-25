@@ -1,18 +1,26 @@
 import {
-  AfterViewChecked,
   Component,
+  Input,
+  Output,
   ElementRef,
   EventEmitter,
-  HostListener,
-  Input,
   OnChanges,
-  OnDestroy,
-  OnInit,
-  Output,
   SimpleChanges,
-  ViewChild
+  OnInit,
+  HostListener,
+  OnDestroy,
+  ViewChild,
+  AfterViewChecked
 } from '@angular/core';
-import { PDFDocumentProxy, PDFPageProxy, PDFPageViewport, PDFProgressData, PDFPromise, PDFSource, PDFViewerParams } from 'pdfjs-dist';
+import {
+  PDFDocumentProxy,
+  PDFViewerParams,
+  PDFPageProxy,
+  PDFPageViewport,
+  PDFSource,
+  PDFProgressData,
+  PDFPromise
+} from 'pdfjs-dist';
 
 import { createEventBus } from '../utils/event-bus-utils';
 
@@ -50,9 +58,9 @@ export enum RenderTextMode {
 @Component({
   selector: 'app-pdf-viewer-lib',
   template: `
-      <div #pdfViewerContainer class="ng2-pdf-viewer-container">
-          <div class="pdfViewer"></div>
-      </div>
+    <div #pdfViewerContainer class="ng2-pdf-viewer-container">
+      <div class="pdfViewer"></div>
+    </div>
   `,
   styleUrls: ['./pdf-viewer.component.scss']
 })
@@ -86,9 +94,9 @@ export class PdfViewerComponent
 
   @Input('render-text-mode')
   set renderTextMode(renderTextMode: RenderTextMode) {
-    if (renderTextMode !== undefined) {
-      this.internalRenderTextMode = renderTextMode;
-    }
+      if (renderTextMode !== undefined) {
+          this.internalRenderTextMode = renderTextMode;
+      }
   }
 
   @Input('original-size')
@@ -189,7 +197,7 @@ export class PdfViewerComponent
 
   static CSS_UNITS: number = 96.0 / 72.0;
   static BORDER_WIDTH = 9;
-  @ViewChild('pdfViewerContainer', { static: false }) pdfViewerContainer;
+  @ViewChild('pdfViewerContainer', {static: false}) pdfViewerContainer;
   private isVisible = false;
 
   private pdfMultiPageViewer: any;
@@ -226,11 +234,15 @@ export class PdfViewerComponent
   private loadingTask: any;
 
   // tslint:disable-next-line
-  @Output('after-load-complete') afterLoadComplete = new EventEmitter<PDFDocumentProxy>();
+  @Output('after-load-complete') afterLoadComplete = new EventEmitter<
+    PDFDocumentProxy
+  >();
   // tslint:disable-next-line
   @Output('page-rendered') pageRendered = new EventEmitter<CustomEvent>();
   // tslint:disable-next-line
-  @Output('text-layer-rendered') textLayerRendered = new EventEmitter<CustomEvent>();
+  @Output('text-layer-rendered') textLayerRendered = new EventEmitter<
+    CustomEvent
+  >();
   // tslint:disable-next-line
   @Output('matches-count-updated') matchesCountUpdated = new EventEmitter<any>();
   // tslint:disable-next-line
@@ -352,29 +364,29 @@ export class PdfViewerComponent
   public convertCoordinates(pageNum: number, rect: number[]): Promise<any> {
     return new Promise((resolve, reject) => {
       this.internalPdf.getPage(pageNum)
-        .then((page: PDFPageProxy) => {
-          const rotation = this.internalRotation || page.rotate;
-          const viewPort: PDFPageViewport =
-            (page as any).getViewport({
-              scale: this.internalZoom,
-              rotation
-            });
-
-          const bounds = viewPort.convertToViewportRectangle(rect);
-          const left = Math.min(bounds[0], bounds[2]);
-          const top = Math.min(bounds[1], bounds[3]);
-          const width = Math.abs(bounds[0] - bounds[2]);
-          const height = Math.abs(bounds[1] - bounds[3]);
-          resolve({
-            left,
-            top,
-            width,
-            height
+      .then((page: PDFPageProxy) => {
+        const rotation = this.internalRotation || page.rotate;
+        const viewPort: PDFPageViewport =
+          (page as any).getViewport({
+            scale: this.internalZoom,
+            rotation
           });
-          // var x = Math.min(screenRect[0], screenRect[2]), width = Math.abs(screenRect[0] - screenRect[2]);
-          // var y = Math.min(screenRect[1], screenRect[3]), height = Math.abs(screenRect[1] - screenRect[3]);
-          // resolve([x,y,width,height]);
+
+        const bounds = viewPort.convertToViewportRectangle(rect);
+        const left = Math.min(bounds[0], bounds[2]);
+        const top = Math.min(bounds[1], bounds[3]);
+        const width = Math.abs(bounds[0] - bounds[2]);
+        const height = Math.abs(bounds[1] - bounds[3]);
+        resolve({
+          left,
+          top,
+          width,
+          height
         });
+        // var x = Math.min(screenRect[0], screenRect[2]), width = Math.abs(screenRect[0] - screenRect[2]);
+        // var y = Math.min(screenRect[1], screenRect[3]), height = Math.abs(screenRect[1] - screenRect[3]);
+        // resolve([x,y,width,height]);
+      });
     });
 
   }
@@ -623,8 +635,6 @@ export class PdfViewerComponent
         this.internalPdf = pdf;
         this.lastLoaded = src;
 
-        this.afterLoadComplete.emit(pdf);
-
         if (!this.pdfMultiPageViewer) {
           this.setupMultiPageViewer();
           this.setupSinglePageViewer();
@@ -633,10 +643,10 @@ export class PdfViewerComponent
         this.resetPdfDocument();
 
         this.update();
+
+        this.afterLoadComplete.emit(pdf);
       },
-      (error: any) => {
-        this.onError.emit(error);
-      }
+      this.onError.emit
     );
   }
 

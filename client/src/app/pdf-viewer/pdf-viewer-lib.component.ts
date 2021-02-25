@@ -11,7 +11,14 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Observable, Subject, Subscription } from 'rxjs';
-import { AddedAnnotationExclusion, Annotation, Location, Meta, Rect, RemovedAnnotationExclusion, } from './annotation-type';
+import {
+  AddedAnnotationExclusion,
+  Annotation,
+  RemovedAnnotationExclusion,
+  Location,
+  Meta,
+  Rect,
+} from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
 import { PdfViewerComponent, RenderTextMode } from './pdf-viewer/pdf-viewer.component';
 import { PDFPageViewport } from 'pdfjs-dist';
@@ -41,6 +48,7 @@ declare enum FindState {
   encapsulation: ViewEncapsulation.None,
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy {
+
   @Input() searchChanged: Subject<{ keyword: string, findPrevious: boolean }>;
   private searchChangedSub: Subscription;
   @Input() pdfSrc: string | PDFSource | ArrayBuffer;
@@ -106,7 +114,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     return this._showExcludedAnnotations;
   }
 
-  // @Output() loadCompleted = new EventEmitter();
+  @Output() loadCompleted = new EventEmitter();
   @Output() annotationDragStart = new EventEmitter<any>();
   // tslint:disable
   @Output('custom-annotation-created') annotationCreated = new EventEmitter();
@@ -169,13 +177,13 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   searchCommand: string;
 
-  @ViewChild(PdfViewerComponent, { static: false })
+  @ViewChild(PdfViewerComponent, {static: false})
   private pdfComponent: PdfViewerComponent;
 
   constructor(
-    private readonly modalService: NgbModal,
-    private zone: NgZone,
-    private snackBar: MatSnackBar,
+      private readonly modalService: NgbModal,
+      private zone: NgZone,
+      private snackBar: MatSnackBar,
   ) {
   }
 
@@ -304,8 +312,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       });
       overlayDiv.dataset.annotationId = annotation.meta.id;
       overlayDiv.setAttribute('class', 'system-annotation'
-        + (this.currentHighlightAnnotationId === annotation.meta.id
-          ? ' annotation-highlight' : ''));
+          + (this.currentHighlightAnnotationId === annotation.meta.id
+              ? ' annotation-highlight' : ''));
       overlayDiv.setAttribute('location', JSON.stringify(location));
       overlayDiv.setAttribute('meta', JSON.stringify(annotation.meta));
       top = this.normalizeTopCoordinate(top, annotation);
@@ -318,29 +326,29 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       elementRefs.push(overlayDiv);
       jQuery(overlayDiv).css('cursor', 'move');
       (jQuery(overlayDiv) as any).qtip(
-        {
-          content: this.prepareTooltipContent(annotation),
-          position: {
-            my: 'top center',
-            at: 'bottom center',
-            viewport: true,
-            target: this,
-          },
-          style: {
-            classes: 'qtip-bootstrap',
-            tip: {
-              width: 16,
-              height: 8,
+          {
+            content: this.prepareTooltipContent(annotation),
+            position: {
+              my: 'top center',
+              at: 'bottom center',
+              viewport: true,
+              target: this,
+            },
+            style: {
+              classes: 'qtip-bootstrap',
+              tip: {
+                width: 16,
+                height: 8,
+              },
+            },
+            show: {
+              delay: 10,
+            },
+            hide: {
+              fixed: true,
+              delay: 150,
             },
           },
-          show: {
-            delay: 10,
-          },
-          hide: {
-            fixed: true,
-            delay: 150,
-          },
-        },
       );
     }
     if (this.pendingHighlights[pageNum]) {
@@ -408,8 +416,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     if (an.meta.isCustom) {
       base.push(`
         <div class="mt-1">
-          <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].removeCustomAnnotation(${escape(
-        JSON.stringify(an.uuid))})">
+          <button 
+            type="button" 
+            class="btn btn-primary btn-block" 
+            onclick="
+                window.pdfViewerRef['${this.pdfViewerId}']
+                  .removeCustomAnnotation(${escape(
+                    JSON.stringify(an.uuid)
+                  )})
+             ">
             <i class="fas fa-fw fa-trash"></i>
             <span>Delete Annotation</span>
           </button>
@@ -427,18 +442,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       };
       base.push(`
         <div class="mt-1">
-          <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openExclusionPanel(${escape(
-        JSON.stringify(annExclusion))})">
+          <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openExclusionPanel(${escape(JSON.stringify(annExclusion))})">
             <i class="fas fa-fw fa-minus-circle"></i>
             <span>Mark for Exclusion</span>
           </button>
         </div>
-      `);
+      `)
     }
     base.push(`
         <div class="mt-1">
-          <button type="button" class="btn btn-secondary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].highlightAllAnnotations(${escape(
-      JSON.stringify(an.meta.id))}, false);jQuery('.system-annotation').qtip('hide')">
+          <button type="button" class="btn btn-secondary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].highlightAllAnnotations(${escape(JSON.stringify(an.meta.id))}, false);jQuery('.system-annotation').qtip('hide')">
             <i class="fas fa-fw fa-search"></i>
             <span>Find Occurrences</span>
           </button>
@@ -457,8 +470,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
             ${an.meta.exclusionComment ? `<span style="line-height: 16px"><i>comment: </i>${escape(an.meta.exclusionComment)}</span>` : ''}
           </div>
           <div class="mt-1">
-            <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].removeAnnotationExclusion(${escape(
-        JSON.stringify(annExclusion))})">
+            <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].removeAnnotationExclusion(${escape(JSON.stringify(annExclusion))})">
               <i class="fas fa-fw fa-undo"></i>
               <span>Unmark Exclusion</span>
             </button>
@@ -550,10 +562,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const viewport = pdfPageView.viewport;
     const pageElement = pdfPageView.div;
     const pageRect = pdfPageView.canvas.getClientRects()[0];
-    const originConverted = viewport.convertToPdfPoint(this.dragAndDropOriginCoord.clientX - pageRect.left,
-      this.dragAndDropOriginCoord.clientY - pageRect.top);
-    const destinationConverted = viewport.convertToPdfPoint(this.dragAndDropDestinationCoord.clientX - pageRect.left,
-      this.dragAndDropDestinationCoord.clientY - pageRect.top);
+    const originConverted = viewport.convertToPdfPoint(this.dragAndDropOriginCoord.clientX - pageRect.left, this.dragAndDropOriginCoord.clientY - pageRect.top);
+    const destinationConverted = viewport.convertToPdfPoint(this.dragAndDropDestinationCoord.clientX - pageRect.left, this.dragAndDropDestinationCoord.clientY - pageRect.top);
     const mouseMoveRectangular = viewport.convertToViewportRectangle([].concat(originConverted).concat(destinationConverted));
     const mouseRectTop = Math.min(mouseMoveRectangular[1], mouseMoveRectangular[3]);
     const mouseRectHeight = Math.abs(mouseMoveRectangular[1] - mouseMoveRectangular[3]);
@@ -715,37 +725,37 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
       jQuery(el).css('cursor', 'move');
       (jQuery(el) as any).qtip(
-        {
+          {
 
-          content: `<img src="assets/images/annotate.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()">
+            content: `<img src="assets/images/annotate.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()">
                 <img src="assets/images/copy.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].copySelectedText()">`,
-          position: {
-            my: 'bottom center',
-            target: 'mouse',
-            adjust: {
-              mouse: false,
+            position: {
+              my: 'bottom center',
+              target: 'mouse',
+              adjust: {
+                mouse: false,
+              },
+            },
+            style: {
+              classes: 'qtip-bootstrap',
+              tip: {
+                width: 16,
+                height: 8,
+              },
+            },
+            show: {
+              delay: 10,
+            },
+            hide: {
+              fixed: true,
+              delay: 200,
             },
           },
-          style: {
-            classes: 'qtip-bootstrap',
-            tip: {
-              width: 16,
-              height: 8,
-            },
-          },
-          show: {
-            delay: 10,
-          },
-          hide: {
-            fixed: true,
-            delay: 200,
-          },
-        },
       );
     });
 
     this.clearSelection();
-  };
+  }
 
   deleteFrictionless() {
     jQuery('.frictionless-annotation').qtip('destroy');
@@ -846,6 +856,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     this.loadOutline();
 
     this.isLoadCompleted = true;
+
+    this.loadCompleted.emit()
   }
 
   /**
@@ -956,14 +968,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       if (foundHighlightAnnotations.length) {
         this.snackBar.open(
           `Highlighted ${foundHighlightAnnotations.length} instance${foundHighlightAnnotations.length === 1 ? '' : 's'}  `
-          + (firstAnnotation != null ? `of '${firstAnnotation.meta.allText}' ` : '')
-          + `in the document, starting on page ${firstPageNumber}.`,
-          'Close', { duration: 5000 });
+            + (firstAnnotation != null ? `of '${firstAnnotation.meta.allText}' ` : '')
+            + `in the document, starting on page ${firstPageNumber}.`,
+            'Close', {duration: 5000});
 
         this.scrollToPage(firstPageNumber, firstAnnotation.rects[0]);
       } else {
         this.snackBar.open(`The annotation could not be found in the document.`,
-          'Close', { duration: 5000 });
+            'Close', {duration: 5000});
       }
     }
   }
@@ -1015,9 +1027,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const overlayContainer = pdfPageView.div;
     const overlayDiv = document.createElement('div');
     overlayDiv.setAttribute('style', `border: 2px solid red; position:absolute;` +
-      'left:' + (left - 4) + 'px;top:' + (top - 4) + 'px;width:' + (width + 8) + 'px;height:' + (height + 8) + 'px;');
+        'left:' + (left - 4) + 'px;top:' + (top - 4) + 'px;width:' + (width + 8) + 'px;height:' + (height + 8) + 'px;');
     overlayContainer.appendChild(overlayDiv);
-    overlayDiv.scrollIntoView({ block: 'center' });
+    overlayDiv.scrollIntoView({block: 'center'});
     jQuery(overlayDiv).effect('highlight', {}, 1000);
     setTimeout(() => {
       jQuery(overlayDiv).remove();
@@ -1074,7 +1086,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
     this.deleteFrictionless();
 
-    this.snackBar.open('It has been copied to clipboard', 'Close', { duration: 5000 });
+    this.snackBar.open('It has been copied to clipboard', 'Close', {duration: 5000});
 
   }
 
@@ -1092,8 +1104,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   markAnnotationExclusions(exclusionData: AddedAnnotationExclusion) {
     this.annotations.forEach((ann: Annotation) => {
-      if (ann.meta.type === exclusionData.type &&
-        this.termsMatch(exclusionData.text, ann.textInDocument, exclusionData.isCaseInsensitive)) {
+      if (ann.meta.type === exclusionData.type && this.termsMatch(exclusionData.text, ann.textInDocument, exclusionData.isCaseInsensitive)) {
         const ref = this.annotationHighlightElementMap.get(ann);
         jQuery(ref).remove();
         ann.meta.isExcluded = true;
@@ -1108,8 +1119,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
   unmarkAnnotationExclusions(exclusionData: RemovedAnnotationExclusion) {
     this.annotations.forEach((ann: Annotation) => {
-      if (ann.meta.type === exclusionData.type &&
-        this.termsMatch(exclusionData.text, ann.textInDocument, ann.meta.isCaseInsensitive)) {
+      if (ann.meta.type === exclusionData.type && this.termsMatch(exclusionData.text, ann.textInDocument, ann.meta.isCaseInsensitive)) {
         const ref = this.annotationHighlightElementMap.get(ann);
         jQuery(ref).remove();
         ann.meta.isExcluded = false;
