@@ -1,26 +1,18 @@
 import {
+  AfterViewChecked,
   Component,
-  Input,
-  Output,
   ElementRef,
   EventEmitter,
-  OnChanges,
-  SimpleChanges,
-  OnInit,
   HostListener,
+  Input,
+  OnChanges,
   OnDestroy,
-  ViewChild,
-  AfterViewChecked
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild
 } from '@angular/core';
-import {
-  PDFDocumentProxy,
-  PDFViewerParams,
-  PDFPageProxy,
-  PDFPageViewport,
-  PDFSource,
-  PDFProgressData,
-  PDFPromise
-} from 'pdfjs-dist';
+import { PDFDocumentProxy, PDFPageProxy, PDFPageViewport, PDFProgressData, PDFPromise, PDFSource, PDFViewerParams } from 'pdfjs-dist';
 
 import { createEventBus } from '../utils/event-bus-utils';
 
@@ -42,6 +34,13 @@ if (!isSSR()) {
   PDFJS.verbosity = PDFJS.VerbosityLevel.ERRORS;
 }
 
+enum FindState {
+  FOUND = 0,
+  NOT_FOUND = 1,
+  WRAPPED = 2,
+  PENDING = 3,
+}
+
 export enum RenderTextMode {
   DISABLED,
   ENABLED,
@@ -51,9 +50,9 @@ export enum RenderTextMode {
 @Component({
   selector: 'app-pdf-viewer-lib',
   template: `
-    <div #pdfViewerContainer class="ng2-pdf-viewer-container">
-      <div class="pdfViewer"></div>
-    </div>
+      <div #pdfViewerContainer class="ng2-pdf-viewer-container">
+          <div class="pdfViewer"></div>
+      </div>
   `,
   styleUrls: ['./pdf-viewer.component.scss']
 })
@@ -65,7 +64,7 @@ export class PdfViewerComponent
     this.internalCMapsUrl = cMapsUrl;
   }
 
- @Input('page')
+  @Input('page')
   set page(page) {
     page = parseInt(page, 10) || 1;
     const orginalPage = page;
@@ -87,9 +86,9 @@ export class PdfViewerComponent
 
   @Input('render-text-mode')
   set renderTextMode(renderTextMode: RenderTextMode) {
-      if (renderTextMode !== undefined) {
-          this.internalRenderTextMode = renderTextMode;
-      }
+    if (renderTextMode !== undefined) {
+      this.internalRenderTextMode = renderTextMode;
+    }
   }
 
   @Input('original-size')
@@ -190,7 +189,7 @@ export class PdfViewerComponent
 
   static CSS_UNITS: number = 96.0 / 72.0;
   static BORDER_WIDTH = 9;
-  @ViewChild('pdfViewerContainer', {static: false}) pdfViewerContainer;
+  @ViewChild('pdfViewerContainer', { static: false }) pdfViewerContainer;
   private isVisible = false;
 
   private pdfMultiPageViewer: any;
@@ -227,15 +226,11 @@ export class PdfViewerComponent
   private loadingTask: any;
 
   // tslint:disable-next-line
-  @Output('after-load-complete') afterLoadComplete = new EventEmitter<
-    PDFDocumentProxy
-  >();
+  @Output('after-load-complete') afterLoadComplete = new EventEmitter<PDFDocumentProxy>();
   // tslint:disable-next-line
   @Output('page-rendered') pageRendered = new EventEmitter<CustomEvent>();
   // tslint:disable-next-line
-  @Output('text-layer-rendered') textLayerRendered = new EventEmitter<
-    CustomEvent
-  >();
+  @Output('text-layer-rendered') textLayerRendered = new EventEmitter<CustomEvent>();
   // tslint:disable-next-line
   @Output('matches-count-updated') matchesCountUpdated = new EventEmitter<any>();
   // tslint:disable-next-line
@@ -357,29 +352,29 @@ export class PdfViewerComponent
   public convertCoordinates(pageNum: number, rect: number[]): Promise<any> {
     return new Promise((resolve, reject) => {
       this.internalPdf.getPage(pageNum)
-      .then((page: PDFPageProxy) => {
-        const rotation = this.internalRotation || page.rotate;
-        const viewPort: PDFPageViewport =
-          (page as any).getViewport({
-            scale: this.internalZoom,
-            rotation
-          });
+        .then((page: PDFPageProxy) => {
+          const rotation = this.internalRotation || page.rotate;
+          const viewPort: PDFPageViewport =
+            (page as any).getViewport({
+              scale: this.internalZoom,
+              rotation
+            });
 
-        const bounds = viewPort.convertToViewportRectangle(rect);
-        const left = Math.min(bounds[0], bounds[2]);
-        const top = Math.min(bounds[1], bounds[3]);
-        const width = Math.abs(bounds[0] - bounds[2]);
-        const height = Math.abs(bounds[1] - bounds[3]);
-        resolve({
-          left,
-          top,
-          width,
-          height
+          const bounds = viewPort.convertToViewportRectangle(rect);
+          const left = Math.min(bounds[0], bounds[2]);
+          const top = Math.min(bounds[1], bounds[3]);
+          const width = Math.abs(bounds[0] - bounds[2]);
+          const height = Math.abs(bounds[1] - bounds[3]);
+          resolve({
+            left,
+            top,
+            width,
+            height
+          });
+          // var x = Math.min(screenRect[0], screenRect[2]), width = Math.abs(screenRect[0] - screenRect[2]);
+          // var y = Math.min(screenRect[1], screenRect[3]), height = Math.abs(screenRect[1] - screenRect[3]);
+          // resolve([x,y,width,height]);
         });
-        // var x = Math.min(screenRect[0], screenRect[2]), width = Math.abs(screenRect[0] - screenRect[2]);
-        // var y = Math.min(screenRect[1], screenRect[3]), height = Math.abs(screenRect[1] - screenRect[3]);
-        // resolve([x,y,width,height]);
-      });
     });
 
   }
@@ -465,6 +460,9 @@ export class PdfViewerComponent
       this.textLayerRendered.emit(e);
     });
 
+    /*
+    This event id fired when total number of matches has changed.
+     */
     eventBus.on('updatefindmatchescount', e => {
       let ready = true;
       try {
@@ -472,11 +470,19 @@ export class PdfViewerComponent
       } catch (e) {
         console.warn('Read of pendingFindMatches is no longer supported, continiued with limited functionality.');
       }
-      this.matchesCountUpdated.emit({matchesCount: e.matchesCount, ready});
+      this.matchesCountUpdated.emit({ matchesCount: e.matchesCount, ready });
     });
 
+    /*
+    This event id fired when:
+      + navigate to next/prev match
+      + search state change ( FindState; fires only for first match )
+     */
     eventBus.on('updatefindcontrolstate', e => {
       this.findControlStateUpdated.emit(e);
+      if (e.state === FindState.FOUND) {
+        this.matchesCountUpdated.emit({ matchesCount: e.matchesCount });
+      }
     });
 
     this.pdfMultiPageLinkService = new pdfjsViewer.PDFLinkService({ eventBus });
