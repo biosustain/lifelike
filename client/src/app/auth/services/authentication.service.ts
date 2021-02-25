@@ -2,7 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AppUser, JWTTokenResponse } from 'app/interfaces';
 import { isNullOrUndefined } from 'util';
-import { of, timer, Subscription } from 'rxjs';
+import { Observable, of, timer, Subscription } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
 
 @Injectable({providedIn: '***ARANGO_USERNAME***'})
@@ -48,7 +48,7 @@ export class AuthenticationService implements OnDestroy {
   /**
    * Authenticate users to get a JWT
    */
-  public login(email: string, password: string) {
+  public login(email: string, password: string): Observable<JWTTokenResponse> {
     return this.http.post<JWTTokenResponse>(
       this.baseUrl + '/login',
       {email, password},

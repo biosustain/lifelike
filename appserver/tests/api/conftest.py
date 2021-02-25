@@ -210,9 +210,23 @@ def mock_delete_elastic_documents(monkeypatch):
 # End service mocks
 ####################
 
+@pytest.fixture(scope='function')
+def fix_admin_role(account_service: AccountService) -> AppRole:
+    return account_service.get_or_create_role('admin')
+
 
 @pytest.fixture(scope='function')
-def fix_api_owner(session, account_user: AccountService) -> AppUser:
+def fix_superuser_role(account_service: AccountService) -> AppRole:
+    return account_service.get_or_create_role('private-data-access')
+
+
+@pytest.fixture(scope='function')
+def fix_user_role(account_service: AccountService) -> AppRole:
+    return account_service.get_or_create_role('user')
+
+
+@pytest.fixture(scope='function')
+def fix_admin_user(session, fix_admin_role, fix_superuser_role) -> AppUser:
     user = AppUser(
         id=100,
         username='api_owner',
@@ -221,16 +235,14 @@ def fix_api_owner(session, account_user: AccountService) -> AppUser:
         last_name='Melancholy',
     )
     user.set_password('password')
-    admin_role = account_user.get_or_create_role('admin')
-    private_data_access_role = account_user.get_or_create_role('private-data-access')
-    user.roles.extend([admin_role, private_data_access_role])
+    user.roles.extend([fix_admin_role, fix_superuser_role])
     session.add(user)
     session.flush()
     return user
 
 
 @pytest.fixture(scope='function')
-def test_user(session) -> AppUser:
+def test_user(session, fix_user_role) -> AppUser:
     user = AppUser(
         id=200,
         username='test',
@@ -239,6 +251,7 @@ def test_user(session) -> AppUser:
         last_name='Melancholy'
     )
     user.set_password('password')
+    user.roles.append(fix_user_role)
     session.add(user)
     session.flush()
     return user
@@ -254,6 +267,7 @@ def test_user_2(session) -> AppUser:
         last_name='life',
     )
     user.set_password('password')
+    user.roles.append(fix_user_role)
     session.add(user)
     session.flush()
     return user

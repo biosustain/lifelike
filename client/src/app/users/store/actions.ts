@@ -1,12 +1,12 @@
 import { createAction, props } from '@ngrx/store';
 
-import { UpdateUserRequest } from 'app/interfaces';
+import { ChangePasswordRequest } from 'app/interfaces';
 
-export const updateUser = createAction(
-  '[User] Update User',
-  props<{ userUpdates: UpdateUserRequest }>(),
+export const changePassword = createAction(
+  '[User] Update User Password',
+  props<{ userUpdates: ChangePasswordRequest }>(),
 );
 
-export const updateUserSuccess = createAction(
-  '[User] Update User Success',
+export const changePasswordSuccess = createAction(
+  '[User] Update User Password Success',
 );
