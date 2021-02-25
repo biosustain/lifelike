@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, combineLatest } from 'rxjs';
 import { ApiService } from '../../shared/services/api.service';
 import { BackgroundTask } from '../../shared/rxjs/background-task';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
@@ -21,7 +21,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
               protected readonly errorHandler: ErrorHandler,
               protected readonly snackBar: MatSnackBar,
               protected readonly filesystemService: FilesystemService) {
-
+    console.log('construct');
   }
 
   private currentFileId: string;
@@ -30,8 +30,9 @@ export class EnrichmentVisualisationService implements OnDestroy {
   object;
   loadTask: BackgroundTask<null, any>;
   loadTaskMetaData: BackgroundTask<null, any>;
-  loadSubscription: Subscription;
+  load: Observable<any>;
   unsavedChanges: any;
+  loaded = false;
 
   ngOnDestroy() {
     this.save().subscribe();
@@ -45,7 +46,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
       ).pipe(
         this.errorHandler.create({label: 'Load enrichment visualisation'}),
         map((value: FilesystemObject, _) => {
-          this.object = value;
+          this.object = (value);
           return value;
         }),
       ));
@@ -57,13 +58,16 @@ export class EnrichmentVisualisationService implements OnDestroy {
         mapBlobToBuffer(),
         mapBufferToJson<EnrichmentVisualisationData>(),
         map(({parameters, cachedResults}: EnrichmentVisualisationData) => {
-          this.cachedResults = cachedResults;
-          this.parameters = parameters;
+          this.cachedResults = (cachedResults);
+          this.parameters = (parameters);
           return {parameters, cachedResults};
         })
       ));
 
-    this.loadSubscription = this.loadTask.results$.subscribe();
+    this.load = combineLatest(
+      this.loadTaskMetaData.results$,
+      this.loadTask.results$
+    );
 
     this.loadTaskMetaData.update();
     this.loadTask.update();

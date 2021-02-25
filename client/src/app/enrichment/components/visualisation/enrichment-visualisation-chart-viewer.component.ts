@@ -27,7 +27,6 @@ import { MessageDialog } from '../../../shared/services/message-dialog.service';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
 import { FilesystemObjectActions } from '../../../file-browser/services/filesystem-object-actions';
 import { MatSnackBar } from '@angular/material';
-import { BackgroundTask } from '../../../shared/rxjs/background-task';
 
 
 @Component({
@@ -47,9 +46,9 @@ export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDe
 
   @Input() geneNames: string[];
   @Input() organism: string;
+  @Input() data: { gene: string, 'p-value': number }[];
   @Input() analysis: string;
   object: FilesystemObject;
-  data: { gene: string, 'p-value': number }[];
   neo4jId: number;
   importGenes: string[];
   unmatchedGenes: string;
@@ -62,10 +61,6 @@ export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDe
 
 
   scrollTopAmount: number;
-
-  loadingData: boolean;
-  loadTask: BackgroundTask<string, any>;
-  loadSubscription: Subscription;
 
 
   selectedRow = 0;
@@ -82,14 +77,14 @@ export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDe
               protected readonly snackBar: MatSnackBar,
               protected readonly filesystemService: FilesystemService,
               protected readonly progressDialog: ProgressDialog) {
-    this.loadTask = new BackgroundTask((analysis) =>
-      this.enrichmentService.enrichWithGOTerms(analysis),
-    );
-
-    this.loadSubscription = this.loadTask.results$.subscribe((result) => {
-      this.data = result.result;
-      this.loadingData = false;
-    });
+    // this.loadTask = new BackgroundTask((analysis) =>
+    //   this.enrichmentService.enrichWithGOTerms(analysis),
+    // );
+    //
+    // this.loadSubscription = this.loadTask.results$.subscribe((result) => {
+    //   this.data = result.result;
+    //   this.loadingData = false;
+    // });
   }
 
   ngOnDestroy() {
@@ -110,13 +105,9 @@ export class EnrichmentVisualisationChartViewerComponent implements OnInit, OnDe
 
 
   ngOnInit() {
-    this.loadingData = true;
-    this.loadTask.update(this.analysis);
   }
 
   ngOnChanges() {
-    this.loadingData = true;
-    this.loadTask.update(this.analysis);
   }
 
   scrollTop() {
