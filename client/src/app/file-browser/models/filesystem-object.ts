@@ -83,11 +83,6 @@ export class ProjectImpl implements Project {
   addDataTransferData(dataTransfer: DataTransfer) {
     createProjectDragImage(this).addDataTransferData(dataTransfer);
 
-    const filesystemObjectTransfer: FilesystemObjectTransferData = {
-      hashId: this.hashId,
-      privileges: this.privileges,
-    };
-
     const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
       display_name: this.name,
       label: 'link',
@@ -106,7 +101,6 @@ export class ProjectImpl implements Project {
 
     dataTransfer.effectAllowed = 'all';
     dataTransfer.setData('text/plain', this.name);
-    dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify(filesystemObjectTransfer));
     dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify(node));
   }
 }
