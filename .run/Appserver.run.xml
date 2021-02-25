@@ -1,0 +1,29 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Appserver" type="Python.FlaskServer">
+    <option name="additionalOptions" value="--host=0.0.0.0 --port=5000 --no-debugger" />
+    <option name="flaskDebug" value="true" />
+    <module name="kg-prototypes" />
+    <option name="target" value="app" />
+    <option name="targetType" value="PYTHON" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="PARENT_ENVS" value="true" />
+    <envs>
+      <env name="DEBUG" value="True" />
+    </envs>
+    <option name="SDK_HOME" value="docker-compose://[$PROJECT_DIR$/docker-compose.yml, $PROJECT_DIR$/docker-compose.override.yml, $PROJECT_DIR$/.run/assets/docker-compose.yml]:appserver/python3" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/appserver" />
+    <option name="IS_MODULE_SDK" value="false" />
+    <option name="ADD_CONTENT_ROOTS" value="false" />
+    <option name="ADD_SOURCE_ROOTS" value="false" />
+    <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+    <PathMappingSettings>
+      <option name="pathMappings">
+        <list>
+          <mapping local-***ARANGO_USERNAME***="." remote-***ARANGO_USERNAME***="/home/n4j" />
+        </list>
+      </option>
+    </PathMappingSettings>
+    <option name="launchJavascriptDebuger" value="false" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -6,7 +6,7 @@ services:
     pgdatabase:
         command: postgres -c max_wal_size=2GB -c log_statement='all'
         container_name: pg-database
-        image: postgres:10.2
+        image: postgres:11
         networks:
             - backend
         ports:
@@ -37,6 +37,7 @@ services:
             - GOOGLE_APPLICATION_CREDENTIALS=ansible_service_account.json
             - LMDB_HOME_FOLDER=/home/n4j/tests/database/services/annotations
         volumes:
+            - ./appserver:/opt/project/appserver
             - ./appserver/ansible_service_account.json:/home/n4j/ansible_service_account.json
             - ./appserver/neo4japp/tests/database/services/annotations/lmdb:/home/n4j/tests/database/services/annotations/lmdb
         networks:
