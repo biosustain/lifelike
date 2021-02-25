@@ -47,7 +47,7 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
   if (openInternally) {
     let m;
 
-    m = pathSearchHash.match(/^\/projects\/[^\/]+\/([^\/]+)\/([^\/#?]+)/);
+    m = pathSearchHash.match(/^\/projects\//);
     if (m != null) {
       workspaceManager.navigateByUrl(pathSearchHash, {
         newTab: true,

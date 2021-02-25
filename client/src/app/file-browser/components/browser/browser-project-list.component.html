@@ -38,7 +38,8 @@
       <ng-container *ngIf="projectList.value">
         <ng-container *ngIf="projectList.value.collectionSize; else noProjectResults">
           <div class="tile-deck">
-            <div *ngFor="let p of projectList.value.results.view" class="tile d-flex flex-column">
+            <div *ngFor="let p of projectList.value.results.view" class="tile d-flex flex-column"
+                 draggable="true" (dragstart)="projectDragStart($event, p)">
               <div class="d-flex tile-toolbar">
                 <div ngbDropdown class="d-inline-block ml-auto" container="body">
                   <button class="btn btn-sm" ngbDropdownToggle>
