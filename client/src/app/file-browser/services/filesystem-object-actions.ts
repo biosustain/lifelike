@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { BehaviorSubject, forkJoin, from, of } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { finalize, map, mergeMap, take } from 'rxjs/operators';
 import { MessageType } from '../../interfaces/message-dialog.interface';
@@ -36,6 +36,9 @@ import {
   ObjectAnnotateDialogValue,
 } from '../components/dialog/object-annotate-dialog.component';
 import { ObjectTypeService } from './object-type.service';
+import { ResultMapping } from 'app/shared/schemas/common';
+import { AnnotationGenerationResultData } from '../schema';
+import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 
 @Injectable()
 export class FilesystemObjectActions {
@@ -278,8 +281,16 @@ export class FilesystemObjectActions {
           [object.hashId], {annotationConfigs, organism});
       });
 
+    const results: ResultMapping<AnnotationGenerationResultData>[] = [];
     return forkJoin(annotationRequests).pipe(
-      finalize(() => progressDialogRef.close()),
+      mergeMap(res => merge(res)),
+      map(result => results.push(result)),
+      finalize(() => {
+        progressDialogRef.close();
+        const modalRef = this.modalService.open(ObjectReannotateResultsDialogComponent);
+        modalRef.componentInstance.objects = targets;
+        modalRef.componentInstance.results = results;
+      }),
       this.errorHandler.create({label: 'Re-annotate object'}),
     ).toPromise();
   }
