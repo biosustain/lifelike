@@ -24,6 +24,7 @@ import { TableCSVExporter } from '../../shared/utils/tables/table-csv-exporter';
 import { EnrichmentTable } from '../models/enrichment-table';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
+export const ENRICHMENT_TABLE_SHORTHAND = 'enrichment-table';
 
 @Injectable()
 export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
@@ -103,7 +104,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: ENRICHMENT_TABLE_MIMETYPE, name: 'Enrichment Tables'}),
+      Object.freeze({id: ENRICHMENT_TABLE_MIMETYPE, shorthand: 'enrichment-table', name: 'Enrichment Tables'}),
     ];
   }
 

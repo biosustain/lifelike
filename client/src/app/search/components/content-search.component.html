@@ -1,24 +1,13 @@
 <ng-container *ngIf="(loadTask.status$ | async) as status">
   <div class="module" appContainerBreakpoints>
     <div class="module-header">
-      <div class="module-title-bar">
-        <div class="d-flex justify-content-between w-100">
-          <h1 class="module-title">
-            Search
-            <ng-container *ngIf="valid">
-              Results for "{{ params.q }}"
-            </ng-container>
-          </h1>
-          <div class="fake-link" (click)="openAdvancedSearchOptions()">Advanced Search Options</div>
-        </div>
-      </div>
-
       <div class="module-toolbar mt-2">
-        <ng-container *ngIf="(searchTypes$ | async) as searchTypes">
-          <app-content-search-form class="w-100" [params]="params" (formResult)="search($event)"
-            [typeChoices]="searchTypes">
-          </app-content-search-form>
+        <ng-container *ngIf="searchTypes">
+          <app-content-search-form class="w-100" [params]="params" (formResult)="search($event)"></app-content-search-form>
         </ng-container>
+      </div>
+      <div class="d-flex justify-content-end w-100">
+        <div class="fake-link" (click)="openAdvancedSearch()">Advanced Search</div>
       </div>
     </div>
 
@@ -27,7 +16,7 @@
         <ng-container *ngIf="!valid; else searchEntered">
           <div class="module-body">
             <div class="text-center my-4 px-4">
-              Search for records above.
+              Please enter a query in the search box above.
             </div>
           </div>
         </ng-container>
@@ -134,7 +123,12 @@
               </div>
             </ng-container>
             <ng-template #noResults>
-              <div class="module-body">
+              <div *ngIf="emptyParams" class="module-body">
+                <div class="text-center my-4 px-4">
+                  Please enter a query in the search box above.
+                </div>
+              </div>
+              <div *ngIf="!emptyParams" class="module-body">
                 <div class="text-center my-4 px-4">
                   No records match your current filters.
                 </div>

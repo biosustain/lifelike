@@ -13,6 +13,7 @@ import { ObjectCreationService } from '../services/object-creation.service';
 import { Observable } from 'rxjs';
 
 export const DIRECTORY_MIMETYPE = 'vnd.lifelike.filesystem/directory';
+export const DIRECTORY_SHORTHAND = 'directory';
 
 @Injectable()
 export class DirectoryTypeProvider extends AbstractObjectTypeProvider {

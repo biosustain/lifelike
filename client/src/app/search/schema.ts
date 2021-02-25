@@ -8,5 +8,19 @@ import { StandardRequestOptions } from '../shared/schemas/common';
 // ----------------------------------------
 
 export interface ContentSearchRequest extends StandardRequestOptions {
-  mimeTypes?: string[];
+  types?: string[];
+  projects?: string[];
+  phrase?: string;
+  wildcards?: string;
+}
+
+export interface AnnotationRequestOptions {
+  texts: string[];
+}
+
+// Responses
+// ----------------------------------------
+
+export interface AnnotationResponse {
+  texts: string[];
 }
