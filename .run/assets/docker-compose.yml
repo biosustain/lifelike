@@ -1,0 +1,8 @@
+# local development overrides
+
+version: '3.5'
+
+services:
+    appserver:
+        container_name: appserver
+        build: ./appserver
