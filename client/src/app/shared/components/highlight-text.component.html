@@ -1,2 +1,31 @@
-<div class="highlight-container" *ngIf="node" (dragstart)="dragStart($event)" (mousedown)="mouseDown($event)"
-     [class.highlight-term]="element?.tagName === 'highlight'" [style.background]="element?.tagName === 'annotation' ? annotationBackgroundColor : null"><app-highlight-text *ngFor="let child of childNodes" [highlight]="child"></app-highlight-text>{{ node.nodeValue }}</div>
+<div class="highlight-container" *ngIf="node" (dragstart)="dragStart($event)" (mousedown)="mouseDown($event)" [ngbPopover]="annotationPopoverContent" [disablePopover]="!annotationMeta"
+     [popoverTitle]="annotationMeta?.allText" triggers="click"
+     container="body" [autoClose]="false"
+     [class.highlight-term]="element?.tagName === 'highlight'" [style.background]="element?.tagName === 'annotation' ? annotationBackgroundColor : null"><app-highlight-text *ngFor="let child of childNodes" [highlight]="child"></app-highlight-text>{{ node.nodeValue }}</div><ng-template #annotationPopoverContent>
+  <div>
+    Type: {{ annotationMeta.type }}
+  </div>
+  <ng-container *ngIf="annotationMeta.id">
+    <div>
+      <ng-container *ngIf="annotationMeta.idHyperlink; else noIdHyperlink">
+        Id: <a [href]="annotationMeta.idHyperlink" target="_blank">{{ annotationMeta.id }}</a>
+      </ng-container>
+      <ng-template #noIdHyperlink>
+        Id: {{ annotationMeta.id }}
+      </ng-template>
+    </div>
+    <ng-container *ngIf="annotationMeta.idType">
+      <div>
+        Id Type: {{ annotationMeta.idType }}
+      </div>
+    </ng-container>
+    <ng-container *ngIf="searchLinks">
+      <div>
+        Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i>
+      </div>
+      <div *ngFor="let link of searchLinks">
+        <a href="{{ link.url }}" target="_blank">{{ link.domain }}</a>
+      </div>
+    </ng-container>
+  </ng-container>
+</ng-template>
