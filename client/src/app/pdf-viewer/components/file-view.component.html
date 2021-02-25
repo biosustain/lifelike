@@ -79,9 +79,9 @@
             <ng-template #textSearchControl>
               <app-search-control [(ngModel)]="searchQuery" (ngModelChange)="searchQueryChanged()"
                                   (enterPress)="findNext()"
-                                  [searching]="pdfViewerLib?.searching || false"
-                                  [resultIndex]="(pdfViewerLib?.matchesCount.current || 1) - 1"
-                                  [resultCount]="pdfViewerLib?.matchesCount.total || 0"
+                                  [searching]="searching || false"
+                                  [resultIndex]="(matchesCount.current || 1) - 1"
+                                  [resultCount]="matchesCount.total || 0"
                                   (previous)="findPrevious()" (next)="findNext()"
                                   #searchControl>
               </app-search-control>
@@ -185,6 +185,7 @@
               [searchChanged]="searchChanged"
               [showExcludedAnnotations]="showExcludedAnnotations"
               [removedAnnotationExclusion]="removedAnnotationExclusion"
+              (matches-count-updated)="matchesCountUpdated($event)"
               (annotationDragStart)="addAnnotationDragData($event)"
               (annotation-exclusion-added)="annotationExclusionAdded($event)"
               (annotation-exclusion-removed)="annotationExclusionRemoved($event)"
