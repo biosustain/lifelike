@@ -113,7 +113,8 @@ export class ObjectCreationService {
         ...value.request,
         ...(options.request || {}),
       }, {
-        annotationMethod: value.annotationMethod,
+        annotationConfigs: value.annotationConfigs,
+        organism: value.organism,
       }).toPromise();
     });
     return dialogRef.result;

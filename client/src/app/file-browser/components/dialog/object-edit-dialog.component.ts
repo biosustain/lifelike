@@ -4,14 +4,15 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../../shared/services/message-dialog.service';
 import { FilesystemObject } from '../../models/filesystem-object';
 import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
-import { ObjectContentSource, ObjectCreateRequest } from '../../schema';
+import { AnnotationConfigs, ObjectContentSource, ObjectCreateRequest } from '../../schema';
 import { OrganismAutocomplete } from '../../../interfaces';
 import { select, Store } from '@ngrx/store';
 import { AuthSelectors } from '../../../auth/store';
 import { State } from 'app/***ARANGO_USERNAME***-store';
 import { Observable } from 'rxjs';
 import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
-import { AnnotationMethod } from '../../../interfaces/annotation';
+import { AnnotationMethods, NLPANNOTATIONMODELS } from '../../../interfaces/annotation';
+import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 
 @Component({
   selector: 'app-object-edit-dialog',
@@ -27,7 +28,9 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   @Input() forceAnnotationOptions = false;
   @Input() promptParent = false;
 
-  readonly annotationMethodChoices: AnnotationMethod[] = ['NLP', 'Rules Based'];
+  readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
+  readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(
+    key => NLPANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
   readonly userRoles$: Observable<string[]>;
 
   private _object: FilesystemObject;
@@ -41,7 +44,13 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     filename: new FormControl('', Validators.required),
     description: new FormControl(),
     public: new FormControl(false),
-    annotationMethod: new FormControl(this.annotationMethodChoices[1], [Validators.required]),
+    annotationConfigs: new FormGroup(
+      this.annotationModels.reduce(
+        (obj, key) => ({...obj, [key]: new FormGroup(
+          {
+            nlp: new FormControl(false),
+            rulesBased: new FormControl(true)
+          })}), {}), [Validators.required]),
     organism: new FormControl(null),
     mimeType: new FormControl(null),
   }, (group: FormGroup): ValidationErrors | null => {
@@ -106,6 +115,18 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     }
   }
 
+  @Input()
+  set configs(value: AnnotationConfigs) {
+    if (value) {
+      const ctrl = (this.form.get('annotationConfigs') as FormControl);
+      for (const [modelName, config] of Object.entries(value)) {
+        if (ctrl.get(modelName)) {
+          ctrl.get(modelName).patchValue(config);
+        }
+      }
+    }
+  }
+
   get possiblyAnnotatable(): boolean {
     return this.object.isAnnotatable || this.filePossiblyAnnotatable || this.forceAnnotationOptions;
   }
@@ -155,11 +176,23 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       ...this.getFileContentRequest(value),
     };
 
+    const annotationConfigs = {};
+    for (const [modelName, config] of Object.entries(value.annotationConfigs)) {
+      const model = {};
+      for (const key of Object.keys(config)) {
+        if (key !== 'disabled') {
+          model[key] = config[key];
+        }
+      }
+      annotationConfigs[modelName] = model;
+    }
+
     return {
       object: this.object,
       objectChanges,
       request,
-      annotationMethod: value.annotationMethod,
+      annotationConfigs,
+      organism: value.organism,
     };
   }
 
@@ -252,5 +285,6 @@ export interface ObjectEditDialogValue {
   object: FilesystemObject;
   objectChanges: Partial<FilesystemObject>;
   request: ObjectCreateRequest;
-  annotationMethod: AnnotationMethod;
+  annotationConfigs: AnnotationConfigs;
+  organism: OrganismAutocomplete;
 }

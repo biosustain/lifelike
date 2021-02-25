@@ -4,7 +4,7 @@ import {
   AnnotationChangeExclusionMeta,
   Meta,
 } from '../pdf-viewer/annotation-type';
-import { AnnotationMethod } from '../interfaces/annotation';
+import { AnnotationMethods } from '../interfaces/annotation';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
 import { FilePrivileges, ProjectPrivileges } from './models/filesystem-object';
 import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
@@ -83,7 +83,6 @@ export interface FilesystemObjectData {
   description: string;
   mimeType: string;
   doi: string;
-  fallbackOrganism?: OrganismAutocomplete;
   public: boolean;
   annotationsDate: string;
   creationDate: string;
@@ -96,6 +95,8 @@ export interface FilesystemObjectData {
   recycled: boolean;
   effectivelyRecycled: boolean;
   highlight?: string[];
+  fallbackOrganism: OrganismAutocomplete;
+  annotationConfigs: AnnotationConfigs;
 }
 
 interface ObjectContentValueRequest {
@@ -192,6 +193,10 @@ export interface ObjectVersionHistoryResponse extends ResultList<ObjectVersionDa
   object: FilesystemObjectData;
 }
 
+export interface AnnotationSelectionResponse {
+  annotationConfigs: AnnotationConfigs;
+}
+
 // ========================================
 // Locks
 // ========================================
@@ -217,9 +222,16 @@ export interface AnnotationGenerationRequest {
   refresh?: boolean;
 }
 
+export interface AnnotationConfigs {
+  [model: string]: {
+    nlp: boolean;
+    rulesBased: boolean;
+  };
+}
+
 export interface PDFAnnotationGenerationRequest extends AnnotationGenerationRequest {
   organism?: OrganismAutocomplete;
-  annotationMethod?: AnnotationMethod;
+  annotationConfigs?: AnnotationConfigs;
 }
 
 export interface TextAnnotationGenerationRequest extends PDFAnnotationGenerationRequest {
