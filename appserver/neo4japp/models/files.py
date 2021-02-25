@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from typing import BinaryIO, Optional, List, Dict
 
 import sqlalchemy
-from sqlalchemy import and_, text, event
+from sqlalchemy import and_, text, event, orm
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
@@ -199,11 +199,19 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     # a lot of the API endpoints, and some of the helper methods that query for Files
     # will populate these fields for you
     calculated_project: Optional[Projects] = None
-    calculated_privileges: Dict[int, FilePrivileges] = {}  # key = AppUser.id
+    calculated_privileges: Dict[int, FilePrivileges]  # key = AppUser.id
     calculated_children: Optional[List['Files']] = None  # children of this file
     calculated_parent_deleted: Optional[bool] = None  # whether a parent is deleted
     calculated_parent_recycled: Optional[bool] = None  # whether a parent is recycled
     calculated_highlight: Optional[str] = None  # highlight used in the content search
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._init_model()
+
+    @orm.reconstructor
+    def _init_model(self):
+        self.calculated_privileges = {}
 
     @property
     def parent_deleted(self):

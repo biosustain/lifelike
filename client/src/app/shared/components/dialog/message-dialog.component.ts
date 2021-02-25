@@ -1,6 +1,8 @@
 import { Component, Input } from '@angular/core';
-import { MessageType } from 'app/interfaces/message-dialog.interface';
+
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 /**
  * A generic alert dialog.
@@ -22,7 +24,11 @@ export class MessageDialogComponent {
   ) {
   }
 
-  close() {
+  dismiss() {
     this.modal.dismiss();
+  }
+
+  close() {
+    this.modal.close();
   }
 }
