@@ -1,10 +1,10 @@
-from marshmallow import fields, validate
+from marshmallow import fields, validate, ValidationError
 
 from neo4japp.database import ma
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import ResultListSchema
+from neo4japp.schemas.fields import SearchQuery
 from neo4japp.schemas.filesystem import RankedFileSchema
-
 
 # ========================================
 # Content Search
@@ -15,16 +15,13 @@ from neo4japp.schemas.filesystem import RankedFileSchema
 
 
 class ContentSearchSchema(CamelCaseSchema):
-    q = ma.String(
+    q = SearchQuery(
         required=True,
-        validate=validate.Regexp(
-            regex=r'.*\S.*',
-            error='Search query cannot contain only whitespace characters.'
-        )
     )
-    mime_types = fields.List(fields.String(), min=0, max=100,
-                             missing=lambda: ['vnd.***ARANGO_DB_NAME***.document/map',
-                                              'application/pdf'])
+    types = ma.String(default='', required=False)
+    projects = ma.String(default='', required=False)
+    phrase = ma.String(default='', required=False)
+    wildcards = ma.String(default='', required=False)
 
 
 # Response

@@ -222,10 +222,21 @@ class FilesystemBaseView(MethodView):
             for permission in require_permissions:
                 if not getattr(file.calculated_privileges[user.id], permission):
                     # Do not reveal the filename with the error!
-                    raise AccessRequestRequiredError(
-                        f"You do not have '{permission}' access to the specified file object "
-                        f"(with ID of {file.hash_id}).",
-                        file_hash_id=file.hash_id)
+                    if not file.calculated_privileges[user.id].readable:
+                        raise AccessRequestRequiredError(
+                            f"You do not have permission to access this file or folder.",
+                            file_hash_id=file.hash_id)
+                    else:
+                        if permission == 'commentable':
+                            raise AccessRequestRequiredError(
+                                f"You can open '{file.filename}' but you cannot make "
+                                f"comments.",
+                                file_hash_id=file.hash_id)
+                        else:
+                            raise AccessRequestRequiredError(
+                                f"You can open '{file.filename}' but you cannot make "
+                                f"changes to it.",
+                                file_hash_id=file.hash_id)
 
             if not permit_recycled and (file.recycled or file.parent_recycled):
                 raise ValidationError(
@@ -1155,7 +1166,8 @@ class FileAnnotationHistoryView(FilesystemBaseView):
 
         query = db.session.query(FileAnnotationsVersion) \
             .filter(FileAnnotationsVersion.file == file) \
-            .order_by(desc(FileAnnotationsVersion.creation_date))
+            .order_by(desc(FileAnnotationsVersion.creation_date)) \
+            .options(joinedload(FileAnnotationsVersion.user))
 
         per_page = pagination['limit']
         page = pagination['page']
@@ -1174,6 +1186,7 @@ class FileAnnotationHistoryView(FilesystemBaseView):
         for newer, older in window(items):
             results.append({
                 'date': older.creation_date,
+                'user': newer.user,
                 'cause': older.cause,
                 'inclusion_changes': self._get_annotation_changes(
                     older.custom_annotations, newer.custom_annotations, 'inclusion'),

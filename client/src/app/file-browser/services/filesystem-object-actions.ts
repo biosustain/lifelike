@@ -5,9 +5,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { finalize, map } from 'rxjs/operators';
+import { finalize, map, mergeMap, take } from 'rxjs/operators';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { FilesystemObject } from '../models/filesystem-object';
@@ -35,6 +35,7 @@ import {
   ObjectAnnotateDialogComponent,
   ObjectAnnotateDialogValue,
 } from '../components/dialog/object-annotate-dialog.component';
+import { ObjectTypeService } from './object-type.service';
 
 @Injectable()
 export class FilesystemObjectActions {
@@ -49,7 +50,8 @@ export class FilesystemObjectActions {
               protected readonly messageDialog: MessageDialog,
               protected readonly errorHandler: ErrorHandler,
               protected readonly filesystemService: FilesystemService,
-              protected readonly objectCreationService: ObjectCreationService) {
+              protected readonly objectCreationService: ObjectCreationService,
+              protected readonly objectTypeService: ObjectTypeService) {
   }
 
   protected createProgressDialog(message: string, title = 'Working...') {
@@ -67,42 +69,43 @@ export class FilesystemObjectActions {
    * @param target the object to export
    */
   openExportDialog(target: FilesystemObject): Promise<boolean> {
-    if (target.exportFormats.length) {
-      const dialogRef = this.modalService.open(ObjectExportDialogComponent);
-      dialogRef.componentInstance.object = target;
-      dialogRef.componentInstance.accept = (value: ObjectExportDialogValue) => {
-        const progressDialogRef = this.createProgressDialog('Generating export...');
-        let content$: Observable<Blob>;
-        let filename = target.filename;
-        if (!filename.endsWith(value.extension)) {
-          filename += value.extension;
-        }
+    return this.objectTypeService.get(target).pipe(
+      mergeMap(typeProvider => typeProvider.getExporters(target)),
+      mergeMap(exporters => {
+        if (exporters.length) {
+          const dialogRef = this.modalService.open(ObjectExportDialogComponent);
+          dialogRef.componentInstance.title = `Export ${getObjectLabel(target)}`;
+          dialogRef.componentInstance.exporters = exporters;
+          dialogRef.componentInstance.accept = (value: ObjectExportDialogValue) => {
+            const progressDialogRef = this.createProgressDialog('Generating export...');
 
-        // If the user is getting the original format, then we'll just use the existing endpoint
-        if (value.request.format === target.originalFormat) {
-          content$ = this.filesystemService.getContent(target.hashId);
+            try {
+              return value.exporter.export().pipe(
+                take(1), // Must do this due to RxJs<->Promise<->etc. tomfoolery
+                finalize(() => progressDialogRef.close()),
+                map((file: File) => {
+                  openDownloadForBlob(file, file.name);
+                  return true;
+                }),
+                this.errorHandler.create({label: 'Export object'}),
+              ).toPromise();
+            } catch (e) {
+              progressDialogRef.close();
+              throw e;
+            }
+          };
+
+          return from(dialogRef.result.catch(() => false));
         } else {
-          content$ = this.filesystemService.generateExport(value.object.hashId, value.request);
+          this.messageDialog.display({
+            title: 'No Export Formats',
+            message: `No export formats are supported for ${getObjectLabel(target)}.`,
+            type: MessageType.Warning,
+          });
+          return of(false);
         }
-
-        return content$.pipe(
-          finalize(() => progressDialogRef.close()),
-          map(blob => {
-            openDownloadForBlob(blob, filename);
-            return true;
-          }),
-          this.errorHandler.create({label: 'Export object'}),
-        ).toPromise();
-      };
-      return dialogRef.result;
-    } else {
-      this.messageDialog.display({
-        title: 'No Export Formats',
-        message: `No export formats are supported for ${getObjectLabel(target)}.`,
-        type: MessageType.Warning,
-      });
-      return Promise.reject();
-    }
+      }),
+    ).toPromise();
   }
 
   /**
@@ -126,6 +129,9 @@ export class FilesystemObjectActions {
   openCloneDialog(target: FilesystemObject): Promise<FilesystemObject> {
     const object = clone(target);
     object.filename = object.filename.replace(/^(.+?)(\.[^.]+)?$/, '$1 (Copy)$2');
+    if (object.parent == null || !object.parent.privileges.writable) {
+      object.parent = null;
+    }
     return this.objectCreationService.openCreateDialog(object, {
       title: `Make Copy of ${getObjectLabel(target)}`,
       promptParent: true,
@@ -177,17 +183,20 @@ export class FilesystemObjectActions {
   openEditDialog(target: FilesystemObject): Promise<any> {
     const dialogRef = this.modalService.open(ObjectEditDialogComponent);
     dialogRef.componentInstance.object = target;
-    dialogRef.componentInstance.accept = ((changes: ObjectEditDialogValue) => {
-      const progressDialogRef = this.createProgressDialog(`Saving changes to ${getObjectLabel(target)}...`);
-      return this.filesystemService.save([target.hashId], changes.request, {
-        [target.hashId]: target,
-      })
-        .pipe(
-          finalize(() => progressDialogRef.close()),
-          this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
-          this.errorHandler.create({label: 'Edit object'}),
-        )
-        .toPromise();
+    this.annotationsService.getAnnotationSelections(target.hashId).subscribe(configs => {
+      dialogRef.componentInstance.configs = configs.annotationConfigs;
+      dialogRef.componentInstance.accept = ((changes: ObjectEditDialogValue) => {
+        const progressDialogRef = this.createProgressDialog(`Saving changes to ${getObjectLabel(target)}...`);
+        return this.filesystemService.save([target.hashId], changes.request, {
+          [target.hashId]: target,
+        })
+          .pipe(
+            finalize(() => progressDialogRef.close()),
+            this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
+            this.errorHandler.create({label: 'Edit object'}),
+          )
+          .toPromise();
+      });
     });
     return dialogRef.result;
   }
@@ -262,11 +271,19 @@ export class FilesystemObjectActions {
 
   reannotate(targets: FilesystemObject[]): Promise<any> {
     const progressDialogRef = this.createProgressDialog('Identifying annotations...');
-    return this.annotationsService.generateAnnotations(targets.map(object => object.hashId))
-      .pipe(
-        finalize(() => progressDialogRef.close()),
-        this.errorHandler.create({label: 'Re-annotate object'}),
-      )
-      .toPromise();
+    // it's better to have separate service calls for each file
+    // and let each finish independently
+    const annotationRequests = targets.map(
+      object => {
+        const annotationConfigs = object.annotationConfigs;
+        const organism = object.fallbackOrganism;
+        return this.annotationsService.generateAnnotations(
+          [object.hashId], {annotationConfigs, organism});
+      });
+
+    return forkJoin(annotationRequests).pipe(
+      finalize(() => progressDialogRef.close()),
+      this.errorHandler.create({label: 'Re-annotate object'}),
+    ).toPromise();
   }
 }

@@ -1,10 +1,11 @@
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import AppRole, AppUser
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import desc, asc
+from sqlalchemy.orm import contains_eager
 from neo4japp.exceptions import DuplicateRecord, NotAuthorizedException
 from neo4japp.data_transfer_objects import UserUpdateRequest
 
-from typing import Sequence
+from typing import Sequence, Tuple
 
 
 class AccountService(RDBMSBaseDao):
@@ -62,15 +63,29 @@ class AccountService(RDBMSBaseDao):
         self.session.delete(user)
         self.commit_or_flush(commit_now)
 
-    def get_user_list(self, query_dict={}) -> Sequence[AppUser]:
-        username = query_dict.get("username", "")
+    def get_user_list(
+        self,
+        filter_dict={},
+        limit: int = None,
+        order_by: str = None,
+        ascend: bool = True
+    ) -> Sequence[Tuple[AppUser, str]]:
+        query = self.session.query(AppUser, AppRole.name) \
+            .join(AppUser.roles, isouter=True) \
+            .options(contains_eager(AppUser.roles))
 
-        if len(username) > 0:
-            return AppUser.query.filter(
-                AppUser.username.ilike(f'%{username}%')
-            ).order_by(AppUser.username).limit(10).all()
-        else:
-            return AppUser.query.order_by(AppUser.username).all()
+        for field, value in filter_dict.items():
+            query = query.filter(getattr(AppUser, field) == value)
+
+        if order_by:
+            sort_by = asc(getattr(AppUser, order_by)) \
+                if ascend else desc(getattr(AppUser, order_by))
+            query = query.order_by(sort_by)
+
+        if limit:
+            query = query.limit(limit)
+
+        return query.all()
 
     def update_user(self, user: AppUser, changes: UserUpdateRequest, commit_now=True) -> AppUser:
         # TODO: 'user roll' updates will have to be handled separately

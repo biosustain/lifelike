@@ -6,15 +6,15 @@ import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
   KnowledgeMap,
+  UniversalEntityData,
   UniversalGraph,
   UniversalGraphNode,
 } from '../../drawing-tool/services/interfaces';
-import { AppUser, User } from '../../interfaces';
-import { FilesystemObjectData, ProjectData } from '../schema';
+import { AppUser, OrganismAutocomplete, User } from '../../interfaces';
+import { AnnotationConfigs, FilesystemObjectData, ProjectData } from '../schema';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
-import { Observable } from 'rxjs';
-import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
 import { createObjectDragImage } from '../utils/drag';
+import { FilePrivileges, ProjectPrivileges } from './privileges';
 
 // These are legacy mime type definitions that have to exist in this file until
 // all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
@@ -22,12 +22,6 @@ const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
 const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
 const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
-
-export interface ProjectPrivileges {
-  readable: boolean;
-  writable: boolean;
-  administrable: boolean;
-}
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {
@@ -87,12 +81,6 @@ export class ProjectImpl implements Project {
   }
 }
 
-export interface FilePrivileges {
-  readable: boolean;
-  writable: boolean;
-  commentable: boolean;
-}
-
 /**
  * This object represents both directories and every type of file in Lifelike. Due
  * to a lot of legacy code, we implement several legacy interfaces to reduce the
@@ -106,7 +94,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   mimeType: string;
   doi: string;
   public: boolean;
-  contentValue$: Observable<Blob> | undefined;
   uploadUrl: string;
   annotationsDate: string;
   creationDate: string;
@@ -121,6 +108,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   privileges: FilePrivileges;
   recycled: boolean;
   effectivelyRecycled: boolean;
+  fallbackOrganism: OrganismAutocomplete;
+  annotationConfigs: AnnotationConfigs;
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
@@ -148,7 +137,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isAnnotatable() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === 'application/pdf';
+    return this.mimeType === 'application/pdf' || this.mimeType === 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
   }
 
   get isMovable() {
@@ -168,7 +157,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isVersioned() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === MAP_MIMETYPE;
+    return this.mimeType === MAP_MIMETYPE || this.mimeType === ENRICHMENT_TABLE_MIMETYPE;
   }
 
   get isNavigable() {
@@ -431,12 +420,13 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   addDataTransferData(dataTransfer: DataTransfer) {
     createObjectDragImage(this).addDataTransferData(dataTransfer);
-    dataTransfer.effectAllowed = 'all';
-    dataTransfer.setData('text/plain', this.name);
-    dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify({
+
+    const filesystemObjectTransfer: FilesystemObjectTransferData = {
       hashId: this.hashId,
-    } as FilesystemObjectTransferData));
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
+      privileges: this.privileges,
+    };
+
+    const node: Partial<Omit<UniversalGraphNode, 'data'>> & {data: Partial<UniversalEntityData>} = {
       display_name: this.name,
       label: this.type === 'map' ? 'map' : 'link',
       sub_labels: [],
@@ -450,7 +440,12 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
           url: this.getCommands().join('/'),
         }],
       },
-    } as Partial<UniversalGraphNode>));
+    };
+
+    dataTransfer.effectAllowed = 'all';
+    dataTransfer.setData('text/plain', this.name);
+    dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify(filesystemObjectTransfer));
+    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify(node));
   }
 
   private getId(): any {
@@ -510,7 +505,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
       'annotationsDate', 'uploadUrl', 'highlight',
       'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
-      'effectivelyRecycled']) {
+      'effectivelyRecycled', 'fallbackOrganism', 'annotationConfigs']) {
       if (key in data) {
         this[key] = data[key];
       }
@@ -545,28 +540,6 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       }
     }
     return this;
-  }
-
-  get exportFormats(): string[] {
-    // TODO: Move this method to ObjectTypeProvider
-    if (this.mimeType === MAP_MIMETYPE) {
-      return ['pdf', 'png', 'svg', 'llmap.json'];
-    } else if (this.mimeType === PDF_MIMETYPE) {
-      return ['pdf'];
-    } else {
-      return [];
-    }
-  }
-
-  get originalFormat(): string | undefined {
-    // TODO: Move this method to ObjectTypeProvider
-    if (this.mimeType === MAP_MIMETYPE) {
-      return 'llmap.json';
-    } else if (this.mimeType === PDF_MIMETYPE) {
-      return 'pdf';
-    } else {
-      return null;
-    }
   }
 
   get ***ARANGO_USERNAME***(): FilesystemObject {

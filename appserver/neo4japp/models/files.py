@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from typing import BinaryIO, Optional, List, Dict
 
 import sqlalchemy
-from sqlalchemy import and_, text, event
+from sqlalchemy import and_, text, event, orm
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
@@ -49,7 +49,6 @@ class FileContent(RDBMSBase):
     raw_file = db.Column(db.LargeBinary, nullable=False)
     checksum_sha256 = db.Column(db.Binary(32), nullable=False, index=True, unique=True)
     creation_date = db.Column(db.DateTime, nullable=False, default=db.func.now())
-    parsed_content = db.Column(postgresql.JSONB, nullable=True)
 
     @property
     def raw_file_utf8(self):
@@ -161,11 +160,21 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='CASCADE'),
                         index=True, nullable=False)
     user = db.relationship('AppUser', foreign_keys=user_id)
-    annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
-    annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
-    custom_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     doi = db.Column(db.String(1024), nullable=True)
     upload_url = db.Column(db.String(2048), nullable=True)
+    public = db.Column(db.Boolean, nullable=False, default=False)
+    deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
+    recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
+
+    """
+    Annotations related columns
+    """
+    # NOTE: for PDFs `annotations` will be one JSON, for Enrichment tables, will be a list of JSON
+    annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
+    annotation_configs = db.Column(postgresql.JSONB, nullable=True)
+    annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
+    custom_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
+    enrichment_annotations = db.Column(postgresql.JSONB, nullable=True)
     excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     fallback_organism_id = db.Column(
         db.Integer,
@@ -176,9 +185,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         nullable=True,
     )
     fallback_organism = db.relationship('FallbackOrganism', foreign_keys=fallback_organism_id)
-    public = db.Column(db.Boolean, nullable=False, default=False)
-    deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
-    recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
+
     __table_args__ = (
         db.Index('uq_files_unique_filename', 'filename', 'parent_id',
                  unique=True,
@@ -192,11 +199,19 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     # a lot of the API endpoints, and some of the helper methods that query for Files
     # will populate these fields for you
     calculated_project: Optional[Projects] = None
-    calculated_privileges: Dict[int, FilePrivileges] = {}  # key = AppUser.id
+    calculated_privileges: Dict[int, FilePrivileges]  # key = AppUser.id
     calculated_children: Optional[List['Files']] = None  # children of this file
     calculated_parent_deleted: Optional[bool] = None  # whether a parent is deleted
     calculated_parent_recycled: Optional[bool] = None  # whether a parent is recycled
     calculated_highlight: Optional[str] = None  # highlight used in the content search
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._init_model()
+
+    @orm.reconstructor
+    def _init_model(self):
+        self.calculated_privileges = {}
 
     @property
     def parent_deleted(self):

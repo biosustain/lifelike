@@ -10,8 +10,10 @@ import { map } from 'rxjs/operators';
 import { DirectoryPreviewComponent } from '../components/directory-preview.component';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../services/object-creation.service';
+import { Observable } from 'rxjs';
 
 export const DIRECTORY_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.filesystem/directory';
+export const DIRECTORY_SHORTHAND = 'directory';
 
 @Injectable()
 export class DirectoryTypeProvider extends AbstractObjectTypeProvider {
@@ -27,7 +29,8 @@ export class DirectoryTypeProvider extends AbstractObjectTypeProvider {
     return object.mimeType === DIRECTORY_MIMETYPE;
   }
 
-  createPreviewComponent(object: FilesystemObject, options?: PreviewOptions) {
+  createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
+                         options?: PreviewOptions) {
     return this.filesystemService.get(object.hashId).pipe(map(newObject => {
       const factory: ComponentFactory<DirectoryPreviewComponent> =
         this.componentFactoryResolver.resolveComponentFactory(DirectoryPreviewComponent);
