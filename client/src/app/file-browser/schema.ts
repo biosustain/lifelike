@@ -135,6 +135,7 @@ export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueReque
   uploadUrl?: string;
   public?: boolean;
   fallbackOrganism?: OrganismAutocomplete;
+  annotationConfigs?: AnnotationConfigs;
 }
 
 /**
