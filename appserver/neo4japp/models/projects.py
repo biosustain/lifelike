@@ -3,17 +3,16 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 from sqlalchemy import (
-    and_,
     event,
     join,
+    orm,
+    select,
     or_,
-    select
 )
 from sqlalchemy.orm import validates
 from sqlalchemy.orm.query import Query
 
-from neo4japp.constants import FILE_INDEX_ID
-from neo4japp.database import db, get_elastic_service
+from neo4japp.database import db
 from neo4japp.models.auth import (
     AccessActionType,
     AccessControlPolicy,
@@ -68,7 +67,15 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
     # yourself or use helpers that populate these fields. These fields are used by
     # a lot of the API endpoints, and some of the helper methods that query for Files
     # will populate these fields for you
-    calculated_privileges: Dict[int, ProjectPrivileges] = {}  # key = AppUser.id
+    calculated_privileges: Dict[int, ProjectPrivileges]  # key = AppUser.id
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._init_model()
+
+    @orm.reconstructor
+    def _init_model(self):
+        self.calculated_privileges = {}
 
     @validates('name')
     def validate_name(self, key, name):

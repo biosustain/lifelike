@@ -27,7 +27,7 @@
 </ng-container>
 
 <ng-container
-  *ngIf="forEditing && (object.isCloneable || object.privileges.writable && (object.isMovable || object.isDeletable))">
+  *ngIf="(object.isCloneable || object.privileges.writable && (object.isMovable || object.isDeletable))">
   <button ngbDropdownItem (click)="openCloneDialog(object)" *ngIf="object.isCloneable">
     Copy{{ nameEntity && object.isDirectory ? ' folder' : ''}} to...
   </button>
