@@ -157,25 +157,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   getValue(): ObjectEditDialogValue {
     const value = this.form.value;
 
-    const objectChanges: Partial<FilesystemObject> = {
-      parent: value.parent,
-      filename: value.filename,
-      description: value.description,
-      public: value.public,
-      mimeType: value.mimeType,
-      fallbackOrganism: value.organism,
-    };
-
-    const request: ObjectCreateRequest = {
-      filename: value.filename,
-      parentHashId: value.parent ? value.parent.hashId : null,
-      description: value.description,
-      public: value.public,
-      mimeType: value.mimeType,
-      fallbackOrganism: value.organism,
-      ...this.getFileContentRequest(value),
-    };
-
     const annotationConfigs = {};
     for (const [modelName, config] of Object.entries(value.annotationConfigs)) {
       const model = {};
@@ -186,6 +167,27 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       }
       annotationConfigs[modelName] = model;
     }
+
+    const objectChanges: Partial<FilesystemObject> = {
+      parent: value.parent,
+      filename: value.filename,
+      description: value.description,
+      public: value.public,
+      mimeType: value.mimeType,
+      fallbackOrganism: value.organism,
+      annotationConfigs,
+    };
+
+    const request: ObjectCreateRequest = {
+      filename: value.filename,
+      parentHashId: value.parent ? value.parent.hashId : null,
+      description: value.description,
+      public: value.public,
+      mimeType: value.mimeType,
+      fallbackOrganism: value.organism,
+      annotationConfigs,
+      ...this.getFileContentRequest(value),
+    };
 
     return {
       object: this.object,

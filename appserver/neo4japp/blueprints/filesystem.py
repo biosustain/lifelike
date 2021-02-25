@@ -344,6 +344,10 @@ class FilesystemBaseView(MethodView):
                     file.fallback_organism = params['fallback_organism']
                     changed_fields.add('fallback_organism')
 
+                if 'annotation_configs' in params:
+                    file.annotation_configs = params['annotation_configs']
+                    changed_fields.add('annotation_configs')
+
                 if 'content_value' in params:
                     buffer = params['content_value']
 

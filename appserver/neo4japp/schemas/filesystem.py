@@ -230,6 +230,9 @@ class BulkFileUpdateRequestSchema(CamelCaseSchema):
     description = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     fallback_organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
+    annotation_configs = fields.Dict(
+        keys=fields.String(),
+        values=fields.Nested(AnnotationMethod, required=True), allow_none=True)
     public = fields.Boolean(default=False)
     content_value = fields.Field(required=False)
 
