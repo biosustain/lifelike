@@ -1,10 +1,6 @@
-import io
 import uuid
 
 from datetime import datetime
-from typing import Dict, List
-
-from sqlalchemy import and_
 
 from neo4japp.constants import TIMEZONE
 from neo4japp.database import (
@@ -19,13 +15,11 @@ from neo4japp.exceptions import (
 )
 from neo4japp.models import (
     Files,
-    FileContent,
     GlobalList, AppUser,
 )
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.services.annotations.annotation_graph_service import AnnotationGraphService
 from neo4japp.services.annotations.constants import (
-    DatabaseType,
     EntityType,
     ManualAnnotationType
 )
@@ -267,28 +261,6 @@ class ManualAnnotationService:
             if not isExcluded(file.excluded_annotations, annotation)
         ]
         return filtered_annotations + file.custom_annotations
-
-    def get_combined_annotations_in_project(self, project_id):
-        files = Files.query.filter(
-            and_(
-                Files.project == project_id,
-                Files.annotations != []
-            )).all()
-        annotations = []
-        for fi in files:
-            annotations.extend(self.get_file_annotations(fi))
-        return annotations
-
-    def get_files_annotations_in_project(self, project_id: str) -> Dict[str, List]:
-        files = Files.query.filter(
-            and_(
-                Files.project == project_id,
-                Files.annotations != []
-            )).all()
-        files_annotations = {}
-        for fi in files:
-            files_annotations[fi.file_id] = self.get_file_annotations(fi)
-        return files_annotations
 
     def add_to_global_list(self, annotation, annotation_type, file_id):
         """ Adds inclusion or exclusion to a global_list table
