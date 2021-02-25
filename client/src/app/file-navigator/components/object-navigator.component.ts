@@ -69,6 +69,7 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
         ['/search', 'content'], {
           queryParams: {
             q: useKeyword ? annotation.text : annotation.primaryName,
+            projects: this.object.project.name,
           },
           newTab: true,
           sideBySide: true,
