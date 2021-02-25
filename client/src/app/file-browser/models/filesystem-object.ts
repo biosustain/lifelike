@@ -10,7 +10,7 @@ import {
   UniversalGraphNode,
 } from '../../drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from '../../interfaces';
-import { FilesystemObjectData, ProjectData } from '../schema';
+import { AnnotationConfigs, FilesystemObjectData, ProjectData } from '../schema';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
 import { Observable } from 'rxjs';
 import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
@@ -121,6 +121,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   fallbackOrganism?: OrganismAutocomplete;
   recycled: boolean;
   effectivelyRecycled: boolean;
+  annotationConfigs: AnnotationConfigs;
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
@@ -510,7 +511,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
       'annotationsDate', 'uploadUrl', 'highlight', 'fallbackOrganism',
       'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
-      'effectivelyRecycled']) {
+      'effectivelyRecycled', 'fallbackOrganism', 'annotationConfigs']) {
       if (key in data) {
         this[key] = data[key];
       }
