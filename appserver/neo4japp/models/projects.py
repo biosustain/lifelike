@@ -1,18 +1,19 @@
 import re
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, List
 
 from sqlalchemy import (
-    and_,
     event,
     join,
-    select
+    orm,
+    select,
+    and_,
+    or_,
 )
 from sqlalchemy.orm import validates
 from sqlalchemy.orm.query import Query
 
-from neo4japp.constants import FILE_INDEX_ID
-from neo4japp.database import db, get_elastic_service
+from neo4japp.database import db
 from neo4japp.models.auth import (
     AccessActionType,
     AccessControlPolicy,
@@ -67,7 +68,15 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
     # yourself or use helpers that populate these fields. These fields are used by
     # a lot of the API endpoints, and some of the helper methods that query for Files
     # will populate these fields for you
-    calculated_privileges: Dict[int, ProjectPrivileges] = {}  # key = AppUser.id
+    calculated_privileges: Dict[int, ProjectPrivileges]  # key = AppUser.id
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._init_model()
+
+    @orm.reconstructor
+    def _init_model(self):
+        self.calculated_privileges = {}
 
     @validates('name')
     def validate_name(self, key, name):
@@ -89,6 +98,28 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
             AppUser, AppUser.id == projects_collaborator_role.c.appuser_id,
         ).filter(
             AppUser.id == user_id
+        )
+
+    @classmethod
+    def user_has_permission_to_projects(cls, user_id: int, projects: List[str]) -> Query:
+        return db.session.query(
+            Projects.id
+        ).join(
+            projects_collaborator_role,
+            and_(
+                projects_collaborator_role.c.projects_id == Projects.id,
+                projects_collaborator_role.c.appuser_id == user_id,
+            )
+        ).join(
+            AppRole,
+            and_(
+                AppRole.id == projects_collaborator_role.c.app_role_id,
+                or_(
+                    AppRole.name == 'project-read',
+                    AppRole.name == 'project-write',
+                    AppRole.name == 'project-admin'
+                )
+            )
         )
 
 

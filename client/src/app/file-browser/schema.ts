@@ -6,9 +6,9 @@ import {
 } from '../pdf-viewer/annotation-type';
 import { AnnotationMethods } from '../interfaces/annotation';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
-import { FilePrivileges, ProjectPrivileges } from './models/filesystem-object';
 import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
 import { EnrichmentResult, EnrichmentTextMapping } from 'app/enrichment-tables/models/enrichment-document';
+import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 
 // ========================================
 // Projects

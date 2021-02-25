@@ -176,7 +176,7 @@ def test_can_get_results_from_pdf(
     assert len(res) > 0
 
 
-def test_can_get_results_from_pdf_with_asterik_wildcard_phrase(
+def test_can_get_results_from_pdf_with_asterisk_wildcard_phrase(
     elastic_service,
     pdf_document,
     highlight,

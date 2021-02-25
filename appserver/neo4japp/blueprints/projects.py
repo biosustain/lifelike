@@ -66,7 +66,7 @@ class ProjectBaseView(MethodView):
             .distinct()
 
         if accessible_only and not private_data_access:
-            expected_roles = ['project-read', 'project-admin']
+            expected_roles = ['project-read', 'project-write', 'project-admin']
 
             project_role_sq = db.session.query(projects_collaborator_role, t_role.name) \
                 .join(t_role, t_role.id == projects_collaborator_role.c.app_role_id) \
