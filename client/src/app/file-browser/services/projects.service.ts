@@ -31,13 +31,16 @@ export class ProjectsService {
               protected readonly apiService: ApiService) {
   }
 
-  list(): Observable<ProjectList> {
+  list(options?: PaginatedRequestOptions): Observable<ProjectList> {
     return this.http.get<ResultList<ProjectData>>(
-      `/api/projects/projects`, this.apiService.getHttpOptions(true),
+      `/api/projects/projects`, {
+        ...this.apiService.getHttpOptions(true),
+        params: serializePaginatedParams(options, false),
+      },
     ).pipe(
       map(data => {
         const projectList = new ProjectList();
-        projectList.collectionSize = data.results.length;
+        projectList.collectionSize = data.total;
         projectList.results.replace(data.results.map(
           itemData => new ProjectImpl().update(itemData)));
         return projectList;
@@ -53,7 +56,7 @@ export class ProjectsService {
     ).pipe(
       map(data => {
         const projectList = new ProjectList();
-        projectList.collectionSize = data.results.length;
+        projectList.collectionSize = data.total;
         projectList.results.replace(data.results.map(
           itemData => new ProjectImpl().update(itemData)));
         return projectList;

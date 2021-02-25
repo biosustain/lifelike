@@ -10,7 +10,7 @@ import { ModelList } from 'app/shared/models';
 import { RankedItem, ResultList } from 'app/shared/schemas/common';
 import { ApiService } from 'app/shared/services/api.service';
 
-import { AnnotationRequest, AnnotationResponse, ContentSearchRequest } from '../schema';
+import { AnnotationRequestOptions, AnnotationResponse, ContentSearchRequest } from '../schema';
 
 
 @Injectable()
@@ -19,9 +19,11 @@ export class ContentSearchService {
               protected readonly apiService: ApiService) {
   }
 
-  annotate(params: AnnotationRequest): Observable<AnnotationResponse> {
+  // TODO: Use endpoint `'annotations/generate'` instead
+  // then add an if block for mime_type?
+  annotate(params: AnnotationRequestOptions): Observable<AnnotationResponse> {
     return this.http.post<AnnotationResponse>(
-      `/api/search/annotate`,
+      `/api/filesystem/annotations/text/generate`,
       params,
       this.apiService.getHttpOptions(true),
     );

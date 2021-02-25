@@ -5,3 +5,8 @@
 .field-value {
     width: 70%;
 }
+
+input.ng-invalid {
+    border: 1px solid red !important;
+    box-shadow: 0 0 0 0.2rem rgb(170 12 12 / 25%) !important;
+}

@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { BehaviorSubject, from, of } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { finalize, map, mergeMap, take } from 'rxjs/operators';
 import { MessageType } from '../../interfaces/message-dialog.interface';
@@ -129,6 +129,9 @@ export class FilesystemObjectActions {
   openCloneDialog(target: FilesystemObject): Promise<FilesystemObject> {
     const object = clone(target);
     object.filename = object.filename.replace(/^(.+?)(\.[^.]+)?$/, '$1 (Copy)$2');
+    if (object.parent == null || !object.parent.privileges.writable) {
+      object.parent = null;
+    }
     return this.objectCreationService.openCreateDialog(object, {
       title: `Make Copy of ${getObjectLabel(target)}`,
       promptParent: true,
@@ -180,17 +183,20 @@ export class FilesystemObjectActions {
   openEditDialog(target: FilesystemObject): Promise<any> {
     const dialogRef = this.modalService.open(ObjectEditDialogComponent);
     dialogRef.componentInstance.object = target;
-    dialogRef.componentInstance.accept = ((changes: ObjectEditDialogValue) => {
-      const progressDialogRef = this.createProgressDialog(`Saving changes to ${getObjectLabel(target)}...`);
-      return this.filesystemService.save([target.hashId], changes.request, {
-        [target.hashId]: target,
-      })
-        .pipe(
-          finalize(() => progressDialogRef.close()),
-          this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
-          this.errorHandler.create({label: 'Edit object'}),
-        )
-        .toPromise();
+    this.annotationsService.getAnnotationSelections(target.hashId).subscribe(configs => {
+      dialogRef.componentInstance.configs = configs.annotationConfigs;
+      dialogRef.componentInstance.accept = ((changes: ObjectEditDialogValue) => {
+        const progressDialogRef = this.createProgressDialog(`Saving changes to ${getObjectLabel(target)}...`);
+        return this.filesystemService.save([target.hashId], changes.request, {
+          [target.hashId]: target,
+        })
+          .pipe(
+            finalize(() => progressDialogRef.close()),
+            this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
+            this.errorHandler.create({label: 'Edit object'}),
+          )
+          .toPromise();
+      });
     });
     return dialogRef.result;
   }
@@ -265,11 +271,19 @@ export class FilesystemObjectActions {
 
   reannotate(targets: FilesystemObject[]): Promise<any> {
     const progressDialogRef = this.createProgressDialog('Identifying annotations...');
-    return this.annotationsService.generateAnnotations(targets.map(object => object.hashId))
-      .pipe(
-        finalize(() => progressDialogRef.close()),
-        this.errorHandler.create({label: 'Re-annotate object'}),
-      )
-      .toPromise();
+    // it's better to have separate service calls for each file
+    // and let each finish independently
+    const annotationRequests = targets.map(
+      object => {
+        const annotationConfigs = object.annotationConfigs;
+        const organism = object.fallbackOrganism;
+        return this.annotationsService.generateAnnotations(
+          [object.hashId], {annotationConfigs, organism});
+      });
+
+    return forkJoin(annotationRequests).pipe(
+      finalize(() => progressDialogRef.close()),
+      this.errorHandler.create({label: 'Re-annotate object'}),
+    ).toPromise();
   }
 }
