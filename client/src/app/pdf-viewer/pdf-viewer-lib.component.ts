@@ -857,7 +857,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
     this.isLoadCompleted = true;
 
-    this.loadCompleted.emit()
+    this.loadCompleted.emit(true)
   }
 
   /**

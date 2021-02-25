@@ -531,8 +531,8 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     });
   }
 
-  loadCompleted() {
-    this.pdfFileLoaded = true;
+  loadCompleted(status) {
+    this.pdfFileLoaded = status;
     if (this.pendingScroll) {
       this.scrollInPdf(this.pendingScroll);
       this.pendingScroll = null;
