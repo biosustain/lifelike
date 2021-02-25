@@ -13,7 +13,7 @@ import {
 import { AppUser, OrganismAutocomplete, User } from '../../interfaces';
 import { AnnotationConfigs, FilesystemObjectData, ProjectData } from '../schema';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
-import { createObjectDragImage } from '../utils/drag';
+import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
 import { FilePrivileges, ProjectPrivileges } from './privileges';
 
 // These are legacy mime type definitions that have to exist in this file until
@@ -78,6 +78,36 @@ export class ProjectImpl implements Project {
       hash = ((hash << 3) + hash) + this.hashId.codePointAt(i);
     }
     return hash % 100 / 100;
+  }
+
+  addDataTransferData(dataTransfer: DataTransfer) {
+    createProjectDragImage(this).addDataTransferData(dataTransfer);
+
+    const filesystemObjectTransfer: FilesystemObjectTransferData = {
+      hashId: this.hashId,
+      privileges: this.privileges,
+    };
+
+    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
+      display_name: this.name,
+      label: 'link',
+      sub_labels: [],
+      data: {
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.id + '',
+        }],
+        sources: [{
+          domain: 'File Source',
+          url: this.getCommands().join('/'),
+        }],
+      },
+    };
+
+    dataTransfer.effectAllowed = 'all';
+    dataTransfer.setData('text/plain', this.name);
+    dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify(filesystemObjectTransfer));
+    dataTransfer.setData('application/lifelike-node', JSON.stringify(node));
   }
 }
 
@@ -426,7 +456,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       privileges: this.privileges,
     };
 
-    const node: Partial<Omit<UniversalGraphNode, 'data'>> & {data: Partial<UniversalEntityData>} = {
+    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
       display_name: this.name,
       label: this.type === 'map' ? 'map' : 'link',
       sub_labels: [],
