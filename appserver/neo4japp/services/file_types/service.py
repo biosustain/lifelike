@@ -1,5 +1,5 @@
 from io import BufferedIOBase, BytesIO
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import typing
 
@@ -12,6 +12,10 @@ class BaseFileTypeProvider:
     A file type provider knows how to handle a certain or set of file types. Instances
     are used by the application to discover operations on files stored within Lifelike.
     """
+
+    # This string should be used anytime we need a user-readable representation of the
+    # corresponding file type. E.g. as an option in search params.
+    SHORTHAND = 'base'
 
     # The first entry in the mime_types tuple is the "canonical" mime type that will
     # typically be used when storing the file in the database. Make sure all entries
@@ -189,3 +193,15 @@ class FileTypeService:
             return results[-1][0]
         else:
             return self.default_provider
+
+    def get_shorthand_to_mime_type_map(self) -> Dict[str, str]:
+        d = {}
+        for provider in self.providers:
+            d[provider.SHORTHAND] = provider.mime_types[0]
+        return d
+
+    def get_mime_type_to_shorthand_map(self) -> Dict[str, str]:
+        d = {}
+        for provider in self.providers:
+            d[provider.mime_types[0]] = provider.SHORTHAND
+        return d
