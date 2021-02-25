@@ -5,14 +5,6 @@
     </h4>
     <div *ngIf="isNode" class="text-muted">
       <div class="mb-2">Type: {{ selected.entity.label | titlecase }}</div>
-      <div>
-        <button class="btn btn-primary w-100"
-                (click)="searchMapNodeInVisualizer(selected.entity)"
-        >Search in Knowledge Graph</button>
-        <button class="btn btn-primary w-100 mt-1"
-                (click)="searchMapNodeInContent(selected.entity)"
-        >Search in User Content</button>
-      </div>
     </div>
     <div *ngIf="!isNode" class="text-muted">
       Type: Connection
@@ -28,11 +20,13 @@
     </div>
   </div>
 
-  <div class="module-body border-top">
-    <div class="mb-4" *ngIf="selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length">
-      <h5>Hyperlinks</h5>
+  <div class="module-body">
+    <div class="mb-4" *ngIf="(selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)
+    || (selected.entity.data?.sources && selected.entity.data?.sources.length)">
+      <h5>Links</h5>
 
-      <ul class="list-unstyled m-0">
+      <app-sources (executeFileSource)="goToSource($event)" [links]="selected.entity.data?.sources"></app-sources>
+      <ul class="list-unstyled m-0" *ngIf="(selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)">
         <li *ngFor='let h of selected.entity.data?.hyperlinks; let i = index;' class="text-truncate">
           <a [href]="h.url" (click)="goToLink(h.url); $event.preventDefault()"
              [ngbTooltip]="h.url" container="body">{{ h.url }}</a>
@@ -40,17 +34,33 @@
       </ul>
     </div>
 
-    <div class="mb-4"
-         *ngIf="name || selected.entity.data?.search">
-      <h5>Quick Search</h5>
+    <div *ngIf="name || selected.entity.data?.search">
+      <fieldset class="fieldset-properties">
+        <legend>Search Internal <i class="fas fa-external-link-alt ml-1"></i></legend>
 
-      <app-quick-search [query]="name" [links]="selected.entity.data?.search"></app-quick-search>
-    </div>
+        <ul class="list-unstyled m-0">
+          <li class="text-truncate">
+            <div class="btn btn-link p-0" (click)="searchMapNodeInVisualizer(selected.entity)">
+              Knowledge Graph
+            </div>
+          </li>
+          <li class="text-truncate">
+            <div class="btn btn-link p-0" (click)="searchMapNodeInContent(selected.entity, 'pdf;enrichment-table')">
+              File Content
+            </div>
+          </li>
+          <li class="text-truncate">
+            <div class="btn btn-link p-0" (click)="searchMapNodeInContent(selected.entity, 'map')">
+              Map Content
+            </div>
+          </li>
+        </ul>
+      </fieldset>
 
-    <div class="mb-4" *ngIf="selected.entity.data?.sources && selected.entity.data?.sources.length">
-      <h5>Sources</h5>
-
-      <app-sources (executeFileSource)="goToSource($event)" [links]="selected.entity.data?.sources"></app-sources>
+      <fieldset class="fieldset-properties mt-4">
+        <legend>Search External <i class="fas fa-external-link-alt ml-1"></i></legend>
+        <app-quick-search [query]="name" [links]="selected.entity.data?.search"></app-quick-search>
+      </fieldset>
     </div>
   </div>
 </div>

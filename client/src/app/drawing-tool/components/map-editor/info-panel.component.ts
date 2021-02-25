@@ -7,12 +7,14 @@ import { EdgeDeletion, NodeDeletion } from '../../../graph-viewer/actions/nodes'
 import { WorkspaceManager } from '../../../shared/workspace-manager';
 import { GraphAction } from '../../../graph-viewer/actions/actions';
 import { openPotentialInternalLink } from '../../../shared/utils/browser';
+import { InfoPanel } from '../../models/info-panel';
 
 @Component({
   selector: 'app-info-panel',
   templateUrl: './info-panel.component.html',
 })
 export class InfoPanelComponent {
+  @Input() infoPanel: InfoPanel = new InfoPanel();
   @Input() selected: GraphEntity | undefined;
   @Output() actionCreated = new EventEmitter<GraphAction>();
 

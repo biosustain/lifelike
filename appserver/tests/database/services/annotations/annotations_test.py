@@ -1,32 +1,67 @@
+import json
 import pytest
 
 from os import path
 from typing import List, Tuple
 
-from neo4japp.database import get_annotation_pdf_parser
 from neo4japp.services.annotations.data_transfer_objects import (
     Annotation,
     GeneAnnotation,
+    NLPResults,
     SpecifiedOrganismStrain
 )
 from neo4japp.services.annotations.constants import EntityType, OrganismCategory
+from neo4japp.services.annotations.pipeline import read_parser_response
 
 
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
 
 
-def lookup_entities(
+"""NOTE: IMPORTANT: Integrated pdfbox2
+
+When testing annotations, the pdfparser container does not have a shared volume
+with the appserver container - we could mount a shared volume, but this doesn't make
+sense because it will only be used during test.
+
+Let's avoid unexpected volume access.
+
+So, instead of loading the PDFs, we need to first get the JSON (meaning calling the
+pdfparser separately and saving that JSON file to the pdf_samples folder from now on.).
+
+This also makes sense because appserver would only get back the JSON.
+
+Doing it this way is a hassle, but it also decouples the annotation tests from the
+file system schema, as that gets changed.
+"""
+
+
+def annotate_pdf(
+    annotation_service,
     entity_service,
-    tokens_list,
-    custom_annotations=[],
-    excluded_annotations=[]
+    parsed,
+    custom_annotations=None,
+    excluded_annotations=None,
+    specified_organism=SpecifiedOrganismStrain(synonym='', organism_id='', category='')
 ):
-    entity_service.set_entity_inclusions(custom_annotations)
-    entity_service.set_entity_exclusions()
-    entity_service.identify_entities(
-        tokens=tokens_list.tokens,
-        check_entities_in_lmdb=entity_service.get_entities_to_identify()
+    if custom_annotations is None:
+        custom_annotations = []
+
+    if excluded_annotations is None:
+        excluded_annotations = []
+
+    entity_results = entity_service.identify(
+        custom_annotations=custom_annotations,
+        tokens=parsed,
+        nlp_results=NLPResults(),
+        annotation_method={}
+    )
+    return annotation_service.create_annotations(
+        custom_annotations=custom_annotations,
+        excluded_annotations=excluded_annotations,
+        entity_results=entity_results,
+        entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
+        specified_organism=specified_organism
     )
 
 
@@ -229,25 +264,19 @@ def test_gene_organism_escherichia_coli_pdf(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
-    pdf = path.join(directory, 'pdf_samples/ecoli_gene_test.pdf')
+    pdf = path.join(directory, 'pdf_samples/annotations_test/ecoli_gene_test.json')
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     keywords = {o.keyword: o.meta.type for o in annotations}
 
@@ -277,26 +306,19 @@ def test_protein_organism_escherichia_coli_pdf(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
-    pdf = path.join(directory, 'pdf_samples/ecoli_protein_test.pdf')
+    pdf = path.join(directory, 'pdf_samples/annotations_test/ecoli_protein_test.json')
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     keywords = {o.keyword: o.meta.id for o in annotations}
 
@@ -311,12 +333,11 @@ def test_local_inclusion_organism_gene_crossmatch(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_local_inclusion_organism_gene_crossmatch.pdf')
+        'pdf_samples/annotations_test/test_local_inclusion_organism_gene_crossmatch.json')
 
     custom_annotation = {
         'meta': {
@@ -346,23 +367,15 @@ def test_local_inclusion_organism_gene_crossmatch(
     }
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(
-            entity_service=entity_service,
-            tokens_list=tokens,
-            custom_annotations=[custom_annotation]
-        )
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[custom_annotation],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed,
+        custom_annotations=[custom_annotation]
+    )
 
     assert len(annotations) == 1
     assert annotations[0].meta.id == 'NCBI:388962'  # human gene
@@ -374,12 +387,11 @@ def test_local_exclusion_organism_gene_crossmatch(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_local_exclusion_organism_gene_crossmatch.pdf')
+        'pdf_samples/annotations_test/test_local_exclusion_organism_gene_crossmatch.json')
 
     excluded_annotation = {
         'id': '37293',
@@ -404,23 +416,15 @@ def test_local_exclusion_organism_gene_crossmatch(
     }
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(
-            entity_service=entity_service,
-            tokens_list=tokens,
-            custom_annotations=[]
-        )
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[excluded_annotation],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed,
+        excluded_annotations=[excluded_annotation]
+    )
 
     assert len(annotations) == 0
 
@@ -433,27 +437,21 @@ def test_human_gene_pdf(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_human_gene_pdf.pdf')
+        'pdf_samples/annotations_test/test_human_gene_pdf.json')
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     keywords = {o.keyword: o.meta.type for o in annotations}
 
@@ -473,27 +471,21 @@ def test_foods_pdf(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_foods_pdf.pdf')
+        'pdf_samples/annotations_test/test_foods_pdf.json')
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     keywords = {o.keyword: o.meta.type for o in annotations}
 
@@ -510,27 +502,21 @@ def test_anatomy_pdf(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_anatomy_pdf.pdf')
+        'pdf_samples/annotations_test/test_anatomy_pdf.json')
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     keywords = {o.keyword: o.meta.type for o in annotations}
 
@@ -544,8 +530,8 @@ def test_anatomy_pdf(
 @pytest.mark.parametrize(
     'index, fpath',
     [
-        (1, 'pdf_samples/annotations_test/test_genes_vs_proteins/test_1.pdf'),
-        (2, 'pdf_samples/annotations_test/test_genes_vs_proteins/test_2.pdf')
+        (1, 'pdf_samples/annotations_test/test_genes_vs_proteins/test_1.json'),
+        (2, 'pdf_samples/annotations_test/test_genes_vs_proteins/test_2.json')
     ],
 )
 def test_genes_vs_proteins(
@@ -557,25 +543,19 @@ def test_genes_vs_proteins(
     fpath
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(directory, fpath)
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     if index == 1:
         assert len(annotations) == 4
@@ -683,27 +663,21 @@ def test_gene_annotation_crossmatch_human_fish(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_gene_annotation_crossmatch_human_fish.pdf')  # noqa
+        'pdf_samples/annotations_test/test_gene_annotation_crossmatch_human_fish.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     # id should change to match KG
     # value from mock_gene_to_organism_crossmatch_human_fish
@@ -717,27 +691,21 @@ def test_gene_annotation_crossmatch_human_rat(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_gene_annotation_crossmatch_human_rat.pdf')  # noqa
+        'pdf_samples/annotations_test/test_gene_annotation_crossmatch_human_rat.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     for a in annotations:
         if a.text_in_document == 'EDEM3':
@@ -753,27 +721,22 @@ def test_global_excluded_chemical_annotations(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
+    entity_service.exclusion_type_chemical = mock_global_chemical_exclusion
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_chemical_annotations.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_chemical_annotations.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 1
     assert 'hypofluorite' not in set([anno.keyword for anno in annotations])
@@ -786,27 +749,22 @@ def test_global_excluded_compound_annotations(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
+    entity_service.exclusion_type_compound = mock_compound_exclusion
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_compound_annotations.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_compound_annotations.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 1
     assert 'guanosine' not in set([anno.keyword for anno in annotations])
@@ -819,27 +777,22 @@ def test_global_excluded_disease_annotations(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
+    entity_service.exclusion_type_disease = mock_disease_exclusion
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_disease_annotations.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_disease_annotations.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 2
     assert 'cold sore' not in set([anno.keyword for anno in annotations])
@@ -853,27 +806,22 @@ def test_global_excluded_gene_annotations(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
+    entity_service.exclusion_type_gene = mock_gene_exclusion
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_gene_annotations.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_gene_annotations.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 2
     assert 'BOLA3' not in set([anno.keyword for anno in annotations])
@@ -886,27 +834,22 @@ def test_global_excluded_phenotype_annotations(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
+    entity_service.exclusion_type_phenotype = mock_phenotype_exclusion
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_phenotype_annotations.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_phenotype_annotations.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 2
     assert 'whey proteins' not in set([anno.keyword for anno in annotations])
@@ -919,27 +862,22 @@ def test_global_excluded_protein_annotations(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
+    entity_service.exclusion_type_protein = mock_protein_exclusion
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_protein_annotations.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_protein_annotations.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 2
     assert 'Wasabi receptor toxin' not in set([anno.keyword for anno in annotations])
@@ -952,27 +890,22 @@ def test_global_excluded_species_annotations(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
+    entity_service.exclusion_type_species = mock_species_exclusion
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_species_annotations.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_species_annotations.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'rat'
@@ -985,27 +918,22 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
+    entity_service.exclusion_type_chemical = mock_global_chemical_exclusion
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_exclusions_does_not_interfere_with_other_entities.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_exclusions_does_not_interfere_with_other_entities.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     # dog not in default_lmdb_setup
     assert len(annotations) == 2
@@ -1021,27 +949,21 @@ def test_global_chemical_inclusion_annotation(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_chemical_inclusion_annotation.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_chemical_inclusion_annotation.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'fake-chemical-(12345)'
@@ -1055,27 +977,21 @@ def test_global_compound_inclusion_annotation(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_compound_inclusion_annotation.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_compound_inclusion_annotation.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'compound-(12345)'
@@ -1092,27 +1008,21 @@ def test_global_gene_inclusion_annotation(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_gene_inclusion_annotation.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_gene_inclusion_annotation.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 2
     # new gene should be considered a synonym of
@@ -1128,27 +1038,21 @@ def test_global_disease_inclusion_annotation(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_disease_inclusion_annotation.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_disease_inclusion_annotation.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'disease-(12345)'
@@ -1162,27 +1066,21 @@ def test_global_phenomena_inclusion_annotation(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_phenomena_inclusion_annotation.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_phenomena_inclusion_annotation.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'fake-phenomena'
@@ -1196,27 +1094,21 @@ def test_global_phenotype_inclusion_annotation(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_phenotype_inclusion_annotation.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_phenotype_inclusion_annotation.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'phenotype-(12345)'
@@ -1230,27 +1122,21 @@ def test_global_protein_inclusion_annotation(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_protein_inclusion_annotation.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_protein_inclusion_annotation.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'protein-(12345)'
@@ -1264,27 +1150,21 @@ def test_global_species_inclusion_annotation(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_species_inclusion_annotation.pdf')  # noqa
+        'pdf_samples/annotations_test/test_global_species_inclusion_annotation.json')  # noqa
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'species-(12345)'
@@ -1299,47 +1179,35 @@ def test_primary_organism_strain(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_primary_organism_strain.pdf')
+        'pdf_samples/annotations_test/test_primary_organism_strain.json')
 
     annotations = []
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     bola = [anno for anno in annotations if anno.keyword == 'BOLA3']
     assert bola[0].meta.id == '101099627'
 
-    with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
-
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                synonym='Homo sapiens', organism_id='9606', category='Eukaryota')
-        )
+    # annotate again but now with fallback organism
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed,
+        specified_organism=SpecifiedOrganismStrain(
+            synonym='Homo sapiens', organism_id='9606', category='Eukaryota')
+    )
 
     bola = [anno for anno in annotations if anno.keyword == 'BOLA3']
     assert bola[0].meta.id == '388962'
@@ -1351,27 +1219,21 @@ def test_no_annotation_for_abbreviation(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_no_annotation_for_abbreviation.pdf')
+        'pdf_samples/annotations_test/test_no_annotation_for_abbreviation.json')
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 2
     assert annotations[0].keyword == 'Pentose Phosphate Pathway'
@@ -1385,27 +1247,21 @@ def test_delta_gene_deletion_detected(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_delta_gene_deletion_detected.pdf')
+        'pdf_samples/annotations_test/test_delta_gene_deletion_detected.json')
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 4
     assert annotations[0].keyword == 'purB'
@@ -1420,27 +1276,21 @@ def test_gene_primary_name(
     get_entity_service
 ):
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_gene_primary_name.pdf')
+        'pdf_samples/annotations_test/test_gene_primary_name.json')
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     assert len(annotations) == 2
     assert annotations[0].primary_name == 'PRKAB1'
@@ -1463,27 +1313,21 @@ def test_user_source_database_input_priority(
     }
 
     annotation_service = get_annotation_service
-    pdf_parser = get_annotation_pdf_parser()
     entity_service = get_entity_service
 
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_user_source_database_input_priority.pdf')
+        'pdf_samples/annotations_test/test_user_source_database_input_priority.json')
 
     with open(pdf, 'rb') as f:
-        parsed = pdf_parser.parse_pdf(pdf=f)
-        tokens = entity_service.extract_tokens(parsed=parsed)
+        parsed = json.load(f)
 
-        lookup_entities(entity_service=entity_service, tokens_list=tokens)
-        annotations = annotation_service.create_rules_based_annotations(
-            tokens=tokens,
-            custom_annotations=[],
-            excluded_annotations=[],
-            entity_results=entity_service.get_entity_match_results(),
-            entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-            specified_organism=SpecifiedOrganismStrain(
-                    synonym='', organism_id='', category='')
-        )
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
 
     # if idHyperlink in `mock_global_chemical_inclusion` was empty
     # then it would've defaulted to

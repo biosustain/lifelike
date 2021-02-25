@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
 import { getObjectLabel } from '../utils/objects';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,13 +17,19 @@ import { WorkspaceManager } from '../../shared/workspace-manager';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { cloneDeep } from 'lodash';
 import { ObjectVersion } from '../models/object-version';
-import { GraphClipboardData, TYPE_STRING } from '../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
+import {
+  GraphClipboardData,
+  TYPE_STRING,
+} from '../../graph-viewer/renderers/canvas/behaviors/paste-keyboard-shortcut';
+import { Exporter, ObjectTypeProvider, ObjectTypeService } from '../services/object-type.service';
+import { Observable } from 'rxjs';
+import { mergeMap, shareReplay } from 'rxjs/operators';
 
 @Component({
   selector: 'app-object-menu',
   templateUrl: './object-menu.component.html',
 })
-export class ObjectMenuComponent {
+export class ObjectMenuComponent implements AfterViewInit, OnChanges {
 
   @Input() object: FilesystemObject;
   @Input() forEditing = true;
@@ -29,6 +43,8 @@ export class ObjectMenuComponent {
   @Output() objectRefresh = new EventEmitter<FilesystemObject>();
   @Output() objectRestore = new EventEmitter<ObjectVersion>();
   @Output() objectUpdate = new EventEmitter<FilesystemObject>();
+  typeProvider$: Observable<ObjectTypeProvider>;
+  exporters$: Observable<Exporter[]>;
 
   constructor(protected readonly router: Router,
               protected readonly snackBar: MatSnackBar,
@@ -36,7 +52,31 @@ export class ObjectMenuComponent {
               protected readonly errorHandler: ErrorHandler,
               protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
-              protected readonly actions: FilesystemObjectActions) {
+              protected readonly actions: FilesystemObjectActions,
+              protected readonly objectTypeService: ObjectTypeService) {
+    this.typeProvider$ = objectTypeService.getDefault();
+  }
+
+  private updateObjectObservables() {
+    const object = this.object;
+    this.typeProvider$ = this.object ? this.objectTypeService.get(this.object).pipe(
+      shareReplay(),
+    ) : this.objectTypeService.getDefault();
+    this.exporters$ = this.typeProvider$.pipe(
+      this.errorHandler.create({label: 'Get exporters'}),
+      mergeMap(typeProvider => typeProvider.getExporters(object)),
+      shareReplay(),
+    );
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if ('object' in changes) {
+      this.updateObjectObservables();
+    }
+  }
+
+  ngAfterViewInit() {
+    this.updateObjectObservables();
   }
 
   openEditDialog(target: FilesystemObject) {

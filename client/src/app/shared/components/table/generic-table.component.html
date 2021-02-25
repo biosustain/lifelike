@@ -1,4 +1,4 @@
-<table class="table table-bordered">
+<table class="table table-hover">
   <thead *ngIf="HEADER">
     <ng-container>
       <tr class="table-secondary" *ngFor="let row of HEADER">
@@ -6,7 +6,6 @@
           *ngFor="let col of row"
           class="border-top text-center text-truncate"
           [attr.colspan]="col.span"
-          style="color: black;"
         >
           {{ col.name }}
         </th>
@@ -18,7 +17,12 @@
     <ng-container>
       <tr *ngFor="let row of entries">
         <td *ngFor="let entry of row" style="white-space:pre-wrap; word-wrap:break-word" class="overflow-auto resizeable" [ngClass]="{ 'error': entry.highlight}">
-          <div >{{ entry.text }}</div>
+          <div>
+            <span *ngIf="entry.text.indexOf('snippet') === -1; else highlightText">{{ entry.text }}</span>
+            <ng-template #highlightText>
+              <app-highlight-text [highlight]="entry.text"></app-highlight-text>
+            </ng-template>
+          </div>
           <ng-container *ngIf="entry.multiLink">
             <ul *ngFor="let link of entry.multiLink">
               <li><a target="_blank" rel="noopener noreferrer" href="{{ link.link }}">{{ link.linkText }}</a></li>
