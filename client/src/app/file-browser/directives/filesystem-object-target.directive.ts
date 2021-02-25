@@ -17,6 +17,8 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ObjectCreationService } from '../services/object-creation.service';
 import { FilesystemObject } from '../models/filesystem-object';
+import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageType } from '../../interfaces/message-dialog.interface';
 
 @Directive({
   selector: '[appFSObjectTarget]',
@@ -33,7 +35,8 @@ export class FilesystemObjectTargetDirective {
               protected readonly errorHandler: ErrorHandler,
               protected readonly snackBar: MatSnackBar,
               protected readonly elementRef: ElementRef,
-              protected readonly objectCreationService: ObjectCreationService) {
+              protected readonly objectCreationService: ObjectCreationService,
+              protected readonly messageDialog: MessageDialog) {
   }
 
   @HostListener('dragover', ['$event'])
@@ -42,6 +45,7 @@ export class FilesystemObjectTargetDirective {
     if (this.dropTargeted) {
       event.dataTransfer.dropEffect = 'move';
       event.preventDefault();
+      event.stopPropagation();
     }
   }
 
@@ -55,9 +59,20 @@ export class FilesystemObjectTargetDirective {
     this.dropTargeted = false;
   }
 
+  @HostListener('body:lifelikeobjectupdate', ['$event'])
+  lifelikeObjectUpdate(event) {
+    if (this.appFSObjectTarget) {
+      if (this.isAffectedObject(event.detail.hashId)) {
+        this.refreshRequest.emit();
+      }
+    }
+  }
+
   @HostListener('drop', ['$event'])
   drop(event: DragEvent) {
     event.preventDefault();
+    event.stopPropagation();
+
     this.dropTargeted = false;
 
     const valid = this.canAcceptDrop(event);
@@ -66,24 +81,44 @@ export class FilesystemObjectTargetDirective {
       if (data !== '') {
         const transferData: FilesystemObjectTransferData = JSON.parse(data);
 
-        const progressDialogRef = this.progressDialog.display({
-          title: 'Working...',
-          progressObservable: new BehaviorSubject<Progress>(new Progress({
-            status: 'Moving...',
-          })),
-        });
-
-        this.filesystemService.save([transferData.hashId], {
-          parentHashId: this.appFSObjectTarget.hashId,
-        }).pipe(
-          tap(() => this.refreshRequest.emit()),
-          finalize(() => progressDialogRef.close()),
-          this.errorHandler.create({label: 'Move object from drag and drop'}),
-        ).subscribe(() => {
-          this.snackBar.open(`Moved item to new folder.`, 'Close', {
-            duration: 5000,
+        if (transferData.privileges.writable) {
+          const progressDialogRef = this.progressDialog.display({
+            title: 'File Move',
+            progressObservable: new BehaviorSubject<Progress>(new Progress({
+              status: 'Moving to the new folder...',
+            })),
           });
-        });
+
+          this.filesystemService.save([transferData.hashId], {
+            parentHashId: this.appFSObjectTarget.hashId,
+          }).pipe(
+            tap(() => {
+              const affectedHashIds = new Set([
+                transferData.hashId,
+                this.appFSObjectTarget.hashId,
+              ]);
+              for (const hashId of affectedHashIds) {
+                document.body.dispatchEvent(new CustomEvent('lifelikeobjectupdate', {
+                  detail: {
+                    hashId,
+                  },
+                }));
+              }
+            }),
+            finalize(() => progressDialogRef.close()),
+            this.errorHandler.create({label: 'Move object from drag and drop'}),
+          ).subscribe(() => {
+            this.snackBar.open(`Moved item to new folder.`, 'Close', {
+              duration: 5000,
+            });
+          });
+        } else {
+          this.messageDialog.display({
+            title: 'Cannot Move Here',
+            message: 'You do not have permission to put files here.',
+            type: MessageType.Error,
+          });
+        }
       } else if (event.dataTransfer.files.length) {
         const file = event.dataTransfer.files[0];
         const object = new FilesystemObject();
@@ -98,24 +133,39 @@ export class FilesystemObjectTargetDirective {
           request: {
             contentValue: file,
           },
+        }).then(value => {
+          this.refreshRequest.emit();
+          return value;
         });
       }
     }
+  }
+
+  isAffectedObject(hashId: string) {
+    if (hashId === this.appFSObjectTarget.hashId) {
+      return true;
+    }
+    for (const child of this.appFSObjectTarget.children.items) {
+      if (child.hashId === hashId) {
+        return true;
+      }
+    }
+    return false;
   }
 
   canAcceptDrop(event: DragEvent): boolean {
     return this.appFSObjectTarget != null
       && this.appFSObjectTarget.privileges.writable
       && ((
-        event.dataTransfer.types.includes(FILESYSTEM_OBJECT_TRANSFER_TYPE)
-        && event.target instanceof Element
-        && (event.target === this.elementRef.nativeElement
-          || event.target.closest('[data-filesystem-object-target-directive]') === this.elementRef.nativeElement)
-      )
-      || (
-        event.dataTransfer.types
-        && event.dataTransfer.types.includes('Files')
-      ));
+          event.dataTransfer.types.includes(FILESYSTEM_OBJECT_TRANSFER_TYPE)
+          && event.target instanceof Element
+          && (event.target === this.elementRef.nativeElement
+            || event.target.closest('[data-filesystem-object-target-directive]') === this.elementRef.nativeElement)
+        )
+        || (
+          event.dataTransfer.types
+          && event.dataTransfer.types.includes('Files')
+        ));
   }
 
 }
