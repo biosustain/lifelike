@@ -1,3 +1,5 @@
+import time
+
 from math import inf
 from typing import cast, Dict, List, Set, Tuple, Union
 from uuid import uuid4
@@ -16,13 +18,10 @@ from neo4japp.services.annotations.constants import (
     EntityIdStr,
     EntityType,
     OrganismCategory,
-    SPACE_COORDINATE_FLOAT,
-    ABBREVIATION_WORD_LENGTH,
     ENTITY_HYPERLINKS,
     ENTITY_TYPE_PRECEDENCE,
     HOMO_SAPIENS_TAX_ID,
     ORGANISM_DISTANCE_THRESHOLD,
-    PDF_NEW_LINE_THRESHOLD,
     SEARCH_LINKS,
 )
 from neo4japp.services.annotations.util import has_center_point
@@ -32,9 +31,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     GeneAnnotation,
     LMDBMatch,
     OrganismAnnotation,
-    PDFChar,
     PDFWord,
-    PDFTokensList,
     SpecifiedOrganismStrain
 )
 from neo4japp.exceptions import AnnotationError
@@ -124,125 +121,6 @@ class AnnotationService:
 
         return entity_type_and_id_pairs
 
-    def _create_keyword_objects(
-        self,
-        token: PDFWord,
-        keyword_positions: List[Annotation.TextPosition] = []
-    ) -> None:
-        """Creates the keyword objects with the keyword
-        text, along with their coordinate positions and
-        page number.
-
-        Determines whether a part of the keyword is on a
-        new line or not. If it is on a new line, then
-        create a new coordinate object for that part of the keyword.
-
-        E.g
-            E. \nColi -> [
-                {keyword: 'E.', x: ..., ...}, keyword: 'Coli', x: ..., ...}
-            ]
-
-            E. Coli -> [{keyword: 'E. Coli', x: ..., ...}]
-        """
-        start_lower_x = 0.0
-        start_lower_y = 0.0
-        end_upper_x = 0.0
-        end_upper_y = 0.0
-        prev_height = 0.0
-
-        keyword = ''
-        cropbox = token.cropbox
-
-        for i, coordinates in enumerate(token.meta.coordinates):
-            try:
-                if coordinates == SPACE_COORDINATE_FLOAT:
-                    keyword += ' '
-                    continue
-
-                lower_x, lower_y, upper_x, upper_y = coordinates
-
-                if (start_lower_x == 0.0 and
-                        start_lower_y == 0.0 and
-                        end_upper_x == 0.0 and
-                        end_upper_y == 0.0):
-                    start_lower_x = lower_x
-                    start_lower_y = lower_y
-                    end_upper_x = upper_x
-                    end_upper_y = upper_y
-
-                    keyword += token.keyword[i]
-                    # set prev height to current height
-                    prev_height = token.meta.heights[i]
-                else:
-                    if lower_y != start_lower_y:
-                        diff = abs(lower_y - start_lower_y)
-
-                        # if diff is greater than height ratio
-                        # then part of keyword is on a new line
-                        if diff > prev_height * PDF_NEW_LINE_THRESHOLD:
-                            start_lower_x += cropbox[0]  # type: ignore
-                            end_upper_x += cropbox[0]  # type: ignore
-                            start_lower_y += cropbox[1]  # type: ignore
-                            end_upper_y += cropbox[1]  # type: ignore
-
-                            keyword_positions.append(
-                                Annotation.TextPosition(
-                                    value=keyword,
-                                    positions=[
-                                        start_lower_x,
-                                        start_lower_y,
-                                        end_upper_x,
-                                        end_upper_y
-                                    ],
-                                )
-                            )
-
-                            start_lower_x = lower_x
-                            start_lower_y = lower_y
-                            end_upper_x = upper_x
-                            end_upper_y = upper_y
-                            prev_height = token.meta.heights[i]
-                            keyword = token.keyword[i]
-                        else:
-                            if upper_y > end_upper_y:
-                                end_upper_y = upper_y
-
-                            if upper_x > end_upper_x:
-                                end_upper_x = upper_x
-
-                            keyword += token.keyword[i]
-                    else:
-                        if upper_y > end_upper_y:
-                            end_upper_y = upper_y
-
-                        if upper_x > end_upper_x:
-                            end_upper_x = upper_x
-
-                        keyword += token.keyword[i]
-            except IndexError:
-                raise AnnotationError(
-                    'An indexing error occurred when creating annotation keyword objects.')
-            except Exception:
-                raise AnnotationError(
-                    'Unexpected error when creating annotation keyword objects')
-
-        start_lower_x += cropbox[0]  # type: ignore
-        end_upper_x += cropbox[0]  # type: ignore
-        start_lower_y += cropbox[1]  # type: ignore
-        end_upper_y += cropbox[1]  # type: ignore
-
-        keyword_positions.append(
-            Annotation.TextPosition(
-                value=keyword,
-                positions=[
-                    start_lower_x,
-                    start_lower_y,
-                    end_upper_x,
-                    end_upper_y
-                ],
-            )
-        )
-
     def _create_annotation_object(
         self,
         token: PDFWord,
@@ -253,19 +131,12 @@ class AnnotationService:
         entity_category: str,
         entity_id_hyperlink: str
     ) -> Annotation:
-        keyword_positions: List[Annotation.TextPosition] = []
-
-        self._create_keyword_objects(
-            keyword_positions=keyword_positions,
-            token=token
-        )
+        keyword_starting_idx = token.lo_location_offset
+        keyword_ending_idx = token.hi_location_offset
+        link_search_term = token.keyword
 
         # entity here is data structure from LMDB
         # see services/annotations/util.py for definition
-        keyword_starting_idx = token.meta.lo_location_offset
-        keyword_ending_idx = token.meta.hi_location_offset
-        link_search_term = token.keyword
-
         if not entity_id_hyperlink:
             if entity['id_type'] != DatabaseType.NCBI.value:
                 hyperlink = ENTITY_HYPERLINKS[entity['id_type']]
@@ -302,8 +173,8 @@ class AnnotationService:
             # for the `keyword` property
             annotation = OrganismAnnotation(
                 page_number=token.page_number,
-                rects=[pos.positions for pos in keyword_positions],  # type: ignore
-                keywords=[k.value for k in keyword_positions],
+                rects=token.coordinates,
+                keywords=[token.keyword],
                 keyword=synonym,
                 primary_name=primary_name,
                 text_in_document=token.keyword,
@@ -320,15 +191,15 @@ class AnnotationService:
                 id=entity_id,
                 id_type=id_type,
                 id_hyperlink=cast(str, hyperlink),
-                links=OrganismAnnotation.OrganismMeta.Links(
+                links=GeneAnnotation.GeneMeta.Links(
                     **{domain: url + link_search_term for domain, url in SEARCH_LINKS.items()}
                 ),
                 all_text=synonym,
             )
             annotation = GeneAnnotation(
                 page_number=token.page_number,
-                rects=[pos.positions for pos in keyword_positions],  # type: ignore
-                keywords=[k.value for k in keyword_positions],
+                rects=token.coordinates,
+                keywords=[token.keyword],
                 keyword=synonym,
                 primary_name=primary_name,
                 text_in_document=token.keyword,
@@ -337,7 +208,7 @@ class AnnotationService:
                 hi_location_offset=keyword_ending_idx,
                 meta=gene_meta,
                 uuid=str(uuid4()),
-            )
+            )  # type: ignore
         else:
             meta = Annotation.Meta(
                 type=token_type,
@@ -351,8 +222,8 @@ class AnnotationService:
             )
             annotation = Annotation(
                 page_number=token.page_number,
-                rects=[pos.positions for pos in keyword_positions],  # type: ignore
-                keywords=[k.value for k in keyword_positions],
+                rects=token.coordinates,
+                keywords=[token.keyword],
                 keyword=synonym,
                 primary_name=primary_name,
                 text_in_document=token.keyword,
@@ -361,12 +232,12 @@ class AnnotationService:
                 hi_location_offset=keyword_ending_idx,
                 meta=meta,
                 uuid=str(uuid4()),
-            )
+            )  # type: ignore
         return annotation
 
     def _get_annotation(
         self,
-        tokens: Dict[str, LMDBMatch],
+        matches_list: List[LMDBMatch],
         token_type: str,
         id_str: str,
     ) -> List[Annotation]:
@@ -393,49 +264,47 @@ class AnnotationService:
         Returns list of matched annotations
         """
         matches: List[Annotation] = []
-        tokens_lowercased = set([normalize_str(s) for s in list(tokens.keys())])
+        tokens_lowercased = set([match.token.normalized_keyword for match in matches_list])  # noqa
+        synonym_common_names_dict: Dict[str, Set[str]] = {}
 
-        for word, lmdb_match in tokens.items():
-            for token in lmdb_match.tokens:
-                synonym_common_names_dict: Dict[str, Set[str]] = {}
+        for match in matches_list:
+            for entity in match.entities:
+                entity_synonym = entity['synonym']
+                entity_common_name = entity['name']
+                if entity_synonym in synonym_common_names_dict:
+                    synonym_common_names_dict[entity_synonym].add(normalize_str(entity_common_name))  # noqa
+                else:
+                    synonym_common_names_dict[entity_synonym] = {normalize_str(entity_common_name)}  # noqa
 
-                for entity in lmdb_match.entities:
-                    entity_synonym = entity['synonym']
-                    entity_common_name = entity['name']
-                    if entity_synonym in synonym_common_names_dict:
-                        synonym_common_names_dict[entity_synonym].add(normalize_str(entity_common_name))  # noqa
-                    else:
-                        synonym_common_names_dict[entity_synonym] = {normalize_str(entity_common_name)}  # noqa
+            for entity in match.entities:
+                entity_synonym = entity['synonym']
+                common_names_referenced_by_synonym = synonym_common_names_dict[entity_synonym]
+                if len(common_names_referenced_by_synonym) > 1:
+                    # synonym used by multiple different common names
+                    #
+                    # for synonyms that are used by more than one common names
+                    # if none of those common names appear in the document
+                    # or if more than one of those common names appear in the document
+                    # do not annotate because cannot infer
+                    common_names_in_document = [n for n in common_names_referenced_by_synonym if n in tokens_lowercased]  # noqa
 
-                for entity in lmdb_match.entities:
-                    entity_synonym = entity['synonym']
-                    common_names_referenced_by_synonym = synonym_common_names_dict[entity_synonym]
-                    if len(common_names_referenced_by_synonym) > 1:
-                        # synonym used by multiple different common names
-                        #
-                        # for synonyms that are used by more than one common names
-                        # if none of those common names appear in the document
-                        # or if more than one of those common names appear in the document
-                        # do not annotate because cannot infer
-                        common_names_in_document = [n for n in common_names_referenced_by_synonym if n in tokens_lowercased]  # noqa
-
-                        if len(common_names_in_document) != 1:
-                            continue
-
-                    try:
-                        annotation = self._create_annotation_object(
-                            token=token,
-                            token_type=token_type,
-                            entity=entity,
-                            entity_id=entity[id_str],
-                            entity_id_type=lmdb_match.id_type,
-                            entity_id_hyperlink=lmdb_match.id_hyperlink,
-                            entity_category=entity.get('category', '')
-                        )
-                    except KeyError:
+                    if len(common_names_in_document) != 1:
                         continue
-                    else:
-                        matches.append(annotation)
+
+                try:
+                    annotation = self._create_annotation_object(
+                        token=match.token,
+                        token_type=token_type,
+                        entity=entity,
+                        entity_id=entity[id_str],
+                        entity_id_type=match.id_type,
+                        entity_id_hyperlink=match.id_hyperlink,
+                        entity_category=entity.get('category', '')
+                    )
+                except KeyError:
+                    continue
+                else:
+                    matches.append(annotation)
         return matches
 
     def _get_closest_entity_organism_pair(
@@ -456,8 +325,8 @@ class AnnotationService:
 
         Currently used for proteins and genes.
         """
-        entity_location_lo = entity.meta.lo_location_offset
-        entity_location_hi = entity.meta.hi_location_offset
+        entity_location_lo = entity.lo_location_offset
+        entity_location_hi = entity.hi_location_offset
 
         closest_dist = inf
         curr_closest_organism = None
@@ -528,24 +397,24 @@ class AnnotationService:
 
         Returns list of matched annotations
         """
-        tokens: Dict[str, LMDBMatch] = self.matched_type_gene
+        matches_list: List[LMDBMatch] = self.matched_type_gene
 
         matches: List[Annotation] = []
 
         entity_token_pairs = []
         gene_names: Set[str] = set()
-        for word, lmdb_match in tokens.items():
-            for token in lmdb_match.tokens:
-                for entity in lmdb_match.entities:
-                    entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
-                    gene_names.add(entity_synonym)
 
-                    entity_token_pairs.append(
-                        (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token))
+        for match in matches_list:
+            for entity in match.entities:
+                entity_synonym = entity['name'] if entity.get('inclusion', None) else entity['synonym']  # noqa
+                gene_names.add(entity_synonym)
+                entity_token_pairs.append(
+                    (entity, match.id_type, match.id_hyperlink, match.token))
 
         gene_names_list = list(gene_names)
         organism_ids = list(self.organism_frequency.keys())
 
+        gene_match_time = time.time()
         gene_organism_matches = \
             self.graph.get_gene_to_organism_match_result(
                 genes=gene_names_list,
@@ -553,6 +422,10 @@ class AnnotationService:
                     genes=gene_names_list, organism_ids=organism_ids),
                 matched_organism_ids=organism_ids,
             )
+        current_app.logger.info(
+            f'Gene organism KG query time {time.time() - gene_match_time}',
+            extra=EventLog(event_type='annotations').to_dict()
+        )
 
         # any genes not matched in KG fall back to specified organism
         fallback_gene_organism_matches = {}
@@ -651,7 +524,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_anatomy,
+            matches_list=self.matched_type_anatomy,
             token_type=EntityType.ANATOMY.value,
             id_str=entity_id_str
         )
@@ -661,7 +534,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_chemical,
+            matches_list=self.matched_type_chemical,
             token_type=EntityType.CHEMICAL.value,
             id_str=entity_id_str
         )
@@ -671,7 +544,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_compound,
+            matches_list=self.matched_type_compound,
             token_type=EntityType.COMPOUND.value,
             id_str=entity_id_str
         )
@@ -681,7 +554,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_disease,
+            matches_list=self.matched_type_disease,
             token_type=EntityType.DISEASE.value,
             id_str=entity_id_str
         )
@@ -691,7 +564,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_food,
+            matches_list=self.matched_type_food,
             token_type=EntityType.FOOD.value,
             id_str=entity_id_str
         )
@@ -701,7 +574,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_phenotype,
+            matches_list=self.matched_type_phenotype,
             token_type=EntityType.PHENOTYPE.value,
             id_str=entity_id_str
         )
@@ -711,7 +584,7 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_phenomena,
+            matches_list=self.matched_type_phenomena,
             token_type=EntityType.PHENOMENA.value,
             id_str=entity_id_str
         )
@@ -725,27 +598,31 @@ class AnnotationService:
         was not matched in the knowledge graph, then keep the original
         protein_id.
         """
-        tokens: Dict[str, LMDBMatch] = self.matched_type_protein
+        matches_list: List[LMDBMatch] = self.matched_type_protein
 
         matches: List[Annotation] = []
 
         entity_token_pairs = []
         protein_names: Set[str] = set()
-        for word, lmdb_match in tokens.items():
-            for token_positions in lmdb_match.tokens:
-                for entity in lmdb_match.entities:
-                    protein_names.add(entity['synonym'])
-
-                    entity_token_pairs.append(
-                        (entity, lmdb_match.id_type, lmdb_match.id_hyperlink, token_positions))
+        for match in matches_list:
+            for entity in match.entities:
+                entity_synonym = entity['synonym']
+                protein_names.add(entity_synonym)
+                entity_token_pairs.append(
+                    (entity, match.id_type, match.id_hyperlink, match.token))
 
         protein_names_list = list(protein_names)
 
+        protein_match_time = time.time()
         protein_organism_matches = \
             self.graph.get_proteins_to_organisms(
                 proteins=protein_names_list,
                 organisms=list(self.organism_frequency.keys()),
             )
+        current_app.logger.info(
+            f'Protein organism KG query time {time.time() - protein_match_time}',
+            extra=EventLog(event_type='annotations').to_dict()
+        )
 
         # any proteins not matched in KG fall back to specified organism
         fallback_protein_organism_matches = {}
@@ -800,7 +677,7 @@ class AnnotationService:
                 matches.append(annotation)
         return matches
 
-    def _annotate_type_species_local(self,) -> List[Annotation]:
+    def _annotate_type_species_local(self) -> List[Annotation]:
         """Similar to self._get_annotation() but for creating
         annotations of custom species.
         However, does not check if a synonym is used by multiple
@@ -808,27 +685,26 @@ class AnnotationService:
         user wants these custom species annotations to be
         annotated.
         """
-        tokens = self.matched_type_species_local
+        matches = self.matched_type_species_local
 
         custom_annotations: List[Annotation] = []
 
-        for word, lmdb_match in tokens.items():
-            for token in lmdb_match.tokens:
-                for entity in lmdb_match.entities:
-                    try:
-                        annotation = self._create_annotation_object(
-                            token=token,
-                            token_type=EntityType.SPECIES.value,
-                            entity=entity,
-                            entity_id=entity[EntityIdStr.SPECIES.value],
-                            entity_id_type=lmdb_match.id_type,
-                            entity_id_hyperlink=lmdb_match.id_hyperlink,
-                            entity_category=entity.get('category', '')
-                        )
-                    except KeyError:
-                        continue
-                    else:
-                        custom_annotations.append(annotation)
+        for match in matches:
+            for entity in match.entities:
+                try:
+                    annotation = self._create_annotation_object(
+                        token=match.token,
+                        token_type=EntityType.SPECIES.value,
+                        entity=entity,
+                        entity_id=entity[EntityIdStr.SPECIES.value],
+                        entity_id_type=match.id_type,
+                        entity_id_hyperlink=match.id_hyperlink,
+                        entity_category=entity.get('category', '')
+                    )
+                except KeyError:
+                    continue
+                else:
+                    custom_annotations.append(annotation)
         return custom_annotations
 
     def _annotate_type_species(
@@ -838,7 +714,7 @@ class AnnotationService:
         excluded_annotations: List[dict]
     ) -> List[Annotation]:
         species_annotations = self._get_annotation(
-            tokens=self.matched_type_species,
+            matches_list=self.matched_type_species,
             token_type=EntityType.SPECIES.value,
             id_str=entity_id_str
         )
@@ -916,7 +792,7 @@ class AnnotationService:
 
     def _annotate_type_company(self, entity_id_str: str) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_company,
+            matches_list=self.matched_type_company,
             token_type=EntityType.COMPANY.value,
             id_str=entity_id_str
         )
@@ -926,48 +802,15 @@ class AnnotationService:
         entity_id_str: str
     ) -> List[Annotation]:
         return self._get_annotation(
-            tokens=self.matched_type_entity,
+            matches_list=self.matched_type_entity,
             token_type=EntityType.ENTITY.value,
             id_str=entity_id_str
         )
 
-    def annotate(
-        self,
-        annotation_type: str,
-        entity_id_str: str,
-        custom_annotations: List[dict],
-        excluded_annotations: List[dict]
-    ) -> List[Annotation]:
-        funcs = {
-            EntityType.ANATOMY.value: self._annotate_anatomy,
-            EntityType.CHEMICAL.value: self._annotate_type_chemical,
-            EntityType.COMPOUND.value: self._annotate_type_compound,
-            EntityType.DISEASE.value: self._annotate_type_disease,
-            EntityType.FOOD.value: self._annotate_type_food,
-            EntityType.PHENOMENA.value: self._annotate_type_phenomena,
-            EntityType.PHENOTYPE.value: self._annotate_type_phenotype,
-            EntityType.SPECIES.value: self._annotate_type_species,
-            EntityType.PROTEIN.value: self._annotate_type_protein,
-            EntityType.GENE.value: self._annotate_type_gene,
-            EntityType.COMPANY.value: self._annotate_type_company,
-            EntityType.ENTITY.value: self._annotate_type_entity
-        }
-
-        annotate_entities = funcs[annotation_type]
-        if annotation_type == EntityType.SPECIES.value:
-            return annotate_entities(
-                entity_id_str=entity_id_str,
-                custom_annotations=custom_annotations,
-                excluded_annotations=excluded_annotations
-            )  # type: ignore
-        else:
-            return annotate_entities(
-                entity_id_str=entity_id_str)  # type: ignore
-
     def _update_entity_frequency_map(
         self,
         entity_frequency: Dict[str, int],
-        annotation: Annotation,
+        annotation
     ) -> Dict[str, int]:
         entity_id = annotation.meta.id
         if entity_frequency.get(entity_id, None) is not None:
@@ -976,7 +819,7 @@ class AnnotationService:
             entity_frequency[entity_id] = 1
 
         # If this annotation is a virus then we also have to update the homo sapiens frequency
-        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+        if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
             if entity_frequency.get(HOMO_SAPIENS_TAX_ID, None) is not None:
                 entity_frequency[HOMO_SAPIENS_TAX_ID] += 1
             else:
@@ -987,7 +830,7 @@ class AnnotationService:
     def _update_entity_location_map(
         self,
         matched_entity_locations: Dict[str, List[Tuple[int, int]]],
-        annotation: Annotation,
+        annotation
     ) -> Dict[str, List[Tuple[int, int]]]:
         if matched_entity_locations.get(annotation.meta.id, None) is not None:
             matched_entity_locations[annotation.meta.id].append(
@@ -1000,7 +843,7 @@ class AnnotationService:
 
         # If the annotation represents a virus, then also mark this location as a human
         # annotation
-        if isinstance(annotation.meta, OrganismAnnotation.OrganismMeta) and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+        if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
             if matched_entity_locations.get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
                 matched_entity_locations[HOMO_SAPIENS_TAX_ID].append(  # noqa
                     (annotation.lo_location_offset, annotation.hi_location_offset)
@@ -1014,7 +857,7 @@ class AnnotationService:
 
     def _get_entity_frequency_location_and_category(
         self,
-        annotations: List[Annotation],
+        annotations
     ) -> Tuple[
             Dict[str, int],
             Dict[str, List[Tuple[int, int]]],
@@ -1036,12 +879,11 @@ class AnnotationService:
                 matched_entity_locations=matched_entity_locations,
                 annotation=annotation,
             )
-            entity_categories[annotation.meta.id] = annotation.meta.to_dict().get('category', '')
+            entity_categories[annotation.meta.id] = annotation.meta.category or ''
 
             # Need to add an entry for humans if we annotated a virus
-            if isinstance(annotation, OrganismAnnotation) and isinstance(annotation.meta, OrganismAnnotation.OrganismMeta):  # noqa
-                if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
-                    entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.EUKARYOTA.value
+            if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+                entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.EUKARYOTA.value
 
         return entity_frequency, matched_entity_locations, entity_categories
 
@@ -1109,27 +951,45 @@ class AnnotationService:
         """
         unified_annotations: List[Annotation] = []
 
+        funcs = {
+            EntityType.ANATOMY.value: self._annotate_anatomy,
+            EntityType.CHEMICAL.value: self._annotate_type_chemical,
+            EntityType.COMPOUND.value: self._annotate_type_compound,
+            EntityType.DISEASE.value: self._annotate_type_disease,
+            EntityType.FOOD.value: self._annotate_type_food,
+            EntityType.PHENOMENA.value: self._annotate_type_phenomena,
+            EntityType.PHENOTYPE.value: self._annotate_type_phenotype,
+            EntityType.SPECIES.value: self._annotate_type_species,
+            EntityType.PROTEIN.value: self._annotate_type_protein,
+            EntityType.GENE.value: self._annotate_type_gene,
+            EntityType.COMPANY.value: self._annotate_type_company,
+            EntityType.ENTITY.value: self._annotate_type_entity
+        }
+
         for entity_type, entity_id_str in types_to_annotate:
-            annotations = self.annotate(
-                annotation_type=entity_type,
-                entity_id_str=entity_id_str,
-                custom_annotations=custom_annotations,
-                excluded_annotations=excluded_annotations
-            )
-            unified_annotations.extend(annotations)
+            annotate_entities = funcs[entity_type]
+            if entity_type == EntityType.SPECIES.value:
+                annotations = annotate_entities(
+                    entity_id_str=entity_id_str,
+                    custom_annotations=custom_annotations,
+                    excluded_annotations=excluded_annotations
+                )  # type: ignore
+                unified_annotations.extend(annotations)
+            else:
+                annotations = annotate_entities(entity_id_str=entity_id_str)  # type: ignore
+                unified_annotations.extend(annotations)
 
         return unified_annotations
 
-    def create_rules_based_annotations(
+    def create_annotations(
         self,
         custom_annotations: List[dict],
         excluded_annotations: List[dict],
-        tokens: PDFTokensList,
         entity_results: EntityResults,
         entity_type_and_id_pairs: List[Tuple[str, str]],
         specified_organism: SpecifiedOrganismStrain,
+        enrichment_mappings: Dict[int, dict] = None
     ) -> List[Annotation]:
-        """Create annotations based on semantic rules."""
         self.matched_type_anatomy = entity_results.matched_type_anatomy
         self.matched_type_chemical = entity_results.matched_type_chemical
         self.matched_type_compound = entity_results.matched_type_compound
@@ -1153,56 +1013,8 @@ class AnnotationService:
         )
 
         cleaned = self._clean_annotations(
-            annotations=annotations)
-        # update the annotations with the common primary name
-        # do this after cleaning because it's easier to
-        # query the KG for the primary names after the
-        # duplicates/overlapping intervals are removed
-        return self.add_primary_name(annotations=cleaned)
-
-    def create_nlp_annotations(
-        self,
-        nlp_resp: List[dict],
-        species_annotations: List[Annotation],
-        custom_annotations: List[dict],
-        excluded_annotations: List[dict],
-        entity_type_and_id_pairs: List[Tuple[str, str]]
-    ) -> List[Annotation]:
-        """Create annotations based on NLP."""
-        nlp_annotations = self._create_annotations(
-            types_to_annotate=entity_type_and_id_pairs,
-            custom_annotations=custom_annotations,
-            excluded_annotations=excluded_annotations
-        )
-
-        unified_annotations = species_annotations + nlp_annotations
-
-        # TODO: TEMP to keep track of things not matched in LMDB
-        matched: Set[str] = set()
-        predicted_set: Set[str] = set()
-        for predicted in nlp_resp:
-            predicted_str = predicted['item']
-            predicted_type = predicted['type']
-            predicted_hashstr = f'{predicted_str},{predicted_type}'
-            predicted_set.add(predicted_hashstr)
-
-        for anno in unified_annotations:
-            # TODO: temp for now as NLP only use Bacteria
-            if anno.meta.type == 'Species':
-                keyword_type = 'Bacteria'
-            else:
-                keyword_type = anno.meta.type
-            hashstr = f'{anno.text_in_document},{keyword_type}'
-            matched.add(hashstr)
-
-        not_matched = predicted_set - matched
-
-        current_app.logger.info(
-            f'NLP TOKENS NOT MATCHED TO LMDB {not_matched}',
-            extra=EventLog(event_type='annotations').to_dict()
-        )
-        cleaned = self._clean_annotations(
-            annotations=unified_annotations)
+            annotations=annotations,
+            enrichment_mappings=enrichment_mappings)
         # update the annotations with the common primary name
         # do this after cleaning because it's easier to
         # query the KG for the primary names after the
@@ -1211,14 +1023,35 @@ class AnnotationService:
 
     def _clean_annotations(
         self,
-        annotations: List[Annotation]
+        annotations: List[Annotation],
+        enrichment_mappings: Dict[int, dict] = None
     ) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
             annotations_list=annotations)
 
-        fixed_unified_annotations = self.fix_conflicting_annotations(
-            unified_annotations=fixed_unified_annotations,
-        )
+        if enrichment_mappings:
+            # need to split up the annotations otherwise
+            # a text in a cell could be removed due to
+            # overlapping with an adjacent cell
+            split: Dict[int, List[Annotation]] = {k: list() for k in enrichment_mappings}
+            for anno in fixed_unified_annotations:
+                for i in split:
+                    # append annotation to list that is greater
+                    # than hi_location_offset
+                    # this means the annotation is part of that sublist
+                    if anno.hi_location_offset <= i:
+                        split[i].append(anno)
+                        break
+
+            combined: List[Annotation] = []
+            for _, v in split.items():
+                combined += self.fix_conflicting_annotations(
+                    unified_annotations=v)
+
+            fixed_unified_annotations = combined
+        else:
+            fixed_unified_annotations = self.fix_conflicting_annotations(
+                unified_annotations=fixed_unified_annotations)
         return fixed_unified_annotations
 
     def add_primary_name(self, annotations: List[Annotation]) -> List[Annotation]:
@@ -1302,27 +1135,24 @@ class AnnotationService:
         """
         updated_unified_annotations: List[Annotation] = []
         annotation_interval_dict: Dict[Tuple[int, int], List[Annotation]] = {}
+        annotation_interval_set: Set[Tuple[int, int]] = set()
 
         for unified in unified_annotations:
-            if unified.lo_location_offset == unified.hi_location_offset:
-                # keyword is a single character
-                # should not have overlaps
-                updated_unified_annotations.append(unified)
+            interval_pair = (unified.lo_location_offset, unified.hi_location_offset)
+            if interval_pair in annotation_interval_dict:
+                annotation_interval_dict[interval_pair].append(unified)
             else:
-                interval_pair = (unified.lo_location_offset, unified.hi_location_offset)
-                if interval_pair in annotation_interval_dict:
-                    annotation_interval_dict[interval_pair].append(unified)
-                else:
-                    annotation_interval_dict[interval_pair] = [unified]
+                annotation_interval_dict[interval_pair] = [unified]
+            annotation_interval_set.add(interval_pair)
 
         # it's faster to create an interval tree with just
         # intervals, rather than a tree with intervals and data
         # because the data are viewed as unique, so the tree is bigger
-        tree = AnnotationIntervalTree([
+        tree = AnnotationIntervalTree(
             AnnotationInterval(
                 begin=lo,
                 end=hi
-            ) for lo, hi in list(annotation_interval_dict)])
+            ) for lo, hi in annotation_interval_set)
 
         # first clean all annotations with equal intervals
         # this means the same keyword was mapped to multiple entities
@@ -1339,7 +1169,7 @@ class AnnotationService:
 
         overlap_ranges = tree.merge_overlaps()
 
-        for (lo, hi) in overlap_ranges:
+        for lo, hi in overlap_ranges:
             overlaps = tree.overlap(lo, hi)
 
             annotations_to_fix: List[Annotation] = []
@@ -1358,17 +1188,6 @@ class AnnotationService:
             updated_unified_annotations.append(chosen_annotation)  # type: ignore
 
         return updated_unified_annotations
-
-    def create_annotation_tree(
-        self,
-        annotation_intervals: List[Tuple[int, int]]
-    ) -> AnnotationIntervalTree:
-        return AnnotationIntervalTree(
-            [AnnotationInterval(
-                begin=lo,
-                end=hi
-            ) for lo, hi in annotation_intervals]
-        )
 
     def determine_entity_precedence(
         self,
@@ -1394,48 +1213,41 @@ class AnnotationService:
                 # gene has lowercase: cysB
                 # also cases like gene SerpinA1 vs protein Serpin A1
 
-                def check_gene_protein(
-                    anno1: Annotation,
-                    anno2: Annotation,
-                    anno1_text_in_document: str,
-                    anno2_text_in_document: str,
-                ):
-                    """First check for exact match
-                    if no exact match then check substrings
-                    e.g `Serpin A1` matched to `serpin A1`
-                    e.g `SerpinA1` matched to `serpin A1`
+                """First check for exact match
+                if no exact match then check substrings
+                e.g `Serpin A1` matched to `serpin A1`
+                e.g `SerpinA1` matched to `serpin A1`
 
-                    We take the first case will not count hyphens separated
-                    because hard to infer if it was used as a space
-                    need to consider precedence in case gene and protein
-                    have the exact spelling correct annotated word
-                    """
-                    if anno1_text_in_document == anno1.keyword:
-                        return anno1
-                    if anno2_text_in_document == anno2.keyword:
-                        return anno2
-
-                    if len(anno1_text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
-                        return anno1
-                    if len(anno2_text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
-                        return anno2
-
-                    return None
-
+                We take the first case will not count hyphens separated
+                because hard to infer if it was used as a space
+                need to consider precedence in case gene and protein
+                have the exact spelling correct annotated word
+                """
+                gene_protein_precedence_result = None
                 if key1 > key2:
-                    gene_protein_precedence_result = check_gene_protein(
-                        anno1=anno1,
-                        anno2=anno2,
-                        anno1_text_in_document=anno1.text_in_document,
-                        anno2_text_in_document=anno2.text_in_document,
-                    )
+                    if anno1.text_in_document == anno1.keyword:
+                        gene_protein_precedence_result = anno1
+                    elif anno2.text_in_document == anno2.keyword:
+                        gene_protein_precedence_result = anno2
+
+                    # no match so far
+                    if gene_protein_precedence_result is None:
+                        if len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):
+                            gene_protein_precedence_result = anno1
+                        elif len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):  # noqa
+                            gene_protein_precedence_result = anno2
                 else:
-                    gene_protein_precedence_result = check_gene_protein(
-                        anno1=anno2,
-                        anno2=anno1,
-                        anno1_text_in_document=anno2.text_in_document,
-                        anno2_text_in_document=anno1.text_in_document,
-                    )
+                    if anno2.text_in_document == anno2.keyword:
+                        gene_protein_precedence_result = anno2
+                    elif anno1.text_in_document == anno1.keyword:
+                        gene_protein_precedence_result = anno1
+
+                    # no match so far
+                    if gene_protein_precedence_result is None:
+                        if len(anno2.text_in_document.split(' ')) == len(anno2.keyword.split(' ')):
+                            gene_protein_precedence_result = anno2
+                        elif len(anno1.text_in_document.split(' ')) == len(anno1.keyword.split(' ')):  # noqa
+                            gene_protein_precedence_result = anno1
 
                 if gene_protein_precedence_result is not None:
                     return gene_protein_precedence_result
@@ -1454,25 +1266,20 @@ class AnnotationService:
         self,
         keyword: str,
         is_case_insensitive: bool,
-        tokens_list: PDFTokensList
+        tokens_list: List[PDFWord]
     ):
         """Returns coordinate positions and page numbers
         for all matching terms in the document
         """
         matches = []
-        for token in tokens_list.tokens:
+        for token in tokens_list:
             if not is_case_insensitive:
                 if token.keyword != keyword:
                     continue
             elif standardize_str(token.keyword).lower() != standardize_str(keyword).lower():
                 continue
-            keyword_positions: List[Annotation.TextPosition] = []
-            self._create_keyword_objects(
-                token=token,
-                keyword_positions=keyword_positions
-            )
-            rects = [pos.positions for pos in keyword_positions]
-            keywords = [pos.value for pos in keyword_positions]
+            rects = token.coordinates
+            keywords = [token.keyword]
             matches.append({
                 'pageNumber': token.page_number,
                 'rects': rects,

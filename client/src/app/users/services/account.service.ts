@@ -46,9 +46,11 @@ export class AccountService implements OnDestroy {
     }
 
     currentUser() {
-        return this.http.get<{result: AppUser}>(
+        return this.http.get<AppUser>(
             `${this.accountApi}/user`,
-        ).pipe(map(resp => resp.result));
+        ).pipe(
+            map(resp => resp),
+        );
     }
 
     updateUser(updateRequest: UpdateUserRequest) {

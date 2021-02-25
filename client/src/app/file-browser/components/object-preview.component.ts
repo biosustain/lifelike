@@ -4,6 +4,8 @@ import {
   ComponentRef,
   Input,
   NgZone,
+  OnChanges,
+  SimpleChanges,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
@@ -11,15 +13,17 @@ import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ObjectTypeService } from '../services/object-type.service';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import { BehaviorSubject, of } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-object-preview',
   templateUrl: './object-preview.component.html',
 })
-export class ObjectPreviewComponent {
+export class ObjectPreviewComponent implements OnChanges {
 
+  @Input() object: FilesystemObject;
+  @Input() contentValue: Blob;
   @Input() highlightTerms: string[] | undefined;
   @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
 
@@ -27,8 +31,9 @@ export class ObjectPreviewComponent {
   readonly previewComponent$ = this.object$.pipe(
     mergeMap(object => {
       if (object) {
+        const contentValue$ = this.contentValue ? of(this.contentValue) : this.filesystemService.getContent(object.hashId);
         return this.objectTypeService.get(object).pipe(mergeMap(typeProvider => {
-          return typeProvider.createPreviewComponent(object, {
+          return typeProvider.createPreviewComponent(object, contentValue$, {
             highlightTerms: this.highlightTerms,
           });
         }));
@@ -44,9 +49,10 @@ export class ObjectPreviewComponent {
               protected readonly ngZone: NgZone) {
   }
 
-  @Input()
-  set object(object: FilesystemObject | undefined) {
-    this.object$.next(object);
+  ngOnChanges(changes: SimpleChanges) {
+    if ('object' in changes || 'contentValue' in changes) {
+      this.object$.next(this.object);
+    }
   }
 
 }

@@ -8,6 +8,7 @@ import { openPotentialInternalLink } from '../../../shared/utils/browser';
 import { PALETTE_COLORS } from '../../services/palette';
 import { isNullOrUndefined } from 'util';
 import { WorkspaceManager } from '../../../shared/workspace-manager';
+import { InfoPanel } from '../../models/info-panel';
 
 @Component({
   selector: 'app-node-form',
@@ -28,6 +29,7 @@ export class NodeFormComponent implements AfterViewInit {
   originalNode: UniversalGraphNode;
   updatedNode: UniversalGraphNode;
 
+  @Input() infoPanel: InfoPanel;
   @Output() save = new EventEmitter<{
     originalData: RecursivePartial<UniversalGraphNode>,
     updatedData: RecursivePartial<UniversalGraphNode>,
@@ -35,14 +37,12 @@ export class NodeFormComponent implements AfterViewInit {
   @Output() delete = new EventEmitter<object>();
   @Output() sourceOpen = new EventEmitter<string>();
 
-  activeTab: string;
   previousLabel: string;
 
   constructor(protected readonly workspaceManager: WorkspaceManager) {
   }
 
   ngAfterViewInit() {
-    setTimeout(() => this.focus(), 10);
   }
 
   get nodeSubtypeChoices() {
@@ -72,8 +72,6 @@ export class NodeFormComponent implements AfterViewInit {
 
     this.updatedNode = cloneDeep(node);
     this.updatedNode.style = this.updatedNode.style || {};
-
-    setTimeout(() => this.focus(), 10);
   }
 
   handleTypeChange() {
@@ -252,11 +250,11 @@ export class NodeFormComponent implements AfterViewInit {
     });
   }
 
-  searchMapNodeInContent(node) {
+  searchMapNodeInContent(node, types: string) {
     this.workspaceManager.navigate(['/search/content'], {
       queryParams: {
         q: node.display_name,
-        types: 'map;pdf',
+        types,
         limit: 20,
         page: 1
       },

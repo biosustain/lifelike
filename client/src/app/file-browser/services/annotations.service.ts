@@ -8,10 +8,11 @@ import { ApiService } from '../../shared/services/api.service';
 import {
   AnnotationExclusionCreateRequest,
   AnnotationExclusionDeleteRequest,
-  AnnotationGenerationRequest,
+  PDFAnnotationGenerationRequest,
   AnnotationGenerationResultData,
   CustomAnnotationCreateRequest,
   CustomAnnotationDeleteRequest,
+  AnnotationSelectionResponse,
 } from '../schema';
 import { map } from 'rxjs/operators';
 import { ResultList, ResultMapping } from '../../shared/schemas/common';
@@ -31,6 +32,15 @@ export class AnnotationsService {
     );
   }
 
+  getAnnotationSelections(hashId: string): Observable<AnnotationSelectionResponse> {
+    return this.http.get<{results: AnnotationSelectionResponse}>(
+      `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations/configs`,
+      this.apiService.getHttpOptions(true),
+    ).pipe(
+      map(data => data.results),
+    );
+  }
+
   getAnnotationCounts(hashId: string): Observable<string> {
     return this.http.post(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations/counts`, {}, {
@@ -40,7 +50,7 @@ export class AnnotationsService {
     );
   }
 
-  generateAnnotations(hashIds: string[], request: AnnotationGenerationRequest = {}):
+  generateAnnotations(hashIds: string[], request: PDFAnnotationGenerationRequest = {}):
     Observable<ResultMapping<AnnotationGenerationResultData>> {
     return this.http.post<ResultMapping<AnnotationGenerationResultData>>(
       `/api/filesystem/annotations/generate`, {

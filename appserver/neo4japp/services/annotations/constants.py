@@ -14,12 +14,8 @@ PHENOTYPES_CUSTOM_LMDB = 'phenotypes_custom'
 PROTEINS_UNIPROT_LMDB = 'proteins_uniprot'
 SPECIES_NCBI_LMDB = 'species_ncbi'
 
-# NLP endpoint
-NLP_ENDPOINT = 'http://nlpapi:5001/infer/v1'
-
 HOMO_SAPIENS_TAX_ID = '9606'
 
-SPACE_COORDINATE_FLOAT = -61390.61390  # used to identify space in the list of coordinates
 ORGANISM_DISTANCE_THRESHOLD = 200
 PDF_NEW_LINE_THRESHOLD = .30
 PDF_CHARACTER_SPACING_THRESHOLD = .325
@@ -154,11 +150,6 @@ class DatabaseType(Enum):
     PUBCHEM = 'PUBCHEM'
 
 
-class AnnotationMethod(Enum):
-    NLP = 'NLP'
-    RULES = 'Rules Based'
-
-
 class ManualAnnotationType(Enum):
     INCLUSION = 'inclusion'
     EXCLUSION = 'exclusion'
@@ -186,4 +177,17 @@ ENTITY_HYPERLINKS = {
     },
     DatabaseType.BIOCYC.value: 'https://biocyc.org/compound?orgid=META&id=',
     DatabaseType.CUSTOM.value: SEARCH_LINKS['google'],
+}
+
+DEFAULT_ANNOTATION_CONFIGS = {
+    EntityType.ANATOMY.value: {'nlp': False, 'rules_based': True},
+    EntityType.CHEMICAL.value: {'nlp': False, 'rules_based': True},
+    EntityType.COMPOUND.value: {'nlp': False, 'rules_based': True},
+    EntityType.DISEASE.value: {'nlp': False, 'rules_based': True},
+    EntityType.FOOD.value: {'nlp': False, 'rules_based': True},
+    EntityType.GENE.value: {'nlp': False, 'rules_based': True},
+    EntityType.PHENOMENA.value: {'nlp': False, 'rules_based': True},
+    EntityType.PHENOTYPE.value: {'nlp': False, 'rules_based': True},
+    EntityType.PROTEIN.value: {'nlp': False, 'rules_based': True},
+    EntityType.SPECIES.value: {'nlp': False, 'rules_based': True}
 }
