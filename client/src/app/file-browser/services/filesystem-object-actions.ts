@@ -132,6 +132,9 @@ export class FilesystemObjectActions {
   openCloneDialog(target: FilesystemObject): Promise<FilesystemObject> {
     const object = clone(target);
     object.filename = object.filename.replace(/^(.+?)(\.[^.]+)?$/, '$1 (Copy)$2');
+    if (object.parent == null || !object.parent.privileges.writable) {
+      object.parent = null;
+    }
     return this.objectCreationService.openCreateDialog(object, {
       title: `Make Copy of ${getObjectLabel(target)}`,
       promptParent: true,
