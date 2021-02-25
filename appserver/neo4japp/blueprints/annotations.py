@@ -286,7 +286,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
         files = self.get_nondeleted_recycled_children(
             Files.id == file.id,
-            children_filter=Files.mime_type == 'application/pdf',
+            # children_filter=Files.mime_type == 'application/pdf',
             lazy_load_content=True
         )
 
@@ -913,7 +913,7 @@ filesystem_bp.add_url_rule(
     view_func=FileAnnotationExclusionsListView.as_view('file_annotation_exclusions_list'))
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/counts',
-    view_func=FileAnnotationSortedView.as_view('file_annotation_counts'))
+    view_func=FileAnnotationCountsView.as_view('file_annotation_counts'))
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/sorted',
     view_func=FileAnnotationSortedView.as_view('file_annotation_sorted'))
