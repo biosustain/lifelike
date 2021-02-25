@@ -51,6 +51,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
     this.enrichmentService.fileId = this.route.snapshot.params.file_id || '';
     this.loadingData = true;
   }
+
   @Input() titleVisible = true;
 
   paramsSubscription: Subscription;
@@ -65,7 +66,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   organism: string;
   loadTableTask: BackgroundTask<null, [FilesystemObject, EnrichmentVisualisationData]>;
   object: FilesystemObject;
-  data: EnrichmentVisualisationData;
+  data;
   neo4jId: number;
   importGenes: string[];
   unmatchedGenes: string;
@@ -77,6 +78,9 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   @ViewChild(WordCloudComponent, {static: false})
   private wordCloudComponent: WordCloudComponent;
 
+  g1;
+  g2;
+  g3;
 
   scrollTopAmount: number;
 
@@ -84,11 +88,14 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
 
   cloudData: string[] = [];
 
-  loadTask: BackgroundTask<string, [FilesystemObject]>;
+  loadTask: BackgroundTask<string, []>;
 
   chartAnalysis = defaultAnalysis.id;
 
   wordCloudAnalysis = defaultAnalysis.id;
+
+
+  loadSubscription: Subscription;
 
   ngOnDestroy() {
     console.log('sagr');
@@ -107,13 +114,30 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
     return !!this.enrichmentService.unsavedChanges;
   }
 
+
   ngOnInit() {
     this.enrichmentService.loadTaskMetaData.results$.subscribe(({result}) => {
       this.object = result;
-      this.loadingData = false;
       this.emitModuleProperties();
     });
+    this.loadTask = new BackgroundTask((analysis) =>
+      this.enrichmentService.enrichWithGOTerms(analysis),
+    );
+
+    this.loadSubscription = this.loadTask.results$.subscribe((result) => {
+      this.data = result.result;
+      this.g1 = this.data.filter(d => d.goLabel.includes('BiologicalProcess'));
+      this.g2 = this.data.filter(d => d.goLabel.includes('MolecularFunction'));
+      this.g3 = this.data.filter(d => d.goLabel.includes('CellularComponent'));
+      this.loadingData = false;
+    });
+    this.enrichmentService.load.subscribe((data) => {
+      console.log(data);
+      this.loadTask.update('fisher');
+    });
+
   }
+
 
   /**
    * Edit enrichment params (essentially the file content) and updates table.

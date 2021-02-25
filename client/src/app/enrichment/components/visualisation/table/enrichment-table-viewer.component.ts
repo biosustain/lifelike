@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output, OnChanges } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
@@ -47,7 +47,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnChanges, OnDest
 
   // Inputs for Generic Table Component
   tableEntries: TableCell[][] = [];
-  tableHeader: TableHeader[][] = [
+  tableHeader = [
     // Primary headers
     [
       {name: 'Imported', span: '1'},
@@ -79,10 +79,10 @@ export class EnrichmentTableViewerComponent implements OnInit, OnChanges, OnDest
   domains: string[] = [];
 
   @Input() geneNames: string[];
+  @Input() data: EnrichmentData;
   @Input() taxID: string;
   @Input() organism: string;
   @Input() analysis: string;
-  data: EnrichmentData;
   neo4jId: number;
   object: any;
   @Input() importGenes: string[];
@@ -95,14 +95,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnChanges, OnDest
 
   scrollTopAmount: number;
 
-  loadingData: boolean;
-
 
   selectedRow = 0;
-  private loadTableTaskSubscription: Promise<PushSubscription>;
-  private loadTableTask: any;
-  loadTask: BackgroundTask<string, any>;
-  loadSubscription: Subscription;
 
   constructor(protected readonly messageDialog: MessageDialog,
               protected readonly ngZone: NgZone,
@@ -115,16 +109,16 @@ export class EnrichmentTableViewerComponent implements OnInit, OnChanges, OnDest
               protected readonly errorHandler: ErrorHandler,
               protected readonly downloadService: DownloadService,
               protected readonly progressDialog: ProgressDialog) {
-    this.loadTask = new BackgroundTask((analysis) =>
-      this.enrichmentService.enrichWithGOTerms(analysis),
-    );
-
-    this.loadSubscription = this.loadTask.results$.subscribe((result) => {
-      this.data = result.result;
-      this.tableHeader = [Object.keys(result.result[0]).map(header => ({name: header, span: 1}))];
-      this.tableEntries = result.result.map(row => Object.values(row).map(cell => ({text: '' + cell})));
-      this.loadingData = false;
-    });
+    // this.loadTask = new BackgroundTask((analysis) =>
+    //   this.enrichmentService.enrichWithGOTerms(analysis),
+    // );
+    //
+    // this.loadSubscription = this.loadTask.results$.subscribe((result) => {
+    //   this.data = result.result;
+    //   this.tableHeader = [Object.keys(result.result[0]).map(header => ({name: header, span: 1}))];
+    //   this.tableEntries = result.result.map(row => Object.values(row).map(cell => ({text: '' + cell})));
+    //   this.loadingData = false;
+    // });
   }
 
   ngOnDestroy() {
@@ -134,13 +128,12 @@ export class EnrichmentTableViewerComponent implements OnInit, OnChanges, OnDest
 
 
   ngOnInit() {
-    this.loadingData = true;
-    this.loadTask.update(this.analysis);
+    // this.tableHeader = [Object.keys(this.data[0]).map(header => ({name: header, span: 1}))];
+    // this.tableEntries = this.data.map(row => Object.values(row).map(cell => ({text: '' + cell})));
+    console.log("asg")
   }
 
   ngOnChanges() {
-    this.loadingData = true;
-    this.loadTask.update(this.analysis);
   }
 
   // ngOnInit() {
@@ -356,7 +349,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnChanges, OnDest
             duration: 2000,
           });
           this.tableEntries = [];
-          this.loadTableTask.update();
         });
     }, () => {
     });
@@ -397,7 +389,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnChanges, OnDest
    *  Match list of inputted gene names to NCBI nodes with name stored in Neo4j.
    */
   matchNCBINodes() {
-    this.loadingData = true;
     this.worksheetViewerService
       .matchNCBINodes(this.importGenes, this.taxID)
       .pipe(
@@ -405,7 +396,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnChanges, OnDest
           this.snackBar.open(`Unable to load entries.`, 'Close', {
             duration: 5000,
           });
-          this.loadingData = false;
           return error;
         }),
         this.errorHandler.create({label: 'Match NCBI nodes'}),
@@ -451,7 +441,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnChanges, OnDest
           this.snackBar.open(`Unable to load entries.`, 'Close', {
             duration: 5000,
           });
-          this.loadingData = false;
           return error;
         }),
         this.errorHandler.create({label: 'Get domains for enrichment table'}),
@@ -474,7 +463,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnChanges, OnDest
         }
         newEntries = newEntries.concat(this.processUnmatchedNodes(synonyms, currentGenes));
         this.tableEntries = this.tableEntries.concat(newEntries);
-        this.loadingData = false;
       });
   }
 
