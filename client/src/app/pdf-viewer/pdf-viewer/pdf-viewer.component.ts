@@ -434,7 +434,7 @@ export class PdfViewerComponent
     }
   }
 
-  private setupMultiPageViewer(value?) {
+  private setupMultiPageViewer() {
     (PDFJS as any).disableTextLayer = !this.internalRenderText;
 
     PdfViewerComponent.setExternalLinkTarget(this.internalExternalLinkTarget);
