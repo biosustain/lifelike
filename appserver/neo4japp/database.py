@@ -247,6 +247,20 @@ def get_manual_annotation_service():
     )
 
 
+def get_sorted_annotation_service(sort_id):
+    from neo4japp.services.annotations import (
+        AnnotationGraphService,
+        ManualAnnotationService
+    )
+    from neo4japp.services.annotations.sorted_annotation_service import sorted_annotations_dict
+
+    return sorted_annotations_dict[sort_id](
+        annotation_service=ManualAnnotationService(
+            graph=AnnotationGraphService()
+        )
+    )
+
+
 def get_bioc_document_service():
     from neo4japp.services.annotations import BiocDocumentService
     return BiocDocumentService()
