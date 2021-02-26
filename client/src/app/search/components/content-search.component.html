@@ -74,7 +74,8 @@
                 <div class="search-results search-results-selectable">
                   <div *ngFor="let result of results.view" class="search-results-item"
                        (appTabSelectable)="results.select(result)"
-                       [class.active]="results.isSelected(result)">
+                       [class.active]="results.isSelected(result)"
+                       draggable="true" (dragstart)="itemDragStart($event, result.item)">
                     <div class="text-truncate mb-1">
                       <app-object-path [object]="result.item.parent" [newTab]="true"></app-object-path>
                     </div>
