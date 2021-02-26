@@ -5,7 +5,7 @@ from tests.helpers.api import generate_jwt_headers
 
 
 @pytest.fixture(scope='function')
-def mock_users(session):
+def mock_users(session, fix_user_role):
     mock_users = [
         'Yoda', 'Clones', 'Mandolorian', 'SithLord', 'Luke',
         'Leia', 'Rey', 'Fin', 'BB8', 'r2d2', 'Kylo']
@@ -16,11 +16,8 @@ def mock_users(session):
             last_name=u,
             email=f'{u}.***ARANGO_DB_NAME***.bio'
         ) for u in mock_users]
-    role = AppRole(name='user')
-    session.add(role)
-    session.flush()
     for u in users:
-        u.roles.append(role)
+        u.roles.append(fix_user_role)
     session.add_all(users)
     session.flush()
     return users
