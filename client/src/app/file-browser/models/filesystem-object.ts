@@ -440,7 +440,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
     if (this.uploadUrl) {
       sources.push({
-        domain: 'External URL',
+        domain: 'Upload URL',
         url: this.uploadUrl,
       });
     }
