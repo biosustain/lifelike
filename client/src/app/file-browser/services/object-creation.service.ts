@@ -37,8 +37,8 @@ export class ObjectCreationService {
    * @param annotationOptions options for the annotation process
    * @return the created object
    */
-  protected executePutWithProgressDialog(request: ObjectCreateRequest,
-                                         annotationOptions: PDFAnnotationGenerationRequest = {}):
+  executePutWithProgressDialog(request: ObjectCreateRequest,
+                               annotationOptions: PDFAnnotationGenerationRequest = {}):
     Observable<FilesystemObject> {
     const progressObservable = new BehaviorSubject<Progress>(new Progress({
       status: 'Preparing...',

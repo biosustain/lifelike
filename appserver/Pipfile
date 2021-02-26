@@ -49,6 +49,7 @@ marshmallow-dataclass = "*"
 marshmallow-enum = "*"
 deepdiff = "*"
 timeflake = "*"
+scipy = "*"
 
 [requires]
 python_version = "3.8.2"
