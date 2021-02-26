@@ -60,15 +60,14 @@
             </div>
           </ng-container>
 
-          <ng-container *ngIf="status.resultsShown || (fileResults.total > 0)">
-            <ng-container *ngIf="results.length || (fileResults.total > 0); else noResults">
+          <ng-container *ngIf="status.resultsShown">
+            <ng-container *ngIf="results.length; else noResults">
               <div class="module-body text-muted">
                 <div class="mb-3">
                   <app-results-summary
                       [page]="params.page"
                       [pageSize]="params.limit"
-                      [collectionSize]="!(fileResults.total > 0) ? collectionSize
-                      : collectionSize + fileResults.total"></app-results-summary>
+                      [collectionSize]="collectionSize"></app-results-summary>
                 </div>
 
                 <div class="search-results search-results-selectable">
