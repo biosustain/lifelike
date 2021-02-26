@@ -118,7 +118,7 @@ export type ObjectContentSource = { contentHashId: string }
  */
 export type ObjectSearchRequest = ({
   type: 'public';
-  mimeTypes: string[];
+  mimeTypes?: string[];
 } & PaginatedRequestOptions) | {
   type: 'linked';
   linkedHashId: string;
