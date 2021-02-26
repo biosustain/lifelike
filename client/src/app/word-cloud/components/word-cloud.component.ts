@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, ViewEncapsulation } from '@angular/core';
 
 import { uniqueId } from 'lodash';
 
@@ -21,7 +21,7 @@ import { NodeLegend } from '../../interfaces';
   styleUrls: ['./word-cloud.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class WordCloudComponent {
+export class WordCloudComponent implements OnDestroy {
   id = uniqueId('WordCloudComponent-');
 
   @Input() title = 'Entity Cloud';
@@ -51,6 +51,10 @@ export class WordCloudComponent {
     this.initWordCloud();
   }
 
+  ngOnDestroy() {
+    this.annotationsLoadedSub.unsubscribe();
+  }
+
   initDataFetch() {
     this.loadTask = new BackgroundTask(() => {
       return combineLatest(
@@ -71,12 +75,7 @@ export class WordCloudComponent {
       });
 
       this.setAnnotationData(annotationExport);
-
-      // Need a slight delay between the data having been loaded and drawing the word cloud, seems like the BackgroundTask doesn't quite
-      // adhere to the normal change detection cycle.
-      setTimeout(() => {
-        this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), true);
-      }, 10);
+      this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), true);
     });
 
     this.getAnnotations();
