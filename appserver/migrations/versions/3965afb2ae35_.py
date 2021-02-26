@@ -41,7 +41,7 @@ def data_upgrades():
     t_app_user = sa.Table(
         'appuser',
         sa.MetaData(),
-        sa.Column('id', sa.Integer, primary_key=True),
+        sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
         sa.Column('username', sa.String(64), index=True, unique=True),
         sa.Column('email', sa.String(120), index=True, unique=True),
         sa.Column('first_name', sa.String(120), nullable=False),
@@ -51,7 +51,7 @@ def data_upgrades():
     t_app_role = sa.Table(
         'app_role',
         sa.MetaData(),
-        sa.Column('id', sa.Integer(), primary_key=True),
+        sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
         sa.Column('name'),
     )
 
@@ -70,12 +70,21 @@ def data_upgrades():
     query = sa.select([t_appuser.c.id]).select_from(t_appuser).where(~t_appuser.c.id.in_(subquery))
 
     app_role_query = sa.select([t_approle.c.id]).where(t_approle.c.name == 'user')
-    app_role_id, = session.execute(app_role_query).fetchone()
+    app_role_id = session.execute(app_role_query).fetchone()
 
-    uids = [u for u, in session.execute(query)]
+    if app_role_id is None:
+        user_role_query = session.execute(t_app_role.insert().values(name='user'))
+        app_role_id = user_role_query.inserted_primary_key
+
+    else:
+        # Unpack the tuple
+        app_role_id = app_role_id[0]
+
+    uids = [u for u, in session.execute(query).fetchall()]
     prepared_inserts = [{'app_role_id': app_role_id, 'appuser_id': uid} for uid in uids]
 
-    session.execute(t_app_user_role.insert(), prepared_inserts)
+    if prepared_inserts:
+        session.execute(t_app_user_role.insert(), prepared_inserts)
 
 def data_downgrades():
     """Add optional data downgrade migrations here"""
