@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ErrorHandler, Injectable } from '@angular/core';
+import { ErrorHandler, Injectable, Injector } from '@angular/core';
 import { ErrorHandler as ErrorHandlerService } from 'app/shared/services/error-handler.service';
 
 @Injectable()
@@ -8,14 +8,24 @@ import { ErrorHandler as ErrorHandlerService } from 'app/shared/services/error-h
  * errors that only occur client side.
  */
 export class GlobalErrorHandler implements ErrorHandler {
-    constructor(private errorHandlerService: ErrorHandlerService) {}
+  constructor(protected readonly errorHandlerService: ErrorHandlerService,
+              protected readonly injector: Injector) {
+  }
 
-    // Used to prevent error dialogs for specific HTTP codes
-    KNOWN_HTTP_ERROR_CODES = [0, 401];
+  // Used to prevent error dialogs for specific HTTP codes
+  KNOWN_HTTP_ERROR_CODES = [0, 401];
 
-    handleError(error: Error | HttpErrorResponse) {
-        if (!(error instanceof HttpErrorResponse && this.KNOWN_HTTP_ERROR_CODES.includes(error.status))) {
-            this.errorHandlerService.showError(error, {label: 'Uncaught exception', expected: false});
-        }
+  handleError(error: Error | HttpErrorResponse) {
+    const errorHandlerService = this.injector.get(ErrorHandlerService);
+    try {
+      if (!(error instanceof HttpErrorResponse && this.KNOWN_HTTP_ERROR_CODES.includes(error.status))) {
+        errorHandlerService.logError(error, {label: 'Uncaught exception', expected: false});
+      }
+    } catch (e) {
+      console.error('Failed to log Lifelike error', e);
     }
+
+    // We are logging the error but are not changing how errors are handled
+    throw error;
+  }
 }
