@@ -11,7 +11,7 @@
     <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
   </app-module-error>
 
-  <div *ngIf="status.resultsShown" class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
+  <div class="position-absolute w-100 h-100 d-flex flex-column" [ngStyle]="{'z-index': 0, 'display': status.resultsShown ? 'initial': 'none'}">
     <div class="module">
       <div class="module-header">
         <div class="module-title-bar d-flex justify-content-between">
