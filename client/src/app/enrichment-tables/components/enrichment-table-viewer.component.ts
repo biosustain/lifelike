@@ -14,7 +14,10 @@ import { FilesystemService } from '../../file-browser/services/filesystem.servic
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { EnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentTable } from '../models/enrichment-table';
-import { EnrichmentTableEditDialogComponent } from './enrichment-table-edit-dialog.component';
+import {
+  EnrichmentTableEditDialogComponent,
+  EnrichmentTableEditDialogValue,
+} from './enrichment-table-edit-dialog.component';
 import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
 import { ObjectVersion } from '../../file-browser/models/object-version';
 
@@ -174,7 +177,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
     const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
     dialogRef.componentInstance.document = document;
     dialogRef.componentInstance.fileId = this.fileId;
-    return dialogRef.result.then((result: Document) => {
+    return dialogRef.result.then((result: EnrichmentTableEditDialogValue) => {
       this.unsavedChanges$.next(true);
       this.refreshData(true);
     }, () => {
