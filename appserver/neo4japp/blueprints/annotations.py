@@ -287,7 +287,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
         files = self.get_nondeleted_recycled_children(
             Files.id == file.id,
-            # children_filter=Files.mime_type == 'application/pdf',
+            children_filter=Files.mime_type == 'application/pdf',
             lazy_load_content=True
         )
 
