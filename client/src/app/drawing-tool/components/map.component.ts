@@ -169,7 +169,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
 
       if (this.highlightTerms != null && this.highlightTerms.length) {
         this.graphCanvas.highlighting.replace(
-          this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true}),
+          this.graphCanvas.findMatching(this.highlightTerms, {keepSearchSpecialChars: true, wholeWord: true}),
         );
       }
     }, e => {

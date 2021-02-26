@@ -2,15 +2,16 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
-
-import { AnnotationRequestOptions, AnnotationResponse } from '../content-search';
-import { RankedItem, ResultList, ResultQuery } from '../../shared/schemas/common';
-import { ApiService } from '../../shared/services/api.service';
-import { ContentSearchRequest } from '../schema';
-import { ModelList } from '../../shared/models';
 import { map } from 'rxjs/operators';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { FilesystemObjectData } from '../../file-browser/schema';
+
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemObjectData, ProjectData } from 'app/file-browser/schema';
+import { ModelList } from 'app/shared/models';
+import { RankedItem, ResultList } from 'app/shared/schemas/common';
+import { ApiService } from 'app/shared/services/api.service';
+
+import { AnnotationRequestOptions, AnnotationResponse, ContentSearchRequest } from '../schema';
+
 
 @Injectable()
 export class ContentSearchService {
@@ -46,5 +47,13 @@ export class ContentSearchService {
         return resultList;
       }),
     );
+  }
+
+  getProjects(): Observable<ProjectData[]> {
+    return this.http.get<{results: ProjectData[]}>(
+      `/api/projects/projects`, {
+        ...this.apiService.getHttpOptions(true),
+      },
+    ).pipe(map(resp => resp.results));
   }
 }

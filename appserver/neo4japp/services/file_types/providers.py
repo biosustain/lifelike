@@ -31,6 +31,7 @@ extension_mime_types = {
 
 class DirectoryTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.filesystem/directory'
+    SHORTHAND = 'directory'
     mime_types = (MIME_TYPE,)
 
     def can_create(self) -> bool:
@@ -47,6 +48,7 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
 
 class PDFTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'application/pdf'
+    SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
     def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
@@ -103,6 +105,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
 
 class MapTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.document/map'
+    SHORTHAND = 'map'
     mime_types = (MIME_TYPE,)
 
     def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
@@ -220,6 +223,7 @@ class MapTypeProvider(BaseFileTypeProvider):
 
 class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = 'vnd.lifelike.document/enrichment-table'
+    SHORTHAND = 'enrichment-table'
     mime_types = (MIME_TYPE,)
 
     def detect_content_confidence(self, buffer: BufferedIOBase) -> Optional[float]:
