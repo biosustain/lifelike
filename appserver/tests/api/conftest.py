@@ -28,7 +28,8 @@ from neo4japp.services.elastic import ElasticService
 #################
 # Service mocks
 ################
-from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider
+from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider, \
+    PDFTypeProvider
 
 
 @pytest.fixture(scope='function')
@@ -285,7 +286,7 @@ def test_user_with_pdf(
             filename='example3.pdf',
             content_id=file_content.id,
             user_id=test_user.id,
-            mime_type=MapTypeProvider.MIME_TYPE,
+            mime_type=PDFTypeProvider.MIME_TYPE,
             creation_date=datetime.now(),
             parent_id=fix_directory.id,
             fallback_organism_id=fallback.id
