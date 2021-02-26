@@ -55,10 +55,10 @@
   <button ngbDropdownItem (click)="openShareDialog(object)">
     Copy{{ nameEntity && object.isDirectory ? ' folder' : ''}} link...
   </button>
-  <button *ngIf="object.uploadUrl" ngbDropdownItem (click)="openUploadUrl(object)">
+  <button *ngIf="object.uploadUrl" ngbDropdownItem (click)="openLink(object.uploadUrl)">
     Open source URL...
   </button>
-  <button *ngIf="object.doi" ngbDropdownItem (click)="openDoi(object)">
+  <button *ngIf="object.doi" ngbDropdownItem (click)="openLink(object.doi)">
     Open DOI...
   </button>
   <ng-container *ngIf="object.isNavigable">
