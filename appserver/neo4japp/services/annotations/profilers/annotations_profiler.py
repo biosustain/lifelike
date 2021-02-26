@@ -3,29 +3,20 @@ import cProfile
 import io
 import pstats
 import os
-import attr
+import requests
+import json
 
 from datetime import datetime
 
-from neo4japp.constants import TIMEZONE
+from neo4japp.database import db
 from neo4japp.factory import create_app
-from neo4japp.models import FileContent
+from neo4japp.models import Files
 from neo4japp.services.annotations.constants import AnnotationMethod
-from neo4japp.services.annotations.data_transfer_objects import SpecifiedOrganismStrain
-from neo4japp.services.annotations.pipeline import create_annotations
+from neo4japp.services.annotations.pipeline import create_annotations_from_pdf
 
 
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
-
-
-@attr.s()
-class Document:
-    parsed_content = attr.ib()
-    raw_file = attr.ib()
-    custom_annotations = attr.ib()
-    excluded_annotations = attr.ib()
-    file_content_id = attr.ib()
 
 
 @contextlib.contextmanager
@@ -52,32 +43,37 @@ def cprofiled():
     # print(s.getvalue())
 
 
-def profile_annotations(pdf):
-    with cprofiled():
-        bioc = create_annotations(
-            AnnotationMethod.RULES.value,
-            '',
-            '',
-            Document(
-                parsed_content=None,
-                raw_file=pdf,
-                custom_annotations=[],
-                excluded_annotations=[],
-                file_content_id='1'
-            ),
-            'filename'
-        )
-
-
 def main():
     app = create_app('Functional Test Flask App', config='config.Testing')
     with app.app_context():
+        req = requests.post(
+            'http://localhost:5000/auth/login',
+            data=json.dumps({'email': 'admin@example.com', 'password': 'password'}),
+            headers={'Content-type': 'application/json'})
+
+        access_token = json.loads(req.text)['access_jwt']
+
         pdf = os.path.join(
             directory,
-            '../../../../tests/database/services/annotations/pdf_samples/Sepsis and Shock.pdf')  # noqa
+            '../../../../tests/database/services/annotations/pdf_samples/Protein Protein Interactions for Covid.pdf')  # noqa
 
+        hash_id = None
         with open(pdf, 'rb') as f:
-            profile_annotations(pdf=f.read())
+            upload_req = requests.post(
+                'http://localhost:5000/filesystem/objects',
+                headers={'Authorization': f'Bearer {access_token}'},
+                files={'contentValue': f},
+                data={
+                    'filename': 'Protein Protein Interactions for Covid.pdf',
+                    'parentHashId': 'lazhauxymcrahybaxcvkathnofyissffuidu'}
+            )
+
+            hash_id = json.loads(upload_req.text)['result']['hashId']
+
+        f = db.session.query(Files).filter(Files.hash_id == hash_id).one()
+        with cprofiled():
+            annotations = create_annotations_from_pdf(
+                AnnotationMethod.RULES.value, '', '', f, f.filename)
 
 
 if __name__ == '__main__':
