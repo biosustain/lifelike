@@ -9,16 +9,18 @@
         <tr>
             <th scope="col" sortable="goId" (sort)="onSort($event)">GOID</th>
             <th scope="col" sortable="goTerm" (sort)="onSort($event)">GO Term</th>
+            <th scope="col" sortable="geneNames" (sort)="onSort($event)">Associated genes</th>
             <th scope="col" sortable="p-value" (sort)="onSort($event)">p-value</th>
         </tr>
         </thead>
-        <tbody>
-        <tr *ngFor="let row of data$ | async">
+        <tbody [ngClass]="{'line-clamp':!service.searchTerm}">
+        <tr *ngFor="let row of data$ | async; let i = index" [tabindex]="i">
             <th scope="row">{{ "" + row.goId }}</th>
                   <td><ngb-highlight [result]="row.goTerm" [term]="service.searchTerm"></ngb-highlight></td>
-                  <td><ngb-highlight [result]="row['p-value']" [term]="service.searchTerm"></ngb-highlight></td>
-            <!--      <td><ngb-highlight [result]="country.area | number" [term]="service.searchTerm"></ngb-highlight></td>-->
-            <!--      <td><ngb-highlight [result]="country.population | number" [term]="service.searchTerm"></ngb-highlight></td>-->
+                  <td><ngb-highlight [result]="row['geneNames'].join(', ')"
+                                     [term]="service.searchTerm"></ngb-highlight></td>
+                  <td><ngb-highlight [result]="row['p-value']"
+                                                             [term]="service.searchTerm"></ngb-highlight></td>
         </tr>
         </tbody>
     </table>

@@ -10,6 +10,7 @@ import { NgbdSortableHeader, SortEvent } from './sortable.directive';
 @Component({
   selector: 'app-table-complete',
   templateUrl: './table-complete.html',
+  styleUrls: ['./table-complete.scss'],
   providers: [DataService, DecimalPipe]
 })
 export class NgbdTableComplete implements OnInit, OnChanges {
@@ -32,6 +33,7 @@ export class NgbdTableComplete implements OnInit, OnChanges {
     }
     this.service.inputData = this.data;
   }
+
   ngOnChanges() {
     if (this.itemsPerPage) {
       this.service.pageSize = this.itemsPerPage;
