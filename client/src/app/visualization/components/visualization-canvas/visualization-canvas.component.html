@@ -1,7 +1,9 @@
 <as-split unit="pixel" direction="horizontal" [gutterSize]="5">
   <as-split-area [order]="0">
     <div class="h-100 position-relative">
-      <app-legend [legend]="legend"></app-legend>
+      <div class="viz-canvas-legend-wrapper">
+        <app-legend [legend]="legend"></app-legend>
+      </div>
 
       <app-visualization-settings
         [legendLabels]="legendLabels"
