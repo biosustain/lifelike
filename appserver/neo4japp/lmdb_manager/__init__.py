@@ -1,2 +1,2 @@
-from .manager import GCPStorageProvider
+from .manager import AzureStorageProvider
 from .manager import LMDBManager

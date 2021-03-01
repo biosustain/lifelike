@@ -62,6 +62,7 @@ def connect_to_neo4j():
         )
     return g.neo4j
 
+
 def connect_to_redis():
     if 'redis' not in g:
         g.redis = Redis(
