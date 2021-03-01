@@ -27,7 +27,7 @@ export class WordCloudComponent implements OnDestroy {
   @Input() title = 'Entity Cloud';
   @Input() object: FilesystemObject;
   @Input() clickableWords = false;
-  @Output() wordOpen = new EventEmitter<WordCloudAnnotationFilterEntity>();
+  @Output() wordOpen = new EventEmitter<WordOpen>();
 
   loadTask: BackgroundTask<[], [NodeLegend, string]>;
   annotationsLoadedSub: Subscription;
@@ -309,7 +309,10 @@ export class WordCloudComponent implements OnDestroy {
       .enter()
       .append('text')
       .on('click', (item: WordCloudAnnotationFilterEntity) => {
-        this.wordOpen.emit(item);
+        this.wordOpen.emit({
+          entity: item,
+          keywordsShown: this.keywordsShown,
+        });
       })
       .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
       .style('fill', (d) => d.color)
@@ -385,7 +388,10 @@ export class WordCloudComponent implements OnDestroy {
       .attr('text-anchor', 'middle')
       .text((d) => d.text)
       .on('click', (item: WordCloudAnnotationFilterEntity) => {
-        this.wordOpen.emit(item);
+        this.wordOpen.emit({
+          entity: item,
+          keywordsShown: this.keywordsShown,
+        });
       })
       .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
       .style('font-size', (d) => d.size + 'px')
@@ -431,4 +437,9 @@ export class WordCloudComponent implements OnDestroy {
       .on('end', words => initial ? this.createInitialWordCloudElements(words) : this.updateWordCloudElements(words));
     layout.start();
   }
+}
+
+class WordOpen {
+  entity: WordCloudAnnotationFilterEntity;
+  keywordsShown: boolean;
 }
