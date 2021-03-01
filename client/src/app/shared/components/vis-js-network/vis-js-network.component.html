@@ -2,8 +2,11 @@
   <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
 </div>
 <ng-template #stable>
-  <div>
-    <app-legend [legend]="legend"></app-legend>
+  <div class="network-navigation-container">
+    <div class="d-flex">
+      <app-legend [legend]="legend"></app-legend>
+      <!-- TODO: Search goes here -->
+    </div>
   </div>
   <div class="network-utilities-container">
     <div class="mb-1">
