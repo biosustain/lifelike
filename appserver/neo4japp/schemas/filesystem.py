@@ -208,7 +208,7 @@ class FileSearchRequestSchema(CamelCaseSchema):
         'linked',
     ]))
     linked_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
-    mime_types = fields.List(fields.String(), required=True,
+    mime_types = fields.List(fields.String(),
                              validate=marshmallow.validate.Length(min=1))
     sort = SortField(columns={
         'filename': Files.filename,

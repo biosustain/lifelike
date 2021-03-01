@@ -5,7 +5,7 @@ import moment from 'moment';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
-  KnowledgeMap,
+  KnowledgeMap, Source,
   UniversalEntityData,
   UniversalGraph,
   UniversalGraphNode,
@@ -426,6 +426,25 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       privileges: this.privileges,
     };
 
+    const sources: Source[] = [{
+      domain: 'File Source',
+      url: this.getCommands().join('/'),
+    }];
+
+    if (this.doi) {
+      sources.push({
+        domain: 'DOI',
+        url: this.doi,
+      });
+    }
+
+    if (this.uploadUrl) {
+      sources.push({
+        domain: 'Upload URL',
+        url: this.uploadUrl,
+      });
+    }
+
     const node: Partial<Omit<UniversalGraphNode, 'data'>> & {data: Partial<UniversalEntityData>} = {
       display_name: this.name,
       label: this.type === 'map' ? 'map' : 'link',
@@ -435,10 +454,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
           type: 'PROJECT_OBJECT',
           id: this.id + '',
         }],
-        sources: [{
-          domain: 'File Source',
-          url: this.getCommands().join('/'),
-        }],
+        sources,
       },
     };
 
