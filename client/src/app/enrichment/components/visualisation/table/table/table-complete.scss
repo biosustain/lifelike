@@ -1,0 +1,40 @@
+@mixin clamp($max-lines) {
+  overflow: hidden;
+  @supports (display: -webkit-box) {
+    display: -webkit-box;
+    -webkit-line-clamp: $max-lines;
+    -webkit-box-orient: vertical;
+  }
+  @supports not (display: -webkit-box) {
+    position: relative;
+    max-height: calc(1.5em * $max-lines);
+    padding-right: 1rem; /* space for ellipsis */
+
+    &::before {
+      position: absolute;
+      content: "...";
+      inset-block-end: 0; /* "bottom" */
+      inset-inline-end: 0; /* "right" */
+    }
+    &::after {
+      content: "";
+      position: absolute;
+      inset-inline-end: 0; /* "right" */
+      width: 1rem;
+      height: 1rem;
+      background: white;
+    }
+  }
+}
+
+.line-clamp > tr {
+  & > td > * {
+    $max-lines: 3;
+    @include clamp($max-lines);
+  }
+
+  &:focus > td > *, &:focus-within > td > * {
+    transition: height 500ms;
+    @include clamp(100);
+  }
+}
