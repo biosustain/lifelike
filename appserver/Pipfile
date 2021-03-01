@@ -49,6 +49,7 @@ marshmallow-dataclass = "*"
 marshmallow-enum = "*"
 deepdiff = "*"
 timeflake = "*"
+azure-storage-file = "*"
 
 [requires]
 python_version = "3.8.2"

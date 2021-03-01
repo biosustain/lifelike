@@ -11,7 +11,7 @@ from sqlalchemy.sql.expression import text
 
 from neo4japp.database import db, get_account_service, get_elastic_service
 from neo4japp.factory import create_app
-from neo4japp.lmdb_manager import LMDBManager, GCPStorageProvider
+from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
 from neo4japp.models import (
     AppUser,
     OrganismGeneMatch,
@@ -266,10 +266,24 @@ def reannotate_all():
 @app.cli.command('load-lmdb')
 def load_lmdb():
     """ Downloads LMDB files from Cloud to Local for application """
-    manager = LMDBManager(GCPStorageProvider(), 'lmdb_database')
+    manager = LMDBManager(AzureStorageProvider(), 'lmdb')
     lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
     manager.download_all(lmdb_dir_path)
     manager.update_all_dates()
+
+
+@app.cli.command('upload-lmdb')
+def upload_lmdb():
+    """ Uploads LMDB files from local to Azure cloud storage.
+    To upload LMDB files,
+    1. Load the files into the proper directories under
+    ../services/annotations/lmdb/<categories>/<data.mdb|lock.mdb>
+    2. Update the 'lmdb_config.json' under the lmdb_manager directory
+    to the correct versions
+    """
+    manager = LMDBManager(AzureStorageProvider(), 'lmdb')
+    lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
+    manager.upload_all(lmdb_dir_path)
 
 
 @app.cli.command('kg-stats')

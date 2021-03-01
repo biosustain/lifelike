@@ -34,6 +34,9 @@ services:
         build: ./appserver
         ports:
             - "5000:5000"
+        env_file:
+            # File found in Azure File Store
+            - azure-secrets.env
         environment:
             # Log Services
             - FORMAT_AS_JSON=false
