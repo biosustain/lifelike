@@ -8,17 +8,6 @@
                 <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab"
                     [destroyOnHide]="false"
                     class="nav-tabs">
-                    <li ngbNavItem="graph">
-                        <a ngbNavLink>Graph</a>
-                        <ng-template ngbNavContent>
-                            <app-enrichment-visualisation-chart-viewer
-                                    [ngStyle]="{display:'block' }"
-                                    [data]="data"
-                                    [showMore]="showMore"
-                            >
-                            </app-enrichment-visualisation-chart-viewer>
-                        </ng-template>
-                    </li>
                     <li ngbNavItem="table">
                         <a ngbNavLink>Table</a>
                         <ng-template ngbNavContent>
@@ -28,6 +17,17 @@
                             >
 
                             </app-enrichment-visualisation-table-viewer>
+                        </ng-template>
+                    </li>
+                    <li ngbNavItem="graph">
+                        <a ngbNavLink>Graph</a>
+                        <ng-template ngbNavContent>
+                            <app-enrichment-visualisation-chart-viewer
+                                    [ngStyle]="{display:'block' }"
+                                    [data]="data"
+                                    [showMore]="showMore"
+                            >
+                            </app-enrichment-visualisation-chart-viewer>
                         </ng-template>
                     </li>
                 </ul>

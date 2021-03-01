@@ -2,16 +2,15 @@ from random import random
 
 import numpy as np
 import pandas as pd
+from scipy.stats.distributions import binom
 from scipy.stats.distributions import hypergeom
 
-import pandas as pd
-from scipy.stats.distributions import binom
 
 def wrap_with_random_p_value(g):
     return {
         "gene": g,
         "p-value": random()
-        }
+    }
 
 
 def fisher_p(k, M, n, N):
@@ -35,7 +34,7 @@ def main(query, ids, annotations):
     :param annotations: list of annotations for each id in "ids", e.g. GO terms, MeSH disease terms...
     :return: vector of unique annotation terms, vector of p-values
     """
-    df = pd.DataFrame({ "id": ids, "annotation": annotations }).drop_duplicates()
+    df = pd.DataFrame({"id": ids, "annotation": annotations}).drop_duplicates()
     query = pd.unique(query)
     df["query"] = np.in1d(df.id, query)
     M = df["id"].nunique()
@@ -51,30 +50,33 @@ def main(query, ids, annotations):
 def statistically_significat(r):
     return r < 0.05
 
+
 def fisher(geneNames, GOterms, *args, **kwargs):
     go = pd.DataFrame(GOterms)
-    goGenes = go["geneName"]
-    goId = go['goId']
-    # gene, p = main(geneNames, goGenes, goId)
+    # goGenes = go["geneName"]
+    # goId = go['goId']
+    # # gene, p = main(geneNames, goGenes, goId)
 
-
-    df = pd.DataFrame({ "id": goGenes, "annotation": goId }).drop_duplicates()
+    df = go.drop_duplicates(["geneName", "goId"])
     query = pd.unique(geneNames)
-    df["query"] = np.in1d(df.id, query).astype(float)
-    M = df["id"].nunique()
+    df["query"] = np.in1d(df["geneName"], query).astype(float)
+    M = df["geneName"].nunique()
     N = len(query)
 
-    df.drop(columns="id", inplace=True)
-    df = df.groupby("annotation").agg(lambda q: fisher_p(q.sum(), M, len(q), N))
+    df = df.groupby("goId").agg(
+            p_value=('query', lambda q: fisher_p(q.sum(), M, len(q), N)),
+            geneNames=('geneName', list),
+            goTerm=('goTerm', 'first'),
+            goLabel=('goLabel', 'first')
+    )
 
-    df = df[df['query'] < 1].sort_values(by='query')
-    df['query'] = df['query']
-    merged = df.merge(go.drop_duplicates(subset=['goId']), 'left', left_index=True, right_on="goId")
+    df = df[df['p_value'] < 1].sort_values(by='p_value')
 
-    merged['p-value'] = merged['query'].astype(float)
-    merged['gene'] = merged.apply(lambda m: f"{m['goTerm']} ({m['goId']})", axis=1)
+    df = df.reset_index().rename(columns={'p_value': 'p-value'})
 
-    return merged.to_json(orient='records')
+    df['gene'] = df.apply(lambda m: f"{m['goTerm']} ({m['goId']})", axis=1)
+
+    return df.to_json(orient='records')
 
     # r = list(map(lambda gp: { "gene": gp[0], "p-value": -np.log10(gp[1]) }, zip(gene, p)))
     # return r
@@ -105,8 +107,8 @@ def binom_main(query, counts, ids, annotations):
     M = len(pd.unique(ids))
     n = sum(counts)
 
-    df = pd.DataFrame({ "id": ids, "annotation": annotations }).drop_duplicates().set_index("id")
-    df = pd.DataFrame({ "id": query, "count": counts }).groupby("id").sum().join(df, how="right").reset_index()
+    df = pd.DataFrame({"id": ids, "annotation": annotations}).drop_duplicates().set_index("id")
+    df = pd.DataFrame({"id": query, "count": counts}).groupby("id").sum().join(df, how="right").reset_index()
     df = df.groupby("annotation").apply(lambda g: binom_p(g["count"].sum(), n, g["id"].nunique(), M))
 
     return list(df.index), list(df)
@@ -117,5 +119,5 @@ def binomial(geneNames, GOterms, *args, **kwargs):
     goGenes = go["geneName"]
     goId = go['goId']
     gene, p = binom_main(geneNames, list(map(lambda g: 1, geneNames)), goGenes, goId)
-    r = list(map(lambda gp: { "gene": gp[0], "p-value": -np.log10(gp[1]) }, zip(gene, p)))
+    r = list(map(lambda gp: {"gene": gp[0], "p-value": -np.log10(gp[1])}, zip(gene, p)))
     return r
