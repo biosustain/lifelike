@@ -50,7 +50,6 @@
           FLASK_APP: "{{ FLASK_APP }}"
           FLASK_APP_CONFIG: "{{ FLASK_APP_CONFIG }}"
           FLASK_ENV: "{{ FLASK_ENV }}"
-          PROJECT_ID: "{{ PROJECT_ID }}"
           SENTRY_KEY: "{{ SENTRY_KEY }}"
           REDIS_HOST: "{{ REDIS_HOST }}"
           REDIS_PORT: "{{ REDIS_PORT|quote }}"
