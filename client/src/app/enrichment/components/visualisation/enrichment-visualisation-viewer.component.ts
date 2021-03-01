@@ -75,8 +75,6 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
   legend: Map<string, string> = new Map<string, string>();
   filtersPanelOpened = false;
   clickableWords = false;
-  @ViewChild(WordCloudComponent, {static: false})
-  private wordCloudComponent: WordCloudComponent;
 
   g1;
   g2;

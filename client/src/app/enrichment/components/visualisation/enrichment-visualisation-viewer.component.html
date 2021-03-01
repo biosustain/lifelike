@@ -83,7 +83,7 @@
             <div *ngIf="!loadingData" class="module-body flex-fill overflow-auto space-cards" #moduleBody>
 
                 <app-enrichment-visualisation-group
-                        title="Biological Process"
+                        [title]="'Biological Process'"
                         [data]="g1"
                         [analysis]="chartAnalysis"
                         [geneNames]="geneNames"
@@ -92,25 +92,25 @@
 
                 </app-enrichment-visualisation-group>
 
-<!--                <app-enrichment-visualisation-group-->
-<!--                        title="MolecularFunction"-->
-<!--                        [data]="g2"-->
-<!--                        [analysis]="chartAnalysis"-->
-<!--                        [geneNames]="geneNames"-->
-<!--                        [organism]="organism"-->
-<!--                >-->
+                <app-enrichment-visualisation-group
+                        [title]="'MolecularFunction'"
+                        [data]="g2"
+                        [analysis]="chartAnalysis"
+                        [geneNames]="geneNames"
+                        [organism]="organism"
+                >
 
-<!--                </app-enrichment-visualisation-group>-->
+                </app-enrichment-visualisation-group>
 
-<!--                <app-enrichment-visualisation-group-->
-<!--                        title="Cellular Component"-->
-<!--                        [data]="g3"-->
-<!--                        [analysis]="chartAnalysis"-->
-<!--                        [geneNames]="geneNames"-->
-<!--                        [organism]="organism"-->
-<!--                >-->
+                <app-enrichment-visualisation-group
+                        [title]="'Cellular Component'"
+                        [data]="g3"
+                        [analysis]="chartAnalysis"
+                        [geneNames]="geneNames"
+                        [organism]="organism"
+                >
 
-<!--                </app-enrichment-visualisation-group>-->
+                </app-enrichment-visualisation-group>
 
 
                 <div class="card">
@@ -125,71 +125,6 @@
                         <!--            [data]="cloudData"-->
                     </app-enrichment-visualisation-cloud-viewer>
                 </div>
-
-
-                <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab"
-                    class="nav nav-tabs">
-                    <li ngbNavItem="BiologicalProcess">
-                        <a ngbNavLink>Biological Process (Gene Ontology)</a>
-                        <ng-template ngbNavContent>
-                            <div class="module-body">
-                                <div class="row align-items-center mb-0">
-                                    <div class="col-sm-6">Node Count:</div>
-                                    <div class="col-sm-6 text-right">
-                                        sardtgearyater
-                                    </div>
-                                </div>
-
-                                <div class="row align-items-center">
-                                    <div class="col-sm-6">Edge Count:</div>
-                                    <div class="col-sm-6 text-right">
-                                        werfweTW4E
-                                    </div>
-                                </div>
-                            </div>
-                        </ng-template>
-                    </li>
-                    <li ngbNavItem="MolecularFunction">
-                        <a ngbNavLink>Molecular Function (Gene Ontology)</a>
-                        <ng-template ngbNavContent>
-                            <div class="module-body">
-                                <div class="row align-items-center mb-0">
-                                    <div class="col-sm-6">Node Count:</div>
-                                    <div class="col-sm-6 text-right">
-                                        sardtgearyater
-                                    </div>
-                                </div>
-
-                                <div class="row align-items-center">
-                                    <div class="col-sm-6">Edge Count:</div>
-                                    <div class="col-sm-6 text-right">
-                                        werfweTW4E
-                                    </div>
-                                </div>
-                            </div>
-                        </ng-template>
-                    </li>
-                    <li ngbNavItem="CellularComponent">
-                        <a ngbNavLink>Cellular Component (Gene Ontology)</a>
-                        <ng-template ngbNavContent>
-                            <div class="module-body">
-                                <div class="row align-items-center mb-0">
-                                    <div class="col-sm-6">Node Count:</div>
-                                    <div class="col-sm-6 text-right">
-                                        sardtgearyater
-                                    </div>
-                                </div>
-
-                                <div class="row align-items-center">
-                                    <div class="col-sm-6">Edge Count:</div>
-                                    <div class="col-sm-6 text-right">
-                                        werfweTW4E
-                                    </div>
-                                </div>
-                            </div>
-                        </ng-template>
-                    </li>
-                </ul>
             </div>
         </div>
     </div>

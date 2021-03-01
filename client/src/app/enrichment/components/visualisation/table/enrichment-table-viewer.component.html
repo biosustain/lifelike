@@ -1,11 +1,6 @@
-<app-generic-table *ngIf="!loadingData else loadingPlaceholder" [header]="tableHeader" [entries]="tableEntries">
-</app-generic-table>
-<ng-template #loadingPlaceholder>
-<div style="text-align: center; padding: 1em"
-     *ngIf="!object || loadingData">
-          <span>
-            <i class="fa fa-spinner fa-spin" style="margin-right: 2px;"></i>
-            Currently Loading Data...
-          </span>
-</div>
-</ng-template>
+<app-table-complete
+        [data]="data"
+        [itemsPerPage]="showMore? 15 : 5"
+        [showControls]="showMore"
+>
+</app-table-complete>

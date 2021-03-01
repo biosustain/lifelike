@@ -1,5 +1,4 @@
-<div class="card" ngStyle="margin: 15px 0;">
-
+<div class="card" [ngStyle]="{margin: '15px 0'}">
     <div [ngStyle]="{padding: '0.5em 1.25rem 0 1.25rem'}" class="card-header d-flex flex-wrap align-items-center">
         {{title}}
 
@@ -9,95 +8,36 @@
                 <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab"
                     [destroyOnHide]="false"
                     class="nav-tabs">
-                    <li ngbNavItem="empty">
-                        <a ngbNavLink>Empty</a>
+                    <li ngbNavItem="graph">
+                        <a ngbNavLink>Graph</a>
                         <ng-template ngbNavContent>
-                            useful for tests
+                            <app-enrichment-visualisation-chart-viewer
+                                    [ngStyle]="{display:'block' }"
+                                    [data]="data"
+                                    [showMore]="showMore"
+                            >
+                            </app-enrichment-visualisation-chart-viewer>
                         </ng-template>
                     </li>
                     <li ngbNavItem="table">
                         <a ngbNavLink>Table</a>
                         <ng-template ngbNavContent>
-<!--                            <div class="card">-->
-<!--&lt;!&ndash;                                    <ng-container *ngIf="!object || loadingData; else objectLoadedHeader">&ndash;&gt;-->
-<!--&lt;!&ndash;                                        <div class="module-toolbar d-flex align-items-center ml-auto">&ndash;&gt;-->
-<!--&lt;!&ndash;                                            <div class="ml-auto d-flex">&ndash;&gt;-->
-<!--&lt;!&ndash;                                                <div class="btn-group mr-2">&ndash;&gt;-->
-<!--&lt;!&ndash;                                                    <button class="btn btn-secondary" disabled>&ndash;&gt;-->
-<!--&lt;!&ndash;                                                        Column Order&ndash;&gt;-->
-<!--&lt;!&ndash;                                                    </button>&ndash;&gt;-->
-<!--&lt;!&ndash;                                                </div>&ndash;&gt;-->
-<!--&lt;!&ndash;                                                <div class="btn-group">&ndash;&gt;-->
-<!--&lt;!&ndash;                                                    <button class="btn btn-secondary" disabled>&ndash;&gt;-->
-<!--&lt;!&ndash;                                                        Download CSV&ndash;&gt;-->
-<!--&lt;!&ndash;                                                    </button>&ndash;&gt;-->
-<!--&lt;!&ndash;                                                </div>&ndash;&gt;-->
-<!--&lt;!&ndash;                                            </div>&ndash;&gt;-->
-<!--&lt;!&ndash;                                        </div>&ndash;&gt;-->
-<!--&lt;!&ndash;                                    </ng-container>&ndash;&gt;-->
-<!--                                    <ng-template #objectLoadedHeader>-->
-<!--                                        <div class="module-toolbar d-flex align-items-center ml-auto">-->
-<!--                                            <div class="ml-auto d-flex">-->
-<!--                                                <div class="btn-group mr-2">-->
-<!--                                                    <button class="btn btn-secondary">-->
-<!--                                                        Column Order-->
-<!--                                                    </button>-->
-<!--                                                </div>-->
-<!--                                                <div class="btn-group">-->
-<!--                                                    <button class="btn btn-secondary">-->
-<!--                                                        Download CSV-->
-<!--                                                    </button>-->
-<!--                                                </div>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </ng-template>-->
+                            <app-enrichment-visualisation-table-viewer
+                                    [data]="data"
+                                    [showMore]="showMore"
+                            >
 
-<!--                                </div>-->
-<!--                                <div-->
-<!--                                        class="card-body" style="overflow-x: scroll;">-->
-<!--                                    <app-enrichment-visualisation-table-viewer-->
-<!--                                            [data]="data"-->
-<!--                                            [analysis]="chartAnalysis"-->
-<!--                                            [geneNames]="geneNames"-->
-<!--                                            [organism]="organism">-->
-
-<!--                                    </app-enrichment-visualisation-table-viewer>-->
-<!--                                    <ng-template #notAvailable>-->
-<!--                                        Table is only available in conjunction with organism.-->
-<!--                                    </ng-template>-->
-<!--                                </div>-->
-
-
-<!--                            </div>-->
-                        </ng-template>
-                    </li>
-                    <li ngbNavItem="graph">
-                        <a ngbNavLink>Graph</a>
-                        <ng-template ngbNavContent>
-<!--                            <div class="card">-->
-<!--                                <div class="card-header d-flex flex-wrap align-items-center">-->
-<!--                                    P-values-->
-<!--                                    <app-chart-controls class="module-toolbar d-flex align-items-center ml-auto"-->
-<!--                                                        (changed)="updateChartParams($event)">-->
-<!--                                    </app-chart-controls>-->
-<!--                                </div>-->
-<!--                                <app-enrichment-visualisation-chart-viewer-->
-<!--                                        class="card-body"-->
-<!--                                        style="display: block; width: 100%; height: 100%;"-->
-<!--                                            [data]="data"-->
-<!--                                        [analysis]="chartAnalysis"-->
-<!--                                        [geneNames]="geneNames"-->
-<!--                                        [organism]="organism"-->
-<!--                                >-->
-<!--                                </app-enrichment-visualisation-chart-viewer>-->
-<!--                            </div>-->
+                            </app-enrichment-visualisation-table-viewer>
                         </ng-template>
                     </li>
                 </ul>
             </div>
         </ng-container>
     </div>
-    <div class="card-body" style="overflow-x: scroll;" [ngbNavOutlet]="nav">
+    <div class="card-body" style="display:block;" [ngbNavOutlet]="nav">
+    </div>
+    <div class="card-footer" [ngStyle]="{textAlign: 'right', cursor: 'pointer'}" (click)="showMoreToggle()">
+        {{showMore ? "show less..." : "show more..."}}
     </div>
 
 
