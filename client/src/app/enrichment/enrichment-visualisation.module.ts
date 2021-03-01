@@ -21,6 +21,7 @@ import {
   EnrichmentVisualisationCloudViewerComponent
 } from './components/visualisation/enrichment-visualisation-cloud-viewer.component';
 import { EnrichmentVisualisationGroupComponent } from './components/visualisation/enrichment-visualisation-group.component';
+import { NgbdTableCompleteModule } from './components/visualisation/table/table/table-complete.module';
 
 @NgModule({
   declarations: [
@@ -36,7 +37,8 @@ import { EnrichmentVisualisationGroupComponent } from './components/visualisatio
     SharedModule,
     FileBrowserModule,
     ChartModule,
-    WordCloudModule
+    WordCloudModule,
+    NgbdTableCompleteModule
   ],
   entryComponents: [
     EnrichmentVisualisationEditDialogComponent,

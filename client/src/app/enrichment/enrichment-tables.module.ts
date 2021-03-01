@@ -14,11 +14,11 @@ import { EnrichmentTablePreviewComponent } from './components/table/dialog/enric
     EnrichmentTableViewerComponent,
     EnrichmentTableEditDialogComponent,
     EnrichmentTableOrderDialogComponent,
-    EnrichmentTablePreviewComponent,
+    EnrichmentTablePreviewComponent
   ],
   imports: [
     SharedModule,
-    FileBrowserModule,
+    FileBrowserModule
   ],
   entryComponents: [
     EnrichmentTableEditDialogComponent,
