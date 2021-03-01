@@ -1,10 +1,5 @@
-import {
-  Component,
-  Input,
-  Output, EventEmitter
-} from '@angular/core';
-import {ChartOptions, ChartType} from 'chart.js';
-import { SingleOrMultiDataSet } from 'ng2-charts';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { ChartOptions, ChartType } from 'chart.js';
 
 @Component({
   selector: 'app-chart',
@@ -78,6 +73,10 @@ export class ChartComponent {
 
   get data() {
     return this.chartData;
+  }
+
+  ngOnInit() {
+    console.log(this);
   }
 
   @Output() chartClick: EventEmitter<any> = new EventEmitter();

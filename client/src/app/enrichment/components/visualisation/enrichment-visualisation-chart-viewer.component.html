@@ -1,15 +1,2 @@
-<app-chart *ngIf="!loadingData else loadingPlaceholder" [data]="data"
-           class="card-body"
-           style="display: block; width: 100%; height: 100%;"
-           (chartClick)="chartClick($event)"
-           (chartHover)="chartClick($event)"
-></app-chart>
-<ng-template #loadingPlaceholder>
-<div style="text-align: center; padding: 1em"
-     *ngIf="!object || loadingData">
-          <span>
-            <i class="fa fa-spinner fa-spin" style="margin-right: 2px;"></i>
-            Currently Loading Data...
-          </span>
-</div>
-</ng-template>
+<app-chart [data]="showMore ?  data.slice(0, 50) : data.slice(0, 25)"
+[ngStyle]="{display: 'block'}"></app-chart>
