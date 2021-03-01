@@ -18,6 +18,13 @@
       <div class="mt-2">
         <p>Transaction Id: {{userError.transactionId}}</p>
       </div>
+
+      <div *ngIf="userError.stacktrace" class="detail">
+        <div class="mt-2">
+          <div class="detail-title">Technical Details</div>
+          <pre>{{userError.stacktrace}}</pre>
+        </div>
+      </div>
     </ng-container>
     <div class="mt-4">
       <ng-content></ng-content>
