@@ -19,6 +19,12 @@
         - backend
         - frontend
 
+    - name: Log into Docker Registry
+      docker_login:
+        registry_url: lifelike.azurecr.io
+        username: {{ AZURE_CR_USERNAME }}
+        password: {{ AZURE_CR_PASSWORD }}
+
     - name: Create/Update LMDB Database
       file:
         path: "{{ deploy_dir }}/lmdb"
