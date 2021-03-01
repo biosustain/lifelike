@@ -33,7 +33,7 @@
         state: started
         pull: yes
         restart: yes
-        image: "{{ container_registry }}/kg-appserver:{{ docker_img_hash }}"
+        image: "lifelike.azurecr.io/kg-appserver:{{ docker_img_hash }}"
         ports:
           - "5000:5000"
         env:
@@ -80,7 +80,7 @@
         state: started
         pull: yes
         restart: yes
-        image: "{{ container_registry }}/kg-webserver:{{ docker_img_hash }}"
+        image: "lifelike.azurecr.io/kg-webserver:{{ docker_img_hash }}"
         memory: 2G
         comparisons:
           image: strict
@@ -101,7 +101,7 @@
         state: started
         pull: yes
         restart: yes
-        image: "{{ container_registry }}/kg-pdfparser:latest"
+        image: "lifelike.azurecr.io/kg-pdfparser:latest"
         memory: 0.5G
         ports:
           - "7600:7600"
