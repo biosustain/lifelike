@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { AppUser} from 'app/interfaces';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from '../../shared/services/message-dialog.service';
 import * as UserActions from '../store/actions';
 import { Store } from '@ngrx/store';
 import { State } from '../../***ARANGO_USERNAME***-store';
@@ -67,7 +67,7 @@ export class UserSecurityComponent {
         title: 'Invalid Input',
         message: 'There are some errors with your input.',
         type: MessageType.Error,
-      });
+      } as MessageArguments);
     }
   }
 }

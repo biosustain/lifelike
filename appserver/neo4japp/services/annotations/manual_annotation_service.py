@@ -93,7 +93,7 @@ class ManualAnnotationService:
             matches = annotator.get_matching_manual_annotations(
                 keyword=term,
                 is_case_insensitive=is_case_insensitive,
-                tokens_list=list(recognition.create_tokens(parsed))
+                tokens_list=parsed
             )
 
             def add_annotation(new_annotation, primary_name=None):
@@ -111,8 +111,11 @@ class ManualAnnotationService:
             ]
 
             if not inclusions:
-                raise AnnotationError(f'There was a problem annotating "{term}", please select '
-                                      'option to annotate only one occurrence of this term.')
+                raise AnnotationError(
+                    message=f'There was a problem annotating "{term}". ' +
+                            'Please make sure the term is correct, ' +
+                            'including correct spacing and no extra characters.',
+                    code=400)
         else:
             if not annotation_exists(annotation_to_add):
                 inclusions = [annotation_to_add]
@@ -227,7 +230,7 @@ class ManualAnnotationService:
         ]
 
         if initial_length == len(file.excluded_annotations):
-            raise RecordNotFoundException('Annotation not found')
+            raise RecordNotFoundException('File does not have any annotations.')
 
         db.session.commit()
 
@@ -239,7 +242,7 @@ class ManualAnnotationService:
             file_id=file_id,
         ).one_or_none()
         if file is None:
-            raise RecordNotFoundException('File does not exist')
+            raise RecordNotFoundException('File does not exist.')
 
         return self._get_file_annotations(file)
 

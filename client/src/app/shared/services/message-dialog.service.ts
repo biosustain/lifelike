@@ -2,12 +2,9 @@ import { Injectable } from '@angular/core';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { MessageDialogComponent } from '../components/dialog/message-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ErrorLog } from '../schemas/common';
 
-export interface MessageArguments {
-  title: string;
-  message: string;
-  detail?: string;
-  transactionId?: string;
+export interface MessageArguments extends ErrorLog {
   type: MessageType;
 }
 
@@ -22,11 +19,12 @@ export class MessageDialog {
 
   display(args: MessageArguments) {
     const modalRef = this.modalService.open(MessageDialogComponent, {
-      size: args.detail ? 'lg' : 'md',
+      size: args.stacktrace ? 'lg' : 'md',
     });
     modalRef.componentInstance.title = args.title;
     modalRef.componentInstance.message = args.message;
-    modalRef.componentInstance.detail = args.detail;
+    modalRef.componentInstance.additionalMsgs = args.additionalMsgs;
+    modalRef.componentInstance.stacktrace = args.stacktrace;
     modalRef.componentInstance.type = args.type;
     modalRef.componentInstance.transactionId = args.transactionId;
   }

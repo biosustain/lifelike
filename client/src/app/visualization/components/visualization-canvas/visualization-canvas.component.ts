@@ -51,7 +51,7 @@ import {
 } from 'app/interfaces/visualization.interface';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { uuidv4 } from 'app/shared/utils';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
@@ -86,7 +86,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                             title: 'Auto-Cluster Error!',
                             message: 'Something strange occurred: attempted to cluster a node with zero relationships!',
                             type: MessageType.Error
-                        }
+                        } as MessageArguments
                     );
                     return;
                 }
@@ -141,7 +141,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                     title: 'Clustering Error',
                     message: error,
                     type: MessageType.Error
-                }
+                } as MessageArguments
             );
             this.clusteringSubscription.unsubscribe();
             this.openClusteringRequests = 0;
@@ -975,7 +975,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                     message: `An error occurred while trying to cluster node with ID ${node} on relationship ` +
                     `${relationship} in direction "${direction}". `,
                     type: MessageType.Error
-                }
+                } as MessageArguments
             );
             return;
         }
@@ -998,7 +998,7 @@ export class VisualizationCanvasComponent implements OnInit, AfterViewInit {
                     title: 'Clustering Error',
                     message: error,
                     type: MessageType.Error
-                }
+                } as MessageArguments
             );
             this.clusteringSubscription.unsubscribe();
             this.openClusteringRequests = 0;

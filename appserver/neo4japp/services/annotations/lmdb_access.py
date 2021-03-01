@@ -2,7 +2,7 @@ import lmdb
 
 from os import path, environ
 
-from neo4japp.exceptions import AnnotationError, LMDBError
+from neo4japp.exceptions import LMDBError
 from neo4japp.services.annotations.constants import (
     ANATOMY_MESH_LMDB,
     CHEMICALS_CHEBI_LMDB,

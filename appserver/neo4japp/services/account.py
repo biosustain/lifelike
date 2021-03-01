@@ -23,7 +23,7 @@ class AccountService(RDBMSBaseDao):
         commit_now=True
     ) -> AppUser:
         if self.exists(AppUser.query_by_email(email)):
-            raise DuplicateRecord(f'E-mail {email} already taken')
+            raise DuplicateRecord(f'E-mail {email} already taken.')
         elif self.exists(AppUser.query_by_username(username)):
             raise DuplicateRecord(f'Username {username} already taken.')
 
@@ -56,10 +56,10 @@ class AccountService(RDBMSBaseDao):
         if user and admin:
             if 'admin' not in [r.name for r in admin.roles]:
                 raise NotAuthorizedException(
-                    'You do not have enough privileges to delete a user')
+                    'You do not have enough privileges to delete a user.')
             elif user.id == admin.id:
                 raise NotAuthorizedException(
-                    'You cannot delete your own account')
+                    'You cannot delete your own account.')
         self.session.delete(user)
         self.commit_or_flush(commit_now)
 
@@ -99,6 +99,6 @@ class AccountService(RDBMSBaseDao):
             if user.check_password(changes.password):
                 user.set_password(changes.new_password)
             else:
-                raise NotAuthorizedException('Old password is invalid')
+                raise NotAuthorizedException('Old password is invalid.')
         self.commit_or_flush(commit_now)
         return user

@@ -1,12 +1,14 @@
 import jwt
 import sentry_sdk
+
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+
 from datetime import datetime, timedelta, timezone
 from flask import current_app, request, Blueprint, g, jsonify
 from flask_httpauth import HTTPTokenAuth
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
 from neo4japp.exceptions import (
-    InvalidCredentialsException,
     JWTTokenException,
     JWTAuthTokenException,
     RecordNotFoundException,
@@ -15,7 +17,7 @@ from neo4japp.exceptions import (
 from neo4japp.schemas.account import UserSchemaWithId
 from neo4japp.schemas.auth import JWTTokenResponse
 from neo4japp.models.auth import AppUser
-from neo4japp.utils.logger import UserEventLog
+from neo4japp.utils.logger import EventLog, UserEventLog
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -89,10 +91,22 @@ class TokenService:
             jwt_resp: JWTResp = {
                 'sub': payload['sub'], 'iat': payload['iat'], 'exp': payload['exp'],
                 'type': payload['type']}
-        except jwt.exceptions.InvalidTokenError:  # type: ignore
-            raise JWTTokenException('auth token is invalid')
-        except jwt.exceptions.ExpiredSignatureError:  # type: ignore
-            raise JWTTokenException('auth token is expired')
+        # default to generic error message
+        # NOTE: is this better than avoiding to
+        # display an error message about
+        # authorization header (for security purposes)?
+        except InvalidTokenError:
+            current_app.logger.error(
+                'Could not decode INVALID authentication token.',
+                extra=EventLog(event_type='token authorization').to_dict()
+            )
+            raise JWTTokenException()
+        except ExpiredSignatureError:
+            current_app.logger.error(
+                'Could not decode EXPIRED authentication token.',
+                extra=EventLog(event_type='token authorization').to_dict()
+            )
+            raise JWTTokenException()
         else:
             return jwt_resp
 
@@ -105,7 +119,15 @@ def verify_token(token):
     if decoded['type'] == 'access':
         token = request.headers.get('Authorization')
         if token is None:
-            raise JWTAuthTokenException('No authorization header found.')
+            current_app.logger.error(
+                f'No authorization header found <{request.headers}>.',
+                extra=EventLog(event_type='token authorization').to_dict()
+            )
+            # default to generic error message
+            # NOTE: is this better than avoiding to
+            # display an error message about
+            # authorization header (for security purposes)?
+            raise JWTAuthTokenException()
         else:
             token = token.split(' ')[-1].strip()
             try:
@@ -118,7 +140,7 @@ def verify_token(token):
                     scope.set_tag('user_email', user.email)
                 return True
     else:
-        raise NotAuthorizedException('no access found')
+        raise NotAuthorizedException('No access found.')
 
 
 @bp.route('/refresh', methods=['POST'])
@@ -130,7 +152,8 @@ def refresh():
 
     decoded = token_service.decode_token(token)
     if decoded['type'] != 'refresh':
-        raise JWTTokenException('wrong token type submitted')
+        raise JWTTokenException(
+            'Your authentication session expired, but there was an error attempting to renew it.')  # noqa
 
     # Create access & refresh token pair
     token_subj = decoded['sub']
@@ -189,5 +212,4 @@ def login():
                 }),
             }))
         else:
-            # Complain about invalid credentials
-            raise InvalidCredentialsException('Invalid credentials')
+            raise RecordNotFoundException('Credentials not found or invalid.')
