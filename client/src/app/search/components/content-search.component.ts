@@ -348,4 +348,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       // Advanced search dialog was dismissed or rejected
       .catch(() => {});
   }
+
+  itemDragStart(event: DragEvent, object: FilesystemObject) {
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    object.addDataTransferData(dataTransfer);
+  }
 }

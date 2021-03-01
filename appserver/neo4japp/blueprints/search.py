@@ -162,9 +162,8 @@ def get_projects_filter(user_id: int, projects: List[str]):
 
         # We can further extend this behavior to directories. A directory can be uniquely
         # identified by its path, with the owner's username as the root.
-        t_project = aliased(Projects)
         query = query.filter(
-            t_project.name.in_(projects)
+            Projects.name.in_(projects)
         )
         accessible_and_filtered_project_ids = [project_id for project_id, in query]
         return {
