@@ -89,6 +89,8 @@
               </button>
             </div>
             <app-word-cloud-annotation-filter
+              [clickableWords]="true"
+              (wordOpen)="this.wordOpen.emit({entity: $event, keywordsShown: keywordsShown})"
               [sortingAlgorithm]="sorting"
               [annotationData]="annotationData"
               (wordVisibilityOutput)="updateWordVisibilityMap($event)"
