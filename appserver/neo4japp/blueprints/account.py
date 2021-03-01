@@ -11,7 +11,7 @@ from neo4japp.blueprints.permissions import requires_role
 from neo4japp.data_transfer_objects import UserUpdateRequest
 from neo4japp.database import get_account_service, db, \
     get_authorization_service
-from neo4japp.exceptions import NotAuthorizedException
+from neo4japp.exceptions import RecordNotFoundException
 from neo4japp.models import AppUser
 from neo4japp.schemas.account import (
     UserListSchema,
@@ -96,7 +96,7 @@ def update_user(req: UserUpdateRequest):
         appuser = AppUser.query.filter_by(username=req.username).one()
         updated_user = account_dao.update_user(appuser, req)
     except NoResultFound:
-        raise NotAuthorizedException('user does not exist')
+        raise RecordNotFoundException('User does not exist.')
     return SuccessResponse(result=updated_user.to_dict(), status_code=200)
 
 

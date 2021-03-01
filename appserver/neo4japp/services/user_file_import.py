@@ -823,7 +823,7 @@ class UserFileImportService(HybridDBDao):
             )
         except Exception:
             raise KgImportException(
-                'An unexpected error occurred while trying to import your \n' +
+                'An unexpected error occurred while trying to import your ' +
                 'relationships into the knowledge graph. Please try again later.'
             )
 
