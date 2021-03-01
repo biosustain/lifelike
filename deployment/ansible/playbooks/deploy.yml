@@ -134,9 +134,17 @@
       tags:
         - deploy
 
+    - name: Seed Elasticsearch
+      docker_container:
+        name: appserver
+        state: started
+        command: flask seed-elastic
+      tags:
+        - deploy
+
     - name: Seed Elasticsearch with Global Annotations
       include_role:
-        name: globala-nnotation
+        name: global-annotation
         apply:
           tags:
             - always
