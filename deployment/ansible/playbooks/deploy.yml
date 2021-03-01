@@ -22,8 +22,8 @@
     - name: Log into Docker Registry
       docker_login:
         registry_url: ***ARANGO_DB_NAME***.azurecr.io
-        username: {{ AZURE_CR_USERNAME }}
-        password: {{ AZURE_CR_PASSWORD }}
+        username: "{{ AZURE_CR_USERNAME }}"
+        password: "{{ AZURE_CR_PASSWORD }}"
 
     - name: Create/Update LMDB Database
       file:
