@@ -55,9 +55,12 @@ class ResultMappingSchema(CamelCaseSchema):
 class ErrorResponseSchema(CamelCaseSchema):
     """All errors are emitted with this schema."""
     message = fields.String()
-    detail = fields.String()
-    code = fields.String()
-    api_http_error = fields.String()
+    additional_msgs = fields.List(fields.String())
+    stacktrace = fields.String()
+    code = fields.Integer()
     version = fields.String()
     transaction_id = fields.String()
-    fields_ = fields.Dict(fields.String(), fields.List(fields.String()), attribute="fields")
+    fields_ = fields.Dict(
+        keys=fields.String(),
+        values=fields.Raw(),  # raw means can be anything
+        attribute='fields', allow_none=True)

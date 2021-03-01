@@ -76,13 +76,8 @@ def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
     # the validation in the schema, but in the interest of time favoring this approach for now.
     if not (0 <= req.limit and req.limit <= 1000):
         raise InvalidArgumentsException(
-            message='Illegal Argument',
-            fields={
-                'limit': [
-                    f'Query limit should be between 0 and 1000 rows. Provided limit was ' +
-                    f'{req.limit}.'
-                ]
-            }
+            message='Query limit is out of bounds.',
+            fields={'min': 0, 'max': 1000}
         )
 
     edge_snippets_result = visualizer.get_snippets_for_edge(
@@ -103,13 +98,8 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
     # the validation in the schema, but in the interest of time favoring this approach for now.
     if not (0 <= req.limit and req.limit <= 1000):
         raise InvalidArgumentsException(
-            message='Illegal Argument',
-            fields={
-                'limit': [
-                    f'Query limit should be between 0 and 1000 rows. Provided limit was ' +
-                    f'{req.limit}.'
-                ]
-            }
+            message='Query limit is out of bounds.',
+            fields={'min': 0, 'max': 1000}
         )
 
     cluster_snippets_result = visualizer.get_snippets_for_cluster(

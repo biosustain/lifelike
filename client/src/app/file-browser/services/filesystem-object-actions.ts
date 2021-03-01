@@ -11,7 +11,7 @@ import { finalize, map, mergeMap, take } from 'rxjs/operators';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { FilesystemObject } from '../models/filesystem-object';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from '../../shared/services/message-dialog.service';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { ObjectSelectionDialogComponent } from '../components/dialog/object-selection-dialog.component';
 import { FilesystemService } from './filesystem.service';
@@ -101,7 +101,7 @@ export class FilesystemObjectActions {
             title: 'No Export Formats',
             message: `No export formats are supported for ${getObjectLabel(target)}.`,
             type: MessageType.Warning,
-          });
+          } as MessageArguments);
           return of(false);
         }
       }),

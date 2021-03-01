@@ -222,21 +222,24 @@ class FilesystemBaseView(MethodView):
             for permission in require_permissions:
                 if not getattr(file.calculated_privileges[user.id], permission):
                     # Do not reveal the filename with the error!
+                    # TODO: probably refactor these readable, commentable to
+                    # actual string values...
                     if not file.calculated_privileges[user.id].readable:
                         raise AccessRequestRequiredError(
-                            f"You do not have permission to access this file or folder.",
-                            file_hash_id=file.hash_id)
+                            curr_access='no',
+                            req_access='readable',
+                            hash_id=file.hash_id)
                     else:
                         if permission == 'commentable':
                             raise AccessRequestRequiredError(
-                                f"You can open '{file.filename}' but you cannot make "
-                                f"comments.",
-                                file_hash_id=file.hash_id)
+                                curr_access='commentable',
+                                req_access='writable',
+                                hash_id=file.hash_id)
                         else:
                             raise AccessRequestRequiredError(
-                                f"You can open '{file.filename}' but you cannot make "
-                                f"changes to it.",
-                                file_hash_id=file.hash_id)
+                                curr_access='readable',
+                                req_access='writable',
+                                hash_id=file.hash_id)
 
             if not permit_recycled and (file.recycled or file.parent_recycled):
                 raise ValidationError(
@@ -995,7 +998,7 @@ class FileBackupContentView(FilesystemBaseView):
             .first()
 
         if backup is None:
-            raise RecordNotFoundException('No backup stored for this file')
+            raise RecordNotFoundException('No backup stored for this file.')
 
         content = backup.raw_value
         etag = hashlib.sha256(content).hexdigest()

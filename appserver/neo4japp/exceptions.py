@@ -1,21 +1,57 @@
-from typing import Dict, List, Optional
-
-
-class BaseException(Exception):
-    def __init__(self, name, message, *args, code='error', error_return_props=None):
+class ServerException(Exception):
+    def __init__(self, name=None, message=None, additional_msgs=None, code=500, *args):
         """
         Create a new exception.
         :param name: the name of the error, which sometimes used on the client
         :param message: a message that can be displayed to the user
+        :param additional_msgs: a list of messages that contain more details for the user
+        :param code: the error code
         :param args: extra args
-        :param code: an error code
-        :param error_return_props: extra data that is returned to the client
         """
+        if not name:
+            name = 'Internal Server Error'
+
+        if not message:
+            message = 'Looks like something went wrong!'
+
+        if not additional_msgs:
+            additional_msgs = [
+                'We track these errors, but if the problem persists, ' +
+                'feel free to contact us with the transaction id.']
+        else:
+            additional_msgs += [
+                'We track these errors, but if the problem persists, ' +
+                'feel free to contact us with the transaction id.']
+
         self.name = name
         self.message = message
+        self.additional_msgs = additional_msgs
         self.code = code
-        self.error_return_props = error_return_props if error_return_props is not None else {}
         super().__init__(*args)
+
+    @property
+    def stacktrace(self):
+        return self._stacktrace
+
+    @stacktrace.setter
+    def stacktrace(self, stacktrace):
+        self._stacktrace = stacktrace
+
+    @property
+    def version(self):
+        return self._version
+
+    @version.setter
+    def version(self, version):
+        self._version = version
+
+    @property
+    def transaction_id(self):
+        return self._transaction_id
+
+    @transaction_id.setter
+    def transaction_id(self, transaction_id):
+        self._transaction_id = transaction_id
 
     def __str__(self):
         return f'<Exception> {self.name}:{self.message}'
@@ -27,174 +63,137 @@ class BaseException(Exception):
         return retval
 
 
-class AnnotationError(BaseException):
+class AnnotationError(ServerException):
     """An error occured during the annotation process"""
 
-    def __init__(self, message, additional_msgs=[]) -> None:
-        super().__init__('Annotation Error', message, additional_msgs)
+    def __init__(self, message=None, additional_msgs=[], code=500) -> None:
+        super().__init__('Annotation Error', message, additional_msgs, code)
 
 
-class LMDBError(BaseException):
+class LMDBError(ServerException):
     """An error occured during the LMDB process"""
 
-    def __init__(self, message, additional_msgs=[]) -> None:
-        super().__init__('LMDB Error', message, additional_msgs)
+    def __init__(self, message=None, additional_msgs=[], code=500) -> None:
+        super().__init__('LMDB Error', message, additional_msgs, code)
 
 
-class FileUploadError(BaseException):
+class FileUploadError(ServerException):
     """An error occured during the file upload process"""
 
-    def __init__(self, message, additional_msgs=[]) -> None:
-        super().__init__('File Upload Error', message, additional_msgs)
+    def __init__(self, message=None, additional_msgs=[], code=500) -> None:
+        super().__init__('File Upload Error', message, additional_msgs, code)
 
 
-class DatabaseError(BaseException):
+class DatabaseError(ServerException):
     """An error occured in database operation"""
 
-    def __init__(self, message, additional_msgs=[]) -> None:
-        super().__init__('Database Error', message, additional_msgs)
+    def __init__(self, message=None, additional_msgs=[], code=500) -> None:
+        super().__init__('Database Error', message, additional_msgs, code)
 
 
-class DirectoryError(BaseException):
+class DirectoryError(ServerException):
     """An error occured in directory operation"""
 
-    def __init__(self, message, additional_msgs=[]) -> None:
-        super().__init__('Directory Error', message, additional_msgs)
+    def __init__(self, message=None, additional_msgs=[], code=500) -> None:
+        super().__init__('Directory Error', message, additional_msgs, code)
 
 
-class DuplicateRecord(BaseException):
-    def __init__(self, message, additional_msgs=[]):
-        super().__init__('Duplicate record', message, additional_msgs)
+class DuplicateRecord(ServerException):
+    def __init__(self, message=None, additional_msgs=[], code=500):
+        super().__init__('Duplicate Error', message, additional_msgs, code)
 
 
-class InvalidArgumentsException(BaseException):
+class InvalidArgumentsException(ServerException):
     """A generic error occurred with invalid API arguments."""
-
-    fields: Optional[Dict[str, List[str]]]
-
-    def __init__(self, message: str,
-                 additional_msgs: Optional[List[str]] = None,
-                 fields: Optional[Dict[str, List[str]]] = None):
-        """
-        Construct a new instance.
-
-        :param message: The machine-readable message
-        :param additional_msgs: Additional messages
-        :param fields: A dictionary of fields and their errors
-        """
-        super().__init__('Argument Error', message, additional_msgs or [])
-        self.fields = fields or {}
-
-    def to_dict(self):
-        retval = super().to_dict()
-        retval['fields'] = self.fields
-        return retval
+    def __init__(self, message=None, additional_msgs=[], fields=None, code=400):
+        super().__init__('Argument Error', message, additional_msgs, code)
+        self.fields = fields
 
 
-class InvalidFileNameException(BaseException):
+class InvalidFileNameException(ServerException):
     """Signals invalid filename"""
 
-    def __init__(self, message, additional_msgs=[]):
-        super().__init__('File has incorrect filename', message, additional_msgs)
+    def __init__(self, message=None, additional_msgs=[], code=500):
+        super().__init__('File Name Error', message, additional_msgs, code)
 
 
-class InvalidDirectoryNameException(BaseException):
+class InvalidDirectoryNameException(ServerException):
     """Signals invalid directory name"""
 
-    def __init__(self, message, additional_msgs=[]):
-        super().__init__('Directory has incorrect directory name', message, additional_msgs)
+    def __init__(self, message=None, additional_msgs=[], code=500):
+        super().__init__('Directory Name Error', message, additional_msgs, code)
 
 
-class InvalidCredentialsException(BaseException):
-    """Signals invalid credentials used"""
-
-    def __init__(self, message, additional_msgs=[]):
-        super().__init__('Invalid credentials', message, additional_msgs)
-
-
-class KgImportException(BaseException):
+class KgImportException(ServerException):
     """Signals something went wrong during import into the knowledge graph"""
 
-    def __init__(self, message, additional_msgs=[]):
-        super().__init__('Knowledge graph import error', message, additional_msgs)
+    def __init__(self, message=None, additional_msgs=[], code=500):
+        super().__init__('Knowledge Graph Import Error', message, additional_msgs, code)
 
 
-class NotAuthorizedException(BaseException):
+class NotAuthorizedException(ServerException):
     """Signals that the client does not sufficient privilege"""
 
-    def __init__(self, message, additional_msgs=[]):
-        super().__init__('Unauthorized Action', message, additional_msgs)
+    def __init__(self, message=None, additional_msgs=[], code=400):
+        super().__init__('Authorization Error', message, additional_msgs, code)
 
 
-class RecordNotFoundException(BaseException):
+class RecordNotFoundException(ServerException):
     """Signals that no record is found in the database"""
 
-    def __init__(self, message, additional_msgs=[]):
-        super().__init__('Record not found', message)
+    def __init__(self, message=None, additional_msgs=[], code=404):
+        super().__init__('No Data Error', message, additional_msgs, code)
 
 
-class JWTTokenException(BaseException):
+class JWTTokenException(ServerException):
     """Signals JWT token issue"""
 
-    def __init__(self, message, additional_msgs=[]):
-        super().__init__('JWT', message)
+    def __init__(self, message=None, additional_msgs=[], code=500):
+        super().__init__('JWT Token Error', message, additional_msgs, code)
 
 
 class JWTAuthTokenException(JWTTokenException):
     """Signals the JWT auth token has an issue"""
 
-    def __init__(self, message):
-        super().__init__(message)
+    def __init__(self, message=None, additional_msgs=[], code=401):
+        super().__init__('JWT Token Error', message, additional_msgs, code)
 
 
-class FormatterException(BaseException):
+class FormatterException(ServerException):
     """Signals that a CamelDictMixin object was not formatted to/from
     dict correctly."""
 
-    def __init__(self, message):
-        super().__init__('Formatter Error', message)
+    def __init__(self, message=None, additional_msgs=[], code=401):
+        super().__init__('Serializing Error', message, additional_msgs, code)
 
 
-class DataNotAvailableException(BaseException):
-    """Signals that the requested data is not available in a storage."""
+# TODO: finish this
+# class FilesystemAccessRequestRequired(ServerException):
+#     """
+#     Raised when access needs to be requested for a file or folder. The end goal is to
+#     provide enough data in this error to the client that we can pop up a
+#     dialog to allow the user to request permission. As of writing, this error has not been
+#     fleshed out and will probably need rethinking.
 
-    def __init__(self, message):
-        super().__init__('Data Not Available Error', message)
+#     On the client, this error just shows a generic permission error.
 
+#     We may want to merge this exception with AccessRequestRequiredError.
+#     """
 
-class NameUnavailableError(BaseException):
-    """Raised when a name has been taken."""
-
-    def __init__(self, message):
-        super().__init__('Name Unavailable Error', message)
-
-
-class FilesystemAccessRequestRequired(BaseException):
-    """
-    Raised when access needs to be requested for a file or folder. The end goal is to
-    provide enough data in this error to the client that we can pop up a
-    dialog to allow the user to request permission. As of writing, this error has not been
-    fleshed out and will probably need rethinking.
-
-    On the client, this error just shows a generic permission error.
-
-    We may want to merge this exception with AccessRequestRequiredError.
-    """
-
-    def __init__(self, message, file_hash_id):
-        super().__init__('Access Request Required Error',
-                         message,
-                         code='access_request_required',
-                         error_return_props={
-                             'request': {
-                                 'file': {
-                                     'hash_id': file_hash_id,
-                                 }
-                             }
-                         })
+#     def __init__(self, message=None, file_hash_id):
+#         super().__init__('Access Request Required Error',
+#                          message,
+#                          code='access_request_required',
+#                          error_return_props={
+#                              'request': {
+#                                  'file': {
+#                                      'hash_id': file_hash_id,
+#                                  }
+#                              }
+#                          })
 
 
-class AccessRequestRequiredError(BaseException):
+class AccessRequestRequiredError(ServerException):
     """
     Raised when access needs to be requested for a project. The end goal is to
     provide enough data in this error to the client that we can pop up a
@@ -205,11 +204,6 @@ class AccessRequestRequiredError(BaseException):
 
     We may want to merge this exception with FilesystemAccessRequestRequired.
     """
-
-    def __init__(self, message, *, file_hash_id=None, project_hash_id=None):
-        super().__init__('Access Request Required Error',
-                         message,
-                         code='access_request_required',
-                         error_return_props={
-                             # TODO: Return the projet or file ID so you can request acess
-                         })
+    def __init__(self, curr_access, req_access, hash_id, additional_msgs=[], code=403):
+        message = f'You have {curr_access} access but not {req_access} access to <{hash_id}>.'
+        super().__init__('Access Error', message, additional_msgs, code)

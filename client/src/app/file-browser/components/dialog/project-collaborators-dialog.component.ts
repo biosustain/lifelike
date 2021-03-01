@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ProjectImpl } from '../../models/filesystem-object';
 import { ModelList } from '../../../shared/models';
 import { Collaborator } from '../../models/collaborator';
@@ -80,7 +80,7 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
         title: 'Invalid Input',
         message: 'There are some errors with your input.',
         type: MessageType.Error,
-      });
+      } as MessageArguments);
     }
   }
 

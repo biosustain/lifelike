@@ -27,10 +27,10 @@ export class UserEffects {
                     AuthActions.refreshUser({ user}),
                 ]),
                 catchError((err: HttpErrorResponse) => {
-                    const error = (err.error as ErrorResponse).apiHttpError;
+                    const error = (err.error as ErrorResponse).message;
                     return from([
                         SnackbarActions.displaySnackbar({payload: {
-                            message: error.message,
+                            message: error,
                             action: 'Dismiss',
                             config: { duration: 10000 },
                         }})
