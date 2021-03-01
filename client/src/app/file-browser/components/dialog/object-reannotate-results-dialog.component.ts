@@ -31,7 +31,7 @@ export class ObjectReannotateResultsDialogComponent extends ConfirmDialogCompone
   set results(values: ResultMapping<AnnotationGenerationResultData>[]) {
     const all = {};
     for (const value of values) {
-      for (const [hashId, status] of Object.entries(value.results)) {
+      for (const [hashId, status] of Object.entries(value.mapping)) {
         all[hashId] = status;
       }
     }
