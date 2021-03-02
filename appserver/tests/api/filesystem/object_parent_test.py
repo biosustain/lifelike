@@ -130,8 +130,6 @@ def test_patch_file_parent_to_self(
 
     resp_data = resp.get_json()
 
-    assert type(resp_data['fields']['parentHashId']) is list
-
     updated_file: Files = session.query(Files) \
         .filter(Files.id == file_in_project.id) \
         .one()
@@ -174,8 +172,6 @@ def test_patch_file_parent_recursively(
     assert resp.status_code == 400
 
     resp_data = resp.get_json()
-
-    assert type(resp_data['fields']['parentHashId']) is list
 
     updated_parent_folder: Files = session.query(Files) \
         .filter(Files.id == file_in_project.parent.id) \
