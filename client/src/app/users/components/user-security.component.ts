@@ -53,9 +53,9 @@ export class UserSecurityComponent {
       // TODO: Add progress dialog
       const password = this.form.get('oldPassword').value;
       const newPassword = this.form.get('password').value;
-      this.store.dispatch(UserActions.updateUser({
+      this.store.dispatch(UserActions.changePassword({
         userUpdates: {
-          ...this.user,
+          hashId: this.user.hashId,
           newPassword,
           password,
         },

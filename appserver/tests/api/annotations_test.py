@@ -10,11 +10,11 @@ def generate_headers(jwt_token):
 def test_user_can_get_gene_annotations_from_pdf(
         client,
         test_user_with_pdf: Files,
-        fix_api_owner: AppUser,
+        fix_admin_user: AppUser,
         mock_get_combined_annotations_result,
         mock_get_organisms_from_gene_ids_result,
 ):
-    login_resp = client.login_as_user(fix_api_owner.email, 'password')
+    login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.hash_id
 
@@ -32,10 +32,10 @@ def test_user_can_get_gene_annotations_from_pdf(
 def test_user_can_get_all_annotations_from_pdf(
         client,
         test_user_with_pdf: Files,
-        fix_api_owner: AppUser,
+        fix_admin_user: AppUser,
         mock_get_combined_annotations_result,
 ):
-    login_resp = client.login_as_user(fix_api_owner.email, 'password')
+    login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.hash_id
 
@@ -53,10 +53,10 @@ def test_user_can_get_all_annotations_from_pdf(
 def test_user_can_get_global_inclusions(
         client,
         fix_project,
-        fix_api_owner,
+        fix_admin_user,
         mock_global_compound_inclusion,
 ):
-    login_resp = client.login_as_user(fix_api_owner.email, 'password')
+    login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
 
     response = client.get(
@@ -72,10 +72,10 @@ def test_user_can_get_global_inclusions(
 def test_user_can_get_global_exclusions(
         client,
         fix_project,
-        fix_api_owner,
+        fix_admin_user,
         mock_global_gene_exclusion,
 ):
-    login_resp = client.login_as_user(fix_api_owner.email, 'password')
+    login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
 
     response = client.get(
@@ -91,10 +91,10 @@ def test_user_can_get_global_exclusions(
 def test_user_can_get_global_list(
         client,
         fix_project,
-        fix_api_owner,
+        fix_admin_user,
         mock_global_list,
 ):
-    login_resp = client.login_as_user(fix_api_owner.email, 'password')
+    login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
 
     response = client.get(
