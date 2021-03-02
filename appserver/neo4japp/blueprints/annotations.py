@@ -586,7 +586,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         db.session.commit()
 
         return jsonify(MultipleAnnotationGenerationResponseSchema().dump({
-            'results': results,
+            'mapping': results,
             'missing': missing,
         }))
 
