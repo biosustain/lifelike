@@ -37,7 +37,7 @@
   with_items:
     - {
         src: "templates/services.yml",
-        dest: /opt/traefik/services.yml,
+        dest: "/opt/traefik/services.yml",
     }
 
 - name: Build and deploy traefik
