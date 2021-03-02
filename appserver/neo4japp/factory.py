@@ -61,51 +61,6 @@ cors = CORS()
 cache = Cache()
 
 
-class ErrorResponse:
-    """
-    Encapsulates the error object that is sent to the client. The purpose of this class
-    is to keep errors sent to the client consistent, but as of writing, this class is
-    a mix of older error handling code and newer error handling code.
-    """
-
-    def __init__(self,
-                 code: Optional[Union[Literal['validation'], Literal['permission']]],
-                 message: str,
-                 *,
-                 detail: Optional[str] = None,
-                 api_http_error: str = None,
-                 version: str = None,
-                 transaction_id: str = None,
-                 fields: Optional[Dict[str, List[str]]] = None,
-                 debug_exception: Exception = None):
-        """
-        Create a new instance of the error.
-
-        :param code: the error code is a machine-parseable error code (not used yet)
-        :param message: a message that can be displayed direct to the user
-        :param detail: extra text that is show on the client in a 'extra info' box
-        :param api_http_error: the old way of returning the error
-        :param version: the version of the app
-        :param transaction_id: a transaction ID that goes into our logs
-        :param fields: a dictionary of form fields (or _schema for generic) and its errors
-        :param debug_exception: an exception that can be dumped into the 'detail' field
-        """
-        assert debug_exception is None or detail is None
-
-        self.message = message
-        self.detail = detail if detail else None
-        self.code = code
-        self.api_http_error = api_http_error
-        self.version = version or GITHUB_HASH
-        self.transaction_id = transaction_id or request.headers.get('X-Transaction-Id', '')
-        self.fields = fields or {}
-
-        if current_app.debug and debug_exception:
-            self.detail = "".join(traceback.format_exception(
-                etype=type(debug_exception), value=debug_exception,
-                tb=debug_exception.__traceback__))
-
-
 @parser.location_handler("mixed_form_json")
 def load_mixed_form_json(request, name, field):
     """
@@ -331,17 +286,16 @@ def handle_validation_error(code, error: ValidationError, messages=None):
     else:
         message = 'An error occurred with the provided input.'
 
-    # TODO: ErrorResponse should no longer be needed
-    return jsonify(ErrorResponseSchema().dump(ErrorResponse(
-        'validation',
-        message,
-        fields=fields,
-        api_http_error='An error occurred with the provided input.',
-    ))), code
+    ex = ServerException(message=message, code=code)
+    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
+    transaction_id = request.headers.get('X-Transaction-Id', '')
+
+    ex.version = GITHUB_HASH
+    ex.transaction_id = transaction_id
+    return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
 
 def handle_access_error(
-    code,
     error: AccessRequestRequiredError,
     messages=None
 ):
