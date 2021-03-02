@@ -1,11 +1,12 @@
 <canvas baseChart
         [ngStyle]="{'height': 130+chartData.length*15+'px',
     minHeight:' 300px'}"
-        [data]="chartData"
+        [data]="data"
         [options]="options"
         [legend]="legend"
         [chartType]="chartType"
-        (chartClick)="chartClick.emit($event)"
-        (chartHover)="chartHover.emit($event)"
+        [colors]="[{backgroundColor:'gray'}]"
 >
+<!--        (chartClick)="chartClick.emit($event)"-->
+<!--        (chartHover)="chartHover.emit($event)"-->
 </canvas>
