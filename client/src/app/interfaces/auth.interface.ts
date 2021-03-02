@@ -17,9 +17,24 @@ export interface AppUser {
   roles: string[];
 }
 
+/** Same as 'AppUser', but with a different name. This is done to help
+ * deprecate parts of the code that should not be revealing sensitive
+ * information vs parts where it's okay such as the 'admin views'.
+ */
+export interface PrivateAppUser {
+  id: number;
+  hashId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  roles: string[];
+}
+
 export type User = Pick<AppUser, 'id' | 'username'>;
 
-export interface UpdateUserRequest extends AppUser {
+export interface ChangePasswordRequest {
+  hashId: string;
   password: string;
   newPassword: string;
 }
@@ -40,5 +55,5 @@ export interface JWTToken {
 export interface JWTTokenResponse {
     accessToken: JWTToken;
     refreshToken: JWTToken;
-    user: AppUser;
+    user: PrivateAppUser;
 }
