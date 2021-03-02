@@ -4,8 +4,18 @@
 <ng-template #stable>
   <div class="network-navigation-container">
     <div class="d-flex">
-      <app-legend [legend]="legend"></app-legend>
-      <!-- TODO: Search goes here -->
+      <div>
+        <app-legend [legend]="legend"></app-legend>
+      </div>
+      <div class="ml-1">
+        <app-search-control
+                [(ngModel)]="searchQuery" (ngModelChange)="searchQueryChanged()"
+                (enterPress)="findNext()"
+                [resultIndex]="currentSearchIndex"
+                [resultCount]="searchResults.length"
+                (previous)="findPrevious()" (next)="findNext()">
+        </app-search-control>
+      </div>
     </div>
   </div>
   <div class="network-utilities-container">
