@@ -22,6 +22,7 @@ import {
 } from './components/visualisation/enrichment-visualisation-cloud-viewer.component';
 import { EnrichmentVisualisationGroupComponent } from './components/visualisation/enrichment-visualisation-group.component';
 import { NgbdTableCompleteModule } from './components/visualisation/table/table/table-complete.module';
+import { ClustergramModule } from './components/visualisation/clustergram/clustergram.module';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,8 @@ import { NgbdTableCompleteModule } from './components/visualisation/table/table/
     FileBrowserModule,
     ChartModule,
     WordCloudModule,
-    NgbdTableCompleteModule
+    NgbdTableCompleteModule,
+    ClustergramModule
   ],
   entryComponents: [
     EnrichmentVisualisationEditDialogComponent,

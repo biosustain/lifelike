@@ -1,1 +1,27 @@
-<div #cloudWrapper class="h-100 w-100 overflow-hidden min-h-100-l"></div>
+<table class="table table-striped">
+    <tr>
+        <td>A</td>
+        <th scope="col" *ngFor="let gene of genes">{{gene}}</th>
+    </tr>
+    <tr *ngFor="let goTerm of goTerms">
+        <th scope="row"><span>{{ goTerm.goId }}</span></th>
+        <td *ngFor="let goGene of genes; let i = index"
+            [ngStyle]="{backgroundColor:goTerm.geneNames.includes(goGene) ?'red':''}">.</td>
+    </tr>
+</table>
+<div class="grid">
+    <ng-container *ngFor="let gene of genes">
+        <div class="gene">{{gene}}</div>
+    </ng-container>
+    <ng-container *ngFor="let goTerm of goTerms;let i = index">
+        <div class="goId">{{goTerm.goId}}</div>
+        <div
+                *ngFor="let gene of goTerm.geneNames;"
+                class="mtx_gene"
+                [ngStyle]="{
+                    gridColumn: 2 + i,
+                    gridRow: 2 + genes.indexOf(gene)
+                }"
+        >{{gene}}</div>
+    </ng-container>
+</div>
