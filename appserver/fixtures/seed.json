@@ -29,6 +29,10 @@
       {
         "id": 7,
         "name": "file-comment"
+      },
+      {
+        "id": 8,
+        "name": "user"
       }
     ]
   },
@@ -57,7 +61,11 @@
         "password": "password",
         "first_name": "Michelle",
         "last_name": "Doe",
-        "roles": []
+        "roles": [
+          {
+            "name": "user"
+          }
+        ]
       }
     ]
   },
