@@ -128,7 +128,6 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
       this.loadingData = false;
     });
     this.enrichmentService.load.subscribe((data) => {
-      console.log(data);
       this.loadTask.update('fisher');
     });
 

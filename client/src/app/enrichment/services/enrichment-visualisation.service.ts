@@ -21,7 +21,6 @@ export class EnrichmentVisualisationService implements OnDestroy {
               protected readonly errorHandler: ErrorHandler,
               protected readonly snackBar: MatSnackBar,
               protected readonly filesystemService: FilesystemService) {
-    console.log('construct');
   }
 
   private currentFileId: string;
