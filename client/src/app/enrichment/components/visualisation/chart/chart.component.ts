@@ -1,6 +1,17 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { ChartOptions, ChartType } from 'chart.js';
 
+const mapTootipItem = func =>
+  ({datasetIndex, index}, {datasets}) => {
+    return func(datasets[datasetIndex].data[index]);
+  };
+
+const mapSingularOfTootipItems = func => {
+  const wrappedFunc = mapTootipItem(func);
+  return ([tootipItem], object) =>
+    wrappedFunc(tootipItem, object);
+};
+
 @Component({
   selector: 'app-chart',
   templateUrl: './chart.component.html'
@@ -31,11 +42,12 @@ export class ChartComponent {
       yAxes: [
         {
           ticks: {
+            reverse: true,
             // suggestedMin: -0.5,
             beginAtZero: true,
             stepSize: 1,
             callback: (value, index) =>
-              index in this.chartData ? this.chartData[index].gene : '',
+              index in this.chartData ? this.chartData[value].gene : '',
           },
           offset: true,
           gridLines: {
@@ -51,8 +63,12 @@ export class ChartComponent {
       }
     },
     tooltips: {
+      enabled: true,
+      mode: 'y',
+      intersect: false,
       callbacks: {
-        label: (tooltipItem, data) => `p-value: ${Math.pow(10, -tooltipItem.xLabel)}`
+        title: mapSingularOfTootipItems(d => d['gene']),
+        label: mapTootipItem(d => `p-value: ${d['p-value']}`)
       }
     }
   };
@@ -60,14 +76,12 @@ export class ChartComponent {
   legend = false;
   public chartData = [];
 
-  @Input('data') set data(data: any[]) {
-    this.chartData = data.sort((a, b) => {
-      return b['p-value'] - a['p-value'];
-    }).map((d: any, i) => ({
+  @Input() set data(data) {
+    this.chartData = data.map((d: any, i) => ({
       ...d,
       x: -Math.log10(d['p-value']),
       y: i,
-      // r: 3.75 + 3.75 * d["Adjusted P-value"]
+      // r: 3.75 + 3.75 * Math.log10(d["geneNames"].length),
     }));
   }
 
@@ -75,9 +89,6 @@ export class ChartComponent {
     return this.chartData;
   }
 
-  ngOnInit() {
-    console.log(this);
-  }
 
   @Output() chartClick: EventEmitter<any> = new EventEmitter();
   @Output() chartHover: EventEmitter<any> = new EventEmitter();

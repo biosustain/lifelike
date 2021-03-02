@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -8,8 +8,6 @@ import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { DownloadService } from 'app/shared/services/download.service';
-
-import { WordCloudComponent } from './word-cloud/word-cloud.component';
 import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
 import { FilesystemService } from '../../../file-browser/services/filesystem.service';
 import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
@@ -123,7 +121,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, OnDestroy
     );
 
     this.loadSubscription = this.loadTask.results$.subscribe((result) => {
-      this.data = result.result;
+      this.data = result.result.sort((a, b) => a['p-value'] - b['p-value']);
       this.g1 = this.data.filter(d => d.goLabel.includes('BiologicalProcess'));
       this.g2 = this.data.filter(d => d.goLabel.includes('MolecularFunction'));
       this.g3 = this.data.filter(d => d.goLabel.includes('CellularComponent'));
