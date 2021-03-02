@@ -21,7 +21,7 @@ export class AccountService implements OnDestroy {
     constructor(private http: HttpClient) {}
 
     getUserList() {
-        this.listOfUsers().subscribe((data: ResultList<PrivateAppUser>) => {
+        this.getUsers().subscribe((data: ResultList<PrivateAppUser>) => {
             this.userListSource.next(data.results);
         });
     }
@@ -36,16 +36,16 @@ export class AccountService implements OnDestroy {
      * Return list of users
      * @param username - optional val to query against list of users
      */
-    listOfUsers(): Observable<ResultList<PrivateAppUser>> {
+    getUsers(hashId?: string): Observable<ResultList<PrivateAppUser>> {
+        if (hashId) {
+            return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/${hashId}`);
+        }
         return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/`);
     }
 
-    currentUser() {
-        return this.http.get<AppUser>(
-            `${this.accountApi}/user`,
-        ).pipe(
-            map(resp => resp),
-        );
+    currentUser(): Observable<PrivateAppUser> {
+        const userState = JSON.parse(localStorage.getItem('auth')).user;
+        return this.getUsers(userState.hashId).pipe(map(result => result.results[0]));
     }
 
     changePassword(updateRequest: ChangePasswordRequest) {
