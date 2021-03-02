@@ -1,103 +1,166 @@
 import re
 
-from flask import Blueprint, g, jsonify, request
+from flask import Blueprint, g, jsonify
 from flask.views import MethodView
-from sqlalchemy import or_
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import func, literal_column, or_
+from sqlalchemy.sql import select
+from sqlalchemy.dialects.postgresql import aggregate_order_by
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
-from neo4japp.blueprints.permissions import requires_role
-from neo4japp.data_transfer_objects import UserUpdateRequest
-from neo4japp.database import get_account_service, db, \
-    get_authorization_service
-from neo4japp.exceptions import RecordNotFoundException
-from neo4japp.models import AppUser
+from neo4japp.database import db, get_authorization_service
+from neo4japp.exceptions import DuplicateRecord, NotAuthorizedException
+from neo4japp.models import AppUser, AppRole
+from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
     UserListSchema,
     UserSearchSchema,
-    UserSchemaWithId,
-    UserCreateSchema
+    UserProfileSchema,
+    UserProfileListSchema,
+    UserCreateSchema,
+    UserUpdateSchema,
+    UserChangePasswordSchema
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
-from neo4japp.util import jsonify_with_class, SuccessResponse
 from neo4japp.utils.request import Pagination
 
 bp = Blueprint('accounts', __name__, url_prefix='/accounts')
 
 
-@bp.route('/', methods=['POST'])
+class AccountView(MethodView):
+    decorators = [auth.login_required]
+
+    def get_or_create_role(self, rolename: str) -> AppRole:
+        retval = AppRole.query.filter_by(name=rolename).one_or_none()
+        if retval is None:
+            retval = AppRole(name=rolename)
+            db.session.add(retval)
+            db.session.commit()
+        return retval
+
+    def get(self, hash_id):
+        t_appuser = AppUser.__table__.alias('t_appuser')
+        t_approle = AppRole.__table__.alias('t_approle')
+
+        query = select([
+            t_appuser.c.id,
+            t_appuser.c.hash_id,
+            t_appuser.c.username,
+            t_appuser.c.email,
+            t_appuser.c.first_name,
+            t_appuser.c.last_name,
+            func.string_agg(
+                t_approle.c.name, aggregate_order_by(literal_column("','"), t_approle.c.name)),
+        ]).select_from(
+            t_appuser.join(user_role, user_role.c.appuser_id == t_appuser.c.id)
+            .join(t_approle, user_role.c.app_role_id == t_approle.c.id)
+        ).group_by(
+            t_appuser.c.id,
+            t_appuser.c.hash_id,
+            t_appuser.c.username,
+            t_appuser.c.email,
+            t_appuser.c.first_name,
+            t_appuser.c.last_name,
+        )
+
+        if g.current_user.has_role('admin') or g.current_user.has_role('private-data-access'):
+            if hash_id:
+                query = query.where(t_appuser.c.hash_id == hash_id)
+        else:
+            # Regular users can only see themselves
+            if hash_id and hash_id != g.current_user.hash_id:
+                raise NotAuthorizedException('You do not have sufficient privileges.')
+            query = query.where(t_appuser.c.hash_id == g.current_user.hash_id)
+
+        results = [
+            {
+                'id': id,
+                'hash_id': hash_id,
+                'username': username,
+                'email': email,
+                'first_name': first_name,
+                'last_name': last_name,
+                'roles': roles.split(',')
+            } for id, hash_id, username, email,
+            first_name, last_name, roles in db.session.execute(query).fetchall()]
+
+        return jsonify(UserProfileListSchema().dump({
+            'total': len(results),
+            'results': results,
+        }))
+
+    @use_args(UserCreateSchema)
+    def post(self, params: dict):
+        admin_or_private_access = g.current_user.has_role('admin') or \
+            g.current_user.has_role('private-data-access')
+        if not admin_or_private_access:
+            raise NotAuthorizedException('You do not have sufficient privileges.')
+        if db.session.query(AppUser.query_by_email(params['email']).exists()).scalar():
+            raise DuplicateRecord(f'E-mail {params["email"]} already taken')
+        elif db.session.query(AppUser.query_by_username(params["username"]).exists()).scalar():
+            raise DuplicateRecord(f'Username {params["username"]} already taken.')
+
+        app_user = AppUser(
+            username=params['username'],
+            email=params['email'],
+            first_name=params['first_name'],
+            last_name=params['last_name']
+        )
+        app_user.set_password(params['password'])
+
+        if not params.get('roles'):
+            # Add default role
+            app_user.roles.append(self.get_or_create_role('user'))
+        else:
+            for role in params['roles']:
+                app_user.roles.append(self.get_or_create_role(role))
+        db.session.add(app_user)
+        db.session.commit()
+        return jsonify(dict(result=app_user.to_dict()))
+
+    @use_args(UserUpdateSchema)
+    def put(self, params: dict, hash_id):
+        """ Updating password and roles will be delegated to a separate function """
+        admin_or_private_access = g.current_user.has_role('admin') or \
+            g.current_user.has_role('private-data-access')
+        if g.current_user.hash_id != hash_id and admin_or_private_access is False:
+            raise NotAuthorizedException('You do not have sufficient privileges.')
+        else:
+            target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
+            for attribute, new_value in params.items():
+                setattr(target, attribute, new_value)
+            db.session.add(target)
+            db.session.commit()
+        return jsonify(dict(result='')), 204
+
+    def delete(self):
+        # TODO: Need to implement soft deletes as well as blocking assets from being viewed
+        pass
+
+
+account_view = AccountView.as_view('accounts_api')
+bp.add_url_rule('/', view_func=account_view, defaults={'hash_id': None}, methods=['GET'])
+bp.add_url_rule('/', view_func=account_view, methods=['POST'])
+bp.add_url_rule('/<string:hash_id>', view_func=account_view, methods=['GET', 'PUT', 'DELETE'])
+
+
+@bp.route('/<string:hash_id>/change-password', methods=['POST', 'PUT'])
 @auth.login_required
-@use_args(UserCreateSchema)
-@requires_role('admin')
-def create_user(args):
-    account_dao = get_account_service()
-
-    yield g.current_user
-
-    # TODO: Allow for adding specific roles
-    new_user = account_dao.create_user(
-        first_name=args['first_name'],
-        last_name=args['last_name'],
-        username=args['username'],
-        email=args['email'],
-        password=args['password']
-    )
-
-    yield jsonify(dict(result=new_user.to_dict())), 201
-
-
-@bp.route('/', methods=['GET'])
-@auth.login_required
-def list_users():
-    """
-       Currently only support query around username
-       The paramters must be laid in order by how list
-       of fields and filters align into key, val pair
-    """
-
-    fields = request.args.getlist('fields')
-    fields = fields if len(fields) else ['email']
-    filters = request.args.getlist('filters')
-    filters = filters if len(filters) else ['']
-
-    query_dict = dict(zip(fields, filters))
-
-    account_dao = get_account_service()
-    users = [
-        {**user.to_dict(), **{'roles': [roles]}}
-        for user, roles in account_dao.get_user_list(query_dict)
-    ]
-    return jsonify(result=users, status_code=200)
-
-
-@bp.route('/user', methods=['GET'])
-@auth.login_required
-def get_user():
-    """ Returns the current user """
-    user = g.current_user
-    return jsonify(UserSchemaWithId().dump({
-        'id': user.id,
-        'hash_id': user.hash_id,
-        'username': user.username,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'roles': [u.name for u in user.roles],
-    })), 200
-
-
-@bp.route('/user', methods=['POST', 'PUT'])
-@auth.login_required
-@jsonify_with_class(UserUpdateRequest)
-def update_user(req: UserUpdateRequest):
-    """ Updates the current user """
-    account_dao = get_account_service()
-    try:
-        appuser = AppUser.query.filter_by(username=req.username).one()
-        updated_user = account_dao.update_user(appuser, req)
-    except NoResultFound:
-        raise RecordNotFoundException('User does not exist.')
-    return SuccessResponse(result=updated_user.to_dict(), status_code=200)
+@use_args(UserChangePasswordSchema)
+def update_password(params: dict, hash_id):
+    admin_or_private_access = g.current_user.has_role('admin') or \
+        g.current_user.has_role('private-data-access')
+    if g.current_user.hash_id != hash_id and admin_or_private_access is False:
+        raise NotAuthorizedException('You do not have sufficient privileges.')
+    else:
+        target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
+        if target.check_password(params['password']):
+            target.set_password(params['new_password'])
+        else:
+            raise NotAuthorizedException('Old password is invalid')
+        db.session.add(target)
+        db.session.commit()
+    return jsonify(dict(result='')), 204
 
 
 class AccountSearchView(MethodView):

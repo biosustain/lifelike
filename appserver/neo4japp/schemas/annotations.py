@@ -62,7 +62,7 @@ class AnnotationGenerationResultSchema(CamelCaseSchema):
 
 
 class MultipleAnnotationGenerationResponseSchema(CamelCaseSchema):
-    results = fields.Dict(keys=fields.String(),
+    mapping = fields.Dict(keys=fields.String(),
                           values=fields.Nested(AnnotationGenerationResultSchema))
     missing = fields.List(fields.String)
 
