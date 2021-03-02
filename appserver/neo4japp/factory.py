@@ -30,10 +30,7 @@ from werkzeug.utils import find_modules, import_string
 
 from neo4japp.database import db, ma, migrate, close_lmdb
 from neo4japp.encoders import CustomJSONEncoder
-from neo4japp.exceptions import (
-    ServerException,
-    AccessRequestRequiredError
-)
+from neo4japp.exceptions import ServerException
 from neo4japp.schemas.common import ErrorResponseSchema
 from neo4japp.utils.logger import ErrorLog
 
@@ -187,7 +184,6 @@ def create_app(name='neo4japp', config='config.Development'):
 
     app.json_encoder = CustomJSONEncoder
 
-    app.register_error_handler(AccessRequestRequiredError, handle_access_error)
     app.register_error_handler(ValidationError, partial(handle_validation_error, 400))
     app.register_error_handler(UnprocessableEntity, partial(handle_webargs_error, 400))
     app.register_error_handler(ServerException, handle_error)
@@ -293,18 +289,6 @@ def handle_validation_error(code, error: ValidationError, messages=None):
     ex.version = GITHUB_HASH
     ex.transaction_id = transaction_id
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
-
-
-def handle_access_error(
-    error: AccessRequestRequiredError,
-    messages=None
-):
-    """
-    Handle errors that occurs when a user doesn't have permission to something but can
-    request permission. This handler is not really fleshed out yet.
-    """
-    current_app.logger.error('Request caused access error', exc_info=error)
-    return jsonify(ErrorResponseSchema().dump(error)), error.code
 
 
 # Ensure that response includes all error messages produced from the parser
