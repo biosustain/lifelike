@@ -64,6 +64,8 @@
           APP_VERSION: "{{ app_version }}"
           APP_BUILD_NUMBER: "{{ app_build_number|quote }}"
           LMDB_HOME_FOLDER: "{{ LMDB_HOME_FOLDER }}"
+          AZURE_ACCOUNT_STORAGE_NAME: "{{ AZURE_ACCOUNT_STORAGE_NAME }}"
+          AZURE_ACCOUNT_STORAGE_KEY: "{{ AZURE_ACCOUNT_STORAGE_KEY }}"
         comparisons:
           image: strict
           env: strict
@@ -104,6 +106,7 @@
     - name: PDFParser Container Deployment
       docker_container:
         name: pdfparser
+        tty: yes
         state: started
         pull: yes
         restart: yes
@@ -124,28 +127,17 @@
         - deploy
 
     - name: Run database migration
-      docker_container:
-        name: appserver
-        state: started
-        command: bin/migrate-db --upgrade --data-migrate
-      tags:
-        - deploy
+      shell:
+        cmd: docker exec appserver bin/migrate-db --upgrade --data-migrate
 
-    - name: Load LMDB Database
-      docker_container:
-        name: appserver
-        state: started
-        command: flask load-lmdb
-      tags:
-        - deploy
+    - name: Load lmdb database
+      shell:
+        cmd: docker exec appserver flask load-lmdb
 
     - name: Seed Elasticsearch
-      docker_container:
-        name: appserver
-        state: started
-        command: flask seed-elastic
-      tags:
-        - deploy
+      shell:
+        cmd: docker exec appserver flask seed-elastic
+      no_log: true
 
     - name: Seed Elasticsearch with Global Annotations
       include_role:
