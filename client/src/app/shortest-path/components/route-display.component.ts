@@ -1,16 +1,20 @@
 import { Component, Input } from '@angular/core';
 
-import { DataSet } from 'vis-network';
+import { DataSet, Edge, Node, Options } from 'vis-network';
 
 import { isNullOrUndefined } from 'util';
-
-import { Neo4jGraphConfig } from 'app/interfaces';
 
 import { GraphData } from '../containers/shortest-path.component';
 
 export enum DisplayType {
   NETWORK = 'network',
   SANKEY = 'sankey'
+}
+
+// TODO: Need to move this to a shared file to save repitition
+export interface VisNetworkData {
+  nodes: DataSet<Node, 'id'>;
+  edges: DataSet<Edge, 'id'>;
 }
 
 @Component({
@@ -24,8 +28,8 @@ export class RouteDisplayComponent {
   }
   @Input() set graphData(graphData: GraphData) {
     // Update vis js data
-    this.networkData.nodes = graphData.nodes;
-    this.networkData.edges = graphData.edges;
+    this.networkData.nodes = new DataSet<Node, 'id'>(graphData.nodes);
+    this.networkData.edges = new DataSet<Edge, 'id'>(graphData.edges);
 
     // Update sankey data
     this.generateSankeyData(graphData.nodes, graphData.edges);
@@ -36,8 +40,8 @@ export class RouteDisplayComponent {
 
   currentDisplay: string;
 
-  networkConfig: Neo4jGraphConfig;
-  networkData: any;
+  networkConfig: Options;
+  networkData: VisNetworkData;
 
   sankeyConfig: any;
   sankeyData: any;
@@ -88,8 +92,8 @@ export class RouteDisplayComponent {
     };
 
     this.networkData = {
-      nodes: new DataSet(),
-      edges: new DataSet(),
+      nodes: new DataSet<Node, 'id'>(),
+      edges: new DataSet<Edge, 'id'>(),
     };
   }
 

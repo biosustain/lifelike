@@ -2,10 +2,11 @@ import { AfterViewInit, Component, Input } from '@angular/core';
 
 import { isNullOrUndefined } from 'util';
 
-import { Network } from 'vis-network';
+import { Color, DataSet, Edge, Network, Node, Options } from 'vis-network';
 
 import { uuidv4 } from 'app/shared/utils';
-import { Neo4jGraphConfig } from 'app/interfaces';
+import { VisNetworkData } from 'app/shortest-path/components/route-display.component';
+
 
 
 enum networkSolvers {
@@ -21,7 +22,7 @@ enum networkSolvers {
   styleUrls: ['./vis-js-network.component.scss']
 })
 export class VisJsNetworkComponent implements AfterViewInit {
-  @Input() set config(config: Neo4jGraphConfig) {
+  @Input() set config(config: Options) {
     this.networkConfig = config;
 
     if (!isNullOrUndefined(config.physics)) {
@@ -35,9 +36,8 @@ export class VisJsNetworkComponent implements AfterViewInit {
     if (!isNullOrUndefined(this.networkGraph)) {
       this.createNetwork();
     }
-
   }
-  @Input() set data(data: any) {
+  @Input() set data(data: VisNetworkData) {
     this.networkData = data;
     if (!isNullOrUndefined(this.networkGraph)) {
       this.setNetworkData();
@@ -47,27 +47,44 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
   SCALE_MODIFIER = 0.11;
 
-  networkConfig: Neo4jGraphConfig;
-  networkData: any;
+  networkConfig: Options;
+  networkData: VisNetworkData;
   networkGraph: Network;
   networkContainerId: string;
 
   stabilized: boolean;
   physicsEnabled: boolean;
 
-  currentSolver: string;
   solverMap: Map<string, string>;
+  currentSolver: string;
+
+  currentSearchIndex: number;
+  searchResults: Node[];
+  searchQuery: string;
 
   cursorStyle: string;
 
   constructor() {
+    this.legend = new Map<string, string[]>();
+
+    this.networkConfig = {};
+    this.networkData = {
+      nodes: new DataSet<Node, 'id'>(),
+      edges: new DataSet<Edge, 'id'>(),
+    };
     this.networkContainerId = uuidv4();
+
     this.stabilized = false;
+    this.physicsEnabled = true;
+
     this.setupSolverMap();
     this.currentSolver = this.solverMap.get(networkSolvers.BARNES_HUT);
-    this.physicsEnabled = true;
+
+    this.currentSearchIndex = 0;
+    this.searchResults = [];
+    this.searchQuery = '';
+
     this.cursorStyle = 'default';
-    this.legend = new Map<string, string[]>();
   }
 
   ngAfterViewInit() {
@@ -148,6 +165,78 @@ export class VisJsNetworkComponent implements AfterViewInit {
     };
     this.currentSolver = this.solverMap.get(layoutType);
     this.createNetwork();
+  }
+
+  searchNodesWithQuery(query: string): Node[] {
+    return this.networkData.nodes.get().filter(
+      node => (node.label as string).toLowerCase().includes(query.toLowerCase())
+    );
+  }
+
+  searchQueryChanged() {
+    console.log('search query changed');
+    // Need to revert the previous search results back to their original values
+    if (this.searchResults.length > 0) {
+      this.searchResults.forEach(node => {
+        this.networkData.nodes.update({
+          ...node,
+          borderWidth: 1,
+        });
+      });
+      this.setNetworkData();
+    }
+
+    this.searchResults = [];
+
+    if (this.searchQuery !== '') {
+      this.searchResults = this.searchNodesWithQuery(this.searchQuery);
+
+      // Set the index to -1, since we call `findNext` immediately after this function is called and want the index to be 0
+      this.currentSearchIndex = -1;
+
+      this.searchResults.forEach(node => this.highlightNode(node.id));
+      // Once all the nodes are updated, update the network
+      this.setNetworkData();
+    }
+  }
+
+  findNext() {
+    if (this.searchResults.length > 0) {
+      // If we're about to go beyond the search result total, wrap back to the beginning
+      if (this.currentSearchIndex + 1 === this.searchResults.length) {
+        this.currentSearchIndex = 0;
+      } else {
+        this.currentSearchIndex += 1;
+      }
+      this.focusNode(this.searchResults[this.currentSearchIndex].id);
+    }
+  }
+
+  findPrevious() {
+    if (this.searchResults.length > 0) {
+      // If we're about to reach negative indeces, then wrap to the end
+      if (this.currentSearchIndex - 1 === -1) {
+        this.currentSearchIndex = this.searchResults.length - 1;
+      } else {
+        this.currentSearchIndex -= 1;
+      }
+      this.focusNode(this.searchResults[this.currentSearchIndex].id);
+    }
+  }
+
+  focusNode(nodeId: number | string) {
+    this.networkGraph.focus(nodeId);
+  }
+
+  highlightNode(nodeId: number | string) {
+    const nodeToHighlight = this.networkData.nodes.get(nodeId);
+    const nodeColor = (nodeToHighlight.color as Color);
+    nodeToHighlight.borderWidth = 2;
+    nodeToHighlight.color = {
+      ...nodeColor,
+      border: 'red'
+    } as Color;
+    this.networkData.nodes.update(nodeToHighlight);
   }
 
   /**
