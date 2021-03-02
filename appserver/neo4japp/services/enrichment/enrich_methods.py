@@ -65,7 +65,7 @@ def fisher(geneNames, GOterms, *args, **kwargs):
 
     df = df.groupby("goId").agg(
             p_value=('query', lambda q: fisher_p(q.sum(), M, len(q), N)),
-            geneNames=('geneName', list),
+            geneNames=('geneName', lambda gn: list(gn[np.in1d(gn, query)])),
             goTerm=('goTerm', 'first'),
             goLabel=('goLabel', 'first')
     )
