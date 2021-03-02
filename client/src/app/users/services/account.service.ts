@@ -3,8 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import {
     AppUser,
     UserCreationRequest,
-    UpdateUserRequest,
+    ChangePasswordRequest,
+    PrivateAppUser,
 } from 'app/interfaces';
+import { ResultList } from 'app/shared/schemas/common';
 import { map, takeUntil } from 'rxjs/operators';
 import { BehaviorSubject, Subject, Observable } from 'rxjs';
 
@@ -19,8 +21,8 @@ export class AccountService implements OnDestroy {
     constructor(private http: HttpClient) {}
 
     getUserList() {
-        this.listOfUsers().subscribe((users: AppUser[]) => {
-            this.userListSource.next(users);
+        this.getUsers().subscribe((data: ResultList<PrivateAppUser>) => {
+            this.userListSource.next(data.results);
         });
     }
 
@@ -34,30 +36,24 @@ export class AccountService implements OnDestroy {
      * Return list of users
      * @param username - optional val to query against list of users
      */
-    listOfUsers(username: string = ''): Observable<AppUser[]> {
-
-        const hyperlink = username.length >= 1 ?
-          `${this.accountApi}/?fields=username&filters=${username}` :
-          `${this.accountApi}/`;
-
-        return this.http.get<{result: AppUser[]}>(
-            hyperlink,
-        ).pipe(map(resp => resp.result));
+    getUsers(hashId?: string): Observable<ResultList<PrivateAppUser>> {
+        if (hashId) {
+            return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/${hashId}`);
+        }
+        return this.http.get<ResultList<PrivateAppUser>>(`${this.accountApi}/`);
     }
 
-    currentUser() {
-        return this.http.get<AppUser>(
-            `${this.accountApi}/user`,
-        ).pipe(
-            map(resp => resp),
+    currentUser(): Observable<PrivateAppUser> {
+        const userState = JSON.parse(localStorage.getItem('auth')).user;
+        return this.getUsers(userState.hashId).pipe(map(result => result.results[0]));
+    }
+
+    changePassword(updateRequest: ChangePasswordRequest) {
+        const { hashId, newPassword, password } = updateRequest;
+        return this.http.post(
+            `${this.accountApi}/${hashId}/change-password`,
+            {newPassword, password},
         );
-    }
-
-    updateUser(updateRequest: UpdateUserRequest) {
-        return this.http.put<{result: AppUser}>(
-            `${this.accountApi}/user`,
-            updateRequest,
-        ).pipe(map(resp => resp.result));
     }
 
     ngOnDestroy() {
