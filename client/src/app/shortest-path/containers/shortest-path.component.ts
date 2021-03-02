@@ -2,13 +2,15 @@ import { Component, OnDestroy } from '@angular/core';
 
 import { combineLatest, Subscription } from 'rxjs';
 
+import { Edge, Node } from 'vis-network';
+
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 
 import { ShortestPathService } from '../services/shortest-path.service';
 
 export interface GraphData {
-  nodes: any;
-  edges: any;
+  nodes: Node[];
+  edges: Edge[];
 }
 
 @Component({
