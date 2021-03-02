@@ -9,10 +9,6 @@ import {
   AnnotationConfigs,
 } from '../../schema';
 import { OrganismAutocomplete } from '../../../interfaces';
-import { select, Store } from '@ngrx/store';
-import { AuthSelectors } from '../../../auth/store';
-import { State } from 'app/root-store';
-import { Observable } from 'rxjs';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from '../../../interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 
@@ -27,7 +23,6 @@ export class ObjectAnnotateDialogComponent extends CommonFormDialogComponent<Obj
   readonly annotationMethodChoices: AnnotationMethods[] = ['NLP', 'Rules Based'];
   readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(
     key => NLPANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
-  readonly userRoles$: Observable<string[]>;
 
   readonly form: FormGroup = new FormGroup({
     annotationConfigs: new FormGroup(
@@ -42,10 +37,8 @@ export class ObjectAnnotateDialogComponent extends CommonFormDialogComponent<Obj
 
   constructor(modal: NgbActiveModal,
               messageDialog: MessageDialog,
-              store: Store<State>,
               protected readonly modalService: NgbModal) {
     super(modal, messageDialog);
-    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
   }
 
   getValue(): ObjectAnnotateDialogValue {
