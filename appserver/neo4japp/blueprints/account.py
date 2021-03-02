@@ -144,22 +144,6 @@ bp.add_url_rule('/', view_func=account_view, methods=['POST'])
 bp.add_url_rule('/<string:hash_id>', view_func=account_view, methods=['GET', 'PUT', 'DELETE'])
 
 
-@bp.route('/user', methods=['GET'])
-@auth.login_required
-def get_user():
-    """ Returns the current user """
-    user = g.current_user
-    return jsonify(UserProfileSchema().dump({
-        'id': user.id,
-        'hash_id': user.hash_id,
-        'email': user.email,
-        'username': user.username,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'roles': [u.name for u in user.roles],
-    })), 200
-
-
 @bp.route('/<string:hash_id>/change-password', methods=['POST', 'PUT'])
 @auth.login_required
 @use_args(UserChangePasswordSchema)
