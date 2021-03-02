@@ -85,10 +85,10 @@ export class EnrichmentVisualisationService implements OnDestroy {
     const geneNames = this.parameters.genes;
     const organism = !!this.parameters.organism ? this.parameters.organism : null;
     const uid = analysis + organism + geneNames.sort();
-    const existing = this.cachedResults.enrichWithGOTerms && this.cachedResults.enrichWithGOTerms[uid];
-    if (existing) {
-      return new Observable(subscriber => subscriber.next(existing));
-    }
+    // const existing = this.cachedResults.enrichWithGOTerms && this.cachedResults.enrichWithGOTerms[uid];
+    // if (existing) {
+    //   return new Observable(subscriber => subscriber.next(existing));
+    // }
     return this.http.post<{ result: [] }>(
       `/api/enrichment-visualisation/enrich-with-go-terms`,
       {geneNames, organism, analysis},
