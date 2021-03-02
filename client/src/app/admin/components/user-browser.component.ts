@@ -22,7 +22,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
   users: AppUser[];
   shownUsers: AppUser[] = [];
   filterQuery = '';
-  loadTask: BackgroundTask<void, ResultList<PrivateAppUser>> = new BackgroundTask(() => this.accountService.listOfUsers());
+  loadTask: BackgroundTask<void, ResultList<PrivateAppUser>> = new BackgroundTask(() => this.accountService.getUsers());
   loadTaskSubscription: Subscription;
   selection = new SelectionModel<AppUser>(true, []);
 
