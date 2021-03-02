@@ -1,47 +1,92 @@
-@import '../../../../../../node_modules/bootstrap/scss/functions';
-@import '../../../../../../node_modules/bootstrap/scss/variables';
-@import '../../../../../scss/variables';
+table {
+  display: table;
+  width: 100%;
 
-.min-h-100-l {
-  min-height: 100px;
+  tr, th[scope="row"] {
+    display: table-cell;
+
+    td, th[scope="col"] {
+      display: block;
+    }
+  }
 }
 
-.filter-btns-container {
-  height: 1.5rem;
-  margin-bottom: .25rem;
+th[scope="row"] {
+  display: block !important;
+  width: 1em;
+  padding: 0;
+
+  & span {
+    display: block;
+    transform-origin: 0 100%;
+    transform: translateX(100%) rotate(-45deg);
+  }
 }
 
-.filter-close-btn {
-  float: right;
-  border-radius: 0.25rem;
-  height: 1.5rem;
-  width: 1.5rem;
-  outline: none;
+td {
+  color: transparent;
+  padding-left: 0;
+  padding-right: 0;
 }
 
-.filter-close-btn:hover {
-  background-color: #FFFFFF;
-  color: #dc3545;
-  cursor: pointer;
+tr:first-child {
+  height: 100px;
 }
 
-.filter-close-btn:active {
-  border: thin solid #dc3545;
-}
 
-.word-cloud-title {
-  min-width: 2rem;
-}
+.grid {
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: auto;
+  width: fit-content;
+  overflow: hidden;
 
-.cloud-word {
-  cursor: default;
-}
+  &:before {
+    display: block;
+    grid-column: 1;
+    grid-row: 1;
+    content: "\00a0";
+  }
 
-.cloud-word-clickable {
-  cursor: pointer;
+  .gene {
+    grid-column: 1;
+    position: relative;
 
-  &:hover {
-    fill: black !important;
-    outline: 4px solid rgba(255, 0, 0, 0.3);
+    &:after {
+      display: block;
+      content: "\00a0";
+      position: absolute;
+      width: 9999px;
+      bottom: 0;
+      border-top: 1px solid pink;
+    }
+  }
+
+  .goId {
+    grid-row: 1;
+    position: relative;
+
+    &:after {
+      display: block;
+      content: "\00a0";
+      position: absolute;
+      height: 9999px;
+      left: 0;
+      border-left: 1px solid pink;
+    }
+  }
+
+  .vertical-line {
+    border-bottom: 1px solid #0f227d;
+    grid-column: 1 / -1;
+  }
+
+  .horizontal-line {
+    border-bottom: 1px solid #0f227d;
+    grid-row: 1 / -1;
+  }
+
+  div {
+    border: 1px solid black;
   }
 }

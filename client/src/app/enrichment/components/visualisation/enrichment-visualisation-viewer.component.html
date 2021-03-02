@@ -113,6 +113,7 @@
                 </app-enrichment-visualisation-group>
 
 
+
                 <div class="card">
                     <div class="card-header">
                         Genes importance by number of GO terms
@@ -125,6 +126,11 @@
                         <!--            [data]="cloudData"-->
                     </app-enrichment-visualisation-cloud-viewer>
                 </div>
+                <app-clustergram
+                        [data]="g3"
+                >
+
+                </app-clustergram>
             </div>
         </div>
     </div>
