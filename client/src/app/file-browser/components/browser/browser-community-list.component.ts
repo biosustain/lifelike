@@ -14,7 +14,6 @@ export class BrowserCommunityListComponent implements OnInit, OnDestroy {
   readonly loadTask: BackgroundTask<void, FilesystemObjectList> = new BackgroundTask(
     () => this.filesystemService.search({
       type: 'public',
-      mimeTypes: [MAP_MIMETYPE],
       sort: '-creationDate',
       limit: 5,
     }),

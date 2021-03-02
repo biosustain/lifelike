@@ -198,7 +198,7 @@ class FilesystemBaseView(MethodView):
                      joinedload(Files.fallback_organism)) \
             .order_by(q_hierarchy.c.level)
 
-        if children_filter:
+        if children_filter is not None:
             query = query.filter(children_filter)
 
         if lazy_load_content:
@@ -555,7 +555,7 @@ class FileListView(FilesystemBaseView):
                     'Your file could not be processed because it is too large.')
 
             # Save the URL
-            file.url = url
+            file.upload_url = url
 
             # Detect mime type
             if params.get('mime_type'):
@@ -733,9 +733,11 @@ class FileSearchView(FilesystemBaseView):
             query = db.session.query(Files.id) \
                 .filter(Files.recycling_date.is_(None),
                         Files.deletion_date.is_(None),
-                        Files.public.is_(True),
-                        Files.mime_type.in_(params['mime_types'])) \
+                        Files.public.is_(True)) \
                 .order_by(*params['sort'])
+
+            if 'mime_types' in params:
+                query = query.filter(Files.mime_type.in_(params['mime_types']))
 
             result = query.paginate(pagination['page'], pagination['limit'])
 
