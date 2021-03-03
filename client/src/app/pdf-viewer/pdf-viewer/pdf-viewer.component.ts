@@ -25,6 +25,7 @@ import {
 import { createEventBus } from '../utils/event-bus-utils';
 
 import * as viewerx from 'pdfjs-dist/web/pdf_viewer';
+import { FindState, RenderTextMode } from '../utils/constants';
 
 declare var require: any;
 let PDFJS: any;
@@ -42,16 +43,13 @@ if (!isSSR()) {
   PDFJS.verbosity = PDFJS.VerbosityLevel.ERRORS;
 }
 
-export enum RenderTextMode {
-  DISABLED,
-  ENABLED,
-  ENHANCED
-}
+
+
 
 @Component({
   selector: 'app-pdf-viewer-lib',
   template: `
-    <div #pdfViewerContainer class="ng2-pdf-viewer-container h-100">
+    <div #pdfViewerContainer class="ng2-pdf-viewer-container">
       <div class="pdfViewer"></div>
     </div>
   `,
@@ -65,7 +63,7 @@ export class PdfViewerComponent
     this.internalCMapsUrl = cMapsUrl;
   }
 
- @Input('page')
+  @Input('page')
   set page(page) {
     page = parseInt(page, 10) || 1;
     const orginalPage = page;
@@ -465,12 +463,29 @@ export class PdfViewerComponent
       this.textLayerRendered.emit(e);
     });
 
+    /*
+    This event id fired when total number of matches has changed.
+     */
     eventBus.on('updatefindmatchescount', e => {
-      this.matchesCountUpdated.emit(e.matchesCount);
+      let ready = true;
+      try {
+        ready = Object.keys(e.source._pendingFindMatches).length === 0;
+      } catch (e) {
+        console.warn('Read of pendingFindMatches is no longer supported, continiued with limited functionality.');
+      }
+      this.matchesCountUpdated.emit({ matchesCount: e.matchesCount, ready });
     });
 
+    /*
+    This event id fired when:
+      + navigate to next/prev match
+      + search state change ( FindState; fires only for first match )
+     */
     eventBus.on('updatefindcontrolstate', e => {
       this.findControlStateUpdated.emit(e);
+      if (e.state === FindState.FOUND) {
+        this.matchesCountUpdated.emit({ matchesCount: e.matchesCount });
+      }
     });
 
     this.pdfMultiPageLinkService = new pdfjsViewer.PDFLinkService({ eventBus });
@@ -611,8 +626,6 @@ export class PdfViewerComponent
         this.internalPdf = pdf;
         this.lastLoaded = src;
 
-        this.afterLoadComplete.emit(pdf);
-
         if (!this.pdfMultiPageViewer) {
           this.setupMultiPageViewer();
           this.setupSinglePageViewer();
@@ -621,10 +634,10 @@ export class PdfViewerComponent
         this.resetPdfDocument();
 
         this.update();
+
+        this.afterLoadComplete.emit(pdf);
       },
-      (error: any) => {
-        this.onError.emit(error);
-      }
+      this.onError.emit
     );
   }
 
