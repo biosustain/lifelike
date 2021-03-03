@@ -1,18 +1,17 @@
-name: Staging Deployment
+name: Azure Staging Deployment
 
 on:
   push:
-    tags:
-      - "staging"
     branches:
-      # only trigger when branches match refs/heads/staging/
       - "staging/**"
+    tags:
+      - staging
 
 jobs:
   build:
     name: Setup, Build, Publish
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     outputs:
       output1: ${{ steps.timestamp.outputs.commit_timestamp }}
@@ -38,67 +37,33 @@ jobs:
         id: buildversion
         run: echo ::set-output name=build_version::$(echo "${GITHUB_REF#refs/*/}")
 
-      # Setup gcloud CLI
-      # https://github.com/GoogleCloudPlatform/github-actions
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
-        with:
-          version: "286.0.0"
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          project_id: ${{ secrets.GCE_PROJECT }}
-
-      # Configure Docker to use gcloud command line tool
-      - run: |-
-          gcloud --quiet auth configure-docker
-
       - name: Build appserver image
         uses: whoan/docker-build-with-cache-action@v5
         with:
-          username: _json_key
-          password: ${{ secrets.GCE_SA_KEY }}
-          registry: gcr.io
-          image_name: ${{ secrets.GCE_PROJECT }}/kg-appserver
-          image_tag: ${{ github.sha }}
+          username: ${{ secrets.AZURE_CR_USERNAME }}
+          password: ${{ secrets.AZURE_CR_PASSWORD }}
+          registry: ***ARANGO_DB_NAME***.azurecr.io
+          image_name: kg-appserver
+          image_tag: ${{ github.sha }},latest
           context: ./appserver
           dockerfile: ./Dockerfile
 
       - name: Build Client and Nginx Image
         uses: whoan/docker-build-with-cache-action@v5
         with:
-          username: _json_key
-          password: ${{ secrets.GCE_SA_KEY }}
-          registry: gcr.io
-          image_name: ${{ secrets.GCE_PROJECT }}/kg-webserver
-          image_tag: ${{ github.sha }}
+          username: ${{ secrets.AZURE_CR_USERNAME }}
+          password: ${{ secrets.AZURE_CR_PASSWORD }}
+          registry: ***ARANGO_DB_NAME***.azurecr.io
+          image_name: kg-webserver
+          image_tag: ${{ github.sha }},latest
           context: ./client
-          dockerfile: ./Dockerfile
-
-      - name: Build Redis
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: _json_key
-          password: ${{ secrets.GCE_SA_KEY }}
-          registry: gcr.io
-          image_name: ${{ secrets.GCE_PROJECT }}/kg-cache-service
-          image_tag: ${{ github.sha }}
-          context: ./cache-invalidator
-          dockerfile: ./Dockerfile
-
-      - name: Build NLP
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: _json_key
-          password: ${{ secrets.GCE_SA_KEY }}
-          registry: gcr.io
-          image_name: ${{ secrets.GCE_PROJECT }}/kg-nlpapi
-          image_tag: ${{ github.sha }}
-          context: ./nlp
           dockerfile: ./Dockerfile
 
   deploy:
     name: Deploy
     needs: build
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     steps:
 
@@ -120,4 +85,3 @@ jobs:
             --extra-vars set_app_build_number=${{ needs.build.outputs.output2 }}
             --extra-vars set_app_version=${{ needs.build.outputs.output3 }}
             --user ansible
-            --verbose
