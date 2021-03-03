@@ -20,7 +20,7 @@ import {
   Rect,
 } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
-import { PdfViewerComponent, RenderTextMode } from './pdf-viewer/pdf-viewer.component';
+import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { PDFPageViewport } from 'pdfjs-dist';
 import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -30,15 +30,10 @@ import { escape, uniqueId } from 'lodash';
 import { SEARCH_LINKS } from 'app/shared/links';
 
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { FindState, RenderTextMode } from './utils/constants';
 
 declare var jQuery: any;
 
-declare enum FindState {
-  FOUND = 0,
-  NOT_FOUND = 1,
-  WRAPPED = 2,
-  PENDING = 3,
-}
 
 @Component({
   // tslint:disable-next-line:component-selector
