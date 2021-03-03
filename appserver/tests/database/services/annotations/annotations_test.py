@@ -51,6 +51,7 @@ def annotate_pdf(
         excluded_annotations = []
 
     entity_results = entity_service.identify(
+        excluded_annotations=excluded_annotations,
         custom_annotations=custom_annotations,
         tokens=parsed,
         nlp_results=NLPResults(),
