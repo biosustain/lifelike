@@ -18,12 +18,27 @@ http:
         certResolver: "le"
         domains:
           - main: "azureqa.lifelike.bio"
+    lifelike-staging:
+      entryPoints:
+        - websecure
+      rule: "Host(`azurestaging.lifelike.bio`)"
+      service: lifelike-staging-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "azurestaging.lifelike.bio"
 
   services:
     lifelike-qa-service:
       loadBalancer:
         servers:
           - url: "http://10.0.100.5"
+  services:
+    lifelike-staging-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.100.7"
+
 
   middlewares:
     admin-auth:
