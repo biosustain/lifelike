@@ -1,16 +1,19 @@
 import { Observable, of } from 'rxjs';
 import { mapBlobToBuffer, mapBufferToJson } from '../../shared/utils/files';
 import { map, mergeMap } from 'rxjs/operators';
-import {
-  EnrichmentTableService,
-  EnrichmentWrapper,
-  GoNode,
-  NCBINode,
-  NCBIWrapper,
-} from '../services/enrichment-table.service';
+import { EnrichmentTableService, EnrichmentWrapper, GoNode, NCBINode, NCBIWrapper, } from '../services/enrichment-table.service';
 import { nullCoalesce } from '../../shared/utils/types';
 
-export class EnrichmentDocument {
+interface Parameters {
+  importGenes: string[];
+  taxID: string;
+  organism: string;
+  domains: string[];
+
+  [key: string]: any;
+}
+
+export class BaseEnrichmentDocument {
   taxID = '';
   organism = '';
   importGenes: string[] = [];
@@ -23,11 +26,15 @@ export class EnrichmentDocument {
   ];
   result: EnrichmentResult = null;
   duplicateGenes: string[] = [];
+  cachedResults = undefined;
 
-  constructor(protected readonly worksheetViewerService: EnrichmentTableService) {
-  }
-
-  setParameters(importGenes: string[], taxID: string, organism: string, domains?: string[]) {
+  parseParameters({
+                    importGenes,
+                    taxID,
+                    organism,
+                    domains,
+                    ...rest
+                  }: Parameters) {
     // parse the file content to get gene list and organism tax id and name
     const rawImportGenes = importGenes.map(gene => gene.trim()).filter((gene) => gene !== '');
     if (taxID === '562' || taxID === '83333') {
@@ -44,11 +51,21 @@ export class EnrichmentDocument {
     const [uniqueImportGenes, duplicateGenes] = this.removeDuplicates(rawImportGenes);
 
     // We set these all at the end to be thread/async-safe
-    this.importGenes = uniqueImportGenes;
-    this.taxID = taxID;
-    this.organism = organism;
-    this.domains = domains;
-    this.duplicateGenes = duplicateGenes;
+    return {
+      importGenes: uniqueImportGenes,
+      taxID,
+      organism,
+      domains,
+      duplicateGenes,
+      ...rest
+    };
+  }
+
+  setParameters(params) {
+    // We set these all at the end to be thread/async-safe
+    const parsedParams = this.parseParameters(params);
+    Object.assign(this, parsedParams);
+    return parsedParams;
   }
 
   /**
@@ -68,46 +85,70 @@ export class EnrichmentDocument {
     return [Array.from(uniqueArray), Array.from(duplicateArray)];
   }
 
-  load(blob: Blob): Observable<this> {
+  load(blob: Blob): Observable<Observable<BaseEnrichmentDocument>> {
     return of(blob)
       .pipe(
         mapBlobToBuffer(),
         mapBufferToJson<EnrichmentData>(),
-        mergeMap((data: EnrichmentData): Observable<this> => {
-          // parse the file content to get gene list and organism tax id and name
-          const resultArray = data.data.split('/');
-          const importGenes = resultArray[0].split(',');
-          const taxID = resultArray[1];
-          const organism = resultArray[2];
-          const domains = resultArray.length > 3 ? resultArray[3].split(',') : null;
-          this.setParameters(importGenes, taxID, organism, domains);
-
-          return (data.result ? of(data.result) : this.generateEnrichmentResults(domains, importGenes, taxID))
-            .pipe(
-              map((newResult: EnrichmentResult) => {
-                // We set these all at the end to be thread/async-safe
-                this.result = newResult;
-                return this;
-              }),
-            );
+        map((data: EnrichmentData): Observable<this> => {
+          const params = this.decode(data);
+          const parsed_params = this.setParameters(params);
+          return parsed_params;
         }),
       );
   }
 
-  save(): Observable<Blob> {
-    const data: EnrichmentData = {
+  encode({importGenes, taxID, organism, domains, result = {}, cachedResults = {}}) {
+    return {
       data: [
-        this.importGenes.join(','),
-        this.taxID,
-        this.organism,
-        this.domains.join(','),
+        importGenes.join(','),
+        taxID,
+        organism,
+        domains.join(','),
       ].join('/'),
-      ...(this.result != null ? {
-        result: this.result,
-      } : {}),
+      result,
+      cachedResults
     };
+  }
 
+  decode({data, ...rest}) {
+    // parse the file content to get gene list and organism tax id and name
+    const resultArray = data.split('/');
+    const importGenes = resultArray[0].split(',');
+    const taxID = resultArray[1];
+    const organism = resultArray[2];
+    const domains = resultArray.length > 3 ? resultArray[3].split(',') : null;
+
+    return {
+      importGenes, taxID, organism, domains, ...rest
+    };
+  }
+
+  save(): Observable<Blob> {
+    const data: EnrichmentData = this.encode(this);
     return of(new Blob([JSON.stringify(data)]));
+  }
+}
+
+export class EnrichmentDocument extends BaseEnrichmentDocument {
+  constructor(protected readonly worksheetViewerService: EnrichmentTableService) {
+    super();
+  }
+
+  load(blob: Blob): Observable<Observable<BaseEnrichmentDocument>> {
+    return super.load(blob)
+      .pipe(
+        mergeMap(({result, domains, importGenes, taxID}: EnrichmentData): Observable<this> => {
+          return (result ? of(result) : this.generateEnrichmentResults(domains, importGenes, taxID))
+            .pipe(
+              map((newResult: EnrichmentResult) => {
+                // We set these all at the end to be thread/async-safe
+                this.result = newResult;
+                return newResult;
+              }),
+            );
+        }),
+      );
   }
 
   refreshData(): Observable<this> {

@@ -18,7 +18,7 @@ interface Node {
   styleUrls: ['./clustergram.component.scss']
 })
 export class ClustergramComponent {
-  @Input() data: { gene: string, 'p-value': number }[];
+  @Input() data: { gene: string, 'p-value': number, geneNames: string[] }[];
   @Input() showMore;
 
   slice() {

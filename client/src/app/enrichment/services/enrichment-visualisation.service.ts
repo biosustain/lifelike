@@ -7,11 +7,9 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { map } from 'rxjs/operators';
+import { map, mergeMap } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { ENRICHMENT_VISUALISATION_MIMETYPE } from '../providers/enrichment-visualisation.type-provider';
-import { mapBlobToBuffer, mapBufferToJson } from '../../shared/utils/files';
-import { EnrichmentVisualisationData } from '../components/visualisation/enrichment-visualisation-viewer.component';
+import { BaseEnrichmentDocument } from '../models/enrichment-document';
 
 @Injectable()
 export class EnrichmentVisualisationService implements OnDestroy {
@@ -24,44 +22,36 @@ export class EnrichmentVisualisationService implements OnDestroy {
   }
 
   private currentFileId: string;
-  cachedResults;
-  parameters;
   object;
   loadTask: BackgroundTask<null, any>;
   loadTaskMetaData: BackgroundTask<null, any>;
   load: Observable<any>;
   unsavedChanges: any;
   loaded = false;
+  enrichmentDocument;
 
   ngOnDestroy() {
     this.save().subscribe();
   }
 
   set fileId(fileId: string) {
+    const enrichmentDocument = this.enrichmentDocument = new BaseEnrichmentDocument();
     this.currentFileId = fileId;
     this.loadTaskMetaData = new BackgroundTask(() =>
       this.filesystemService.get(
         this.fileId,
       ).pipe(
         this.errorHandler.create({label: 'Load enrichment visualisation'}),
-        map((value: FilesystemObject, _) => {
-          this.object = (value);
-          return value;
-        }),
+        map((value: FilesystemObject, _) => this.object = value),
       ));
     this.loadTask = new BackgroundTask(() =>
       this.filesystemService.getContent(
         this.fileId,
       ).pipe(
         this.errorHandler.create({label: 'Load enrichment visualisation'}),
-        mapBlobToBuffer(),
-        mapBufferToJson<EnrichmentVisualisationData>(),
-        map(({parameters, cachedResults}: EnrichmentVisualisationData) => {
-          this.cachedResults = (cachedResults);
-          this.parameters = (parameters);
-          return {parameters, cachedResults};
-        })
-      ));
+        mergeMap((blob: Blob) => enrichmentDocument.load(blob))
+      )
+    );
 
     this.load = combineLatest(
       this.loadTaskMetaData.results$,
@@ -81,26 +71,22 @@ export class EnrichmentVisualisationService implements OnDestroy {
    * @param analysis - analysis ID to be used
    */
   enrichWithGOTerms(analysis = 'fisher'): Observable<[]> {
-    const geneNames = this.parameters.genes;
-    const organism = !!this.parameters.organism ? this.parameters.organism : null;
+    const {importGenes: geneNames, taxID, organism, cachedResults} = this.enrichmentDocument;
     const uid = analysis + organism + geneNames.sort();
-    const existing = this.cachedResults.enrichWithGOTerms && this.cachedResults.enrichWithGOTerms[uid];
+    const existing = cachedResults.enrichWithGOTerms && cachedResults.enrichWithGOTerms[uid];
     if (existing) {
       return new Observable(subscriber => subscriber.next(existing));
     }
     return this.http.post<{ result: [] }>(
       `/api/enrichment-visualisation/enrich-with-go-terms`,
-      {geneNames, organism, analysis},
+      {geneNames, organism: `${taxID}/${organism}`, analysis},
       this.apiService.getHttpOptions(true),
     ).pipe(
       map((resp: any) => {
-        if (!this.cachedResults) {
-          this.cachedResults = {};
+        if (!cachedResults.enrichWithGOTerms) {
+          cachedResults.enrichWithGOTerms = {};
         }
-        if (!this.cachedResults.enrichWithGOTerms) {
-          this.cachedResults.enrichWithGOTerms = {};
-        }
-        return this.cachedResults.enrichWithGOTerms[uid] = resp.result;
+        return cachedResults.enrichWithGOTerms[uid] = resp.result;
       }),
     );
   }
@@ -110,26 +96,22 @@ export class EnrichmentVisualisationService implements OnDestroy {
    * @param analysis - analysis ID to be used
    */
   getGOSignificance(): Observable<[]> {
-    const geneNames = this.parameters.genes;
-    const organism = !!this.parameters.organism ? this.parameters.organism : null;
+    const {importGenes: geneNames, taxID, organism, cachedResults} = this.enrichmentDocument;
     const uid = organism + geneNames.sort();
-    const existing = this.cachedResults.GOSignificance && this.cachedResults.GOSignificance[uid];
+    const existing = cachedResults.GOSignificance && cachedResults.GOSignificance[uid];
     if (existing) {
       return new Observable(subscriber => subscriber.next(existing));
     }
     return this.http.post<{ result: [] }>(
       `/api/enrichment-visualisation/get_GO_significance`,
-      {geneNames, organism},
+      {geneNames, organism: `${taxID}/${organism}`},
       this.apiService.getHttpOptions(true),
     ).pipe(
       map((resp: any) => {
-        if (!this.cachedResults) {
-          this.cachedResults = {};
+        if (!cachedResults.GOSignificance) {
+          cachedResults.GOSignificance = {};
         }
-        if (!this.cachedResults.GOSignificance) {
-          this.cachedResults.GOSignificance = {};
-        }
-        return this.cachedResults.GOSignificance[uid] = resp.result;
+        return cachedResults.GOSignificance[uid] = resp.result;
       }),
     );
   }
@@ -138,17 +120,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
    * Save the current representation of knowledge model
    */
   save() {
-    const contentValue = new Blob([JSON.stringify({
-      parameters: this.parameters,
-      cachedResults: this.cachedResults,
-    })], {
-      type: ENRICHMENT_VISUALISATION_MIMETYPE,
-    });
-
-    // Push to backend to save
-    return this.filesystemService.save([this.fileId], {
-      contentValue,
-    })
+    return this.enrichmentDocument.save()
       .pipe(
         this.errorHandler.create({label: 'Update enrichment visualisation'}),
         map(() => {
@@ -158,22 +130,5 @@ export class EnrichmentVisualisationService implements OnDestroy {
           });
         }),
       );
-  }
-
-  matchNCBINodes(importGenes: string[], taxID: string) {
-    const existing = this.cachedResults && this.cachedResults.NCBINodes && this.cachedResults.NCBINodes[taxID + importGenes.sort()];
-    if (existing) {
-      return new Observable(() => existing);
-    }
-    return this.http.post<{ result: [] }>(
-      `/api/knowledge-graph/get-ncbi-nodes/enrichment-domains`,
-      {importGenes, taxID},
-      this.apiService.getHttpOptions(true),
-    ).pipe(
-      map((resp: any) => {
-        this.cachedResults.NCBINodes[taxID + importGenes.sort()] = resp.result;
-        return this.cachedResults.NCBINodes[taxID + importGenes.sort()];
-      }),
-    );
   }
 }

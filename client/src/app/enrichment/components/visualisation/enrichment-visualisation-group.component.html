@@ -1,6 +1,6 @@
 <div class="card" [ngStyle]="{margin: '15px 0'}">
-    <div [ngStyle]="{padding: '0.5em 1.25rem 0 1.25rem'}" class="card-header d-flex flex-wrap align-items-center">
-        {{title}}
+    <div style="padding: 0.5em 1.25rem 0 1.25rem;" class="card-header d-flex flex-wrap align-items-center">
+        <span style="padding:0.5rem 0;">{{title}}</span>
 
         <ng-container>
             <div class="module-toolbar d-flex align-items-center ml-auto">
@@ -45,7 +45,7 @@
             </div>
         </ng-container>
     </div>
-    <div class="card-body" style="display:block;" [ngbNavOutlet]="nav">
+    <div class="card-body" [ngbNavOutlet]="nav">
     </div>
     <div class="card-footer" [ngStyle]="{textAlign: 'right', cursor: 'pointer'}" (click)="showMoreToggle()">
         {{showMore ? "show less..." : "show more..."}}

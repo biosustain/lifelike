@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
-import { mergeMap, shareReplay, take, tap } from 'rxjs/operators';
+import { mergeMap, shareReplay, take, tap, map } from 'rxjs/operators';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ObjectCreationService } from '../../../file-browser/services/object-creation.service';
@@ -58,8 +58,10 @@ export class EnrichmentTableViewerComponent implements OnInit {
       }),
       shareReplay(),
     );
+    const enrichmentDocument = new EnrichmentDocument(this.worksheetViewerService);
     this.document$ = this.filesystemService.getContent(this.fileId).pipe(
-      mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).load(blob)),
+      mergeMap((blob: Blob) => enrichmentDocument.load(blob)),
+      map(() => enrichmentDocument),
       shareReplay(),
     );
     this.table$ = this.document$.pipe(
