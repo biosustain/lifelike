@@ -10,8 +10,8 @@
       <i [style.visibility]="value?.length === 0 ? 'hidden': 'visible'" class="fa fa-times"></i>
     </button>
   </div>
-  <div *ngIf="resultCount" class="input-group-append" [ngStyle]="{flexGrow:1}">
-              <span class="input-group-text" id="increment-btn" [ngStyle]="{width:'100%'}">
+  <div *ngIf="resultCount" class="input-group-append" style="flex-grow:1;">
+              <span class="input-group-text" id="increment-btn" style="width:100%;">
                 {{resultIndex + 1}} of {{resultCount}}
                 <span *ngIf="searching" style="display:block; text-align: center;" class="ml-1">
                   <i

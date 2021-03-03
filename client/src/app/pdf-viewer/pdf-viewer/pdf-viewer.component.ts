@@ -25,6 +25,7 @@ import {
 import { createEventBus } from '../utils/event-bus-utils';
 
 import * as viewerx from 'pdfjs-dist/web/pdf_viewer';
+import { FindState, RenderTextMode } from '../utils/constants';
 
 declare var require: any;
 let PDFJS: any;
@@ -42,18 +43,8 @@ if (!isSSR()) {
   PDFJS.verbosity = PDFJS.VerbosityLevel.ERRORS;
 }
 
-enum FindState {
-  FOUND = 0,
-  NOT_FOUND = 1,
-  WRAPPED = 2,
-  PENDING = 3,
-}
 
-export enum RenderTextMode {
-  DISABLED,
-  ENABLED,
-  ENHANCED
-}
+
 
 @Component({
   selector: 'app-pdf-viewer-lib',
