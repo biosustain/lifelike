@@ -7,7 +7,7 @@ from neo4japp.models.files import AnnotationChangeCause
 from neo4japp.schemas.account import UserSchema
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import ResultListSchema
-from neo4japp.services.annotations.constants import AnnotationMethod
+from neo4japp.schemas.enrichment import EnrichmentTableSchema, EnrichmentTextMapping
 
 
 class FallbackOrganismSchema(Schema):  # Not camel case!
@@ -27,6 +27,11 @@ class FallbackOrganismSchema(Schema):  # Not camel case!
         )
 
 
+class AnnotationMethod(CamelCaseSchema):
+    nlp = fields.Boolean(required=True)
+    rules_based = fields.Boolean(required=True)
+
+
 # ========================================
 # Generation
 # ========================================
@@ -37,7 +42,15 @@ class FallbackOrganismSchema(Schema):  # Not camel case!
 class AnnotationGenerationRequestSchema(CamelCaseSchema):
     """Request for initial annotation or re-annotation."""
     organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
-    annotation_method = EnumField(AnnotationMethod, by_value=True)
+    texts = fields.List(fields.Nested(EnrichmentTextMapping), allow_none=True)
+    enrichment = fields.Nested(EnrichmentTableSchema, allow_none=True)
+    annotation_configs = fields.Dict(
+        keys=fields.String(),
+        values=fields.Nested(AnnotationMethod, required=True), allow_none=True)
+
+
+class RefreshEnrichmentAnnotationsRequestSchema(CamelCaseSchema):
+    refresh = fields.Boolean(required=True)
 
 
 # Responses
@@ -49,7 +62,7 @@ class AnnotationGenerationResultSchema(CamelCaseSchema):
 
 
 class MultipleAnnotationGenerationResponseSchema(CamelCaseSchema):
-    results = fields.Dict(keys=fields.String(),
+    mapping = fields.Dict(keys=fields.String(),
                           values=fields.Nested(AnnotationGenerationResultSchema))
     missing = fields.List(fields.String)
 

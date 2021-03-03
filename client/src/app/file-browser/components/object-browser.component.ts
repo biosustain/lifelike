@@ -162,9 +162,6 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
 
   reannotate(targets: FilesystemObject[]) {
     this.actions.reannotate(targets).then(() => {
-      this.snackBar.open(`Selected files re-annotated.`, 'Close', {
-        duration: 5000,
-      });
       this.load(this.hashId);
     }, () => {
     });
@@ -228,9 +225,8 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
           newTab: true,
         });
       }
-    }, this.errorHandler.createCallback({
-      label: 'Create action',
-    }));
+    }, () => {
+    });
   }
 
 }

@@ -1,22 +1,26 @@
+import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
+
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
 import {
   AbstractObjectTypeProvider,
   CreateActionOptions,
   CreateDialogAction,
   Exporter,
   PreviewOptions,
-} from '../../file-browser/services/object-type.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
+} from 'app/file-browser/services/object-type.service';
+import { SearchType } from 'app/search/shared';
+import { RankedItem } from 'app/shared/schemas/common';
+
 import { MapComponent } from '../components/map.component';
-import { Observable, of } from 'rxjs';
-import { RankedItem } from '../../shared/schemas/common';
-import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
 import { UniversalGraph } from '../services/interfaces';
-import { SearchType } from '../../search/shared';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { map } from 'rxjs/operators';
 
 export const MAP_MIMETYPE = 'vnd.lifelike.document/map';
+export const MAP_SHORTHAND = 'map';
 
 @Injectable()
 export class MapTypeProvider extends AbstractObjectTypeProvider {
@@ -76,7 +80,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: MAP_MIMETYPE, name: 'Maps'}),
+      Object.freeze({id: MAP_MIMETYPE, shorthand: 'map', name: 'Maps'}),
     ];
   }
 

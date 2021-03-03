@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, ViewEncapsulation } from '@angular/core';
 
 import { uniqueId } from 'lodash';
 
@@ -10,8 +10,10 @@ import { LegendService } from 'app/shared/services/legend.service';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
+import { defaultSortingAlgorithm, SortingAlgorithm } from '../sorting/sorting-algorithms';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
+import { NodeLegend } from '../../interfaces';
 
 @Component({
   selector: 'app-word-cloud',
@@ -19,15 +21,15 @@ import { AnnotationsService } from '../../file-browser/services/annotations.serv
   styleUrls: ['./word-cloud.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class WordCloudComponent {
+export class WordCloudComponent implements OnDestroy {
   id = uniqueId('WordCloudComponent-');
 
   @Input() title = 'Entity Cloud';
   @Input() object: FilesystemObject;
   @Input() clickableWords = false;
-  @Output() wordOpen = new EventEmitter<WordCloudAnnotationFilterEntity>();
+  @Output() wordOpen = new EventEmitter<WordOpen>();
 
-  loadTask: BackgroundTask<[], any>;
+  loadTask: BackgroundTask<[], [NodeLegend, string]>;
   annotationsLoadedSub: Subscription;
 
   wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
@@ -39,18 +41,25 @@ export class WordCloudComponent {
   WORD_CLOUD_MARGIN = 10;
   MAX_ALGO_INPUT = 1000;
 
+  sorting: SortingAlgorithm = defaultSortingAlgorithm;
+  sortingChanged = false;
+
   keywordsShown = true;
 
-  constructor(protected readonly pdfAnnotationService: AnnotationsService,
+  constructor(protected readonly annotationsService: AnnotationsService,
               protected readonly legendService: LegendService) {
     this.initWordCloud();
+  }
+
+  ngOnDestroy() {
+    this.annotationsLoadedSub.unsubscribe();
   }
 
   initDataFetch() {
     this.loadTask = new BackgroundTask(() => {
       return combineLatest(
         this.legendService.getAnnotationLegend(),
-        this.pdfAnnotationService.getAnnotationCounts(this.object.hashId),
+        this.annotationsService.getSortedAnnotations(this.object.hashId, this.sorting.id),
       );
     });
   }
@@ -59,7 +68,6 @@ export class WordCloudComponent {
     this.initDataFetch();
     this.annotationsLoadedSub = this.loadTask.results$.subscribe(({
                                                                     result: [legend, annotationExport],
-                                                                    value: [],
                                                                   }) => {
       // Reset legend
       Object.keys(legend).forEach(label => {
@@ -67,12 +75,7 @@ export class WordCloudComponent {
       });
 
       this.setAnnotationData(annotationExport);
-
-      // Need a slight delay between the data having been loaded and drawing the word cloud, seems like the BackgroundTask doesn't quite
-      // adhere to the normal change detection cycle.
-      setTimeout(() => {
-        this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), true);
-      }, 10);
+      this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), true);
     });
 
     this.getAnnotations();
@@ -89,7 +92,13 @@ export class WordCloudComponent {
     this.loadTask.update([]);
   }
 
-  setAnnotationData(annotationExport: any) {
+  sort(algorithm) {
+    this.sortingChanged = true;
+    this.sorting = algorithm;
+    this.initWordCloud();
+  }
+
+  setAnnotationData(annotationExport: string) {
     // Reset annotation data
     this.annotationData = [];
     this.wordVisibilityMap.clear();
@@ -102,7 +111,7 @@ export class WordCloudComponent {
     // remove empty line at the end of the tsv response
     annotationList.pop();
     annotationList.forEach(e => {
-      //  entity_id	  type	  text	  primary_name  count
+      //  entity_id	  type	  text	  primary_name  value
       //  col[0]      col[1]  col[2]  col[3]        col[4]
       const cols = e.split('\t');
       const uniquePair = cols[0] === '' ? cols[1] + cols[2] : cols[0] + cols[1];
@@ -115,10 +124,13 @@ export class WordCloudComponent {
           keyword: cols[2],
           primaryName: cols[3],
           text: cols[2],
-          frequency: parseInt(cols[4], 10),
+          frequency: Number(cols[4]),
           shown: true,
         } as WordCloudAnnotationFilterEntity;
-        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotation), annotation.frequency >= 1);
+        this.wordVisibilityMap.set(
+          this.getAnnotationIdentifier(annotation),
+          this.sorting.min === undefined || annotation.frequency >= this.sorting.min,
+        );
         this.annotationData.push(annotation);
         uniquePairMap.set(uniquePair, this.annotationData.length - 1);
       } else {
@@ -261,9 +273,10 @@ export class WordCloudComponent {
     this.updateWordVisibility(words);
 
     const {width, height} = this.getCloudSvgDimensions();
+    const componentId = this.id;
 
     // create a tooltip
-    const tooltip = d3.select(`#${this.id}cloud-wrapper`)
+    const tooltip = d3.select(`#${componentId}cloud-wrapper`)
       .append('div')
       .style('opacity', 0)
       .attr('class', 'tooltip')
@@ -274,7 +287,6 @@ export class WordCloudComponent {
       .style('padding', '5px');
 
     // Also create a function for the tooltip content, to be shown when the text is hovered over
-    const componentId = this.id;
     const keywordsShown = this.keywordsShown;
     const mousemove = function(d) {
       const coordsOfCloud = document.getElementById(`${componentId}cloud-wrapper`).getBoundingClientRect() as DOMRect;
@@ -297,7 +309,10 @@ export class WordCloudComponent {
       .enter()
       .append('text')
       .on('click', (item: WordCloudAnnotationFilterEntity) => {
-        this.wordOpen.emit(item);
+        this.wordOpen.emit({
+          entity: item,
+          keywordsShown: this.keywordsShown,
+        });
       })
       .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
       .style('fill', (d) => d.color)
@@ -373,7 +388,10 @@ export class WordCloudComponent {
       .attr('text-anchor', 'middle')
       .text((d) => d.text)
       .on('click', (item: WordCloudAnnotationFilterEntity) => {
-        this.wordOpen.emit(item);
+        this.wordOpen.emit({
+          entity: item,
+          keywordsShown: this.keywordsShown,
+        });
       })
       .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
       .style('font-size', (d) => d.size + 'px')
@@ -400,7 +418,9 @@ export class WordCloudComponent {
     const {width, height} = this.getCloudSvgDimensions();
 
     const maxAlgoInputSlice = data.length > this.MAX_ALGO_INPUT ? data.slice(0, this.MAX_ALGO_INPUT) : data;
-    const maximumCount = Math.max(...maxAlgoInputSlice.map(annotation => annotation.frequency as number));
+    const frequencies = maxAlgoInputSlice.map(annotation => annotation.frequency as number);
+    const maximum = Math.max(...frequencies);
+    const minimum = Math.min(...frequencies);
 
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
     const layout = cloud()
@@ -408,7 +428,7 @@ export class WordCloudComponent {
       .words(maxAlgoInputSlice)
       .padding(3)
       // max ~48px, min ~12px
-      .fontSize((d) => ((d.frequency / maximumCount) * 36) + 12)
+      .fontSize((d) => (((d.frequency - minimum) / (maximum - minimum)) * 36) + 12)
       .rotate(() => 0)
       // TODO: Maybe in the future we can allow the user to define their own rotation intervals,
       // but for now just keep it simple and don't rotate the words
@@ -417,4 +437,9 @@ export class WordCloudComponent {
       .on('end', words => initial ? this.createInitialWordCloudElements(words) : this.updateWordCloudElements(words));
     layout.start();
   }
+}
+
+class WordOpen {
+  entity: WordCloudAnnotationFilterEntity;
+  keywordsShown: boolean;
 }

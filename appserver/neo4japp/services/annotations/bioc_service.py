@@ -33,7 +33,10 @@ class BiocDocumentService:
     ):
         document = BioCDocument()
         document.id = file_uri
-        text = self.printable(text).replace('\r\n', '\n')
+        # this was stripping out characters like apostrophe, etc
+        # which created a discrepancies in the index offset
+        # of the final text
+        # text = self.printable(text).replace('\r\n', '\n')
         passage = BioCPassage()
         passage.offset = 0
         passage.text = text

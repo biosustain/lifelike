@@ -19,7 +19,7 @@ export class ObjectInfoComponent implements OnInit {
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
   _object: FilesystemObject | undefined;
   highlightLimit = this.defaultHighlightLimit;
-  highlightOptions: FindOptions = {keepSearchSpecialChars: true};
+  highlightOptions: FindOptions = {keepSearchSpecialChars: true, wholeWord: true};
 
   @Input()
   set object(object: FilesystemObject | undefined) {

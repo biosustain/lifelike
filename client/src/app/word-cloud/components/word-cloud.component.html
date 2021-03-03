@@ -11,7 +11,7 @@
     <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
   </app-module-error>
 
-  <div *ngIf="status.resultsShown" class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
+  <div class="position-absolute w-100 h-100 d-flex flex-column" [ngStyle]="{'z-index': 0, 'display': status.resultsShown ? 'initial': 'none'}">
     <div class="module">
       <div class="module-header">
         <div class="module-title-bar d-flex justify-content-between">
@@ -34,14 +34,14 @@
               </button>
               <button class="btn btn-secondary text-nowrap"
                       ngbTooltip="Fit Cloud to Window"
-                      placement="bottom top left right"
+                      placement="bottom top bottom-left top-left"
                       (click)="fitCloudToWindow()">
                 <i class="fas fa-fw fa-expand-arrows-alt"></i>
               </button>
               <button class="btn btn-secondary"
                       ngbTooltip="Reload Annotations"
                       container="body"
-                      placement="bottom top left right"
+                      placement="bottom top bottom-right bottom-left top-right top-left"
                       (click)="getAnnotations()">
                 <i class="fa fa-fw fa-sync"></i>
               </button>
@@ -49,9 +49,18 @@
                       (click)="toggleFiltersPanel()"
                       ngbTooltip="Show Annotation Filters"
                       container="body"
-                      placement="bottom top left right">
+                      placement="bottom top bottom-right top-right">
                 <i class="fa fa-fw fa-filter"></i>
               </button>
+              <div ngbDropdown container="body" class="btn-group" role="group"
+                   ngbTooltip="Method for word size calculation"
+                   placement="bottom-right top-right">
+                <button class="btn btn-secondary" ngbDropdownToggle>
+                  <i class="fas fa-sort-size-down"></i>
+                    <span *ngIf="sortingChanged" class="mx-2">{{sorting.name}}</span>
+                </button>
+                <app-sorting-algorithms (changeSorting)="sort($event)" [selected]="sorting" ngbDropdownMenu></app-sorting-algorithms>
+              </div>
             </div>
           </div>
         </div>
@@ -80,6 +89,9 @@
               </button>
             </div>
             <app-word-cloud-annotation-filter
+              [clickableWords]="true"
+              (wordOpen)="this.wordOpen.emit({entity: $event, keywordsShown: keywordsShown})"
+              [sortingAlgorithm]="sorting"
               [annotationData]="annotationData"
               (wordVisibilityOutput)="updateWordVisibilityMap($event)"
             ></app-word-cloud-annotation-filter>

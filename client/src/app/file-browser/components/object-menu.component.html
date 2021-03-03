@@ -27,7 +27,7 @@
 </ng-container>
 
 <ng-container
-  *ngIf="forEditing && (object.isCloneable || object.privileges.writable && (object.isMovable || object.isDeletable))">
+  *ngIf="(object.isCloneable || object.privileges.writable && (object.isMovable || object.isDeletable))">
   <button ngbDropdownItem (click)="openCloneDialog(object)" *ngIf="object.isCloneable">
     Copy{{ nameEntity && object.isDirectory ? ' folder' : ''}} to...
   </button>
@@ -54,6 +54,12 @@
   </ng-container>
   <button ngbDropdownItem (click)="openShareDialog(object)">
     Copy{{ nameEntity && object.isDirectory ? ' folder' : ''}} link...
+  </button>
+  <button *ngIf="object.uploadUrl" ngbDropdownItem (click)="openLink(object.uploadUrl)">
+    Open source URL...
+  </button>
+  <button *ngIf="object.doi" ngbDropdownItem (click)="openLink(object.doi)">
+    Open DOI...
   </button>
   <ng-container *ngIf="object.isNavigable">
     <button ngbDropdownItem [appLink]="['/file-navigator', object.project.name, object.hashId]"
