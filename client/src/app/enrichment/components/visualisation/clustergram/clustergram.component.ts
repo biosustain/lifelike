@@ -18,15 +18,17 @@ interface Node {
   styleUrls: ['./clustergram.component.scss']
 })
 export class ClustergramComponent {
+  @Input() data: { gene: string, 'p-value': number }[];
+  @Input() showMore;
 
-  @Input('data') set data(data) {
-    this.genes = [...data.reduce((o, n) => n.geneNames.forEach(o.add.bind(o)) || o, new Set())];
+  slice() {
+    const data = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 25);
     const genes = new Map();
-    data.forEach((goTerm, goIndex)=>{
-      goTerm.geneNames.forEach(g=>{
+    data.forEach((goTerm, goIndex) => {
+      goTerm.geneNames.forEach(g => {
         let gene_row = genes.get(g);
-        if(!gene_row) {
-          gene_row = Array(data.length).fill()
+        if (!gene_row) {
+          gene_row = new Array(data.length);
           genes.set(g, gene_row);
         }
         gene_row[goIndex] = true;
@@ -36,12 +38,14 @@ export class ClustergramComponent {
     this.goTerms = data;
   }
 
-  get data() {
-    return this._data;
+  ngOnInit() {
+    this.slice();
   }
 
-  private _data: any[] = [];
+  ngOnChanges(change) {
+    this.slice();
+  }
 
-  genes = [];
+  genes = new Map();
   goTerms = [];
 }
