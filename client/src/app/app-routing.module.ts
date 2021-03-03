@@ -263,6 +263,15 @@ const routes: Routes = [
       fontAwesomeIcon: 'fas fa-compass',
     },
   },
+  {
+    path: 'enrichment-visualisation/:project_name/:file_id',
+    component: EnrichmentVisualisationViewerComponent,
+    canActivate: [AuthGuard],
+    data: {
+      title: 'Enrichment Visualisation',
+      fontAwesomeIcon: 'fas chart-bar',
+    },
+  },
   // Old links
   {path: 'file-browser', redirectTo: 'projects', pathMatch: 'full'},
   {path: 'pdf-viewer/:file_id', redirectTo: 'projects/beta-project/files/:file_id', pathMatch: 'full'},

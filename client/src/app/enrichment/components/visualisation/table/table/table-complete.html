@@ -25,7 +25,7 @@
         </tbody>
     </table>
 
-    <div *ngIf="showControls" class="d-flex justify-content-between p-2">
+    <div *ngIf="showControls" class="d-flex justify-content-between p-2" style="flex-wrap: wrap;">
         <ngb-pagination
                 [collectionSize]="(total$ | async)!" [(page)]="service.page" [pageSize]="service.pageSize">
         </ngb-pagination>
