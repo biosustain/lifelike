@@ -5,16 +5,16 @@ import moment from 'moment';
 import { DirectoryObject } from '../../interfaces/projects.interface';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
 import {
-  KnowledgeMap,
+  KnowledgeMap, Source,
+  UniversalEntityData,
   UniversalGraph,
   UniversalGraphNode,
 } from '../../drawing-tool/services/interfaces';
-import { AppUser, User } from '../../interfaces';
-import { FilesystemObjectData, ProjectData } from '../schema';
+import { AppUser, OrganismAutocomplete, User } from '../../interfaces';
+import { AnnotationConfigs, FilesystemObjectData, ProjectData } from '../schema';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
-import { Observable } from 'rxjs';
-import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
 import { createObjectDragImage } from '../utils/drag';
+import { FilePrivileges, ProjectPrivileges } from './privileges';
 
 // These are legacy mime type definitions that have to exist in this file until
 // all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
@@ -22,12 +22,6 @@ const DIRECTORY_MIMETYPE = 'vnd.lifelike.filesystem/directory';
 const MAP_MIMETYPE = 'vnd.lifelike.document/map';
 const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 const PDF_MIMETYPE = 'application/pdf';
-
-export interface ProjectPrivileges {
-  readable: boolean;
-  writable: boolean;
-  administrable: boolean;
-}
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements Project {
@@ -87,12 +81,6 @@ export class ProjectImpl implements Project {
   }
 }
 
-export interface FilePrivileges {
-  readable: boolean;
-  writable: boolean;
-  commentable: boolean;
-}
-
 /**
  * This object represents both directories and every type of file in Lifelike. Due
  * to a lot of legacy code, we implement several legacy interfaces to reduce the
@@ -120,6 +108,8 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   privileges: FilePrivileges;
   recycled: boolean;
   effectivelyRecycled: boolean;
+  fallbackOrganism: OrganismAutocomplete;
+  annotationConfigs: AnnotationConfigs;
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
@@ -147,7 +137,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isAnnotatable() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === 'application/pdf';
+    return this.mimeType === 'application/pdf' || this.mimeType === 'vnd.lifelike.document/enrichment-table';
   }
 
   get isMovable() {
@@ -430,12 +420,32 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   addDataTransferData(dataTransfer: DataTransfer) {
     createObjectDragImage(this).addDataTransferData(dataTransfer);
-    dataTransfer.effectAllowed = 'all';
-    dataTransfer.setData('text/plain', this.name);
-    dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify({
+
+    const filesystemObjectTransfer: FilesystemObjectTransferData = {
       hashId: this.hashId,
-    } as FilesystemObjectTransferData));
-    dataTransfer.setData('application/lifelike-node', JSON.stringify({
+      privileges: this.privileges,
+    };
+
+    const sources: Source[] = [{
+      domain: 'File Source',
+      url: this.getCommands().join('/'),
+    }];
+
+    if (this.doi) {
+      sources.push({
+        domain: 'DOI',
+        url: this.doi,
+      });
+    }
+
+    if (this.uploadUrl) {
+      sources.push({
+        domain: 'Upload URL',
+        url: this.uploadUrl,
+      });
+    }
+
+    const node: Partial<Omit<UniversalGraphNode, 'data'>> & {data: Partial<UniversalEntityData>} = {
       display_name: this.name,
       label: this.type === 'map' ? 'map' : 'link',
       sub_labels: [],
@@ -444,12 +454,14 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
           type: 'PROJECT_OBJECT',
           id: this.id + '',
         }],
-        sources: [{
-          domain: 'File Source',
-          url: this.getCommands().join('/'),
-        }],
+        sources,
       },
-    } as Partial<UniversalGraphNode>));
+    };
+
+    dataTransfer.effectAllowed = 'all';
+    dataTransfer.setData('text/plain', this.name);
+    dataTransfer.setData(FILESYSTEM_OBJECT_TRANSFER_TYPE, JSON.stringify(filesystemObjectTransfer));
+    dataTransfer.setData('application/lifelike-node', JSON.stringify(node));
   }
 
   private getId(): any {
@@ -509,7 +521,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
       'annotationsDate', 'uploadUrl', 'highlight',
       'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
-      'effectivelyRecycled']) {
+      'effectivelyRecycled', 'fallbackOrganism', 'annotationConfigs']) {
       if (key in data) {
         this[key] = data[key];
       }

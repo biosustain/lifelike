@@ -77,6 +77,9 @@ class AppUser(RDBMSBase, TimestampMixin, HashIdMixin):
             self.password_hash.encode("utf-8")
         )
 
+    def has_role(self, role: str):
+        return role in [r.name for r in self.roles]
+
     @classmethod
     def query_by_email(cls, email: str) -> Query:
         return cls.query.filter(cls.email == email)

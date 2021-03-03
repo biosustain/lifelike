@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup } from '@angular/forms';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { FormComponent } from 'app/shared/components/base/form.component';
@@ -12,12 +12,10 @@ import { SearchType } from '../shared';
   templateUrl: './content-search-form.component.html',
 })
 export class ContentSearchFormComponent extends FormComponent<ContentSearchOptions> {
-  @Input() typeChoices: SearchType[] = [];
   @Output() formResult = new EventEmitter<ContentSearchOptions>();
 
   form = new FormGroup({
-    q: new FormControl('', [Validators.required, this.whitespaceValidator]),
-    mimeTypes: new FormControl([]),
+    q: new FormControl(''),
   });
 
   constructor(messageDialog: MessageDialog) {
@@ -25,15 +23,30 @@ export class ContentSearchFormComponent extends FormComponent<ContentSearchOptio
   }
 
   @Input() set params(params: ContentSearchOptions) {
-    super.params = params;
+    super.params = {
+      ...params,
+      q: this.getQueryStringFromParams(params),
+    };
   }
 
-  choiceLabel(choice) {
-    return choice.name;
-  }
+  getQueryStringFromParams(params: ContentSearchOptions) {
+    const q = [];
+    if (params.hasOwnProperty('q') && params.q !== '') {
+      q.push(params.q);
+    }
+    if (params.hasOwnProperty('wildcards') && params.wildcards !== '') {
+      q.push(params.wildcards);
+    }
+    if (params.hasOwnProperty('phrase') && params.phrase !== '') {
+      q.push(`"${params.phrase}"`);
+    }
+    if (params.hasOwnProperty('types') && params.types !== []) {
+      params.types.forEach(type => q.push(`type:${type.shorthand}`));
+    }
+    if (params.hasOwnProperty('projects') && params.projects !== []) {
+      params.projects.forEach(project => q.push(`project:${project}`));
+    }
 
-  whitespaceValidator(control: AbstractControl): { [key: string]: any } | null {
-    const val = control.value as string;
-    return val.length > 0 && val.match(/.*\S.*/) === null ? {whitespace: {value: control.value}} : null;
+    return q.join(' ');
   }
 }
