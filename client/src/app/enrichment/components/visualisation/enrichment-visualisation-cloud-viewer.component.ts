@@ -15,13 +15,9 @@ import { BackgroundTask } from '../../../shared/rxjs/background-task';
   templateUrl: './enrichment-visualisation-cloud-viewer.component.html',
   styleUrls: ['./enrichment-visualisation-viewer.component.scss']
 })
-export class EnrichmentVisualisationCloudViewerComponent implements OnInit, OnDestroy, ModuleAwareComponent, OnChanges {
-  @Input() titleVisible = true;
+export class EnrichmentVisualisationCloudViewerComponent implements OnInit, ModuleAwareComponent, OnChanges {
 
-  paramsSubscription: Subscription;
-  queryParamsSubscription: Subscription;
 
-  returnUrl: string;
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
@@ -38,7 +34,6 @@ export class EnrichmentVisualisationCloudViewerComponent implements OnInit, OnDe
 
   data: { text: any; frequency: any }[] = [];
 
-  selectedRow = 0;
   loadTask: BackgroundTask<string, any>;
   loadSubscription: Subscription;
 
@@ -53,27 +48,6 @@ export class EnrichmentVisualisationCloudViewerComponent implements OnInit, OnDe
       this.data = result.result.map(d => ({text: d['gene'], frequency: d['n_related_GO_terms']}));
       this.loadingData = false;
     });
-  }
-
-  ngOnDestroy() {
-    // todo
-  }
-
-  shouldConfirmUnload() {
-    return this.enrichmentService.unsavedChanges.getValue();
-  }
-
-  setCloudData() {
-    // this.data = this.data[this.selectedRow].Genes.split(';');
-  }
-
-  // events
-  public chartClick({event, active}: { event: MouseEvent, active: {}[] }): void {
-    console.log('active', active[0]);
-    if (active[0]) {
-      this.selectedRow = (active[0] as any)._index;
-      this.setCloudData();
-    }
   }
 
   ngOnInit() {
