@@ -203,6 +203,7 @@ def _create_annotations(
     start_lmdb_time = time.time()
     entity_results = entity_recog.identify(
         custom_annotations=custom_annotations,
+        excluded_annotations=excluded_annotations,
         tokens=parsed,
         nlp_results=nlp_results,
         annotation_method=annotation_method
