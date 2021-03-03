@@ -5,7 +5,7 @@ on:
     branches:
       - master
     tags:
-      - azureqa
+      - qa
 
 jobs:
   build:
