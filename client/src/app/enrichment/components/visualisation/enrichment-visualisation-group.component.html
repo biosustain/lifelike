@@ -30,6 +30,17 @@
                             </app-enrichment-visualisation-chart-viewer>
                         </ng-template>
                     </li>
+                    <li ngbNavItem="clustergram">
+                        <a ngbNavLink>Clustergram</a>
+                        <ng-template ngbNavContent>
+                            <app-clustergram
+                                    [data]="data"
+                                    [showMore]="showMore"
+                            >
+
+                            </app-clustergram>
+                        </ng-template>
+                    </li>
                 </ul>
             </div>
         </ng-container>

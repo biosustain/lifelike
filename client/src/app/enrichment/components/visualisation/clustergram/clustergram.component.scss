@@ -1,92 +1,28 @@
 table {
-  display: table;
-  width: 100%;
+  width: calc(100% - 3em);
 
-  tr, th[scope="row"] {
-    display: table-cell;
+  thead tr {
+    height: 5em;
 
-    td, th[scope="col"] {
-      display: block;
-    }
-  }
-}
+    th {
+      position: relative;
 
-th[scope="row"] {
-  display: block !important;
-  width: 1em;
-  padding: 0;
+      &[scope="col"] {
+        padding: 0;
 
-  & span {
-    display: block;
-    transform-origin: 0 100%;
-    transform: translateX(100%) rotate(-45deg);
-  }
-}
-
-td {
-  color: transparent;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-tr:first-child {
-  height: 100px;
-}
-
-
-.grid {
-  display: grid;
-  grid-template-columns: auto;
-  grid-template-rows: auto;
-  width: fit-content;
-  overflow: hidden;
-
-  &:before {
-    display: block;
-    grid-column: 1;
-    grid-row: 1;
-    content: "\00a0";
-  }
-
-  .gene {
-    grid-column: 1;
-    position: relative;
-
-    &:after {
-      display: block;
-      content: "\00a0";
-      position: absolute;
-      width: 9999px;
-      bottom: 0;
-      border-top: 1px solid pink;
+        & span {
+          width: 1.5em;
+          overflow-wrap: initial;
+          display: block;
+          transform-origin: 0 100%;
+          transform: translateX(100%) rotate(-45deg);
+        }
+      }
     }
   }
 
-  .goId {
-    grid-row: 1;
-    position: relative;
-
-    &:after {
-      display: block;
-      content: "\00a0";
-      position: absolute;
-      height: 9999px;
-      left: 0;
-      border-left: 1px solid pink;
-    }
-  }
-
-  .vertical-line {
-    border-bottom: 1px solid #0f227d;
-    grid-column: 1 / -1;
-  }
-
-  .horizontal-line {
-    border-bottom: 1px solid #0f227d;
-    grid-row: 1 / -1;
-  }
-
-  div {
-    border: 1px solid black;
+  tbody td.match {
+    background-color: red;
+    border-left: 1px solid white;
   }
 }
