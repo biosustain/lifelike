@@ -53,15 +53,6 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <button class="btn btn-primary w-100"
-                    (click)="searchMapNodeInVisualizer(node)"
-            >Search in Knowledge Graph</button>
-            <button class="btn btn-primary w-100 mt-1"
-                    (click)="searchMapNodeInContent(node)"
-            >Search in File Content</button>
-          </div>
-
           <label class='d-table w-100'>
             <span class='d-table-cell' style="width: inherit;">Hyperlinks:</span>
             <span (click)='addHyperlink()' class='d-tabble-cell badge badge-primary'><i class="fa fa-plus"></i></span>
@@ -88,8 +79,30 @@
 
           <fieldset class="fieldset-properties mt-4"
                     *ngIf="(node.display_name != null && node.display_name.length) || node.data?.search">
-            <legend>Quick Search <i class="fas fa-external-link-alt ml-1"></i></legend>
+            <legend>Search Internal <i class="fas fa-external-link-alt ml-1"></i></legend>
 
+            <ul class="list-unstyled m-0">
+              <li class="text-truncate">
+                <div class="btn btn-link p-0" (click)="searchMapNodeInVisualizer(node)">
+                  Knowledge Graph
+                </div>
+              </li>
+              <li class="text-truncate">
+                <div class="btn btn-link p-0" (click)="searchMapNodeInContent(node, '')">
+                  All Content
+                </div>
+              </li>
+              <li class="text-truncate">
+                <div class="btn btn-link p-0" (click)="searchMapNodeInContent(node, 'map')">
+                  Map Content
+                </div>
+              </li>
+            </ul>
+          </fieldset>
+
+          <fieldset class="fieldset-properties mt-4"
+                    *ngIf="(node.display_name != null && node.display_name.length) || node.data?.search">
+            <legend>Search External <i class="fas fa-external-link-alt ml-1"></i></legend>
             <app-quick-search [query]="node.display_name" [links]="node.data?.search"></app-quick-search>
           </fieldset>
 

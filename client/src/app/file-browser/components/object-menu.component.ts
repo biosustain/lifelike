@@ -191,4 +191,7 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
     }
   }
 
+  openLink(url: string) {
+    window.open(url);
+  }
 }

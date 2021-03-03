@@ -76,8 +76,8 @@ class ProjectCalculator:
             project_writable = self.result[f'has_project-write_{user_id}']
 
             privileges = ProjectPrivileges(
-                readable=project_manageable or project_readable,
-                writable=project_manageable or (project_readable and project_writable),
+                readable=project_manageable or project_readable or project_writable,
+                writable=project_manageable or project_writable,
                 administrable=project_manageable,
             )
 
