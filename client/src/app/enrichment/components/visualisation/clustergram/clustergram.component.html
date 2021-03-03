@@ -1,27 +1,14 @@
-<table class="table table-striped">
+<table class="table table-striped column-hover">
+    <thead>
     <tr>
-        <td>A</td>
-        <th scope="col" *ngFor="let gene of genes">{{gene}}</th>
+        <th></th>
+        <th scope="col" *ngFor="let goTerm of goTerms"><span>{{goTerm.goId}}</span></th>
     </tr>
-    <tr *ngFor="let goTerm of goTerms">
-        <th scope="row"><span>{{ goTerm.goId }}</span></th>
-        <td *ngFor="let goGene of genes; let i = index"
-            [ngStyle]="{backgroundColor:goTerm.geneNames.includes(goGene) ?'red':''}">.</td>
+    </thead>
+    <tbody>
+    <tr *ngFor="let entry of genes | keyvalue">
+        <th scope="row">{{ entry.key }}</th>
+        <td *ngFor="let value of entry.value" [ngClass]="{match:value}"></td>
     </tr>
+    </tbody>
 </table>
-<div class="grid">
-    <ng-container *ngFor="let gene of genes">
-        <div class="gene">{{gene}}</div>
-    </ng-container>
-    <ng-container *ngFor="let goTerm of goTerms;let i = index">
-        <div class="goId">{{goTerm.goId}}</div>
-        <div
-                *ngFor="let gene of goTerm.geneNames;"
-                class="mtx_gene"
-                [ngStyle]="{
-                    gridColumn: 2 + i,
-                    gridRow: 2 + genes.indexOf(gene)
-                }"
-        >{{gene}}</div>
-    </ng-container>
-</div>
