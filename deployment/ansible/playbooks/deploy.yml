@@ -136,7 +136,7 @@
 
     - name: Seed elastic
       shell:
-        cmd: docker exec -d flask seed-elastic
+        cmd: docker exec -d appserver flask seed-elastic
 
     - name: Seed Elasticsearch with Global Annotations
       include_role:
