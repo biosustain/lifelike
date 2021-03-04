@@ -31,7 +31,7 @@ from neo4japp.utils import EventLog
 
 
 logger = logging.getLogger('elasticsearch')
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.CRITICAL)
 
 
 class ElasticService():
