@@ -1,23 +1,11 @@
-import { Component, EventEmitter, Input, NgZone, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { Subscription } from 'rxjs';
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { DownloadService } from 'app/shared/services/download.service';
 import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
-import { FilesystemService } from '../../../file-browser/services/filesystem.service';
-import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
-
-import { EnrichmentTableService } from '../../services/enrichment-table.service';
-import { MessageDialog } from '../../../shared/services/message-dialog.service';
-import { WorkspaceManager } from '../../../shared/workspace-manager';
-import { FilesystemObjectActions } from '../../../file-browser/services/filesystem-object-actions';
-import { MatSnackBar } from '@angular/material';
-import { EnrichmentVisualisationService } from '../../services/enrichment-visualisation.service';
+import { EnrichmentVisualisationService, EnrichWithGOTermsResult } from '../../services/enrichment-visualisation.service';
 
 @Component({
   selector: 'app-enrichment-visualisation-viewer',
@@ -27,19 +15,8 @@ import { EnrichmentVisualisationService } from '../../services/enrichment-visual
 })
 export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwareComponent {
 
-  constructor(protected readonly messageDialog: MessageDialog,
-              protected readonly ngZone: NgZone,
-              protected readonly workspaceManager: WorkspaceManager,
-              protected readonly filesystemObjectActions: FilesystemObjectActions,
-              protected readonly route: ActivatedRoute,
-              protected readonly worksheetViewerService: EnrichmentTableService,
-              readonly enrichmentService: EnrichmentVisualisationService,
-              protected readonly modalService: NgbModal,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly downloadService: DownloadService,
-              protected readonly snackBar: MatSnackBar,
-              protected readonly filesystemService: FilesystemService,
-              protected readonly progressDialog: ProgressDialog) {
+  constructor(protected readonly route: ActivatedRoute,
+              readonly enrichmentService: EnrichmentVisualisationService) {
     this.enrichmentService.fileId = this.route.snapshot.params.file_id || '';
     this.loadingData = true;
   }
@@ -49,11 +26,11 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
 
   loadTableTask: BackgroundTask<null, [FilesystemObject, EnrichmentVisualisationData]>;
   object: FilesystemObject;
-  groups = new Set([
+  groups = [
     'Biological Process',
     'Molecular Function',
-    'Biological Process'
-  ]);
+    'Cellular Component'
+  ];
   data = new Map([
     ['BiologicalProcess', undefined],
     ['MolecularFunction', undefined],
@@ -62,7 +39,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
 
   loadingData: boolean;
 
-  loadTask: BackgroundTask<string, []>;
+  loadTask: BackgroundTask<string, EnrichWithGOTermsResult[]>;
 
   loadSubscription: Subscription;
 
@@ -78,7 +55,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
     this.loadSubscription = this.loadTask.results$.subscribe((result) => {
       const data = result.result.sort((a, b) => a['p-value'] - b['p-value']);
       this.data.forEach((value, key, map) =>
-          map.set(key, data.filter(d => d.goLabel.includes(key)))
+          map.set(key, data.filter(({goLabel}) => goLabel.includes(key)))
       );
       this.loadingData = false;
     });
@@ -109,5 +86,4 @@ export interface EnrichmentVisualisationParameters {
 
 export interface EnrichmentVisualisationData {
   parameters: EnrichmentVisualisationParameters;
-  cachedResults: object;
 }

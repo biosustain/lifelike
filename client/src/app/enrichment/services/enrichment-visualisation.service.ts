@@ -11,6 +11,11 @@ import { map, mergeMap } from 'rxjs/operators';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { BaseEnrichmentDocument } from '../models/enrichment-document';
 
+export interface EnrichWithGOTermsResult {
+  'p-value': any;
+  'goLabel': string[];
+}
+
 @Injectable()
 export class EnrichmentVisualisationService implements OnDestroy {
 
@@ -29,10 +34,6 @@ export class EnrichmentVisualisationService implements OnDestroy {
   unsavedChanges: any;
   loaded = false;
   enrichmentDocument;
-
-  ngOnDestroy() {
-    this.save().subscribe();
-  }
 
   set fileId(fileId: string) {
     const enrichmentDocument = this.enrichmentDocument = new BaseEnrichmentDocument();
@@ -70,24 +71,14 @@ export class EnrichmentVisualisationService implements OnDestroy {
    * Match gene names to NCBI nodes with same name and has given taxonomy ID.
    * @param analysis - analysis ID to be used
    */
-  enrichWithGOTerms(analysis = 'fisher'): Observable<[]> {
-    const {importGenes: geneNames, taxID, organism, cachedResults} = this.enrichmentDocument;
-    const uid = analysis + organism + geneNames.sort();
-    const existing = cachedResults.enrichWithGOTerms && cachedResults.enrichWithGOTerms[uid];
-    if (existing) {
-      return new Observable(subscriber => subscriber.next(existing));
-    }
+  enrichWithGOTerms(analysis = 'fisher'): Observable<EnrichWithGOTermsResult[]> {
+    const {importGenes: geneNames, taxID, organism} = this.enrichmentDocument;
     return this.http.post<{ result: [] }>(
       `/api/enrichment-visualisation/enrich-with-go-terms`,
       {geneNames, organism: `${taxID}/${organism}`, analysis},
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map((resp: any) => {
-        if (!cachedResults.enrichWithGOTerms) {
-          cachedResults.enrichWithGOTerms = {};
-        }
-        return cachedResults.enrichWithGOTerms[uid] = resp.result;
-      }),
+      map((resp: any) => resp.result)
     );
   }
 
@@ -96,39 +87,14 @@ export class EnrichmentVisualisationService implements OnDestroy {
    * @param analysis - analysis ID to be used
    */
   getGOSignificance(): Observable<[]> {
-    const {importGenes: geneNames, taxID, organism, cachedResults} = this.enrichmentDocument;
+    const {importGenes: geneNames, taxID, organism} = this.enrichmentDocument;
     const uid = organism + geneNames.sort();
-    const existing = cachedResults.GOSignificance && cachedResults.GOSignificance[uid];
-    if (existing) {
-      return new Observable(subscriber => subscriber.next(existing));
-    }
     return this.http.post<{ result: [] }>(
       `/api/enrichment-visualisation/get_GO_significance`,
       {geneNames, organism: `${taxID}/${organism}`},
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map((resp: any) => {
-        if (!cachedResults.GOSignificance) {
-          cachedResults.GOSignificance = {};
-        }
-        return cachedResults.GOSignificance[uid] = resp.result;
-      }),
+      map((resp: any) => resp.result),
     );
-  }
-
-  /**
-   * Save the current representation of knowledge model
-   */
-  save() {
-    return this.enrichmentDocument.save()
-      .pipe(
-        this.errorHandler.create({label: 'Update enrichment visualisation'}),
-        map(() => {
-          // this.unsavedChanges.next(false);
-          this.snackBar.open('Visualisation saved.', null, {
-            duration: 2000,
-          });
-        }),
-      );
   }
 }

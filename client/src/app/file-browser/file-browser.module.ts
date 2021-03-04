@@ -43,8 +43,8 @@ import { ObjectCreationService } from './services/object-creation.service';
 import { ObjectAnnotateDialogComponent } from './components/dialog/object-annotate-dialog.component';
 import { FilesystemObjectTargetDirective } from './directives/filesystem-object-target.directive';
 import {AnnotationsService} from './services/annotations.service';
-import {WordCloudModule} from '../enrichment/components/visualisation/word-cloud/word-cloud.module';
-import {ChartModule} from '../enrichment/components/visualisation/chart/chart.module';
+import {WordCloudModule} from '../shared/components/word-cloud/word-cloud.module';
+import {ChartModule} from '../enrichment/components/visualisation/group/chart/chart.module';
 
 @NgModule({
   declarations: [
