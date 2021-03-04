@@ -4,13 +4,11 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subject, of } from 'rxjs';
 import { mergeMap, shareReplay, take, tap, map } from 'rxjs/operators';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ObjectCreationService } from '../../../file-browser/services/object-creation.service';
-import { EnrichmentVisualisationEditDialogComponent } from '../visualisation/dialog/enrichment-visualisation-edit-dialog.component';
-import { ENRICHMENT_VISUALISATION_MIMETYPE } from '../visualisation/table/enrichment-table-viewer.component';
 import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
 import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
@@ -58,10 +56,8 @@ export class EnrichmentTableViewerComponent implements OnInit {
       }),
       shareReplay(),
     );
-    const enrichmentDocument = new EnrichmentDocument(this.worksheetViewerService);
     this.document$ = this.filesystemService.getContent(this.fileId).pipe(
-      mergeMap((blob: Blob) => enrichmentDocument.load(blob)),
-      map(() => enrichmentDocument),
+      mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob)),
       shareReplay(),
     );
     this.table$ = this.document$.pipe(
@@ -82,7 +78,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
   }
 
   restore(version: ObjectVersion) {
-    this.document$ = new EnrichmentDocument(this.worksheetViewerService).load(version.contentValue).pipe(
+    this.document$ = new EnrichmentDocument(this.worksheetViewerService).loadResult(version.contentValue).pipe(
       tap(() => this.unsavedChanges$.next(true)),
       shareReplay(),
     );
@@ -125,31 +121,6 @@ export class EnrichmentTableViewerComponent implements OnInit {
       shareReplay(),
       this.errorHandler.create({label: 'Load enrichment table'}),
     );
-  }
-
-  createVisualisation() {
-    const dialogRef = this.modalService.open(EnrichmentVisualisationEditDialogComponent);
-    dialogRef.componentInstance.title = 'New Enrichment Visualisation Parameters';
-    dialogRef.componentInstance.submitButtonLabel = 'Next';
-    const object = new FilesystemObject();
-    object.filename = 'Untitled Enrichment Visualisation';
-    object.mimeType = ENRICHMENT_VISUALISATION_MIMETYPE;
-    // object.parent = this.object$.parent;
-    dialogRef.componentInstance.object = object;
-    dialogRef.componentInstance.data = {
-      // domains: this.domains,
-      // genes: this.importGenes,
-      // organism: this.organism
-    };
-
-    return dialogRef.result.then((parameters) => {
-      return this.objectCreationService.openCreateDialog(object, {
-        title: 'Name the Enrichment Visualisation',
-        request: {
-          contentValue: new Blob([JSON.stringify({parameters, cachedResults: {}})]),
-        }
-      });
-    });
   }
 
   save() {

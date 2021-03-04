@@ -4,8 +4,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
-import { NgbdSortableHeader } from './sortable.directive';
-import { NgbdTableComplete } from './table-complete';
+import { SortableTableHeaderDirective } from '../../../../../shared/directives/table-sortable-header.directive';
+import { TableCompleteComponent } from './table-complete.component';
 
 @NgModule({
   imports: [
@@ -15,8 +15,8 @@ import { NgbdTableComplete } from './table-complete';
     ReactiveFormsModule,
     NgbModule
   ],
-  declarations: [NgbdTableComplete, NgbdSortableHeader],
-  exports: [NgbdTableComplete],
-  bootstrap: [NgbdTableComplete]
+  declarations: [TableCompleteComponent, SortableTableHeaderDirective],
+  exports: [TableCompleteComponent],
+  bootstrap: [TableCompleteComponent]
 })
-export class NgbdTableCompleteModule {}
+export class TableCompleteComponentModule {}

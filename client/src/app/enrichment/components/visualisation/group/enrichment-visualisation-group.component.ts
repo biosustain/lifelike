@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { Subscription } from 'rxjs';
 import { ModuleProperties } from 'app/shared/modules';
-import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+import { FilesystemObject } from '../../../../file-browser/models/filesystem-object';
 
 @Component({
   selector: 'app-enrichment-visualisation-group',
@@ -13,21 +13,10 @@ export class EnrichmentVisualisationGroupComponent {
   constructor() {
   }
 
-  _data;
-
-  @Input()
-  set data(d) {
-    this._data = d;
-  }
-
-  get data() {
-    return this._data;
-  }
-
+  @Input() data;
   @Input() geneNames: string[];
   @Input() organism: string;
   @Input() analysis: string;
-
   @Input() title;
 
   paramsSubscription: Subscription;

@@ -4,21 +4,18 @@ import { Subscription } from 'rxjs';
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
-import { EnrichmentVisualisationService } from '../../services/enrichment-visualisation.service';
+import { EnrichmentVisualisationService } from '../../../services/enrichment-visualisation.service';
 
-import { WordCloudComponent } from './word-cloud/word-cloud.component';
-import { BackgroundTask } from '../../../shared/rxjs/background-task';
+import { WordCloudComponent } from '../../../../shared/components/word-cloud/word-cloud.component';
+import { BackgroundTask } from '../../../../shared/rxjs/background-task';
 
 
 @Component({
   selector: 'app-enrichment-visualisation-cloud-viewer',
   templateUrl: './enrichment-visualisation-cloud-viewer.component.html',
-  styleUrls: ['./enrichment-visualisation-viewer.component.scss']
+  styleUrls: ['../enrichment-visualisation-viewer.component.scss']
 })
 export class EnrichmentVisualisationCloudViewerComponent implements OnInit, ModuleAwareComponent, OnChanges {
-
-
-
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   @Input() geneNames: string[];

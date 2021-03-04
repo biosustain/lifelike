@@ -49,10 +49,11 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
       this.componentFactoryResolver.resolveComponentFactory(EnrichmentTablePreviewComponent);
     const componentRef = factory.create(this.injector);
     const instance: EnrichmentTablePreviewComponent = componentRef.instance;
+    const enrichmentDocument = new EnrichmentDocument(this.worksheetService);
     return contentValue$.pipe(
-      mergeMap(blob => new EnrichmentDocument(this.worksheetService).load(blob)),
-      map(document => {
-        instance.document = document;
+      mergeMap(blob => enrichmentDocument.load(blob)),
+      map(() => {
+        instance.document = enrichmentDocument;
         return componentRef;
       }),
     );
@@ -111,8 +112,10 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
     return of([{
       name: 'CSV',
       export: () => {
+        const enrichmentDocument = new EnrichmentDocument(this.worksheetViewerService);
         return this.filesystemService.getContent(object.hashId).pipe(
-          mergeMap(blob => new EnrichmentDocument(this.worksheetViewerService).load(blob)),
+          mergeMap(blob => enrichmentDocument.load(blob)),
+          map(() => enrichmentDocument),
           mergeMap(document => new EnrichmentTable().load(document)),
           mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
           map(blob => {

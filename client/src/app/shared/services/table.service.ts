@@ -1,10 +1,10 @@
-import { Injectable, PipeTransform } from '@angular/core';
+import { Injectable } from '@angular/core';
 
 import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 
 import { DecimalPipe } from '@angular/common';
 import { debounceTime, delay, switchMap, tap } from 'rxjs/operators';
-import { SortColumn, SortDirection } from './sortable.directive';
+import { SortColumn, SortDirection } from '../directives/table-sortable-header.directive';
 
 interface SearchResult {
   data: any[];
@@ -32,12 +32,12 @@ function sort(data: any[], column: SortColumn, direction: string): any[] {
   }
 }
 
-function matches(data: any, term: string, pipe: PipeTransform) {
+function matches(data: any, term: string) {
   const lowerCaseTerm = term.toLowerCase();
   return Object.values(data).some(d => String(d).toLowerCase().includes(lowerCaseTerm));
 }
 
-@Injectable({providedIn: 'root'})
+@Injectable()
 export class DataService {
   private _loading$ = new BehaviorSubject<boolean>(true);
   private _search$ = new Subject<void>();
@@ -95,33 +95,32 @@ export class DataService {
   }
 
   set page(page: number) {
-    this._set({page});
+    this.patch({page});
   }
 
   set pageSize(pageSize: number) {
-    this._set({pageSize});
+    this.patch({pageSize});
   }
 
   set searchTerm(searchTerm: string) {
-    this._set({searchTerm});
+    this.patch({searchTerm});
   }
 
   set sortColumn(sortColumn: SortColumn) {
-    this._set({sortColumn});
+    this.patch({sortColumn});
   }
 
   set sortDirection(sortDirection: SortDirection) {
-    this._set({sortDirection});
+    this.patch({sortDirection});
   }
 
-  private _set(patch: Partial<State>) {
+  patch(patch: Partial<State>) {
     Object.assign(this._state, patch);
     this._search$.next(this._inputData);
   }
 
   set inputData(data) {
     this._inputData = data;
-    console.log(data);
     this._search$.next(data);
   }
 
@@ -132,7 +131,7 @@ export class DataService {
     let data = sort(inputData, sortColumn, sortDirection);
 
     // 2. filter
-    data = data.filter(d => matches(d, searchTerm, this.pipe));
+    data = data.filter(d => matches(d, searchTerm));
     const total = data.length;
 
     // 3. paginate
