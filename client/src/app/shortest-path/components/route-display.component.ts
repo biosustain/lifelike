@@ -1,20 +1,14 @@
 import { Component, Input } from '@angular/core';
 
-import { DataSet, Edge, Node, Options } from 'vis-network';
+import { Options } from 'vis-network';
 
 import { isNullOrUndefined } from 'util';
 
-import { GraphData } from '../containers/shortest-path.component';
+import { GraphData } from 'app/interfaces/vis-js.interface';
 
 export enum DisplayType {
   NETWORK = 'network',
   SANKEY = 'sankey'
-}
-
-// TODO: Need to move this to a shared file to save repitition
-export interface VisNetworkData {
-  nodes: DataSet<Node, 'id'>;
-  edges: DataSet<Edge, 'id'>;
 }
 
 @Component({
@@ -28,8 +22,7 @@ export class RouteDisplayComponent {
   }
   @Input() set graphData(graphData: GraphData) {
     // Update vis js data
-    this.networkData.nodes = new DataSet<Node, 'id'>(graphData.nodes);
-    this.networkData.edges = new DataSet<Edge, 'id'>(graphData.edges);
+    this.networkData = graphData;
 
     // Update sankey data
     this.generateSankeyData(graphData.nodes, graphData.edges);
@@ -41,7 +34,7 @@ export class RouteDisplayComponent {
   currentDisplay: string;
 
   networkConfig: Options;
-  networkData: VisNetworkData;
+  networkData: GraphData;
 
   sankeyConfig: any;
   sankeyData: any;
@@ -92,8 +85,8 @@ export class RouteDisplayComponent {
     };
 
     this.networkData = {
-      nodes: new DataSet<Node, 'id'>(),
-      edges: new DataSet<Edge, 'id'>(),
+      nodes: [],
+      edges: [],
     };
   }
 

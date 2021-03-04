@@ -4,10 +4,10 @@
 <ng-template #stable>
   <div class="network-navigation-container">
     <div class="d-flex">
-      <div>
+      <div class="pointer-events-on">
         <app-legend [legend]="legend"></app-legend>
       </div>
-      <div class="ml-1">
+      <div class="d-block h-100 ml-2 pointer-events-on">
         <app-search-control
                 [(ngModel)]="searchQuery" (ngModelChange)="searchQueryChanged()"
                 (enterPress)="findNext()"
