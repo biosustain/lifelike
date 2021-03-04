@@ -69,7 +69,7 @@
         comparisons:
           image: strict
           env: strict
-        memory: 8G
+        memory: 10G
         volumes:
           - "{{ deploy_dir }}/lmdb:/home/n4j/neo4japp/services/annotations/lmdb"
         networks:
@@ -111,7 +111,7 @@
         pull: yes
         restart: yes
         image: "{{ container_registry }}/kg-pdfparser:latest"
-        memory: 0.5G
+        memory: 1G
         ports:
           - "7600:7600"
         networks:
@@ -133,6 +133,10 @@
     - name: Load lmdb database
       shell:
         cmd: docker exec appserver flask load-lmdb
+
+    - name: Seed elastic
+      shell:
+        cmd: docker exec -d flask seed-elastic
 
     - name: Seed Elasticsearch with Global Annotations
       include_role:
