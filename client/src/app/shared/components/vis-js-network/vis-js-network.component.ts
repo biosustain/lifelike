@@ -2,11 +2,11 @@ import { AfterViewInit, Component, Input } from '@angular/core';
 
 import { isNullOrUndefined } from 'util';
 
-import { Color, DataSet, Edge, Network, Node, Options } from 'vis-network';
+import { Color, Edge, Network, Node, Options } from 'vis-network';
+import { DataSet } from 'vis-data';
 
+import { GraphData, VisNetworkDataSet } from 'app/interfaces/vis-js.interface';
 import { uuidv4 } from 'app/shared/utils';
-import { VisNetworkData } from 'app/shortest-path/components/route-display.component';
-
 
 
 enum networkSolvers {
@@ -37,8 +37,9 @@ export class VisJsNetworkComponent implements AfterViewInit {
       this.createNetwork();
     }
   }
-  @Input() set data(data: VisNetworkData) {
-    this.networkData = data;
+  @Input() set data(data: GraphData) {
+    this.networkData.nodes.update(data.nodes);
+    this.networkData.edges.update(data.edges);
     if (!isNullOrUndefined(this.networkGraph)) {
       this.setNetworkData();
     }
@@ -48,7 +49,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
   SCALE_MODIFIER = 0.11;
 
   networkConfig: Options;
-  networkData: VisNetworkData;
+  networkData: VisNetworkDataSet;
   networkGraph: Network;
   networkContainerId: string;
 
@@ -103,6 +104,10 @@ export class VisJsNetworkComponent implements AfterViewInit {
     this.solverMap.set(networkSolvers.REPULSION, 'Repulsion');
   }
 
+  /**
+   * Resets the network data. Be careful using this method! It will cause the network to be re-drawn and stabilized, and is therefore
+   * rather slow. If there isn't a need to reset the entire network, it is better to use the DataSet update method for nodes and edges.
+   */
   setNetworkData() {
     this.networkGraph.setData(this.networkData);
   }
@@ -151,7 +156,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
   }
 
   /**
-   * Udates the Vis.js to use the provided layout solver. Also updates the currently selected solver, which is reflected in the UI.
+   * Udates the Vis.js network to use the provided layout solver. Also updates the currently selected solver, which is reflected in the UI.
    * @param layoutType string representing the newly selected layout solver, expected to be one of networkSolvers
    */
   updateNetworkLayout(layoutType: string) {
@@ -167,14 +172,21 @@ export class VisJsNetworkComponent implements AfterViewInit {
     this.createNetwork();
   }
 
+  /**
+   * Finds all nodes which contain the given substring in their label and returns copies of these nodes. Returning copies ensures we do not
+   * accidentally mutate the data.
+   * @param query string to search for in all nodes
+   */
   searchNodesWithQuery(query: string): Node[] {
-    return this.networkData.nodes.get().filter(
-      node => (node.label as string).toLowerCase().includes(query.toLowerCase())
-    );
+    return this.networkData.nodes.get()
+      .filter(
+        node => (node.label as string).toLowerCase().includes(query.toLowerCase())
+      ).map(node => {
+        return {...node};
+      });
   }
 
   searchQueryChanged() {
-    console.log('search query changed');
     // Need to revert the previous search results back to their original values
     if (this.searchResults.length > 0) {
       this.searchResults.forEach(node => {
@@ -183,7 +195,6 @@ export class VisJsNetworkComponent implements AfterViewInit {
           borderWidth: 1,
         });
       });
-      this.setNetworkData();
     }
 
     this.searchResults = [];
@@ -193,10 +204,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
       // Set the index to -1, since we call `findNext` immediately after this function is called and want the index to be 0
       this.currentSearchIndex = -1;
-
       this.searchResults.forEach(node => this.highlightNode(node.id));
-      // Once all the nodes are updated, update the network
-      this.setNetworkData();
     }
   }
 
@@ -226,6 +234,10 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
   focusNode(nodeId: number | string) {
     this.networkGraph.focus(nodeId);
+    // Zoom in on the focused node, otherwise it might be hard to find
+    this.networkGraph.moveTo({
+      scale: 0.99,
+    });
   }
 
   highlightNode(nodeId: number | string) {
@@ -240,8 +252,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
   }
 
   /**
-   * Contains all of the event handling features for the
-   * network graph.
+   * Contains all of the event handling features for the network graph.
    */
   setupEventBinds() {
     this.networkGraph.on('stabilizationIterationsDone', (params) => {
