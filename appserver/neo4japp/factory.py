@@ -51,7 +51,7 @@ module_logs = [
     'urllib3',
     'alembic',
     'webargs',
-    'py2neo',
+    'py2neo'
 ]
 
 for mod in module_logs:
