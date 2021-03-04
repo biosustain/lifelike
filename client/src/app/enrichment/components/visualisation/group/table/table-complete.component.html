@@ -1,5 +1,5 @@
 <form>
-    <div *ngIf="showControls" class="form-group form-inline">
+    <div *ngIf="showMore" class="form-group form-inline">
         Search: <input class="form-control ml-2" type="text" name="searchTerm"
                                  [(ngModel)]="service.searchTerm"/>
         <span class="ml-3" *ngIf="service.loading$ | async">Loading...</span>
@@ -25,7 +25,7 @@
         </tbody>
     </table>
 
-    <div *ngIf="showControls" class="d-flex justify-content-between p-2" style="flex-wrap: wrap;">
+    <div *ngIf="showMore" class="d-flex justify-content-between p-2" style="flex-wrap: wrap;">
         <ngb-pagination
                 [collectionSize]="(total$ | async)!" [(page)]="service.page" [pageSize]="service.pageSize">
         </ngb-pagination>

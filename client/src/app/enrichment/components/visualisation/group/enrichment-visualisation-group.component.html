@@ -11,23 +11,23 @@
                     <li ngbNavItem="table">
                         <a ngbNavLink>Table</a>
                         <ng-template ngbNavContent>
-                            <app-enrichment-visualisation-table-viewer
+                            <app-table-complete
                                     [data]="data"
                                     [showMore]="showMore"
                             >
 
-                            </app-enrichment-visualisation-table-viewer>
+                            </app-table-complete>
                         </ng-template>
                     </li>
                     <li ngbNavItem="graph">
                         <a ngbNavLink>Graph</a>
                         <ng-template ngbNavContent>
-                            <app-enrichment-visualisation-chart-viewer
+                            <app-chart
                                     [ngStyle]="{display:'block' }"
                                     [data]="data"
                                     [showMore]="showMore"
                             >
-                            </app-enrichment-visualisation-chart-viewer>
+                            </app-chart>
                         </ng-template>
                     </li>
                     <li ngbNavItem="clustergram">

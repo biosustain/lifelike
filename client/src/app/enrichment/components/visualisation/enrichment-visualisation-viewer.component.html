@@ -41,7 +41,7 @@
                 <ng-container *ngIf="status.running">
                     <div class="d-flex flex-fill align-items-center justify-content-center">
                         <app-module-progress>
-                            Loading enrichment table...
+                            Loading enrichment visualisation...
                         </app-module-progress>
                     </div>
                 </ng-container>
@@ -50,7 +50,7 @@
                     <div class="module-body flex-fill overflow-auto space-cards">
                         <app-enrichment-visualisation-group
                                 *ngFor="let d of data | keyvalue; let i = index"
-                                [title]="groups[i]"
+                                [title]="groups[i] || 'dsfgsdfg'"
                                 [data]="d.value"
                         >
 

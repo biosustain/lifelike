@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges } from '@angular/core';
 import { ChartOptions, ChartType } from 'chart.js';
 
 const mapTootipItem = func =>
@@ -16,7 +16,7 @@ const mapSingularOfTootipItems = func => {
   selector: 'app-chart',
   templateUrl: './chart.component.html'
 })
-export class ChartComponent {
+export class ChartComponent implements OnInit, OnChanges {
   public options: ChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -47,7 +47,7 @@ export class ChartComponent {
             beginAtZero: true,
             stepSize: 1,
             callback: (value, index) =>
-              index in this.chartData ? this.chartData[value].gene : '',
+              index in this.slicedData ? this.slicedData[value].gene : '',
           },
           offset: true,
           gridLines: {
@@ -75,9 +75,16 @@ export class ChartComponent {
   public chartType: ChartType = 'bubble';
   legend = false;
   public chartData = [];
+  @Input() showMore;
+  @Input() data;
+  @Output() chartClick: EventEmitter<any> = new EventEmitter();
+  @Output() chartHover: EventEmitter<any> = new EventEmitter();
 
-  @Input() set data(data) {
-    this.chartData = data.map((d: any, i) => ({
+  slicedData;
+
+  parseData() {
+    const data = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 25);
+    this.slicedData = data.map((d: any, i) => ({
       ...d,
       x: -Math.log10(d['p-value']),
       y: i,
@@ -85,12 +92,20 @@ export class ChartComponent {
     }));
   }
 
-  get data() {
-    return this.chartData;
+  ngOnInit() {
+    this.parseData();
   }
 
+  ngOnChanges(change) {
+    this.parseData();
+  }
+}
 
-  @Output() chartClick: EventEmitter<any> = new EventEmitter();
-  @Output() chartHover: EventEmitter<any> = new EventEmitter();
 
+export interface EnrichmentVisualisationData {
+  /**
+   * @deprecated the filename does this job
+   */
+  name?: string;
+  data: string;
 }
