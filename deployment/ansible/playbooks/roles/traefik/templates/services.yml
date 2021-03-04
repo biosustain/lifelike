@@ -27,6 +27,15 @@ http:
         certResolver: "le"
         domains:
           - main: "azurestaging.***ARANGO_DB_NAME***.bio"
+    ***ARANGO_DB_NAME***-prod:
+      entryPoints:
+        - websecure
+      rule: "Host(`azureprod.***ARANGO_DB_NAME***.bio`)"
+      service: ***ARANGO_DB_NAME***-prod-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "azureprod.***ARANGO_DB_NAME***.bio"
 
   services:
     ***ARANGO_DB_NAME***-qa-service:
@@ -38,6 +47,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://10.0.100.7"
+  services:
+    ***ARANGO_DB_NAME***-prod-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.100.8"
 
 
   middlewares:
