@@ -69,17 +69,17 @@
               "imported": {
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 200
+                "maxLength": 5000
               },
               "matched": {
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 200
+                "maxLength": 5000
               },
               "fullName": {
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 1000
+                "maxLength": 5000
               },
               "link": {
                 "$ref": "#/definitions/safeUrl"
