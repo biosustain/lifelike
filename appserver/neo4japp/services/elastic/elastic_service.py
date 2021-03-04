@@ -31,7 +31,7 @@ from neo4japp.utils import EventLog
 
 
 logger = logging.getLogger('elasticsearch')
-logger.setLevel(logging.CRITICAL)
+logger.setLevel(logging.WARNING)
 
 
 class ElasticService():
@@ -128,6 +128,9 @@ class ElasticService():
         )
 
         for success, info in results:
+            # TODO: Evaluate the data egress size. When seeding the staging database
+            # locally, this could output ~1gb of data. Question: Should we conditionally
+            # turn this off?
             if success:
                 current_app.logger.info(
                     f'Elastic search bulk operation succeeded: {info}',
