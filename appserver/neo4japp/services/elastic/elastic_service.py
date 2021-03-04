@@ -3,6 +3,7 @@ import itertools
 import json
 import re
 import string
+import logging
 from io import BytesIO
 from typing import (
     Dict,
@@ -27,6 +28,10 @@ from neo4japp.services.elastic import (
 )
 from neo4japp.services.file_types.providers import MapTypeProvider
 from neo4japp.utils import EventLog
+
+
+logger = logging.getLogger('elasticsearch')
+logger.setLevel(logging.WARNING)
 
 
 class ElasticService():
