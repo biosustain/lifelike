@@ -27,6 +27,15 @@ http:
         certResolver: "le"
         domains:
           - main: "azurestaging.lifelike.bio"
+    lifelike-prod:
+      entryPoints:
+        - websecure
+      rule: "Host(`azureprod.lifelike.bio`)"
+      service: lifelike-prod-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "azureprod.lifelike.bio"
 
   services:
     lifelike-qa-service:
@@ -38,6 +47,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://10.0.100.7"
+  services:
+    lifelike-prod-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.100.8"
 
 
   middlewares:
