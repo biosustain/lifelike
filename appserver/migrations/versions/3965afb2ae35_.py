@@ -74,8 +74,7 @@ def data_upgrades():
 
     if app_role_id is None:
         user_role_query = session.execute(t_app_role.insert().values(name='user'))
-        app_role_id = user_role_query.inserted_primary_key
-
+        app_role_id = user_role_query.inserted_primary_key[0]
     else:
         # Unpack the tuple
         app_role_id = app_role_id[0]
