@@ -607,6 +607,9 @@ class FileListView(FilesystemBaseView):
             db.session.add(params['fallback_organism'])
             file.fallback_organism = params['fallback_organism']
 
+        if params.get('annotation_configs'):
+            file.annotation_configs = params['annotation_configs']
+
         # ========================================
         # Commit and filename conflict resolution
         # ========================================
