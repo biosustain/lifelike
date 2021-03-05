@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 
 import { SharedModule } from 'app/shared/shared.module';
 
-import { EnrichmentVisualisationCloudViewerComponent } from './enrichment-visualisation-cloud-viewer.component';
+import { CloudViewerComponent } from './cloud-viewer.component';
 import { WordCloudModule } from '../../../../shared/components/word-cloud/word-cloud.module';
 
 const components = [
-  EnrichmentVisualisationCloudViewerComponent
+  CloudViewerComponent
 ];
 
 @NgModule({
