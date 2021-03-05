@@ -81,7 +81,9 @@ def graph(request, app):
     """
     graph = Graph(
         host=os.environ.get('NEO4J_HOST'),
-        auth=os.environ.get('NEO4J_AUTH').split('/')
+        auth=os.environ.get('NEO4J_AUTH').split('/'),
+        port=os.environ.get('NEOJ_PORT'),
+        scheme=os.environ.get('NEO4J_SCHEME')
     )
 
     # Ensure a clean graph state before every test
