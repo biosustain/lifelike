@@ -166,8 +166,7 @@ def parse_pdf(file_id: int) -> Tuple[str, List[PDFWord]]:
 
 def parse_text(text: str) -> Tuple[str, List[PDFWord]]:
     req = requests.post(
-        f'http://pdfparser:7600/token/rect/json', data={'text': text}, timeout=30
-    )
+        f'http://pdfparser:7600/token/rect/json', data={'text': text}, timeout=30)
     resp = req.json()
     req.close()
 
