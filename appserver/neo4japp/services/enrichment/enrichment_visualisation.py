@@ -26,7 +26,7 @@ class EnrichmentVisualisationService(KgService):
         return redis_cached(
                 cache_id, self.graph.run(
                         """
-                        MATCH (:Taxonomy {id:$id,name:$name})-
+                        MATCH (:Taxonomy {id:$id})-
                                [:HAS_TAXONOMY]-(n:Gene)-[:GO_LINK]-(g:db_GO)
                         WITH n, g, labels(g) AS go_labels
                         RETURN
@@ -34,8 +34,7 @@ class EnrichmentVisualisationService(KgService):
                             [lbl IN go_labels WHERE lbl<> 'db_GO'] AS goLabel
                         LIMIT 100000
                         """,
-                        id=id,
-                        name=name
+                        id=id
                 ).data,
                 load=json.loads,
                 dump=json.dumps
@@ -45,12 +44,11 @@ class EnrichmentVisualisationService(KgService):
         id, name = organism.split('/')
         return self.graph.run(
                 """
-                match (:Taxonomy {id:$id, name:$name})-[tl:HAS_TAXONOMY]-(n:Gene)-[nl:GO_LINK]-(g:db_GO)
+                match (:Taxonomy {id:$id})-[tl:HAS_TAXONOMY]-(n:Gene)-[nl:GO_LINK]-(g:db_GO)
                 where n.name in $gene_names
                 return n.name as gene, count(nl) as n_related_GO_terms
                 limit 1000
                 """,
                 id=id,
-                name=name,
                 gene_names=gene_names
         ).data()

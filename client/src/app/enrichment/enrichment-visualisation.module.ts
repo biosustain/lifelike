@@ -3,8 +3,8 @@ import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { EnrichmentVisualisationViewerComponent } from './components/visualisation/enrichment-visualisation-viewer.component';
 import { EnrichmentVisualisationService } from './services/enrichment-visualisation.service';
-import { EnrichmentVisualisationGroupModule } from './components/visualisation/group/enrichment-visualisation-group.module';
-import { EnrichmentVisualisationCloudViewerModule } from './components/visualisation/word-cloud/enrichment-visualisation-cloud-viewer.module';
+import { GroupModule } from './components/visualisation/group/group.module';
+import { CloudViewerModule } from './components/visualisation/word-cloud/cloud-viewer.module';
 
 @NgModule({
   declarations: [
@@ -13,8 +13,8 @@ import { EnrichmentVisualisationCloudViewerModule } from './components/visualisa
   imports: [
     SharedModule,
     FileBrowserModule,
-    EnrichmentVisualisationGroupModule,
-    EnrichmentVisualisationCloudViewerModule
+    GroupModule,
+    CloudViewerModule
   ],
   exports: [
     EnrichmentVisualisationViewerComponent

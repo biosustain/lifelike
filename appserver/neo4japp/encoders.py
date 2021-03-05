@@ -5,6 +5,7 @@ from neo4japp.models import GraphNode, GraphRelationship
 
 from numbers import Number
 
+
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
         try:

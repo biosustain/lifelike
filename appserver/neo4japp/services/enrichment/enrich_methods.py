@@ -1,16 +1,7 @@
-from random import random
-
 import numpy as np
 import pandas as pd
 from scipy.stats.distributions import binom
 from scipy.stats.distributions import hypergeom
-
-
-def wrap_with_random_p_value(g):
-    return {
-        "gene": g,
-        "p-value": random()
-    }
 
 
 def fisher_p(k, M, n, N):
@@ -26,36 +17,11 @@ def fisher_p(k, M, n, N):
     return hypergeom.cdf(n - k, M, n, M - N)
 
 
-def main(query, ids, annotations):
+def fisher(geneNames, GOterms):
     """
     Run standard fisher's exact tests for each annotation term.
-    :param query: list of entity ids, e.g. NCBI entrez gene IDs. Must match ids in "ids" exactly.
-    :param ids: list of ids for each annotation in "annotations"
-    :param annotations: list of annotations for each id in "ids", e.g. GO terms, MeSH disease terms...
-    :return: vector of unique annotation terms, vector of p-values
     """
-    df = pd.DataFrame({"id": ids, "annotation": annotations}).drop_duplicates()
-    query = pd.unique(query)
-    df["query"] = np.in1d(df.id, query)
-    M = df["id"].nunique()
-    N = len(query)
-
-    df.drop(columns="id", inplace=True)
-    df = df.groupby("annotation").agg(lambda q: fisher_p(q.sum(), M, len(q), N))
-
-    df.reset_index(inplace=True)
-    return list(df["annotation"]), list(df["query"])
-
-
-def statistically_significat(r):
-    return r < 0.05
-
-
-def fisher(geneNames, GOterms, *args, **kwargs):
     go = pd.DataFrame(GOterms)
-    # goGenes = go["geneName"]
-    # goId = go['goId']
-    # # gene, p = main(geneNames, goGenes, goId)
 
     df = go.drop_duplicates(["geneName", "goId"])
     query = pd.unique(geneNames)
@@ -78,9 +44,6 @@ def fisher(geneNames, GOterms, *args, **kwargs):
 
     return df.to_json(orient='records')
 
-    # r = list(map(lambda gp: { "gene": gp[0], "p-value": -np.log10(gp[1]) }, zip(gene, p)))
-    # return r
-
 
 def binom_p(x, n, N, M):
     """
@@ -98,23 +61,32 @@ def binom_p(x, n, N, M):
 def binom_main(query, counts, ids, annotations):
     """
     Run standard fisher's exact tests for each annotation term.
-    :param query: list of entity ids, e.g. NCBI entrez gene IDs. Must match ids in "ids" exactly.
+    :param query: list of entity ids,
+        e.g. NCBI entrez gene IDs. Must match ids in "ids" exactly.
     :param counts: number of repeated observations for each of the ids in "query".
     :param ids: list of ids for each annotation in "annotations"
-    :param annotations: list of annotations for each id in "ids", e.g. GO terms, MeSH disease terms...
+    :param annotations: list of annotations for each id in "ids",
+        e.g. GO terms, MeSH disease terms.
     :return: vector of unique annotation terms, vector of p-values
     """
     M = len(pd.unique(ids))
     n = sum(counts)
 
-    df = pd.DataFrame({"id": ids, "annotation": annotations}).drop_duplicates().set_index("id")
-    df = pd.DataFrame({"id": query, "count": counts}).groupby("id").sum().join(df, how="right").reset_index()
-    df = df.groupby("annotation").apply(lambda g: binom_p(g["count"].sum(), n, g["id"].nunique(), M))
+    df = pd.DataFrame({"id": ids, "annotation": annotations}) \
+        .drop_duplicates() \
+        .set_index("id")
+    df = pd.DataFrame({"id": query, "count": counts}) \
+        .groupby("id") \
+        .sum() \
+        .join(df, how="right") \
+        .reset_index()
+    df = df.groupby("annotation") \
+        .apply(lambda g: binom_p(g["count"].sum(), n, g["id"].nunique(), M))
 
     return list(df.index), list(df)
 
 
-def binomial(geneNames, GOterms, *args, **kwargs):
+def binomial(geneNames, GOterms):
     go = pd.DataFrame(GOterms)
     goGenes = go["geneName"]
     goId = go['goId']

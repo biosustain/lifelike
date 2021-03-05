@@ -1,43 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-
-import { Subscription } from 'rxjs';
-import { ModuleProperties } from 'app/shared/modules';
-import { FilesystemObject } from '../../../../file-browser/models/filesystem-object';
+import { Component, Input } from '@angular/core';
 
 @Component({
-  selector: 'app-enrichment-visualisation-group',
-  templateUrl: './enrichment-visualisation-group.component.html',
-  styleUrls: ['./enrichment-visualisation-group.component.scss']
+  selector: 'app-group',
+  templateUrl: './group.component.html',
+  styleUrls: ['./group.component.scss']
 })
-export class EnrichmentVisualisationGroupComponent {
-  constructor() {
-  }
-
+export class GroupComponent {
   @Input() data;
-  @Input() geneNames: string[];
-  @Input() organism: string;
-  @Input() analysis: string;
   @Input() title;
-
-  paramsSubscription: Subscription;
-  queryParamsSubscription: Subscription;
-
-  returnUrl: string;
-
-  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  projectName: string;
-  @Input() fileId: string;
-  object: FilesystemObject;
-  neo4jId: number;
-  importGenes: string[];
-  unmatchedGenes: string;
-  duplicateGenes: string;
-  wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
-  legend: Map<string, string> = new Map<string, string>();
-  filtersPanelOpened = false;
-  clickableWords = false;
-
-  activeTab: string;
 
   showMore = false;
 

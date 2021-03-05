@@ -11,11 +11,10 @@ import { BackgroundTask } from '../../../../shared/rxjs/background-task';
 
 
 @Component({
-  selector: 'app-enrichment-visualisation-cloud-viewer',
-  templateUrl: './enrichment-visualisation-cloud-viewer.component.html',
-  styleUrls: ['../enrichment-visualisation-viewer.component.scss']
+  selector: 'app-cloud-viewer',
+  templateUrl: './cloud-viewer.component.html'
 })
-export class EnrichmentVisualisationCloudViewerComponent implements OnInit, ModuleAwareComponent, OnChanges {
+export class CloudViewerComponent implements OnInit, ModuleAwareComponent, OnChanges {
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   @Input() geneNames: string[];
