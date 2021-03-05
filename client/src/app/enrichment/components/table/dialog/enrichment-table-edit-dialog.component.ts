@@ -1,4 +1,4 @@
-import { Component, Input, ErrorHandler } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormArray, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
@@ -11,6 +11,7 @@ import { ProgressDialog } from '../../../../shared/services/progress-dialog.serv
 import { ENRICHMENT_TABLE_MIMETYPE } from '../../../providers/enrichment-table.type-provider';
 import { ObjectSelectionDialogComponent } from '../../../../file-browser/components/dialog/object-selection-dialog.component';
 import { ObjectCreateRequest } from '../../../../file-browser/schema';
+import { ErrorHandler } from '../../../../shared/services/error-handler.service';
 
 @Component({
   selector: 'app-enrichment-table-edit-dialog',
