@@ -1,30 +1,37 @@
-import {Directive, EventEmitter, Input, Output} from '@angular/core';
+import { Directive, EventEmitter, Input, Output, HostBinding, HostListener } from '@angular/core';
 
-export type SortColumn = string;
-export type SortDirection = 'asc' | 'desc' | '';
-const rotate: {[key: string]: SortDirection} = { 'asc': 'desc', 'desc': '', '': 'asc' };
+export enum SortDirection {
+  asc = 'asc',
+  desc = 'desc',
+  none = 'none'
+}
+
+type SortDirectionType = keyof typeof SortDirection | false | 0 | '' | null | undefined;
+
+const rotate: { [key: string]: SortDirectionType } = {
+  [SortDirection.asc]: SortDirection.desc,
+  [SortDirection.desc]: SortDirection.none,
+  [SortDirection.none]: SortDirection.asc
+};
 
 export interface SortEvent {
-  column: SortColumn;
-  direction: SortDirection;
+  column: any;
+  direction: SortDirectionType;
 }
 
 @Directive({
-  selector: 'th[sortable]',
-  host: {
-    '[class.asc]': 'direction === "asc"',
-    '[class.desc]': 'direction === "desc"',
-    '(click)': 'rotate()'
-  }
+  selector: 'th[appSortable]'
 })
 export class SortableTableHeaderDirective {
-
-  @Input() sortable: SortColumn = '';
-  @Input() direction: SortDirection = '';
+  @Input() sortable: any;
+  @Input() direction: SortDirectionType;
   @Output() sort = new EventEmitter<SortEvent>();
 
-  rotate() {
-    this.direction = rotate[this.direction];
+  @HostBinding('class.asc') isAsc = () => this.direction === SortDirection.asc;
+  @HostBinding('class.desc') isDesc = () => this.direction === SortDirection.desc;
+
+  @HostListener('click') rotate() {
+    this.direction = rotate[this.direction || 'none'];
     this.sort.emit({column: this.sortable, direction: this.direction});
   }
 }

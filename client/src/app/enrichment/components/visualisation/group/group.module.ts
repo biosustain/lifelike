@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { EnrichmentVisualisationGroupComponent } from './enrichment-visualisation-group.component';
+import { GroupComponent } from './group.component';
 import { SharedModule } from '../../../../shared/shared.module';
 import { FileBrowserModule } from '../../../../file-browser/file-browser.module';
 import { ChartModule } from './chart/chart.module';
@@ -9,7 +9,7 @@ import { ClustergramModule } from './clustergram/clustergram.module';
 
 @NgModule({
   declarations: [
-    EnrichmentVisualisationGroupComponent
+    GroupComponent
   ],
   imports: [
     SharedModule,
@@ -19,8 +19,8 @@ import { ClustergramModule } from './clustergram/clustergram.module';
     ClustergramModule
   ],
   exports: [
-    EnrichmentVisualisationGroupComponent
+    GroupComponent
   ]
 })
-export class EnrichmentVisualisationGroupModule {
+export class GroupModule {
 }
