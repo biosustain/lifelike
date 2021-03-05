@@ -282,7 +282,7 @@ def handle_validation_error(code, error: ValidationError, messages=None):
     else:
         message = 'An error occurred with the provided input.'
 
-    ex = ServerException(message=message, code=code)
+    ex = ServerException(message=message, code=code, fields=fields)
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
     transaction_id = request.headers.get('X-Transaction-Id', '')
 

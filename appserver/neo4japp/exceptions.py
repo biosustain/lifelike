@@ -1,5 +1,5 @@
 class ServerException(Exception):
-    def __init__(self, name=None, message=None, additional_msgs=None, code=500, *args):
+    def __init__(self, name=None, message=None, additional_msgs=None, fields=None, code=500, *args):
         """
         Create a new exception.
         :param name: the name of the error, which sometimes used on the client
@@ -27,6 +27,7 @@ class ServerException(Exception):
         self.message = message
         self.additional_msgs = additional_msgs
         self.code = code
+        self.fields = fields
         super().__init__(*args)
 
     @property
@@ -106,8 +107,7 @@ class DuplicateRecord(ServerException):
 class InvalidArgumentsException(ServerException):
     """A generic error occurred with invalid API arguments."""
     def __init__(self, message=None, additional_msgs=[], fields=None, code=400):
-        super().__init__('Argument Error', message, additional_msgs, code)
-        self.fields = fields
+        super().__init__('Argument Error', message, additional_msgs, fields, code)
 
 
 class InvalidFileNameException(ServerException):
