@@ -5,7 +5,6 @@ import { AccountService } from '../services/account.service';
 
 import * as UserActions from './actions';
 import { SnackbarActions } from 'app/shared/store';
-import { AuthActions } from 'app/auth/store';
 
 import { catchError, exhaustMap, map, switchMap } from 'rxjs/operators';
 import { from } from 'rxjs';
@@ -13,45 +12,38 @@ import { ErrorResponse } from '../../shared/schemas/common';
 
 @Injectable()
 export class UserEffects {
-  updateUser$ = createEffect(() => this.actions$.pipe(
-    ofType(UserActions.updateUser),
-    exhaustMap(({userUpdates}) => {
-      return this.accountService.updateUser(userUpdates).pipe(
-        switchMap(user => [
-          UserActions.updateUserSuccess(),
-          AuthActions.refreshUser({user}),
-        ]),
-        catchError((err: HttpErrorResponse) => {
-          const error = (err.error as ErrorResponse).apiHttpError;
-          return from([
-            SnackbarActions.displaySnackbar({
-              payload: {
-                message: error.message,
-                action: 'Dismiss',
-                config: {duration: 10000},
-              }
-            })
-          ]);
-        }),
-      );
-    })
-  ));
-  updateUserSuccess$ = createEffect(() => this.actions$.pipe(
-    ofType(UserActions.updateUserSuccess),
-    map(_ => SnackbarActions.displaySnackbar(
-      {
-        payload: {
-          message: 'Update success!',
-          action: 'Dismiss',
-          config: {duration: 10000},
-        }
-      }
-    )),
-  ));
+    constructor(
+        private actions$: Actions,
+        private accountService: AccountService,
+    ) {}
 
-  constructor(
-    private actions$: Actions,
-    private accountService: AccountService,
-  ) {
-  }
+    updateUserPassword$ = createEffect(() => this.actions$.pipe(
+        ofType(UserActions.changePassword),
+        exhaustMap(({ userUpdates }) => {
+            return this.accountService.changePassword(userUpdates).pipe(
+                switchMap(() => [UserActions.changePasswordSuccess()]),
+                catchError((err: HttpErrorResponse) => {
+                    const error = (err.error as ErrorResponse).apiHttpError;
+                    return from([
+                        SnackbarActions.displaySnackbar({payload: {
+                            message: error.message,
+                            action: 'Dismiss',
+                            config: { duration: 10000 },
+                        }})
+                    ]);
+                }),
+            );
+        })
+    ));
+
+    updateUserPasswordSuccess$ = createEffect(() => this.actions$.pipe(
+        ofType(UserActions.changePasswordSuccess),
+        map(_ => SnackbarActions.displaySnackbar(
+            {payload: {
+                message: 'Update success!',
+                action: 'Dismiss',
+                config: { duration: 10000 },
+            }}
+        )),
+    ));
 }

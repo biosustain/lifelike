@@ -174,6 +174,10 @@ def create_user(name, email):
         last_name=name,
         email=email,
     )
+    # set default role
+    account_service = get_account_service()
+    get_role = account_service.get_or_create_role('user')
+    user.roles.extend([get_role])
     user.set_password('password')
     db.session.add(user)
     db.session.commit()

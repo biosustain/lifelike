@@ -1,0 +1,27 @@
+<form (ngSubmit)="submit()">
+  <app-modal-header (cancel)="cancel()">Results</app-modal-header>
+
+  <app-modal-body>
+    <ngb-accordion>
+      <ngb-panel *ngIf="success.length" title="Files that successfully re-annotated">
+        <ng-template ngbPanelContent>
+          <ul *ngFor="let file of success">
+            <li>{{file}}</li>
+          </ul>
+        </ng-template>
+      </ngb-panel>
+
+      <ngb-panel *ngIf="failed.length" title="Files that failed to re-annotate">
+        <ng-template ngbPanelContent>
+          <ul *ngFor="let file of failed">
+            <li>{{file}}</li>
+          </ul>
+        </ng-template>
+      </ngb-panel>
+    </ngb-accordion>
+  </app-modal-body>
+
+  <app-modal-footer>
+    <button type="submit" class="btn btn-primary" (click)="cancel()">Close</button>
+  </app-modal-footer>
+</form>

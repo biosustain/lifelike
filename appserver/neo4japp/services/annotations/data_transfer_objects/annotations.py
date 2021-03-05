@@ -1,6 +1,6 @@
 import attr
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from neo4japp.util import CamelDictMixin
 
@@ -26,11 +26,24 @@ class PDFBase():
 
 
 @attr.s(frozen=True)
+class NLPResults():
+    anatomy: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    chemicals: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    compounds: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    diseases: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    foods: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    genes: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    phenomenas: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    phenotypes: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    proteins: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+    species: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
+
+
+@attr.s(frozen=False)
 class PDFWord(PDFBase):
     keyword: str = attr.ib()
     normalized_keyword: str = attr.ib()
     page_number: int = attr.ib()
-    cropbox: Tuple[int, int] = attr.ib()
     lo_location_offset: int = attr.ib()
     hi_location_offset: int = attr.ib()
     # used to determine abbreviations
@@ -40,26 +53,10 @@ class PDFWord(PDFBase):
     heights: List[float] = attr.ib(default=attr.Factory(list))
     widths: List[float] = attr.ib(default=attr.Factory(list))
     coordinates: List[List[float]] = attr.ib(default=attr.Factory(list))
-    # used with NLP because it returns the type
-    token_type: Optional[str] = attr.ib(default=None)
+    # type is itself, not sure how that works so set to Any for now
+    next: Optional[Any] = attr.ib(default=None)
 
 
-@attr.s(frozen=True)
-class PDFTokensList():
-    tokens: Any = attr.ib()
-
-
-# IMPORTANT NOTE/TODO: JIRA LL-465
-# the commented out old code is there
-# because we need to resolve this issue of what data
-# structure to use. Up until 4/20 the commented out
-# structure was used in annotations and pdf-viewer
-#
-# but a last minute change was done on the pdf-viewer
-# and to avoid back and forth between (1) annotations,
-# (2) pdf-viewer and (3) NLP, we need to settle on a format
-#
-# for now change to what the pdf-viewer use
 @attr.s(frozen=False)
 class Annotation(CamelDictMixin):
     @attr.s(frozen=False)
@@ -82,16 +79,9 @@ class Annotation(CamelDictMixin):
         is_custom: bool = attr.ib(default=False)
         all_text: str = attr.ib(default='')
 
-    @attr.s(frozen=True)
-    class TextPosition(CamelDictMixin):
-        # [x1, y1, x2, y2]
-        positions: List[float] = attr.ib()
-        value: str = attr.ib()
-
     page_number: int = attr.ib()
     # keywords and rects are a pair
     # each index in the list correspond to the other
-    # these two replaced the old lower_left/upper_right in TextPosition
     # the keywords attribute is only there to help with debugging the coordinates
     keywords: List[str] = attr.ib()
     rects: List[List[float]] = attr.ib()
@@ -124,27 +114,27 @@ class GeneAnnotation(Annotation):
 @attr.s(frozen=False)
 class LMDBMatch():
     entities: List[dict] = attr.ib()
-    tokens: List[PDFWord] = attr.ib()
+    token: PDFWord = attr.ib()
     id_type: str = attr.ib(default='')
     id_hyperlink: str = attr.ib(default='')
 
 
 @attr.s(frozen=True)
 class EntityResults():
-    matched_type_anatomy: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_chemical: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_compound: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_disease: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_food: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_gene: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_phenomena: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_phenotype: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_protein: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_species: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_species_local: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_anatomy: List[LMDBMatch] = attr.ib()
+    matched_type_chemical: List[LMDBMatch] = attr.ib()
+    matched_type_compound: List[LMDBMatch] = attr.ib()
+    matched_type_disease: List[LMDBMatch] = attr.ib()
+    matched_type_food: List[LMDBMatch] = attr.ib()
+    matched_type_gene: List[LMDBMatch] = attr.ib()
+    matched_type_phenomena: List[LMDBMatch] = attr.ib()
+    matched_type_phenotype: List[LMDBMatch] = attr.ib()
+    matched_type_protein: List[LMDBMatch] = attr.ib()
+    matched_type_species: List[LMDBMatch] = attr.ib()
+    matched_type_species_local: List[LMDBMatch] = attr.ib()
     # non LMDB entity types
-    matched_type_company: Dict[str, LMDBMatch] = attr.ib()
-    matched_type_entity: Dict[str, LMDBMatch] = attr.ib()
+    matched_type_company: List[LMDBMatch] = attr.ib()
+    matched_type_entity: List[LMDBMatch] = attr.ib()
 
 
 @attr.s(frozen=True)

@@ -23,7 +23,7 @@ export class PdfTypeProvider extends AbstractObjectTypeProvider {
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: PDF_MIMETYPE, name: 'Documents'}),
+      Object.freeze({id: PDF_MIMETYPE, shorthand: PDF_SHORTHAND, name: 'Documents'}),
     ];
   }
 
@@ -43,3 +43,4 @@ export class PdfTypeProvider extends AbstractObjectTypeProvider {
 }
 
 export const PDF_MIMETYPE = 'application/pdf';
+export const PDF_SHORTHAND = 'pdf';

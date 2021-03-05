@@ -4,11 +4,10 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { BehaviorSubject, combineLatest, Observable, Subject, of } from 'rxjs';
-import { mergeMap, shareReplay, take, tap, map } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
+import { mergeMap, shareReplay, take, tap } from 'rxjs/operators';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ObjectCreationService } from '../../../file-browser/services/object-creation.service';
 import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
 import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
@@ -17,7 +16,7 @@ import { FilesystemService } from '../../../file-browser/services/filesystem.ser
 import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
 import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
-import { EnrichmentTableEditDialogComponent } from './dialog/enrichment-table-edit-dialog.component';
+import { EnrichmentTableEditDialogComponent, EnrichmentTableEditDialogValue } from './dialog/enrichment-table-edit-dialog.component';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -30,7 +29,6 @@ export class EnrichmentTableViewerComponent implements OnInit {
 
   fileId: string;
   object$: Observable<FilesystemObject> = new Subject();
-  contentValue$: Observable<Blob> = new Subject();
   document$: Observable<EnrichmentDocument> = new Subject();
   table$: Observable<EnrichmentTable> = new Subject();
   scrollTopAmount: number;
@@ -42,7 +40,6 @@ export class EnrichmentTableViewerComponent implements OnInit {
               protected readonly snackBar: MatSnackBar,
               protected readonly modalService: NgbModal,
               protected readonly errorHandler: ErrorHandler,
-              protected readonly objectCreationService: ObjectCreationService,
               protected readonly filesystemService: FilesystemService,
               protected readonly progressDialog: ProgressDialog,
               protected readonly changeDetectorRef: ChangeDetectorRef) {
@@ -51,13 +48,13 @@ export class EnrichmentTableViewerComponent implements OnInit {
 
   ngOnInit() {
     this.object$ = this.filesystemService.get(this.fileId).pipe(
-      tap(object => {
+      tap(() => {
         this.emitModuleProperties();
       }),
       shareReplay(),
     );
     this.document$ = this.filesystemService.getContent(this.fileId).pipe(
-      mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob)),
+      mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, this.fileId)),
       shareReplay(),
     );
     this.table$ = this.document$.pipe(
@@ -78,7 +75,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
   }
 
   restore(version: ObjectVersion) {
-    this.document$ = new EnrichmentDocument(this.worksheetViewerService).loadResult(version.contentValue).pipe(
+    this.document$ = new EnrichmentDocument(this.worksheetViewerService).loadResult(version.contentValue, this.fileId).pipe(
       tap(() => this.unsavedChanges$.next(true)),
       shareReplay(),
     );
@@ -175,7 +172,8 @@ export class EnrichmentTableViewerComponent implements OnInit {
   openEnrichmentTableEditDialog(document: EnrichmentDocument): Promise<any> {
     const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
     dialogRef.componentInstance.document = document;
-    return dialogRef.result.then((result: Document) => {
+    dialogRef.componentInstance.fileId = this.fileId;
+    return dialogRef.result.then((result: EnrichmentTableEditDialogValue) => {
       this.unsavedChanges$.next(true);
       this.refreshData(true);
     }, () => {

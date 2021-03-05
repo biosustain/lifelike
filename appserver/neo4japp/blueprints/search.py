@@ -1,8 +1,8 @@
 import html
 import json
 import re
-from collections import defaultdict
-from typing import Optional
+from typing import List, Optional
+
 
 import sqlalchemy
 from flask import Blueprint, current_app, jsonify, g
@@ -15,7 +15,12 @@ from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
 from neo4japp.data_transfer_objects import GeneFilteredRequest
 from neo4japp.data_transfer_objects.common import ResultList, ResultQuery
-from neo4japp.database import get_search_service_dao, db, get_elastic_service, get_file_type_service
+from neo4japp.database import (
+    db,
+    get_search_service_dao,
+    get_elastic_service,
+    get_file_type_service
+)
 from neo4japp.models import (
     Projects,
     AppRole,
@@ -23,15 +28,19 @@ from neo4japp.models import (
 )
 from neo4japp.schemas.common import PaginatedRequestSchema
 from neo4japp.schemas.search import (
-    AnnotateRequestSchema,
     ContentSearchSchema,
     OrganismSearchSchema,
-    VizSearchSchema, ContentSearchResponseSchema
+    VizSearchSchema,
+    ContentSearchResponseSchema
 )
-from neo4japp.services.annotations.constants import AnnotationMethod
-from neo4japp.services.annotations.pipeline import create_annotations
+from neo4japp.services.file_types.providers import (
+    EnrichmentTableTypeProvider,
+    MapTypeProvider,
+    PDFTypeProvider
+)
 from neo4japp.util import jsonify_with_class, SuccessResponse
-from neo4japp.utils.logger import UserEventLog
+
+from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.utils.request import Pagination
 
 bp = Blueprint('search', __name__, url_prefix='/search')
@@ -68,59 +77,117 @@ def visualizer_search(
     })
 
 
-@bp.route('/annotate', methods=['POST'])
-@auth.login_required
-@use_kwargs(AnnotateRequestSchema)
-def annotate(texts):
-    # If done right, we would parse the XML but the built-in XML libraries in Python
-    # are susceptible to some security vulns, but because this is an internal API,
-    # we can accept that it can be janky
-    container_tag_re = re.compile("^<snippet>(.*)</snippet>$", re.DOTALL | re.IGNORECASE)
-    highlight_strip_tag_re = re.compile("^<highlight>([^<]+)</highlight>$", re.IGNORECASE)
-    highlight_add_tag_re = re.compile("^%%%%%-(.+)-%%%%%$", re.IGNORECASE)
+# Start Search Helpers #
 
-    results = []
+def empty_params(params):
+    return not any([params[key] for key in params.keys()])
 
-    for text in texts:
-        annotations = []
 
-        # Remove the outer document tag
-        text = container_tag_re.sub("\\1", text)
-        # Remove the highlight tags to help the annotation parser
-        text = highlight_strip_tag_re.sub("%%%%%-\\1-%%%%%", text)
+def get_types_from_params(q, advanced_args, file_type_service):
+    # Get document types from either `q` or `types`
+    types = []
+    if 'types' in advanced_args and advanced_args['types'] != '':
+        types = advanced_args['types'].split(';')
 
-        try:
-            annotations = create_annotations(
-                annotation_method=AnnotationMethod.RULES.value,
-                document=text,
-                filename='snippet.pdf',
-                specified_organism_synonym='',
-                specified_organism_tax_id='',
-            )['documents'][0]['passages'][0]['annotations']
-        except Exception as e:
-            pass
+    # Even if `types` is in the advanced args, expect `q` might also contain some types
+    extracted_types = re.findall(r'\btype:\S*', q)
 
-        for annotation in annotations:
-            keyword = annotation['keyword']
-            text = re.sub(
-                # Replace but outside tags (shh @ regex)
-                f"({re.escape(keyword)})(?![^<]*>|[^<>]*</)",
-                f'<annotation type="{annotation["meta"]["type"]}" '
-                f'meta="{html.escape(json.dumps(annotation["meta"]))}"'
-                f'>\\1</annotation>',
-                text,
-                flags=re.IGNORECASE)
+    if len(extracted_types) > 0:
+        q = re.sub(r'\btype:\S*', '', q)
+        for extracted_type in extracted_types:
+            types.append(extracted_type.split(':')[1])
 
-        # Re-add the highlight tags
-        text = highlight_add_tag_re.sub("<highlight>\\1</highlight>", text)
-        # Re-wrap with document tags
-        text = f"<snippet>{text}</snippet>"
+    mime_types = []
+    shorthand_to_mime_type_map = file_type_service.get_shorthand_to_mime_type_map()
+    for t in types:
+        if t in shorthand_to_mime_type_map:
+            mime_types.append(shorthand_to_mime_type_map[t])
 
-        results.append(text)
+    # If we found any types in the advanced args, or in the query, use them. Otherwise default is
+    # all.
+    if len(mime_types) > 0:
+        return q, mime_types
+    else:
+        # If we ever add new *searchable* types to the content search, they should be added here.
+        # We may eventually just use a loop over all providers in the file_type_service, but right
+        # now it doesn't really make sense to include directory in the content search.
+        return q, [
+            EnrichmentTableTypeProvider.MIME_TYPE,
+            MapTypeProvider.MIME_TYPE,
+            PDFTypeProvider.MIME_TYPE
+        ]
 
-    return jsonify({
-        'texts': results,
-    })
+
+def get_projects_from_params(q, advanced_args):
+    # Get projects from either `q` or `projects`
+    projects = []
+    if 'projects' in advanced_args and advanced_args['projects'] != '':
+        projects = advanced_args['projects'].split(';')
+
+    # Even if `projects` is in the advanced args, expect `q` might also contain some projects
+    extracted_projects = re.findall(r'\bproject:\S*', q)
+
+    if len(extracted_projects) > 0:
+        q = re.sub(r'\bproject:\S*', '', q)
+        for extracted_type in extracted_projects:
+            projects.append(extracted_type.split(':')[1])
+
+    return q, projects
+
+
+def get_wildcards_from_params(q, advanced_args):
+    # Get wildcards from `wildcards`
+    wildcards = []
+    if 'wildcards' in advanced_args and advanced_args['wildcards'] != '':
+        wildcards = advanced_args['wildcards'].split(';')
+
+    return ' '.join([q] + wildcards)
+
+
+def get_phrase_from_params(q, advanced_args):
+    if 'phrase' in advanced_args and advanced_args['phrase'] != '':
+        q += ' "' + advanced_args['phrase'] + '"'
+
+    return q
+
+
+def get_projects_filter(user_id: int, projects: List[str]):
+    query = Projects.user_has_permission_to_projects(user_id, projects)
+
+    if len(projects) > 0:
+        # TODO: Right now filtering by project name works because project names are unique.
+        # It's likely that in the future this will no longer be the case! When that happens,
+        # We can uniquely identify a project using both the username of the project owner,
+        # AND the project name. E.g., johndoe/project-name is unique.
+
+        # We can further extend this behavior to directories. A directory can be uniquely
+        # identified by its path, with the owner's username as the root.
+        query = query.filter(
+            Projects.name.in_(projects)
+        )
+        accessible_and_filtered_project_ids = [project_id for project_id, in query]
+        return {
+            'bool': {
+                'must': [
+                    # If the document is in the filtered list of projects...
+                    {'terms': {'project_id': accessible_and_filtered_project_ids}},
+                ]
+            }
+        }
+    else:
+        accessible_project_ids = [project_id for project_id, in query]
+        return {
+            'bool': {
+                'should': [
+                    # If the user has access to the project the document is in...
+                    {'terms': {'project_id': accessible_project_ids}},
+                    # OR if the document is public.
+                    {'term': {'public': True}}
+                ]
+            }
+        }
+
+# End Search Helpers #
 
 
 class ContentSearchView(FilesystemBaseView):
@@ -129,20 +196,34 @@ class ContentSearchView(FilesystemBaseView):
     @use_args(ContentSearchSchema)
     @use_args(PaginatedRequestSchema)
     def post(self, params: dict, pagination: Pagination):
-        current_user = g.current_user
-
-        file_type_service = get_file_type_service()
-
-        search_term = params['q']
-        mime_types = params['mime_types']
-
         current_app.logger.info(
-            f'Term: {search_term}',
+            f'Term: {params["q"]}',
             extra=UserEventLog(
                 username=g.current_user.username, event_type='search contentsearch').to_dict()
         )
 
+        current_user = g.current_user
+        file_type_service = get_file_type_service()
+
+        if empty_params(params):
+            return jsonify(ContentSearchResponseSchema(context={
+                'user_privilege_filter': g.current_user.id,
+            }).dump({
+                'total': 0,
+                'query': ResultQuery(phrases=[]),
+                'results': [],
+            }))
+
         offset = (pagination.page - 1) * pagination.limit
+
+        q = params['q']
+        q, types = get_types_from_params(q, params, file_type_service)
+        q, projects = get_projects_from_params(q, params)
+        q = get_wildcards_from_params(q, params)
+        q = get_phrase_from_params(q, params)
+
+        # Set the search term once we've parsed 'q' for all advanced options
+        search_term = q.strip()
 
         text_fields = ['description', 'data.content', 'filename']
         text_field_boosts = {'description': 1, 'data.content': 1, 'filename': 3}
@@ -161,50 +242,14 @@ class ContentSearchView(FilesystemBaseView):
             'number_of_fragments': 100,
         }
 
-        user_id = g.current_user.id
-
-        t_project = aliased(Projects)
-        t_project_role = aliased(AppRole)
-
-        # Role table used to check if we have permission
-        query = db.session.query(
-            t_project.id
-        ).join(
-            projects_collaborator_role,
-            sqlalchemy.and_(
-                projects_collaborator_role.c.projects_id == t_project.id,
-                projects_collaborator_role.c.appuser_id == user_id,
-            )
-        ).join(
-            t_project_role,
-            sqlalchemy.and_(
-                t_project_role.id == projects_collaborator_role.c.app_role_id,
-                sqlalchemy.or_(
-                    t_project_role.name == 'project-read',
-                    t_project_role.name == 'project-write',
-                    t_project_role.name == 'project-admin'
-                )
-            )
-        )
-
-        accessible_project_ids = [project_id for project_id, in query]
-
         query_filter = {
             'bool': {
                 'must': [
-                    # The document must have the specified type
-                    {'terms': {'mime_type': mime_types}},
-                    # And...
-                    {
-                        'bool': {
-                            'should': [
-                                # If the user has access to the project the document is in...
-                                {'terms': {'project_id': accessible_project_ids}},
-                                # OR if the document is public...
-                                {'term': {'public': True}}
-                            ]
-                        }
-                    }
+                    # The document must have the specified type...
+                    {'terms': {'mime_type': types}},
+                    # ...And must be accessible by the user, and in the specified list of
+                    # projects or public if no list is given...
+                    get_projects_filter(g.current_user.id, projects),
                 ]
             }
         }

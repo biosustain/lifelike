@@ -13,15 +13,18 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { SearchType } from '../../search/shared';
 import { EnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentTableService } from '../services/enrichment-table.service';
-import { finalize, map, mergeMap } from 'rxjs/operators';
+import { finalize, map, mergeMap, tap } from 'rxjs/operators';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { TableCSVExporter } from '../../shared/utils/tables/table-csv-exporter';
 import { EnrichmentTable } from '../models/enrichment-table';
-import { EnrichmentTablePreviewComponent } from '../components/table/dialog/enrichment-table-preview.component';
-import { EnrichmentTableEditDialogComponent } from '../components/table/dialog/enrichment-table-edit-dialog.component';
+import { EnrichmentTablePreviewComponent } from '../components/table/enrichment-table-preview.component';
+import {
+  EnrichmentTableEditDialogComponent,
+  EnrichmentTableEditDialogValue
+} from '../components/table/dialog/enrichment-table-edit-dialog.component';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 
@@ -49,11 +52,10 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
       this.componentFactoryResolver.resolveComponentFactory(EnrichmentTablePreviewComponent);
     const componentRef = factory.create(this.injector);
     const instance: EnrichmentTablePreviewComponent = componentRef.instance;
-    const enrichmentDocument = new EnrichmentDocument(this.worksheetService);
     return contentValue$.pipe(
-      mergeMap(blob => enrichmentDocument.load(blob)),
-      map(() => {
-        instance.document = enrichmentDocument;
+      mergeMap(blob => new EnrichmentDocument(this.worksheetService).loadResult(blob, object.hashId)),
+      map(document => {
+        instance.document = document;
         return componentRef;
       }),
     );
@@ -74,9 +76,10 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
           const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
           dialogRef.componentInstance.title = 'New Enrichment Table Parameters';
           dialogRef.componentInstance.submitButtonLabel = 'Next';
+          dialogRef.componentInstance.object = object;
           dialogRef.componentInstance.document = new EnrichmentDocument(this.worksheetViewerService);
 
-          return dialogRef.result.then((result: EnrichmentDocument) => {
+          return dialogRef.result.then((value: EnrichmentTableEditDialogValue) => {
             const progressDialogRef = this.progressDialog.display({
               title: 'Enrichment Table Creating',
               progressObservable: new BehaviorSubject<Progress>(new Progress({
@@ -84,15 +87,15 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
               })),
             });
 
-            return result.refreshData().pipe(
-              mergeMap(document => document.save()),
+            const document = value.document;
+
+            return document.refreshData().pipe(
+              mergeMap(newDocument => newDocument.save()),
+              tap(() => progressDialogRef.close()),
               mergeMap(blob =>
-                from(this.objectCreationService.openCreateDialog(object, {
-                  title: 'Name the Enrichment Table',
-                  request: {
-                    contentValue: blob,
-                  },
-                  ...(options.createDialog || {}),
+                from(this.objectCreationService.executePutWithProgressDialog({
+                  ...value.request,
+                  contentValue: blob,
                 }))),
               finalize(() => progressDialogRef.close()),
             ).toPromise();
@@ -104,7 +107,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
 
   getSearchTypes(): SearchType[] {
     return [
-      Object.freeze({id: ENRICHMENT_TABLE_MIMETYPE, name: 'Enrichment Tables'}),
+      Object.freeze({id: ENRICHMENT_TABLE_MIMETYPE, shorthand: 'enrichment-table', name: 'Enrichment Tables'}),
     ];
   }
 
@@ -112,10 +115,8 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
     return of([{
       name: 'CSV',
       export: () => {
-        const enrichmentDocument = new EnrichmentDocument(this.worksheetViewerService);
         return this.filesystemService.getContent(object.hashId).pipe(
-          mergeMap(blob => enrichmentDocument.load(blob)),
-          map(() => enrichmentDocument),
+          mergeMap(blob => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)),
           mergeMap(document => new EnrichmentTable().load(document)),
           mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
           map(blob => {
