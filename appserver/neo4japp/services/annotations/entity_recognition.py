@@ -337,7 +337,7 @@ class EntityRecognitionService:
             return True
         return False
 
-    def set_entity_exclusions(self) -> None:
+    def set_entity_exclusions(self, excluded_annotations: List[dict]) -> None:
         exclusion_func = [
             self._get_annotation_type_anatomy_to_exclude,
             self._get_annotation_type_chemical_to_exclude,
@@ -366,6 +366,17 @@ class EntityRecognitionService:
 
         for func in exclusion_func:
             func(global_annotations_to_exclude)
+
+        # local exclusions
+        # only get the custom species for now
+        local_species_exclusions = [
+            custom for custom in excluded_annotations if custom.get(
+                'type') == EntityType.SPECIES.value and not custom.get(
+                    'meta', {}).get('excludeGlobally')
+        ]
+        self._get_annotation_type_species_to_exclude(
+            exclusion_list=local_species_exclusions
+        )
 
     def _create_annotation_inclusions(
         self,
@@ -1104,11 +1115,12 @@ class EntityRecognitionService:
     def identify(
         self,
         custom_annotations: List[dict],
+        excluded_annotations: List[dict],
         tokens: List[PDFWord],
         nlp_results: NLPResults,
         annotation_method: Dict[str, dict]
     ) -> EntityResults:
-        self.set_entity_exclusions()
+        self.set_entity_exclusions(excluded_annotations)
         self.set_entity_inclusions(custom_annotations)
 
         anatomy_cur = self.lmdb.session.anatomy_txn.cursor()

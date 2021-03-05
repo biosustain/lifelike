@@ -3,6 +3,12 @@
 .pdf-viewer-container {
   position: relative;
   counter-reset: annotation-highlight-index;
+
+  height: 100%;
+
+  .pdf-viewer-document {
+    height: 100%;
+  }
 }
 
 // The box that says the PDF is loading

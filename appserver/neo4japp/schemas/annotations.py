@@ -107,7 +107,9 @@ class BaseAnnotationSchema(Schema):
 # ========================================
 
 class SystemAnnotationMetaSchema(BaseAnnotationMetaSchema):
-    pass
+    isExcluded = fields.Boolean(allow_none=True)
+    exclusionReason = fields.String(allow_none=True)
+    exclusionComment = fields.String(allow_none=True)
 
 
 class SystemAnnotationSchema(BaseAnnotationSchema):
