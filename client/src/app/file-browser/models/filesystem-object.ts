@@ -140,6 +140,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return this.mimeType === 'application/pdf' || this.mimeType === 'vnd.lifelike.document/enrichment-table';
   }
 
+  get promptOrganism() {
+    return this.mimeType !== ENRICHMENT_TABLE_MIMETYPE;
+  }
+
   get isMovable() {
     // TODO: Move this method to ObjectTypeProvider
     return !(this.isDirectory && !this.parent);
@@ -157,7 +161,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isVersioned() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === MAP_MIMETYPE || this.mimeType === ENRICHMENT_TABLE_MIMETYPE;
+    return this.mimeType === MAP_MIMETYPE;
   }
 
   get isNavigable() {
@@ -445,7 +449,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       });
     }
 
-    const node: Partial<Omit<UniversalGraphNode, 'data'>> & {data: Partial<UniversalEntityData>} = {
+    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
       display_name: this.name,
       label: this.type === 'map' ? 'map' : 'link',
       sub_labels: [],
