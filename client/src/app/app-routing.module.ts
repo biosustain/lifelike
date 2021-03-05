@@ -23,7 +23,7 @@ import { MapViewComponent } from './drawing-tool/components/map-view.component';
 import { CommunityBrowserComponent } from './file-browser/components/community-browser.component';
 import { BrowserComponent } from './file-browser/components/browser/browser.component';
 import { ContentSearchComponent } from './search/components/content-search.component';
-import {ObjectNavigatorComponent} from './file-navigator/components/object-navigator.component';
+import { ObjectNavigatorComponent } from './file-navigator/components/object-navigator.component';
 import { ShortestPathComponent } from './shortest-path/containers/shortest-path.component';
 import {EnrichmentTableViewerComponent} from './enrichment/components/table/enrichment-table-viewer.component';
 import {EnrichmentVisualisationViewerComponent} from './enrichment/components/visualisation/enrichment-visualisation-viewer.component';
