@@ -106,9 +106,9 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     sort: this.defaultSort,
   });
   privileges: FilePrivileges;
+  fallbackOrganism?: OrganismAutocomplete;
   recycled: boolean;
   effectivelyRecycled: boolean;
-  fallbackOrganism: OrganismAutocomplete;
   annotationConfigs: AnnotationConfigs;
 
   highlight?: string[];
@@ -519,7 +519,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
     for (const key of [
       'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
-      'annotationsDate', 'uploadUrl', 'highlight',
+      'annotationsDate', 'uploadUrl', 'highlight', 'fallbackOrganism',
       'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
       'effectivelyRecycled', 'fallbackOrganism', 'annotationConfigs']) {
       if (key in data) {
