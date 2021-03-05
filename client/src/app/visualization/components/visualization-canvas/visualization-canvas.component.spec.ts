@@ -7,7 +7,7 @@ import { MockComponents } from 'ng-mocks';
 
 import { of } from 'rxjs';
 
-import { DataSet } from 'vis-network';
+import { DataSet } from 'vis-data';
 
 import { DEFAULT_CLUSTER_ROWS } from 'app/shared/constants';
 import {

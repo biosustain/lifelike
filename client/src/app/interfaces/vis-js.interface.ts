@@ -1,5 +1,5 @@
-import { Edge, Node } from 'vis-network';
 import { DataSet } from 'vis-data';
+import { Edge, Node } from 'vis-network';
 
 export interface GraphData {
   nodes: Node[];
