@@ -1,12 +1,12 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'truncate'
+ name: 'truncate'
 })
 
 export class TruncatePipe implements PipeTransform {
 
-  transform(value: string, args: string[]): string {
+transform(value: string, args: string[]): string {
     // What length of the text to limit to depending on the
     // length of the text.
     const limit = args.length > 0 ? parseInt(args[0], 10) : 20;

@@ -7,8 +7,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 export class ScrubHtmlPipe implements PipeTransform {
   constructor(
     private domSanitizer: DomSanitizer,
-  ) {
-  }
+  ) {}
 
   transform(value: string): any {
     return this.domSanitizer.sanitize(SecurityContext.HTML, value);

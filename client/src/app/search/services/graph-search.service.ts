@@ -16,12 +16,12 @@ export class GraphSearchService extends AbstractService {
   }
 
   visualizerSearch(
-    query: string,
-    organism: string = '',
-    page: number = 1,
-    limit: number = 10,
-    domains: string[],
-    entities: string[],
+      query: string,
+      organism: string = '',
+      page: number = 1,
+      limit: number = 10,
+      domains: string[],
+      entities: string[],
   ) {
     return this.http.post<{ result: FTSResult }>(
       `${this.searchApi}/viz-search`,

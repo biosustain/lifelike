@@ -3,7 +3,7 @@ import { MessageArguments } from '../services/message-dialog.service';
 
 export const displayMessageDialog = createAction(
   '[Importer] Display Message Dialog',
-  props<{ payload: MessageArguments }>(),
+  props<{payload: MessageArguments}>(),
 );
 
 const all = union({displayMessageDialog});

@@ -1,6 +1,10 @@
 import { Component } from '@angular/core';
 
-import { FormControl, FormGroup, Validators, } from '@angular/forms';
+import {
+  FormGroup,
+  FormControl,
+  Validators,
+} from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../shared/services/message-dialog.service';

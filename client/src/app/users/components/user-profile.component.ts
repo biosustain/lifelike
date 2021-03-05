@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormGroup, FormControl } from '@angular/forms';
 import { AppUser } from 'app/interfaces';
 
 @Component({

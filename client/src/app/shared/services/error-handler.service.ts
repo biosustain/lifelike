@@ -18,8 +18,7 @@ export class ErrorHandler {
   constructor(
     private readonly messageDialog: MessageDialog,
     private readonly loggingService: LoggingService,
-  ) {
-  }
+  ) {}
 
   createTransactionId(): string {
     return Math.random().toString(36).substr(2, 9);

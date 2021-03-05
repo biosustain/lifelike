@@ -1,4 +1,4 @@
-<div appContainerBreakpoints class="module">
+<div class="module" appContainerBreakpoints>
   <div class="module-header">
     <div class="module-title-bar">
       <div class="module-title">
@@ -9,7 +9,7 @@
 
   <div class="module-body flex-fill overflow-auto">
     <div class="module-body-container">
-      <ul #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs" ngbNav>
+      <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs">
         <li ngbNavItem="users">
           <a ngbNavLink>Users</a>
           <ng-template ngbNavContent>

@@ -1,4 +1,4 @@
-<form (ngSubmit)="submit()" [formGroup]="form">
+<form [formGroup]="form" (ngSubmit)="submit()">
   <div class="form-group">
     <div class="input-group">
     <span class="input-group-prepend">
@@ -16,14 +16,14 @@
   <div class="mt-2">
     <div class="d-flex w-100 flex-spaced-wrap">
       <div class="form-group d-flex align-items-start mb-0 mr-3">
-        <label class="my-0 mr-2 mt-2" for="domain">
+        <label for="domain" class="my-0 mr-2 mt-2">
           Domains:
         </label>
         <div class="d-flex flex-column">
-          <app-select (touch)="form.get('domains').markAsDirty()" (valuesChange)="form.get('domains').setValue($event)" [choiceLabel]="choiceLabel"
-                      [choices]="domainChoices" [values]="form.value.domains"
-                      formId="domain"
-                      style="width: 200px">
+          <app-select formId="domain" [choices]="domainChoices" style="width: 200px"
+                      [values]="form.value.domains" (valuesChange)="form.get('domains').setValue($event)"
+                      (touch)="form.get('domains').markAsDirty()"
+                      [choiceLabel]="choiceLabel">
           </app-select>
 
           <app-form-input-feedback [control]="form.get('domains')"></app-form-input-feedback>
@@ -31,15 +31,15 @@
       </div>
 
       <div class="form-group d-flex align-items-start mb-0 mr-3">
-        <label class="my-0 mr-2 mt-2" for="entity-types">
+        <label for="entity-types" class="my-0 mr-2 mt-2">
           Entities:
         </label>
 
         <div class="d-flex flex-column">
-          <app-select (touch)="form.get('entities').markAsDirty()" (valuesChange)="form.get('entities').setValue($event)" [choiceLabel]="choiceLabel"
-                      [choices]="entityChoices" [values]="form.value.entities"
-                      formId="entity-types"
-                      style="width: 200px">
+          <app-select formId="entity-types" [choices]="entityChoices" style="width: 200px"
+                      [values]="form.value.entities" (valuesChange)="form.get('entities').setValue($event)"
+                      (touch)="form.get('entities').markAsDirty()"
+                      [choiceLabel]="choiceLabel">
           </app-select>
 
           <app-form-input-feedback [control]="form.get('entities')"></app-form-input-feedback>
@@ -47,21 +47,21 @@
       </div>
 
       <div class="form-group d-flex align-items-start mb-0 mr-3">
-        <label class="my-0 mr-2 mt-2" for="organism">
+        <label for="organism" class="my-0 mr-2 mt-2">
           Organism:
         </label>
 
         <div class="d-flex flex-column">
           <app-organism-autocomplete
-            (organismPicked)="setOrganism($event)"
-            [organismTaxId]="organismChoice"
             formId="organism"
+            [organismTaxId]="organismChoice"
+            (organismPicked)="setOrganism($event)"
           ></app-organism-autocomplete>
         </div>
       </div>
 
       <div class="ml-auto">
-        <button class="btn btn-primary" type="submit">Search</button>
+        <button type="submit" class="btn btn-primary">Search</button>
       </div>
     </div>
   </div>
