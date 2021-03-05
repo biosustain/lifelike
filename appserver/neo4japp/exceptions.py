@@ -68,95 +68,152 @@ class AnnotationError(ServerException):
     """An error occured during the annotation process"""
 
     def __init__(self, message=None, additional_msgs=[], code=500) -> None:
-        super().__init__('Annotation Error', message, additional_msgs, code)
+        super().__init__(
+            'Annotation Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class LMDBError(ServerException):
     """An error occured during the LMDB process"""
 
     def __init__(self, message=None, additional_msgs=[], code=500) -> None:
-        super().__init__('LMDB Error', message, additional_msgs, code)
+        super().__init__(
+            'LMDB Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class FileUploadError(ServerException):
     """An error occured during the file upload process"""
 
     def __init__(self, message=None, additional_msgs=[], code=500) -> None:
-        super().__init__('File Upload Error', message, additional_msgs, code)
+        super().__init__(
+            'File Upload Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class DatabaseError(ServerException):
     """An error occured in database operation"""
 
     def __init__(self, message=None, additional_msgs=[], code=500) -> None:
-        super().__init__('Database Error', message, additional_msgs, code)
+        super().__init__(
+            'Database Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class DirectoryError(ServerException):
     """An error occured in directory operation"""
 
     def __init__(self, message=None, additional_msgs=[], code=500) -> None:
-        super().__init__('Directory Error', message, additional_msgs, code)
+        super().__init__(
+            'Directory Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class DuplicateRecord(ServerException):
     def __init__(self, message=None, additional_msgs=[], code=500):
-        super().__init__('Duplicate Error', message, additional_msgs, code)
+        super().__init__(
+            'Duplicate Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class InvalidArgumentsException(ServerException):
     """A generic error occurred with invalid API arguments."""
     def __init__(self, message=None, additional_msgs=[], fields=None, code=400):
-        super().__init__('Argument Error', message, additional_msgs, fields, code)
+        super().__init__(
+            'Argument Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            fields=fields,
+            code=code)
 
 
 class InvalidFileNameException(ServerException):
     """Signals invalid filename"""
 
     def __init__(self, message=None, additional_msgs=[], code=500):
-        super().__init__('File Name Error', message, additional_msgs, code)
+        super().__init__(
+            'File Name Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class InvalidDirectoryNameException(ServerException):
     """Signals invalid directory name"""
 
     def __init__(self, message=None, additional_msgs=[], code=500):
-        super().__init__('Directory Name Error', message, additional_msgs, code)
+        super().__init__(
+            'Directory Name Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class KgImportException(ServerException):
     """Signals something went wrong during import into the knowledge graph"""
 
     def __init__(self, message=None, additional_msgs=[], code=500):
-        super().__init__('Knowledge Graph Import Error', message, additional_msgs, code)
+        super().__init__(
+            'Knowledge Graph Import Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class NotAuthorizedException(ServerException):
     """Signals that the client does not sufficient privilege"""
 
     def __init__(self, message=None, additional_msgs=[], code=400):
-        super().__init__('Authorization Error', message, additional_msgs, code)
+        super().__init__(
+            'Authorization Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class RecordNotFoundException(ServerException):
     """Signals that no record is found in the database"""
 
     def __init__(self, message=None, additional_msgs=[], code=404):
-        super().__init__('No Data Error', message, additional_msgs, code)
+        super().__init__(
+            'No Data Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class JWTTokenException(ServerException):
     """Signals JWT token issue"""
 
     def __init__(self, message=None, additional_msgs=[], code=500):
-        super().__init__('JWT Token Error', message, additional_msgs, code)
+        super().__init__(
+            'JWT Token Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class JWTAuthTokenException(JWTTokenException):
     """Signals the JWT auth token has an issue"""
 
     def __init__(self, message=None, additional_msgs=[], code=401):
-        super().__init__('JWT Token Error', message, additional_msgs, code)
+        super().__init__(
+            'JWT Token Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class FormatterException(ServerException):
@@ -164,7 +221,11 @@ class FormatterException(ServerException):
     dict correctly."""
 
     def __init__(self, message=None, additional_msgs=[], code=401):
-        super().__init__('Serializing Error', message, additional_msgs, code)
+        super().__init__(
+            'Serializing Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 # TODO: finish this
@@ -206,4 +267,8 @@ class AccessRequestRequiredError(ServerException):
     """
     def __init__(self, curr_access, req_access, hash_id, additional_msgs=[], code=403):
         message = f'You have {curr_access} access but not {req_access} access to <{hash_id}>.'
-        super().__init__('Access Error', message, additional_msgs, code)
+        super().__init__(
+            'Access Error',
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
