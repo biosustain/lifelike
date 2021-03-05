@@ -56,9 +56,13 @@ db = SQLAlchemy(
 # TODO: how to close connection? Py2neo doesn't seem to do this...
 def connect_to_neo4j():
     if 'neo4j' not in g:
+        secure = current_app.config.get('NEO4J_SCHEME', 'bolt')
         g.neo4j = Graph(
             host=current_app.config.get('NEO4J_HOST'),
             auth=current_app.config.get('NEO4J_AUTH').split('/'),
+            secure=secure.find('s') > -1,  # Any 's' will be considered a secure protocol
+            port=current_app.config.get('NEO4J_PORT'),
+            scheme=current_app.config.get('NEO4J_SCHEME')
         )
     return g.neo4j
 

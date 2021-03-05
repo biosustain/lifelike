@@ -25,7 +25,9 @@ class Base():
     REDIS_SSL = os.environ.get('REDIS_SSL', 'false')
 
     NEO4J_HOST = os.environ.get('NEO4J_HOST')
+    NEO4J_SCHEME = os.environ.get('NEO4J_SCHEME')
     NEO4J_AUTH = os.environ.get('NEO4J_AUTH')
+    NEO4J_PORT = os.environ.get('NEO4J_PORT')
 
     SQLALCHEMY_DATABASE_URI = 'postgresql://%s:%s@%s:%s/%s' % (
         POSTGRES_USER,
