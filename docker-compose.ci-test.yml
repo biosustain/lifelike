@@ -22,6 +22,8 @@ services:
         environment:
             - NEO4J_HOST=n4j-database
             - NEO4J_AUTH=neo4j/password
+            - NEO4J_SCHEME=bolt
+            - NEO4J_PORT=7687
             - FLASK_DEBUG=1
             - FLASK_ENV=development
             - FLASK_APP=app
