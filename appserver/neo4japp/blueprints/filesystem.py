@@ -397,6 +397,7 @@ class FilesystemBaseView(MethodView):
             try:
                 db.session.commit()
             except IntegrityError as e:
+                db.session.rollback()
                 raise ValidationError("No two items (folder or file) can share the same name.",
                                       "filename")
 
