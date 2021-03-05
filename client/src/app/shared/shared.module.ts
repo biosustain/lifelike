@@ -1,5 +1,5 @@
 /**
- * Commonly-used imports are grouped here for simpler use by feature modules.
+ * Commonly-used imports are grouped here for simplier use by feature modules.
  */
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TextFieldModule } from '@angular/cdk/text-field';
@@ -59,8 +59,6 @@ import { ApiService } from './services/api.service';
 import { VisJsNetworkComponent } from './components/vis-js-network/vis-js-network.component';
 import { PlotlySankeyDiagramComponent } from './components/plotly-sankey-diagram/plotly-sankey-diagram.component';
 import { SearchControlComponent } from './components/search-control.component';
-import {FilterComponent} from './components/filter/filter.component';
-import {WordCloudFilterComponent} from './components/word-cloud-filter/word-cloud-filter.component';
 import { UserComponent } from './components/user.component';
 import { SelectInputComponent } from './components/form/select-input.component';
 import { UserSelectComponent } from './components/form/user-select.component';
@@ -72,9 +70,7 @@ const components = [
   VisJsNetworkComponent,
   PlotlySankeyDiagramComponent,
   AnnotationFilterComponent,
-  FilterComponent,
   WordCloudAnnotationFilterComponent,
-  WordCloudFilterComponent,
   MessageDialogComponent,
   ProgressDialogComponent,
   HighlightSnippetComponent,

@@ -16,8 +16,7 @@ export class DownloadService {
   constructor(
     private errorHandler: ErrorHandler,
     public readonly progressDialog: ProgressDialog,
-  ) {
-  }
+  ) {}
 
   requestDownload(
     filename: string,
@@ -33,10 +32,10 @@ export class DownloadService {
     });
 
     project().pipe(
-      tap(
-        () => progressDialogRef.close(),
-        () => progressDialogRef.close()),
-      this.errorHandler.create(),
+        tap(
+            () => progressDialogRef.close(),
+            () => progressDialogRef.close()),
+        this.errorHandler.create(),
     ).subscribe(resp => {
       // It is necessary to create a new blob object with mime-type explicitly set
       // otherwise only Chrome works like it should

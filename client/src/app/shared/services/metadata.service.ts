@@ -8,18 +8,18 @@ import { AbstractService } from './abstract-service';
 
 @Injectable({providedIn: 'root'})
 export class MetaDataService extends AbstractService {
-  readonly baseUrl = '/api/meta';
+    readonly baseUrl = '/api/meta';
 
-  constructor(auth: AuthenticationService, http: HttpClient) {
-    super(auth, http);
-  }
+    constructor(auth: AuthenticationService, http: HttpClient) {
+        super(auth, http);
+    }
 
-  getBuildInfo(): Observable<BuildInfo> {
-    return this.http.get<{ result: BuildInfo }>(
-      `${this.baseUrl}/`,
-      {...this.getHttpOptions(true)}
-    ).pipe(
-      map((res) => res.result)
-    );
-  }
+    getBuildInfo(): Observable<BuildInfo> {
+        return this.http.get<{result: BuildInfo}>(
+            `${this.baseUrl}/`,
+            {...this.getHttpOptions(true)}
+        ).pipe(
+            map((res) => res.result)
+        );
+    }
 }

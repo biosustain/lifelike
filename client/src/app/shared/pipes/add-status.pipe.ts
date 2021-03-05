@@ -8,9 +8,9 @@ import { catchError, map, startWith } from 'rxjs/operators';
 export class AddStatusPipe implements PipeTransform {
   transform<T>(observable: Observable<T>): Observable<PipeStatus<T>> {
     return observable.pipe(
-      map((value: any) => ({loading: false, value})),
-      startWith({loading: true}),
-      catchError(error => of({loading: false, error})),
+        map((value: any) => ({loading: false, value})),
+        startWith({loading: true}),
+        catchError(error => of({loading: false, error})),
     );
   }
 }

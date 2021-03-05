@@ -1,29 +1,29 @@
 <ng-container *ngIf="(loadTask.status$ | async) as status">
   <div class="mb-4 d-flex">
     <div>
-      <button (click)="displayCreateDialog()" class="btn btn-primary">
+      <button class="btn btn-primary" (click)="displayCreateDialog()">
         <i class="fa fa-fw fa-plus"></i>
         Create User
       </button>
       <div class="d-inline-block" ngbTooltip="Not yet implemented.">
-        <button [disabled]="true" class="btn btn-secondary ml-2" ngbTooltip="Not yet implemented.">
+        <button class="btn btn-secondary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
           <i class="fa fa-fw fa-pencil"></i> Edit
         </button>
-        <button [disabled]="true" class="btn btn-secondary ml-2" ngbTooltip="Not yet implemented.">
+        <button class="btn btn-secondary ml-2" [disabled]="true" ngbTooltip="Not yet implemented.">
           <i class="fa fa-fw fa-trash"></i>
         </button>
       </div>
-      <button (click)="this.refresh()" class="btn btn-secondary ml-2" ngbTooltip="Refresh the results"
-              type="button">
+      <button type="button" class="btn btn-secondary ml-2" (click)="this.refresh()"
+              ngbTooltip="Refresh the results">
         <i class="fa fa-sync"></i>
       </button>
     </div>
   </div>
 
   <app-background-task-progress
-    (refresh)="this.refresh()" [status]="status" childClass="mb-2"></app-background-task-progress>
+          [status]="status" (refresh)="this.refresh()" childClass="mb-2"></app-background-task-progress>
 
-  <table [class.table-selectable]="status.resultsShown" class="table" style="table-layout: fixed">
+  <table class="table" [class.table-selectable]="status.resultsShown" style="table-layout: fixed">
     <colgroup>
       <col style="width: 50%">
     </colgroup>
@@ -32,8 +32,8 @@
     <tr>
       <th>
         <div class="custom-control custom-checkbox">
-          <input (change)="toggleAllSelected()" [checked]="isAllSelected()" class="custom-control-input"
-                 id="select-all" type="checkbox">
+          <input type="checkbox" class="custom-control-input" id="select-all"
+                 [checked]="isAllSelected()" (change)="toggleAllSelected()">
           <label class="custom-control-label" for="select-all">
             Username
           </label>
@@ -70,14 +70,14 @@
     </tbody>
 
     <tbody *ngIf="status.resultsShown">
-    <tr (appTabSelectable)="selection.toggle(user)"
-        *ngFor="let user of shownUsers"
+    <tr *ngFor="let user of shownUsers"
+        (appTabSelectable)="selection.toggle(user)"
         [class.active]="selection.isSelected(user)">
       <td class="align-middle text-truncate mw-100">
         <div class="custom-control custom-checkbox">
-          <input (change)="selection.toggle(user)" [checked]="selection.isSelected(user)" class="custom-control-input"
-                 id="user-{{ user.id }}"
-                 type="checkbox">
+          <input type="checkbox" class="custom-control-input" id="user-{{ user.id }}"
+                 (change)="selection.toggle(user)"
+                 [checked]="selection.isSelected(user)">
           <label class="custom-control-label d-flex align-items-center" for="user-{{ user.id }}">
             {{ user.username }}
           </label>

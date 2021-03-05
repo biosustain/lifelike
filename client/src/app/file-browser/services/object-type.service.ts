@@ -1,6 +1,6 @@
-import {ComponentRef, Injectable, InjectionToken, Injector} from '@angular/core';
-import {FilesystemObject} from '../models/filesystem-object';
-import {Observable, of} from 'rxjs';
+import { ComponentRef, Injectable, InjectionToken, Injector } from '@angular/core';
+import { FilesystemObject } from '../models/filesystem-object';
+import { Observable, of } from 'rxjs';
 import { RankedItem } from '../../shared/schemas/common';
 import { CreateDialogOptions } from './object-creation.service';
 import { SearchType } from '../../search/shared';

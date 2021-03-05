@@ -12,21 +12,22 @@ import { MessageDialog } from '../services/message-dialog.service';
 
 @Injectable()
 export class SharedNgrxEffects {
-  displaySnackbar$ = createEffect(() => this.actions$.pipe(
-    ofType(displaySnackbar),
-    map(action => action.payload),
-    tap(payload => this.snackBar.open(payload.message, payload.action, payload.config)
-    )), {dispatch: false});
-  displayMessageDialog$ = createEffect(() => this.actions$.pipe(
-    ofType(displayMessageDialog),
-    map(action => action.payload),
-    tap(payload => this.messageDialog.display(payload)
-    )), {dispatch: false});
-
   constructor(
     private actions$: Actions,
     private snackBar: MatSnackBar,
     private messageDialog: MessageDialog,
   ) {
   }
+
+  displaySnackbar$ = createEffect(() => this.actions$.pipe(
+    ofType(displaySnackbar),
+    map(action => action.payload),
+    tap(payload => this.snackBar.open(payload.message, payload.action, payload.config)
+    )), {dispatch: false});
+
+  displayMessageDialog$ = createEffect(() => this.actions$.pipe(
+    ofType(displayMessageDialog),
+    map(action => action.payload),
+    tap(payload => this.messageDialog.display(payload)
+    )), {dispatch: false});
 }

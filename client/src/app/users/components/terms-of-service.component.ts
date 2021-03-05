@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 
 @Component({
   selector: 'app-terms-of-service',

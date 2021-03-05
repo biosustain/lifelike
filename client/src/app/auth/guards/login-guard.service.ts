@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, } from '@angular/router';
-import { select, Store } from '@ngrx/store';
+import {
+    CanActivate,
+    ActivatedRouteSnapshot,
+    Router,
+    RouterStateSnapshot,
+} from '@angular/router';
+import { Store, select } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { State } from '../store/state';
@@ -13,8 +18,7 @@ import { AuthSelectors } from '../store';
 
 @Injectable()
 export class LoginGuard implements CanActivate {
-  constructor(private store: Store<State>, private router: Router) {
-  }
+  constructor(private store: Store<State>, private router: Router) {}
 
   canActivate(
     {}: ActivatedRouteSnapshot,
