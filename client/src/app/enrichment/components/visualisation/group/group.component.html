@@ -1,7 +1,6 @@
-<div class="card" [ngStyle]="{margin: '15px 0'}">
-    <div style="padding: 0.5em 1.25rem 0 1.25rem;" class="card-header d-flex flex-wrap align-items-center">
-        <span style="padding:0.5rem 0;">{{title}}</span>
-
+<div class="card fill-width">
+    <div class="card-header d-flex flex-wrap align-items-center card-header-with-buttons">
+        <span class="title">{{title}}</span>
         <ng-container>
             <div class="module-toolbar d-flex align-items-center ml-auto">
 
@@ -23,7 +22,7 @@
                         <a ngbNavLink>Graph</a>
                         <ng-template ngbNavContent>
                             <app-chart
-                                    [ngStyle]="{display:'block' }"
+                                    [style.display]="'block'"
                                     [data]="data"
                                     [showMore]="showMore"
                             >

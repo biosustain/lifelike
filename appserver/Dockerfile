@@ -18,8 +18,9 @@ RUN groupadd -g $GID $N4J_USER && \
 WORKDIR $N4J_HOME
 
 # Copy Pipfiles and install dependencies FIRST to better apply Docker layer cache
-COPY --chown=1000:1000 Pipfile .
-COPY --chown=1000:1000 Pipfile.lock .
+COPY --chown=1000:1000 Pipfile* .
+# Create Pipfile.lock if it has been deleted
+RUN if [ ! -e "Pipfile.lock" ]; then pipenv lock --python python3; fi
 RUN pipenv install --dev --deploy --system
 
 # ...then copy everything else
