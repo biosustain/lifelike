@@ -40,8 +40,6 @@ def request_navigator_log():
         EventLog(event_type='user navigate').to_dict())
 
 
-
-
 @app.cli.command("seed")
 def seed():
     def find_existing_row(model, value):
