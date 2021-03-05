@@ -6,7 +6,7 @@ export enum SortDirection {
   none = 'none'
 }
 
-type SortDirectionType = keyof typeof SortDirection | false | 0 | '' | null | undefined;
+export type SortDirectionType = keyof typeof SortDirection | false | 0 | '' | null | undefined;
 
 const rotate: { [key: string]: SortDirectionType } = {
   [SortDirection.asc]: SortDirection.desc,
