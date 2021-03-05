@@ -64,8 +64,8 @@ def connect_to_neo4j():
 
 def connect_to_lmdb():
     if 'lmdb' not in g:
-        from neo4japp.services.annotations.lmdb_access import LMDB
-        g.lmdb = LMDB()
+        from neo4japp.services.annotations.lmdb_access import LMDBAccess
+        g.lmdb = LMDBAccess()
         g.lmdb.open_envs()
     return g.lmdb
 
@@ -254,6 +254,20 @@ def get_manual_annotation_service():
     )
     return ManualAnnotationService(
         graph=AnnotationGraphService()
+    )
+
+
+def get_sorted_annotation_service(sort_id):
+    from neo4japp.services.annotations import (
+        AnnotationGraphService,
+        ManualAnnotationService
+    )
+    from neo4japp.services.annotations.sorted_annotation_service import sorted_annotations_dict
+
+    return sorted_annotations_dict[sort_id](
+        annotation_service=ManualAnnotationService(
+            graph=AnnotationGraphService()
+        )
     )
 
 

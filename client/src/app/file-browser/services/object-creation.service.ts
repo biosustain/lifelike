@@ -1,4 +1,4 @@
-import { AnnotationGenerationRequest, ObjectCreateRequest } from '../schema';
+import { PDFAnnotationGenerationRequest, ObjectCreateRequest } from '../schema';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { FilesystemObject } from '../models/filesystem-object';
 import { Progress, ProgressMode } from '../../interfaces/common-dialog.interface';
@@ -37,8 +37,8 @@ export class ObjectCreationService {
    * @param annotationOptions options for the annotation process
    * @return the created object
    */
-  protected executePutWithProgressDialog(request: ObjectCreateRequest,
-                                         annotationOptions: AnnotationGenerationRequest = {}):
+  executePutWithProgressDialog(request: ObjectCreateRequest,
+                               annotationOptions: PDFAnnotationGenerationRequest = {}):
     Observable<FilesystemObject> {
     const progressObservable = new BehaviorSubject<Progress>(new Progress({
       status: 'Preparing...',
@@ -114,7 +114,7 @@ export class ObjectCreationService {
         ...value.request,
         ...(options.request || {}),
       }, {
-        annotationMethod: value.annotationMethod,
+        annotationConfigs: value.annotationConfigs,
         organism: value.organism,
       }).toPromise();
     });

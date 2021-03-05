@@ -1,7 +1,4 @@
 <div class="pdf-viewer-container" [class.debugmode]="debugMode" (mouseup)="mouseUp($event)">
-  <div *ngIf="!isLoadCompleted" class="pdf-loading-box floating-toolbar">
-    Loading<span *ngIf="allPages"> page {{currentRenderedPage}} of {{allPages}}</span>...
-  </div>
   <div class="pdf-viewer-document">
     <app-pdf-viewer-lib [src]="pdfSrc" [(page)]="page" [rotation]="rotation" [original-size]="originalSize"
                         [fit-to-page]="fitToPage"
@@ -10,7 +7,7 @@
                         [render-text]="renderText" [external-link-target]="'blank'" [autoresize]="autoresize"
                         (error)="onError($event)"
                         (on-progress)="onProgress($event)" (page-rendered)="pageRendered($event)"
-                        (matches-count-updated)="matchesCountUpdated($event)"
+                        (matches-count-updated)="matchesCountUpdated.emit($event)"
                         (find-control-state-updated)="findControlStateUpdated($event)">
     </app-pdf-viewer-lib>
   </div>

@@ -1,7 +1,7 @@
 <div class="input-group w-100 d-flex">
   <input [(ngModel)]="value" (change)="this.changed()" (blur)="this.blurred()"
          type="text" class="form-control input-border"
-         [style.width]="value ? '150px' : '100px'"
+         [ngStyle]="{minWidth:searchInputWidth,flexGrow:20}"
          placeholder="Search" aria-label="Graph search" aria-describedby="graph-search"
          [disabled]="disabled" (keyup.enter)="enterPress.next()"
          #searchInput>
@@ -10,9 +10,15 @@
       <i [style.visibility]="value?.length === 0 ? 'hidden': 'visible'" class="fa fa-times"></i>
     </button>
   </div>
-  <div *ngIf="resultCount" class="input-group-append">
-              <span class="input-group-text" id="increment-btn">
+  <div *ngIf="resultCount" class="input-group-append" style="flex-grow:1;">
+              <span class="input-group-text" id="increment-btn" style="width:100%;">
                 {{resultIndex + 1}} of {{resultCount}}
+                <span *ngIf="searching" style="display:block; text-align: center;" class="ml-1">
+                  <i
+                    style="display:block; text-align: center;"
+                    class="fa fa-spinner fa-spin text-dark"
+                  ></i>
+                </span>
               </span>
   </div>
   <div class="input-group-append" id="decrement-btn">

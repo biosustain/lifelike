@@ -6,6 +6,7 @@ from neo4japp.models import Files, Projects
 from neo4japp.models.files import FilePrivileges, FileLock
 from neo4japp.models.projects import ProjectPrivileges
 from neo4japp.schemas.account import UserSchema
+from neo4japp.schemas.annotations import AnnotationMethod, FallbackOrganismSchema
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.common import ResultListSchema, ResultMappingSchema, SingleResultSchema, \
     RankedItemSchema
@@ -131,6 +132,11 @@ class FileSchema(CamelCaseSchema):
     highlight = fields.Method('get_highlight')
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
+    fallback_organism = fields.Nested(FallbackOrganismSchema)
+    annotation_configs = fields.Dict(
+        keys=fields.String(),
+        values=fields.Nested(AnnotationMethod)
+    )
 
     def get_user_privilege_filter(self):
         try:
@@ -202,7 +208,7 @@ class FileSearchRequestSchema(CamelCaseSchema):
         'linked',
     ]))
     linked_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
-    mime_types = fields.List(fields.String(), required=True,
+    mime_types = fields.List(fields.String(),
                              validate=marshmallow.validate.Length(min=1))
     sort = SortField(columns={
         'filename': Files.filename,

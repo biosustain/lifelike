@@ -66,11 +66,11 @@ export class InfoViewPanelComponent {
     });
   }
 
-  searchMapNodeInContent(node) {
+  searchMapNodeInContent(node, types: string) {
     this.workspaceManager.navigate(['/search/content'], {
       queryParams: {
         q: node.display_name,
-        types: 'map;pdf',
+        types,
         limit: 20,
         page: 1
       },
