@@ -1,6 +1,14 @@
-import { ChangeDetectionStrategy, Component, Input, } from '@angular/core';
-import { FormControl, FormGroup, Validators, } from '@angular/forms';
-import { AppUser } from 'app/interfaces';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+} from '@angular/core';
+import {
+  FormGroup,
+  FormControl,
+  Validators,
+} from '@angular/forms';
+import { AppUser} from 'app/interfaces';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { MessageDialog } from '../../shared/services/message-dialog.service';
 import * as UserActions from '../store/actions';

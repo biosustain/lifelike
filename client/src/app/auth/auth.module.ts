@@ -12,22 +12,21 @@ import { AuthGuard } from './guards/auth-guard.service';
 import { LoginGuard } from './guards/login-guard.service';
 
 const components = [
-  LoginComponent,
+    LoginComponent,
 ];
 
 @NgModule({
-  imports: [
-    EffectsModule.forFeature([AuthEffects]),
-    StoreModule.forFeature('auth', reducer),
-    SharedModule,
-  ],
-  declarations: components,
-  providers: [
-    AuthGuard,
-    AuthenticationService,
-    LoginGuard,
-  ],
-  exports: components,
+    imports: [
+        EffectsModule.forFeature([AuthEffects]),
+        StoreModule.forFeature('auth', reducer),
+        SharedModule,
+    ],
+    declarations: components,
+    providers: [
+        AuthGuard,
+        AuthenticationService,
+        LoginGuard,
+    ],
+    exports: components,
 })
-export class AuthModule {
-}
+export class AuthModule {}

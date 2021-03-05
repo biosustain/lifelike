@@ -2,19 +2,19 @@
   <!-- Toolbar -->
   <div class="mb-4 d-flex">
     <div>
-      <div class="d-inline-block" ngbDropdown>
+      <div ngbDropdown class="d-inline-block">
         <button class="btn btn-primary" ngbDropdownToggle>
           <i class="fa fa-fw fa-file-export"></i>
           Export
         </button>
         <div ngbDropdownMenu>
-          <button (click)="exportGlobalExclusions()" ngbDropdownItem>Export Exclusions...</button>
-          <button (click)="exportGlobalInclusions()" ngbDropdownItem>Export Inclusions...</button>
+          <button ngbDropdownItem (click)="exportGlobalExclusions()">Export Exclusions...</button>
+          <button ngbDropdownItem (click)="exportGlobalInclusions()">Export Inclusions...</button>
         </div>
       </div>
-      <button (click)="deleteAnnotation(results.selection)"
-              [disabled]="results.selection.length === 0"
+      <button [disabled]="results.selection.length === 0"
               class="btn btn-danger ml-2"
+              (click)="deleteAnnotation(results.selection)"
               ngbTooltip="Delete annotation(s)">
         Delete
       </button>
@@ -24,59 +24,59 @@
   <!-- Table -->
   <table class="table module-body-table">
     <thead>
-    <tr>
-      <th class="text-truncate">
-        <div class="custom-control custom-checkbox">
-          <input (change)="results.toggleAll()" [checked]="results.isAllSelected()" class="custom-control-input"
-                 id="select-all"
-                 type="checkbox">
-          <label class="custom-control-label" for="select-all"></label>
-        </div>
-      </th>
-      <th *ngFor="let header of headers">
-        {{ header }}
-      </th>
-    </tr>
+      <tr>
+        <th class="text-truncate">
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="select-all"
+                   [checked]="results.isAllSelected()"
+                   (change)="results.toggleAll()">
+            <label class="custom-control-label" for="select-all"></label>
+          </div>
+        </th>
+        <th *ngFor="let header of headers">
+          {{ header }}
+        </th>
+      </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let object of results.view; index as objectIndex"
-        [class.active]="this.results.isSelected(object)">
-      <td (click)="results.toggle(object)" class="align-middle text-nowrap text-truncate">
-        <div class="custom-control custom-checkbox text-truncate">
-          <input (change)="results.toggle(object)" [checked]="results.isSelected(object)" class="custom-control-input"
-                 id="object-{{ objectIndex }}"
-                 type="checkbox">
-          <label class="custom-control-label d-block" for="object-{{ objectIndex }}">
-            <div class="d-flex align-items-center text-truncate">
-              <div class="d-inline-block mr-1">
-                <i class="fa fa-fw fa-file-alt text-muted"></i>
+      <tr *ngFor="let object of results.view; index as objectIndex"
+          [class.active]="this.results.isSelected(object)">
+        <td class="align-middle text-nowrap text-truncate" (click)="results.toggle(object)">
+          <div class="custom-control custom-checkbox text-truncate">
+            <input type="checkbox" class="custom-control-input" id="object-{{ objectIndex }}"
+                   (change)="results.toggle(object)"
+                   [checked]="results.isSelected(object)">
+            <label class="custom-control-label d-block" for="object-{{ objectIndex }}">
+              <div class="d-flex align-items-center text-truncate">
+                <div class="d-inline-block mr-1">
+                  <i class="fa fa-fw fa-file-alt text-muted"></i>
+                </div>
               </div>
-            </div>
-          </label>
-        </div>
-      </td>
-      <td class="align-middle text-nowrap">{{ object.text }}</td>
-      <td class="align-middle text-nowrap">{{ object.type }}</td>
-      <td class="align-middle text-nowrap">{{ object.entityType }}</td>
-      <td class="align-middle text-nowrap">{{ object.annotationId }}</td>
-      <td class="align-middle text-nowrap">
-        <button class="btn"
-                disabled ngbTooltip="Download file">
-        </button>
-      </td>
-      <td class="align-middle text-nowrap">{{ object.userEmail}}</td>
-      <td class="align-middle text-nowrap">{{ object.reason }}</td>
-      <td class="align-middle text-nowrap">{{ object.comment }}</td>
-      <td class="align-middle text-nowrap">{{ object.creationDate }}</td>
-    </tr>
+            </label>
+          </div>
+        </td>
+        <td class="align-middle text-nowrap">{{ object.text }}</td>
+        <td class="align-middle text-nowrap">{{ object.type }}</td>
+        <td class="align-middle text-nowrap">{{ object.entityType }}</td>
+        <td class="align-middle text-nowrap">{{ object.annotationId }}</td>
+        <td class="align-middle text-nowrap">
+          <button class="btn"
+                  ngbTooltip="Download file" disabled>
+          </button>
+        </td>
+        <td class="align-middle text-nowrap">{{ object.userEmail}}</td>
+        <td class="align-middle text-nowrap">{{ object.reason }}</td>
+        <td class="align-middle text-nowrap">{{ object.comment }}</td>
+        <td class="align-middle text-nowrap">{{ object.creationDate }}</td>
+      </tr>
     </tbody>
   </table>
   <ngb-pagination
-    (pageChange)="goToPage($event)"
-    *ngIf="collectionSize"
-    [collectionSize]="collectionSize"
-    [pageSize]="pageSize"
-    [page]="currentPage"
     style="text-align: center"
+    *ngIf="collectionSize"
+    [page]="currentPage"
+    [pageSize]="pageSize"
+    [collectionSize]="collectionSize"
+    (pageChange)="goToPage($event)"
   ></ngb-pagination>
 </div>

@@ -4,10 +4,10 @@ import {
   CreateDialogAction, PreviewOptions,
 } from '../services/object-type.service';
 import { FilesystemObject } from '../models/filesystem-object';
-import {ComponentFactory, ComponentFactoryResolver, Injectable, Injector} from '@angular/core';
-import {FilesystemService} from '../services/filesystem.service';
-import {map} from 'rxjs/operators';
-import {DirectoryPreviewComponent} from '../components/directory-preview.component';
+import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
+import { FilesystemService } from '../services/filesystem.service';
+import { map } from 'rxjs/operators';
+import { DirectoryPreviewComponent } from '../components/directory-preview.component';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../services/object-creation.service';
 import { Observable } from 'rxjs';

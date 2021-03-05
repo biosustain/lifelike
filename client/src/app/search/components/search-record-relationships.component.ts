@@ -20,21 +20,17 @@ export class SearchRecordRelationshipsComponent {
   PUBMEDURL: string = PUBMEDURL;
 
   // TODO: We should come up with a consistent way to mark variables as private without using '_', or
-  nodeURL: string;
-  chemicalDisplayName = '';
-  chemicalLabel = '';
-  diseaseDisplayName = '';
-  diseaseLabel = '';
-  @Input() params: GraphSearchParameters;
   // just disable that check for tslint.
   private prvNode: FTSReferenceRecord;
+  nodeURL: string;
 
-  constructor() {
-  }
+  chemicalDisplayName = '';
+  chemicalLabel = '';
 
-  get node(): FTSReferenceRecord {
-    return this.prvNode;
-  }
+  diseaseDisplayName = '';
+  diseaseLabel = '';
+
+  @Input() params: GraphSearchParameters;
 
   @Input()
   set node(n: FTSReferenceRecord) {
@@ -56,6 +52,13 @@ export class SearchRecordRelationshipsComponent {
       nodeQuery += disease.id;
     }
     this.nodeURL = stringToHex(nodeQuery);
+  }
+
+  get node(): FTSReferenceRecord {
+    return this.prvNode;
+  }
+
+  constructor() {
   }
 
   setChemicalDataStrings(chemical: GraphNode) {

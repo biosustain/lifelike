@@ -1,5 +1,5 @@
-import {ResultListComponent} from './result-list.component';
-import {PaginatedRequestOptions, ResultList} from '../../schemas/common';
+import { ResultListComponent } from './result-list.component';
+import { PaginatedRequestOptions, ResultList } from '../../schemas/common';
 
 export abstract class PaginatedResultListComponent<O extends PaginatedRequestOptions, R,
     RL extends ResultList<R> = ResultList<R>> extends ResultListComponent<O, R, RL> {

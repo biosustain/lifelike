@@ -1,19 +1,19 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 function formatDate(dateStr) {
-  const date = new Date(dateStr);
-  const monthNames = [
-    'January', 'February', 'March',
-    'April', 'May', 'June', 'July',
-    'August', 'September', 'October',
-    'November', 'December'
-  ];
+    const date = new Date(dateStr);
+    const monthNames = [
+        'January', 'February', 'March',
+        'April', 'May', 'June', 'July',
+        'August', 'September', 'October',
+        'November', 'December'
+    ];
 
-  const day = date.getDate();
-  const monthIndex = date.getMonth();
-  const year = date.getFullYear();
+    const day = date.getDate();
+    const monthIndex = date.getMonth();
+    const year = date.getFullYear();
 
-  return monthNames[monthIndex] + ' ' + day + ', ' + year;
+    return monthNames[monthIndex] + ' ' + day +  ', ' + year;
 }
 
 @Pipe({

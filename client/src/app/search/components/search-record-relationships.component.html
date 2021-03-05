@@ -1,10 +1,10 @@
-<div (dragstart)="dragStarted($event)" draggable="true">
+<div draggable="true" (dragstart)="dragStarted($event)">
   <div class="search-results-item-header">
     <h5>
       <a
+        href='/kg-visualizer/graph'
         [appLink]="['/kg-visualizer/graph']"
         [queryParams]="getVisualizerQueryParams({ data: nodeURL })"
-        href='/kg-visualizer/graph'
       >Snippet: {{ node.node.displayName }}</a>
     </h5>
 
@@ -15,23 +15,23 @@
     <div class="pub-snippet-title">{{ node.node.displayName }}</div>
     <i *ngIf="node.chemical || node.disease">This snippet generated the following relationship</i>
     <app-node-relationship
-      [edge]="node.relationship"
-      [leftNodeColor]="'rgb(143, 166, 203)'"
-      [leftNodeLabel]="chemicalLabel"
       [leftNodeName]="chemicalDisplayName"
+      [leftNodeLabel]="chemicalLabel"
+      [leftNodeColor]="'rgb(143, 166, 203)'"
       [rightNodeColor]="'rgb(205, 93, 103)'"
-      [rightNodeLabel]="diseaseLabel"
       [rightNodeName]="diseaseDisplayName"
+      [rightNodeLabel]="diseaseLabel"
+      [edge]="node.relationship"
     ></app-node-relationship>
     <div class="publication-container">
       <div>
         <span class="pub-data-header">Publication:</span>
-        <a href="{{ PUBMEDURL }}/{{ node.publicationId }}" target="_blank">
+        <a target="_blank" href="{{ PUBMEDURL }}/{{ node.publicationId }}">
           <span>{{ node.publicationTitle }}</span>
           <span *ngIf="node.publicationYear">({{ node.publicationYear }})</span>
         </a>
         <span class="pubid-data-header">PubMed ID:</span>
-        <a href="{{ PUBMEDURL }}/{{ node.publicationId }}" target="_blank">
+        <a target="_blank" href="{{ PUBMEDURL }}/{{ node.publicationId }}">
           <span>{{ node.publicationId }}</span>
         </a>
       </div>

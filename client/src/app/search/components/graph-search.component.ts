@@ -39,9 +39,10 @@ export class GraphSearchComponent implements OnInit, OnDestroy {
   results: FTSQueryRecord[] = [];
 
   legend: Map<string, string> = new Map();
+
+  private valuesSubscription: Subscription;
   routerParamSubscription: Subscription;
   loadTaskSubscription: Subscription;
-  private valuesSubscription: Subscription;
 
   constructor(
     private route: ActivatedRoute,

@@ -1,6 +1,6 @@
-import {Component, Input} from '@angular/core';
-import {ProjectImpl} from '../models/filesystem-object';
-import {hslToRgb} from '../../shared/utils/colors';
+import { Component, Input } from '@angular/core';
+import { ProjectImpl } from '../models/filesystem-object';
+import { hslToRgb } from '../../shared/utils/colors';
 
 @Component({
   selector: 'app-project-icon',
