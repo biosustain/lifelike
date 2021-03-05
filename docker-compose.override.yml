@@ -52,8 +52,8 @@ services:
             - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
             - ELASTIC_FILE_INDEX_ID=file_dev
             # Neo4j
-            - NEO4J_HOST=34.67.212.125
-            - NEO4J_AUTH=neo4j/lifelike-stg-2021
+            - NEO4J_HOST=n4j-database
+            - NEO4J_AUTH=neo4j/password
             # Redis
             - REDIS_HOST=redis
             - REDIS_PORT=6379
@@ -118,8 +118,6 @@ services:
 
     redis:
         container_name: redis
-        ports:
-          - "6379:6379"
         networks:
             - backend
 
@@ -189,7 +187,7 @@ services:
         build:
             context: logstash/
         volumes:
-            - ./logstash/config:/usr/share/logstash/config
+            - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
             - ./logstash/pipeline:/usr/share/logstash/pipeline
         ports:
             - "5044:5044"
