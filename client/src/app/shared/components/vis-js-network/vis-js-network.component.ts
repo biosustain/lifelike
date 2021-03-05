@@ -2,8 +2,8 @@ import { AfterViewInit, Component, Input } from '@angular/core';
 
 import { isNullOrUndefined } from 'util';
 
-import { Color, Edge, Network, Node, Options } from 'vis-network';
 import { DataSet } from 'vis-data';
+import { Color, Edge, Network, Node, Options } from 'vis-network';
 
 import { GraphData, VisNetworkDataSet } from 'app/interfaces/vis-js.interface';
 import { uuidv4 } from 'app/shared/utils';
