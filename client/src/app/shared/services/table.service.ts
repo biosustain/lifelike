@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 
 import { debounceTime, delay, switchMap, tap } from 'rxjs/operators';
-import { SortColumn, SortDirection } from '../directives/table-sortable-header.directive';
+import { SortDirectionType, SortDirection } from '../directives/table-sortable-header.directive';
 
 interface SearchResult {
   data: any[];
@@ -14,19 +14,19 @@ interface State {
   page: number;
   pageSize: number;
   searchTerm: string;
-  sortColumn: SortColumn;
-  sortDirection: SortDirection;
+  sortColumn: string;
+  sortDirection: SortDirectionType;
 }
 
 const compare = (v1: string | number, v2: string | number) => v1 < v2 ? -1 : v1 > v2 ? 1 : 0;
 
-function sort(data: any[], column: SortColumn, direction: string): any[] {
+function sort(data: any[], column: string, direction: SortDirectionType): any[] {
   if (direction === '' || column === '') {
     return data;
   } else {
     return [...data].sort((a, b) => {
       const res = compare(a[column], b[column]);
-      return direction === 'asc' ? res : -res;
+      return direction === SortDirection.asc ? res : -res;
     });
   }
 }
@@ -105,11 +105,11 @@ export class DataService {
     this.patch({searchTerm});
   }
 
-  set sortColumn(sortColumn: SortColumn) {
+  set sortColumn(sortColumn: string) {
     this.patch({sortColumn});
   }
 
-  set sortDirection(sortDirection: SortDirection) {
+  set sortDirection(sortDirection: SortDirectionType) {
     this.patch({sortDirection});
   }
 
