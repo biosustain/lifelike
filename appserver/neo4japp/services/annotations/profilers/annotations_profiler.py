@@ -11,12 +11,15 @@ from datetime import datetime
 from neo4japp.database import db
 from neo4japp.factory import create_app
 from neo4japp.models import Files
-from neo4japp.services.annotations.constants import AnnotationMethod
+from neo4japp.services.annotations.constants import DEFAULT_ANNOTATION_CONFIGS
 from neo4japp.services.annotations.pipeline import create_annotations_from_pdf
 
 
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
+
+FALLBACK_ORGANISM_SYNONYM = ''
+FALLBACK_ORGANISM_TAXID = ''
 
 
 @contextlib.contextmanager
@@ -51,7 +54,7 @@ def main():
             data=json.dumps({'email': 'admin@example.com', 'password': 'password'}),
             headers={'Content-type': 'application/json'})
 
-        access_token = json.loads(req.text)['access_jwt']
+        access_token = json.loads(req.text)['accessToken']['token']
 
         pdf = os.path.join(
             directory,
@@ -73,7 +76,11 @@ def main():
         f = db.session.query(Files).filter(Files.hash_id == hash_id).one()
         with cprofiled():
             annotations = create_annotations_from_pdf(
-                AnnotationMethod.RULES.value, '', '', f, f.filename)
+                annotation_method=DEFAULT_ANNOTATION_CONFIGS,
+                specified_organism_synonym=FALLBACK_ORGANISM_SYNONYM,
+                specified_organism_tax_id=FALLBACK_ORGANISM_TAXID,
+                document=f,
+                filename=f.filename)
 
 
 if __name__ == '__main__':
