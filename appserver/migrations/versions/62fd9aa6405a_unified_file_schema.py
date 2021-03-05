@@ -335,6 +335,11 @@ def upgrade():
     op.alter_column('files', 'mime_type', existing_type=sa.String(length=127), nullable=False,
                     server_default=None)
 
+    # Make enrichment tables the enrichment table type
+    session.execute(t_file.update().values(
+        mime_type='vnd.***ARANGO_DB_NAME***.document/enrichment-table'
+    ).where(t_file.c.filename.ilike('%.enrichment')))
+
     # ========================================
     # Copy over maps
     # ========================================
@@ -931,6 +936,16 @@ def insert_sample_data(session):
         file_id='test',
         project=1,
         filename='test.txt',
+        content_id=1,
+        dir_id=2,
+        user_id=1,
+        creation_date=datetime.now(),
+    ))
+
+    session.execute(t_files.insert().values(
+        file_id='enrichment',
+        project=1,
+        filename='table.enrichment',
         content_id=1,
         dir_id=2,
         user_id=1,

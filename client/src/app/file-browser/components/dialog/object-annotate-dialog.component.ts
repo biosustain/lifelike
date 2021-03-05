@@ -1,21 +1,16 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { Component, Input } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../../shared/services/message-dialog.service';
 import { FilesystemObject } from '../../models/filesystem-object';
 import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
 import {
-  AnnotationGenerationRequest,
-  ObjectContentSource,
-  ObjectCreateRequest,
+  PDFAnnotationGenerationRequest,
+  AnnotationConfigs,
 } from '../../schema';
 import { OrganismAutocomplete } from '../../../interfaces';
-import { select, Store } from '@ngrx/store';
-import { AuthSelectors } from '../../../auth/store';
-import { State } from 'app/***ARANGO_USERNAME***-store';
-import { Observable } from 'rxjs';
-import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
-import { AnnotationMethod } from '../../../interfaces/annotation';
+import { AnnotationMethods, NLPANNOTATIONMODELS } from '../../../interfaces/annotation';
+import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 
 @Component({
   selector: 'app-object-annotate-dialog',
@@ -25,31 +20,47 @@ export class ObjectAnnotateDialogComponent extends CommonFormDialogComponent<Obj
   @Input() objects: FilesystemObject[] = [];
   @Input() title = 'Annotation Options';
 
-  readonly annotationMethodChoices: AnnotationMethod[] = ['NLP', 'Rules Based'];
-  readonly userRoles$: Observable<string[]>;
+  readonly annotationMethodChoices: AnnotationMethods[] = ['NLP', 'Rules Based'];
+  readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(
+    key => NLPANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
 
   readonly form: FormGroup = new FormGroup({
-    annotationMethod: new FormControl(this.annotationMethodChoices[1], [Validators.required]),
+    annotationConfigs: new FormGroup(
+      this.annotationModels.reduce(
+        (obj, key) => ({...obj, [key]: new FormGroup(
+          {
+            nlp: new FormControl(false),
+            rulesBased: new FormControl(true)
+          })}), {}), [Validators.required]),
     organism: new FormControl(null),
   });
 
   constructor(modal: NgbActiveModal,
               messageDialog: MessageDialog,
-              store: Store<State>,
               protected readonly modalService: NgbModal) {
     super(modal, messageDialog);
-    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
   }
 
   getValue(): ObjectAnnotateDialogValue {
     const value = this.form.value;
 
+    const annotationConfigs = {};
+    for (const [modelName, config] of Object.entries(value.annotationConfigs)) {
+      const model = {};
+      for (const key of Object.keys(config)) {
+        if (key !== 'disabled') {
+          model[key] = config[key];
+        }
+      }
+      annotationConfigs[modelName] = model;
+    }
+
     return {
       request: {
-        annotationMethod: value.annotationMethod,
+        annotationConfigs,
         organism: value.organism,
       },
-      annotationMethod: value.annotationMethod,
+      annotationConfigs,
       organism: value.organism,
     };
   }
@@ -70,7 +81,7 @@ export class ObjectAnnotateDialogComponent extends CommonFormDialogComponent<Obj
 }
 
 export interface ObjectAnnotateDialogValue {
-  request: AnnotationGenerationRequest;
-  annotationMethod: AnnotationMethod;
+  request: PDFAnnotationGenerationRequest;
+  annotationConfigs: AnnotationConfigs;
   organism: OrganismAutocomplete;
 }

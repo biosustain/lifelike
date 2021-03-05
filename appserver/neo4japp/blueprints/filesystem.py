@@ -198,7 +198,7 @@ class FilesystemBaseView(MethodView):
                      joinedload(Files.fallback_organism)) \
             .order_by(q_hierarchy.c.level)
 
-        if children_filter:
+        if children_filter is not None:
             query = query.filter(children_filter)
 
         if lazy_load_content:
@@ -222,10 +222,21 @@ class FilesystemBaseView(MethodView):
             for permission in require_permissions:
                 if not getattr(file.calculated_privileges[user.id], permission):
                     # Do not reveal the filename with the error!
-                    raise AccessRequestRequiredError(
-                        f"You do not have '{permission}' access to the specified file object "
-                        f"(with ID of {file.hash_id}).",
-                        file_hash_id=file.hash_id)
+                    if not file.calculated_privileges[user.id].readable:
+                        raise AccessRequestRequiredError(
+                            f"You do not have permission to access this file or folder.",
+                            file_hash_id=file.hash_id)
+                    else:
+                        if permission == 'commentable':
+                            raise AccessRequestRequiredError(
+                                f"You can open '{file.filename}' but you cannot make "
+                                f"comments.",
+                                file_hash_id=file.hash_id)
+                        else:
+                            raise AccessRequestRequiredError(
+                                f"You can open '{file.filename}' but you cannot make "
+                                f"changes to it.",
+                                file_hash_id=file.hash_id)
 
             if not permit_recycled and (file.recycled or file.parent_recycled):
                 raise ValidationError(
@@ -544,7 +555,7 @@ class FileListView(FilesystemBaseView):
                     'Your file could not be processed because it is too large.')
 
             # Save the URL
-            file.url = url
+            file.upload_url = url
 
             # Detect mime type
             if params.get('mime_type'):
@@ -722,9 +733,11 @@ class FileSearchView(FilesystemBaseView):
             query = db.session.query(Files.id) \
                 .filter(Files.recycling_date.is_(None),
                         Files.deletion_date.is_(None),
-                        Files.public.is_(True),
-                        Files.mime_type.in_(params['mime_types'])) \
+                        Files.public.is_(True)) \
                 .order_by(*params['sort'])
+
+            if 'mime_types' in params:
+                query = query.filter(Files.mime_type.in_(params['mime_types']))
 
             result = query.paginate(pagination['page'], pagination['limit'])
 

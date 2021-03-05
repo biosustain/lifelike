@@ -27,7 +27,6 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
   public readonly loadTask: BackgroundTask<PaginatedRequestOptions, FilesystemObjectList> = new BackgroundTask(
     (locator: PaginatedRequestOptions) => this.filesystemService.search({
       type: 'public',
-      mimeTypes: [MAP_MIMETYPE],
       sort: '-modificationDate',
       ...locator,
     }), // TODO

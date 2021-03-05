@@ -1,12 +1,32 @@
 import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { getObjectCommands, getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
+
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { flatten } from 'lodash';
+
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { isNullOrUndefined } from 'util';
+
+import { HighlightDisplayLimitChange } from 'app/file-browser/components/object-info.component';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import {
+  ObjectTypeProvider,
+  ObjectTypeService,
+} from 'app/file-browser/services/object-type.service';
+import { getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
 import { PDFResult, PDFSnippets } from 'app/interfaces';
-import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
+import { FileViewComponent } from 'app/pdf-viewer/components/file-view.component';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
 import { ModuleProperties } from 'app/shared/modules';
+import { RankedItem, ResultList } from 'app/shared/schemas/common';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { CollectionModel } from 'app/shared/utils/collection-model';
+import { FindOptions } from 'app/shared/utils/find';
 import {
   deserializePaginatedParams,
   getChoicesFromQuery,
@@ -14,24 +34,11 @@ import {
 } from 'app/shared/utils/params';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 
+import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
 import { ContentSearchOptions } from '../content-search';
 import { ContentSearchService } from '../services/content-search.service';
-import { HighlightDisplayLimitChange } from '../../file-browser/components/object-info.component';
-import { FileViewComponent } from '../../pdf-viewer/components/file-view.component';
-import { RankedItem, ResultList } from '../../shared/schemas/common';
-import { map, tap } from 'rxjs/operators';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { Observable, of } from 'rxjs';
-import { ContentSearchRequest } from '../schema';
-import { FindOptions } from '../../shared/utils/find';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { SearchType } from '../shared';
-import {
-  ObjectTypeProvider,
-  ObjectTypeService,
-} from '../../file-browser/services/object-type.service';
-import { flatten } from 'lodash';
+
 
 @Component({
   selector: 'app-content-search',
@@ -48,10 +55,25 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     multipleSelection: false,
   });
   fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
-  highlightOptions: FindOptions = {keepSearchSpecialChars: true};
-  searchTypes$: Observable<SearchType[]>;
+  highlightOptions: FindOptions = {keepSearchSpecialChars: true, wholeWord: true};
+  searchTypes: SearchType[];
+  searchTypesMap: Map<string, SearchType>;
 
-  constructor(protected readonly route: ActivatedRoute,
+  get emptyParams(): boolean {
+    if (isNullOrUndefined(this.params)) {
+      return true;
+    }
+    const qExists = this.params.hasOwnProperty('q') && this.params.q.length !== 0;
+    const typesExists = this.params.hasOwnProperty('types') && this.params.types.length !== 0;
+    const projectsExists = this.params.hasOwnProperty('projects') && this.params.projects.length !== 0;
+    const phraseExists = this.params.hasOwnProperty('phrase') && this.params.phrase.length !== 0;
+    const wildcardExists = this.params.hasOwnProperty('wildcards') && this.params.wildcards.length !== 0;
+
+    return !(qExists || typesExists || projectsExists || phraseExists || wildcardExists);
+  }
+
+  constructor(private modalService: NgbModal,
+              protected readonly route: ActivatedRoute,
               protected readonly workspaceManager: WorkspaceManager,
               protected readonly contentSearchService: ContentSearchService,
               protected readonly zone: NgZone,
@@ -60,12 +82,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
               protected readonly objectTypeService: ObjectTypeService) {
     super(route, workspaceManager);
     objectTypeService.all().subscribe((providers: ObjectTypeProvider[]) => {
-      this.searchTypes$ = of(flatten(providers.map(provider => provider.getSearchTypes())));
+      this.searchTypes = flatten(providers.map(provider => provider.getSearchTypes()));
+      this.searchTypesMap = new Map(Array.from(this.searchTypes.values()).map(value => [value.shorthand, value]));
     });
-  }
-
-  get valid(): boolean {
-    return !!this.params.q.length;
   }
 
   valueChanged(value: ContentSearchOptions) {
@@ -75,21 +94,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     });
   }
 
+
   getResults(params: ContentSearchOptions): Observable<ResultList<RankedItem<FilesystemObject>>> {
-    const request: ContentSearchRequest = {
-      sort: params.sort,
-      page: params.page,
-      limit: params.limit,
-      q: params.q,
-    };
-
-    // If we don't provide a list of mime types, then the server will return all
-    // by default
-    if (params.mimeTypes.length) {
-      request.mimeTypes = params.mimeTypes.map(item => item.id);
-    }
-
-    return this.contentSearchService.search(request).pipe(
+    return this.contentSearchService.search(this.serializeParams(params)).pipe(
       this.errorHandler.create({label: 'Content search'}),
       map(result => ({
         query: result.query,
@@ -104,30 +111,90 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       limit: this.defaultLimit,
       page: 1,
       sort: '+name',
-      mimeTypes: [],
       q: '',
     };
   }
 
-  deserializeParams(params) {
-    return this.searchTypes$.pipe(
-      map(searchTypes => {
-        const searchTypesMap = new Map(Array.from(searchTypes.values()).map(value => [value.id, value]));
-        return {
-          ...deserializePaginatedParams(params, this.defaultLimit),
-          q: params.hasOwnProperty('q') ? params.q : '',
-          mimeTypes: params.hasOwnProperty('mimeTypes') ? getChoicesFromQuery(params, 'mimeTypes', searchTypesMap) : [],
-        };
-      }),
-    );
+  deserializeAdvancedParams(params) {
+    const advancedParams: any = {};
+
+    if (params.hasOwnProperty('types')) {
+      advancedParams.types = getChoicesFromQuery(params, 'types', this.searchTypesMap);
+    }
+    if (params.hasOwnProperty('projects')) {
+      advancedParams.projects = params.projects === '' ? [] : params.projects.split(';');
+    }
+    if (params.hasOwnProperty('phrase')) {
+      advancedParams.phrase = params.phrase;
+    }
+    if (params.hasOwnProperty('wildcards')) {
+      advancedParams.wildcards = params.wildcards;
+    }
+    return advancedParams;
   }
 
-  serializeParams(params, restartPagination = false) {
+  deserializeParams(params) {
+    return of({
+      ...deserializePaginatedParams(params, this.defaultLimit),
+      ...this.deserializeAdvancedParams(params),
+      q: params.hasOwnProperty('q') ? params.q : '',
+    });
+  }
+
+  serializeAdvancedParams(params: ContentSearchOptions) {
+    const advancedParams: any = {};
+
+    if (params.hasOwnProperty('types')) {
+      advancedParams.types = params.types.map(value => value.shorthand).join(';');
+    }
+    if (params.hasOwnProperty('projects')) {
+      advancedParams.projects = params.projects.join(';');
+    }
+    if (params.hasOwnProperty('phrase')) {
+      advancedParams.phrase = params.phrase;
+    }
+    if (params.hasOwnProperty('wildcards')) {
+      advancedParams.wildcards = params.wildcards;
+    }
+    return advancedParams;
+  }
+
+  serializeParams(params: ContentSearchOptions, restartPagination = false) {
     return {
       ...serializePaginatedParams(params, restartPagination),
-      q: params.q,
-      mimeTypes: params.mimeTypes.map(value => value.id).join(';'),
+      ...this.serializeAdvancedParams(params),
+      q: params.hasOwnProperty('q') ? params.q : '',
     };
+  }
+
+  search(params) {
+    this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {
+      queryParams: {
+        ...this.serializeParams({
+          ...this.getDefaultParams(),
+          // If normal search, only use the 'q' param; Ignore any advanced params we arrived at the page with
+          q: isNullOrUndefined(params.q) ? '' : params.q,
+        }, true),
+        t: new Date().getTime(),
+      },
+    });
+  }
+
+  /**
+   * Special version of search which handles the existence of advanced query params.
+   * @param params object representing the search query options
+   */
+  advancedSearch(params) {
+    this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {
+      queryParams: {
+        ...this.serializeParams({
+          ...this.getDefaultParams(),
+          // If advanced search, use all params
+          ...params,
+        }, true),
+        t: new Date().getTime(),
+      },
+    });
   }
 
   highlightClicked(object: FilesystemObject, highlight: string) {
@@ -195,13 +262,95 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     });
   }
 
-  openAdvancedSearchOptions() {
-    this.messageDialog.display({
-      title: 'Advanced Search Options',
-      message: '- Exact phrase: "this exact phrase"\n' +
-        '- Zero or more wildcard character: ba*na\n' +
-        '- One or more wildcard character: ba?ana',
-      type: MessageType.Info,
+  /**
+   * Attempts to extract advanced search options from the query string paramter 'q'. If any advanced options are found, they are removed
+   * 'q' and added to the params object.
+   * @param params object representing the content search options
+   */
+  extractAdvancedParams(params: ContentSearchOptions) {
+    const advancedParams: any = {};
+    let q = '';
+
+    if (params.hasOwnProperty('q')) {
+      q = (params.q as string);
+
+      // Remove 'types' from q and add to the types option of the advancedParams
+      const typeMatches = q.match(/\btype:\S*/g);
+      let extractedTypes = [];
+      if (!isNullOrUndefined(typeMatches)) {
+        extractedTypes = typeMatches.map(typeVal => typeVal.split(':')[1]);
+      }
+
+
+      let givenTypes = [];
+      if (params.hasOwnProperty('types')) {
+        givenTypes = params.types.map(value => value.shorthand);
+      }
+
+      q = q.replace(/\btype:\S*/g, '').trim();
+      advancedParams.types = getChoicesFromQuery(
+        {types: extractedTypes.concat(givenTypes).join(';')},
+        'types',
+        this.searchTypesMap
+      );
+
+      // Remove 'projects' from q and add to the projects option of the advancedParams
+      const givenProjects = params.hasOwnProperty('projects') ? params.projects : [];
+      const projectMatches = q.match(/\bproject:\S*/g);
+
+      let extractedProjects = [];
+      if (!isNullOrUndefined(projectMatches)) {
+        extractedProjects = projectMatches.map(projectVal => projectVal.split(':')[1]);
+      }
+
+      q = q.replace(/\bproject:\S*/g, '').trim();
+      advancedParams.projects = extractedProjects.concat(givenProjects);
+
+      // Remove the first phrase from q and add to the phrase option of the advancedParams
+      if (params.hasOwnProperty('phrase')) {
+        advancedParams.phrase = params.phrase;
+      } else {
+        const phraseMatches = q.match(/\"((?:\"\"|[^\"])*)\"/);
+        if (!isNullOrUndefined(phraseMatches)) {
+          // Object at index 1 should be the string enclosed by '"'
+          advancedParams.phrase = phraseMatches[1];
+          q = q.replace(/\"((?:\"\"|[^\"])*)\"/, '').trim();
+        }
+      }
+
+      // Remove 'wildcards' from q and add to the wildcards option of the advancedParams
+      const givenWildcards = params.hasOwnProperty('wildcards') ? [params.wildcards] : [];
+      const extractedWildcards = q.match(/\S*(\?|\*)\S*/g);
+
+      q = q.replace(/\S*(\?|\*)\S*/g, '').trim();
+      advancedParams.wildcards = givenWildcards.concat(extractedWildcards).join(' ').trim();
+    }
+
+    advancedParams.q = q;
+
+    return advancedParams;
+  }
+
+  /**
+   * Opens the advanced search dialog. Users can add special options to their query using this feature.
+   */
+  openAdvancedSearch() {
+    const modalRef = this.modalService.open(AdvancedSearchDialogComponent, {
+      size: 'md',
     });
+    modalRef.componentInstance.params = this.extractAdvancedParams(this.params);
+    modalRef.componentInstance.typeChoices = this.searchTypes.concat().sort((a, b) => a.name.localeCompare(b.name));
+    modalRef.result
+      // Advanced search was triggered
+      .then((params) => {
+        this.advancedSearch(params);
+      })
+      // Advanced search dialog was dismissed or rejected
+      .catch(() => {});
+  }
+
+  itemDragStart(event: DragEvent, object: FilesystemObject) {
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    object.addDataTransferData(dataTransfer);
   }
 }

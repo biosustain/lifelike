@@ -17,6 +17,17 @@ class UserCreateSchema(CamelCaseSchema):
     password = fields.String()
 
 
+class UserChangePasswordSchema(CamelCaseSchema):
+    password = fields.String()
+    new_password = fields.String()
+
+
+class UserUpdateSchema(CamelCaseSchema):
+    """ Only these attributes can be modified for AppUsers """
+    first_name = fields.String()
+    last_name = fields.String()
+
+
 class UserSchema(CamelCaseSchema):
     """Generic schema for returning public information about a user."""
     hash_id = fields.String()
@@ -26,8 +37,9 @@ class UserSchema(CamelCaseSchema):
     # DO NOT return private information (like email) in this schema
 
 
-class UserSchemaWithId(UserSchema):
+class UserProfileSchema(UserSchema):
     id = fields.Integer()
+    email = fields.Email()
     roles = fields.List(fields.String())
 
 
@@ -45,6 +57,10 @@ class UserSearchSchema(CamelCaseSchema):
 
 # Responses
 # ----------------------------------------
+
+class UserProfileListSchema(ResultListSchema):
+    results = fields.List(fields.Nested(UserProfileSchema))
+
 
 class UserListSchema(ResultListSchema):
     """A list of users."""

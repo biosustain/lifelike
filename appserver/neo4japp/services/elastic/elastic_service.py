@@ -261,51 +261,38 @@ class ElasticService():
 
     # Begin search methods
 
-    def get_words_and_phrases_from_search_term(
-            self,
-            search_term: str,
-    ):
-        term = ''
-        parsing_phrase = False
-        word_stack = []
-        phrase_stack = []
-        wildcard_stack = []
-        for c in search_term:
-            if c == '"':
-                if parsing_phrase:
-                    phrase_stack.append(term)
-                    term = ''
-                    parsing_phrase = False
-                else:
-                    if term != '':
-                        if '*' in term or '?' in term:
-                            wildcard_stack.append(term)
-                        else:
-                            word_stack.append(term)
-                        term = ''
-                    parsing_phrase = True
-                continue
+    def get_matches(self, pattern, string, match_group):
+        matches = []
+        match = re.search(pattern, string)
+        while(match):
+            # Add the match to the list, stripping whitespace
+            matches.append(match.group(match_group).strip())
 
-            if re.match(r'\s', c) and not parsing_phrase:
-                if term != '':
-                    if '*' in term or '?' in term:
-                        wildcard_stack.append(term)
-                    else:
-                        word_stack.append(term)
-                    term = ''
-                continue
-            term += c
+            # Get the start and end indices
+            start, end = (match.start(), match.end())
 
-        if term != '':
-            # If a phrase doesn't have a closing `"`, it's possible that multiple
-            # words might be in the term. So, split the phrase and extend the
-            # appropriate stack with the split values.
-            if '*' in term or '?' in term:
-                wildcard_stack.extend(re.split(r'\s+', term.strip()))
-            else:
-                word_stack.extend(re.split(r'\s+', term.strip()))
+            # Splice the string: get everything before start, and after end, placing
+            # a single whitespace character between them. The reason we need a
+            # buffer between the two halves is because there may have not been a
+            # boundary between the matched term and its neighbors. e.g.
+            # 'apples" and "bananas' would turn into 'applesbananas' without the
+            # buffer in a phrase match.
+            string = string[:start] + ' ' + string[end:]
 
-        return word_stack, phrase_stack, wildcard_stack
+            # Get a new match object, if one exists
+            match = re.search(pattern, string)
+        return matches, string
+
+    def get_words_phrases_and_wildcards(self, string):
+        phrase_regex = r'\"((?:\"\"|[^\"])*)\"'
+        wildcard_regex = r'\S*(\?|\*)\S*'
+
+        phrases, string = self.get_matches(phrase_regex, string, 1)
+        wildcards, string = self.get_matches(wildcard_regex, string, 0)
+        string = string.strip()
+        words = re.split(r'\s+', string) if len(string) > 0 else []
+
+        return words, phrases, wildcards
 
     def get_text_match_objs(
             self,
@@ -427,7 +414,20 @@ class ElasticService():
             highlight,
     ):
         search_term = search_term.strip()
-        words, phrases, wildcards = self.get_words_and_phrases_from_search_term(search_term)
+
+        if search_term == '':
+            return {
+                'query': {
+                    'bool': {
+                        'must': [
+                            query_filter,
+                        ],
+                    }
+                },
+                'highlight': highlight
+            }, []
+
+        words, phrases, wildcards = self.get_words_phrases_and_wildcards(search_term)
 
         search_queries = []
         if len(text_fields) > 0:
@@ -497,6 +497,7 @@ class ElasticService():
             size=limit,
             rest_total_hits_as_int=True,
         )
+
         es_response['hits']['hits'] = [doc for doc in es_response['hits']['hits']]
         return es_response, search_phrases
 

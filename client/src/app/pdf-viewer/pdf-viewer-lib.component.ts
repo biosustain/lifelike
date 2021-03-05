@@ -11,17 +11,16 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { Observable, Subject, Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
 import {
   AddedAnnotationExclusion,
   Annotation,
+  RemovedAnnotationExclusion,
   Location,
   Meta,
   Rect,
-  RemovedAnnotationExclusion,
 } from './annotation-type';
 import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
-import { PdfViewerComponent, RenderTextMode } from './pdf-viewer/pdf-viewer.component';
+import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { PDFPageViewport } from 'pdfjs-dist';
 import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -31,8 +30,10 @@ import { escape, uniqueId } from 'lodash';
 import { SEARCH_LINKS } from 'app/shared/links';
 
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { FindState, RenderTextMode } from './utils/constants';
 
 declare var jQuery: any;
+
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -52,11 +53,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   @Input() debugMode: boolean;
   @Input() entityTypeVisibilityMap: Map<string, boolean> = new Map();
   @Input() filterChanges: Observable<void>;
-  @Input() renderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
+  renderTextMode: RenderTextMode = RenderTextMode.ENHANCED;
   currentHighlightAnnotationId: string | undefined;
   foundHighlightAnnotations: Annotation[] = [];
   currentHighlightAnnotationsIndex = 0;
   private filterChangeSubscription: Subscription;
+  searching = false;
 
   @Input()
   set addedAnnotations(annotations: Annotation[]) {
@@ -174,9 +176,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   private pdfComponent: PdfViewerComponent;
 
   constructor(
-    private readonly modalService: NgbModal,
-    private zone: NgZone,
-    private snackBar: MatSnackBar,
+      private readonly modalService: NgbModal,
+      private zone: NgZone,
+      private snackBar: MatSnackBar,
   ) {
   }
 
@@ -232,8 +234,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       this.filterChangeSubscription = this.filterChanges.subscribe(() => this.renderFilterSettings());
     }
 
-    this.searchChangedSub = this.searchChanged.pipe(
-      debounceTime(250)).subscribe((sb) => {
+    this.searchChangedSub = this.searchChanged.subscribe((sb) => {
       this.searchQueryChanged(sb);
     });
   }
@@ -306,8 +307,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       });
       overlayDiv.dataset.annotationId = annotation.meta.id;
       overlayDiv.setAttribute('class', 'system-annotation'
-        + (this.currentHighlightAnnotationId === annotation.meta.id
-          ? ' annotation-highlight' : ''));
+          + (this.currentHighlightAnnotationId === annotation.meta.id
+              ? ' annotation-highlight' : ''));
       overlayDiv.setAttribute('location', JSON.stringify(location));
       overlayDiv.setAttribute('meta', JSON.stringify(annotation.meta));
       top = this.normalizeTopCoordinate(top, annotation);
@@ -320,29 +321,29 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       elementRefs.push(overlayDiv);
       jQuery(overlayDiv).css('cursor', 'move');
       (jQuery(overlayDiv) as any).qtip(
-        {
-          content: this.prepareTooltipContent(annotation),
-          position: {
-            my: 'top center',
-            at: 'bottom center',
-            viewport: true,
-            target: this,
-          },
-          style: {
-            classes: 'qtip-bootstrap',
-            tip: {
-              width: 16,
-              height: 8,
+          {
+            content: this.prepareTooltipContent(annotation),
+            position: {
+              my: 'top center',
+              at: 'bottom center',
+              viewport: true,
+              target: this,
+            },
+            style: {
+              classes: 'qtip-bootstrap',
+              tip: {
+                width: 16,
+                height: 8,
+              },
+            },
+            show: {
+              delay: 10,
+            },
+            hide: {
+              fixed: true,
+              delay: 150,
             },
           },
-          show: {
-            delay: 10,
-          },
-          hide: {
-            fixed: true,
-            delay: 150,
-          },
-        },
       );
     }
     if (this.pendingHighlights[pageNum]) {
@@ -392,12 +393,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const collapseTargetId = uniqueId('pdf-tooltip-collapse-target');
     let collapseHtml = `
       <a class="pdf-tooltip-collapse-control collapsed" role="button" data-toggle="collapse" data-target="#${collapseTargetId}" aria-expanded="false" aria-controls="${collapseTargetId}">
-        Search links
+        Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i>
       </a>
       <div class="collapse" id="${collapseTargetId}">
     `;
     // links should be sorted in the order that they appear in SEARCH_LINKS
-    for (const {domain, url} of SEARCH_LINKS) {
+    for (const { domain, url } of SEARCH_LINKS) {
       const link = an.meta.links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(an.meta.allText));
       collapseHtml += `<a target="_blank" href="${escape(link)}">${escape(domain)}</a><br/>`;
     }
@@ -410,7 +411,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     if (an.meta.isCustom) {
       base.push(`
         <div class="mt-1">
-          <button type="button" class="btn btn-primary btn-block" onclick="window.pdfViewerRef['${this.pdfViewerId}'].removeCustomAnnotation(${escape(JSON.stringify(an.uuid))})">
+          <button 
+            type="button" 
+            class="btn btn-primary btn-block" 
+            onclick="
+                window.pdfViewerRef['${this.pdfViewerId}']
+                  .removeCustomAnnotation(${escape(
+                    JSON.stringify(an.uuid)
+                  )})
+             ">
             <i class="fas fa-fw fa-trash"></i>
             <span>Delete Annotation</span>
           </button>
@@ -563,7 +572,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const elements: any[] = Array.from(clonedSelection.children);
     elements.forEach((org_span: any) => {
       const span = org_span.cloneNode(true);
-      const {transform} = span.style;
+      const { transform } = span.style;
       const transform_match = transform.match(/[\d\.]+/);
 
       // decompose https://github.com/mozilla/pdf.js/blob/b1d3b6eb12b471af060c40a2d1fe479b1878ceb7/src/display/text_layer.js#L679:L739
@@ -572,18 +581,18 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         span.style.transform = `scaleX(${transform_match[0]})`;
       }
       span.style.display = 'block';
-      span.style.position = 'absolute'
+      span.style.position = 'absolute';
       span.style.lineHeight = 1;
       span.style.transformOrigin = '0% 0%';
 
-      pageElement.appendChild(span)
+      pageElement.appendChild(span);
 
       rects = [...rects, ...span.getClientRects()];
 
-      span.remove()
+      span.remove();
     });
 
-    rects[0] = selectedRects[0] // first one used to be wrong
+    rects[0] = selectedRects[0]; // first one used to be wrong
 
     function createCorrectRects(rects: Array<DOMRect>) {
       let startLowerX = null, startLowerY = null;
@@ -592,7 +601,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
       for (let i = 0; i < rects.length; i++) {
         const rect = rects[i];
-        const prevRect = i > 0 ? rects[i - 1] : rect
+        const prevRect = i > 0 ? rects[i - 1] : rect;
         // point of origin in browser is top left
         const lowerX = rect.left;
         const lowerY = rect.bottom;
@@ -613,12 +622,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
             const prevHeight = prevRect.height;
 
             if (diff > prevHeight * newLineThreshold) {
-              const rectsOnNewLine = []
+              const rectsOnNewLine = [];
               for (let j = i; j < rects.length; j++) {
                 rectsOnNewLine.push(rects[j]);
               }
 
-              const unprocessedDOMRects = {length: rectsOnNewLine.length} as Array<DOMRect>;
+              const unprocessedDOMRects = { length: rectsOnNewLine.length } as Array<DOMRect>;
               rectsOnNewLine.forEach((r, i) => unprocessedDOMRects[i] = r);
               createCorrectRects(unprocessedDOMRects);
               // break because the recursion already calculated the
@@ -649,6 +658,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     // Each section rectangle represent one selection,
     // this means multiple words on the same line should
     // create one selection rectangle
+    // See LL-1437 (https://github.com/SBRG/kg-prototypes/pull/474)
     createCorrectRects(rects);
 
     this.selectedTextCoords = [];
@@ -684,7 +694,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       const location: Location = {
         pageNumber: that.currentPage,
         rect: that.getMultilinedRect(),
-      }
+      };
       el.setAttribute('draggable', 'true');
       el.addEventListener('dragstart', event => {
         jQuery('.frictionless-annotation').qtip('hide');
@@ -710,32 +720,32 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
       jQuery(el).css('cursor', 'move');
       (jQuery(el) as any).qtip(
-        {
+          {
 
-          content: `<img src="assets/images/annotate.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()">
+            content: `<img src="assets/images/annotate.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].openAnnotationPanel()">
                 <img src="assets/images/copy.png" onclick="window.pdfViewerRef['${this.pdfViewerId}'].copySelectedText()">`,
-          position: {
-            my: 'bottom center',
-            target: 'mouse',
-            adjust: {
-              mouse: false,
+            position: {
+              my: 'bottom center',
+              target: 'mouse',
+              adjust: {
+                mouse: false,
+              },
+            },
+            style: {
+              classes: 'qtip-bootstrap',
+              tip: {
+                width: 16,
+                height: 8,
+              },
+            },
+            show: {
+              delay: 10,
+            },
+            hide: {
+              fixed: true,
+              delay: 200,
             },
           },
-          style: {
-            classes: 'qtip-bootstrap',
-            tip: {
-              width: 16,
-              height: 8,
-            },
-          },
-          show: {
-            delay: 10,
-          },
-          hide: {
-            fixed: true,
-            delay: 200,
-          },
-        },
       );
     });
 
@@ -777,7 +787,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     dialogRef.componentInstance.text = annExclusion.text;
     dialogRef.componentInstance.type = annExclusion.type;
     dialogRef.result.then(exclusionData => {
-      this.annotationExclusionAdded.emit({...exclusionData, ...annExclusion});
+      this.annotationExclusionAdded.emit({ ...exclusionData, ...annExclusion });
     }, () => {
     });
   }
@@ -828,8 +838,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         this.pdfSrc = e.target.result;
       };
 
-
-      console.time("pageRendering")
       reader.readAsArrayBuffer($pdf.files[0]);
     }
   }
@@ -842,12 +850,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
 
     this.loadOutline();
 
-    // setTimeout(() => {
-    //  this.loadCompleted.emit(true);
-    // }, 2000);
+    this.isLoadCompleted = true;
 
-    // this.isLoadCompleted = true;
-    console.timeEnd("pageRendering")
+    this.loadCompleted.emit(true)
   }
 
   /**
@@ -875,6 +880,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     this.progressData = progressData;
 
     this.isLoaded = progressData.loaded >= progressData.total;
+    this.isLoadCompleted = !!this.isLoaded;
     this.error = null; // clear error
   }
 
@@ -957,14 +963,14 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       if (foundHighlightAnnotations.length) {
         this.snackBar.open(
           `Highlighted ${foundHighlightAnnotations.length} instance${foundHighlightAnnotations.length === 1 ? '' : 's'}  `
-          + (firstAnnotation != null ? `of '${firstAnnotation.meta.allText}' ` : '')
-          + `in the document, starting on page ${firstPageNumber}.`,
-          'Close', {duration: 5000});
+            + (firstAnnotation != null ? `of '${firstAnnotation.meta.allText}' ` : '')
+            + `in the document, starting on page ${firstPageNumber}.`,
+            'Close', {duration: 5000});
 
         this.scrollToPage(firstPageNumber, firstAnnotation.rects[0]);
       } else {
         this.snackBar.open(`The annotation could not be found in the document.`,
-          'Close', {duration: 5000});
+            'Close', {duration: 5000});
       }
     }
   }
@@ -1016,7 +1022,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     const overlayContainer = pdfPageView.div;
     const overlayDiv = document.createElement('div');
     overlayDiv.setAttribute('style', `border: 2px solid red; position:absolute;` +
-      'left:' + (left - 4) + 'px;top:' + (top - 4) + 'px;width:' + (width + 8) + 'px;height:' + (height + 8) + 'px;');
+        'left:' + (left - 4) + 'px;top:' + (top - 4) + 'px;width:' + (width + 8) + 'px;height:' + (height + 8) + 'px;');
     overlayContainer.appendChild(overlayDiv);
     overlayDiv.scrollIntoView({block: 'center'});
     jQuery(overlayDiv).effect('highlight', {}, 1000);
@@ -1029,36 +1035,19 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
    * Page rendered callback, which is called when a page is rendered (called multiple times)
    */
   pageRendered(e: CustomEvent) {
-    console.timeEnd("pageRendering")
-    console.time("pageRendered")
     this.allPages = this.pdf.numPages;
     this.currentRenderedPage = (e as any).pageNumber;
-    const nump = Number(this.pdf.numPages);
-    const currentNump = Number((e as any).pageNumber);
-    if (nump === currentNump) {
-      this.isLoadCompleted = true;
-      setTimeout(() => {
-        this.loadCompleted.emit(true);
-        // #pdfViewerContainer should be scrollable for search functionality to work properly
-        let parent = (this.pdfComponent as any).element.nativeElement;
-        while (parent.id != 'pdf-viewer-lib-wrapper') {
-          jQuery(parent).addClass('h-100 overflow-hidden');
-          parent = parent.parentElement;
-        }
-      }, 1000);
-    }
     const pageNum = (e as any).pageNumber;
     const pdfPageView = (e as any).source;
     this.processAnnotations(pageNum, pdfPageView);
-    console.timeEnd("pageRendered")
-    console.time("pageRendering")
   }
 
   searchQueryChanged(newQuery: { keyword: string, findPrevious: boolean }) {
-    if (newQuery.keyword.trim().length) {
+    const keyword = newQuery.keyword.trim();
+    if (keyword.length) {
       this.highlightAllAnnotations(null);
     }
-    this.searchChange.emit(newQuery.keyword.trim());
+    this.searchChange.emit(keyword);
     if (newQuery.keyword !== this.pdfQuery) {
       this.pdfQuery = newQuery.keyword;
       this.searchCommand = 'find';
@@ -1086,7 +1075,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       e.preventDefault();
     };
 
-    document.addEventListener('copy', listener, false)
+    document.addEventListener('copy', listener, false);
     document.execCommand('copy');
     document.removeEventListener('copy', listener, false);
 
@@ -1135,21 +1124,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     this.renderFilterSettings();
   }
 
-  matchesCountUpdated(matchesCount) {
-    if (this.searchCommand !== 'find') {
-      return;
-    }
-    this.matchesCount = matchesCount;
-  }
+  @Output('matches-count-updated') matchesCountUpdated = new EventEmitter<any>();
 
   findControlStateUpdated(event) {
     if (this.showNextFindFeedback) {
-      if (event.state === 0) {
+      if (event.state === FindState.FOUND) {
         this.showNextFindFeedback = false;
-        this.snackBar.open('Found the text in the document.', 'Close', {duration: 5000});
-      } else if (event.state === 1) {
+        this.snackBar.open('Found the text in the document.', 'Close', { duration: 5000 });
+      } else if (event.state === FindState.NOT_FOUND) {
         this.showNextFindFeedback = false;
-        this.snackBar.open('Could not find the text in the document.', 'Close', {duration: 5000});
+        this.snackBar.open('Could not find the text in the document.', 'Close', { duration: 5000 });
       }
     }
     if (this.searchCommand !== 'findagain' || typeof event.previous === 'undefined') {

@@ -21,7 +21,7 @@ from neo4japp.services.annotations.constants import (
 directory = environ.get('LMDB_HOME_FOLDER')
 
 
-class LMDB:
+class LMDBAccess:
     def __init__(
         self,
         anatomy_lmdb_path: str = 'lmdb/anatomy',

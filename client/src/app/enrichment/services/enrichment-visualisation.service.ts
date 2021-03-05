@@ -17,7 +17,7 @@ export interface EnrichWithGOTermsResult {
 }
 
 @Injectable()
-export class EnrichmentVisualisationService implements OnDestroy {
+export class EnrichmentVisualisationService {
 
   constructor(protected readonly http: HttpClient,
               protected readonly apiService: ApiService,

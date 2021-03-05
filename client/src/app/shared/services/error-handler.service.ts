@@ -104,7 +104,7 @@ export class ErrorHandler {
     return new UserError(title, message, detail, error, transactionId);
   }
 
-  showError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta) {
+  logError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta) {
     const {title, message, detail, transactionId} = this.createUserError(error);
 
     this.loggingService.sendLogs(
@@ -113,6 +113,12 @@ export class ErrorHandler {
       first(),
       catchError(() => EMPTY)
     ).subscribe();
+  }
+
+  showError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta) {
+    this.logError(error, logInfo);
+
+    const {title, message, detail, transactionId} = this.createUserError(error);
 
     this.messageDialog.display({
       title,
