@@ -13,11 +13,6 @@ import { BackgroundTask } from '../../../../shared/rxjs/background-task';
   templateUrl: './cloud-viewer.component.html'
 })
 export class CloudViewerComponent implements OnInit, OnChanges {
-
-  @ViewChild(WordCloudComponent, {static: false})
-  private wordCloudComponent: WordCloudComponent;
-
-
   loadingData: boolean;
 
   data: { text: any; frequency: any }[] = [];
