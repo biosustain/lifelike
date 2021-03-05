@@ -1,17 +1,5 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 
-
-interface Node {
-  value?: any;
-  result?: any;
-  frequency: any;
-  text?: any;
-  shown?: any;
-  id?: any;
-  type?: any;
-  color?: any;
-}
-
 @Component({
   selector: 'app-clustergram',
   templateUrl: './clustergram.component.html',

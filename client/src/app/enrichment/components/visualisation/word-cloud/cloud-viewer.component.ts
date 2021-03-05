@@ -1,8 +1,6 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, OnChanges, OnInit, ViewChild } from '@angular/core';
 
 import { Subscription } from 'rxjs';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
 
 import { EnrichmentVisualisationService } from '../../../services/enrichment-visualisation.service';
 
@@ -14,14 +12,8 @@ import { BackgroundTask } from '../../../../shared/rxjs/background-task';
   selector: 'app-cloud-viewer',
   templateUrl: './cloud-viewer.component.html'
 })
-export class CloudViewerComponent implements OnInit, ModuleAwareComponent, OnChanges {
-  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+export class CloudViewerComponent implements OnInit, OnChanges {
 
-  @Input() geneNames: string[];
-  @Input() organism: string;
-  @Input() analysis: string;
-  wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
-  clickableWords = false;
   @ViewChild(WordCloudComponent, {static: false})
   private wordCloudComponent: WordCloudComponent;
 
@@ -33,14 +25,13 @@ export class CloudViewerComponent implements OnInit, ModuleAwareComponent, OnCha
   loadTask: BackgroundTask<string, any>;
   loadSubscription: Subscription;
 
-  constructor(protected readonly enrichmentService: EnrichmentVisualisationService,
-              protected readonly errorHandler: ErrorHandler) {
+  constructor(protected readonly enrichmentService: EnrichmentVisualisationService) {
     this.loadTask = new BackgroundTask(() =>
       this.enrichmentService.getGOSignificance(),
     );
 
     this.loadSubscription = this.loadTask.results$.subscribe((result) => {
-     // tslint:disable-next-line:no-string-literal
+      // tslint:disable-next-line:no-string-literal
       this.data = result.result.map(d => ({text: d['gene'], frequency: d['n_related_GO_terms']}));
       this.loadingData = false;
     });
