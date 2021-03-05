@@ -77,8 +77,6 @@ export class ChartComponent implements OnInit, OnChanges {
   public chartData = [];
   @Input() showMore;
   @Input() data;
-  @Output() chartClick: EventEmitter<any> = new EventEmitter();
-  @Output() chartHover: EventEmitter<any> = new EventEmitter();
 
   slicedData;
 
@@ -99,13 +97,4 @@ export class ChartComponent implements OnInit, OnChanges {
   ngOnChanges(change) {
     this.parseData();
   }
-}
-
-
-export interface EnrichmentVisualisationData {
-  /**
-   * @deprecated the filename does this job
-   */
-  name?: string;
-  data: string;
 }
