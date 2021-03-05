@@ -48,20 +48,20 @@
 
                 <ng-container *ngIf="status.loaded">
                     <div class="module-body flex-fill overflow-auto space-cards">
-                        <app-enrichment-visualisation-group
+                        <app-group
                                 *ngFor="let d of data | keyvalue; let i = index"
-                                [title]="groups[i] || 'dsfgsdfg'"
+                                [title]="groups[i]"
                                 [data]="d.value"
                         >
 
-                        </app-enrichment-visualisation-group>
+                        </app-group>
 
                         <div class="card">
                             <div class="card-header">
                                 Genes importance by number of GO terms
                             </div>
-                            <app-enrichment-visualisation-cloud-viewer class="card-body">
-                            </app-enrichment-visualisation-cloud-viewer>
+                            <app-cloud-viewer class="card-body">
+                            </app-cloud-viewer>
                         </div>
                     </div>
                 </ng-container>

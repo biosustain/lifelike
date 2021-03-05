@@ -165,6 +165,7 @@ def get_enrichment_table_service():
         )
     return g.enrichment_table_service
 
+
 def get_enrichment_visualisation_service():
     if 'enrichment_visualisation_service' not in g:
         from neo4japp.services import EnrichmentVisualisationService

@@ -19,6 +19,6 @@ const components = [
   ],
   exports: components,
 })
-export class EnrichmentVisualisationCloudViewerModule {
+export class CloudViewerModule {
 
 }

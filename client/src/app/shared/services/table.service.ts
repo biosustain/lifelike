@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 
 import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 
-import { DecimalPipe } from '@angular/common';
 import { debounceTime, delay, switchMap, tap } from 'rxjs/operators';
 import { SortColumn, SortDirection } from '../directives/table-sortable-header.directive';
 
@@ -54,7 +53,7 @@ export class DataService {
 
   _inputData;
 
-  constructor(private pipe: DecimalPipe) {
+  constructor() {
     this._search$.pipe(
       tap(d => {
         this._loading$.next(true);
@@ -86,20 +85,20 @@ export class DataService {
     return this._state.page;
   }
 
-  get pageSize() {
-    return this._state.pageSize;
-  }
-
-  get searchTerm() {
-    return this._state.searchTerm;
-  }
-
   set page(page: number) {
     this.patch({page});
   }
 
+  get pageSize() {
+    return this._state.pageSize;
+  }
+
   set pageSize(pageSize: number) {
     this.patch({pageSize});
+  }
+
+  get searchTerm() {
+    return this._state.searchTerm;
   }
 
   set searchTerm(searchTerm: string) {

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 
 
 interface Node {
@@ -17,21 +17,24 @@ interface Node {
   templateUrl: './clustergram.component.html',
   styleUrls: ['./clustergram.component.scss']
 })
-export class ClustergramComponent {
+export class ClustergramComponent implements OnInit, OnChanges {
   @Input() data: { gene: string, 'p-value': number, geneNames: string[] }[];
   @Input() showMore;
+
+  genes = new Map();
+  goTerms = [];
 
   slice() {
     const data = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 25);
     const genes = new Map();
     data.forEach((goTerm, goIndex) => {
       goTerm.geneNames.forEach(g => {
-        let gene_row = genes.get(g);
-        if (!gene_row) {
-          gene_row = new Array(data.length);
-          genes.set(g, gene_row);
+        let geneRow = genes.get(g);
+        if (!geneRow) {
+          geneRow = new Array(data.length);
+          genes.set(g, geneRow);
         }
-        gene_row[goIndex] = true;
+        geneRow[goIndex] = true;
       });
     });
     this.genes = genes;
@@ -45,7 +48,4 @@ export class ClustergramComponent {
   ngOnChanges(change) {
     this.slice();
   }
-
-  genes = new Map();
-  goTerms = [];
 }

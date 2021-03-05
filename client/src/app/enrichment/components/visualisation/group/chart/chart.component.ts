@@ -67,7 +67,7 @@ export class ChartComponent implements OnInit, OnChanges {
       mode: 'y',
       intersect: false,
       callbacks: {
-        title: mapSingularOfTootipItems(d => d['gene']),
+        title: mapSingularOfTootipItems(({gene}) => gene),
         label: mapTootipItem(d => `p-value: ${d['p-value']}`)
       }
     }
