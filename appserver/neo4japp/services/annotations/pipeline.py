@@ -203,6 +203,7 @@ def _create_annotations(
     start_lmdb_time = time.time()
     entity_results = entity_recog.identify(
         custom_annotations=custom_annotations,
+        excluded_annotations=excluded_annotations,
         tokens=parsed,
         nlp_results=nlp_results,
         annotation_method=annotation_method
@@ -237,7 +238,8 @@ def _create_annotations(
         entity_results=entity_results,
         entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
         specified_organism=SpecifiedOrganismStrain(
-            synonym=entity_synonym, organism_id=entity_id, category=entity_category)
+            synonym=entity_synonym, organism_id=entity_id, category=entity_category),
+        enrichment_mappings=enrichment_mappings
     )
 
     bioc = bioc_service.read(text=pdf_text, file_uri=filename)
@@ -357,7 +359,6 @@ def create_annotations_from_enrichment_table(
         f'Time to parse text {time.time() - start}',
         extra=EventLog(event_type='annotations').to_dict()
     )
-
     annotations = _create_annotations(
         annotation_method=annotation_method,
         specified_organism_synonym=specified_organism_synonym,

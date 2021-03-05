@@ -413,24 +413,26 @@ class AnnotationService:
 
         gene_names_list = list(gene_names)
         organism_ids = list(self.organism_frequency.keys())
+        gene_organism_matches = {}
 
-        gene_match_time = time.time()
-        gene_organism_matches = \
-            self.graph.get_gene_to_organism_match_result(
+        if not self.enrichment_mappings:
+            gene_match_time = time.time()
+            gene_organism_matches = self.graph.get_gene_to_organism_match_result(
                 genes=gene_names_list,
                 postgres_genes=self.db.get_genes(
                     genes=gene_names_list, organism_ids=organism_ids),
                 matched_organism_ids=organism_ids,
             )
-        current_app.logger.info(
-            f'Gene organism KG query time {time.time() - gene_match_time}',
-            extra=EventLog(event_type='annotations').to_dict()
-        )
+            current_app.logger.info(
+                f'Gene organism KG query time {time.time() - gene_match_time}',
+                extra=EventLog(event_type='annotations').to_dict()
+            )
 
         # any genes not matched in KG fall back to specified organism
         fallback_gene_organism_matches = {}
 
         if self.specified_organism.synonym:
+            gene_match_time = time.time()
             fallback_gene_organism_matches = \
                 self.graph.get_gene_to_organism_match_result(
                     genes=gene_names_list,
@@ -438,6 +440,10 @@ class AnnotationService:
                         genes=gene_names_list, organism_ids=organism_ids),
                     matched_organism_ids=[self.specified_organism.organism_id],
                 )
+            current_app.logger.info(
+                f'Gene fallback organism KG query time {time.time() - gene_match_time}',
+                extra=EventLog(event_type='annotations').to_dict()
+            )
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             gene_id = None
@@ -612,27 +618,33 @@ class AnnotationService:
                     (entity, match.id_type, match.id_hyperlink, match.token))
 
         protein_names_list = list(protein_names)
+        protein_organism_matches = {}
 
-        protein_match_time = time.time()
-        protein_organism_matches = \
-            self.graph.get_proteins_to_organisms(
+        if not self.enrichment_mappings:
+            protein_match_time = time.time()
+            protein_organism_matches = self.graph.get_proteins_to_organisms(
                 proteins=protein_names_list,
                 organisms=list(self.organism_frequency.keys()),
             )
-        current_app.logger.info(
-            f'Protein organism KG query time {time.time() - protein_match_time}',
-            extra=EventLog(event_type='annotations').to_dict()
-        )
+            current_app.logger.info(
+                f'Protein organism KG query time {time.time() - protein_match_time}',
+                extra=EventLog(event_type='annotations').to_dict()
+            )
 
         # any proteins not matched in KG fall back to specified organism
         fallback_protein_organism_matches = {}
 
         if self.specified_organism.synonym:
+            protein_match_time = time.time()
             fallback_protein_organism_matches = \
                 self.graph.get_proteins_to_organisms(
                     proteins=protein_names_list,
                     organisms=[self.specified_organism.organism_id],
                 )
+            current_app.logger.info(
+                f'Protein fallback organism KG query time {time.time() - protein_match_time}',
+                extra=EventLog(event_type='annotations').to_dict()
+            )
 
         for entity, entity_id_type, entity_id_hyperlink, token in entity_token_pairs:
             category = entity.get('category', '')
@@ -843,7 +855,7 @@ class AnnotationService:
 
         # If the annotation represents a virus, then also mark this location as a human
         # annotation
-        if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+        if not self.enrichment_mappings and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
             if matched_entity_locations.get(HOMO_SAPIENS_TAX_ID, None) is not None:  # noqa
                 matched_entity_locations[HOMO_SAPIENS_TAX_ID].append(  # noqa
                     (annotation.lo_location_offset, annotation.hi_location_offset)
@@ -882,7 +894,7 @@ class AnnotationService:
             entity_categories[annotation.meta.id] = annotation.meta.category or ''
 
             # Need to add an entry for humans if we annotated a virus
-            if annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
+            if not self.enrichment_mappings and annotation.meta.category == OrganismCategory.VIRUSES.value:  # noqa
                 entity_categories[HOMO_SAPIENS_TAX_ID] = OrganismCategory.EUKARYOTA.value
 
         return entity_frequency, matched_entity_locations, entity_categories
@@ -1005,6 +1017,7 @@ class AnnotationService:
         self.matched_type_entity = entity_results.matched_type_entity
 
         self.specified_organism = specified_organism
+        self.enrichment_mappings = enrichment_mappings
 
         annotations = self._create_annotations(
             types_to_annotate=entity_type_and_id_pairs,
@@ -1014,7 +1027,7 @@ class AnnotationService:
 
         cleaned = self._clean_annotations(
             annotations=annotations,
-            enrichment_mappings=enrichment_mappings)
+            enrichment_mappings=self.enrichment_mappings)
         # update the annotations with the common primary name
         # do this after cleaning because it's easier to
         # query the KG for the primary names after the
