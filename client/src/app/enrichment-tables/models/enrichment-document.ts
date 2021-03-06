@@ -82,7 +82,20 @@ export class EnrichmentDocument {
     return of(blob)
       .pipe(
         mapBlobToBuffer(),
-        mapBufferToJson<EnrichmentData>(),
+        map((data: ArrayBuffer | undefined): EnrichmentData => {
+          if (data == null) {
+            return null;
+          }
+          const s = new TextDecoder('utf-8').decode(data);
+          try {
+            return JSON.parse(s) as EnrichmentData;
+          } catch (e) {
+            // Old enrichment table format was just a string for the data
+            return {
+              data: s,
+            };
+          }
+        }),
         mergeMap((data: EnrichmentData): Observable<this> => {
           // parse the file content to get gene list and organism tax id and name
           const resultArray = data.data.split('/');
