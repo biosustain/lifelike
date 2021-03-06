@@ -54,7 +54,7 @@
           NEO4J_HOST: "{{ NEO4J_HOST }}"
           NEO4J_AUTH: "{{ NEO4J_AUTH }}"
           NEO4J_SCHEME: "{{ NEO4J_SCHEME }}"
-          NEO4J_PORT: "{{ NEO4J_PORT }}"
+          NEO4J_PORT: "{{ NEO4J_PORT|quote }}"
           FLASK_APP: "{{ FLASK_APP }}"
           FLASK_APP_CONFIG: "{{ FLASK_APP_CONFIG }}"
           FLASK_ENV: "{{ FLASK_ENV }}"
