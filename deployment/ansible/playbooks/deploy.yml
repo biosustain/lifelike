@@ -35,7 +35,6 @@
 
     - name: Appserver Container Deployment
       docker_container:
-        hostname: "appserver-{{ webserver }}"
         name: appserver
         state: started
         pull: yes
@@ -89,7 +88,6 @@
 
     - name: Webserver Container Deployment
       docker_container:
-        hostname: "webserver-{{ webserver }}"
         name: webserver
         state: started
         pull: yes
@@ -133,6 +131,7 @@
 
     - name: Filebeat Deployment
       docker_container:
+        hostname: "filebeat-{{ webserver }}"
         name: filebeat
         state: started
         pull: yes
