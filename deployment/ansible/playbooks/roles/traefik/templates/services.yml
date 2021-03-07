@@ -42,12 +42,10 @@ http:
       loadBalancer:
         servers:
           - url: "http://10.0.100.5"
-  services:
     ***ARANGO_DB_NAME***-staging-service:
       loadBalancer:
         servers:
           - url: "http://10.0.100.7"
-  services:
     ***ARANGO_DB_NAME***-prod-service:
       loadBalancer:
         servers:
