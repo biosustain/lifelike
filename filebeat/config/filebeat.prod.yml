@@ -1,17 +1,12 @@
-filebeat.inputs:
-  - type: docker
-    containers.ids:
-      - "*"
-
 filebeat.autodiscover:
   providers:
     - type: docker
       templates:
         - condition:
             contains:
-              docker.container.image: gcr.io/able-goods-221820/{{ docker_nginx_img }}
+              docker.container.image: lifelike.azurecr.io/kg-webserver
           config:
-            - type: docker
+            - type: container
               containers.ids:
                 - "${data.docker.container.id}"
             - module: nginx
@@ -28,11 +23,11 @@ filebeat.autodiscover:
       templates:
         - condition:
             contains:
-              docker.container.image: gcr.io/able-goods-221820/{{ docker_appserver_img }}
+              docker.container.image: lifelike.azurecr.io/kg-appserver
           config:
             - type: container
-              containers.id:
-                - "${data.docker.container.id}"
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
               multiline.pattern: 'ERROR|INFO|DEBUG|WARN'
               multiline.negate: true
               multiline.match: after
@@ -40,9 +35,6 @@ filebeat.autodiscover:
 processors:
   - add_docker_metadata:
       host: "unix:///var/run/docker.sock"
-  - add_fields:
-      fields:
-        cloud_provider: "{{ cloud_provider }}"
 
 output.logstash:
-    hosts: ["{{ elk_server_host }}"]
+    hosts: ["elk.prod.lifelike.bio:5044"]

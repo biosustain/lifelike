@@ -1,5 +1,6 @@
-FROM docker.elastic.co/beats/filebeat:7.9.1
-COPY config/filebeat.yml /usr/share/filebeat/filebeat.yml
+FROM docker.elastic.co/beats/filebeat:7.11.1 AS base
+ARG CONFIG_FILE=filebeat.yml
+COPY config/filebeat.yml /usr/share/filebeat/${CONFIG_FILE}
 USER root
-RUN chown root:filebeat /usr/share/filebeat/filebeat.yml
+RUN chown root:filebeat /usr/share/filebeat/${CONFIG_FILE}
 USER filebeat
