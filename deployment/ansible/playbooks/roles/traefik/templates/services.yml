@@ -42,12 +42,10 @@ http:
       loadBalancer:
         servers:
           - url: "http://10.0.100.5"
-  services:
     lifelike-staging-service:
       loadBalancer:
         servers:
           - url: "http://10.0.100.7"
-  services:
     lifelike-prod-service:
       loadBalancer:
         servers:
