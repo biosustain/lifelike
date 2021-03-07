@@ -130,7 +130,7 @@
         pull: yes
         restart: yes
         image: "{{ container_registry }}/filebeat:{{ docker_img_hash }}"
-        commands: "--strict.perms=false"
+        command: "--strict.perms=false"
         user: root
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock:ro
