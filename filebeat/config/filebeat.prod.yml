@@ -6,7 +6,7 @@ filebeat.autodiscover:
             contains:
               docker.container.image: lifelike.azurecr.io/kg-webserver
           config:
-            - type: container
+            - type: docker
               containers.ids:
                 - "${data.docker.container.id}"
             - module: nginx
