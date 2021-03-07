@@ -35,11 +35,13 @@
 
     - name: Appserver Container Deployment
       docker_container:
-        hostname: "appserver-{{ webserver }}"
+        # hostname: "appserver-{{ webserver }}"
         name: appserver
         state: started
         pull: yes
         restart: yes
+        restart_policy: always
+        restart_retries: 3
         image: "{{ container_registry }}/kg-appserver:{{ docker_img_hash }}"
         ports:
           - "5000:5000"
@@ -87,11 +89,13 @@
 
     - name: Webserver Container Deployment
       docker_container:
-        hostname: "webserver-{{ webserver }}"
+        # hostname: "webserver-{{ webserver }}"
         name: webserver
         state: started
         pull: yes
         restart: yes
+        restart_policy: always
+        restart_retries: 3
         image: "{{ container_registry }}/kg-webserver:{{ docker_img_hash }}"
         memory: 2G
         comparisons:
@@ -114,6 +118,8 @@
         state: started
         pull: yes
         restart: yes
+        restart_policy: always
+        restart_retries: 3
         image: "{{ container_registry }}/kg-pdfparser:latest"
         memory: 1G
         ports:
@@ -131,6 +137,8 @@
         state: started
         pull: yes
         restart: yes
+        restart_policy: always
+        restart_retries: 3
         image: "{{ container_registry }}/filebeat:{{ docker_img_hash }}"
         command: "--strict.perms=false"
         user: ***ARANGO_USERNAME***
