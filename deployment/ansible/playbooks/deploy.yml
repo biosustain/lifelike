@@ -123,6 +123,31 @@
       tags:
         - deploy
 
+    - name: Filebeat Deployment
+      docker_container:
+        name: filebeat
+        state: started
+        pull: yes
+        restart: yes
+        image: "{{ container_registry }}/filebeat:{{ docker_img_hash }}"
+        commands: "--strict.perms=false"
+        user: ***ARANGO_USERNAME***
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+          # This is needed for filebeat to load container log path as specified in filebeat.yml
+          - /var/lib/docker/containers:/var/lib/docker/containers:ro
+        memory: 1G
+        comparisons:
+          image: strict
+          env: strict
+        networks:
+          - name: backend
+            aliases:
+              - filebeat
+          - name: frontend
+            aliases:
+              - filebeat
+
     - name: Prune unused images
       shell: "docker image prune -a -f"
       tags:
