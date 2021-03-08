@@ -457,6 +457,13 @@ def default_lmdb_setup(app, request):
         synonym='Arg',
     )
 
+    lead = lmdb_chemical_factory(
+        chemical_id='CHEBI:29952',
+        id_type=DatabaseType.CHEBI.value,
+        name='Lead',
+        synonym='Lead',
+    )
+
     hypofluorite = lmdb_chemical_factory(
         chemical_id='CHEBI:30244',
         id_type=DatabaseType.CHEBI.value,
@@ -502,7 +509,7 @@ def default_lmdb_setup(app, request):
 
     entities = [
         (ANATOMY_MESH_LMDB, 'anatomy', []),
-        (CHEMICALS_CHEBI_LMDB, 'chemicals', [adenosine, arginine, hypofluorite, histidine]),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', [adenosine, arginine, hypofluorite, histidine, lead]),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', [adenosine2, guanosine]),
         (DISEASES_MESH_LMDB, 'diseases', [cold_sore]),
         (FOODS_MESH_LMDB, 'foods', []),

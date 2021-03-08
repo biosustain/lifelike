@@ -42,7 +42,8 @@ def annotate_pdf(
     parsed,
     custom_annotations=None,
     excluded_annotations=None,
-    specified_organism=SpecifiedOrganismStrain(synonym='', organism_id='', category='')
+    specified_organism=SpecifiedOrganismStrain(synonym='', organism_id='', category=''),
+    annotation_method=dict()
 ):
     if custom_annotations is None:
         custom_annotations = []
@@ -55,7 +56,7 @@ def annotate_pdf(
         custom_annotations=custom_annotations,
         tokens=parsed,
         nlp_results=NLPResults(),
-        annotation_method={}
+        annotation_method=annotation_method
     )
     return annotation_service.create_annotations(
         custom_annotations=custom_annotations,
@@ -1335,3 +1336,43 @@ def test_user_source_database_input_priority(
     # https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27594
     assert annotations[0].meta.id_hyperlink == custom['meta']['idHyperlink']
     assert annotations[0].meta.id_type == custom['meta']['idType']
+
+
+def test_compound_use_chemical_nlp(
+    default_lmdb_setup,
+    get_annotation_service,
+    get_entity_service
+):
+    annotation_service = get_annotation_service
+    entity_service = get_entity_service
+
+    pdf = path.join(
+        directory,
+        'pdf_samples/annotations_test/test_compound_use_chemical_nlp.json')
+
+    with open(pdf, 'rb') as f:
+        parsed = json.load(f)
+
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
+
+    keywords = {o.keyword: o.meta.type for o in annotations}
+
+    assert 'Lead' in keywords
+    assert keywords['Lead'] == EntityType.CHEMICAL.value
+
+    # now test Lead is no longer chemical or compound
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed,
+        annotation_method={EntityType.CHEMICAL.value: {'nlp': True, 'rules_based': False}}
+    )
+
+    keywords = {o.keyword: o.meta.type for o in annotations}
+
+    assert 'Lead' not in keywords
