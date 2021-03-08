@@ -38,7 +38,24 @@ import {SortingAlgorithm} from '../../../word-cloud/sorting/sorting-algorithms';
 export class AnnotationFilterComponent implements OnInit, OnDestroy {
   id = uniqueId('AnnotationFilterComponent-');
 
-  @Input() annotationData: AnnotationFilterEntity[];
+  _annotationData: AnnotationFilterEntity[];
+  @Input() set annotationData(data: AnnotationFilterEntity[]) {
+    this._annotationData = data;
+    // Get all the annotation types to populate the legend
+    data.forEach((annotation) => {
+      this.legend.set(annotation.type, annotation.color);
+    });
+
+    // Set each type's visibility to true at first, we'll figure out what the visibility actually is in `applyFilters` below.
+    this.legend.forEach((_, key) => {
+      this.typeVisibilityMap.set(key, true);
+    });
+
+    this.applyFilters();
+  }
+  get annotationData() {
+    return this._annotationData;
+  }
   @Output() wordVisibilityOutput: EventEmitter<Map<string, boolean>>;
   @Input() sortingAlgorithm: SortingAlgorithm;
 
@@ -113,18 +130,6 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     if (this.sortingAlgorithm.hasOwnProperty('default')) { this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default); }
     // TODO: Uncomment if we bring back max frequency
     // this.filtersForm.get('maximumValue').setValue(this.annotationData[0].frequency);
-
-    // Get all the annotation types to populate the legend
-    this.annotationData.forEach((annotation) => {
-      this.legend.set(annotation.type, annotation.color);
-    });
-
-    // Set each type's visibility to true at first, we'll figure out what the visibility actually is in `applyFilters` below.
-    this.legend.forEach((_, key) => {
-      this.typeVisibilityMap.set(key, true);
-    });
-
-    this.applyFilters();
 
     // Basically debounces the word visibility output. Any time the parent component should know about visibility changes, we should emit a
     // new value to `outputSubject`, rather than emitting to `wordVisibilityOutput` directly.

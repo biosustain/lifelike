@@ -320,6 +320,16 @@ class FallbackOrganism(RDBMSBase):
     organism_synonym = db.Column(db.String(200), nullable=False)
     organism_taxonomy_id = db.Column(db.String(50), nullable=False)
 
+    @property
+    def tax_id(self):
+        # Required for FallbackOrganismSchema
+        return self.organism_taxonomy_id
+
+    @property
+    def synonym(self):
+        # Required for FallbackOrganismSchema
+        return self.organism_synonym
+
 
 class FileVersion(RDBMSBase, FullTimestampMixin, HashIdMixin):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

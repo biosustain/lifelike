@@ -6,7 +6,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { BehaviorSubject, Observable, of, Subscription, throwError } from 'rxjs';
 import { PdfFile } from '../../interfaces/pdf-files.interface';
-import { catchError, map, mergeMap } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType } from '@angular/common/http';
 import { ApiService } from '../../shared/services/api.service';
 import {
@@ -20,7 +20,7 @@ import {
   ObjectSearchRequest,
   ObjectVersionHistoryResponse,
 } from '../schema';
-import { objectToFormData, objectToMixedFormData } from '../../shared/utils/forms';
+import { objectToMixedFormData } from '../../shared/utils/forms';
 import { ObjectVersion, ObjectVersionHistory } from '../models/object-version';
 import { serializePaginatedParams } from '../../shared/utils/params';
 import { FilesystemObjectList } from '../models/filesystem-object-list';
@@ -81,7 +81,7 @@ export class FilesystemService {
   }> {
     return this.http.post(
       `/api/filesystem/objects`,
-      objectToFormData(request), {
+      objectToMixedFormData(request), {
         ...this.apiService.getHttpOptions(true),
         observe: 'events',
         reportProgress: true,
