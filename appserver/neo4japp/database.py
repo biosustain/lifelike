@@ -58,6 +58,7 @@ def connect_to_neo4j():
     if 'neo4j' not in g:
         secure = current_app.config.get('NEO4J_SCHEME', 'bolt')
         g.neo4j = Graph(
+            name=current_app.config.get('NEO4J_DATABASE'),
             host=current_app.config.get('NEO4J_HOST'),
             auth=current_app.config.get('NEO4J_AUTH').split('/'),
             secure=secure.find('s') > -1,  # Any 's' will be considered a secure protocol
