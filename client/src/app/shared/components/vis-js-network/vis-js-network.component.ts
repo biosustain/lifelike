@@ -178,9 +178,10 @@ export class VisJsNetworkComponent implements AfterViewInit {
    * @param query string to search for in all nodes
    */
   searchNodesWithQuery(query: string): Node[] {
+    const lowerCasedQuery = query.toLowerCase();
     return this.networkData.nodes.get()
       .filter(
-        node => (node.label as string).toLowerCase().includes(query.toLowerCase())
+        node => (node.label as string).toLowerCase().includes(lowerCasedQuery)
       ).map(node => {
         return {...node};
       });
