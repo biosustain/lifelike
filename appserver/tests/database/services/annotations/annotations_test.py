@@ -42,14 +42,21 @@ def annotate_pdf(
     parsed,
     custom_annotations=None,
     excluded_annotations=None,
-    specified_organism=SpecifiedOrganismStrain(synonym='', organism_id='', category=''),
-    annotation_method=dict()
+    annotation_method=None,
+    specified_organism=SpecifiedOrganismStrain(synonym='', organism_id='', category='')
 ):
     if custom_annotations is None:
         custom_annotations = []
 
     if excluded_annotations is None:
         excluded_annotations = []
+
+    if annotation_method is None:
+        annotation_method = {}
+
+    # if chemical used NLP then set compound too
+    if annotation_method.get(EntityType.CHEMICAL.value, {}).get('nlp', False):
+        annotation_method[EntityType.COMPOUND.value] = {'nlp': True, 'rules_base': False}
 
     entity_results = entity_service.identify(
         excluded_annotations=excluded_annotations,
