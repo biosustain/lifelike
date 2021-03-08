@@ -458,7 +458,7 @@ def default_lmdb_setup(app, request):
     )
 
     lead = lmdb_chemical_factory(
-        chemical_id='CHEBI:29952',
+        chemical_id='CHEBI:Lead',
         id_type=DatabaseType.CHEBI.value,
         name='Lead',
         synonym='Lead',
@@ -492,6 +492,13 @@ def default_lmdb_setup(app, request):
         synonym='adenosine',
     )
 
+    leadcp = lmdb_compound_factory(
+        compound_id='LEAD',
+        id_type=DatabaseType.BIOCYC.value,
+        name='Lead',
+        synonym='Lead',
+    )
+
     guanosine = lmdb_compound_factory(
         compound_id='GUANOSINE',
         id_type=DatabaseType.BIOCYC.value,
@@ -510,7 +517,7 @@ def default_lmdb_setup(app, request):
     entities = [
         (ANATOMY_MESH_LMDB, 'anatomy', []),
         (CHEMICALS_CHEBI_LMDB, 'chemicals', [adenosine, arginine, hypofluorite, histidine, lead]),
-        (COMPOUNDS_BIOCYC_LMDB, 'compounds', [adenosine2, guanosine]),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', [adenosine2, guanosine, leadcp]),
         (DISEASES_MESH_LMDB, 'diseases', [cold_sore]),
         (FOODS_MESH_LMDB, 'foods', []),
         (GENES_NCBI_LMDB, 'genes', [ampk, bola3, hyp27_gene, serpina1_gene, serpina1_gene2]),
