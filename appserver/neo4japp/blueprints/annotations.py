@@ -524,7 +524,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         'success': True,
                     }
 
-                    annotations_list = annotations['documents'][0]['passages'][0]['annotations']  # noqa
+                    annotations_list = annotations['documents'][0]['passages'][0]['annotations']
 
                     prev_k = -1
                     for k, text_mapping in enrichment_mappings.items():
@@ -548,11 +548,13 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                             enrichment['genes'][text_mapping[
                                 'row']]['full_name'] = snippet
                         else:
-                            enrichment[
-                                'genes'][text_mapping[
-                                    'row']]['domains'][text_mapping[
-                                        'domain']][text_mapping[
-                                            'label']]['annotated_text'] = snippet
+                            # ignore GO and Biocyc columns for now JIRA LL-2657
+                            if text_mapping['domain'] != 'GO' and text_mapping['domain'] != 'Biocyc':  # noqa
+                                enrichment[
+                                    'genes'][text_mapping[
+                                        'row']]['domains'][text_mapping[
+                                            'domain']][text_mapping[
+                                                'label']]['annotated_text'] = snippet
                 if all_annotations:
                     update = {
                         'id': file.id,
