@@ -99,7 +99,6 @@ export class ObjectCreationService {
     dialogRef.componentInstance.object = target;
     const keys: Array<keyof CreateDialogOptions> = [
       'promptUpload',
-      'promptAnnotationOptions',
       'forceAnnotationOptions',
       'promptParent',
       'parentLabel',
@@ -126,7 +125,6 @@ export class ObjectCreationService {
 export interface CreateDialogOptions {
   title?: string;
   promptUpload?: boolean;
-  promptAnnotationOptions?: boolean;
   forceAnnotationOptions?: boolean;
   promptParent?: boolean;
   parentLabel?: string;
