@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
-import { mergeMap, shareReplay, take, tap } from 'rxjs/operators';
+import { map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { EnrichmentTableService } from '../services/enrichment-table.service';
@@ -20,6 +20,7 @@ import {
 } from './enrichment-table-edit-dialog.component';
 import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
 import { ObjectVersion } from '../../file-browser/models/object-version';
+import { ObjectUpdateRequest } from '../../file-browser/schema';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -37,7 +38,11 @@ export class EnrichmentTableViewerComponent implements OnInit {
   table$: Observable<EnrichmentTable> = new Subject();
   scrollTopAmount: number;
 
-  unsavedChanges$ = new BehaviorSubject<boolean>(false);
+  /**
+   * Keeps tracks of changes so they aren't saved to the server until you hit 'Save'. However,
+   * due to the addition of annotations to enrichment tables, this feature has been broken.
+   */
+  queuedChanges$ = new BehaviorSubject<ObjectUpdateRequest | undefined>(null);
 
   constructor(protected readonly route: ActivatedRoute,
               protected readonly worksheetViewerService: EnrichmentTableService,
@@ -80,7 +85,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
 
   restore(version: ObjectVersion) {
     this.document$ = new EnrichmentDocument(this.worksheetViewerService).load(version.contentValue, this.fileId).pipe(
-      tap(() => this.unsavedChanges$.next(true)),
+      tap(() => this.queuedChanges$.next(this.queuedChanges$.value || {})),
       shareReplay(),
     );
     this.table$ = this.document$.pipe(
@@ -101,22 +106,17 @@ export class EnrichmentTableViewerComponent implements OnInit {
       mergeMap(([document, table]) => document.refreshData().pipe(
         mergeMap(() => new EnrichmentTable().load(document)),
         tap(newTable => {
-          if (assumeChanged) {
-            this.unsavedChanges$.next(true);
-          } else if (!table.equals(newTable)) {
-            this.unsavedChanges$.next(true);
-            this.snackBar.open(
-              `Data refreshed.`,
-              'Close',
-              {duration: 5000},
-            );
-          } else {
-            this.snackBar.open(
-              `Data refreshed but there were no changes.`,
-              'Close',
-              {duration: 5000},
-            );
-          }
+          this.snackBar.open(
+            `Data refreshed.`,
+            'Close',
+            {duration: 5000},
+          );
+        }),
+        mergeMap(newTable => {
+          this.queuedChanges$.next(this.queuedChanges$.value || {});
+          return this.save().pipe(
+            map(() => newTable),
+          );
         }),
       )),
       shareReplay(),
@@ -125,7 +125,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
   }
 
   save() {
-    combineLatest(
+    const observable = combineLatest(
       this.object$,
       this.document$.pipe(
         mergeMap(document => document.save()),
@@ -135,16 +135,22 @@ export class EnrichmentTableViewerComponent implements OnInit {
       mergeMap(([object, blob]) =>
         this.filesystemService.save([object.hashId], {
           contentValue: blob,
+          ...this.queuedChanges$.value,
         })),
-      tap(() => this.unsavedChanges$.next(false)),
+      tap(() => this.queuedChanges$.next(null)),
       this.errorHandler.create({label: 'Save enrichment table'}),
-    ).subscribe(() => {
+      shareReplay(),
+    );
+
+    observable.subscribe(() => {
       this.snackBar.open(
         `Enrichment table saved.`,
         'Close',
         {duration: 5000},
       );
     });
+
+    return observable;
   }
 
   /**
@@ -159,7 +165,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
       return dialogRef.result.then((result) => {
         if (document.domains !== result) {
           document.domains = result;
-          this.unsavedChanges$.next(true);
+          this.queuedChanges$.next(this.queuedChanges$.value || {});
           this.table$ = new EnrichmentTable().load(document).pipe(
             this.errorHandler.create({label: 'Re-order enrichment table'}),
             shareReplay(),
@@ -173,12 +179,16 @@ export class EnrichmentTableViewerComponent implements OnInit {
   /**
    * Edit enrichment params (essentially the file content) and updates table.
    */
-  openEnrichmentTableEditDialog(document: EnrichmentDocument): Promise<any> {
+  openEnrichmentTableEditDialog(object: FilesystemObject, document: EnrichmentDocument): Promise<any> {
     const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
+    dialogRef.componentInstance.promptObject = false;
+    dialogRef.componentInstance.object = object;
     dialogRef.componentInstance.document = document;
     dialogRef.componentInstance.fileId = this.fileId;
     return dialogRef.result.then((result: EnrichmentTableEditDialogValue) => {
-      this.unsavedChanges$.next(true);
+      this.queuedChanges$.next({
+        ...(this.queuedChanges$.value || {}),
+      });
       this.refreshData(true);
     }, () => {
     });

@@ -76,7 +76,6 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
 
           const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
           dialogRef.componentInstance.title = 'New Enrichment Table Parameters';
-          dialogRef.componentInstance.submitButtonLabel = 'Next';
           dialogRef.componentInstance.object = object;
           dialogRef.componentInstance.document = new EnrichmentDocument(this.worksheetViewerService);
 
