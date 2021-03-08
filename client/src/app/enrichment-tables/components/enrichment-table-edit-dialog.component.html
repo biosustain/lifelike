@@ -5,7 +5,7 @@
     </app-modal-header>
 
     <app-modal-body>
-      <ng-container *ngIf="object">
+      <ng-container *ngIf="promptObject">
         <app-form-row for="parent" [label]="parentLabel" [control]="form.get('parent')"
                       *ngIf="promptParent">
           <div class="d-flex align-items-center text-truncate">
@@ -29,37 +29,11 @@
         </app-form-row>
 
         <app-form-row for="description" label="Description" [control]="form.get('description')">
-        <textarea formControlName="description" id="description"
-                  [appFormInput]="form.get('description')"
-                  rows="5"></textarea>
+          <textarea formControlName="description" id="description"
+                    [appFormInput]="form.get('description')"
+                    rows="5"></textarea>
         </app-form-row>
 
-      </ng-container>
-
-      <app-form-row for="entitiesList" label="Gene Names" [control]="form.get('entitiesList')">
-        <textarea formControlName="entitiesList" id="entitiesList"
-                  [appFormInput]="form.get('entitiesList')"
-                  rows="5" placeholder="* New line for each gene name"></textarea>
-      </app-form-row>
-      <app-form-row for="organism" label="Organism" [control]="form.get('organism')">
-        <app-organism-autocomplete
-          formId="organism"
-          [organismTaxId]="organismTaxId"
-          (organismPicked)="setOrganism($event)"
-        ></app-organism-autocomplete>
-      </app-form-row>
-
-      <app-form-row for="domainsList" label="Domains" [control]="form.get('domainsList')">
-        <div *ngFor="let choice of checks; let i=index">
-          <label>
-            <input type="checkbox" [value]="choice" (change)="onCheckChange($event)"
-                   [checked]="domains.includes(choice)">
-            {{choice}}
-          </label>
-        </div>
-      </app-form-row>
-
-      <ng-container *ngIf="object">
         <app-form-row [control]="form.get('public')">
           <div class="custom-control custom-checkbox">
             <input type="checkbox" class="custom-control-input" id="public"
@@ -68,6 +42,58 @@
               community</label>
           </div>
         </app-form-row>
+      </ng-container>
+
+      <ng-template #enrichmentParamsFields>
+        <app-form-row for="entitiesList" label="Gene Names" [control]="form.get('entitiesList')">
+          <textarea formControlName="entitiesList" id="entitiesList"
+                    [appFormInput]="form.get('entitiesList')"
+                    rows="5" placeholder="One gene per line"></textarea>
+        </app-form-row>
+
+        <app-form-row
+          label="Organism"
+        >
+          <app-organism-autocomplete
+            formId="organism"
+            [organismTaxId]="form.get('organism').value ? form.get('organism').value.tax_id : null"
+            (organismPicked)="organismChanged($event)"
+          ></app-organism-autocomplete>
+        </app-form-row>
+
+        <app-form-row for="domainsList" label="Domains" [control]="form.get('domainsList')">
+          <div *ngFor="let choice of checks; let i=index">
+            <label>
+              <input type="checkbox" [value]="choice" (change)="onCheckChange($event)"
+                     [checked]="domains.includes(choice)">
+              {{choice}}
+            </label>
+          </div>
+        </app-form-row>
+      </ng-template>
+
+      <fieldset class="fieldset-properties mt-4" *ngIf="promptObject">
+        <legend>Enrichment Table Parameters</legend>
+        <ng-container *ngTemplateOutlet="enrichmentParamsFields"></ng-container>
+      </fieldset>
+
+      <ng-container *ngTemplateOutlet="!promptObject ? enrichmentParamsFields : null"></ng-container>
+
+      <ng-container *ngIf="promptObject">
+        <fieldset class="fieldset-properties mt-4">
+          <legend>Annotation Options</legend>
+          <app-form-row>
+            <div class="text-muted mb-2">
+              <i class="fa fa-exclamation-circle"></i>
+              Below are the current entity types that have an NLP model. Other entity types will
+              default to Rules Based.
+            </div>
+            <app-annotation-config-table
+              [headers]="annotationMethods"
+              [models]="annotationModels"
+              [form]="form.get('annotationConfigs')"></app-annotation-config-table>
+          </app-form-row>
+        </fieldset>
       </ng-container>
     </app-modal-body>
 
