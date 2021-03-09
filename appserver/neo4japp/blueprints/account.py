@@ -74,7 +74,7 @@ class AccountView(MethodView):
         else:
             # Regular users can only see themselves
             if hash_id and hash_id != g.current_user.hash_id:
-                raise ServerException(message='You do not have sufficient privileges.')
+                raise ServerException(message='You do not have sufficient privileges.', code=400)
             query = query.where(t_appuser.c.hash_id == g.current_user.hash_id)
 
         results = [
