@@ -1,0 +1,54 @@
+<div class="card fill-width">
+    <div class="card-header d-flex flex-wrap align-items-center card-header-with-buttons">
+        <span class="title">{{title}}</span>
+        <ng-container>
+            <div class="module-toolbar d-flex align-items-center ml-auto">
+
+                <ul ngbNav #nav="ngbNav"
+                    [destroyOnHide]="false"
+                    class="nav-tabs">
+                    <li ngbNavItem="table">
+                        <a ngbNavLink>Table</a>
+                        <ng-template ngbNavContent>
+                            <app-table-complete
+                                    [data]="data"
+                                    [showMore]="showMore"
+                            >
+
+                            </app-table-complete>
+                        </ng-template>
+                    </li>
+                    <li ngbNavItem="graph">
+                        <a ngbNavLink>Graph</a>
+                        <ng-template ngbNavContent>
+                            <app-chart
+                                    [style.display]="'block'"
+                                    [data]="data"
+                                    [showMore]="showMore"
+                            >
+                            </app-chart>
+                        </ng-template>
+                    </li>
+                    <li ngbNavItem="clustergram">
+                        <a ngbNavLink>Clustergram</a>
+                        <ng-template ngbNavContent>
+                            <app-clustergram
+                                    [data]="data"
+                                    [showMore]="showMore"
+                            >
+
+                            </app-clustergram>
+                        </ng-template>
+                    </li>
+                </ul>
+            </div>
+        </ng-container>
+    </div>
+    <div class="card-body" [ngbNavOutlet]="nav">
+    </div>
+    <div class="card-footer" [ngStyle]="{textAlign: 'right', cursor: 'pointer'}" (click)="showMoreToggle()">
+        {{showMore ? "show less..." : "show more..."}}
+    </div>
+
+
+</div>
