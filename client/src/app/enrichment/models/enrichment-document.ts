@@ -89,7 +89,20 @@ export class BaseEnrichmentDocument {
     return of(blob)
       .pipe(
         mapBlobToBuffer(),
-        mapBufferToJson<EnrichmentData>(),
+        map((data: ArrayBuffer | undefined): EnrichmentData => {
+          if (data == null) {
+            return null;
+          }
+          const s = new TextDecoder('utf-8').decode(data);
+          try {
+            return JSON.parse(s) as EnrichmentData;
+          } catch (e) {
+            // Old enrichment table format was just a string for the data
+            return {
+              data: s,
+            };
+          }
+        }),
         map(this.decode.bind(this)),
         map(this.setParameters.bind(this))
       );
