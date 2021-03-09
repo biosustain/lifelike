@@ -8,11 +8,7 @@ from neo4japp.database import (
     get_annotation_service,
     get_entity_recognition
 )
-from neo4japp.exceptions import (
-    AnnotationError,
-    RecordNotFoundException,
-    DuplicateRecord,
-)
+from neo4japp.exceptions import ServerException
 from neo4japp.models import (
     Files,
     GlobalList, AppUser,
@@ -111,7 +107,8 @@ class ManualAnnotationService:
             ]
 
             if not inclusions:
-                raise AnnotationError(
+                raise ServerException(
+                    title='Unable to Annotate',
                     message=f'There was a problem annotating "{term}". ' +
                             'Please make sure the term is correct, ' +
                             'including correct spacing and no extra characters.',
@@ -120,7 +117,9 @@ class ManualAnnotationService:
             if not annotation_exists(annotation_to_add):
                 inclusions = [annotation_to_add]
             else:
-                raise DuplicateRecord('Annotation already exists.')
+                raise ServerException(
+                    title='Unable to Annotate',
+                    message='Annotation already exists.', code=400)
 
         if annotation_to_add['meta']['includeGlobally']:
             self.add_to_global_list(
@@ -230,7 +229,10 @@ class ManualAnnotationService:
         ]
 
         if initial_length == len(file.excluded_annotations):
-            raise RecordNotFoundException('File does not have any annotations.')
+            raise ServerException(
+                title='Failed to Annotate',
+                message='File does not have any annotations.',
+                code=404)
 
         db.session.commit()
 
@@ -242,7 +244,10 @@ class ManualAnnotationService:
             file_id=file_id,
         ).one_or_none()
         if file is None:
-            raise RecordNotFoundException('File does not exist.')
+            raise ServerException(
+                title='Failed to Annotate',
+                message='File does not exist.',
+                code=404)
 
         return self._get_file_annotations(file)
 

@@ -43,8 +43,8 @@ export class ErrorHandler {
   }
 
   createUserError(error: any): UserError {
-    let title = 'Oops!';
-    let message = 'The server encountered a problem. No further details are currently available.';
+    let title = '';
+    let message = '';
     let additionalMsgs = [];
     let stacktrace = null;
     // A transaction id for log audits with Sentry (Sentry.io)
@@ -56,14 +56,11 @@ export class ErrorHandler {
 
       // Detect if we got an error response object
       if (errorResponse && errorResponse.message) {
+        title = errorResponse.title;
         message = errorResponse.message;
         additionalMsgs = errorResponse.additionalMsgs;
         stacktrace = errorResponse.stacktrace;
         transactionId = errorResponse.transactionId;
-      }
-
-      if (errorResponse.code < 500) {
-        title = 'Bad Request';
       }
 
       // Override some fields for some error codes
