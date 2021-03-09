@@ -22,4 +22,6 @@ def get_knowledge_graph_statistics():
     if statistics:
         return statistics, 200
 
-    raise ServerException('Knowledge Graph Statistics Not Available.')
+    raise ServerException(
+        'Failed to Statistics',
+        'Knowledge Graph Statistics Not Available.')

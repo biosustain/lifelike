@@ -33,7 +33,7 @@ from neo4japp.database import (
     get_manual_annotation_service,
     get_sorted_annotation_service
 )
-from neo4japp.exceptions import AnnotationError
+from neo4japp.exceptions import ServerException
 from neo4japp.models import (
     AppUser,
     Files,
@@ -466,7 +466,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         organism=organism or file.fallback_organism,
                         user_id=current_user.id,
                     )
-                except AnnotationError as e:
+                except ServerException as e:
                     current_app.logger.error(
                         'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e)
                     results[file.hash_id] = {
@@ -510,7 +510,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         method=annotation_configs,
                         organism=organism,
                     )
-                except AnnotationError as e:
+                except ServerException as e:
                     current_app.logger.error(
                         'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e)  # noqa
                     results[file.hash_id] = {
@@ -936,7 +936,10 @@ def get_pdf_to_annotate(file_id):
     doc = Files.query.get(file_id)
 
     if not doc:
-        raise RecordNotFoundException(f'File with file id {file_id} not found.')
+        raise ServerException(
+            title='Failed to Annotate',
+            message=f'File with file id {file_id} not found.',
+            code=404)
 
     res = make_response(doc.content.raw_file)
     res.headers['Content-Type'] = 'application/pdf'

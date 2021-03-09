@@ -2,7 +2,7 @@ import lmdb
 
 from os import path, environ
 
-from neo4japp.exceptions import LMDBError
+from neo4japp.exceptions import ServerException
 from neo4japp.services.annotations.constants import (
     ANATOMY_MESH_LMDB,
     CHEMICALS_CHEBI_LMDB,
@@ -121,7 +121,9 @@ class LMDBAccess:
                 max_dbs=2,
             )
         except Exception:
-            raise LMDBError('An error occurred opening LMDB environment.')
+            raise ServerException(
+                'Cannot Connect to LMDB',
+                'An error occurred opening LMDB environment.')
         else:
             """
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

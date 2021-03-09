@@ -1,15 +1,16 @@
 class ServerException(Exception):
-    def __init__(self, name=None, message=None, additional_msgs=None, fields=None, code=500, *args):
+    def __init__(self, title=None, message=None, additional_msgs=None, fields=None, code=500, *args):  # noqa
         """
         Create a new exception.
-        :param name: the name of the error, which sometimes used on the client
+        :param title: the title of the error, which sometimes used on the client
         :param message: a message that can be displayed to the user
         :param additional_msgs: a list of messages that contain more details for the user
         :param code: the error code
+        :param fields:
         :param args: extra args
         """
-        if not name:
-            name = 'Internal Server Error'
+        if not title:
+            title = 'We\'re sorry!'
 
         if not message:
             message = 'Looks like something went wrong!'
@@ -23,7 +24,7 @@ class ServerException(Exception):
                 'We track these errors, but if the problem persists, ' +
                 'feel free to contact us with the transaction id.']
 
-        self.name = name
+        self.title = title
         self.message = message
         self.additional_msgs = additional_msgs
         self.code = code
@@ -55,143 +56,35 @@ class ServerException(Exception):
         self._transaction_id = transaction_id
 
     def __str__(self):
-        return f'<Exception> {self.name}:{self.message}'
+        return f'<Exception> {self.title}:{self.message}'
 
     def to_dict(self):
         retval = {}
-        retval['name'] = self.name
+        retval['title'] = self.title
         retval['message'] = self.message
         return retval
 
 
-class AnnotationError(ServerException):
-    """An error occured during the annotation process"""
+""" READ READ READ READ
 
-    def __init__(self, message=None, additional_msgs=[], code=500) -> None:
-        super().__init__(
-            'Annotation Error',
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
+Should not need to create anymore exceptions! Everything can be
+generalized into the `ServerException`.
 
+If you must...
 
-class LMDBError(ServerException):
-    """An error occured during the LMDB process"""
+Should only create errors based on features. This will help to display
+feature specific error titles in the messages on UI, instead of generic
+`Bad Request` or `Invalid Input`.
 
-    def __init__(self, message=None, additional_msgs=[], code=500) -> None:
-        super().__init__(
-            'LMDB Error',
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
+The title should be a short concise message indicating the error;
+e.g
+    `Unable to Annotate`
+    `Unable to Get Visualizer Snippet Data`
 
-
-class FileUploadError(ServerException):
-    """An error occured during the file upload process"""
-
-    def __init__(self, message=None, additional_msgs=[], code=500) -> None:
-        super().__init__(
-            'File Upload Error',
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
-
-
-class DatabaseError(ServerException):
-    """An error occured in database operation"""
-
-    def __init__(self, message=None, additional_msgs=[], code=500) -> None:
-        super().__init__(
-            'Database Error',
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
-
-
-class DirectoryError(ServerException):
-    """An error occured in directory operation"""
-
-    def __init__(self, message=None, additional_msgs=[], code=500) -> None:
-        super().__init__(
-            'Directory Error',
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
-
-
-class DuplicateRecord(ServerException):
-    def __init__(self, message=None, additional_msgs=[], code=500):
-        super().__init__(
-            'Duplicate Error',
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
-
-
-class InvalidArgumentsException(ServerException):
-    """A generic error occurred with invalid API arguments."""
-    def __init__(self, message=None, additional_msgs=[], fields=None, code=400):
-        super().__init__(
-            'Argument Error',
-            message=message,
-            additional_msgs=additional_msgs,
-            fields=fields,
-            code=code)
-
-
-class InvalidFileNameException(ServerException):
-    """Signals invalid filename"""
-
-    def __init__(self, message=None, additional_msgs=[], code=500):
-        super().__init__(
-            'File Name Error',
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
-
-
-class InvalidDirectoryNameException(ServerException):
-    """Signals invalid directory name"""
-
-    def __init__(self, message=None, additional_msgs=[], code=500):
-        super().__init__(
-            'Directory Name Error',
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
-
-
-class KgImportException(ServerException):
-    """Signals something went wrong during import into the knowledge graph"""
-
-    def __init__(self, message=None, additional_msgs=[], code=500):
-        super().__init__(
-            'Knowledge Graph Import Error',
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
-
-
-class NotAuthorizedException(ServerException):
-    """Signals that the client does not sufficient privilege"""
-
-    def __init__(self, message=None, additional_msgs=[], code=400):
-        super().__init__(
-            'Authorization Error',
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
-
-
-class RecordNotFoundException(ServerException):
-    """Signals that no record is found in the database"""
-
-    def __init__(self, message=None, additional_msgs=[], code=404):
-        super().__init__(
-            'No Data Error',
-            message=message,
-            additional_msgs=additional_msgs,
-            code=code)
+Errors like `DuplicateError` and `InvalidArgumentsException` aren't needed
+as they can be generalized to a `ServerException`, and the `message` or `fields`
+can indicate duplication.
+"""
 
 
 class JWTTokenException(ServerException):
@@ -220,7 +113,7 @@ class FormatterException(ServerException):
     """Signals that a CamelDictMixin object was not formatted to/from
     dict correctly."""
 
-    def __init__(self, message=None, additional_msgs=[], code=401):
+    def __init__(self, message=None, additional_msgs=[], code=500):
         super().__init__(
             'Serializing Error',
             message=message,

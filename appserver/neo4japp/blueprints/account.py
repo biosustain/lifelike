@@ -3,13 +3,14 @@ import re
 from flask import Blueprint, g, jsonify
 from flask.views import MethodView
 from sqlalchemy import func, literal_column, or_
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import select
 from sqlalchemy.dialects.postgresql import aggregate_order_by
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_authorization_service
-from neo4japp.exceptions import DuplicateRecord, NotAuthorizedException
+from neo4japp.exceptions import ServerException
 from neo4japp.models import AppUser, AppRole
 from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
@@ -34,8 +35,12 @@ class AccountView(MethodView):
         retval = AppRole.query.filter_by(name=rolename).one_or_none()
         if retval is None:
             retval = AppRole(name=rolename)
-            db.session.add(retval)
-            db.session.commit()
+            try:
+                db.session.add(retval)
+                db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback()
+                raise
         return retval
 
     def get(self, hash_id):
@@ -69,7 +74,7 @@ class AccountView(MethodView):
         else:
             # Regular users can only see themselves
             if hash_id and hash_id != g.current_user.hash_id:
-                raise NotAuthorizedException('You do not have sufficient privileges.')
+                raise ServerException(message='You do not have sufficient privileges.')
             query = query.where(t_appuser.c.hash_id == g.current_user.hash_id)
 
         results = [
@@ -94,11 +99,17 @@ class AccountView(MethodView):
         admin_or_private_access = g.current_user.has_role('admin') or \
             g.current_user.has_role('private-data-access')
         if not admin_or_private_access:
-            raise NotAuthorizedException('You do not have sufficient privileges.')
+            raise ServerException(
+                'Cannot Create New User',
+                'You do not have sufficient privileges.')
         if db.session.query(AppUser.query_by_email(params['email']).exists()).scalar():
-            raise DuplicateRecord(f'E-mail {params["email"]} already taken')
+            raise ServerException(
+                'Cannot Create New User',
+                f'E-mail {params["email"]} already taken.')
         elif db.session.query(AppUser.query_by_username(params["username"]).exists()).scalar():
-            raise DuplicateRecord(f'Username {params["username"]} already taken.')
+            raise ServerException(
+                'Cannot Create New User',
+                f'Username {params["username"]} already taken.')
 
         app_user = AppUser(
             username=params['username'],
@@ -114,8 +125,12 @@ class AccountView(MethodView):
         else:
             for role in params['roles']:
                 app_user.roles.append(self.get_or_create_role(role))
-        db.session.add(app_user)
-        db.session.commit()
+        try:
+            db.session.add(app_user)
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
         return jsonify(dict(result=app_user.to_dict()))
 
     @use_args(UserUpdateSchema)
@@ -124,13 +139,20 @@ class AccountView(MethodView):
         admin_or_private_access = g.current_user.has_role('admin') or \
             g.current_user.has_role('private-data-access')
         if g.current_user.hash_id != hash_id and admin_or_private_access is False:
-            raise NotAuthorizedException('You do not have sufficient privileges.')
+            raise ServerException(
+                'Failed to Update User',
+                'You do not have sufficient privileges.')
         else:
             target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
             for attribute, new_value in params.items():
                 setattr(target, attribute, new_value)
-            db.session.add(target)
-            db.session.commit()
+
+            try:
+                db.session.add(target)
+                db.session.commit()
+            except SQLAlchemyError:
+                db.session.rollback()
+                raise
         return jsonify(dict(result='')), 204
 
     def delete(self):
@@ -151,15 +173,23 @@ def update_password(params: dict, hash_id):
     admin_or_private_access = g.current_user.has_role('admin') or \
         g.current_user.has_role('private-data-access')
     if g.current_user.hash_id != hash_id and admin_or_private_access is False:
-        raise NotAuthorizedException('You do not have sufficient privileges.')
+        raise ServerException(
+            'Failed to Update User',
+            'You do not have sufficient privileges.')
     else:
         target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
         if target.check_password(params['password']):
             target.set_password(params['new_password'])
         else:
-            raise NotAuthorizedException('Old password is invalid')
-        db.session.add(target)
-        db.session.commit()
+            raise ServerException(
+                'Failed to Update User',
+                'Old password is invalid.')
+        try:
+            db.session.add(target)
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
     return jsonify(dict(result='')), 204
 
 
