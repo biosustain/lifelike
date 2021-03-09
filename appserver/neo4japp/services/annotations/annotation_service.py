@@ -493,8 +493,9 @@ class AnnotationService:
                                         fallback_organisms_to_match[key] = d[key]
 
                             # if matched in KG then set to fallback strain
-                            gene_id = fallback_organisms_to_match[self.specified_organism.organism_id]  # noqa
-                            specified_organism_id = self.specified_organism.organism_id
+                            if fallback_organisms_to_match.get(self.specified_organism.organism_id, None):  # noqa
+                                gene_id = fallback_organisms_to_match[self.specified_organism.organism_id]  # noqa
+                                specified_organism_id = self.specified_organism.organism_id
 
                     category = self.specified_organism.category if specified_organism_id else self.organism_categories[organism_id]  # noqa
                 elif entity_synonym in fallback_gene_organism_matches:
