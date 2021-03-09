@@ -82,7 +82,7 @@ def graph(request, app):
     graph = Graph(
         host=os.environ.get('NEO4J_HOST'),
         auth=os.environ.get('NEO4J_AUTH').split('/'),
-        port=os.environ.get('NEOJ_PORT'),
+        port=os.environ.get('NEO4J_PORT'),
         scheme=os.environ.get('NEO4J_SCHEME')
     )
 
