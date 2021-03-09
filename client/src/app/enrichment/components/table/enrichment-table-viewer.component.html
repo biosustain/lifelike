@@ -44,7 +44,7 @@
                 </div>
               </div>
 
-              <div *ngIf="unsavedChanges$.value" class="ml-1">
+              <div *ngIf="queuedChanges$.value" class="ml-1">
                 <span class="badge badge-danger badge-pill ml-1"
                       ngbTooltip="Has unsaved changes" container="body">
                   <i class="fa fa-pencil-alt"></i>
@@ -61,7 +61,7 @@
 
               <div class="btn-group ml-2">
                 <button class="btn btn-secondary"
-                        (click)="openEnrichmentTableEditDialog(result.document)"
+                        (click)="openEnrichmentTableEditDialog(result.object.value, result.document)"
                         [disabled]="!result.document || !result.object.value.privileges.writable">
                   <i class="fas fa-fw fa-dna"></i> Parameters
                 </button>

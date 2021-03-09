@@ -78,7 +78,7 @@ export class EnrichmentVisualisationService {
       {geneNames, organism: `${taxID}/${organism}`, analysis},
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map((resp: any) => resp.result)
+      map((resp: any) => resp)
     );
   }
 
@@ -94,7 +94,7 @@ export class EnrichmentVisualisationService {
       {geneNames, organism: `${taxID}/${organism}`},
       this.apiService.getHttpOptions(true),
     ).pipe(
-      map((resp: any) => resp.result),
+      map((resp: any) => resp),
     );
   }
 }
