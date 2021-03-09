@@ -4,10 +4,9 @@ import {
   AnnotationChangeExclusionMeta,
   Meta,
 } from '../pdf-viewer/annotation-type';
-import { AnnotationMethods } from '../interfaces/annotation';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
 import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
-import { EnrichmentResult, EnrichmentTextMapping } from 'app/enrichment-tables/models/enrichment-document';
+import { EnrichmentResult, EnrichmentTextMapping } from 'app/enrichment/models/enrichment-document';
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 
 // ========================================
