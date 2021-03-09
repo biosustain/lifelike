@@ -5,7 +5,7 @@ from neo4japp.database import (
     get_authorization_service,
     get_projects_service,
 )
-from neo4japp.exceptions import NotAuthorizedException
+from neo4japp.exceptions import ServerException
 
 
 def requires_permission(action: AccessActionType):
@@ -22,7 +22,7 @@ def requires_permission(action: AccessActionType):
      will then be combined with the `action` parameter for access
      control check.
 
-     Raises NotAuthorizedException if the request does not have the
+     Raises ServerException if the request does not have the
      correct permission.
 
      """
@@ -34,8 +34,10 @@ def requires_permission(action: AccessActionType):
                 principal, asset = next(gen)
                 auth = get_authorization_service()
                 if not auth.is_allowed(principal, action, asset):
-                    raise NotAuthorizedException(
-                        f'{principal} is not allowed {action} action on {asset}')
+                    raise ServerException(
+                        title='Unable to Process Request',
+                        message=f'{principal} is not allowed {action} action on {asset}',
+                        code=400)
                 retval = next(gen)
             finally:
                 gen.close()
@@ -61,8 +63,10 @@ def has_project_permission(project, user, action: AccessActionType):
 
 def check_project_permission(project, user, action: AccessActionType):
     if not has_project_permission(project, user, action):
-        raise NotAuthorizedException(
-            f'{user.username} does not have {action.name} privilege'
+        raise ServerException(
+            title='Unable to Process Request',
+            message=f'{user.username} does not have {action.name} privilege',
+            code=400
         )
 
 
@@ -94,8 +98,10 @@ def requires_project_role(role: str):
                 proj = get_projects_service()
                 roles = proj.has_role(principal, asset)
                 if roles is None or roles.name != role:
-                    raise NotAuthorizedException(
-                        f'{principal} does not have required role: {role}'
+                    raise ServerException(
+                        title='Unable to Process Request',
+                        message=f'{principal} does not have required role: {role}',
+                        code=400
                     )
                 retval = next(gen)
             finally:
@@ -115,8 +121,10 @@ def requires_role(role: str):
                 principal = next(gen)
                 auth = get_authorization_service()
                 if not auth.has_role(principal, role):
-                    raise NotAuthorizedException(
-                        f'{principal} does not have the required role: {role}'
+                    raise ServerException(
+                        title='Unable to Process Request',
+                        message=f'{principal} does not have the required role: {role}',
+                        code=400
                     )
                 retval = next(gen)
             finally:

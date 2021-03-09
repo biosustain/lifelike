@@ -246,7 +246,7 @@ def reannotate_all():
     in the database. """
     from neo4japp.blueprints.annotations import annotate
     from neo4japp.models import Files, FileContent
-    from neo4japp.exceptions import AnnotationError
+    from neo4japp.exceptions import ServerException
     files = db.session.query(
         Files.id,
         Files.annotations,
@@ -264,7 +264,7 @@ def reannotate_all():
     for fi in files:
         try:
             update, version = annotate(fi, AnnotationChangeCause.SYSTEM_REANNOTATION)
-        except AnnotationError:
+        except ServerException:
             logger.info('Failed to annotate: <id:{fi.id}>')
         else:
             updated_files.append(update)
@@ -398,7 +398,7 @@ def bulk_upload_files(gcp_source, project_name, username, reannotate):
         projects_collaborator_role,
     )
     import neo4japp.models.files_queries as files_queries
-    from neo4japp.exceptions import AnnotationError
+    from neo4japp.exceptions import ServerException
     from neo4japp.blueprints.files import extract_doi
     from neo4japp.blueprints.annotations import annotate
     from pdfminer import high_level
@@ -535,7 +535,7 @@ def bulk_upload_files(gcp_source, project_name, username, reannotate):
                     update, version = annotate(doc, AnnotationChangeCause.SYSTEM_REANNOTATION)
                     annotated_files.append(update)
                     versions.append(version)
-                except (AnnotationError, Exception):
+                except (ServerException, Exception):
                     app.logger.info(f'Filename {filename} failed to annotate.')
 
             db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)

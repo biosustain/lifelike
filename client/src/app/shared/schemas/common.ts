@@ -35,6 +35,7 @@ export interface ResultList<T> {
 }
 
 export interface ErrorResponse {
+  title: string;
   message: string;
   additionalMsgs?: string[];
   stacktrace?: string;

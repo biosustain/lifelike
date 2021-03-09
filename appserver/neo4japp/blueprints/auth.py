@@ -11,8 +11,7 @@ from typing_extensions import TypedDict
 from neo4japp.exceptions import (
     JWTTokenException,
     JWTAuthTokenException,
-    RecordNotFoundException,
-    NotAuthorizedException,
+    ServerException,
 )
 from neo4japp.schemas.account import UserProfileSchema
 from neo4japp.schemas.auth import JWTTokenResponse
@@ -133,14 +132,17 @@ def verify_token(token):
             try:
                 user = AppUser.query_by_email(decoded['sub']).one()
             except NoResultFound:
-                raise RecordNotFoundException('Credentials not found.')
+                raise ServerException(
+                    title='Failed to Authenticate',
+                    message='Credentials not found.',
+                    code=404)
             else:
                 g.current_user = user
                 with sentry_sdk.configure_scope() as scope:
                     scope.set_tag('user_email', user.email)
                 return True
     else:
-        raise NotAuthorizedException('No access found.')
+        raise ServerException('Failed to Authenticate')
 
 
 @bp.route('/refresh', methods=['POST'])
@@ -163,7 +165,10 @@ def refresh():
     try:
         user = AppUser.query.filter_by(email=decoded['sub']).one()
     except NoResultFound:
-        raise RecordNotFoundException('Credentials not found.')
+        raise ServerException(
+            title='Failed to Authenticate',
+            message='Credentials not found.',
+            code=404)
     else:
         return jsonify(JWTTokenResponse().dump({
             'access_token': access_jwt,
@@ -192,7 +197,10 @@ def login():
     try:
         user = AppUser.query.filter_by(email=data.get('email')).one()
     except NoResultFound:
-        raise RecordNotFoundException('Credentials not found or invalid.')
+        raise ServerException(
+            title='Failed to Authenticate',
+            message='Credentials not found or invalid.',
+            code=404)
     else:
         if user.check_password(data.get('password')):
             current_app.logger.info(
@@ -214,4 +222,7 @@ def login():
                 },
             }))
         else:
-            raise RecordNotFoundException('Credentials not found or invalid.')
+            raise ServerException(
+                title='Failed to Authenticate',
+                message='Credentials not found or invalid.',
+                code=404)

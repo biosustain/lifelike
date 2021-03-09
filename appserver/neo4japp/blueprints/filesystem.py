@@ -21,7 +21,10 @@ from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_file_type_service, get_authorization_service
-from neo4japp.exceptions import RecordNotFoundException, AccessRequestRequiredError
+from neo4japp.exceptions import (
+    AccessRequestRequiredError,
+    ServerException
+)
 from neo4japp.models import Projects, Files, FileContent, AppUser, \
     FileVersion, FileBackup
 from neo4japp.models.files import FileLock, FileAnnotationsVersion, FallbackOrganism
@@ -74,7 +77,10 @@ class FilesystemBaseView(MethodView):
         """
         files = self.get_nondeleted_recycled_files(filter, lazy_load_content)
         if not len(files):
-            raise RecordNotFoundException("The requested file object could not be found.")
+            raise ServerException(
+                title='Failed to Get File(s)',
+                message='The requested file object could not be found.',
+                code=404)
         return files[0]
 
     def get_nondeleted_recycled_files(self, filter, lazy_load_content=False,
@@ -164,9 +170,11 @@ class FilesystemBaseView(MethodView):
             missing_hash_ids = self.get_missing_hash_ids(require_hash_ids, files)
 
             if len(missing_hash_ids):
-                raise RecordNotFoundException(
-                    f"The request specified one or more file or directory "
-                    f"({', '.join(missing_hash_ids)}) that could not be found.")
+                raise ServerException(
+                    title='Failed to Get File(s)',
+                    message=f"The request specified one or more file or directory "
+                    f"({', '.join(missing_hash_ids)}) that could not be found.",
+                    code=404)
 
         # In the end, we just return a list of Files instances!
         return files
@@ -506,7 +514,7 @@ class FileListView(FilesystemBaseView):
         try:
             parent = self.get_nondeleted_recycled_file(Files.hash_id == params['parent_hash_id'])
             self.check_file_permissions([parent], current_user, ['writable'], permit_recycled=False)
-        except RecordNotFoundException:
+        except ServerException:
             # Rewrite the error to make more sense
             raise ValidationError("The requested parent object could not be found.",
                                   "parent_hash_id")
@@ -534,7 +542,7 @@ class FileListView(FilesystemBaseView):
                 existing_file = self.get_nondeleted_recycled_file(Files.hash_id == source_hash_id)
                 self.check_file_permissions([existing_file], current_user, ['readable'],
                                             permit_recycled=True)
-            except RecordNotFoundException:
+            except ServerException:
                 raise ValidationError(f"The requested file or directory to clone from "
                                       f"({source_hash_id}) could not be found.",
                                       "content_hash_id")
@@ -1023,7 +1031,10 @@ class FileBackupContentView(FilesystemBaseView):
             .first()
 
         if backup is None:
-            raise RecordNotFoundException('No backup stored for this file.')
+            raise ServerException(
+                title='Failed to Get File Backup',
+                message='No backup stored for this file.',
+                code=404)
 
         content = backup.raw_value
         etag = hashlib.sha256(content).hexdigest()
