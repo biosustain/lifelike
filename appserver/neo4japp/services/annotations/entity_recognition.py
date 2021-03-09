@@ -787,8 +787,11 @@ class EntityRecognitionService:
         self,
         token: PDFWord,
         compounds_found: List[LMDBMatch],
+        nlp_compounds: Set[Tuple[int, int]],
+        used_nlp: bool,
         cursor
     ) -> None:
+        offset_key = (token.lo_location_offset, token.hi_location_offset)
         current_token = token
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
@@ -797,25 +800,39 @@ class EntityRecognitionService:
         id_type = None
         id_hyperlink = None
 
+        found_inclusion = False
+
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
         else:
             # didn't find in LMDB so look in global inclusion
             found = self.inclusion_type_compound.get(lookup_term, None)
             if found:
+                found_inclusion = True
                 entities = found.entities
                 id_type = found.entity_id_type
                 id_hyperlink = found.entity_id_hyperlink
 
+        # only want those in inclusion or identified by NLP
         if entities:
-            compounds_found.append(
-                LMDBMatch(
-                    entities=entities,
-                    token=current_token,
-                    id_type=id_type or '',
-                    id_hyperlink=id_hyperlink or ''
+            if not used_nlp:
+                compounds_found.append(
+                    LMDBMatch(
+                        entities=entities,
+                        token=current_token,
+                        id_type=id_type or '',
+                        id_hyperlink=id_hyperlink or ''
+                    )
                 )
-            )
+            elif found_inclusion or offset_key in nlp_compounds:
+                compounds_found.append(
+                    LMDBMatch(
+                        entities=entities,
+                        token=current_token,
+                        id_type=id_type or '',
+                        id_hyperlink=id_hyperlink or ''
+                    )
+                )
 
     def identify_disease(
         self,
@@ -1214,6 +1231,9 @@ class EntityRecognitionService:
                     self.identify_compound(
                         token=current_token,
                         compounds_found=compounds_found,
+                        nlp_compounds=nlp_results.compounds,
+                        used_nlp=annotation_method.get(
+                            EntityType.COMPOUND.value, {}).get('nlp', False),
                         cursor=compounds_cur)
 
                 if not self.is_disease_exclusion(current_token.keyword):

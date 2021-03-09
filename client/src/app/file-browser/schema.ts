@@ -133,6 +133,8 @@ export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueReque
   description?: string;
   uploadUrl?: string;
   public?: boolean;
+  fallbackOrganism?: OrganismAutocomplete;
+  annotationConfigs?: AnnotationConfigs;
 }
 
 /**
@@ -215,6 +217,7 @@ export interface AnnotationGenerationResultData {
 
 // Requests
 // ----------------------------------------
+
 export interface AnnotationGenerationRequest {
   refresh?: boolean;
 }
