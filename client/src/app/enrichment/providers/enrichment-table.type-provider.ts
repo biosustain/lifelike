@@ -9,10 +9,6 @@ import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 import { RankedItem } from '../../shared/schemas/common';
 import { ObjectCreationService } from '../../file-browser/services/object-creation.service';
-import {
-  EnrichmentTableEditDialogComponent,
-  EnrichmentTableEditDialogValue,
-} from '../components/enrichment-table-edit-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { SearchType } from '../../search/shared';
 import { EnrichmentDocument } from '../models/enrichment-document';
@@ -21,13 +17,16 @@ import { finalize, map, mergeMap, tap } from 'rxjs/operators';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { EnrichmentTablePreviewComponent } from '../components/enrichment-table-preview.component';
 import { FilesystemService } from '../../file-browser/services/filesystem.service';
 import { TableCSVExporter } from '../../shared/utils/tables/table-csv-exporter';
 import { EnrichmentTable } from '../models/enrichment-table';
+import { EnrichmentTablePreviewComponent } from '../components/table/enrichment-table-preview.component';
+import {
+  EnrichmentTableEditDialogComponent,
+  EnrichmentTableEditDialogValue
+} from '../components/table/dialog/enrichment-table-edit-dialog.component';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
-export const ENRICHMENT_TABLE_SHORTHAND = 'enrichment-table';
 
 @Injectable()
 export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
@@ -54,7 +53,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
     const componentRef = factory.create(this.injector);
     const instance: EnrichmentTablePreviewComponent = componentRef.instance;
     return contentValue$.pipe(
-      mergeMap(blob => new EnrichmentDocument(this.worksheetService).load(blob, object.hashId)),
+      mergeMap(blob => new EnrichmentDocument(this.worksheetService).loadResult(blob, object.hashId)),
       map(document => {
         instance.document = document;
         return componentRef;
@@ -116,7 +115,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
       name: 'CSV',
       export: () => {
         return this.filesystemService.getContent(object.hashId).pipe(
-          mergeMap(blob => new EnrichmentDocument(this.worksheetViewerService).load(blob, object.hashId)),
+          mergeMap(blob => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)),
           mergeMap(document => new EnrichmentTable().load(document)),
           mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
           map(blob => {
