@@ -278,8 +278,9 @@ export class WordCloudComponent implements OnDestroy {
     // create a tooltip
     const tooltip = d3.select(`#${componentId}cloud-wrapper`)
       .append('div')
-      .style('opacity', 0)
+      .style('display', 'none')
       .attr('class', 'tooltip')
+      .style('opacity', 1)
       .style('background-color', 'white')
       .style('border', 'solid')
       .style('border-width', '2px')
@@ -318,9 +319,9 @@ export class WordCloudComponent implements OnDestroy {
       .style('fill', (d) => d.color)
       .attr('text-anchor', 'middle')
       .style('font-size', (d) => d.size + 'px')
-      .on('mouseover', () => tooltip.style('opacity', 1))
+      .on('mouseover', () => tooltip.style('display', 'block'))
       .on('mousemove', mousemove)
-      .on('mouseleave', () => tooltip.style('opacity', 0))
+      .on('mouseleave', () => tooltip.style('display', 'none'))
       .transition()
       .attr('transform', (d) => {
         return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
@@ -359,8 +360,9 @@ export class WordCloudComponent implements OnDestroy {
     // Create a tooltip for the word cloud text
     const tooltip = d3.select(`#${this.id}cloud-wrapper`)
       .append('div')
-      .style('opacity', 0)
+      .style('display', 'none')
       .attr('class', 'tooltip')
+      .style('opacity', 1)
       .style('background-color', 'white')
       .style('border', 'solid')
       .style('border-width', '2px')
@@ -395,9 +397,9 @@ export class WordCloudComponent implements OnDestroy {
       })
       .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
       .style('font-size', (d) => d.size + 'px')
-      .on('mouseover', () => tooltip.style('opacity', 1))
+      .on('mouseover', () => tooltip.style('display', 'block'))
       .on('mousemove', mousemove)
-      .on('mouseleave', () => tooltip.style('opacity', 0))
+      .on('mouseleave', () => tooltip.style('display', 'none'))
       .transition()
       .attr('transform', (d) => {
         return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
