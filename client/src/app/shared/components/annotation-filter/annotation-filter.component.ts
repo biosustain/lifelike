@@ -23,10 +23,10 @@ import { isNullOrUndefined } from 'util';
 
 import {
   AnnotationFilterEntity,
+  AnnotationVisibility,
   DefaultGroupByOptions,
   DefaultOrderByOptions,
   OrderDirection,
-  AnnotationVisibility,
 } from 'app/interfaces/annotation-filter.interface';
 import {SortingAlgorithm} from '../../../word-cloud/sorting/sorting-algorithms';
 
@@ -35,11 +35,11 @@ import {SortingAlgorithm} from '../../../word-cloud/sorting/sorting-algorithms';
   templateUrl: './annotation-filter.component.html',
   styleUrls: ['./annotation-filter.component.scss'],
 })
-export class AnnotationFilterComponent implements OnInit, OnDestroy {
+export class AnnotationFilterComponent<T extends AnnotationFilterEntity> implements OnInit, OnDestroy {
   id = uniqueId('AnnotationFilterComponent-');
 
-  _annotationData: AnnotationFilterEntity[];
-  @Input() set annotationData(data: AnnotationFilterEntity[]) {
+  _annotationData: T[];
+  @Input() set annotationData(data: T[]) {
     this._annotationData = data;
     // Get all the annotation types to populate the legend
     data.forEach((annotation) => {
@@ -168,7 +168,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
     this.filtersFormValueChangesSub.unsubscribe();
   }
 
-  getAnnotationIdentifier(annotation: AnnotationFilterEntity) {
+  getAnnotationIdentifier(annotation: T) {
     return annotation.id + annotation.type + annotation.keyword;
   }
 
@@ -321,8 +321,8 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
   }
 
   private sortByFrequency(
-    a: AnnotationFilterEntity,
-    b: AnnotationFilterEntity,
+    a: T,
+    b: T,
     direction: string
   ) {
     return direction === OrderDirection.DESCENDING
@@ -330,17 +330,28 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
       : a.frequency - b.frequency;
   }
 
-  private groupDataByEntityType() {
-    const typeMap = new Map<string, AnnotationFilterEntity[]>();
+  private sortByType(
+    a: T,
+    b: T,
+    direction: string
+  ) {
+    if (b.type === a.type) {
+      return 0;
+    }
+    if (direction === OrderDirection.DESCENDING) {
+      return b.type > a.type ? 1 : -1;
+    } else {
+      return a.type > b.type ? 1 : -1;
+    }
+  }
 
-    this.legend.forEach((_, type) => typeMap.set(type, []));
-    this.annotationData.forEach((annotation) =>
-      typeMap.get(annotation.type).push(annotation)
-    );
-    this.annotationData = Array.from(typeMap.values()).reduce(
-      (accumulator, value) => accumulator.concat(value),
-      []
-    );
+  private groupDataByEntityType() {
+    this.annotationData.sort((a, b) => {
+      // TODO: Setting the default type sort direction to ascending, may want to change this in the future.
+      const sortByTypeResult = this.sortByType(a, b, OrderDirection.ASCENDING);
+      const sortByFrequencyResult = this.sortByFrequency(a, b, this.selectedOrderDirection);
+      return sortByTypeResult === 0 ? sortByFrequencyResult : sortByTypeResult;
+    });
   }
 
   // TODO: Effectively unused, but keeping because we might add it back in the future
@@ -357,6 +368,8 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
         filteredList.push(annotation);
       }
     });
+    // TODO: If we use this function in the future, need to refactor this to not use assignment! annotationData should only be assigned a
+    // value when the parent supplies a new input value.
     this.annotationData = unfilteredList.concat(filteredList);
   }
 
@@ -410,7 +423,7 @@ export class AnnotationFilterComponent implements OnInit, OnDestroy {
    * Sets visibility to false for all entities that are not within the range specified by the user. This DOES NOT redraw the cloud! The
    * calling function should bre responsible for the redraw.
    */
-  private filterByFrequency(annotation: AnnotationFilterEntity) {
+  private filterByFrequency(annotation: T) {
     const minimumValue = this.filtersForm.get('minimumValue').value;
 
     // TODO: Uncomment these if we bring back max frequency
