@@ -1,3 +1,3 @@
-app_environment: staging
+app_environment: demo
 elastic_file_content_index_id: file_demo
-container_registry: "gcr.io/able-goods-221820"
+container_registry: "lifelike.azurecr.io"
