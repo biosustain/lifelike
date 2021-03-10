@@ -318,9 +318,9 @@ export class WordCloudComponent implements OnDestroy {
       })
       .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
       .style('font-size', (d) => d.size + 'px')
-      .on('mouseover', () => tooltip.style('opacity', 1))
+      .on('mouseover', () => tooltip.style('display', 'block'))
       .on('mousemove', mousemove)
-      .on('mouseleave', () => tooltip.style('opacity', 0))
+      .on('mouseleave', () => tooltip.style('display', 'none'))
       .transition()
       .attr('transform', (d) => {
         return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
