@@ -9,6 +9,7 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { FilesystemService } from '../services/filesystem.service';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { element } from 'protractor';
+import { FilesystemObject, ProjectImpl } from '../models/filesystem-object';
 
 @Component({
   selector: 'app-object-tile-deck',
@@ -34,6 +35,11 @@ export class ObjectTileDeckComponent extends ObjectListComponent {
               elementRef: ElementRef,
               progressDialog: ProgressDialog) {
     super(router, snackBar, modalService, errorHandler, route, workspaceManager, actions, filesystemService, elementRef, progressDialog);
+  }
+
+  objectDragStart(event: DragEvent, object: FilesystemObject) {
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    object.addDataTransferData(dataTransfer);
   }
 
 }
