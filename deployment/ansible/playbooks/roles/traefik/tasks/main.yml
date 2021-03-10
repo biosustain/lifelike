@@ -29,16 +29,11 @@
     }
 
 - name: Copy traefik services file
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+  copy:
+    src: "files/services.yml"
+    dest: "/opt/traefik/services.yml"
     owner: ***ARANGO_USERNAME***
     group: ***ARANGO_USERNAME***
-  with_items:
-    - {
-        src: "templates/services.yml",
-        dest: "/opt/traefik/services.yml",
-    }
 
 - name: Build and deploy traefik
   community.general.docker_container:
@@ -54,3 +49,11 @@
         - /opt/traefik/services.yml:/services.yml
         - /opt/traefik/acme.json:/acme.json
         - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.dashboard.rule: "Host(`azure.***ARANGO_DB_NAME***.bio`)"
+      traefik.http.routers.dashboard.tls: "true"
+      traefik.http.routers.dashboard.tls.certresolver: le
+      traefik.http.routers.dashboard.service: api@internal
+      traefik.http.routers.dashboard.middlewares: admin-auth
+      traefik.http.middlewares.admin-auth.basicauth.users: "{{ traefik_credentials }}"
