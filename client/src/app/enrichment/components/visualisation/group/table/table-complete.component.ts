@@ -15,6 +15,7 @@ import { SortableTableHeaderDirective, SortEvent } from '../../../../../shared/d
 export class TableCompleteComponent implements OnInit, OnChanges {
   data$: Observable<any[]>;
   total$: Observable<number>;
+  showInsignificant: false;
   @Input() data;
   @Input() itemsPerPage;
   @Input() showMore = true;
@@ -28,7 +29,7 @@ export class TableCompleteComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.service.pageSize = this.showMore ? 15 : 5;
-    this.service.inputData = this.data;
+    this.setData();
   }
 
   ngOnChanges({showMore, data}: SimpleChanges) {
@@ -44,8 +45,20 @@ export class TableCompleteComponent implements OnInit, OnChanges {
       this.service.pageSize = 15;
     }
     if (data) {
-      this.service.inputData = this.data;
+      this.setData();
     }
+  }
+
+  setData() {
+    if (this.showInsignificant) {
+      this.service.inputData = this.data;
+    } else {
+      this.service.inputData = this.data.filter(d => d['q-value'] <= 0.05);
+    }
+  }
+
+  toggleShowInsignificant(e) {
+    this.setData();
   }
 
   onSort({column, direction}: SortEvent) {
