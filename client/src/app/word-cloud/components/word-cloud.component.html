@@ -57,7 +57,7 @@
                    placement="bottom-right top-right">
                 <button class="btn btn-secondary" ngbDropdownToggle>
                   <i class="fas fa-sort-size-down"></i>
-                    <span *ngIf="sortingChanged" class="mx-2">{{sorting.name}}</span>
+                    <span class="mx-2">{{sorting.name}}</span>
                 </button>
                 <app-sorting-algorithms (changeSorting)="sort($event)" [selected]="sorting" ngbDropdownMenu></app-sorting-algorithms>
               </div>

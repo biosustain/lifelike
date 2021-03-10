@@ -42,7 +42,6 @@ export class WordCloudComponent implements OnDestroy {
   MAX_ALGO_INPUT = 1000;
 
   sorting: SortingAlgorithm = defaultSortingAlgorithm;
-  sortingChanged = false;
 
   keywordsShown = true;
 
@@ -93,7 +92,6 @@ export class WordCloudComponent implements OnDestroy {
   }
 
   sort(algorithm) {
-    this.sortingChanged = true;
     this.sorting = algorithm;
     this.initWordCloud();
   }
