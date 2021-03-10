@@ -37,8 +37,8 @@ export class ObjectCreationService {
    * @param annotationOptions options for the annotation process
    * @return the created object
    */
-  protected executePutWithProgressDialog(request: ObjectCreateRequest,
-                                         annotationOptions: PDFAnnotationGenerationRequest = {}):
+  executePutWithProgressDialog(request: ObjectCreateRequest,
+                               annotationOptions: PDFAnnotationGenerationRequest = {}):
     Observable<FilesystemObject> {
     const progressObservable = new BehaviorSubject<Progress>(new Progress({
       status: 'Preparing...',
@@ -99,7 +99,6 @@ export class ObjectCreationService {
     dialogRef.componentInstance.object = target;
     const keys: Array<keyof CreateDialogOptions> = [
       'promptUpload',
-      'promptAnnotationOptions',
       'forceAnnotationOptions',
       'promptParent',
       'parentLabel',
@@ -126,7 +125,6 @@ export class ObjectCreationService {
 export interface CreateDialogOptions {
   title?: string;
   promptUpload?: boolean;
-  promptAnnotationOptions?: boolean;
   forceAnnotationOptions?: boolean;
   promptParent?: boolean;
   parentLabel?: string;

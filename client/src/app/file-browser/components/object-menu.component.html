@@ -11,9 +11,6 @@
     <button ngbDropdownItem (click)="reannotate([object])" *ngIf="object.isAnnotatable">
       Re-annotate
     </button>
-    <button ngbDropdownItem (click)="openAnnotationDialog([object])" *ngIf="object.isAnnotatable">
-      Re-annotate with...
-    </button>
   </ng-container>
   <ng-container *ngIf="object.isVersioned">
     <button ngbDropdownItem (click)="openVersionHistoryDialog(object)" *ngIf="!showRestore">
@@ -54,6 +51,12 @@
   </ng-container>
   <button ngbDropdownItem (click)="openShareDialog(object)">
     Copy{{ nameEntity && object.isDirectory ? ' folder' : ''}} link...
+  </button>
+  <button *ngIf="object.uploadUrl" ngbDropdownItem (click)="openLink(object.uploadUrl)">
+    Open external URL...
+  </button>
+  <button *ngIf="object.doi" ngbDropdownItem (click)="openLink(object.doi)">
+    Open DOI...
   </button>
   <ng-container *ngIf="object.isNavigable">
     <button ngbDropdownItem [appLink]="['/file-navigator', object.project.name, object.hashId]"

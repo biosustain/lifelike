@@ -35,8 +35,17 @@
       <li *ngIf="object.public">
         <i class="fa fa-fw text-icon fa-globe"></i> Public
       </li>
-      <li *ngIf="object.annotationDate">
-        <strong>Annotated:</strong> {{ object.annotationDate | date: 'short' }}
+      <li *ngIf="object.isAnnotatable">
+        <strong>Annotated:</strong>
+        <span *ngIf="object.annotationDate; else noAnnotations">
+          {{ object.annotationDate | date: 'short' }}
+        </span>
+        <ng-template #noAnnotations>
+          <em class="text-muted">Not annotated</em>
+        </ng-template>
+      </li>
+      <li *ngIf="object.isAnnotatable">
+        <strong>Annotation Organism:</strong>&nbsp;<app-organism [organism]="object.fallbackOrganism" [highlightTerms]="highlightTerms"></app-organism>
       </li>
       <li *ngIf="object.modificationDate">
         <strong>Modified:</strong> {{ object.modificationDate | date: 'short' }}
@@ -45,7 +54,13 @@
         <strong>Created:</strong> {{ object.creationDate | date: 'short' }}
       </li>
       <li *ngIf="object.user">
-        <strong>Author:</strong> <app-user [user]="object.user"></app-user>
+        <strong>Author:</strong>&nbsp;<app-user [user]="object.user" [highlightTerms]="highlightTerms"></app-user>
+      </li>
+      <li *ngIf="object.doi" class="text-truncate">
+        <strong>DOI:</strong>&nbsp;<a [href]="object.doi" target="_blank">{{ object.doi }}</a>
+      </li>
+      <li *ngIf="object.uploadUrl" class="text-truncate">
+        <strong>Source URL:</strong>&nbsp;<a [href]="object.uploadUrl" target="_blank">{{ object.uploadUrl }}</a>
       </li>
     </ul>
     <div class="mt-3" *ngIf="objectControls">

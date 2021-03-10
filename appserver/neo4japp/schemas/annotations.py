@@ -62,7 +62,7 @@ class AnnotationGenerationResultSchema(CamelCaseSchema):
 
 
 class MultipleAnnotationGenerationResponseSchema(CamelCaseSchema):
-    results = fields.Dict(keys=fields.String(),
+    mapping = fields.Dict(keys=fields.String(),
                           values=fields.Nested(AnnotationGenerationResultSchema))
     missing = fields.List(fields.String)
 
@@ -107,7 +107,9 @@ class BaseAnnotationSchema(Schema):
 # ========================================
 
 class SystemAnnotationMetaSchema(BaseAnnotationMetaSchema):
-    pass
+    isExcluded = fields.Boolean(allow_none=True)
+    exclusionReason = fields.String(allow_none=True)
+    exclusionComment = fields.String(allow_none=True)
 
 
 class SystemAnnotationSchema(BaseAnnotationSchema):

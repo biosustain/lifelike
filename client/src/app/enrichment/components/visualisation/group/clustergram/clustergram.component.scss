@@ -1,0 +1,29 @@
+table {
+  // 100% - rotated text overflow estimate
+  width: calc(100% - 3em);
+
+  thead tr {
+    height: 5em;
+
+    th {
+      position: relative;
+
+      &[scope="col"] {
+        padding: 0;
+
+        & span {
+          width: 1.5em;
+          overflow-wrap: initial;
+          display: block;
+          transform-origin: 0 100%;
+          transform: translateX(100%) rotate(-45deg);
+        }
+      }
+    }
+  }
+
+  tbody td.match {
+    background-color: red;
+    border-left: 1px solid white;
+  }
+}
