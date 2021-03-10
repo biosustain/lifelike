@@ -285,7 +285,8 @@ export class WordCloudComponent implements OnDestroy {
       .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
 
     // Get the tooltip for the word cloud text (this should already be present in the DOM)
-    const tooltip = d3.select(`#${this.id}-word-cloud-tooltip`);
+    const tooltip = d3.select(`#${this.id}-word-cloud-tooltip`)
+      .style('display', 'none');
 
     // Also create a function for the tooltip content, to be shown when the text is hovered over
     const componentId = this.id;
