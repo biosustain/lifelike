@@ -1,14 +1,5 @@
 http:
   routers:
-    dashboard:
-      rule: "Host(`azure.lifelike.bio`)"
-      service: api@internal
-      middlewares:
-        - admin-auth
-      tls:
-        certResolver: "le"
-        domains:
-          - main: "azure.lifelike.bio"
     lifelike-qa:
       entryPoints:
         - websecure
@@ -50,10 +41,3 @@ http:
       loadBalancer:
         servers:
           - url: "http://10.0.100.8"
-
-
-  middlewares:
-    admin-auth:
-      basicAuth:
-        users:
-          - "{{ traefik_credentials }}"
