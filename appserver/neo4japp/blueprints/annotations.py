@@ -58,7 +58,7 @@ from neo4japp.utils.logger import UserEventLog
 from .filesystem import bp as filesystem_bp
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from neo4japp.schemas.annotations import (
-    AnnotationMethod,
+    AnnotationConfigurations,
     AnnotationGenerationRequestSchema,
     RefreshEnrichmentAnnotationsRequestSchema,
     MultipleAnnotationGenerationResponseSchema,
@@ -462,7 +462,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     annotations, version = self._annotate(
                         file=file,
                         cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
-                        method=annotation_configs,
+                        configs=annotation_configs,
                         organism=organism or file.fallback_organism,
                         user_id=current_user.id,
                     )
@@ -592,14 +592,17 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             'missing': missing,
         }))
 
-    def _annotate(self, file: Files,
-                  cause: AnnotationChangeCause,
-                  organism: Optional[FallbackOrganism] = None,
-                  method: Dict[str, AnnotationMethod] = None,
-                  user_id: int = None):
+    def _annotate(
+        self,
+        file: Files,
+        cause: AnnotationChangeCause,
+        configs: AnnotationConfigurations,
+        organism: Optional[FallbackOrganism] = None,
+        user_id: int = None
+    ):
         """Annotate PDF files."""
         annotations_json = create_annotations_from_pdf(
-            annotation_method=method,
+            annotation_configs=configs,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
             document=file,
@@ -630,11 +633,11 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         self,
         text: str,
         organism: Optional[FallbackOrganism] = None,
-        method: Dict[str, AnnotationMethod] = None
+        configs: AnnotationConfigurations = None
     ):
         """Annotate text string."""
         annotations_json = create_annotations_from_text(
-            annotation_method=method,
+            annotation_configs=configs,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
             text=text
@@ -646,12 +649,12 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         text: str,
         enrichment_mappings: Dict[int, dict],
         organism: Optional[FallbackOrganism] = None,
-        method: Dict[str, AnnotationMethod] = None
+        configs: AnnotationConfigurations = None
     ):
         """Annotate all text in enrichment table."""
 
         annotations_json = create_annotations_from_enrichment_table(
-            annotation_method=method,
+            annotation_configs=configs,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
             text=text,

@@ -6,10 +6,14 @@ from neo4japp.models import Files, Projects
 from neo4japp.models.files import FilePrivileges, FileLock
 from neo4japp.models.projects import ProjectPrivileges
 from neo4japp.schemas.account import UserSchema
-from neo4japp.schemas.annotations import AnnotationMethod, FallbackOrganismSchema
+from neo4japp.schemas.annotations import AnnotationConfigurations, FallbackOrganismSchema
 from neo4japp.schemas.base import CamelCaseSchema
-from neo4japp.schemas.common import ResultListSchema, ResultMappingSchema, SingleResultSchema, \
+from neo4japp.schemas.common import (
+    ResultListSchema,
+    ResultMappingSchema,
+    SingleResultSchema,
     RankedItemSchema
+)
 from neo4japp.schemas.fields import SortField, FileUploadField, NiceFilenameString
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
@@ -134,10 +138,7 @@ class FileSchema(CamelCaseSchema):
     recycled = fields.Boolean()
     effectively_recycled = fields.Boolean()
     fallback_organism = fields.Nested(FallbackOrganismSchema)
-    annotation_configs = fields.Dict(
-        keys=fields.String(),
-        values=fields.Nested(AnnotationMethod)
-    )
+    annotation_configs = fields.Nested(AnnotationConfigurations)
 
     def get_user_privilege_filter(self):
         try:
@@ -230,9 +231,7 @@ class BulkFileUpdateRequestSchema(CamelCaseSchema):
     description = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     fallback_organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
-    annotation_configs = fields.Dict(
-        keys=fields.String(),
-        values=fields.Nested(AnnotationMethod, required=True), allow_none=True)
+    annotation_configs = fields.Nested(AnnotationConfigurations)
     public = fields.Boolean(default=False)
     content_value = fields.Field(required=False)
 
