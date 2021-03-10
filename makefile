@@ -4,7 +4,7 @@ LMDB_PATH = $(APPSERVER_PATH)/neo4japp/services/annotations/lmdb
 
 # Fetches the password to unlock Ansible vault files
 ansible-secrets:
-	gsutil cp gs://kg-secrets/.vault_secrets_pw $(ANSIBLE_PATH)
+	az storage blob download --account-name lifelike --container-name lifelike-secrets --name .vault_secrets_pw  --file $(ANSIBLE_PATH)/.vault_secrets_pw
 
 # Fetches the credentials (env file) for Azure services
 azure-secrets:
