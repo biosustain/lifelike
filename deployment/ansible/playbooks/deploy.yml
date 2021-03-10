@@ -69,8 +69,10 @@
           APP_VERSION: "{{ app_version }}"
           APP_BUILD_NUMBER: "{{ app_build_number|quote }}"
           LMDB_HOME_FOLDER: "{{ LMDB_HOME_FOLDER }}"
+          SECRET_KEY: "{{ SECRET_KEY }}"
           AZURE_ACCOUNT_STORAGE_NAME: "{{ AZURE_ACCOUNT_STORAGE_NAME }}"
           AZURE_ACCOUNT_STORAGE_KEY: "{{ AZURE_ACCOUNT_STORAGE_KEY }}"
+          AZURE_BLOB_STORAGE_URL: "{{ AZURE_BLOB_STORAGE_URL }}"
         comparisons:
           image: strict
           env: strict
