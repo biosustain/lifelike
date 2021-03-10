@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, ViewEncapsulation, OnInit } from '@angular/core';
 
 import { uniqueId } from 'lodash';
 
@@ -14,6 +14,7 @@ import { defaultSortingAlgorithm, SortingAlgorithm } from '../sorting/sorting-al
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
 import { NodeLegend } from '../../interfaces';
+import { first, skip } from 'rxjs/operators';
 
 @Component({
   selector: 'app-word-cloud',
@@ -21,7 +22,7 @@ import { NodeLegend } from '../../interfaces';
   styleUrls: ['./word-cloud.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class WordCloudComponent implements OnDestroy {
+export class WordCloudComponent implements OnInit, OnDestroy {
   id = uniqueId('WordCloudComponent-');
 
   @Input() title = 'Entity Cloud';
@@ -29,7 +30,8 @@ export class WordCloudComponent implements OnDestroy {
   @Input() clickableWords = false;
   @Output() wordOpen = new EventEmitter<WordOpen>();
 
-  loadTask: BackgroundTask<[], [NodeLegend, string]>;
+  loadTask: BackgroundTask<any, [NodeLegend, string]>;
+  annotationsLoadedInitSub: Subscription;
   annotationsLoadedSub: Subscription;
 
   wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
@@ -40,6 +42,8 @@ export class WordCloudComponent implements OnDestroy {
 
   WORD_CLOUD_MARGIN = 10;
   MAX_ALGO_INPUT = 1000;
+  FONT_MIN = 12;
+  FONT_MAX = 48;
 
   sorting: SortingAlgorithm = defaultSortingAlgorithm;
 
@@ -50,24 +54,29 @@ export class WordCloudComponent implements OnDestroy {
     this.initWordCloud();
   }
 
+  ngOnInit() {
+    this.getAnnotations();
+  }
+
   ngOnDestroy() {
+    this.annotationsLoadedInitSub.unsubscribe();
     this.annotationsLoadedSub.unsubscribe();
   }
 
   initDataFetch() {
-    this.loadTask = new BackgroundTask(() => {
+    this.loadTask = new BackgroundTask(({hashId, sortingId}) => {
       return combineLatest(
         this.legendService.getAnnotationLegend(),
-        this.annotationsService.getSortedAnnotations(this.object.hashId, this.sorting.id),
+        this.annotationsService.getSortedAnnotations(hashId, sortingId),
       );
     });
   }
 
   initWordCloud() {
     this.initDataFetch();
-    this.annotationsLoadedSub = this.loadTask.results$.subscribe(({
-                                                                    result: [legend, annotationExport],
-                                                                  }) => {
+    this.annotationsLoadedInitSub = this.loadTask.results$.pipe(first()).subscribe(({
+                                                                                      result: [legend, annotationExport],
+                                                                                    }) => {
       // Reset legend
       Object.keys(legend).forEach(label => {
         this.legend.set(label.toLowerCase(), legend[label].color);
@@ -76,8 +85,17 @@ export class WordCloudComponent implements OnDestroy {
       this.setAnnotationData(annotationExport);
       this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), true);
     });
+    this.annotationsLoadedSub = this.loadTask.results$.pipe(skip(1)).subscribe(({
+                                                                                  result: [legend, annotationExport],
+                                                                                }) => {
+      // Reset legend
+      Object.keys(legend).forEach(label => {
+        this.legend.set(label.toLowerCase(), legend[label].color);
+      });
 
-    this.getAnnotations();
+      this.setAnnotationData(annotationExport);
+      this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), false);
+    });
   }
 
   getAnnotationIdentifier(annotation: WordCloudAnnotationFilterEntity) {
@@ -88,12 +106,12 @@ export class WordCloudComponent implements OnDestroy {
    * Sends a request to the BackgroundTask object for new annotations data.
    */
   getAnnotations() {
-    this.loadTask.update([]);
+    this.loadTask.update({hashId: this.object.hashId, sortingId: this.sorting.id});
   }
 
   sort(algorithm) {
     this.sorting = algorithm;
-    this.initWordCloud();
+    this.getAnnotations();
   }
 
   setAnnotationData(annotationExport: string) {
@@ -381,10 +399,10 @@ export class WordCloudComponent implements OnDestroy {
     wordElements
       .enter()
       .append('text')
+      .text((d) => d.text)
       .merge(wordElements)
       .style('fill', (d) => d.color)
       .attr('text-anchor', 'middle')
-      .text((d) => d.text)
       .on('click', (item: WordCloudAnnotationFilterEntity) => {
         this.wordOpen.emit({
           entity: item,
@@ -408,6 +426,21 @@ export class WordCloudComponent implements OnDestroy {
   }
 
   /**
+   * Given dataset return normalised font-size generator
+   * @param data represents a collection of AnnotationFilterEntity data
+   */
+  fontSize(data) {
+    const frequencies = data.map(annotation => annotation.frequency as number);
+    const maximum = Math.max(...frequencies);
+    const minimum = Math.min(...frequencies);
+    const fontDelta = this.FONT_MAX - this.FONT_MIN;
+    return d => {
+      const fraction = (d.frequency - minimum) / (maximum - minimum) || 0;
+      return (fraction * fontDelta) + this.FONT_MIN;
+    };
+  }
+
+  /**
    * Draws a word cloud with the given AnnotationFilterEntity inputs using the d3.layout.cloud library.
    * @param data represents a collection of AnnotationFilterEntity data
    */
@@ -416,17 +449,13 @@ export class WordCloudComponent implements OnDestroy {
     const {width, height} = this.getCloudSvgDimensions();
 
     const maxAlgoInputSlice = data.length > this.MAX_ALGO_INPUT ? data.slice(0, this.MAX_ALGO_INPUT) : data;
-    const frequencies = maxAlgoInputSlice.map(annotation => annotation.frequency as number);
-    const maximum = Math.max(...frequencies);
-    const minimum = Math.min(...frequencies);
 
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
     const layout = cloud()
       .size([width, height])
       .words(maxAlgoInputSlice)
       .padding(3)
-      // max ~48px, min ~12px
-      .fontSize((d) => (((d.frequency - minimum) / (maximum - minimum)) * 36) + 12)
+      .fontSize(this.fontSize(maxAlgoInputSlice))
       .rotate(() => 0)
       // TODO: Maybe in the future we can allow the user to define their own rotation intervals,
       // but for now just keep it simple and don't rotate the words
