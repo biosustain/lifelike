@@ -51,6 +51,7 @@ deepdiff = "*"
 timeflake = "*"
 azure-storage-file = "*"
 scipy = "*"
+azure-storage-blob = "*"
 
 [requires]
 python_version = "3.8.2"
