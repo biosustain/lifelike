@@ -100,16 +100,19 @@ class AccountView(MethodView):
             g.current_user.has_role('private-data-access')
         if not admin_or_private_access:
             raise ServerException(
-                'Cannot Create New User',
-                'You do not have sufficient privileges.')
+                title='Cannot Create New User',
+                message='You do not have sufficient privileges.',
+                code=400)
         if db.session.query(AppUser.query_by_email(params['email']).exists()).scalar():
             raise ServerException(
-                'Cannot Create New User',
-                f'E-mail {params["email"]} already taken.')
+                title='Cannot Create New User',
+                message=f'E-mail {params["email"]} already taken.',
+                code=400)
         elif db.session.query(AppUser.query_by_username(params["username"]).exists()).scalar():
             raise ServerException(
-                'Cannot Create New User',
-                f'Username {params["username"]} already taken.')
+                title='Cannot Create New User',
+                message=f'Username {params["username"]} already taken.',
+                code=400)
 
         app_user = AppUser(
             username=params['username'],
