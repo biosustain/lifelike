@@ -21,7 +21,7 @@ class EnrichmentVisualisationService(KgService):
         raise NotImplementedError
 
     def query_go_term(self, organism_id):
-        return self.graph.run(
+        r = self.graph.run(
                 """
                 MATCH (:Taxonomy {id:$id})-
                        [:HAS_TAXONOMY]-(n:Gene)-[:GO_LINK]-(g:db_GO)
@@ -33,6 +33,10 @@ class EnrichmentVisualisationService(KgService):
                 """,
                 id=organism_id
         ).data()
+        # raise if empty - should never happen so fail fast
+        if not r:
+            raise ValueError
+        return r
 
     def get_go_terms(self, organism):
         cache_id = f"get_go_terms_{organism}"
