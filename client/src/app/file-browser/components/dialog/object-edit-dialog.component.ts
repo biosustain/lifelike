@@ -6,10 +6,6 @@ import { FilesystemObject } from '../../models/filesystem-object';
 import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
 import { AnnotationConfigs, ObjectContentSource, ObjectCreateRequest } from '../../schema';
 import { OrganismAutocomplete } from '../../../interfaces';
-import { select, Store } from '@ngrx/store';
-import { AuthSelectors } from '../../../auth/store';
-import { State } from 'app/root-store';
-import { Observable } from 'rxjs';
 import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from '../../../interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
@@ -25,14 +21,12 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   @Input() title = 'Edit Item';
   @Input() parentLabel = 'Location';
   @Input() promptUpload = false;
-  @Input() promptAnnotationOptions = true;
   @Input() forceAnnotationOptions = false;
   @Input() promptParent = false;
 
   readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
   readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(
     key => NLPANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
-  readonly userRoles$: Observable<string[]>;
 
   private _object: FilesystemObject;
   private filePossiblyAnnotatable = false;
@@ -90,10 +84,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   constructor(modal: NgbActiveModal,
               messageDialog: MessageDialog,
-              store: Store<State>,
               protected readonly modalService: NgbModal) {
     super(modal, messageDialog);
-    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
   }
 
   get object() {
@@ -109,6 +101,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       description: value.description || '',
       public: value.public || false,
       mimeType: value.mimeType,
+      organism: value.fallbackOrganism,
     });
     if (!value.parent) {
       this.promptParent = true;
@@ -157,23 +150,6 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   getValue(): ObjectEditDialogValue {
     const value = this.form.value;
 
-    const objectChanges = {
-      parent: value.parent,
-      filename: value.filename,
-      description: value.description,
-      public: value.public,
-      mimeType: value.mimeType,
-    };
-
-    const request: ObjectCreateRequest = {
-      filename: value.filename,
-      parentHashId: value.parent ? value.parent.hashId : null,
-      description: value.description,
-      public: value.public,
-      mimeType: value.mimeType,
-      ...this.getFileContentRequest(value),
-    };
-
     const annotationConfigs = {};
     for (const [modelName, config] of Object.entries(value.annotationConfigs)) {
       const model = {};
@@ -184,6 +160,27 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       }
       annotationConfigs[modelName] = model;
     }
+
+    const objectChanges: Partial<FilesystemObject> = {
+      parent: value.parent,
+      filename: value.filename,
+      description: value.description,
+      public: value.public,
+      mimeType: value.mimeType,
+      fallbackOrganism: value.organism,
+      annotationConfigs,
+    };
+
+    const request: ObjectCreateRequest = {
+      filename: value.filename,
+      parentHashId: value.parent ? value.parent.hashId : null,
+      description: value.description,
+      public: value.public,
+      mimeType: value.mimeType,
+      fallbackOrganism: value.organism,
+      annotationConfigs,
+      ...this.getFileContentRequest(value),
+    };
 
     return {
       object: this.object,

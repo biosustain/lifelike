@@ -16,6 +16,7 @@ dist/
 Thumbs.db
 .bash_history
 .local/
+.run
 
 # IDE - VSCode
 .vscode/

@@ -70,13 +70,13 @@ export class FilesystemObjectTargetDirective {
 
   @HostListener('drop', ['$event'])
   drop(event: DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-
     this.dropTargeted = false;
 
     const valid = this.canAcceptDrop(event);
     if (valid) {
+      event.preventDefault();
+      event.stopPropagation();
+
       const data = event.dataTransfer.getData(FILESYSTEM_OBJECT_TRANSFER_TYPE);
       if (data !== '') {
         const transferData: FilesystemObjectTransferData = JSON.parse(data);
@@ -128,7 +128,6 @@ export class FilesystemObjectTargetDirective {
           title: 'Upload File',
           promptUpload: false,
           promptParent: true,
-          promptAnnotationOptions: true,
           forceAnnotationOptions: true, // This is not correct (we should detect this value)
           request: {
             contentValue: file,
