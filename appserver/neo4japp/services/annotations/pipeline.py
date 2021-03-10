@@ -15,7 +15,6 @@ from neo4japp.database import (
 from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.constants import (
     EntityType,
-    DEFAULT_ANNOTATION_CONFIGS,
     MAX_ABBREVIATION_WORD_LENGTH
 )
 from neo4japp.services.annotations.data_transfer_objects import (
@@ -192,10 +191,6 @@ def _create_annotations(
 
     start = time.time()
 
-    if not annotation_method:
-        # will cause default to rules based
-        annotation_method = DEFAULT_ANNOTATION_CONFIGS
-
     # identify entities w/ NLP first
     nlp_results = get_nlp_entities(
         text=pdf_text,
@@ -203,8 +198,7 @@ def _create_annotations(
 
     # if chemical used NLP then set compound too
     if annotation_method[EntityType.CHEMICAL.value]['nlp']:
-        annotation_method[EntityType.COMPOUND.value] = DEFAULT_ANNOTATION_CONFIGS[EntityType.COMPOUND.value]  # noqa
-        annotation_method[EntityType.COMPOUND.value]['nlp'] = True
+        annotation_method[EntityType.COMPOUND.value] = annotation_method[EntityType.CHEMICAL.value]
 
     start_lmdb_time = time.time()
     entity_results = entity_recog.identify(
@@ -258,7 +252,7 @@ def _create_annotations(
 
 
 def create_annotations_from_pdf(
-    annotation_method,
+    annotation_configs,
     specified_organism_synonym,
     specified_organism_tax_id,
     document,
@@ -286,7 +280,7 @@ def create_annotations_from_pdf(
     )
 
     annotations = _create_annotations(
-        annotation_method=annotation_method,
+        annotation_method=annotation_configs['annotation_methods'],
         specified_organism_synonym=specified_organism_synonym,
         specified_organism_tax_id=specified_organism_tax_id,
         filename=filename,
@@ -299,7 +293,7 @@ def create_annotations_from_pdf(
 
 
 def create_annotations_from_text(
-    annotation_method,
+    annotation_configs,
     specified_organism_synonym,
     specified_organism_tax_id,
     text
@@ -326,7 +320,7 @@ def create_annotations_from_text(
     )
 
     annotations = _create_annotations(
-        annotation_method=annotation_method,
+        annotation_method=annotation_configs['annotation_methods'],
         specified_organism_synonym=specified_organism_synonym,
         specified_organism_tax_id=specified_organism_tax_id,
         filename='text-extract',
@@ -339,7 +333,7 @@ def create_annotations_from_text(
 
 
 def create_annotations_from_enrichment_table(
-    annotation_method,
+    annotation_configs,
     specified_organism_synonym,
     specified_organism_tax_id,
     enrichment_mappings,
@@ -366,7 +360,7 @@ def create_annotations_from_enrichment_table(
         extra=EventLog(event_type='annotations').to_dict()
     )
     annotations = _create_annotations(
-        annotation_method=annotation_method,
+        annotation_method=annotation_configs['annotation_methods'],
         specified_organism_synonym=specified_organism_synonym,
         specified_organism_tax_id=specified_organism_tax_id,
         filename='text-extract',
