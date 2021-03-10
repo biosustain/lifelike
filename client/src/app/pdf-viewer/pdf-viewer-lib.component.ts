@@ -328,6 +328,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
               at: 'bottom center',
               viewport: true,
               target: this,
+              container: jQuery(overlayContainer)
             },
             style: {
               classes: 'qtip-bootstrap',
@@ -338,10 +339,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
             },
             show: {
               delay: 10,
+              event: 'click',
             },
             hide: {
               fixed: true,
               delay: 150,
+		          event: 'unfocus'
             },
           },
       );
@@ -739,6 +742,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
               },
             },
             show: {
+              event: 'click',
               delay: 10,
             },
             hide: {
