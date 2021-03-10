@@ -3,30 +3,48 @@ http:
     ***ARANGO_DB_NAME***-qa:
       entryPoints:
         - websecure
-      rule: "Host(`azureqa.***ARANGO_DB_NAME***.bio`)"
+      rule: "Host(`qa.***ARANGO_DB_NAME***.bio`)"
       service: ***ARANGO_DB_NAME***-qa-service
       tls:
         certResolver: "le"
         domains:
-          - main: "azureqa.***ARANGO_DB_NAME***.bio"
+          - main: "qa.***ARANGO_DB_NAME***.bio"
     ***ARANGO_DB_NAME***-staging:
       entryPoints:
         - websecure
-      rule: "Host(`azurestaging.***ARANGO_DB_NAME***.bio`)"
+      rule: "Host(`staging.***ARANGO_DB_NAME***.bio`)"
       service: ***ARANGO_DB_NAME***-staging-service
       tls:
         certResolver: "le"
         domains:
-          - main: "azurestaging.***ARANGO_DB_NAME***.bio"
+          - main: "staging.***ARANGO_DB_NAME***.bio"
     ***ARANGO_DB_NAME***-prod:
       entryPoints:
         - websecure
-      rule: "Host(`azureprod.***ARANGO_DB_NAME***.bio`)"
+      rule: "Host(`***ARANGO_DB_NAME***.bio`)"
       service: ***ARANGO_DB_NAME***-prod-service
       tls:
         certResolver: "le"
         domains:
-          - main: "azureprod.***ARANGO_DB_NAME***.bio"
+          - main: "***ARANGO_DB_NAME***.bio"
+    ***ARANGO_DB_NAME***-demo:
+      entryPoints:
+        - websecure
+      rule: "Host(`demo.***ARANGO_DB_NAME***.bio`)"
+      service: ***ARANGO_DB_NAME***-demo-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "demo.***ARANGO_DB_NAME***.bio"
+    ***ARANGO_DB_NAME***-test:
+      entryPoints:
+        - websecure
+      rule: "Host(`test.***ARANGO_DB_NAME***.bio`)"
+      service: ***ARANGO_DB_NAME***-test-service
+      tls:
+        certResolver: "le"
+        domains:
+          - main: "test.***ARANGO_DB_NAME***.bio"
 
   services:
     ***ARANGO_DB_NAME***-qa-service:
@@ -41,3 +59,11 @@ http:
       loadBalancer:
         servers:
           - url: "http://10.0.100.8"
+    ***ARANGO_DB_NAME***-demo-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.100.10"
+    ***ARANGO_DB_NAME***-test-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.100.9"

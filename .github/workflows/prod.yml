@@ -5,7 +5,7 @@ on:
     release:
       types: [published]
     tags:
-      - azureprod
+      - prod
 
 jobs:
   build:
@@ -58,6 +58,18 @@ jobs:
           image_tag: ${{ github.sha }},latest
           context: ./client
           dockerfile: ./Dockerfile
+
+      - name: Build Filebeat Image
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          username: ${{ secrets.AZURE_CR_USERNAME }}
+          password: ${{ secrets.AZURE_CR_PASSWORD }}
+          registry: ***ARANGO_DB_NAME***.azurecr.io
+          image_name: filebeat
+          image_tag: ${{ github.sha }},latest
+          context: ./filebeat
+          dockerfile: ./Dockerfile
+          build_extra_args: "--build-arg=CONFIG_FILE=filebeat.prod.yml"
 
   deploy:
     name: Deploy
