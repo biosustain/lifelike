@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, EMPTY as empty, merge, of, Subject, Subscription } from 'rxjs';
 import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 
-import { DataSet } from 'vis-network';
+import { DataSet } from 'vis-data';
 
 import { isArray, isNullOrUndefined } from 'util';
 
