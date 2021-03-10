@@ -1,6 +1,7 @@
 <ng-container *ngIf="objects != null">
   <div class="tile-deck tile-deck-{{ tileDeckSize }}">
-    <div *ngFor="let o of objects.view" class="tile d-flex flex-column">
+    <div *ngFor="let o of objects.view" class="tile d-flex flex-column"
+         draggable="true" (dragstart)="objectDragStart($event, o)">
       <div class="flex-fill d-flex justify-content-center align-items-center my-2">
         <a [appLink]="o.getCommands(forEditing)" [newTab]="newTabObject"
            class="text-muted">
