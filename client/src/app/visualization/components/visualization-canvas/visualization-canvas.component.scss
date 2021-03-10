@@ -1,3 +1,7 @@
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+@import 'src/scss/variables';
+
 #network-viz {
     background-color: #F5F5F5;
 }
@@ -29,4 +33,12 @@
 }
 #sidenav-panel-close-btn:active {
   border: thin solid #dc3545;
+}
+
+.viz-canvas-legend-wrapper {
+    margin-left: $spacer;
+    margin-top: $spacer;
+    min-width: 6rem;
+    position: absolute;
+    z-index: 1;
 }

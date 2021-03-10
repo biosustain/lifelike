@@ -1,0 +1,14 @@
+<table class="table table-striped column-hover">
+    <thead>
+    <tr>
+        <th></th>
+        <th scope="col" *ngFor="let goTerm of goTerms"><span>{{goTerm.goId}}</span></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let entry of genes | keyvalue">
+        <th scope="row">{{ entry.key }}</th>
+        <td *ngFor="let value of entry.value" [ngClass]="{match:value}"></td>
+    </tr>
+    </tbody>
+</table>

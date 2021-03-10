@@ -37,7 +37,7 @@ export class ContentSearchService {
     ).pipe(
       map(data => {
         const resultList: ModelList<RankedItem<FilesystemObject>> = new ModelList();
-        resultList.collectionSize = data.results.length;
+        resultList.collectionSize = data.total;
         resultList.results.replace(data.results.map(
           itemData => ({
             rank: itemData.rank,

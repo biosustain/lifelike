@@ -32,6 +32,11 @@ docker-stop:
 docker-flask-seed:
 	docker-compose exec appserver flask seed
 
+clean-postgres:
+	# Quick command to drop the data in localhost postgres database
+	# Usually used to seed database from cloud backups
+	docker-compose exec pgdatabase psql -U postgres -h pgdatabase -d postgres -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
 clean-pyc:
 	find . -name '*.pyc' -delete
 

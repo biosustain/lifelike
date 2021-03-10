@@ -4,10 +4,9 @@ import {
   AnnotationChangeExclusionMeta,
   Meta,
 } from '../pdf-viewer/annotation-type';
-import { AnnotationMethods } from '../interfaces/annotation';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
 import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
-import { EnrichmentResult, EnrichmentTextMapping } from 'app/enrichment-tables/models/enrichment-document';
+import { EnrichmentResult, EnrichmentTextMapping } from 'app/enrichment/models/enrichment-document';
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 
 // ========================================
@@ -118,7 +117,7 @@ export type ObjectContentSource = { contentHashId: string }
  */
 export type ObjectSearchRequest = ({
   type: 'public';
-  mimeTypes: string[];
+  mimeTypes?: string[];
 } & PaginatedRequestOptions) | {
   type: 'linked';
   linkedHashId: string;
@@ -134,6 +133,8 @@ export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueReque
   description?: string;
   uploadUrl?: string;
   public?: boolean;
+  fallbackOrganism?: OrganismAutocomplete;
+  annotationConfigs?: AnnotationConfigs;
 }
 
 /**
@@ -216,6 +217,7 @@ export interface AnnotationGenerationResultData {
 
 // Requests
 // ----------------------------------------
+
 export interface AnnotationGenerationRequest {
   refresh?: boolean;
 }
