@@ -74,7 +74,9 @@
               No entities (annotations) found.
             </ngb-alert>
           </ng-container>
-          <div [id]="id + 'cloud-wrapper'" class="h-100 w-100 overflow-hidden"></div>
+          <div [id]="id + '-cloud-wrapper'" class="h-100 w-100 overflow-hidden">
+            <div [id]="id + '-word-cloud-tooltip'" class="tooltip word-cloud-tooltip"></div>
+          </div>
         </as-split-area>
         <as-split-area [visible]="filtersPanelOpened"
                        size="340"
