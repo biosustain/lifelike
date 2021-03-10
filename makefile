@@ -6,6 +6,14 @@ LMDB_PATH = $(APPSERVER_PATH)/neo4japp/services/annotations/lmdb
 ansible-secrets:
 	gsutil cp gs://kg-secrets/.vault_secrets_pw $(ANSIBLE_PATH)
 
+# Fetches the credentials (env file) for Azure services
+azure-secrets:
+	az storage blob download --account-name lifelike --container-name lifelike-secrets --name azure-secrets.env --file ./azure-secrets.env
+
+# Log into azure container registry
+container-login:
+	az acr login --name lifelike
+
 # Fetches the LMDB files needed to run the application
 lmdb:
 	docker-compose up -d appserver
@@ -14,16 +22,22 @@ lmdb:
 
 # Sets up everything you need to run the application
 # Mostly used for first time dev environment setup
-init: ansible-secrets lmdb docker-build
+init: ansible-secrets azure-secrets lmdb docker-build container-login
 
 docker-build:
 	docker-compose build
 
-docker-run: docker-stop lmdb
+# Runs enough containers for the application to function
+docker-run: docker-stop container-login azure-secrets lmdb
 	docker-compose up -d
 
+# Runs additional containers such as Kibana/Logstash/Filebeat
+docker-run-all: docker-stop container-login azure-secrets lmdb
+	docker-compose -f docker-compose.override.yml -f docker-compose.middleware.yml
+
 docker-stop:
-	docker-compose down
+	docker ps -aq | xargs docker stop
+	docker ps -aq | xargs docker rm
 
 docker-flask-seed:
 	docker-compose exec appserver flask seed
