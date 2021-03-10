@@ -1,0 +1,40 @@
+<form>
+    <div *ngIf="showMore" class="form-group form-inline">
+        Search: <input class="form-control ml-2" type="text" name="searchTerm"
+                                 [(ngModel)]="service.searchTerm"/>
+        <span class="ml-3" *ngIf="service.loading$ | async">Loading...</span>
+    </div>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th scope="col" appSortable="goId" (sort)="onSort($event)">GOID</th>
+            <th scope="col" appSortable="goTerm" (sort)="onSort($event)">GO Term</th>
+            <th scope="col" appSortable="geneNames" (sort)="onSort($event)">Associated genes</th>
+            <th scope="col" appSortable="p-value" (sort)="onSort($event)">p-value</th>
+        </tr>
+        </thead>
+        <tbody [ngClass]="{'line-clamp':!service.searchTerm}">
+        <tr *ngFor="let row of data$ | async; let i = index" [tabindex]="i">
+            <th scope="row">{{ "" + row.goId }}</th>
+                  <td><ngb-highlight [result]="row.goTerm" [term]="service.searchTerm"></ngb-highlight></td>
+                  <td><ngb-highlight [result]="row['geneNames'].join(', ')"
+                                     [term]="service.searchTerm"></ngb-highlight></td>
+                  <td><ngb-highlight [result]="row['p-value']"
+                                                             [term]="service.searchTerm"></ngb-highlight></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div *ngIf="showMore" class="d-flex justify-content-between p-2" style="flex-wrap: wrap;">
+        <ngb-pagination
+                [collectionSize]="(total$ | async)!" [(page)]="service.page" [pageSize]="service.pageSize">
+        </ngb-pagination>
+
+        <select class="custom-select" style="width: auto" name="pageSize" [(ngModel)]="service.pageSize">
+            <option [ngValue]="15">15 items per page</option>
+            <option [ngValue]="30">30 items per page</option>
+            <option [ngValue]="100">100 items per page</option>
+        </select>
+    </div>
+
+</form>
