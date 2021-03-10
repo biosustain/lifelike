@@ -14,6 +14,7 @@ from sqlalchemy.types import TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
+
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 logging.getLogger('azure').setLevel(logging.WARNING)
