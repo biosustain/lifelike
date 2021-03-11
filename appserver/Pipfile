@@ -52,6 +52,7 @@ timeflake = "*"
 azure-storage-file = "*"
 scipy = "*"
 azure-storage-blob = "*"
+statsmodels = "*"
 
 [requires]
 python_version = "3.8.2"
