@@ -9,7 +9,7 @@ bp = Blueprint('kg-statistics-api', __name__, url_prefix='/kg-statistics')
 @bp.route('', methods=['GET'])
 def get_knowledge_graph_statistics():
     stat_service = get_kg_statistics_service()
-    statistics = stat_service.get_cache_data('kg_statistics')
+    statistics = stat_service.get_cache_data('kg_statistics', prepend_default_prefix=True)
 
     if statistics:
         return statistics, 200

@@ -302,7 +302,8 @@ def refresh_kg_statistics(force):
     from neo4japp.database import get_kg_statistics_service
     stat_service = get_kg_statistics_service()
     try:
-        if stat_service.get_cache_data('kg_statistics') is None or force:
+        if stat_service.get_cache_data(
+             'kg_statistics', prepend_default_prefix=True) is None or force:
             statistics = stat_service.get_kg_statistics()
             stat_service.set_cache_data('kg_statistics', statistics)
             app.logger.info(f'Finish loading the statistics data into redis.')
