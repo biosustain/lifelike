@@ -4,6 +4,7 @@ import {
   EventEmitter,
   Input,
   OnDestroy,
+  OnInit,
   Output,
   ViewChild,
   ViewEncapsulation
@@ -17,12 +18,13 @@ import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filte
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { LegendService } from 'app/shared/services/legend.service';
 
-import * as d3 from 'd3';
-import * as cloud from 'd3.layout.cloud';
 import { defaultSortingAlgorithm, SortingAlgorithm } from '../sorting/sorting-algorithms';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
 import { NodeLegend } from '../../interfaces';
+
+import * as d3 from 'd3';
+import * as cloud from 'd3.layout.cloud';
 
 @Component({
   selector: 'app-word-cloud',
@@ -30,7 +32,7 @@ import { NodeLegend } from '../../interfaces';
   styleUrls: ['./word-cloud.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class WordCloudComponent implements OnDestroy {
+export class WordCloudComponent implements OnInit, OnDestroy {
   id = uniqueId('WordCloudComponent-');
 
   @Input() title = 'Entity Cloud';
@@ -62,7 +64,9 @@ export class WordCloudComponent implements OnDestroy {
   keywordsShown = true;
 
   constructor(protected readonly annotationsService: AnnotationsService,
-              protected readonly legendService: LegendService) {
+              protected readonly legendService: LegendService) {}
+
+  ngOnInit() {
     // Initialize the background task
     this.loadTask = new BackgroundTask(() => {
       return combineLatest(
