@@ -359,7 +359,10 @@ class FileAnnotationSortedView(FilesystemBaseView):
         files = self.get_nondeleted_recycled_children(
                 Files.id == file.id,
                 children_filter=and_(
-                        (Files.mime_type == 'application/pdf'),
+                        Files.mime_type.in_((
+                            'application/pdf',
+                            'vnd.lifelike.document/enrichment-table'
+                        )),
                         Files.recycling_date.is_(None)
                 ),
                 lazy_load_content=True
