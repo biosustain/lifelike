@@ -2,7 +2,15 @@
     <thead>
     <tr>
         <th></th>
-        <th scope="col" *ngFor="let goTerm of goTerms"><span>{{goTerm.goId}}</span></th>
+        <th scope="col" *ngFor="let goTerm of goTerms">
+            <div>
+            <span [ngbTooltip]="goTerm.goTerm"
+                  tooltipClass="rotatedTooltip"
+                  placement="bottom-left bottom-right"
+                  closeDelay="10">
+                {{goTerm.goId}}</span>
+            </div>
+        </th>
     </tr>
     </thead>
     <tbody>
