@@ -339,12 +339,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
             fixed: true,
             delay: 150,
             event: 'unfocus'
-          },
-          events: {
-            hidden: function(event, api) {
-              // Destroy it immediately
-              api.destroy(true);
-            }
           }
         },
       );
@@ -489,12 +483,27 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     }
   }
 
+  private _focusedTextLayer;
+  private set focusedTextLayer(textLayer) {
+    if(textLayer) {
+      textLayer.style.zIndex = 100;
+      this._focusedTextLayer = textLayer;
+    } else {
+        if(this._focusedTextLayer) this._focusedTextLayer.style.zIndex = null;
+        this._focusedTextLayer = undefined;
+    }
+  };
+
+  private get focusedTextLayer() {
+    return this._focusedTextLayer;
+  };
+
   @HostListener('window:mousedown', ['$event'])
   mouseDown(event: MouseEvent) {
     let target = event.target as any;
     let parent = target.closest('.textLayer');
     if (parent) {
-      parent.style.zIndex = 100;
+      this.focusedTextLayer = parent;
       // coming from pdf-viewer
       // prepare it for drag and drop
       this.dragAndDropOriginCoord = {
@@ -508,6 +517,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   mouseUp = event => {
+    this.focusedTextLayer = null;
     const targetTagName = event.target.tagName;
     if (targetTagName === 'INPUT') {
       return false;
@@ -529,7 +539,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
       // coming not from pdf-viewer
       return false;
     }
-    parent.closest('.textLayer').style.zIndex = null;
     const range = selection.getRangeAt(0);
     const selectionBounds = range.getBoundingClientRect();
     const selectedRects = selection.getRangeAt(0).getClientRects();
