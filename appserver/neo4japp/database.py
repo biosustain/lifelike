@@ -312,6 +312,14 @@ def get_kg_statistics_service():
     return g.kg_statistics_service
 
 
+def get_redis_helper_service():
+    if 'redis_helper_service' not in g:
+        from neo4japp.services.redis import RedisHelperService
+        redis_conn = connect_to_redis()
+        g.redis_helper_service = RedisHelperService(redis_conn=redis_conn)
+    return g.redis_helper_service
+
+
 def reset_dao():
     """ Cleans up DAO bound to flask request context
 

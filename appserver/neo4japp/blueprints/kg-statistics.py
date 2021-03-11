@@ -2,7 +2,6 @@ from flask import Blueprint
 from neo4japp.database import get_kg_statistics_service
 from neo4japp.exceptions import DataNotAvailableException
 
-from neo4japp.services.redis import redis_server
 
 bp = Blueprint('kg-statistics-api', __name__, url_prefix='/kg-statistics')
 
