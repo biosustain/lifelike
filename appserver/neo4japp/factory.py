@@ -5,7 +5,6 @@ import sentry_sdk
 import traceback
 
 from functools import partial
-from typing import Union
 
 from flask import (
     current_app,
@@ -24,7 +23,6 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-from sqlalchemy.exc import SQLAlchemyError
 from webargs.flaskparser import parser
 from werkzeug.exceptions import UnprocessableEntity
 from werkzeug.utils import find_modules, import_string
@@ -189,7 +187,6 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(UnprocessableEntity, partial(handle_webargs_error, 400))
     app.register_error_handler(ServerException, handle_error)
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
-    app.register_error_handler(SQLAlchemyError, partial(handle_generic_error, 500))
     return app
 
 
@@ -227,7 +224,7 @@ def handle_error(ex: ServerException):
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
 
-def handle_generic_error(code: int, ex: Union[SQLAlchemyError, Exception]):
+def handle_generic_error(code: int, ex: Exception):
     # create a default server error
     # display to user the default error message
     # but log with the real exception message below
