@@ -1,4 +1,5 @@
 import os
+from flask import current_app
 from neo4japp.services.common import RedisDao
 
 
@@ -20,10 +21,17 @@ class RedisHelperService(RedisDao):
             result_provider,
             cache_setting=None,
             load=None,
-            dump=None
+            dump=None,
+            uid_prefix=None,
     ):
         if cache_setting is None:
             cache_setting = dict(ex=3600 * 24)
+        # This is used to distinguish between different environments
+        # since we connect to a single Redis instance.
+        if uid_prefix is None:
+            uid_prefix = current_app.config.get('REDIS_PREFIX')
+
+        uid = f'{uid_prefix}_{uid}'
 
         cached_result = self.redis.get(uid)
         if cached_result:

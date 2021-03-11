@@ -52,26 +52,31 @@ class Development(Base):
     ASSETS_DEBUG = True
     WTF_CSRF_ENABLED = False
     DOMAIN = 'http://localhost'
+    REDIS_PREFIX = 'redis-dev'
 
 
 class QA(Base):
     """ QA configuration """
     SITE_NAME = 'Lifelike Knowledge Search (QA)'
     DOMAIN = 'https://qa.lifelike.bio'
+    REDIS_PREFIX = 'redis-qa'
 
 
 class Staging(Base):
     """Staging configurations"""
     SITE_NAME = 'Lifelike Knowledge Search (Staging)'
     DOMAIN = 'https://test.lifelike.bio'
+    REDIS_PREFIX = 'redis-staging'
 
 
 class Testing(Base):
     """Functional test configuration"""
     TESTING = True
     WTF_CSRF_ENABLED = False
+    REDIS_PREFIX = 'redis-testing'
 
 
 class Production(Base):
     """ Production configuration """
     DOMAIN = 'https://kg.lifelike.bio'
+    REDIS_PREFIX = 'redis-prod'
