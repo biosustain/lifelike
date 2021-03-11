@@ -13,6 +13,7 @@ import {
 import { uniqueId } from 'lodash';
 
 import { combineLatest, Subscription } from 'rxjs';
+import { first } from 'rxjs/operators';
 
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -63,6 +64,9 @@ export class WordCloudComponent implements OnInit, OnDestroy {
 
   keywordsShown = true;
 
+  resizeCloud = true;
+  cloudResizeObserver: any;
+
   constructor(protected readonly annotationsService: AnnotationsService,
               protected readonly legendService: LegendService) {}
 
@@ -79,11 +83,21 @@ export class WordCloudComponent implements OnInit, OnDestroy {
     this.annotationsLoadedSub = this.loadTask.results$.subscribe(({result: [legend, annotationExport]}) => {
         // Reset legend
         Object.keys(legend).forEach(label => {
-        this.legend.set(label.toLowerCase(), legend[label].color);
+          this.legend.set(label.toLowerCase(), legend[label].color);
         });
 
         this.setAnnotationData(annotationExport);
         this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
+    });
+
+    // First time we get a data response, set up the cloud resize observer. The DOM element isn't created until after a response is
+    // received so we can't do this any earlier.
+    this.loadTask.results$.pipe(first()).subscribe(() => {
+      // @ts-ignore
+      this.cloudResizeObserver = new ResizeObserver(() => {
+        this.resizeCloud = true;
+      });
+      this.cloudResizeObserver.observe(this.wordCloudWrapperEl.nativeElement);
     });
 
     // Send initial data request
@@ -91,6 +105,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.cloudResizeObserver.unobserve(this.wordCloudWrapperEl.nativeElement);
     this.annotationsLoadedSub.unsubscribe();
   }
 
@@ -289,17 +304,22 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   private updateWordCloudElements(words: WordCloudAnnotationFilterEntity[]) {
     this.updateWordVisibility(words);
 
-    // Set the dimensions and margins of the graph
-    const {width, height} = this.getCloudSvgDimensions();
+    // Get grouping element
+    const g = d3.select(this.wordCloudGroupEl.nativeElement);
+    if (this.resizeCloud) {
+      this.resizeCloud = false;
 
-    // Get the svg element and update
-    d3.select(this.wordCloudSvgEl.nativeElement)
-      .attr('width', width)
-      .attr('height', height);
+      // Get the dimensions and margins of the graph
+      const {width, height} = this.getCloudSvgDimensions();
 
-    // Get and update the grouping element
-    const g = d3.select(this.wordCloudGroupEl.nativeElement)
-      .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+      // Get the svg element and update
+      d3.select(this.wordCloudSvgEl.nativeElement)
+        .attr('width', width)
+        .attr('height', height);
+
+      // Also update the grouping element
+      g.attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+    }
 
     // Get the tooltip for the word cloud text (this should already be present in the DOM)
     const tooltip = d3.select(this.wordCloudTooltipEl.nativeElement)
