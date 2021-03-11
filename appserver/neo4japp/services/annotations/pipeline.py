@@ -102,7 +102,8 @@ def get_nlp_entities(text: str, entities: Set[str]):
     return NLPResults(
         anatomy=entity_results[EntityType.ANATOMY.value],
         chemicals=entity_results[EntityType.CHEMICAL.value],
-        compounds=entity_results[EntityType.COMPOUND.value],
+        # compound will use chemical
+        compounds=entity_results[EntityType.CHEMICAL.value],
         diseases=entity_results[EntityType.DISEASE.value],
         foods=entity_results[EntityType.FOOD.value],
         genes=entity_results[EntityType.GENE.value],
@@ -199,6 +200,11 @@ def _create_annotations(
     nlp_results = get_nlp_entities(
         text=pdf_text,
         entities=set(k for k, v in annotation_method.items() if v['nlp']))
+
+    # if chemical used NLP then set compound too
+    if annotation_method[EntityType.CHEMICAL.value]['nlp']:
+        annotation_method[EntityType.COMPOUND.value] = DEFAULT_ANNOTATION_CONFIGS[EntityType.COMPOUND.value]  # noqa
+        annotation_method[EntityType.COMPOUND.value]['nlp'] = True
 
     start_lmdb_time = time.time()
     entity_results = entity_recog.identify(

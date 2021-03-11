@@ -491,11 +491,13 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
                 # combine all text to process at once
                 for text_mapping in texts:
-                    text = text_mapping['text']
-                    enrichment_text += text
-                    curr_idx = len(enrichment_text)
-                    enrichment_mappings[curr_idx-1] = text_mapping
-                    enrichment_text += ' '  # to separate prev text
+                    # ignore GO and Biocyc columns for now JIRA LL-2657
+                    if text_mapping.get('domain', '') != 'GO' and text_mapping.get('domain', '') != 'Biocyc':  # noqa
+                        text = text_mapping['text']
+                        enrichment_text += text
+                        curr_idx = len(enrichment_text)
+                        enrichment_mappings[curr_idx-1] = text_mapping
+                        enrichment_text += ' '  # to separate prev text
 
                 # remove trailing white space
                 # shouldn't matter but let's see how it does...
@@ -524,7 +526,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         'success': True,
                     }
 
-                    annotations_list = annotations['documents'][0]['passages'][0]['annotations']  # noqa
+                    annotations_list = annotations['documents'][0]['passages'][0]['annotations']
 
                     prev_k = -1
                     for k, text_mapping in enrichment_mappings.items():
