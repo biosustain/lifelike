@@ -1,9 +1,9 @@
 <div class="input-group w-100 d-flex">
-  <input [(ngModel)]="value" (change)="this.changed()" (blur)="this.blurred()"
+  <input [value]="value" (blur)="this.blurred()"
          type="text" class="form-control input-border"
          [ngStyle]="{minWidth:searchInputWidth,flexGrow:20}"
          placeholder="Search" aria-label="Graph search" aria-describedby="graph-search"
-         [disabled]="disabled" (keyup.enter)="enterPress.next()"
+         [disabled]="disabled" (keyup)="inputKeyUp($event)"
          #searchInput>
   <div class="input-group-append">
     <button class="form-control input-border border-left-0" (click)="clear()">
