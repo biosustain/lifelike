@@ -507,7 +507,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     annotations = self._annotate_enrichment_texts(
                         text=enrichment_text,
                         enrichment_mappings=enrichment_mappings,
-                        method=annotation_configs,
+                        configs=annotation_configs,
                         organism=organism,
                     )
                 except AnnotationError as e:
