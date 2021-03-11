@@ -155,7 +155,7 @@ def refresh():
     decoded = token_service.decode_token(token)
     if decoded['type'] != 'refresh':
         raise JWTTokenException(
-            'Your authentication session expired, but there was an error attempting to renew it.')  # noqa
+            message='Your authentication session expired, but there was an error attempting to renew it.')  # noqa
 
     # Create access & refresh token pair
     token_subj = decoded['sub']
