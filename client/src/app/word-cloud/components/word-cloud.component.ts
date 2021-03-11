@@ -293,7 +293,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
     const {width, height} = this.getCloudSvgDimensions();
 
     // Get the svg element and update
-    const svg = d3.select(this.wordCloudSvgEl.nativeElement)
+    d3.select(this.wordCloudSvgEl.nativeElement)
       .attr('width', width)
       .attr('height', height);
 
