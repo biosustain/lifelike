@@ -1,4 +1,5 @@
 import json
+from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError
 from neo4japp.exceptions import DatabaseError
 
@@ -41,10 +42,24 @@ class RedisDao:
         self.redis = redis_conn
         super().__init__(**kwargs)
 
-    def set_cache_data(self, key, value, cache_expiration=1209600):
+    def set_cache_data(self, key, value, cache_expiration=1209600, key_prefix=None):
+        """ This is used to distinguish between different environments
+        since we connect to a single Redis instance and keys could
+        potentially collide.
+        """
+        if key_prefix is None:
+            key_prefix = current_app.config.get('REDIS_PREFIX')
+        key = f'{key_prefix}_{key}'
         self.redis.set(key, json.dumps(value))
         self.redis.expire(key, cache_expiration)
         return self.redis.get(key)
 
-    def get_cache_data(self, key):
+    def get_cache_data(self, key, prepend_default_prefix=False):
+        """ This is used to distinguish between different environments
+        since we connect to a single Redis instance. By default, our
+        setter will add the global Redis prefix.
+        """
+        if prepend_default_prefix:
+            key_prefix = current_app.config.get('REDIS_PREFIX')
+            key = f'{key_prefix}_{key}'
         return self.redis.get(key)
