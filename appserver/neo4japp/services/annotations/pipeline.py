@@ -160,9 +160,13 @@ def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
     return pdf_text, parsed
 
 
-def parse_pdf(file_id: int) -> Tuple[str, List[PDFWord]]:
-    req = requests.get(
-        f'http://pdfparser:7600/token/rect/json/http://appserver:5000/annotations/files/{file_id}', timeout=45)  # noqa
+def parse_pdf(file_id: int, exclude_references: bool) -> Tuple[str, List[PDFWord]]:
+    req = requests.post(
+        f'http://pdfparser:7600/token/rect/json/',
+        data={
+            'fileUrl': f'http://appserver:5000/annotations/files/{file_id}',
+            'excludeReferences': exclude_references
+        }, timeout=45)
     resp = req.json()
     req.close()
 
@@ -172,7 +176,7 @@ def parse_pdf(file_id: int) -> Tuple[str, List[PDFWord]]:
 
 def parse_text(text: str) -> Tuple[str, List[PDFWord]]:
     req = requests.post(
-        f'http://pdfparser:7600/token/rect/json', data={'text': text}, timeout=30)
+        f'http://pdfparser:7600/token/rect/text/json', data={'text': text}, timeout=30)
     resp = req.json()
     req.close()
 
@@ -269,7 +273,7 @@ def create_annotations_from_pdf(
 
     start = time.time()
     try:
-        pdf_text, parsed = parse_pdf(document.id)
+        pdf_text, parsed = parse_pdf(document.id, annotation_configs['exclude_references'])
     except requests.exceptions.ConnectTimeout:
         raise AnnotationError(
             'The request timed out while trying to connect to the parsing service.')
