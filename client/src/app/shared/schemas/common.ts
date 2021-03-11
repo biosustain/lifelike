@@ -42,7 +42,7 @@ export interface ErrorResponse {
   code?: number;
   version?: string;
   transactionId?: string;
-  fields?: { [key: string]: any };
+  fields?: { [key: string]: string[] };
 }
 
 export interface ErrorLogMeta {

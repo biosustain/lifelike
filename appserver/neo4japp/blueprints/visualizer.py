@@ -77,8 +77,7 @@ def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
     if not (0 <= req.limit and req.limit <= 1000):
         raise ServerException(
             title='Failed to Get Edge Snippets',
-            message='Query limit is out of bounds.',
-            fields={'min': 0, 'max': 1000},
+            message='Query limit is out of bounds, the limit is 0 <= limit <= 1000.',
             code=400
         )
 
@@ -101,8 +100,7 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
     if not (0 <= req.limit and req.limit <= 1000):
         raise ServerException(
             title='Failed to Get Cluster Snippets',
-            message='Query limit is out of bounds.',
-            fields={'min': 0, 'max': 1000},
+            message='Query limit is out of bounds, the limit is 0 <= limit <= 1000.',
             code=400
         )
 

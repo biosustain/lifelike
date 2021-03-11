@@ -90,9 +90,9 @@ can indicate duplication.
 class JWTTokenException(ServerException):
     """Signals JWT token issue"""
 
-    def __init__(self, message=None, additional_msgs=[], code=500):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
         super().__init__(
-            'JWT Token Error',
+            title=title,
             message=message,
             additional_msgs=additional_msgs,
             code=code)
@@ -101,9 +101,9 @@ class JWTTokenException(ServerException):
 class JWTAuthTokenException(JWTTokenException):
     """Signals the JWT auth token has an issue"""
 
-    def __init__(self, message=None, additional_msgs=[], code=401):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=401):
         super().__init__(
-            'JWT Token Error',
+            title=title,
             message=message,
             additional_msgs=additional_msgs,
             code=code)
@@ -113,9 +113,9 @@ class FormatterException(ServerException):
     """Signals that a CamelDictMixin object was not formatted to/from
     dict correctly."""
 
-    def __init__(self, message=None, additional_msgs=[], code=500):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
         super().__init__(
-            'Serializing Error',
+            title=title,
             message=message,
             additional_msgs=additional_msgs,
             code=code)
@@ -158,7 +158,7 @@ class AccessRequestRequiredError(ServerException):
 
     We may want to merge this exception with FilesystemAccessRequestRequired.
     """
-    def __init__(self, curr_access, req_access, hash_id, additional_msgs=[], code=403):
+    def __init__(self, curr_access, req_access, hash_id, filename=None, additional_msgs=[], code=403):  # noqa
         message = f'You have {curr_access} access but not {req_access} access to <{hash_id}>.'
         super().__init__(
             'Access Error',
