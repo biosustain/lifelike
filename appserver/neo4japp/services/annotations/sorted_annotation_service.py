@@ -59,8 +59,8 @@ class SumLogCountSA(SortedAnnotation):
     def get_annotations(self, files):
         files_annotations, key_map = self.get_annotations_per_file(files)
         df = DataFrame(
-            files_annotations,
-            columns=['file_id', 'key']
+                files_annotations,
+                columns=['file_id', 'key']
         )
         gdf = df.groupby(["key", "file_id"])
         distinct_annotations = dict()
@@ -100,20 +100,24 @@ class MannWhitneyUSA(SortedAnnotation):
         files_annotations, key_map = self.get_annotations_per_file(files)
 
         df = DataFrame(
-            files_annotations,
-            columns=['file_id', 'key']
+                files_annotations,
+                columns=['file_id', 'key']
         ) \
             .groupby(["key", "file_id"]) \
-            .size()
+            .size() \
+            .reset_index()
+
         distinct_annotations = dict()
-        for key, group in df.groupby('key'):
+        for key in df['key'].unique():
+            df['mask'] = df['key'] == key
             distinct_annotations[key] = {
                 'annotation': key_map[key],
                 'value': -log(
-                    mannwhitneyu(
-                        group,
-                        df[df.index.get_level_values('key') != key]
-                    ).pvalue
+                        mannwhitneyu(
+                                df[df['mask']][0],
+                                df[0] * (~df['mask']),
+                                alternative='greater'
+                        ).pvalue
                 )
             }
 
