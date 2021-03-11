@@ -1,4 +1,13 @@
-import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import {
+  AfterViewChecked,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
@@ -21,15 +30,18 @@ import {
 import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
 import { ObjectVersion } from '../../file-browser/models/object-version';
 import { ObjectUpdateRequest } from '../../file-browser/schema';
+import { ElementFind } from '../../shared/utils/find/element-find';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
   templateUrl: './enrichment-table-viewer.component.html',
   styleUrls: ['./enrichment-table-viewer.component.scss'],
 })
-export class EnrichmentTableViewerComponent implements OnInit {
+export class EnrichmentTableViewerComponent implements OnInit, AfterViewChecked {
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  @ViewChild('tableScroll', {static: false}) tableScrollRef: ElementRef;
+  @ViewChild('findTarget', {static: false}) findTargetRef: ElementRef;
 
   fileId: string;
   object$: Observable<FilesystemObject> = new Subject();
@@ -37,6 +49,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
   document$: Observable<EnrichmentDocument> = new Subject();
   table$: Observable<EnrichmentTable> = new Subject();
   scrollTopAmount: number;
+  findController = new ElementFind();
 
   /**
    * Keeps tracks of changes so they aren't saved to the server until you hit 'Save'. However,
@@ -51,7 +64,8 @@ export class EnrichmentTableViewerComponent implements OnInit {
               protected readonly errorHandler: ErrorHandler,
               protected readonly filesystemService: FilesystemService,
               protected readonly progressDialog: ProgressDialog,
-              protected readonly changeDetectorRef: ChangeDetectorRef) {
+              protected readonly changeDetectorRef: ChangeDetectorRef,
+              protected readonly elementRef: ElementRef) {
     this.fileId = this.route.snapshot.params.file_id || '';
   }
 
@@ -73,6 +87,14 @@ export class EnrichmentTableViewerComponent implements OnInit {
       this.errorHandler.create({label: 'Load enrichment table'}),
       shareReplay(),
     );
+  }
+
+  ngAfterViewChecked() {
+    if (this.tableScrollRef && this.findTargetRef) {
+      this.findController.target = this.findTargetRef.nativeElement;
+    } else {
+      this.findController.target = null;
+    }
   }
 
   scrollTop() {
