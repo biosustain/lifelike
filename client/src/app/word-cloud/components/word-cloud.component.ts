@@ -304,11 +304,12 @@ export class WordCloudComponent implements OnDestroy {
     // Also create a function for the tooltip content, to be shown when the text is hovered over
     const cloudWrapper = this.wordCloudWrapperEl;
     const keywordsShown = this.keywordsShown;
-    const mousemove = function(d) {
+    const mouseenter = function(d) {
       const coordsOfCloud = cloudWrapper.nativeElement.getBoundingClientRect() as DOMRect;
       const coordsOfText = this.getBoundingClientRect() as DOMRect;
       tooltip
         .html(keywordsShown ? `Primary Name: ${d.primaryName}` : `Text in Document: ${d.keyword}`)
+        .style('display', 'block')
         .style('left', (coordsOfText.x - coordsOfCloud.x) + 'px')
         .style('top', (coordsOfText.y - coordsOfCloud.y) + 'px');
     };
@@ -332,8 +333,7 @@ export class WordCloudComponent implements OnDestroy {
       })
       .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
       .style('font-size', (d) => d.size + 'px')
-      .on('mouseover', () => tooltip.style('display', 'block'))
-      .on('mousemove', mousemove)
+      .on('mouseenter', mouseenter)
       .on('mouseleave', () => tooltip.style('display', 'none'))
       .transition()
       .attr('transform', (d) => {
