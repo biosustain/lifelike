@@ -81,6 +81,7 @@ def get_nlp_entities(text: str, entities: Set[str]):
     }
 
     models = []
+    start = time.time()
     if all([model in entities for model in nlp_models]):
         req = call_nlp_service(model='all', text=text)
         models = [req]
@@ -91,6 +92,11 @@ def get_nlp_entities(text: str, entities: Set[str]):
                     nlp_models[model],
                     text
                 ) for model in entities if nlp_models.get(model, None)])
+
+    current_app.logger.info(
+        f'Total NLP time {time.time() - start}',
+        extra=EventLog(event_type='annotations').to_dict()
+    )
 
     for model in models:
         for results in model['results']:
