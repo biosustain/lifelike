@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from .utils.q_value import add_q_value
 from scipy.stats.distributions import hypergeom
 
 
@@ -41,4 +42,5 @@ def fisher(geneNames, GOterms):
 
     df['gene'] = df.apply(lambda m: f"{m['goTerm']} ({m['goId']})", axis=1)
 
+    add_q_value(df)
     return df.to_json(orient='records')
