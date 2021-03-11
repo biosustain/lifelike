@@ -1,4 +1,13 @@
-import { Component, EventEmitter, Input, OnDestroy, Output, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+  ViewEncapsulation
+} from '@angular/core';
 
 import { uniqueId } from 'lodash';
 
@@ -28,6 +37,12 @@ export class WordCloudComponent implements OnDestroy {
   @Input() object: FilesystemObject;
   @Input() clickableWords = false;
   @Output() wordOpen = new EventEmitter<WordOpen>();
+
+  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapperEl: ElementRef;
+  @ViewChild('wordCloudWrapper', {static: false}) wordCloudWrapperEl: ElementRef;
+  @ViewChild('wordCloudTooltip', {static: false}) wordCloudTooltipEl: ElementRef;
+  @ViewChild('wordCloudSvg', {static: false}) wordCloudSvgEl: ElementRef;
+  @ViewChild('wordCloudGroup', {static: false}) wordCloudGroupEl: ElementRef;
 
   loadTask: BackgroundTask<[], [NodeLegend, string]>;
   annotationsLoadedSub: Subscription;
@@ -179,7 +194,7 @@ export class WordCloudComponent implements OnDestroy {
   }
 
   copyWordCloudToClipboard() {
-    const hiddenTextAreaWrapper = document.getElementById(`${this.id}-hidden-text-area-wrapper`);
+    const hiddenTextAreaWrapper = this.hiddenTextAreaWrapperEl.nativeElement;
     hiddenTextAreaWrapper.style.display = 'block';
     const tempTextArea = document.createElement('textarea');
 
@@ -256,8 +271,8 @@ export class WordCloudComponent implements OnDestroy {
       bottom: this.WORD_CLOUD_MARGIN,
       left: this.WORD_CLOUD_MARGIN,
     };
-    const width = (document.getElementById(`${this.id}-cloud-wrapper`).offsetWidth) - margin.left - margin.right;
-    const height = (document.getElementById(`${this.id}-cloud-wrapper`).offsetHeight) - margin.top - margin.bottom;
+    const width = this.wordCloudWrapperEl.nativeElement.offsetWidth - margin.left - margin.right;
+    const height = this.wordCloudWrapperEl.nativeElement.offsetHeight - margin.top - margin.bottom;
     return {width, height};
   }
 
@@ -274,25 +289,23 @@ export class WordCloudComponent implements OnDestroy {
     const {width, height} = this.getCloudSvgDimensions();
 
     // Get the svg element and update
-    const svg = d3.select(`#${this.id}-cloud-wrapper`)
-      .select('svg')
+    const svg = d3.select(this.wordCloudSvgEl.nativeElement)
       .attr('width', width)
       .attr('height', height);
 
     // Get and update the grouping element
-    const g = svg
-      .select('g')
+    const g = d3.select(this.wordCloudGroupEl.nativeElement)
       .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
 
     // Get the tooltip for the word cloud text (this should already be present in the DOM)
-    const tooltip = d3.select(`#${this.id}-word-cloud-tooltip`)
+    const tooltip = d3.select(this.wordCloudTooltipEl.nativeElement)
       .style('display', 'none');
 
     // Also create a function for the tooltip content, to be shown when the text is hovered over
-    const componentId = this.id;
+    const cloudWrapper = this.wordCloudWrapperEl;
     const keywordsShown = this.keywordsShown;
     const mousemove = function(d) {
-      const coordsOfCloud = document.getElementById(`${componentId}-cloud-wrapper`).getBoundingClientRect() as DOMRect;
+      const coordsOfCloud = cloudWrapper.nativeElement.getBoundingClientRect() as DOMRect;
       const coordsOfText = this.getBoundingClientRect() as DOMRect;
       tooltip
         .html(keywordsShown ? `Primary Name: ${d.primaryName}` : `Text in Document: ${d.keyword}`)
@@ -346,17 +359,6 @@ export class WordCloudComponent implements OnDestroy {
     const maximum = Math.max(...frequencies);
     const minimum = Math.min(...frequencies);
 
-    // If the cloud SVG doesn't already exist, create it
-    const wordCloudSvg = document.getElementById(`${this.id}-cloud-wrapper`).getElementsByTagName('svg');
-    if (wordCloudSvg.length === 0) {
-      // Append the svg element to the wrapper and append the grouping element to the svg
-      d3.select(`#${this.id}-cloud-wrapper`)
-      .append('svg')
-      .attr('width', width)
-      .attr('height', height)
-      .append('g')
-      .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
-    }
 
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
     const layout = cloud()

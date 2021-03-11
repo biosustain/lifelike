@@ -74,8 +74,11 @@
               No entities (annotations) found.
             </ngb-alert>
           </ng-container>
-          <div [id]="id + '-cloud-wrapper'" class="h-100 w-100 overflow-hidden">
-            <div [id]="id + '-word-cloud-tooltip'" class="tooltip word-cloud-tooltip"></div>
+          <div #wordCloudWrapper class="h-100 w-100 overflow-hidden">
+            <svg #wordCloudSvg>
+              <g #wordCloudGroup></g>
+            </svg>
+            <div #wordCloudTooltip class="tooltip word-cloud-tooltip"></div>
           </div>
         </as-split-area>
         <as-split-area [visible]="filtersPanelOpened"
@@ -103,4 +106,4 @@
     </div>
   </div>
 </div>
-<div [id]="id + '-hidden-text-area-wrapper'" style="display: none;"></div>
+<div #hiddenTextAreaWrapper style="display: none;"></div>
