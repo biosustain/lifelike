@@ -1,0 +1,14 @@
+.justify-content-center {
+  display: flex;
+  justify-content: center;
+}
+
+.space-cards {
+  display: flex;
+  flex-direction: column;
+  margin: -15px 0;
+
+  & > .card {
+    margin: 15px 0;
+  }
+}
