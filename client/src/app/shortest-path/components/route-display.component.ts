@@ -1,12 +1,10 @@
 import { Component, Input } from '@angular/core';
 
-import { DataSet } from 'vis-network';
+import { Options } from 'vis-network';
 
 import { isNullOrUndefined } from 'util';
 
-import { Neo4jGraphConfig } from 'app/interfaces';
-
-import { GraphData } from '../containers/shortest-path.component';
+import { GraphData } from 'app/interfaces/vis-js.interface';
 
 export enum DisplayType {
   NETWORK = 'network',
@@ -24,8 +22,7 @@ export class RouteDisplayComponent {
   }
   @Input() set graphData(graphData: GraphData) {
     // Update vis js data
-    this.networkData.nodes = graphData.nodes;
-    this.networkData.edges = graphData.edges;
+    this.networkData = graphData;
 
     // Update sankey data
     this.generateSankeyData(graphData.nodes, graphData.edges);
@@ -36,8 +33,8 @@ export class RouteDisplayComponent {
 
   currentDisplay: string;
 
-  networkConfig: Neo4jGraphConfig;
-  networkData: any;
+  networkConfig: Options;
+  networkData: GraphData;
 
   sankeyConfig: any;
   sankeyData: any;
@@ -88,8 +85,8 @@ export class RouteDisplayComponent {
     };
 
     this.networkData = {
-      nodes: new DataSet(),
-      edges: new DataSet(),
+      nodes: [],
+      edges: [],
     };
   }
 

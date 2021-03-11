@@ -1,9 +1,9 @@
-import { FilesystemObject } from '../models/filesystem-object';
+import { FilesystemObject, ProjectImpl } from '../models/filesystem-object';
 import { TextElement } from '../../graph-viewer/utils/canvas/text-element';
 import 'canvas-plus';
 import { DragImage } from '../../shared/utils/drag';
 
-export function createObjectDragImage(object: FilesystemObject): DragImage {
+function createDragImage(label: string, fontAwesomeIconCode: string): DragImage {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
@@ -16,7 +16,7 @@ export function createObjectDragImage(object: FilesystemObject): DragImage {
   let height = paddingY * 2 + shadowSize;
 
   const iconTextElement = new TextElement(ctx, {
-    text: object.fontAwesomeIconCode,
+    text: fontAwesomeIconCode,
     font: '900 16px "Font Awesome 5 Pro"',
     fillStyle: '#adb5bd',
   });
@@ -24,7 +24,7 @@ export function createObjectDragImage(object: FilesystemObject): DragImage {
   width += iconTextElement.actualWidth + iconLabelSpacing;
 
   const labelTextElement = new TextElement(ctx, {
-    text: object.filename,
+    text: label,
     font: '16px Roboto',
     fillStyle: 'black',
   });
@@ -65,4 +65,12 @@ export function createObjectDragImage(object: FilesystemObject): DragImage {
   labelTextElement.draw(paddingX + iconTextElement.actualWidth + iconLabelSpacing, paddingY);
 
   return new DragImage(canvas, 0, 0);
+}
+
+export function createProjectDragImage(project: ProjectImpl): DragImage {
+  return createDragImage(project.name, '\uf5fd');
+}
+
+export function createObjectDragImage(object: FilesystemObject): DragImage {
+  return createDragImage(object.filename, object.fontAwesomeIconCode);
 }
