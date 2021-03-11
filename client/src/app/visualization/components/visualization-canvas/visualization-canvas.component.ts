@@ -14,7 +14,9 @@ import { skip, first } from 'rxjs/operators';
 
 import { isNullOrUndefined } from 'util';
 
-import { Network, DataSet, IdType } from 'vis-network';
+import { DataSet } from 'vis-data';
+import { Network, IdType } from 'vis-network';
+
 
 import {
   DuplicateVisEdge,

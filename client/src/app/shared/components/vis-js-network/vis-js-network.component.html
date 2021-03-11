@@ -2,8 +2,21 @@
   <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
 </div>
 <ng-template #stable>
-  <div>
-    <app-legend [legend]="legend"></app-legend>
+  <div class="network-navigation-container">
+    <div class="d-flex">
+      <div class="pointer-events-on">
+        <app-legend [legend]="legend"></app-legend>
+      </div>
+      <div class="d-block h-100 ml-2 pointer-events-on">
+        <app-search-control
+          [(ngModel)]="searchQuery" (ngModelChange)="searchQueryChanged()"
+          (enterPress)="findNext()"
+          [resultIndex]="currentSearchIndex"
+          [resultCount]="searchResults.length"
+          (previous)="findPrevious()" (next)="findNext()">
+        </app-search-control>
+      </div>
+    </div>
   </div>
   <div class="network-utilities-container">
     <div class="mb-1">
