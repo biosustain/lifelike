@@ -540,6 +540,9 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         for anno in annotations_to_process:
                             if text_mapping.get('imported'):
                                 anno['enrichmentGene'] = text_mapping['text']
+                                anno['enrichmentDomain']['domain'] = 'Imported'
+                            if text_mapping.get('matched'):
+                                anno['enrichmentDomain']['domain'] = 'Matched'
                             if text_mapping.get('full_name'):
                                 # enrichment JSON doesn't have a domain label for this
                                 anno['enrichmentDomain']['domain'] = 'Gene Full Name'
