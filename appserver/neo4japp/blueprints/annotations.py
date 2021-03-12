@@ -529,6 +529,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     annotations_list = annotations['documents'][0]['passages'][0]['annotations']
 
                     prev_k = -1
+                    enriched_gene = ''
                     for k, text_mapping in enrichment_mappings.items():
                         annotations_to_process = [anno for anno in annotations_list if anno.get(
                             'hiLocationOffset', None) and anno.get(
@@ -537,7 +538,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         prev_k = k
 
                         # update JSON to have enrichment row and domain...
-                        enriched_gene = ''
                         for anno in annotations_to_process:
                             # imported should come first for each row
                             if text_mapping.get('imported'):
@@ -554,6 +554,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                                 # enrichment JSON doesn't have a domain label for this
                                 anno['enrichmentDomain']['domain'] = 'Gene Full Name'
                             if 'domain' in text_mapping:
+                                anno['enrichmentGene'] = enriched_gene
                                 if text_mapping['domain'] == 'Regulon':
                                     anno['enrichmentDomain']['domain'] = text_mapping['domain']
                                     anno['enrichmentDomain']['subDomain'] = text_mapping['label']
