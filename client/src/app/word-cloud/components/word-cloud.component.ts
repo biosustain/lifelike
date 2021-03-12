@@ -46,6 +46,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   @ViewChild('wordCloudTooltip', {static: false}) wordCloudTooltipEl: ElementRef;
   @ViewChild('wordCloudSvg', {static: false}) wordCloudSvgEl: ElementRef;
   @ViewChild('wordCloudGroup', {static: false}) wordCloudGroupEl: ElementRef;
+  layout: any;
 
   loadTask: BackgroundTask<any, [NodeLegend, string]>;
   annotationsLoadedSub: Subscription;
@@ -91,15 +92,17 @@ export class WordCloudComponent implements OnInit, OnDestroy {
         this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
     });
 
-    // First time we get a data response, set up the cloud resize observer. The DOM element isn't created until after a response is
-    // received so we can't do this any earlier.
+    // Emits the first time we get a data response
     this.loadTask.results$.pipe(first()).subscribe(() => {
+      // Set up the cloud resize observer.
       // @ts-ignore
       this.cloudResizeObserver = new ResizeObserver(() => {
         this.resizeCloud = true;
       });
       this.cloudResizeObserver.observe(this.wordCloudWrapperEl.nativeElement);
     });
+
+    this.layout = cloud();
 
     // Send initial data request
     this.getAnnotations();
@@ -306,20 +309,6 @@ export class WordCloudComponent implements OnInit, OnDestroy {
 
     // Get grouping element
     const g = d3.select(this.wordCloudGroupEl.nativeElement);
-    if (this.resizeCloud) {
-      this.resizeCloud = false;
-
-      // Get the dimensions and margins of the graph
-      const {width, height} = this.getCloudSvgDimensions();
-
-      // Get the svg element and update
-      d3.select(this.wordCloudSvgEl.nativeElement)
-        .attr('width', width)
-        .attr('height', height);
-
-      // Also update the grouping element
-      g.attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
-    }
 
     // Get the tooltip for the word cloud text (this should already be present in the DOM)
     const tooltip = d3.select(this.wordCloudTooltipEl.nativeElement)
@@ -390,13 +379,28 @@ export class WordCloudComponent implements OnInit, OnDestroy {
    * @param data represents a collection of AnnotationFilterEntity data
    */
   drawWordCloud(data: WordCloudAnnotationFilterEntity[]) {
-    // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
-    const {width, height} = this.getCloudSvgDimensions();
-    const maxAlgoInputSlice = data.length > this.MAX_ALGO_INPUT ? data.slice(0, this.MAX_ALGO_INPUT) : data;
+    if (this.resizeCloud) {
+      this.resizeCloud = false;
+
+      // Get the dimensions and margins of the graph
+      const {width, height} = this.getCloudSvgDimensions();
+
+      // Get the svg element and update
+      d3.select(this.wordCloudSvgEl.nativeElement)
+        .attr('width', width)
+        .attr('height', height);
+
+      // Also update the grouping element
+      d3.select(this.wordCloudGroupEl.nativeElement)
+        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+
+      // ...And update the cloud layout
+      this.layout.size([width, height]);
+    }
 
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
-    const layout = cloud()
-      .size([width, height])
+    const maxAlgoInputSlice = data.length > this.MAX_ALGO_INPUT ? data.slice(0, this.MAX_ALGO_INPUT) : data;
+    this.layout
       .words(maxAlgoInputSlice)
       .padding(3)
       // max ~48px, min ~12px
@@ -407,7 +411,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
       /* tslint:disable:no-bitwise*/
       // .rotate(() => (~~(Math.random() * 8) - 3) * 15)
       .on('end', words => this.updateWordCloudElements(words));
-    layout.start();
+    this.layout.start();
   }
 }
 
