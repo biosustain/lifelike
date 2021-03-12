@@ -6,7 +6,7 @@ table {
   $tooltip-arrow-height: 0.4rem;
   $tooltip-arrow-width: 2*$tooltip-arrow-height;
 
-  width: calc(100% - $tilted-text-space-estimate);
+  width: calc(100% - #{$tilted-text-space-estimate});
   table-layout: fixed;
   margin-top: $tilted-text-space-estimate;
   margin-right: $tilted-text-space-estimate;
