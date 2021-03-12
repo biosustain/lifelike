@@ -79,6 +79,11 @@ class Annotation(CamelDictMixin):
         is_custom: bool = attr.ib(default=False)
         all_text: str = attr.ib(default='')
 
+    @attr.s(frozen=False)
+    class EnrichmentDomain():
+        domain: str = attr.ib(default='')
+        sub_domain: str = attr.ib(default='')
+
     page_number: int = attr.ib()
     # keywords and rects are a pair
     # each index in the list correspond to the other
@@ -95,6 +100,8 @@ class Annotation(CamelDictMixin):
     meta: Meta = attr.ib()
     uuid: str = attr.ib()
     primary_name: str = attr.ib(default='')
+    enrichment_gene: str = attr.ib(default='')
+    enrichment_domain: EnrichmentDomain = attr.ib(default=attr.Factory(EnrichmentDomain))
 
 
 @attr.s(frozen=False)
