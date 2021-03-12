@@ -47,7 +47,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   @ViewChild('wordCloudSvg', {static: false}) wordCloudSvgEl: ElementRef;
   @ViewChild('wordCloudGroup', {static: false}) wordCloudGroupEl: ElementRef;
 
-  loadTask: BackgroundTask<[], [NodeLegend, string]>;
+  loadTask: BackgroundTask<any, [NodeLegend, string]>;
   annotationsLoadedSub: Subscription;
 
   wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
@@ -58,9 +58,10 @@ export class WordCloudComponent implements OnInit, OnDestroy {
 
   WORD_CLOUD_MARGIN = 10;
   MAX_ALGO_INPUT = 1000;
+  FONT_MIN = 12;
+  FONT_MAX = 48;
 
   sorting: SortingAlgorithm = defaultSortingAlgorithm;
-  sortingChanged = false;
 
   keywordsShown = true;
 
@@ -72,10 +73,10 @@ export class WordCloudComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Initialize the background task
-    this.loadTask = new BackgroundTask(() => {
+    this.loadTask = new BackgroundTask(({hashId, sortingId}) => {
       return combineLatest(
         this.legendService.getAnnotationLegend(),
-        this.annotationsService.getSortedAnnotations(this.object.hashId, this.sorting.id),
+        this.annotationsService.getSortedAnnotations(hashId, sortingId),
       );
     });
 
@@ -117,11 +118,10 @@ export class WordCloudComponent implements OnInit, OnDestroy {
    * Sends a request to the BackgroundTask object for new annotations data.
    */
   getAnnotations() {
-    this.loadTask.update([]);
+    this.loadTask.update({hashId: this.object.hashId, sortingId: this.sorting.id});
   }
 
   sort(algorithm) {
-    this.sortingChanged = true;
     this.sorting = algorithm;
     this.getAnnotations();
   }
@@ -345,10 +345,10 @@ export class WordCloudComponent implements OnInit, OnDestroy {
     wordElements
       .enter()
       .append('text')
+      .text((d) => d.text)
       .merge(wordElements)
       .style('fill', (d) => d.color)
       .attr('text-anchor', 'middle')
-      .text((d) => d.text)
       .on('click', (item: WordCloudAnnotationFilterEntity) => {
         this.wordOpen.emit({
           entity: item,
@@ -371,18 +371,28 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Given dataset return normalised font-size generator
+   * @param data represents a collection of AnnotationFilterEntity data
+   */
+  fontSize(data) {
+    const frequencies = data.map(annotation => annotation.frequency as number);
+    const maximum = Math.max(...frequencies);
+    const minimum = Math.min(...frequencies);
+    const fontDelta = this.FONT_MAX - this.FONT_MIN;
+    return d => {
+      const fraction = (d.frequency - minimum) / (maximum - minimum) || 0;
+      return (fraction * fontDelta) + this.FONT_MIN;
+    };
+  }
+
+  /**
    * Draws a word cloud with the given AnnotationFilterEntity inputs using the d3.layout.cloud library.
    * @param data represents a collection of AnnotationFilterEntity data
    */
   drawWordCloud(data: WordCloudAnnotationFilterEntity[]) {
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
     const {width, height} = this.getCloudSvgDimensions();
-
     const maxAlgoInputSlice = data.length > this.MAX_ALGO_INPUT ? data.slice(0, this.MAX_ALGO_INPUT) : data;
-    const frequencies = maxAlgoInputSlice.map(annotation => annotation.frequency as number);
-    const maximum = Math.max(...frequencies);
-    const minimum = Math.min(...frequencies);
-
 
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
     const layout = cloud()
@@ -390,7 +400,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
       .words(maxAlgoInputSlice)
       .padding(3)
       // max ~48px, min ~12px
-      .fontSize((d) => (((d.frequency - minimum) / (maximum - minimum)) * 36) + 12)
+      .fontSize(this.fontSize(maxAlgoInputSlice))
       .rotate(() => 0)
       // TODO: Maybe in the future we can allow the user to define their own rotation intervals,
       // but for now just keep it simple and don't rotate the words
