@@ -12,7 +12,7 @@ from neo4japp.database import (
     get_bioc_document_service,
     get_entity_recognition
 )
-from neo4japp.exceptions import ServerException
+from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.constants import (
     EntityType,
     MAX_ABBREVIATION_WORD_LENGTH
@@ -275,15 +275,15 @@ def create_annotations_from_pdf(
     try:
         pdf_text, parsed = parse_pdf(document.id, annotation_configs['exclude_references'])
     except requests.exceptions.ConnectTimeout:
-        raise ServerException(
+        raise AnnotationError(
             'Unable to Annotate',
             'The request timed out while trying to connect to the parsing service.')
     except requests.exceptions.Timeout:
-        raise ServerException(
+        raise AnnotationError(
             'Unable to Annotate',
             'The request to the parsing service timed out.')
     except (requests.exceptions.RequestException, Exception):
-        raise ServerException(
+        raise AnnotationError(
             'Unable to Annotate',
             'An unexpected error occurred with the parsing service.')
 
@@ -318,15 +318,15 @@ def create_annotations_from_text(
     try:
         pdf_text, parsed = parse_text(text)
     except requests.exceptions.ConnectTimeout:
-        raise ServerException(
+        raise AnnotationError(
             'Unable to Annotate',
             'The request timed out while trying to connect to the parsing service.')
     except requests.exceptions.Timeout:
-        raise ServerException(
+        raise AnnotationError(
             'Unable to Annotate',
             'The request to the parsing service timed out.')
     except (requests.exceptions.RequestException, Exception):
-        raise ServerException(
+        raise AnnotationError(
             'Unable to Annotate',
             'An unexpected error occurred with the parsing service.')
 
@@ -362,15 +362,15 @@ def create_annotations_from_enrichment_table(
     try:
         pdf_text, parsed = parse_text(text)
     except requests.exceptions.ConnectTimeout:
-        raise ServerException(
+        raise AnnotationError(
             'Unable to Annotate',
             'The request timed out while trying to connect to the parsing service.')
     except requests.exceptions.Timeout:
-        raise ServerException(
+        raise AnnotationError(
             'Unable to Annotate',
             'The request to the parsing service timed out.')
     except (requests.exceptions.RequestException, Exception):
-        raise ServerException(
+        raise AnnotationError(
             'Unable to Annotate',
             'An unexpected error occurred with the parsing service.')
 

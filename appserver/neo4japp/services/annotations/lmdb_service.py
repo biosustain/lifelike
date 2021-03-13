@@ -2,7 +2,7 @@ import json
 
 from typing import List
 
-from neo4japp.exceptions import ServerException
+from neo4japp.exceptions import LMDBError
 from neo4japp.database import LMDBConnection
 
 
@@ -16,9 +16,9 @@ class LMDBService(LMDBConnection):
             try:
                 values = [json.loads(v) for v in cursor.iternext_dup()]
             except Exception:
-                raise ServerException(
-                    'Cannot Connect to LMDB',
-                    f'Failed token lookup for type <{token_type}>.')
+                raise LMDBError(
+                    title='Cannot Connect to LMDB',
+                    message=f'Failed token lookup for type <{token_type}>.')
             cursor.close()
         return values
 
