@@ -48,7 +48,8 @@ class UserManualAPI(MethodView):
         try:
             file = request.files['file']
         except KeyError:
-            raise ServerException('Unable to Upload File', 'No file specified.')
+            raise ServerException(
+                title='Unable to Upload File', message='No file specified.')
 
         self.blob.upload_from_string(file.read(), content_type='application/pdf')
 

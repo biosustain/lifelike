@@ -13,7 +13,6 @@ from neo4japp.exceptions import (
     JWTAuthTokenException,
     ServerException,
 )
-from neo4japp.schemas.account import UserProfileSchema
 from neo4japp.schemas.auth import JWTTokenResponse
 from neo4japp.models.auth import AppUser
 from neo4japp.utils.logger import EventLog, UserEventLog
@@ -134,7 +133,7 @@ def verify_token(token):
             except NoResultFound:
                 raise ServerException(
                     title='Failed to Authenticate',
-                    message='Credentials not found.',
+                    message='There was a problem authenticating, please try again.',
                     code=404)
             else:
                 g.current_user = user
@@ -142,7 +141,10 @@ def verify_token(token):
                     scope.set_tag('user_email', user.email)
                 return True
     else:
-        raise ServerException('Failed to Authenticate')
+        raise ServerException(
+            title='Failed to Authenticate',
+            message='There was a problem authenticating, please try again.',
+            code=404)
 
 
 @bp.route('/refresh', methods=['POST'])
@@ -167,7 +169,7 @@ def refresh():
     except NoResultFound:
         raise ServerException(
             title='Failed to Authenticate',
-            message='Credentials not found.',
+            message='There was a problem authenticating, please try again.',
             code=404)
     else:
         return jsonify(JWTTokenResponse().dump({
@@ -199,7 +201,7 @@ def login():
     except NoResultFound:
         raise ServerException(
             title='Failed to Authenticate',
-            message='Credentials not found or invalid.',
+            message='There was a problem authenticating, please try again.',
             code=404)
     else:
         if user.check_password(data.get('password')):
@@ -224,5 +226,5 @@ def login():
         else:
             raise ServerException(
                 title='Failed to Authenticate',
-                message='Credentials not found or invalid.',
+                message='There was a problem authenticating, please try again.',
                 code=404)

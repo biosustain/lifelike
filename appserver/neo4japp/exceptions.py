@@ -65,26 +65,58 @@ class ServerException(Exception):
         return retval
 
 
-""" READ READ READ READ
+class AnnotationError(ServerException):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+        super().__init__(
+            title=title,
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
-Should not need to create anymore exceptions! Everything can be
-generalized into the `ServerException`.
 
-If you must...
+class LMDBError(ServerException):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+        super().__init__(
+            title=title,
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
-Should only create errors based on features. This will help to display
-feature specific error titles in the messages on UI, instead of generic
-`Bad Request` or `Invalid Input`.
 
-The title should be a short concise message indicating the error;
-e.g
-    `Unable to Annotate`
-    `Unable to Get Visualizer Snippet Data`
+class FileUploadError(ServerException):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+        super().__init__(
+            title=title,
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
-Errors like `DuplicateError` and `InvalidArgumentsException` aren't needed
-as they can be generalized to a `ServerException`, and the `message` or `fields`
-can indicate duplication.
-"""
+
+class NotAuthorized(ServerException):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+        super().__init__(
+            title=title,
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
+
+
+class RecordNotFound(ServerException):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+        super().__init__(
+            title=title,
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
+
+
+class InvalidArgument(ServerException):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+        super().__init__(
+            title=title,
+            message=message,
+            additional_msgs=additional_msgs,
+            code=code)
 
 
 class JWTTokenException(ServerException):
