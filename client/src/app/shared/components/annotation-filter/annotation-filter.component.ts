@@ -46,12 +46,18 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
       this.legend.set(annotation.type, annotation.color);
     });
 
-    // Set each type's visibility to true at first, we'll figure out what the visibility actually is in `applyFilters` below.
-    this.legend.forEach((_, key) => {
-      this.typeVisibilityMap.set(key, true);
+    // For each NEW type in the legend, set the visibility of that type to true by default. For any existing type, use the current
+    // visibility.
+    this.legend.forEach((_, type) => {
+      this.typeVisibilityMap.set(type, this.typeVisibilityMap.has(type) ? this.typeVisibilityMap.get(type) : true);
     });
 
-    this.applyFilters();
+    // When the component is initially created, we apply the default filters and emit to the parent, and on subsequent data loads we also
+    // need to apply the filters and output to the parent.
+    if (this.initialized) {
+      this.applyFilters();
+      this.outputSubject.next();
+    }
   }
   get annotationData() {
     return this._annotationData;
@@ -83,6 +89,8 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
   orderDirections: string[];
 
   legend: Map<string, string>;
+
+  initialized = false;
 
   constructor() {
     this.outputSubject = new Subject<boolean>();
@@ -149,6 +157,11 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
         }
       }
     );
+
+    // Apply filters to initial data and output to parent
+    this.applyFilters();
+    this.outputSubject.next();
+    this.initialized = true;
   }
 
   updateVisibility() {
