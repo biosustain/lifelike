@@ -34,7 +34,7 @@ from neo4japp.services.annotations.data_transfer_objects import (
     PDFWord,
     SpecifiedOrganismStrain
 )
-from neo4japp.exceptions import ServerException
+from neo4japp.exceptions import AnnotationError
 from neo4japp.util import normalize_str, standardize_str
 from neo4japp.utils.logger import EventLog
 
@@ -372,7 +372,7 @@ class AnnotationService:
                 )
 
         if curr_closest_organism is None:
-            raise ServerException(
+            raise AnnotationError(
                 title='Unable to Annotate',
                 message='Cannot get gene ID with no organisms.')
 
@@ -516,7 +516,7 @@ class AnnotationService:
                         gene_id = organisms_to_match[self.specified_organism.organism_id]  # noqa
                         category = self.specified_organism.category
                     except KeyError:
-                        raise ServerException(
+                        raise AnnotationError(
                             title='Unable to Annotate',
                             message='Failed to find gene ID with fallback organism.')
 

@@ -10,7 +10,7 @@ from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_authorization_service
-from neo4japp.exceptions import ServerException
+from neo4japp.exceptions import ServerException, NotAuthorized
 from neo4japp.models import AppUser, AppRole
 from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
@@ -74,7 +74,7 @@ class AccountView(MethodView):
         else:
             # Regular users can only see themselves
             if hash_id and hash_id != g.current_user.hash_id:
-                raise ServerException(message='You do not have sufficient privileges.', code=400)
+                raise NotAuthorized(message='You do not have sufficient privileges.', code=400)
             query = query.where(t_appuser.c.hash_id == g.current_user.hash_id)
 
         results = [
@@ -99,7 +99,7 @@ class AccountView(MethodView):
         admin_or_private_access = g.current_user.has_role('admin') or \
             g.current_user.has_role('private-data-access')
         if not admin_or_private_access:
-            raise ServerException(
+            raise NotAuthorized(
                 title='Cannot Create New User',
                 message='You do not have sufficient privileges.',
                 code=400)
@@ -142,9 +142,9 @@ class AccountView(MethodView):
         admin_or_private_access = g.current_user.has_role('admin') or \
             g.current_user.has_role('private-data-access')
         if g.current_user.hash_id != hash_id and admin_or_private_access is False:
-            raise ServerException(
-                'Failed to Update User',
-                'You do not have sufficient privileges.')
+            raise NotAuthorized(
+                title='Failed to Update User',
+                message='You do not have sufficient privileges.')
         else:
             target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
             for attribute, new_value in params.items():
@@ -176,17 +176,17 @@ def update_password(params: dict, hash_id):
     admin_or_private_access = g.current_user.has_role('admin') or \
         g.current_user.has_role('private-data-access')
     if g.current_user.hash_id != hash_id and admin_or_private_access is False:
-        raise ServerException(
-            'Failed to Update User',
-            'You do not have sufficient privileges.')
+        raise NotAuthorized(
+            title='Failed to Update User',
+            message='You do not have sufficient privileges.')
     else:
         target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
         if target.check_password(params['password']):
             target.set_password(params['new_password'])
         else:
             raise ServerException(
-                'Failed to Update User',
-                'Old password is invalid.')
+                title='Failed to Update User',
+                message='Old password is invalid.')
         try:
             db.session.add(target)
             db.session.commit()
