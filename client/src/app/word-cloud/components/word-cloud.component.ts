@@ -89,7 +89,6 @@ export class WordCloudComponent implements OnInit, OnDestroy {
         });
 
         this.setAnnotationData(annotationExport);
-        this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
     });
 
     // Emits the first time we get a data response
