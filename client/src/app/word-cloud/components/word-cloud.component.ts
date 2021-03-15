@@ -1,20 +1,31 @@
-import { Component, EventEmitter, Input, OnDestroy, Output, ViewEncapsulation, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  ViewEncapsulation
+} from '@angular/core';
 
 import { uniqueId } from 'lodash';
 
 import { combineLatest, Subscription } from 'rxjs';
+import { first } from 'rxjs/operators';
 
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { LegendService } from 'app/shared/services/legend.service';
 
-import * as d3 from 'd3';
-import * as cloud from 'd3.layout.cloud';
 import { defaultSortingAlgorithm, SortingAlgorithm } from '../sorting/sorting-algorithms';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
 import { NodeLegend } from '../../interfaces';
-import { first, skip } from 'rxjs/operators';
+
+import * as d3 from 'd3';
+import * as cloud from 'd3.layout.cloud';
 
 @Component({
   selector: 'app-word-cloud',
@@ -30,8 +41,14 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   @Input() clickableWords = false;
   @Output() wordOpen = new EventEmitter<WordOpen>();
 
+  @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapperEl: ElementRef;
+  @ViewChild('wordCloudWrapper', {static: false}) wordCloudWrapperEl: ElementRef;
+  @ViewChild('wordCloudTooltip', {static: false}) wordCloudTooltipEl: ElementRef;
+  @ViewChild('wordCloudSvg', {static: false}) wordCloudSvgEl: ElementRef;
+  @ViewChild('wordCloudGroup', {static: false}) wordCloudGroupEl: ElementRef;
+  layout: any;
+
   loadTask: BackgroundTask<any, [NodeLegend, string]>;
-  annotationsLoadedInitSub: Subscription;
   annotationsLoadedSub: Subscription;
 
   wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
@@ -49,53 +66,50 @@ export class WordCloudComponent implements OnInit, OnDestroy {
 
   keywordsShown = true;
 
+  resizeCloud = true;
+  cloudResizeObserver: any;
+
   constructor(protected readonly annotationsService: AnnotationsService,
-              protected readonly legendService: LegendService) {
-    this.initWordCloud();
-  }
+              protected readonly legendService: LegendService) {}
 
   ngOnInit() {
-    this.getAnnotations();
-  }
-
-  ngOnDestroy() {
-    this.annotationsLoadedInitSub.unsubscribe();
-    this.annotationsLoadedSub.unsubscribe();
-  }
-
-  initDataFetch() {
+    // Initialize the background task
     this.loadTask = new BackgroundTask(({hashId, sortingId}) => {
       return combineLatest(
         this.legendService.getAnnotationLegend(),
         this.annotationsService.getSortedAnnotations(hashId, sortingId),
       );
     });
+
+    // Set the background task callback
+    this.annotationsLoadedSub = this.loadTask.results$.subscribe(({result: [legend, annotationExport]}) => {
+        // Reset legend
+        Object.keys(legend).forEach(label => {
+          this.legend.set(label.toLowerCase(), legend[label].color);
+        });
+
+        this.setAnnotationData(annotationExport);
+    });
+
+    // Emits the first time we get a data response
+    this.loadTask.results$.pipe(first()).subscribe(() => {
+      // Set up the cloud resize observer.
+      // @ts-ignore
+      this.cloudResizeObserver = new ResizeObserver(() => {
+        this.resizeCloud = true;
+      });
+      this.cloudResizeObserver.observe(this.wordCloudWrapperEl.nativeElement);
+    });
+
+    this.layout = cloud();
+
+    // Send initial data request
+    this.getAnnotations();
   }
 
-  initWordCloud() {
-    this.initDataFetch();
-    this.annotationsLoadedInitSub = this.loadTask.results$.pipe(first()).subscribe(({
-                                                                                      result: [legend, annotationExport],
-                                                                                    }) => {
-      // Reset legend
-      Object.keys(legend).forEach(label => {
-        this.legend.set(label.toLowerCase(), legend[label].color);
-      });
-
-      this.setAnnotationData(annotationExport);
-      this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), true);
-    });
-    this.annotationsLoadedSub = this.loadTask.results$.pipe(skip(1)).subscribe(({
-                                                                                  result: [legend, annotationExport],
-                                                                                }) => {
-      // Reset legend
-      Object.keys(legend).forEach(label => {
-        this.legend.set(label.toLowerCase(), legend[label].color);
-      });
-
-      this.setAnnotationData(annotationExport);
-      this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), false);
-    });
+  ngOnDestroy() {
+    this.cloudResizeObserver.unobserve(this.wordCloudWrapperEl.nativeElement);
+    this.annotationsLoadedSub.unsubscribe();
   }
 
   getAnnotationIdentifier(annotation: WordCloudAnnotationFilterEntity) {
@@ -174,31 +188,34 @@ export class WordCloudComponent implements OnInit, OnDestroy {
     newMap.forEach((val, key) => {
       this.wordVisibilityMap.set(key, val);
     });
-    this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), false);
+    this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
   }
 
   /**
    * Redraws the word cloud with updated dimensions to fit the current window.
    */
   fitCloudToWindow() {
-    this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), false);
+    this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
   }
 
   toggleFiltersPanel() {
     this.filtersPanelOpened = !this.filtersPanelOpened;
   }
 
+  /**
+   * Updates the word cloud text to the primary names of each entity, and vice versa.
+   */
   toggleShownText() {
     this.annotationData = this.annotationData.map(annotation => {
       annotation.text = this.keywordsShown ? annotation.primaryName : annotation.keyword;
       return annotation;
     });
     this.keywordsShown = !this.keywordsShown;
-    this.drawWordCloud(this.getFilteredAnnotationDeepCopy(), false);
+    this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
   }
 
   copyWordCloudToClipboard() {
-    const hiddenTextAreaWrapper = document.getElementById(`${this.id}-hidden-text-area-wrapper`);
+    const hiddenTextAreaWrapper = this.hiddenTextAreaWrapperEl.nativeElement;
     hiddenTextAreaWrapper.style.display = 'block';
     const tempTextArea = document.createElement('textarea');
 
@@ -275,75 +292,9 @@ export class WordCloudComponent implements OnInit, OnDestroy {
       bottom: this.WORD_CLOUD_MARGIN,
       left: this.WORD_CLOUD_MARGIN,
     };
-    const width = (document.getElementById(`${this.id}cloud-wrapper`).offsetWidth) - margin.left - margin.right;
-    const height = (document.getElementById(`${this.id}cloud-wrapper`).offsetHeight) - margin.top - margin.bottom;
-
+    const width = this.wordCloudWrapperEl.nativeElement.offsetWidth - margin.left - margin.right;
+    const height = this.wordCloudWrapperEl.nativeElement.offsetHeight - margin.top - margin.bottom;
     return {width, height};
-  }
-
-  /**
-   * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
-   * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
-   */
-  private createInitialWordCloudElements(words: WordCloudAnnotationFilterEntity[]) {
-    this.updateWordVisibility(words);
-
-    const {width, height} = this.getCloudSvgDimensions();
-    const componentId = this.id;
-
-    // create a tooltip
-    const tooltip = d3.select(`#${componentId}cloud-wrapper`)
-      .append('div')
-      .style('opacity', 0)
-      .attr('class', 'tooltip')
-      .style('background-color', 'white')
-      .style('border', 'solid')
-      .style('border-width', '2px')
-      .style('border-radius', '5px')
-      .style('padding', '5px');
-
-    // Also create a function for the tooltip content, to be shown when the text is hovered over
-    const keywordsShown = this.keywordsShown;
-    const mousemove = function(d) {
-      const coordsOfCloud = document.getElementById(`${componentId}cloud-wrapper`).getBoundingClientRect() as DOMRect;
-      const coordsOfText = this.getBoundingClientRect() as DOMRect;
-      tooltip
-        .html(keywordsShown ? `Primary Name: ${d.primaryName}` : `Text in Document: ${d.keyword}`)
-        .style('left', (coordsOfText.x - coordsOfCloud.x) + 'px')
-        .style('top', (coordsOfText.y - coordsOfCloud.y) + 'px');
-    };
-
-    // Append the svg element to the wrapper, append the grouping element to the svg, and create initial words
-    d3.select(`#${this.id}cloud-wrapper`)
-      .append('svg')
-      .attr('width', width)
-      .attr('height', height)
-      .append('g')
-      .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
-      .selectAll('text')
-      .data(words, (d) => d.text)
-      .enter()
-      .append('text')
-      .on('click', (item: WordCloudAnnotationFilterEntity) => {
-        this.wordOpen.emit({
-          entity: item,
-          keywordsShown: this.keywordsShown,
-        });
-      })
-      .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
-      .style('fill', (d) => d.color)
-      .attr('text-anchor', 'middle')
-      .style('font-size', (d) => d.size + 'px')
-      .on('mouseover', () => tooltip.style('opacity', 1))
-      .on('mousemove', mousemove)
-      .on('mouseleave', () => tooltip.style('opacity', 0))
-      .transition()
-      .attr('transform', (d) => {
-        return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
-      })
-      .text((d) => d.text)
-      .ease(d3.easeSin)
-      .duration(1000);
   }
 
   /**
@@ -355,45 +306,28 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   private updateWordCloudElements(words: WordCloudAnnotationFilterEntity[]) {
     this.updateWordVisibility(words);
 
-    // Set the dimensions and margins of the graph
-    const {width, height} = this.getCloudSvgDimensions();
+    // Get grouping element
+    const g = d3.select(this.wordCloudGroupEl.nativeElement);
 
-    // Get the svg element and update
-    const svg = d3.select(`#${this.id}cloud-wrapper`)
-      .select('svg')
-      .attr('width', width)
-      .attr('height', height);
-
-    // Get and update the grouping element
-    const g = svg
-      .select('g')
-      .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
-
-    // Get the word elements
-    const wordElements = g.selectAll('text').data(words, (d) => d.text);
-
-    // Create a tooltip for the word cloud text
-    const tooltip = d3.select(`#${this.id}cloud-wrapper`)
-      .append('div')
-      .style('opacity', 0)
-      .attr('class', 'tooltip')
-      .style('background-color', 'white')
-      .style('border', 'solid')
-      .style('border-width', '2px')
-      .style('border-radius', '5px')
-      .style('padding', '5px');
+    // Get the tooltip for the word cloud text (this should already be present in the DOM)
+    const tooltip = d3.select(this.wordCloudTooltipEl.nativeElement)
+      .style('display', 'none');
 
     // Also create a function for the tooltip content, to be shown when the text is hovered over
-    const componentId = this.id;
+    const cloudWrapper = this.wordCloudWrapperEl;
     const keywordsShown = this.keywordsShown;
-    const mousemove = function(d) {
-      const coordsOfCloud = document.getElementById(`${componentId}cloud-wrapper`).getBoundingClientRect() as DOMRect;
+    const mouseenter = function(d) {
+      const coordsOfCloud = cloudWrapper.nativeElement.getBoundingClientRect() as DOMRect;
       const coordsOfText = this.getBoundingClientRect() as DOMRect;
       tooltip
         .html(keywordsShown ? `Primary Name: ${d.primaryName}` : `Text in Document: ${d.keyword}`)
+        .style('display', 'block')
         .style('left', (coordsOfText.x - coordsOfCloud.x) + 'px')
         .style('top', (coordsOfText.y - coordsOfCloud.y) + 'px');
     };
+
+    // Get the word elements
+    const wordElements = g.selectAll('text').data(words, (d) => d.text);
 
     // Add any new words
     wordElements
@@ -411,9 +345,8 @@ export class WordCloudComponent implements OnInit, OnDestroy {
       })
       .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
       .style('font-size', (d) => d.size + 'px')
-      .on('mouseover', () => tooltip.style('opacity', 1))
-      .on('mousemove', mousemove)
-      .on('mouseleave', () => tooltip.style('opacity', 0))
+      .on('mouseenter', mouseenter)
+      .on('mouseleave', () => tooltip.style('display', 'none'))
       .transition()
       .attr('transform', (d) => {
         return 'translate(' + [d.x, d.y] + ')rotate(' + d.rotate + ')';
@@ -444,25 +377,40 @@ export class WordCloudComponent implements OnInit, OnDestroy {
    * Draws a word cloud with the given AnnotationFilterEntity inputs using the d3.layout.cloud library.
    * @param data represents a collection of AnnotationFilterEntity data
    */
-  drawWordCloud(data: WordCloudAnnotationFilterEntity[], initial: boolean) {
-    // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
-    const {width, height} = this.getCloudSvgDimensions();
+  drawWordCloud(data: WordCloudAnnotationFilterEntity[]) {
+    if (this.resizeCloud) {
+      this.resizeCloud = false;
 
-    const maxAlgoInputSlice = data.length > this.MAX_ALGO_INPUT ? data.slice(0, this.MAX_ALGO_INPUT) : data;
+      // Get the dimensions and margins of the graph
+      const {width, height} = this.getCloudSvgDimensions();
+
+      // Get the svg element and update
+      d3.select(this.wordCloudSvgEl.nativeElement)
+        .attr('width', width)
+        .attr('height', height);
+
+      // Also update the grouping element
+      d3.select(this.wordCloudGroupEl.nativeElement)
+        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+
+      // ...And update the cloud layout
+      this.layout.size([width, height]);
+    }
 
     // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
-    const layout = cloud()
-      .size([width, height])
+    const maxAlgoInputSlice = data.length > this.MAX_ALGO_INPUT ? data.slice(0, this.MAX_ALGO_INPUT) : data;
+    this.layout
       .words(maxAlgoInputSlice)
       .padding(3)
+      // max ~48px, min ~12px
       .fontSize(this.fontSize(maxAlgoInputSlice))
       .rotate(() => 0)
       // TODO: Maybe in the future we can allow the user to define their own rotation intervals,
       // but for now just keep it simple and don't rotate the words
       /* tslint:disable:no-bitwise*/
       // .rotate(() => (~~(Math.random() * 8) - 3) * 15)
-      .on('end', words => initial ? this.createInitialWordCloudElements(words) : this.updateWordCloudElements(words));
-    layout.start();
+      .on('end', words => this.updateWordCloudElements(words));
+    this.layout.start();
   }
 }
 

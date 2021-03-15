@@ -9,9 +9,8 @@ import { AnnotationFilterComponent } from '../annotation-filter/annotation-filte
   templateUrl: './word-cloud-annotation-filter.component.html',
   styleUrls: ['./word-cloud-annotation-filter.component.scss']
 })
-export class WordCloudAnnotationFilterComponent extends AnnotationFilterComponent implements OnInit {
+export class WordCloudAnnotationFilterComponent extends AnnotationFilterComponent<WordCloudAnnotationFilterEntity> implements OnInit {
   @Input() clickableWords = false;
-  @Input() annotationData: WordCloudAnnotationFilterEntity[];
   @Output() wordOpen = new EventEmitter<WordCloudAnnotationFilterEntity>();
 
   constructor() {
