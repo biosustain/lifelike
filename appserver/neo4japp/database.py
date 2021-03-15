@@ -8,7 +8,6 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from py2neo import Graph
 from sqlalchemy import MetaData, Table, UniqueConstraint
-from redis import Redis
 
 from neo4japp.utils.flask import scope_flask_app_ctx
 
@@ -56,28 +55,17 @@ db = SQLAlchemy(
 # TODO: how to close connection? Py2neo doesn't seem to do this...
 def connect_to_neo4j():
     if 'neo4j' not in g:
+        protocols = ['bolts', 'bolt+s', 'bolt+ssc', 'https', 'http+s', 'http+ssc']
         secure = current_app.config.get('NEO4J_SCHEME', 'bolt')
         g.neo4j = Graph(
             name=current_app.config.get('NEO4J_DATABASE'),
             host=current_app.config.get('NEO4J_HOST'),
             auth=current_app.config.get('NEO4J_AUTH').split('/'),
-            secure=secure in ['bolts', 'bolt+s', 'bolt+ssc', 'https', 'http+s', 'http+ssc'],  # Any 's' will be considered a secure protocol
+            secure=secure in protocols,  # Any 's' will be considered a secure protocol
             port=current_app.config.get('NEO4J_PORT'),
             scheme=current_app.config.get('NEO4J_SCHEME')
         )
     return g.neo4j
-
-
-def connect_to_redis():
-    if 'redis' not in g:
-        g.redis = Redis(
-            host=current_app.config.get('REDIS_HOST'),
-            port=current_app.config.get('REDIS_PORT'),
-            password=current_app.config.get('REDIS_PASSWORD'),
-            ssl=current_app.config.get('REDIS_SSL').lower() == 'true',
-            decode_responses=True
-        )
-    return g.redis
 
 
 def connect_to_lmdb():
@@ -304,20 +292,8 @@ def get_kg_statistics_service():
     if 'kg_statistics_service' not in g:
         from neo4japp.services.kg_statistics import KgStatisticsService
         graph = connect_to_neo4j()
-        redis_conn = connect_to_redis()
-        g.kg_statistics_service = KgStatisticsService(
-            graph=graph,
-            redis_conn=redis_conn
-        )
+        g.kg_statistics_service = KgStatisticsService(graph=graph)
     return g.kg_statistics_service
-
-
-def get_redis_helper_service():
-    if 'redis_helper_service' not in g:
-        from neo4japp.services.redis import RedisHelperService
-        redis_conn = connect_to_redis()
-        g.redis_helper_service = RedisHelperService(redis_conn=redis_conn)
-    return g.redis_helper_service
 
 
 def reset_dao():
@@ -335,7 +311,6 @@ def reset_dao():
         'projects_service',
         'visualizer_service',
         'neo4j',
-        'redis',
     ]:
         if dao in g:
             g.pop(dao)

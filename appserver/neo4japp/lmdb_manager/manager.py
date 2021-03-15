@@ -9,6 +9,7 @@ from datetime import datetime
 from azure.common import AzureMissingResourceHttpError
 from azure.storage.file import FileService, ContentSettings
 from typing import List, Dict, Optional
+from neo4japp.exceptions import RecordNotFoundException
 from sqlalchemy import Column, String
 from sqlalchemy.types import TIMESTAMP
 from sqlalchemy.orm import sessionmaker
@@ -17,14 +18,6 @@ from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
 log = logging.getLogger(__name__)
 logging.getLogger('azure').setLevel(logging.WARNING)
-
-
-class DoesNotExist(Exception):
-
-    def __init__(self, name, message, *args):
-        self.name = name
-        self.message = message
-        super().__init__(*args)
 
 
 class BaseCloudStorageProvider:
@@ -100,7 +93,7 @@ class AzureStorageProvider(BaseCloudStorageProvider):
                 os.path.basename(remote_object_path),
             )
         except AzureMissingResourceHttpError:
-            raise DoesNotExist('Missing Resource', 'File not found.')
+            raise RecordNotFoundException('Missing Resource', 'File not found.')
         else:
             return remote_fi.properties.content_settings.content_md5
 

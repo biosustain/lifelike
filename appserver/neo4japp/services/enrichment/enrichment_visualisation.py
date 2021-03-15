@@ -3,8 +3,8 @@ import logging
 from functools import partial
 from typing import List
 
-from neo4japp.database import get_redis_helper_service
 from neo4japp.exceptions import DataNotAvailableException
+from neo4japp.services.rcache import redis_cached
 from neo4japp.services import KgService
 from neo4japp.services.enrichment.enrich_methods import fisher
 
@@ -15,7 +15,6 @@ logging.getLogger("py2neo.client.bolt").setLevel(logging.INFO)
 class EnrichmentVisualisationService(KgService):
     def __init__(self, graph, session):
         super().__init__(graph=graph, session=session)
-        self.redis_service = get_redis_helper_service()
 
     def enrich_go(self, gene_names: List[str], analysis, organism):
         if analysis == 'fisher':
@@ -43,7 +42,7 @@ class EnrichmentVisualisationService(KgService):
 
     def get_go_terms(self, organism):
         cache_id = f"get_go_terms_{organism}"
-        return self.redis_service.redis_cached(
+        return redis_cached(
                 cache_id,
                 partial(self.query_go_term, organism.id),
                 load=json.loads,

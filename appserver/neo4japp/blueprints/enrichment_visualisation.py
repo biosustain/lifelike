@@ -9,7 +9,8 @@ from flask_marshmallow import Schema
 from marshmallow import fields, ValidationError
 from marshmallow.validate import Regexp, OneOf
 from neo4japp.blueprints.auth import auth
-from neo4japp.database import get_enrichment_visualisation_service, get_redis_helper_service
+from neo4japp.database import get_enrichment_visualisation_service
+from neo4japp.services.rcache import redis_cached
 from webargs.flaskparser import use_args
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
@@ -60,8 +61,7 @@ def enrich_go(args):
     analysis = args['analysis']
     cache_id = '_'.join(['enrich_go', ','.join(gene_names), analysis, str(organism)])
     enrichment_visualisation = get_enrichment_visualisation_service()
-    redis_service = get_redis_helper_service()
-    return redis_service.redis_cached(
+    return redis_cached(
             cache_id, partial(enrichment_visualisation.enrich_go, gene_names, analysis, organism)
     ), dict(mimetype='application/json')
 
@@ -74,8 +74,7 @@ def go_significance(args):
     organism = args['organism']
     cache_id = '_'.join(['go_significance', ','.join(gene_names), str(organism)])
     enrichment_visualisation = get_enrichment_visualisation_service()
-    redis_service = get_redis_helper_service()
-    return redis_service.redis_cached(
+    return redis_cached(
             cache_id,
             partial(enrichment_visualisation.get_go_significance, gene_names, organism),
             dump=json.dumps
