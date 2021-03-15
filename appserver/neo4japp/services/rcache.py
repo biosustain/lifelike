@@ -1,7 +1,6 @@
 """ Redis Cache """
 import os
 import redis
-import json
 
 
 REDIS_HOST = os.environ.get('REDIS_HOST')
@@ -57,21 +56,3 @@ def redis_cached(
         if load is None:
             return dumped_result
         return result
-
-
-def set_cache_data(key, value, cache_expiration=1209600):
-    """ This is used to distinguish between different environments
-    since we connect to a single Redis instance and keys could
-    potentially collide.
-    """
-    redis_server.set(key, json.dumps(value))
-    redis_server.expire(key, cache_expiration)
-    return redis_server.get(key)
-
-
-def get_cache_data(key):
-    """ This is used to distinguish between different environments
-    since we connect to a single Redis instance. By default, our
-    setter will add the global Redis prefix.
-    """
-    return redis_server.get(key)
