@@ -19,11 +19,6 @@ class Base():
     POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
     POSTGRES_DB = os.environ.get('POSTGRES_DB')
 
-    REDIS_HOST = os.environ.get('REDIS_HOST')
-    REDIS_PORT = os.environ.get('REDIS_PORT')
-    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
-    REDIS_SSL = os.environ.get('REDIS_SSL', 'false')
-
     NEO4J_HOST = os.environ.get('NEO4J_HOST')
     NEO4J_SCHEME = os.environ.get('NEO4J_SCHEME')
     NEO4J_AUTH = os.environ.get('NEO4J_AUTH')
@@ -52,31 +47,26 @@ class Development(Base):
     ASSETS_DEBUG = True
     WTF_CSRF_ENABLED = False
     DOMAIN = 'http://localhost'
-    REDIS_PREFIX = 'redis-dev'
 
 
 class QA(Base):
     """ QA configuration """
     SITE_NAME = 'Lifelike Knowledge Search (QA)'
     DOMAIN = 'https://qa.lifelike.bio'
-    REDIS_PREFIX = 'redis-qa'
 
 
 class Staging(Base):
     """Staging configurations"""
     SITE_NAME = 'Lifelike Knowledge Search (Staging)'
     DOMAIN = 'https://test.lifelike.bio'
-    REDIS_PREFIX = 'redis-staging'
 
 
 class Testing(Base):
     """Functional test configuration"""
     TESTING = True
     WTF_CSRF_ENABLED = False
-    REDIS_PREFIX = 'redis-testing'
 
 
 class Production(Base):
     """ Production configuration """
     DOMAIN = 'https://kg.lifelike.bio'
-    REDIS_PREFIX = 'redis-prod'

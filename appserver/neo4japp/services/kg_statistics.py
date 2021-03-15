@@ -1,11 +1,11 @@
 from collections import defaultdict
-from neo4japp.services.common import GraphBaseDao, RedisDao
+from neo4japp.services.common import GraphBaseDao
 
 
-class KgStatisticsService(GraphBaseDao, RedisDao):
+class KgStatisticsService(GraphBaseDao):
 
-    def __init__(self, graph, redis_conn):
-        super().__init__(graph=graph, redis_conn=redis_conn)
+    def __init__(self, graph):
+        super().__init__(graph=graph)
 
     def get_kg_statistics(self):
         results = self.graph.run('CALL db.labels()').data()
