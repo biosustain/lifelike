@@ -700,11 +700,11 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         # Remove the highlight tags to help the annotation parser
         text = highlight_strip_tag_re.sub('%%%%%-\\1-%%%%%', text)
 
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # TODO: See JIRA BUG LL-2451
-        #
+        # sort by longest length because the regex is eager
+        # and will take the first occurrence it finds
+        annotations = sorted(annotations, key=lambda x: x['keywordLength'], reverse=True)
         for annotation in annotations:
-            keyword = annotation['keyword']
+            keyword = annotation['textInDocument']
             text = re.sub(
                 # Replace but outside tags (shh @ regex)
                 f"(?<!\\w)({re.escape(keyword)})(?!\\w)(?![^<]*>|[^<>]*</)",
