@@ -300,12 +300,11 @@ def refresh_kg_statistics(force):
     NOTE: This command bogs down neo4j pretty heavily,
     so we only want to run this sparingly. """
     from neo4japp.database import get_kg_statistics_service
-    from neo4japp.services import rcache
     stat_service = get_kg_statistics_service()
     try:
-        if rcache.get_cache_data('kg_statistics') is None or force:
-            statistics = stat_service.get_kg_statistics()
-            rcache.set_cache_data('kg_statistics', statistics)
+        stat_service.get_kg_statistics()
+        if force:
+            stat_service.get_kg_statistics(force_refresh=True)
             app.logger.info(f'Finish loading the statistics data into redis.')
         else:
             app.logger.info(
