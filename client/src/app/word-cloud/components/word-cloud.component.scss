@@ -23,10 +23,6 @@
   border: thin solid #dc3545;
 }
 
-.word-cloud-title {
-  min-width: 2rem;
-}
-
 .cloud-word {
   cursor: default;
 }
@@ -39,3 +35,7 @@
     outline: 4px solid rgba(255, 0, 0, 0.3);
   }
 }
+
+.word-cloud-title {
+    min-width: 2rem;
+  }
