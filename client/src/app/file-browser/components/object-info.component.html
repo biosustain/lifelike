@@ -60,7 +60,7 @@
         <strong>DOI:</strong>&nbsp;<a [href]="object.doi" target="_blank">{{ object.doi }}</a>
       </li>
       <li *ngIf="object.uploadUrl" class="text-truncate">
-        <strong>Source URL:</strong>&nbsp;<a [href]="object.uploadUrl" target="_blank">{{ object.uploadUrl }}</a>
+        <strong>External URL:</strong>&nbsp;<a [href]="object.uploadUrl" target="_blank">{{ object.uploadUrl }}</a>
       </li>
     </ul>
     <div class="mt-3" *ngIf="objectControls">
