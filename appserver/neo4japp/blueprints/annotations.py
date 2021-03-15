@@ -529,12 +529,37 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     annotations_list = annotations['documents'][0]['passages'][0]['annotations']
 
                     prev_k = -1
+                    enriched_gene = ''
                     for k, text_mapping in enrichment_mappings.items():
                         annotations_to_process = [anno for anno in annotations_list if anno.get(
                             'hiLocationOffset', None) and anno.get(
                                 'loLocationOffset') > prev_k and anno.get('hiLocationOffset') <= k]
 
                         prev_k = k
+
+                        # update JSON to have enrichment row and domain...
+                        for anno in annotations_to_process:
+                            # imported should come first for each row
+                            if text_mapping.get('imported'):
+                                enriched_gene = text_mapping['text']
+                                anno['enrichmentGene'] = enriched_gene
+                                # enrichment JSON doesn't have a domain label for this
+                                anno['enrichmentDomain']['domain'] = 'Imported'
+                            if text_mapping.get('matched'):
+                                anno['enrichmentGene'] = enriched_gene
+                                # enrichment JSON doesn't have a domain label for this
+                                anno['enrichmentDomain']['domain'] = 'Matched'
+                            if text_mapping.get('full_name'):
+                                anno['enrichmentGene'] = enriched_gene
+                                # enrichment JSON doesn't have a domain label for this
+                                anno['enrichmentDomain']['domain'] = 'Gene Full Name'
+                            if 'domain' in text_mapping:
+                                anno['enrichmentGene'] = enriched_gene
+                                if text_mapping['domain'] == 'Regulon':
+                                    anno['enrichmentDomain']['domain'] = text_mapping['domain']
+                                    anno['enrichmentDomain']['subDomain'] = text_mapping['label']
+                                else:
+                                    anno['enrichmentDomain']['domain'] = text_mapping['domain']
 
                         snippet = self._highlight_annotations(
                             original_text=text_mapping['text'],
