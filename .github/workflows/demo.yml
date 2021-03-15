@@ -9,7 +9,7 @@ jobs:
   build:
     name: Setup, Build, Publish
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     outputs:
       output1: ${{ steps.timestamp.outputs.commit_timestamp }}
