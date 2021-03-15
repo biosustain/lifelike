@@ -42,7 +42,7 @@ class UserManualAPI(MethodView):
         return resp
 
     def post(self):
-        if g.current_user.has_role('admin') or g.current_user.has_role('private-data-access'):
+        if g.current_user.has_role('admin'):
             try:
                 file = request.files['file']
             except KeyError:
