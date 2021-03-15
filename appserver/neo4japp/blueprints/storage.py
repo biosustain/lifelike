@@ -16,6 +16,10 @@ bp = Blueprint('storage', __name__, url_prefix='/storage')
 
 
 class UserManualAPI(MethodView):
+    """
+    Uploads a user manual for how to use Lifelike. This API is Azure Cloud
+    platform specific.
+    """
 
     decorators = [auth.login_required]
 
