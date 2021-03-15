@@ -2,7 +2,6 @@
 import os
 import redis
 
-
 REDIS_HOST = os.environ.get('REDIS_HOST')
 REDIS_PORT = os.environ.get('REDIS_PORT')
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
@@ -23,19 +22,13 @@ redis_server = redis.Redis(
     )
 )
 
-###########################
-#
-#   REDIS HELPER METHODS
-#
-###########################
-
 
 def redis_cached(
         uid: str,
         result_provider,
         cache_setting=DEFAULT_CACHE_SETTINGS,
-        load=None,
-        dump=None
+        load=lambda x: x,
+        dump=lambda x: x,
 ):
     """
     Helper method to use redis cache
@@ -47,12 +40,10 @@ def redis_cached(
                             use with caution!!!
     """
     cached_result = redis_server.get(uid)
-    if cached_result is None:
-        return load(cached_result) if load else cached_result
+    if cached_result is not None:
+        return load(cached_result)
     else:
         result = result_provider()
-        dumped_result = dump(result) if dump else result
+        dumped_result = dump(result)
         redis_server.set(uid, dumped_result, **cache_setting)
-        if load is None:
-            return dumped_result
-        return result
+        return dumped_result
