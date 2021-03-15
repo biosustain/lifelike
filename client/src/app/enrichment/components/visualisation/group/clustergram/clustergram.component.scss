@@ -70,25 +70,41 @@ table {
               }
             }
 
-            &.bs-tooltip-top-right, &.bs-tooltip-right-top {
-              padding: $tooltip-arrow-height 0;
-              transform: none !important;
-              left: unset;
-              right: 0;
-
-              .tooltip-inner {
-                border-bottom-left-radius: 0;
-                transform-origin: 100% 0;
-                transform: rotate($column-header-angle) translate(100%, -100%);
-              }
-
-              .arrow {
-                display: none;
-              }
+            &.bs-tooltip-bottom-left, &.bs-tooltip-left-bottom {
+             padding: $tooltip-arrow-height 0;
+             transform: none !important;
+            
+             .tooltip-inner {
+               border-top-right-radius: 0;
+               transform-origin: 0 0;
+               transform: rotate(
+                               $column-header-angle
+               ) translate(-100%, 0);
+             }
+            
+             .arrow {
+               display: none;
+             }
             }
-
-
+            
             // Code for non-used tooltip placements
+            //&.bs-tooltip-top-right, &.bs-tooltip-right-top {
+            //  padding: $tooltip-arrow-height 0;
+            //  transform: none !important;
+            //  left: unset;
+            //  right: 0;
+            //
+            //  .tooltip-inner {
+            //    border-bottom-left-radius: 0;
+            //    transform-origin: 100% 0;
+            //    transform: rotate($column-header-angle) translate(100%, -100%);
+            //  }
+            //
+            //  .arrow {
+            //    display: none;
+            //  }
+            //}
+
             //&.bs-tooltip-top-left, &.bs-tooltip-left-top {
             //  padding: $tooltip-arrow-height 0;
             //
@@ -98,23 +114,6 @@ table {
             //    transform: translateX(-50%) rotate(
             //                    $column-header-angle
             //    ) translate(2*$tooltip-arrow-height, 2*$tooltip-arrow-height);
-            //  }
-            //
-            //  .arrow {
-            //    display: none;
-            //  }
-            //}
-            //
-            //&.bs-tooltip-bottom-left, &.bs-tooltip-left-bottom {
-            //  padding: $tooltip-arrow-height 0;
-            //  transform: none !important;
-            //
-            //  .tooltip-inner {
-            //    border-top-right-radius: 0;
-            //    transform-origin: 0 0;
-            //    transform: rotate(
-            //                    $column-header-angle
-            //    ) translate(-100%, 0);
             //  }
             //
             //  .arrow {
