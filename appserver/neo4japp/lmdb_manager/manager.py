@@ -1,4 +1,3 @@
-import base64
 import logging
 import hashlib
 import json
@@ -25,26 +24,31 @@ class BaseCloudStorageProvider:
     storages. (e.g. Azure, GCP, AWS) """
 
     def upload(self, storage_object: str, remote_object_path: str, source_path: str):
-        """
-        Uploads from local destination to remote source.
-        Args:
-            storage_object (str): represents what cloud providers call
-            the top level directory (e.g. all files will reside in a particular bucket).
-            remote_object_path (str): represents the path to the remote object.
-            source_path (str): path string where local files are located.
+        """Uploads from local destination to remote source.
+
+        :param storage_object: represents what cloud providers call
+        the top level directory (e.g. all files will reside in a particular bucket).
+        :type storage_object: str
+        :param remote_object_path: represents the path to the remote object.
+        :type remote_object_path: str
+        :param source_path: path string where local files are located.
+        :type source_path: str
+        :raises NotImplementedError:
         """
         raise NotImplementedError()
 
     def download(self, storage_object: str, remote_object_path: str, dest_path: str):
-        """
-        Downloads a remote object to a local destination. Directories
+        """Downloads a remote object to a local destination. Directories
         will be created if they do not exists in the local path.
 
-        Args:
-            storage_object (str): represents what cloud providers call
-            the top level directory (e.g. all files will reside in a particular bucket).
-            remote_object_path (str): represents the path to the remote object.
-            dest_path (str): path string to save the file on local.
+        :param storage_object: represents what cloud providers call
+        the top level directory (e.g. all files will reside in a particular bucket).
+        :type storage_object: str
+        :param remote_object_path: represents the path to the remote object.
+        :type remote_object_path: str
+        :param dest_path: path string to save the file on local.
+        :type dest_path: str
+        :raises NotImplementedError:
         """
         raise NotImplementedError()
 
@@ -56,15 +60,15 @@ class BaseCloudStorageProvider:
         """ Returns the file hash on the remote store """
         raise NotImplementedError()
 
-    def get_hash(self, local_path: str, hashlib_fn=hashlib.md5, base64encode=True) -> str:
-        """
-        Gets a file hash using the specified algorithm and encoding.
+    def get_hash(self, local_path: str, hashlib_fn) -> str:
+        """Gets a file hash using the specified algorithm and encoding.
 
-        Args:
-            local_path (str): path to the local file.
-            checksum_fn (obj): the callback used to determine
-            the file's checksum.
-            base64 (bool): return the hash in base64 encoding or not.
+        :param local_path: path to the local file.
+        :type local_path: str
+        :param hashlib_fn: the callback used to determine the file's checksum.
+        :type hashlib_fn: bool
+        :return: the hashed value
+        :rtype: str
         """
         log.debug(f'Generating checksum for {local_path}...')
 
@@ -72,8 +76,6 @@ class BaseCloudStorageProvider:
         with open(local_path, 'rb') as fi:
             for chunk in iter(lambda: fi.read(8192), b''):
                 hash_.update(chunk)
-        if base64encode:
-            hash_ = base64.b64encode(hash_.digest()).decode('utf-8')
         return hash_.hexdigest()
 
 
@@ -114,7 +116,7 @@ class AzureStorageProvider(BaseCloudStorageProvider):
                 return remote_object_dir
 
     def upload(self, storage_name: str, remote_object_path: str, source_path: str):
-        local_src_hash = self.get_hash(source_path, base64encode=False)
+        local_src_hash = self.get_hash(source_path, hashlib.md5)
         self.create_remote_dir(storage_name, os.path.dirname(remote_object_path))
         self.client.create_file_from_path(
             storage_name,
@@ -122,7 +124,7 @@ class AzureStorageProvider(BaseCloudStorageProvider):
             os.path.basename(remote_object_path),
             source_path,
             content_settings=ContentSettings(content_md5=local_src_hash),
-            progress_callback=lambda c, t: print(
+            progress_callback=lambda c, t: log.debug(
                 f'Uploading {os.path.dirname(source_path)} - {c/t * 100}'
             )
         )
@@ -131,7 +133,7 @@ class AzureStorageProvider(BaseCloudStorageProvider):
         existing_checksum = None
         # Calculate file checksum if it exists
         if os.path.exists(dest_path):
-            existing_checksum = self.get_hash(dest_path, base64encode=False)
+            existing_checksum = self.get_hash(dest_path, hashlib.md5)
         else:
             base_dir = os.path.dirname(dest_path)
             # Checks to see if there's an existing directory
@@ -144,7 +146,7 @@ class AzureStorageProvider(BaseCloudStorageProvider):
                 os.path.dirname(remote_object_path),
                 os.path.basename(remote_object_path),
                 dest_path,
-                progress_callback=lambda c, t: print(
+                progress_callback=lambda c, t: log.debug(
                     f'Downloading {os.path.dirname(dest_path)} - {c/t * 100}')
             )
             log.debug(f'Saving file "{remote_object_path}" to "{dest_path}"')
@@ -255,11 +257,11 @@ class LMDBManager:
         for lmdb_file in paths:
             upload_file = True
             data_mdb_path = os.path.join(source_dir, lmdb_file.category, 'data.mdb')
-            data_mdb_md5 = self.cloud_provider.get_hash(data_mdb_path, base64encode=False)
+            data_mdb_md5 = self.cloud_provider.get_hash(data_mdb_path, hashlib.md5)
             try:
                 remote_data_mdb_md5 = self.cloud_provider.get_remote_hash(
                     'lmdb', lmdb_file.data_mdb_path)
-            except DoesNotExist:
+            except RecordNotFoundException:
                 pass
             else:
                 if data_mdb_md5 == remote_data_mdb_md5:
