@@ -47,7 +47,7 @@ def redis_cached(
                             use with caution!!!
     """
     cached_result = redis_server.get(uid)
-    if cached_result:
+    if cached_result is None:
         return load(cached_result) if load else cached_result
     else:
         result = result_provider()
