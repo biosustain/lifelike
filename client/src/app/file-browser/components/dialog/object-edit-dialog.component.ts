@@ -51,7 +51,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
               })}), {})
         )
       }, [Validators.required]),
-    organism: new FormControl(null),
+    organism: new FormControl(null, Validators.required),
     mimeType: new FormControl(null),
   }, (group: FormGroup): ValidationErrors | null => {
     if (this.promptUpload) {
