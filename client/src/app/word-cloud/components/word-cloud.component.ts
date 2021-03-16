@@ -10,7 +10,7 @@ import { LegendService } from 'app/shared/services/legend.service';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
-import { defaultSortingAlgorithm, SortingAlgorithm } from '../sorting/sorting-algorithms';
+import { SortingAlgorithm, fileTypeSortingAlgorithms } from '../sorting/sorting-algorithms';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
 import { NodeLegend } from '../../interfaces';
@@ -28,6 +28,8 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   @Input() title = 'Entity Cloud';
   @Input() object: FilesystemObject;
   @Input() clickableWords = false;
+  @Input() queryParams = {};
+
   @Output() wordOpen = new EventEmitter<WordOpen>();
 
   loadTask: BackgroundTask<any, [NodeLegend, string]>;
@@ -45,7 +47,9 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   FONT_MIN = 12;
   FONT_MAX = 48;
 
-  sorting: SortingAlgorithm = defaultSortingAlgorithm;
+  sorting: SortingAlgorithm;
+
+  sortingAlgorithms: SortingAlgorithm[];
 
   keywordsShown = true;
 
@@ -55,6 +59,9 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    const sorting_for_file_type = fileTypeSortingAlgorithms[this.object.mimeType];
+    this.sorting = sorting_for_file_type.default;
+    this.sortingAlgorithms = sorting_for_file_type.all;
     this.getAnnotations();
   }
 
@@ -64,10 +71,10 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   }
 
   initDataFetch() {
-    this.loadTask = new BackgroundTask(({hashId, sortingId}) => {
+    this.loadTask = new BackgroundTask(({hashId, ...queryParams}) => {
       return combineLatest(
         this.legendService.getAnnotationLegend(),
-        this.annotationsService.getSortedAnnotations(hashId, sortingId),
+        this.annotationsService.getSortedAnnotations(hashId, queryParams),
       );
     });
   }
@@ -106,7 +113,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
    * Sends a request to the BackgroundTask object for new annotations data.
    */
   getAnnotations() {
-    this.loadTask.update({hashId: this.object.hashId, sortingId: this.sorting.id});
+    this.loadTask.update({hashId: this.object.hashId, sort: this.sorting.id, ...this.queryParams});
   }
 
   sort(algorithm) {
