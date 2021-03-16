@@ -40,6 +40,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     super(modal, messageDialog, modalService);
     this.form.addControl('entitiesList', new FormControl('', Validators.required));
     this.form.addControl('domainsList', new FormArray([]));
+    this.form.get('organism').setValidators([Validators.required]);
   }
 
   get document() {
