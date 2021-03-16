@@ -58,7 +58,7 @@ from neo4japp.utils.logger import UserEventLog
 from .filesystem import bp as filesystem_bp
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from neo4japp.schemas.annotations import (
-    AnnotationMethod,
+    AnnotationConfigurations,
     AnnotationGenerationRequestSchema,
     RefreshEnrichmentAnnotationsRequestSchema,
     MultipleAnnotationGenerationResponseSchema,
@@ -310,8 +310,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
 class FileAnnotationSortedView(FilesystemBaseView):
     decorators = [auth.login_required]
 
-    def get_rows(self, files, sort):
-        annotation_service = get_sorted_annotation_service(sort)
+    def get_rows(self, files, annotation_service):
         values = annotation_service.get_annotations(files)
 
         yield [
@@ -356,19 +355,32 @@ class FileAnnotationSortedView(FilesystemBaseView):
 
         file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
-        files = self.get_nondeleted_recycled_children(
-                Files.id == file.id,
-                children_filter=and_(
-                        (Files.mime_type == 'application/pdf'),
-                        Files.recycling_date.is_(None)
-                ),
-                lazy_load_content=True
-        )
 
         buffer = io.StringIO()
         writer = csv.writer(buffer, delimiter="\t", quotechar='"')
-        for row in self.get_rows(files, sort):
-            writer.writerow(row)
+
+        if file.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table':
+            files = self.get_nondeleted_recycled_files(
+                    Files.id == file.id,
+                    lazy_load_content=True
+            )
+
+            annotation_service = get_sorted_annotation_service(sort, mime_type=file.mime_type)
+            for row in self.get_rows(files, annotation_service):
+                writer.writerow(row)
+        else:
+            files = self.get_nondeleted_recycled_children(
+                    Files.id == file.id,
+                    children_filter=and_(
+                            Files.mime_type == 'application/pdf',
+                            Files.recycling_date.is_(None)
+                    ),
+                    lazy_load_content=True
+            )
+
+            annotation_service = get_sorted_annotation_service(sort)
+            for row in self.get_rows(files, annotation_service):
+                writer.writerow(row)
 
         result = buffer.getvalue().encode('utf-8')
 
@@ -462,7 +474,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     annotations, version = self._annotate(
                         file=file,
                         cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
-                        method=annotation_configs,
+                        configs=annotation_configs,
                         organism=organism or file.fallback_organism,
                         user_id=current_user.id,
                     )
@@ -491,11 +503,13 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
                 # combine all text to process at once
                 for text_mapping in texts:
-                    text = text_mapping['text']
-                    enrichment_text += text
-                    curr_idx = len(enrichment_text)
-                    enrichment_mappings[curr_idx-1] = text_mapping
-                    enrichment_text += ' '  # to separate prev text
+                    # ignore GO and Biocyc columns for now JIRA LL-2657
+                    if text_mapping.get('domain', '') != 'GO' and text_mapping.get('domain', '') != 'Biocyc':  # noqa
+                        text = text_mapping['text']
+                        enrichment_text += text
+                        curr_idx = len(enrichment_text)
+                        enrichment_mappings[curr_idx-1] = text_mapping
+                        enrichment_text += ' '  # to separate prev text
 
                 # remove trailing white space
                 # shouldn't matter but let's see how it does...
@@ -505,7 +519,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     annotations = self._annotate_enrichment_texts(
                         text=enrichment_text,
                         enrichment_mappings=enrichment_mappings,
-                        method=annotation_configs,
+                        configs=annotation_configs,
                         organism=organism,
                     )
                 except AnnotationError as e:
@@ -524,15 +538,40 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         'success': True,
                     }
 
-                    annotations_list = annotations['documents'][0]['passages'][0]['annotations']  # noqa
+                    annotations_list = annotations['documents'][0]['passages'][0]['annotations']
 
                     prev_k = -1
+                    enriched_gene = ''
                     for k, text_mapping in enrichment_mappings.items():
                         annotations_to_process = [anno for anno in annotations_list if anno.get(
                             'hiLocationOffset', None) and anno.get(
                                 'loLocationOffset') > prev_k and anno.get('hiLocationOffset') <= k]
 
                         prev_k = k
+
+                        # update JSON to have enrichment row and domain...
+                        for anno in annotations_to_process:
+                            # imported should come first for each row
+                            if text_mapping.get('imported'):
+                                enriched_gene = text_mapping['text']
+                                anno['enrichmentGene'] = enriched_gene
+                                # enrichment JSON doesn't have a domain label for this
+                                anno['enrichmentDomain']['domain'] = 'Imported'
+                            if text_mapping.get('matched'):
+                                anno['enrichmentGene'] = enriched_gene
+                                # enrichment JSON doesn't have a domain label for this
+                                anno['enrichmentDomain']['domain'] = 'Matched'
+                            if text_mapping.get('full_name'):
+                                anno['enrichmentGene'] = enriched_gene
+                                # enrichment JSON doesn't have a domain label for this
+                                anno['enrichmentDomain']['domain'] = 'Gene Full Name'
+                            if 'domain' in text_mapping:
+                                anno['enrichmentGene'] = enriched_gene
+                                if text_mapping['domain'] == 'Regulon':
+                                    anno['enrichmentDomain']['domain'] = text_mapping['domain']
+                                    anno['enrichmentDomain']['subDomain'] = text_mapping['label']
+                                else:
+                                    anno['enrichmentDomain']['domain'] = text_mapping['domain']
 
                         snippet = self._highlight_annotations(
                             original_text=text_mapping['text'],
@@ -590,14 +629,17 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             'missing': missing,
         }))
 
-    def _annotate(self, file: Files,
-                  cause: AnnotationChangeCause,
-                  organism: Optional[FallbackOrganism] = None,
-                  method: Dict[str, AnnotationMethod] = None,
-                  user_id: int = None):
+    def _annotate(
+        self,
+        file: Files,
+        cause: AnnotationChangeCause,
+        configs: AnnotationConfigurations,
+        organism: Optional[FallbackOrganism] = None,
+        user_id: int = None
+    ):
         """Annotate PDF files."""
         annotations_json = create_annotations_from_pdf(
-            annotation_method=method,
+            annotation_configs=configs,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
             document=file,
@@ -628,11 +670,11 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         self,
         text: str,
         organism: Optional[FallbackOrganism] = None,
-        method: Dict[str, AnnotationMethod] = None
+        configs: AnnotationConfigurations = None
     ):
         """Annotate text string."""
         annotations_json = create_annotations_from_text(
-            annotation_method=method,
+            annotation_configs=configs,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
             text=text
@@ -644,12 +686,12 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         text: str,
         enrichment_mappings: Dict[int, dict],
         organism: Optional[FallbackOrganism] = None,
-        method: Dict[str, AnnotationMethod] = None
+        configs: AnnotationConfigurations = None
     ):
         """Annotate all text in enrichment table."""
 
         annotations_json = create_annotations_from_enrichment_table(
-            annotation_method=method,
+            annotation_configs=configs,
             specified_organism_synonym=organism.organism_synonym if organism else '',  # noqa
             specified_organism_tax_id=organism.organism_taxonomy_id if organism else '',  # noqa
             text=text,
@@ -670,11 +712,11 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         # Remove the highlight tags to help the annotation parser
         text = highlight_strip_tag_re.sub('%%%%%-\\1-%%%%%', text)
 
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # TODO: See JIRA BUG LL-2451
-        #
+        # sort by longest length because the regex is eager
+        # and will take the first occurrence it finds
+        annotations = sorted(annotations, key=lambda x: x['keywordLength'], reverse=True)
         for annotation in annotations:
-            keyword = annotation['keyword']
+            keyword = annotation['textInDocument']
             text = re.sub(
                 # Replace but outside tags (shh @ regex)
                 f"(?<!\\w)({re.escape(keyword)})(?!\\w)(?![^<]*>|[^<>]*</)",
@@ -934,7 +976,10 @@ def get_pdf_to_annotate(file_id):
     doc = Files.query.get(file_id)
 
     if not doc:
-        raise RecordNotFoundException(f'File with file id {file_id} not found.')
+        raise AnnotationError(
+            title='Failed to Annotate',
+            message=f'File with file id {file_id} not found.',
+            code=404)
 
     res = make_response(doc.content.raw_file)
     res.headers['Content-Type'] = 'application/pdf'

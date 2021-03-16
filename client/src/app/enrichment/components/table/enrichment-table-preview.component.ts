@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { EnrichmentDocument } from '../models/enrichment-document';
+import { EnrichmentDocument } from '../../models/enrichment-document';
 
 @Component({
   selector: 'app-enrichment-table-preview',

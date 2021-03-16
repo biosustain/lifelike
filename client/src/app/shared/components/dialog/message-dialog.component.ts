@@ -15,7 +15,8 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
 export class MessageDialogComponent {
   @Input() title: string;
   @Input() message: string;
-  @Input() detail: string;
+  @Input() additionalMsgs: string[];
+  @Input() stacktrace: string;
   @Input() transactionId: string;
   @Input() type: MessageType;
 

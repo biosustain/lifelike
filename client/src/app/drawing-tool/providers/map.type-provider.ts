@@ -18,6 +18,7 @@ import { RankedItem } from 'app/shared/schemas/common';
 
 import { MapComponent } from '../components/map.component';
 import { UniversalGraph } from '../services/interfaces';
+import { mapBlobToBuffer, mapBufferToJson } from '../../shared/utils/files';
 
 export const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
 export const MAP_SHORTHAND = 'map';
@@ -105,7 +106,23 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
           }),
         );
       },
-    }]);
+    }, ...(['Gene', 'Chemical'].map(type => ({
+      name: `${type} List`,
+      export: () => {
+        return this.filesystemService.getContent(object.hashId).pipe(
+          mapBlobToBuffer(),
+          mapBufferToJson<UniversalGraph>(),
+          map(graph => {
+            const blob = new Blob([
+              graph.nodes.filter(node => node.label === type.toLowerCase()).map(node => node.display_name).join('\r\n')
+            ], {
+              type: 'text/plain',
+            });
+            return new File([blob], object.filename + ` (${type}s).txt`);
+          }),
+        );
+      },
+    })))]);
   }
 
 }

@@ -4,10 +4,9 @@ import {
   AnnotationChangeExclusionMeta,
   Meta,
 } from '../pdf-viewer/annotation-type';
-import { AnnotationMethods } from '../interfaces/annotation';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
 import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
-import { EnrichmentResult, EnrichmentTextMapping } from 'app/enrichment-tables/models/enrichment-document';
+import { EnrichmentResult, EnrichmentTextMapping } from 'app/enrichment/models/enrichment-document';
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 
 // ========================================
@@ -96,7 +95,7 @@ export interface FilesystemObjectData {
   effectivelyRecycled: boolean;
   highlight?: string[];
   fallbackOrganism: OrganismAutocomplete;
-  annotationConfigs: AnnotationConfigs;
+  annotationConfigs: AnnotationConfigurations;
 }
 
 interface ObjectContentValueRequest {
@@ -135,7 +134,7 @@ export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueReque
   uploadUrl?: string;
   public?: boolean;
   fallbackOrganism?: OrganismAutocomplete;
-  annotationConfigs?: AnnotationConfigs;
+  annotationConfigs?: AnnotationConfigurations;
 }
 
 /**
@@ -195,7 +194,7 @@ export interface ObjectVersionHistoryResponse extends ResultList<ObjectVersionDa
 }
 
 export interface AnnotationSelectionResponse {
-  annotationConfigs: AnnotationConfigs;
+  annotationConfigs: AnnotationConfigurations;
 }
 
 // ========================================
@@ -223,16 +222,21 @@ export interface AnnotationGenerationRequest {
   refresh?: boolean;
 }
 
-export interface AnnotationConfigs {
+export interface AnnotationMethods {
   [model: string]: {
     nlp: boolean;
     rulesBased: boolean;
   };
 }
 
+export interface AnnotationConfigurations {
+  excludeReferences: boolean;
+  annotationMethods: AnnotationMethods;
+}
+
 export interface PDFAnnotationGenerationRequest extends AnnotationGenerationRequest {
   organism?: OrganismAutocomplete;
-  annotationConfigs?: AnnotationConfigs;
+  annotationConfigs?: AnnotationConfigurations;
 }
 
 export interface TextAnnotationGenerationRequest extends PDFAnnotationGenerationRequest {

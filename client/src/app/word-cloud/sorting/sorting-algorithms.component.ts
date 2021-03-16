@@ -1,6 +1,5 @@
-import {Component, EventEmitter, Output, Input, ViewChild, ViewEncapsulation} from '@angular/core';
-import {NgbDropdown} from '@ng-bootstrap/ng-bootstrap';
-import {defaultSortingAlgorithm, SortingAlgorithm, sortingAlgorithms} from './sorting-algorithms';
+import { Component, EventEmitter, Output, Input, ViewEncapsulation } from '@angular/core';
+import { SortingAlgorithm } from './sorting-algorithms';
 
 
 @Component({
@@ -10,9 +9,8 @@ import {defaultSortingAlgorithm, SortingAlgorithm, sortingAlgorithms} from './so
   encapsulation: ViewEncapsulation.None,
 })
 export class SortingAlgorithmsComponent {
-  @ViewChild('dropdown', {static: false, read: NgbDropdown}) dropdownComponent: NgbDropdown;
   @Output() changeSorting = new EventEmitter<SortingAlgorithm>();
+  @Input() algorithms;
 
-  algorithms: SortingAlgorithm[] = sortingAlgorithms;
-  @Input() selected: SortingAlgorithm = defaultSortingAlgorithm;
+  @Input() selected: SortingAlgorithm;
 }
