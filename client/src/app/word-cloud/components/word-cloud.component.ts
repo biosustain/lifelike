@@ -80,9 +80,9 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const sorting_for_file_type = fileTypeSortingAlgorithms[this.object.mimeType];
-    this.sorting = sorting_for_file_type.default;
-    this.sortingAlgorithms = sorting_for_file_type.all;
+    const sortingForFileType = fileTypeSortingAlgorithms[this.object.mimeType];
+    this.sorting = sortingForFileType.default;
+    this.sortingAlgorithms = sortingForFileType.all;
 
     this.annotationsLoadedSub = this.loadTask.results$.pipe(first()).subscribe(() =>
       this.cloudResizeObserver.observe(this.wordCloudWrapperEl.nativeElement)
