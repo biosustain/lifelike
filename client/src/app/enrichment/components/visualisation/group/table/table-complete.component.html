@@ -17,10 +17,10 @@
         </thead>
         <tbody [ngClass]="{'line-clamp':!service.searchTerm}">
         <tr *ngFor="let row of data$ | async; let i = index" [tabindex]="i">
-            <th scope="row">{{ "" + row.goId }}</th>
-            <td>
+            <td>{{ "" + row.goId }}</td>
+            <th scope="row">
                 <ngb-highlight [result]="row.goTerm" [term]="service.searchTerm"></ngb-highlight>
-            </td>
+            </th>
             <td>
                 <ngb-highlight [result]="row['geneNames'].join(', ')"
                                [term]="service.searchTerm"></ngb-highlight>

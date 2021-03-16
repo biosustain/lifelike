@@ -1,4 +1,5 @@
 import { Component, OnChanges, OnInit, Input } from '@angular/core';
+import { annotationTypesMap } from '../../../../../shared/annotation-styles';
 
 @Component({
   selector: 'app-cloud-viewer',
@@ -7,10 +8,12 @@ import { Component, OnChanges, OnInit, Input } from '@angular/core';
 export class DsfgsdfgcloudViewerComponent implements OnInit, OnChanges {
   @Input() data: { gene: string, 'p-value': number, geneNames: string[] }[];
   @Input() showMore;
+  geneColor = annotationTypesMap.get('gene').color;
 
   slicedData;
 
   slice() {
+    const color = this.geneColor;
     this.slicedData = Object.entries(
       this.data.reduce((o, n) => {
         n['geneNames'].forEach(g => {
@@ -19,7 +22,7 @@ export class DsfgsdfgcloudViewerComponent implements OnInit, OnChanges {
         });
         return o;
       }, {})
-    ).map(([text, frequency]) => ({text, frequency}));
+    ).map(([text, frequency]) => ({text, frequency, color}));
   }
 
   ngOnInit() {
