@@ -61,9 +61,9 @@
     "rxjs": "~6.4.0",
     "tachyons": "4.10.0",
     "tslib": "^1.10.0",
-    "vis-data": "^6.2.1",
-    "vis-network": "^6.5.2",
-    "vis-util": "^1.1.8",
+    "vis-data": "7.1.2",
+    "vis-network": "9.0.2",
+    "vis-util": "5.0.2",
     "web-animations-js": "^2.3.2",
     "webcola": "^3.4.0",
     "zone.js": "~0.11.3"

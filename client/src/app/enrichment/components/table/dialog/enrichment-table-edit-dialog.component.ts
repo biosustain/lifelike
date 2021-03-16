@@ -2,15 +2,11 @@ import { Component, Input } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FormArray, FormControl, Validators } from '@angular/forms';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { OrganismAutocomplete } from 'app/interfaces/neo4j.interface';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
-import { ErrorHandler } from '../../shared/services/error-handler.service';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { EnrichmentDocument } from '../models/enrichment-document';
-import {
-  ObjectEditDialogComponent,
-  ObjectEditDialogValue,
-} from '../../file-browser/components/dialog/object-edit-dialog.component';
+import { ObjectEditDialogComponent, ObjectEditDialogValue } from '../../../../file-browser/components/dialog/object-edit-dialog.component';
+import { EnrichmentDocument } from '../../../models/enrichment-document';
+import { ErrorHandler } from '../../../../shared/services/error-handler.service';
+import { ProgressDialog } from '../../../../shared/services/progress-dialog.service';
 
 @Component({
   selector: 'app-enrichment-table-edit-dialog',
@@ -44,6 +40,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     super(modal, messageDialog, modalService);
     this.form.addControl('entitiesList', new FormControl('', Validators.required));
     this.form.addControl('domainsList', new FormArray([]));
+    this.form.get('organism').setValidators([Validators.required]);
   }
 
   get document() {
@@ -75,13 +72,13 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     const parentValue: ObjectEditDialogValue = super.getValue();
 
     const value = this.form.value;
-    this.document.setParameters(
-      this.fileId || '',
-      value.entitiesList.split(/[\/\n\r]/g),
-      value.organism.tax_id,
-      value.organism.organism_name,
-      value.domainsList,
-    );
+    this.document.setParameters({
+      fileId: value.fileId || this.fileId || '',
+      importGenes: value.entitiesList.split(/[\/\n\r]/g),
+      taxID: value.organism.tax_id,
+      organism: value.organism.organism_name,
+      domains: value.domainsList,
+    });
 
     return {
       ...parentValue,

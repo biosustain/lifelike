@@ -53,7 +53,7 @@ def annotate_pdf():
     for f in files:
         try:
             annotations = create_annotations_from_pdf(
-                annotation_method=DEFAULT_ANNOTATION_CONFIGS,
+                annotation_configs=DEFAULT_ANNOTATION_CONFIGS,
                 specified_organism_synonym=FALLBACK_ORGANISM_SYNONYM,
                 specified_organism_tax_id=FALLBACK_ORGANISM_TAXID,
                 document=f,
@@ -65,7 +65,7 @@ def annotate_pdf():
         except Exception:
             try:
                 annotations = create_annotations_from_pdf(
-                    annotation_method=DEFAULT_ANNOTATION_CONFIGS,
+                    annotation_configs=DEFAULT_ANNOTATION_CONFIGS,
                     specified_organism_synonym=FALLBACK_ORGANISM_SYNONYM,
                     specified_organism_tax_id=FALLBACK_ORGANISM_TAXID,
                     document=f,
@@ -94,7 +94,7 @@ def annotate_text():
 
                     try:
                         annotations = create_annotations_from_text(
-                            annotation_method=DEFAULT_ANNOTATION_CONFIGS,
+                            annotation_configs=DEFAULT_ANNOTATION_CONFIGS,
                             specified_organism_synonym=FALLBACK_ORGANISM_SYNONYM,
                             specified_organism_tax_id=FALLBACK_ORGANISM_TAXID,
                             text=text)
@@ -105,7 +105,7 @@ def annotate_text():
                     except Exception:
                         try:
                             annotations = create_annotations_from_text(
-                                annotation_method=DEFAULT_ANNOTATION_CONFIGS,
+                                annotation_configs=DEFAULT_ANNOTATION_CONFIGS,
                                 specified_organism_synonym=FALLBACK_ORGANISM_SYNONYM,
                                 specified_organism_tax_id=FALLBACK_ORGANISM_TAXID,
                                 text=text)

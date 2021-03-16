@@ -18,20 +18,18 @@ import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
 import { map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { EnrichmentTableService } from '../services/enrichment-table.service';
-import { FilesystemObject } from '../../file-browser/models/filesystem-object';
-import { FilesystemService } from '../../file-browser/services/filesystem.service';
-import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { EnrichmentDocument } from '../models/enrichment-document';
-import { EnrichmentTable } from '../models/enrichment-table';
-import {
-  EnrichmentTableEditDialogComponent,
-  EnrichmentTableEditDialogValue,
-} from './enrichment-table-edit-dialog.component';
-import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
-import { ObjectVersion } from '../../file-browser/models/object-version';
-import { ObjectUpdateRequest } from '../../file-browser/schema';
-import { AsyncElementFind } from '../../shared/utils/find/async-element-find';
+
+import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
+import { EnrichmentDocument } from '../../models/enrichment-document';
+import { EnrichmentTable } from '../../models/enrichment-table';
+import { ObjectUpdateRequest } from '../../../file-browser/schema';
+import { EnrichmentTableService } from '../../services/enrichment-table.service';
+import { FilesystemService } from '../../../file-browser/services/filesystem.service';
+import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
+import { ObjectVersion } from '../../../file-browser/models/object-version';
+import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
+import { EnrichmentTableEditDialogComponent, EnrichmentTableEditDialogValue } from './dialog/enrichment-table-edit-dialog.component';
+import { AsyncElementFind } from '../../../shared/utils/find/async-element-find';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -46,7 +44,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
 
   fileId: string;
   object$: Observable<FilesystemObject> = new Subject();
-  contentValue$: Observable<Blob> = new Subject();
   document$: Observable<EnrichmentDocument> = new Subject();
   table$: Observable<EnrichmentTable> = new Subject();
   scrollTopAmount: number;
@@ -73,13 +70,13 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
 
   ngOnInit() {
     this.object$ = this.filesystemService.get(this.fileId).pipe(
-      tap(object => {
+      tap(() => {
         this.emitModuleProperties();
       }),
       shareReplay(),
     );
     this.document$ = this.filesystemService.getContent(this.fileId).pipe(
-      mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).load(blob, this.fileId)),
+      mergeMap((blob: Blob) => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, this.fileId)),
       shareReplay(),
     );
     this.table$ = this.document$.pipe(
@@ -118,7 +115,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   }
 
   restore(version: ObjectVersion) {
-    this.document$ = new EnrichmentDocument(this.worksheetViewerService).load(version.contentValue, this.fileId).pipe(
+    this.document$ = new EnrichmentDocument(this.worksheetViewerService).loadResult(version.contentValue, this.fileId).pipe(
       tap(() => this.queuedChanges$.next(this.queuedChanges$.value || {})),
       shareReplay(),
     );
@@ -131,7 +128,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     );
   }
 
-  refreshData(assumeChanged = false) {
+  refreshData() {
     this.table$ = combineLatest(
       this.document$,
       this.table$,
@@ -223,7 +220,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
       this.queuedChanges$.next({
         ...(this.queuedChanges$.value || {}),
       });
-      this.refreshData(true);
+      this.refreshData();
     }, () => {
     });
   }
