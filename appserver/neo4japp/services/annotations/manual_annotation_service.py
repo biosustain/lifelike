@@ -8,15 +8,8 @@ from neo4japp.database import (
     get_annotation_service,
     get_entity_recognition
 )
-from neo4japp.exceptions import (
-    AnnotationError,
-    RecordNotFoundException,
-    DuplicateRecord,
-)
-from neo4japp.models import (
-    Files,
-    GlobalList, AppUser,
-)
+from neo4japp.exceptions import AnnotationError
+from neo4japp.models import Files, GlobalList, AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.services.annotations.annotation_graph_service import AnnotationGraphService
 from neo4japp.services.annotations.constants import (
@@ -93,7 +86,7 @@ class ManualAnnotationService:
             matches = annotator.get_matching_manual_annotations(
                 keyword=term,
                 is_case_insensitive=is_case_insensitive,
-                tokens_list=list(recognition.create_tokens(parsed))
+                tokens_list=parsed
             )
 
             def add_annotation(new_annotation, primary_name=None):
@@ -111,13 +104,19 @@ class ManualAnnotationService:
             ]
 
             if not inclusions:
-                raise AnnotationError(f'There was a problem annotating "{term}", please select '
-                                      'option to annotate only one occurrence of this term.')
+                raise AnnotationError(
+                    title='Unable to Annotate',
+                    message=f'There was a problem annotating "{term}". ' +
+                            'Please make sure the term is correct, ' +
+                            'including correct spacing and no extra characters.',
+                    code=400)
         else:
             if not annotation_exists(annotation_to_add):
                 inclusions = [annotation_to_add]
             else:
-                raise DuplicateRecord('Annotation already exists.')
+                raise AnnotationError(
+                    title='Unable to Annotate',
+                    message='Annotation already exists.', code=400)
 
         if annotation_to_add['meta']['includeGlobally']:
             self.add_to_global_list(
@@ -227,7 +226,10 @@ class ManualAnnotationService:
         ]
 
         if initial_length == len(file.excluded_annotations):
-            raise RecordNotFoundException('Annotation not found')
+            raise AnnotationError(
+                title='Failed to Annotate',
+                message='File does not have any annotations.',
+                code=404)
 
         db.session.commit()
 
@@ -239,7 +241,10 @@ class ManualAnnotationService:
             file_id=file_id,
         ).one_or_none()
         if file is None:
-            raise RecordNotFoundException('File does not exist')
+            raise AnnotationError(
+                title='Failed to Annotate',
+                message='File does not exist.',
+                code=404)
 
         return self._get_file_annotations(file)
 

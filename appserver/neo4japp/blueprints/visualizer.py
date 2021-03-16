@@ -20,7 +20,7 @@ from neo4japp.request_schemas.visualizer import (
     AssociatedTypeSnippetCountRequest,
 )
 from neo4japp.exceptions import (
-    InvalidArgumentsException,
+    InvalidArgument,
 )
 from neo4japp.util import CamelDictMixin, SuccessResponse, jsonify_with_class
 
@@ -75,14 +75,10 @@ def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
     # TODO: In the future would be better to refactor this request to use Marshmallow and handle
     # the validation in the schema, but in the interest of time favoring this approach for now.
     if not (0 <= req.limit and req.limit <= 1000):
-        raise InvalidArgumentsException(
-            message='Illegal Argument',
-            fields={
-                'limit': [
-                    f'Query limit should be between 0 and 1000 rows. Provided limit was ' +
-                    f'{req.limit}.'
-                ]
-            }
+        raise InvalidArgument(
+            title='Failed to Get Edge Snippets',
+            message='Query limit is out of bounds, the limit is 0 <= limit <= 1000.',
+            code=400
         )
 
     edge_snippets_result = visualizer.get_snippets_for_edge(
@@ -102,14 +98,10 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
     # TODO: In the future would be better to refactor this request to use Marshmallow and handle
     # the validation in the schema, but in the interest of time favoring this approach for now.
     if not (0 <= req.limit and req.limit <= 1000):
-        raise InvalidArgumentsException(
-            message='Illegal Argument',
-            fields={
-                'limit': [
-                    f'Query limit should be between 0 and 1000 rows. Provided limit was ' +
-                    f'{req.limit}.'
-                ]
-            }
+        raise InvalidArgument(
+            title='Failed to Get Cluster Snippets',
+            message='Query limit is out of bounds, the limit is 0 <= limit <= 1000.',
+            code=400
         )
 
     cluster_snippets_result = visualizer.get_snippets_for_cluster(

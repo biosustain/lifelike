@@ -87,7 +87,7 @@ export class UserFileImportEffects {
                     // TODO: redirect to show graph of uploaded data
                 ]),
                 catchError((errors: ErrorResponse) => of(displaySnackbar({payload: {
-                    message: errors.apiHttpError.message,
+                    message: errors.message,
                     action: 'Dismiss',
                     config: {duration: 3000},
                 }}))),

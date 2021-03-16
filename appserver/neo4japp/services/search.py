@@ -9,7 +9,6 @@ from neo4japp.data_transfer_objects import (
     FTSResult,
     FTSTaxonomyRecord
 )
-from neo4japp.exceptions import InvalidArgumentsException
 from neo4japp.models import GraphNode
 from neo4japp.services.common import GraphBaseDao
 from neo4japp.util import (

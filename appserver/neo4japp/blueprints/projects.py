@@ -1,10 +1,6 @@
 from typing import List, Optional, Tuple, Dict, Iterable
 
-from flask import (
-    jsonify,
-    Blueprint,
-    g,
-)
+from flask import jsonify, Blueprint, g
 from flask.views import MethodView
 from marshmallow import ValidationError
 from sqlalchemy import and_
@@ -14,23 +10,30 @@ from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_projects_service, get_authorization_service
-from neo4japp.exceptions import (
-    RecordNotFoundException,
-    AccessRequestRequiredError,
-)
+from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound
 from neo4japp.models import (
     AppRole,
     AppUser,
     Projects,
-    projects_collaborator_role, )
+    projects_collaborator_role
+)
 from neo4japp.models.projects_queries import add_project_user_role_columns, ProjectCalculator
 from neo4japp.schemas.common import PaginatedRequestSchema
-from neo4japp.schemas.filesystem import ProjectListSchema, ProjectListRequestSchema, \
-    ProjectSearchRequestSchema, \
-    ProjectCreateSchema, ProjectResponseSchema, BulkProjectRequestSchema, \
-    BulkProjectUpdateRequestSchema, MultipleProjectResponseSchema, ProjectUpdateRequestSchema
-from neo4japp.schemas.projects import ProjectCollaboratorListSchema, \
+from neo4japp.schemas.filesystem import (
+    ProjectListSchema,
+    ProjectListRequestSchema,
+    ProjectSearchRequestSchema,
+    ProjectCreateSchema,
+    ProjectResponseSchema,
+    BulkProjectRequestSchema,
+    BulkProjectUpdateRequestSchema,
+    MultipleProjectResponseSchema,
+    ProjectUpdateRequestSchema
+)
+from neo4japp.schemas.projects import (
+    ProjectCollaboratorListSchema,
     ProjectMultiCollaboratorUpdateRequest
+)
 from neo4japp.utils.request import Pagination
 
 
@@ -96,7 +99,10 @@ class ProjectBaseView(MethodView):
         """
         files, *_ = self.get_nondeleted_projects(filter)
         if not len(files):
-            raise RecordNotFoundException("The requested project could not be found.")
+            raise RecordNotFound(
+                title='Failed to Get File(s)',
+                message='The requested project could not be found.',
+                code=404)
         return files[0]
 
     def get_nondeleted_projects(self, filter, accessible_only=False, sort=None,
@@ -145,9 +151,11 @@ class ProjectBaseView(MethodView):
             missing_hash_ids = self.get_missing_hash_ids(require_hash_ids, projects)
 
             if len(missing_hash_ids):
-                raise RecordNotFoundException(
-                    f"The request specified one or more projects "
-                    f"({', '.join(missing_hash_ids)}) that could not be found.")
+                raise RecordNotFound(
+                    title='Failed to Get File(s)',
+                    message=f"The request specified one or more projects "
+                    f"({', '.join(missing_hash_ids)}) that could not be found.",
+                    code=404)
 
         return projects, total
 
@@ -167,9 +175,9 @@ class ProjectBaseView(MethodView):
                 if not getattr(project.calculated_privileges[user.id], permission):
                     # Do not reveal the project name with the error!
                     raise AccessRequestRequiredError(
-                        f"You do not have '{permission}' access to the specified project "
-                        f"(with ID of {project.hash_id}).",
-                        project_hash_id=project.hash_id)
+                        curr_access='no',
+                        req_access=permission,
+                        hash_id=project.hash_id)
 
     def get_project_response(self, hash_id: str, user: AppUser):
         """
