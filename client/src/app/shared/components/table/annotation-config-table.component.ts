@@ -14,7 +14,11 @@ export class AnnotationConfigurationTableComponent {
   constructor() {}
 
   checkboxChange(model, method, otherMethod, event) {
-    this.form.get(model).get(method).setValue(event.target.checked);
-    this.form.get(model).get(otherMethod).setValue(!event.target.checked);
+    this.form.get('annotationMethods').get(model).get(method).setValue(event.target.checked);
+    this.form.get('annotationMethods').get(model).get(otherMethod).setValue(!event.target.checked);
+  }
+
+  excludeReferences(event) {
+    this.form.get('excludeReferences').setValue(event.target.checked);
   }
 }

@@ -180,14 +180,10 @@ ENTITY_HYPERLINKS = {
 }
 
 DEFAULT_ANNOTATION_CONFIGS = {
-    EntityType.ANATOMY.value: {'nlp': False, 'rules_based': True},
-    EntityType.CHEMICAL.value: {'nlp': False, 'rules_based': True},
-    EntityType.COMPOUND.value: {'nlp': False, 'rules_based': True},
-    EntityType.DISEASE.value: {'nlp': False, 'rules_based': True},
-    EntityType.FOOD.value: {'nlp': False, 'rules_based': True},
-    EntityType.GENE.value: {'nlp': False, 'rules_based': True},
-    EntityType.PHENOMENA.value: {'nlp': False, 'rules_based': True},
-    EntityType.PHENOTYPE.value: {'nlp': False, 'rules_based': True},
-    EntityType.PROTEIN.value: {'nlp': False, 'rules_based': True},
-    EntityType.SPECIES.value: {'nlp': False, 'rules_based': True}
+    'exclude_references': True,
+    'annotation_methods': {
+        EntityType.CHEMICAL.value: {'nlp': False, 'rules_based': True},
+        EntityType.DISEASE.value: {'nlp': False, 'rules_based': True},
+        EntityType.GENE.value: {'nlp': False, 'rules_based': True}
+    }
 }

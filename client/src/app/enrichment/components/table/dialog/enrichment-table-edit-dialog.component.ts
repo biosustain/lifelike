@@ -40,6 +40,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     super(modal, messageDialog, modalService);
     this.form.addControl('entitiesList', new FormControl('', Validators.required));
     this.form.addControl('domainsList', new FormArray([]));
+    this.form.get('organism').setValidators([Validators.required]);
   }
 
   get document() {
@@ -72,7 +73,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
     const value = this.form.value;
     this.document.setParameters({
-      fileId: value.fileId || '',
+      fileId: value.fileId || this.fileId || '',
       importGenes: value.entitiesList.split(/[\/\n\r]/g),
       taxID: value.organism.tax_id,
       organism: value.organism.organism_name,

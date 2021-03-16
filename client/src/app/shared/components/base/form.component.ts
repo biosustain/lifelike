@@ -2,7 +2,7 @@ import { EventEmitter } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 
 import { MessageType } from '../../../interfaces/message-dialog.interface';
-import { MessageDialog } from '../../services/message-dialog.service';
+import { MessageArguments, MessageDialog } from '../../services/message-dialog.service';
 
 export abstract class FormComponent<O> {
   abstract form: AbstractControl;
@@ -25,7 +25,7 @@ export abstract class FormComponent<O> {
         title: 'Invalid Input',
         message: 'There are some errors with your input.',
         type: MessageType.Error,
-      });
+      } as MessageArguments);
     }
   }
 }
