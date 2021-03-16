@@ -13,7 +13,7 @@ DEFAULT_CACHE_SETTINGS = {
 }
 
 connection_prefix = 'rediss' if REDIS_SSL == 'true' else 'redis'
-connection_url = f'{connection_prefix}://{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0'
+connection_url = f'{connection_prefix}://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0'
 
 redis_server = redis.Redis(
     connection_pool=redis.BlockingConnectionPool.from_url(connection_url))
