@@ -255,7 +255,11 @@ class ManualAnnotationService:
             return False
         if len(file.annotations) == 0:
             return file.custom_annotations
-        annotations = file.annotations['documents'][0]['passages'][0]['annotations']
+        annotations = file.annotations
+        # for some reason enrichment table returns list in here
+        if isinstance(file.annotations, list):
+            annotations = annotations[0]
+        annotations = annotations['documents'][0]['passages'][0]['annotations']
         filtered_annotations = [
             annotation for annotation in annotations
             if not isExcluded(file.excluded_annotations, annotation)

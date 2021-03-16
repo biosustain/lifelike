@@ -17,7 +17,6 @@ import {
 import { map } from 'rxjs/operators';
 import { ResultList, ResultMapping } from '../../shared/schemas/common';
 import {
-  defaultSortingAlgorithm,
   SortingAlgorithmId
 } from '../../word-cloud/sorting/sorting-algorithms';
 
@@ -45,7 +44,7 @@ export class AnnotationsService {
     );
   }
 
-  getSortedAnnotations(hashId: string, sort: SortingAlgorithmId = defaultSortingAlgorithm.id) {
+  getSortedAnnotations(hashId: string, sort: SortingAlgorithmId) {
     return this.http.post(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations/sorted`, {}, {
         ...this.apiService.getHttpOptions(true),
