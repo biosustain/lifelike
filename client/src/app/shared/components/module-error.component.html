@@ -10,6 +10,14 @@
       <div class="mt-2">
         {{ userError.message }}
       </div>
+
+      <div *ngFor="let msg of userError.additionalMsgs" class="mt-2">
+        <p>{{msg}}</p>
+      </div>
+
+      <div class="mt-2">
+        <p>Transaction Id: {{userError.transactionId}}</p>
+      </div>
     </ng-container>
     <div class="mt-4">
       <ng-content></ng-content>
@@ -17,8 +25,8 @@
   </div>
 </div>
 <ng-container *ngIf="userError != null">
-  <div *ngIf="userError.detail" class="detail mt-4">
+  <div *ngIf="userError.stacktrace" class="detail mt-4">
     <div class="detail-title">Technical Details</div>
-    <pre>{{ userError.detail }}</pre>
+    <pre>{{ userError.stacktrace }}</pre>
   </div>
 </ng-container>

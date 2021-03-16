@@ -1,4 +1,5 @@
 from sqlalchemy import and_
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.session import Session
 
 from neo4japp.services.common import RDBMSBaseDao
@@ -11,13 +12,14 @@ from neo4japp.models.auth import (
     AppRole,
 )
 
-from typing import Iterable, Sequence, Union
+from typing import Iterable, Sequence
 
 
 class AuthService(RDBMSBaseDao):
     def __init__(self, session: Session):
         super().__init__(session)
 
+    # TODO: Doesn't seem to be used anywhere except in tests
     def grant(
         self,
         permission: AccessActionType,
@@ -71,9 +73,13 @@ class AuthService(RDBMSBaseDao):
                 )
                 self.session.add(p2)
                 retval.append(p2)
-        self.commit_or_flush(commit_now)
+        try:
+            self.commit_or_flush(commit_now)
+        except SQLAlchemyError:
+            raise
         return retval
 
+    # TODO: Doesn't seem to be used anywhere except in tests
     def revoke(
         self,
         permission: AccessActionType,
@@ -100,7 +106,10 @@ class AuthService(RDBMSBaseDao):
                     AccessControlPolicy.rule_type == AccessRuleType.ALLOW,
                 )
             ).delete()
-        self.commit_or_flush(commit_now)
+        try:
+            self.commit_or_flush(commit_now)
+        except SQLAlchemyError:
+            raise
 
     def has_role(
         self,

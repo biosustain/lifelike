@@ -196,6 +196,16 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                     texts.push({text: gene.fullName, row: rowCounter, fullName: true});
                     for (const [entryDomain, entryData] of Object.entries(gene.domains)) {
                       switch (entryDomain) {
+                        case (Domain.Regulon):
+                          for (const [regulonLabel, regulonData] of Object.entries(entryData)) {
+                            texts.push({
+                              text: regulonData.text,
+                              row: rowCounter,
+                              domain: entryDomain,
+                              label: regulonLabel
+                            });
+                          }
+                          break;
                         case (Domain.Biocyc):
                           texts.push({
                             text: entryData.Pathways.text,

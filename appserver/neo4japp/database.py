@@ -264,17 +264,25 @@ def get_manual_annotation_service():
     )
 
 
-def get_sorted_annotation_service(sort_id):
+def get_sorted_annotation_service(sort_id, *, mime_type=None):
     from neo4japp.services.annotations import (
         AnnotationGraphService,
         ManualAnnotationService
     )
-    from neo4japp.services.annotations.sorted_annotation_service import sorted_annotations_dict
-
-    return sorted_annotations_dict[sort_id](
-        annotation_service=ManualAnnotationService(
-            graph=AnnotationGraphService()
+    if not mime_type:
+        from neo4japp.services.annotations.sorted_annotation_service import sorted_annotations_dict
+        return sorted_annotations_dict[sort_id](
+            annotation_service=ManualAnnotationService(
+                graph=AnnotationGraphService()
+            )
         )
+
+    from neo4japp.services.annotations.sorted_annotation_service import \
+        sorted_annotations_per_file_type_dict
+    return sorted_annotations_per_file_type_dict[mime_type][sort_id](
+            annotation_service=ManualAnnotationService(
+                    graph=AnnotationGraphService()
+            )
     )
 
 
