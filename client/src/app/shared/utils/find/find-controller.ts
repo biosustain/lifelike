@@ -1,7 +1,7 @@
 /**
  * Manages the process of finding some text within something.
  */
-interface FindController {
+export interface FindController {
   /**
    * The query to search for.
    */
@@ -51,4 +51,13 @@ interface FindController {
    * Get the number of matches.
    */
   getResultCount(): number;
+}
+
+/**
+ * An async find implementation.
+ */
+export interface AsyncFindController extends FindController {
+
+  tick(): void;
+
 }

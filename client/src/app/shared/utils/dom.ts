@@ -6,6 +6,7 @@
  * @param width width of the rect
  * @param height the height of the rect
  */
+
 function createDOMRect(x: number, y: number, width: number, height: number): DOMRect {
   return {
     x,
@@ -28,7 +29,7 @@ function createDOMRect(x: number, y: number, width: number, height: number): DOM
  * @param element the element
  * @param rect a rect to use (otherwise the element's rect is used)
  */
-export function getAbsoluteBoundingClientRect(element: Element, rect: DOMRect | undefined = null): DOMRect {
+export function getAbsoluteBoundingClientRect(element: Element, rect: DOMRect | undefined = null): DOMRect | ClientRect {
   if (rect == null) {
     rect = element.getBoundingClientRect();
   }
@@ -59,10 +60,9 @@ export function getAbsoluteBoundingClientRect(element: Element, rect: DOMRect | 
  */
 export function getBoundingClientRectRelativeToContainer(rect: DOMRect, container: Element): DOMRect {
   const containerRect = getAbsoluteBoundingClientRect(container);
-  console.log('getBoundingClientRectRelativeToContainer', container, containerRect);
   return createDOMRect(
-    rect.x - containerRect.x + container.scrollLeft,
-    rect.y - containerRect.y + container.scrollTop,
+    rect.left - containerRect.left + container.scrollLeft,
+    rect.top - containerRect.top + container.scrollTop,
     rect.width,
     rect.height,
   );
@@ -79,7 +79,7 @@ export function getBoundingClientRectRelativeToContainer(rect: DOMRect, containe
  */
 export function* walkParentElements(start: Element,
                                     predicate: (element: Element) => boolean,
-                                    continueAfterFail = true): Generator<Element | undefined> {
+                                    continueAfterFail = true): Iterable<Element | undefined> {
   let current: Element = start;
   while (current) {
     if (predicate(current)) {
@@ -93,7 +93,7 @@ export function* walkParentElements(start: Element,
   }
 }
 
-export function* walkOverflowElementPairs(start: Element): Generator<{ target: Element, viewport: Element } | undefined> {
+export function* walkOverflowElementPairs(start: Element): Iterable<{ target: Element, viewport: Element } | undefined> {
   let current: Element = start.parentElement;
   let target: Element = start;
   while (current) {
@@ -116,8 +116,10 @@ export const nonStaticPositionPredicate = (element: Element): boolean => {
   return position === 'absolute' || position === 'fixed' || position === 'relative';
 };
 
-export function* walkElementVisibility(owner: Element, ownerRect: DOMRect | undefined): Generator<ElementVisibility> {
+export function* walkElementVisibility(owner: Element, ownerRect: DOMRect | undefined): Iterable<ElementVisibility> {
   ownerRect = ownerRect || owner.getBoundingClientRect();
+
+  // TODO: NOT QUITE RIGHT - not sure it gets the right parent container that the scrollbar is from
 
   let index = 0;
   for (const {target, viewport} of walkOverflowElementPairs(owner)) {
@@ -164,15 +166,6 @@ export interface ElementVisibility {
   fullyVisibleY: boolean;
   partiallyVisibleX: boolean;
   partiallyVisibleY: boolean;
-}
-
-export function isElementVisible(owner: Element, ownerRect: DOMRect | undefined) {
-  for (const visibility of walkElementVisibility(owner, ownerRect)) {
-    if (!visibility.partiallyVisibleX || !visibility.partiallyVisibleY) {
-      return false;
-    }
-  }
-  return true;
 }
 
 /**
@@ -235,3 +228,9 @@ const defaultScrollRectIntoViewOptions: ScrollRectIntoViewOptions = {
   inset: 100,
   preferNoHorizontalScroll: true,
 };
+
+export interface NodeTextRange {
+  node: Node;
+  start: number;
+  end: number;
+}
