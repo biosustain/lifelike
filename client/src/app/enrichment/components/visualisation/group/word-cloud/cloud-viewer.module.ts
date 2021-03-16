@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
-import { DsfgsdfgcloudViewerComponent } from './dsfgsdfgcloud-viewer.component';
+import { CloudViewerComponent } from './cloud-viewer.component';
 import { WordCloudModule } from '../../../../../shared/components/word-cloud/word-cloud.module';
 
 const components = [
-  DsfgsdfgcloudViewerComponent
+  CloudViewerComponent
 ];
 
 @NgModule({
@@ -13,6 +13,6 @@ const components = [
   ],
   exports: components,
 })
-export class SdfgsdfcloudViewerModule {
+export class CloudViewerModule {
 
 }

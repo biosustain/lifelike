@@ -6,7 +6,7 @@ import { WordCloudModule } from '../../../../shared/components/word-cloud/word-c
 import { TableCompleteComponentModule } from './table/table-complete.module';
 import { ClustergramModule } from './clustergram/clustergram.module';
 import { CommonModule } from '@angular/common';
-import { SdfgsdfcloudViewerModule } from './word-cloud/sdfgsdfcloud-viewer.module';
+import { CloudViewerModule } from './word-cloud/cloud-viewer.module';
 
 @NgModule({
   declarations: [
@@ -19,7 +19,7 @@ import { SdfgsdfcloudViewerModule } from './word-cloud/sdfgsdfcloud-viewer.modul
     WordCloudModule,
     TableCompleteComponentModule,
     ClustergramModule,
-    SdfgsdfcloudViewerModule
+    CloudViewerModule
   ],
   exports: [
     GroupComponent
