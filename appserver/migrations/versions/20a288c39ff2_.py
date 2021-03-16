@@ -1,4 +1,4 @@
-"""Fix old annotated papers to have default annotation configs. Also removed '[]' annotations in favor for null.
+"""Fix old annotated papers to have default annotation configs.
 
 Revision ID: 20a288c39ff2
 Revises: 9ab4ceb163b3
@@ -52,115 +52,8 @@ def data_upgrades():
         'files',
         column('id', sa.Integer),
         column('annotations', postgresql.JSONB),
-        column('custom_annotations', postgresql.JSONB),
-        column('excluded_annotations', postgresql.JSONB),
         column('mime_type', sa.String),
         column('annotation_configs', sa.String))
-
-    tableclause2 = table(
-        'file_annotations_version',
-        column('id', sa.Integer),
-        column('custom_annotations', postgresql.JSONB),
-        column('excluded_annotations', postgresql.JSONB))
-
-    # need to drop the postgres default value first
-    # before setting to null works
-    conn.execute(text('alter table files alter column annotations drop default'))
-    conn.execute(text('alter table files alter column custom_annotations drop default'))
-    conn.execute(text('alter table files alter column excluded_annotations drop default'))
-
-    conn.execute(text('alter table file_annotations_version alter column custom_annotations drop default'))
-    conn.execute(text('alter table file_annotations_version alter column excluded_annotations drop default'))
-
-    # remove the empty list string for files.annotations
-    # columns are nullable so shouldn't have that value
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause.c.id,
-        tableclause.c.annotations
-    ]).where(tableclause.c.annotations == '[]'))
-
-    for chunk in window_chunk(files, 25):
-        collected = []
-        for fid, file_annotations in chunk:
-            collected.append({'id': fid, 'annotations': null()})
-        try:
-            session.bulk_update_mappings(Files, collected)
-            session.commit()
-        except Exception:
-            session.rollback()
-            raise
-
-    # remove the empty list string for files.custom_annotations
-    # columns are nullable so shouldn't have that value
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause.c.id,
-        tableclause.c.custom_annotations
-    ]).where(tableclause.c.custom_annotations == '[]'))
-
-    for chunk in window_chunk(files, 25):
-        collected = []
-        for fid, custom_annotations in chunk:
-            collected.append({'id': fid, 'custom_annotations': null()})
-        try:
-            session.bulk_update_mappings(Files, collected)
-            session.commit()
-        except Exception:
-            session.rollback()
-            raise
-
-    # remove the empty list string for files.excluded_annotations
-    # columns are nullable so shouldn't have that value
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause.c.id,
-        tableclause.c.excluded_annotations
-    ]).where(tableclause.c.excluded_annotations == '[]'))
-
-    for chunk in window_chunk(files, 25):
-        collected = []
-        for fid, excluded_annotations in chunk:
-            collected.append({'id': fid, 'excluded_annotations': null()})
-        try:
-            session.bulk_update_mappings(Files, collected)
-            session.commit()
-        except Exception:
-            session.rollback()
-            raise
-
-    # remove the empty list string for file_annotations_version.custom_annotations
-    # columns are nullable so shouldn't have that value
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause2.c.id,
-        tableclause2.c.custom_annotations
-    ]).where(tableclause2.c.custom_annotations == '[]'))
-
-    for chunk in window_chunk(files, 25):
-        collected = []
-        for fid, custom_annotations in chunk:
-            collected.append({'id': fid, 'custom_annotations': null()})
-        try:
-            session.bulk_update_mappings(FileAnnotationsVersion, collected)
-            session.commit()
-        except Exception:
-            session.rollback()
-            raise
-
-    # remove the empty list string for file_annotations_version.excluded_annotations
-    # columns are nullable so shouldn't have that value
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause2.c.id,
-        tableclause2.c.excluded_annotations
-    ]).where(tableclause2.c.excluded_annotations == '[]'))
-
-    for chunk in window_chunk(files, 25):
-        collected = []
-        for fid, excluded_annotations in chunk:
-            collected.append({'id': fid, 'excluded_annotations': null()})
-        try:
-            session.bulk_update_mappings(FileAnnotationsVersion, collected)
-            session.commit()
-        except Exception:
-            session.rollback()
-            raise
 
     # fix annotations, set to proper null value for files with no annotations
     files = conn.execution_options(stream_results=True).execute(sa.select([
@@ -179,7 +72,7 @@ def data_upgrades():
     for chunk in window_chunk(files, 25):
         collected = []
         for fid, annotations in chunk:
-            collected.append({'id': fid, 'annotations': null()})
+            collected.append({'id': fid, 'annotations': '[]'})
         try:
             session.bulk_update_mappings(Files, collected)
             session.commit()
