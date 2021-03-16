@@ -161,6 +161,8 @@
           - name: frontend
             aliases:
               - filebeat
+      tags:
+        - deploy
 
     # Use a dev version within the same VM if not prod/staging
     - name: Redis Deployment (Non Production/Staging)
@@ -181,7 +183,9 @@
           - name: backend
             aliases:
               - redis
-        when: webserver == "prod" or webserver == "staging"
+      when: not (webserver == "prod" or webserver == "staging")
+      tags:
+        - deploy
 
     - name: Prune unused images
       shell: "docker image prune -a -f"
