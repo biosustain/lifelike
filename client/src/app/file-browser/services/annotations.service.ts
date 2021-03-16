@@ -17,7 +17,6 @@ import {
 import { map } from 'rxjs/operators';
 import { ResultList, ResultMapping } from '../../shared/schemas/common';
 import {
-  defaultSortingAlgorithm,
   SortingAlgorithmId
 } from '../../word-cloud/sorting/sorting-algorithms';
 
