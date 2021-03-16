@@ -37,14 +37,9 @@ from neo4japp.data_transfer_objects.user_file_import import (
     Properties,
     RelationshipDirection,
 )
-from neo4japp.exceptions import (
-    KgImportException
-)
+from neo4japp.exceptions import ServerException
 from neo4japp.factory import cache
-from neo4japp.models import (
-    FileContent,
-    Worksheet
-)
+from neo4japp.models import FileContent, Worksheet
 from neo4japp.services.common import HybridDBDao
 from neo4japp.util import compute_hash
 
@@ -822,8 +817,9 @@ class UserFileImportService(HybridDBDao):
                 relationships=relationships,
             )
         except Exception:
-            raise KgImportException(
-                'An unexpected error occurred while trying to import your \n' +
+            raise ServerException(
+                'Failed to Import File',
+                'An unexpected error occurred while trying to import your ' +
                 'relationships into the knowledge graph. Please try again later.'
             )
 
@@ -838,7 +834,8 @@ class UserFileImportService(HybridDBDao):
             # If _any_ error is thrown after importing nodes, we should discard what was imported
             # to make sure the KG and Postgres don't get out of sync.
             self.detach_and_delete_worksheet(worksheet_node_id)
-            raise KgImportException(
+            raise ServerException(
+                'Failed to Import File',
                 'Nodes were successfully imported, but an unexpected error occurred ' +
                 'while saving your worksheet to the database. The imported nodes have been ' +
                 'discarded. Please try importing again.'
