@@ -5,7 +5,7 @@ import { annotationTypesMap } from '../../../../../shared/annotation-styles';
   selector: 'app-cloud-viewer',
   templateUrl: './cloud-viewer.component.html'
 })
-export class DsfgsdfgcloudViewerComponent implements OnInit, OnChanges {
+export class CloudViewerComponent implements OnInit, OnChanges {
   @Input() data: { gene: string, 'p-value': number, geneNames: string[] }[];
   @Input() showMore;
   geneColor = annotationTypesMap.get('gene').color;

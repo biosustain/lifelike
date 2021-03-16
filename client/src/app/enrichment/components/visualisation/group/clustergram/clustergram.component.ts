@@ -9,7 +9,7 @@ const geneColor = annotationTypesMap.get('gene').color;
   styleUrls: ['./clustergram.component.scss']
 })
 export class ClustergramComponent implements OnInit, OnChanges {
-  @Input() data: { gene: string, 'p-value': number, geneNames: string[] }[];
+  @Input() data;
   @Input() showMore;
 
   genes = new Map();
@@ -21,14 +21,14 @@ export class ClustergramComponent implements OnInit, OnChanges {
   }
 
   columnOrder(a, b) {
-    return b.value.filter(d => d).length - a.value.filter(d => d).length;
+    return b.geneNames.length - a.geneNames.length;
   }
 
   slice() {
     const data = (this.showMore ?
       this.data.slice(0, 50)
       : this.data.slice(0, 25))
-      .sort((a, b) => b.geneNames.length - a.geneNames.length);
+      .sort(this.columnOrder);
     const genes = new Map();
     data.forEach((goTerm, goIndex) => {
       goTerm.geneNames.forEach(g => {
