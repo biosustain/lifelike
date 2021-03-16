@@ -15,7 +15,6 @@ from neo4japp.database import (
 from neo4japp.exceptions import AnnotationError
 from neo4japp.services.annotations.constants import (
     EntityType,
-    DEFAULT_ANNOTATION_CONFIGS,
     MAX_ABBREVIATION_WORD_LENGTH
 )
 from neo4japp.services.annotations.data_transfer_objects import (
@@ -82,6 +81,7 @@ def get_nlp_entities(text: str, entities: Set[str]):
     }
 
     models = []
+    start = time.time()
     if all([model in entities for model in nlp_models]):
         req = call_nlp_service(model='all', text=text)
         models = [req]
@@ -92,6 +92,11 @@ def get_nlp_entities(text: str, entities: Set[str]):
                     nlp_models[model],
                     text
                 ) for model in entities if nlp_models.get(model, None)])
+
+    current_app.logger.info(
+        f'Total NLP time {time.time() - start}',
+        extra=EventLog(event_type='annotations').to_dict()
+    )
 
     for model in models:
         for results in model['results']:
@@ -155,9 +160,13 @@ def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
     return pdf_text, parsed
 
 
-def parse_pdf(file_id: int) -> Tuple[str, List[PDFWord]]:
-    req = requests.get(
-        f'http://pdfparser:7600/token/rect/json/http://appserver:5000/annotations/files/{file_id}', timeout=45)  # noqa
+def parse_pdf(file_id: int, exclude_references: bool) -> Tuple[str, List[PDFWord]]:
+    req = requests.post(
+        f'http://pdfparser:7600/token/rect/json/',
+        data={
+            'fileUrl': f'http://appserver:5000/annotations/files/{file_id}',
+            'excludeReferences': exclude_references
+        }, timeout=45)
     resp = req.json()
     req.close()
 
@@ -167,7 +176,7 @@ def parse_pdf(file_id: int) -> Tuple[str, List[PDFWord]]:
 
 def parse_text(text: str) -> Tuple[str, List[PDFWord]]:
     req = requests.post(
-        f'http://pdfparser:7600/token/rect/json', data={'text': text}, timeout=30)
+        f'http://pdfparser:7600/token/rect/text/json', data={'text': text}, timeout=30)
     resp = req.json()
     req.close()
 
@@ -192,10 +201,6 @@ def _create_annotations(
 
     start = time.time()
 
-    if not annotation_method:
-        # will cause default to rules based
-        annotation_method = DEFAULT_ANNOTATION_CONFIGS
-
     # identify entities w/ NLP first
     nlp_results = get_nlp_entities(
         text=pdf_text,
@@ -203,8 +208,7 @@ def _create_annotations(
 
     # if chemical used NLP then set compound too
     if annotation_method[EntityType.CHEMICAL.value]['nlp']:
-        annotation_method[EntityType.COMPOUND.value] = DEFAULT_ANNOTATION_CONFIGS[EntityType.COMPOUND.value]  # noqa
-        annotation_method[EntityType.COMPOUND.value]['nlp'] = True
+        annotation_method[EntityType.COMPOUND.value] = annotation_method[EntityType.CHEMICAL.value]
 
     start_lmdb_time = time.time()
     entity_results = entity_recog.identify(
@@ -258,7 +262,7 @@ def _create_annotations(
 
 
 def create_annotations_from_pdf(
-    annotation_method,
+    annotation_configs,
     specified_organism_synonym,
     specified_organism_tax_id,
     document,
@@ -269,7 +273,7 @@ def create_annotations_from_pdf(
 
     start = time.time()
     try:
-        pdf_text, parsed = parse_pdf(document.id)
+        pdf_text, parsed = parse_pdf(document.id, annotation_configs['exclude_references'])
     except requests.exceptions.ConnectTimeout:
         raise AnnotationError(
             'The request timed out while trying to connect to the parsing service.')
@@ -286,7 +290,7 @@ def create_annotations_from_pdf(
     )
 
     annotations = _create_annotations(
-        annotation_method=annotation_method,
+        annotation_method=annotation_configs['annotation_methods'],
         specified_organism_synonym=specified_organism_synonym,
         specified_organism_tax_id=specified_organism_tax_id,
         filename=filename,
@@ -299,7 +303,7 @@ def create_annotations_from_pdf(
 
 
 def create_annotations_from_text(
-    annotation_method,
+    annotation_configs,
     specified_organism_synonym,
     specified_organism_tax_id,
     text
@@ -326,7 +330,7 @@ def create_annotations_from_text(
     )
 
     annotations = _create_annotations(
-        annotation_method=annotation_method,
+        annotation_method=annotation_configs['annotation_methods'],
         specified_organism_synonym=specified_organism_synonym,
         specified_organism_tax_id=specified_organism_tax_id,
         filename='text-extract',
@@ -339,7 +343,7 @@ def create_annotations_from_text(
 
 
 def create_annotations_from_enrichment_table(
-    annotation_method,
+    annotation_configs,
     specified_organism_synonym,
     specified_organism_tax_id,
     enrichment_mappings,
@@ -366,7 +370,7 @@ def create_annotations_from_enrichment_table(
         extra=EventLog(event_type='annotations').to_dict()
     )
     annotations = _create_annotations(
-        annotation_method=annotation_method,
+        annotation_method=annotation_configs['annotation_methods'],
         specified_organism_synonym=specified_organism_synonym,
         specified_organism_tax_id=specified_organism_tax_id,
         filename='text-extract',
