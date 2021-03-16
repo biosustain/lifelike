@@ -2,10 +2,12 @@ name: Azure Staging Deployment
 
 on:
   push:
-    branches:
-      - "staging/**"
     tags:
-      - staging
+      - azurestaging
+    # branches:
+    #   - "staging/**"
+    # tags:
+    #   - staging
 
 jobs:
   build:
