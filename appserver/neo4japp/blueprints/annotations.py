@@ -976,7 +976,10 @@ def get_pdf_to_annotate(file_id):
     doc = Files.query.get(file_id)
 
     if not doc:
-        raise RecordNotFoundException(f'File with file id {file_id} not found.')
+        raise AnnotationError(
+            title='Failed to Annotate',
+            message=f'File with file id {file_id} not found.',
+            code=404)
 
     res = make_response(doc.content.raw_file)
     res.headers['Content-Type'] = 'application/pdf'

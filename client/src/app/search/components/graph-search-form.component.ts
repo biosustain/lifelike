@@ -5,7 +5,7 @@ import { OrganismAutocomplete } from 'app/interfaces';
 
 import { GraphSearchParameters } from '../graph-search';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from '../../shared/services/message-dialog.service';
 
 @Component({
   selector: 'app-graph-search-form',
@@ -86,7 +86,7 @@ export class GraphSearchFormComponent {
         title: 'Invalid Input',
         message: errorMsg,
         type: MessageType.Error,
-      });
+      } as MessageArguments);
     }
   }
 
