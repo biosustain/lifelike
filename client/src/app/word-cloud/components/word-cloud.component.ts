@@ -72,6 +72,8 @@ export class WordCloudComponent implements OnInit, OnDestroy {
       );
     });
 
+    // Set up the cloud resize observer.
+    // @ts-ignore
     this.cloudResizeObserver = new ResizeObserver(() => {
       this.resizeCloud = true;
     });
