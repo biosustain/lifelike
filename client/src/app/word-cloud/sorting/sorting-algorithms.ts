@@ -17,34 +17,32 @@ export interface SortingAlgorithm {
   default?: number;
 }
 
-const frequency =
-  {
-    id: SortingAlgorithmId.frequency,
-    name: 'Frequency',
-    description: `
+const frequency = {
+  id: SortingAlgorithmId.frequency,
+  name: 'Frequency',
+  description: `
 Standard word cloud with word size determined from total word count.<br/>
 <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = 𝙨𝙪𝙢<sub>𝙞</sub> (𝙘𝙤𝙪𝙣𝙩<sub>𝙞</sub> )</p>
     `,
-    valueDescription: 'Entity Frequency',
-    min: 0,
-    step: 1,
-    default: 1,
-  };
+  valueDescription: 'Entity Frequency',
+  min: 0,
+  step: 1,
+  default: 1,
+};
 
-const mwu =
-  {
-    id: SortingAlgorithmId.mwu,
-    name: 'Mann–Whitney U test',
-    description: `
+const mwu = {
+  id: SortingAlgorithmId.mwu,
+  name: 'Mann–Whitney U test',
+  description: `
 Each word are weighted according to a one-sided MWU test that assesses whether a count
 for that specific term tends to be larger than a count from any other term.<br/>
 <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = -𝙡𝙤𝙜 (𝙥 -𝙫𝙖𝙡𝙪𝙚 )</p>
     `,
-    valueDescription: '-log(p-value)',
-    min: 0,
-    step: 0.25,
-    default: 0,
-  };
+  valueDescription: '-log(p-value)',
+  min: 0,
+  step: 0.25,
+  default: 0,
+};
 
 export const fileTypeSortingAlgorithms = {
   'vnd.***ARANGO_DB_NAME***.filesystem/directory': {
