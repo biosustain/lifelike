@@ -49,9 +49,9 @@ class VisEdge(CamelDictMixin):
     def build_from_dict_formatter(self, vis_edge_input_dict: dict):
         # Error if both 'from' and 'from_' are in the dict, or if neither of them are
         if vis_edge_input_dict.get('from_', None) is None and vis_edge_input_dict.get('from', None) is None:  # noqa
-            raise FormatterException("Must have either 'from' or 'from_' in a VisEdge dict!")
+            raise FormatterException(message="Must have either 'from' or 'from_' in a VisEdge dict!")  # noqa
         elif vis_edge_input_dict.get('from_', None) is not None and vis_edge_input_dict.get('from', None) is not None:  # noqa
-            raise FormatterException("Cannot have both 'from' and 'from_' in a VisEdge dict!")
+            raise FormatterException(message="Cannot have both 'from' and 'from_' in a VisEdge dict!")  # noqa
 
         if vis_edge_input_dict.get('from', None) is not None:
             vis_edge_input_dict['from_'] = vis_edge_input_dict['from']
