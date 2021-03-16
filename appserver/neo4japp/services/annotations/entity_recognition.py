@@ -708,19 +708,18 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
-        else:
-            # didn't find in LMDB so look in global inclusion
-            found = self.inclusion_type_anatomy.get(lookup_term, None)
-            if found:
-                entities = found.entities
-                id_type = found.entity_id_type
-                id_hyperlink = found.entity_id_hyperlink
+        found = self.inclusion_type_anatomy.get(lookup_term, None)
+        if found:
+            # see self.identify_gene for concatenate reason
+            entities += found.entities
+            id_type = found.entity_id_type
+            id_hyperlink = found.entity_id_hyperlink
 
         if entities:
             anatomy_found.append(
@@ -745,7 +744,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -753,14 +752,13 @@ class EntityRecognitionService:
 
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
-        else:
-            # didn't find in LMDB so look in global inclusion
-            found = self.inclusion_type_chemical.get(lookup_term, None)
-            if found:
-                found_inclusion = True
-                entities = found.entities
-                id_type = found.entity_id_type
-                id_hyperlink = found.entity_id_hyperlink
+        found = self.inclusion_type_chemical.get(lookup_term, None)
+        if found:
+            found_inclusion = True
+            # see self.identify_gene for concatenate reason
+            entities += found.entities
+            id_type = found.entity_id_type
+            id_hyperlink = found.entity_id_hyperlink
 
         # only want those in inclusion or identified by NLP
         if entities:
@@ -796,7 +794,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -804,14 +802,13 @@ class EntityRecognitionService:
 
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
-        else:
-            # didn't find in LMDB so look in global inclusion
-            found = self.inclusion_type_compound.get(lookup_term, None)
-            if found:
-                found_inclusion = True
-                entities = found.entities
-                id_type = found.entity_id_type
-                id_hyperlink = found.entity_id_hyperlink
+        found = self.inclusion_type_compound.get(lookup_term, None)
+        if found:
+            found_inclusion = True
+            # see self.identify_gene for concatenate reason
+            entities += found.entities
+            id_type = found.entity_id_type
+            id_hyperlink = found.entity_id_hyperlink
 
         # only want those in inclusion or identified by NLP
         if entities:
@@ -847,7 +844,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -855,14 +852,13 @@ class EntityRecognitionService:
 
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
-        else:
-            # didn't find in LMDB so look in global inclusion
-            found = self.inclusion_type_disease.get(lookup_term, None)
-            if found:
-                found_inclusion = True
-                entities = found.entities
-                id_type = found.entity_id_type
-                id_hyperlink = found.entity_id_hyperlink
+        found = self.inclusion_type_disease.get(lookup_term, None)
+        if found:
+            found_inclusion = True
+            # see self.identify_gene for concatenate reason
+            entities += found.entities
+            id_type = found.entity_id_type
+            id_hyperlink = found.entity_id_hyperlink
 
         # only want those in inclusion or identified by NLP (if any)
         if entities:
@@ -895,19 +891,18 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
-        else:
-            # didn't find in LMDB so look in global inclusion
-            found = self.inclusion_type_food.get(lookup_term, None)
-            if found:
-                entities = found.entities
-                id_type = found.entity_id_type
-                id_hyperlink = found.entity_id_hyperlink
+        found = self.inclusion_type_food.get(lookup_term, None)
+        if found:
+            # see self.identify_gene for concatenate reason
+            entities += found.entities
+            id_type = found.entity_id_type
+            id_hyperlink = found.entity_id_hyperlink
 
         if entities:
             foods_found.append(
@@ -932,7 +927,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -940,14 +935,17 @@ class EntityRecognitionService:
 
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
-        else:
-            # didn't find in LMDB so look in global inclusion
-            found = self.inclusion_type_gene.get(lookup_term, None)
-            if found:
-                found_inclusion = True
-                entities = found.entities
-                id_type = found.entity_id_type
-                id_hyperlink = found.entity_id_hyperlink
+
+        found = self.inclusion_type_gene.get(lookup_term, None)
+        if found:
+            found_inclusion = True
+            # need to concatenate and not do either LMDB or global inclusion
+            # because a global could normalize to something already in
+            # LMDB, e.g IL-8 is a global inclusion, but il8 is already
+            # normalized in LMDB from IL8
+            entities += found.entities
+            id_type = found.entity_id_type
+            id_hyperlink = found.entity_id_hyperlink
 
         # only want those in inclusion or identified by NLP (if any)
         if entities:
@@ -980,19 +978,18 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
-        else:
-            # didn't find in LMDB so look in global inclusion
-            found = self.inclusion_type_phenomena.get(lookup_term, None)
-            if found:
-                entities = found.entities
-                id_type = found.entity_id_type
-                id_hyperlink = found.entity_id_hyperlink
+        found = self.inclusion_type_phenomena.get(lookup_term, None)
+        if found:
+            # see self.identify_gene for concatenate reason
+            entities += found.entities
+            id_type = found.entity_id_type
+            id_hyperlink = found.entity_id_hyperlink
 
         if entities:
             phenomenas_found.append(
@@ -1014,19 +1011,18 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
-        else:
-            # didn't find in LMDB so look in global inclusion
-            found = self.inclusion_type_phenotype.get(lookup_term, None)
-            if found:
-                entities = found.entities
-                id_type = found.entity_id_type
-                id_hyperlink = found.entity_id_hyperlink
+        found = self.inclusion_type_phenotype.get(lookup_term, None)
+        if found:
+            # see self.identify_gene for concatenate reason
+            entities += found.entities
+            id_type = found.entity_id_type
+            id_hyperlink = found.entity_id_hyperlink
 
         if entities:
             phenotypes_found.append(
@@ -1048,7 +1044,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -1057,13 +1053,12 @@ class EntityRecognitionService:
             entities_to_use = [entity for entity in entities if entity['synonym'] == term]  # noqa
             if entities_to_use:
                 entities = entities_to_use
-        else:
-            # didn't find in LMDB so look in global inclusion
-            found = self.inclusion_type_protein.get(lookup_term, None)
-            if found:
-                entities = found.entities
-                id_type = found.entity_id_type
-                id_hyperlink = found.entity_id_hyperlink
+        found = self.inclusion_type_protein.get(lookup_term, None)
+        if found:
+            # see self.identify_gene for concatenate reason
+            entities += found.entities
+            id_type = found.entity_id_type
+            id_hyperlink = found.entity_id_hyperlink
 
         if entities:
             proteins_found.append(
@@ -1086,19 +1081,18 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
-        else:
-            # didn't find in LMDB so look in global inclusion
-            found = self.inclusion_type_species.get(lookup_term, None)
-            if found:
-                entities = found.entities
-                id_type = found.entity_id_type
-                id_hyperlink = found.entity_id_hyperlink
+        found = self.inclusion_type_species.get(lookup_term, None)
+        if found:
+            # see self.identify_gene for concatenate reason
+            entities += found.entities
+            id_type = found.entity_id_type
+            id_hyperlink = found.entity_id_hyperlink
 
         if entities:
             species_found.append(
