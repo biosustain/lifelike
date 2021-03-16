@@ -93,7 +93,7 @@ class FileUploadError(ServerException):
 
 
 class NotAuthorized(ServerException):
-    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=403):
         super().__init__(
             title=title,
             message=message,
@@ -102,7 +102,7 @@ class NotAuthorized(ServerException):
 
 
 class RecordNotFound(ServerException):
-    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=404):
         super().__init__(
             title=title,
             message=message,
@@ -111,7 +111,7 @@ class RecordNotFound(ServerException):
 
 
 class InvalidArgument(ServerException):
-    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=400):
         super().__init__(
             title=title,
             message=message,
