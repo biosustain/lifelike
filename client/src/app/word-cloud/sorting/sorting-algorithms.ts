@@ -22,8 +22,8 @@ const frequency =
     id: SortingAlgorithmId.frequency,
     name: 'Frequency',
     description: `
-      Standard word cloud with word size determined from total word count.<br/>
-      <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = 𝙨𝙪𝙢<sub>𝙞</sub> (𝙘𝙤𝙪𝙣𝙩<sub>𝙞</sub> )</p>
+Standard word cloud with word size determined from total word count.<br/>
+<p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = 𝙨𝙪𝙢<sub>𝙞</sub> (𝙘𝙤𝙪𝙣𝙩<sub>𝙞</sub> )</p>
     `,
     valueDescription: 'Entity Frequency',
     min: 0,
@@ -35,11 +35,10 @@ const mwu =
   {
     id: SortingAlgorithmId.mwu,
     name: 'Mann–Whitney U test',
-    // title: 'Title for description',
     description: `
-    Each word are weighted according to a one-sided MWU test that assesses whether a count
-    for that specific term tends to be larger than a count from any other term.<br/>
-    <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = -𝙡𝙤𝙜 (𝙥 -𝙫𝙖𝙡𝙪𝙚 )</p>
+Each word are weighted according to a one-sided MWU test that assesses whether a count
+for that specific term tends to be larger than a count from any other term.<br/>
+<p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = -𝙡𝙤𝙜 (𝙥 -𝙫𝙖𝙡𝙪𝙚 )</p>
     `,
     valueDescription: '-log(p-value)',
     min: 0,
@@ -55,12 +54,11 @@ export const fileTypeSortingAlgorithms = {
       {
         id: SortingAlgorithmId.sum_log_count,
         name: 'Log transformed frequency',
-        // title: 'No title',
         description: `
-            Log transformed counts. Method emphasizes terms appearing across multiple sources
-            over similar counts collected from a single source.<br/>
-            <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = 𝙨𝙪𝙢<sub>𝙞</sub> (𝙡𝙤𝙜 (𝙘𝙤𝙪𝙣𝙩<sub>𝙞</sub> ))</p>
-            `,
+Log transformed counts. Method emphasizes terms appearing across multiple sources
+over similar counts collected from a single source.<br/>
+<p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = 𝙨𝙪𝙢<sub>𝙞</sub> (𝙡𝙤𝙜 (𝙘𝙤𝙪𝙣𝙩<sub>𝙞</sub> ))</p>
+        `,
         valueDescription: 'Sum log of frequency per file',
         min: 0,
         step: 0.1,
@@ -81,10 +79,7 @@ export const fileTypeSortingAlgorithms = {
       {
         id: SortingAlgorithmId.count_per_row,
         name: 'Count per row',
-        // title: 'No title',
-        description: `
-      Number of rows a value occurs in.
-      `,
+        description: `Number of rows a value occurs in.`,
         valueDescription: 'Count per row',
         min: 0,
         step: 1,
@@ -93,12 +88,13 @@ export const fileTypeSortingAlgorithms = {
       {
         ...mwu,
         description: `
-    Each word are weighted according to a one-sided MWU test that assesses whether a count
-    for that specific term tends to be larger than a count from any other term.<br/>
-    <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = -𝙡𝙤𝙜 (𝙥 -𝙫𝙖𝙡𝙪𝙚 )</p>
-    
-    For the MWU we compare distributions for a gene (or other entity) of interest and the distribution for all other genes. For each row we observe samples of these distributions for each gene. Normally one would simply sum occurrences of the gene within the row, however, since some columns might be highly correlated (duplicated text) we will instead use the number of mentions from the column with the most mentions as the sample taken for from that row.
-    `,
+Each word are weighted according to a one-sided MWU test that assesses whether a count
+for that specific term tends to be larger than a count from any other term.<br/>
+<p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = -𝙡𝙤𝙜 (𝙥 -𝙫𝙖𝙡𝙪𝙚 )</p>
+Normally one would simply sum occurrences of the gene within the row, however, 
+since some columns might be highly correlated (duplicated text) 
+the number of maximum mentions per column is used as an sample for that row.
+        `,
       }
     ]
   }

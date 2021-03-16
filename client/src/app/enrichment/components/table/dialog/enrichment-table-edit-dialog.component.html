@@ -52,7 +52,9 @@
         </app-form-row>
 
         <app-form-row
+          for="organism"
           label="Organism"
+          [control]="form.get('organism')"
         >
           <app-organism-autocomplete
             formId="organism"
@@ -83,11 +85,6 @@
         <fieldset class="fieldset-properties mt-4">
           <legend>Annotation Options</legend>
           <app-form-row>
-            <div class="text-muted mb-2">
-              <i class="fa fa-exclamation-circle"></i>
-              Below are the current entity types that have an NLP model. Other entity types will
-              default to Rules Based.
-            </div>
             <app-annotation-config-table
               [headers]="annotationMethods"
               [models]="annotationModels"
