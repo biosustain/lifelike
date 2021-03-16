@@ -1,14 +1,16 @@
+import { Injectable } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { AbstractControl } from '@angular/forms';
+
 import { Observable, pipe, throwError, EMPTY } from 'rxjs';
 import { catchError, first } from 'rxjs/operators';
-import { HttpErrorResponse } from '@angular/common/http';
-import { MessageDialog } from './message-dialog.service';
-import { Injectable } from '@angular/core';
 import { UnaryFunction } from 'rxjs/src/internal/types';
+
+import { MessageDialog } from './message-dialog.service';
 import { UserError } from '../exceptions';
 import { LoggingService } from '../services/logging.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { ErrorLogMeta, ErrorResponse } from '../schemas/common';
-import { AbstractControl } from '@angular/forms';
 import { isNullOrUndefined } from 'util';
 
 @Injectable({
@@ -41,9 +43,10 @@ export class ErrorHandler {
   }
 
   createUserError(error: any): UserError {
-    let title = 'Problem Encountered';
-    let message = 'The server encountered a problem. No further details are currently available.';
-    let detail = null;
+    let title = '';
+    let message = '';
+    let additionalMsgs = [];
+    let stacktrace = null;
     // A transaction id for log audits with Sentry (Sentry.io)
     let transactionId = this.createTransactionId();
 
@@ -53,61 +56,59 @@ export class ErrorHandler {
 
       // Detect if we got an error response object
       if (errorResponse && errorResponse.message) {
+        title = errorResponse.title;
         message = errorResponse.message;
-        detail = errorResponse.detail;
+        additionalMsgs = errorResponse.additionalMsgs;
+        stacktrace = errorResponse.stacktrace;
         transactionId = errorResponse.transactionId;
       }
 
       // Override some fields for some error codes
-      if (httpErrorResponse.status === 404) {
-        title = 'Not Found';
+      if (httpErrorResponse.status === 403 || httpErrorResponse.status === 404) {
         message = 'The page that you are looking for does not exist. You may have ' +
           'followed a broken link or the page may have been removed.';
       } else if (httpErrorResponse.status === 413) {
-        title = 'Too Large';
         message = 'The server could not process your upload because it was too large.';
-      } else if (httpErrorResponse.status === 400) {
-        title = 'Invalid Input';
-      } else if (httpErrorResponse.status === 403) {
-        title = 'Insufficient Permission';
       }
     } else if (error instanceof UserError) {
       const userError = error as UserError;
 
       title = userError.title;
       message = userError.message;
-      detail = userError.detail;
+      additionalMsgs = userError.additionalMsgs;
+      stacktrace = userError.stacktrace;
       transactionId = userError.transactionId;
 
       if (error.cause != null) {
         const causeUserError = this.createUserError(error.cause);
-        if (causeUserError.detail != null) {
-          if (detail != null) {
-            detail = detail + '\n\n------------------------------\n\n' + causeUserError.detail;
+        if (causeUserError.stacktrace != null) {
+          if (stacktrace != null) {
+            stacktrace = stacktrace + '\n\n------------------------------\n\n' + causeUserError.stacktrace;
           } else {
-            detail = causeUserError.detail;
+            stacktrace = causeUserError.stacktrace;
           }
         }
       }
     } else if (error instanceof Error) {
       const errorObject = error as Error;
-      detail = errorObject.message;
+      stacktrace = errorObject.message;
 
       if (errorObject.stack) {
-        detail += '\n\n' + errorObject.stack;
+        stacktrace += '\n\n' + errorObject.stack;
       }
     } else {
-      detail = error + '';
+      stacktrace = error + '';
     }
 
-    return new UserError(title, message, detail, error, transactionId);
+    return new UserError(
+      title, message, additionalMsgs, stacktrace, error, transactionId);
   }
 
   logError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta) {
-    const {title, message, detail, transactionId} = this.createUserError(error);
+    const {title, message, additionalMsgs, stacktrace, transactionId} = this.createUserError(error);
 
     this.loggingService.sendLogs(
-      {title, message, detail, transactionId, ...logInfo}
+      {title, message, additionalMsgs, stacktrace, transactionId, ...logInfo}
     ).pipe(
       first(),
       catchError(() => EMPTY)
@@ -117,12 +118,13 @@ export class ErrorHandler {
   showError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta) {
     this.logError(error, logInfo);
 
-    const {title, message, detail, transactionId} = this.createUserError(error);
+    const {title, message, additionalMsgs, stacktrace, transactionId} = this.createUserError(error);
 
     this.messageDialog.display({
       title,
       message,
-      detail,
+      additionalMsgs,
+      stacktrace,
       transactionId,
       type: MessageType.Error,
     });
