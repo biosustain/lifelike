@@ -169,12 +169,12 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     """
     Annotations related columns
     """
-    annotations = db.Column(postgresql.JSONB, nullable=True)
+    annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     annotation_configs = db.Column(postgresql.JSONB, nullable=True)
     annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
-    custom_annotations = db.Column(postgresql.JSONB, nullable=True)
+    custom_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     enrichment_annotations = db.Column(postgresql.JSONB, nullable=True)
-    excluded_annotations = db.Column(postgresql.JSONB, nullable=True)
+    excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     fallback_organism_id = db.Column(
         db.Integer,
         # CAREFUL do not allow cascade ondelete
@@ -306,8 +306,8 @@ class FileAnnotationsVersion(RDBMSBase, TimestampMixin, HashIdMixin):
                         index=True, nullable=False)
     file = db.relationship('Files', foreign_keys=file_id)
     cause = db.Column(db.Enum(AnnotationChangeCause), nullable=False)
-    custom_annotations = db.Column(postgresql.JSONB, nullable=True)
-    excluded_annotations = db.Column(postgresql.JSONB, nullable=True)
+    custom_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
+    excluded_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     user_id = db.Column(db.Integer, db.ForeignKey('appuser.id', ondelete='SET NULL'),
                         index=True, nullable=True)
     user = db.relationship('AppUser', foreign_keys=user_id)
