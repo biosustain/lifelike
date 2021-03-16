@@ -195,7 +195,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get hasWordCloud() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.isDirectory || this.mimeType === PDF_MIMETYPE;
+    return this.isDirectory || this.mimeType === PDF_MIMETYPE || this.mimeType === ENRICHMENT_TABLE_MIMETYPE;
   }
 
   /**

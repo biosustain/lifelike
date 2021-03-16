@@ -52,7 +52,9 @@
         </app-form-row>
 
         <app-form-row
+          for="organism"
           label="Organism"
+          [control]="form.get('organism')"
         >
           <app-organism-autocomplete
             formId="organism"

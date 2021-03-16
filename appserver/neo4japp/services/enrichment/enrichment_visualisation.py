@@ -30,7 +30,6 @@ class EnrichmentVisualisationService(KgService):
                 RETURN
                     n.id AS geneId, n.name AS geneName, g.id AS goId, g.name AS goTerm,
                     [lbl IN go_labels WHERE lbl<> 'db_GO'] AS goLabel
-                LIMIT 100000
                 """,
                 id=organism_id
         ).data()
