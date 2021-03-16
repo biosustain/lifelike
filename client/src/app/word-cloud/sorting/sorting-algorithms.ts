@@ -89,8 +89,8 @@ over similar counts collected from a single source.<br/>
 Each word are weighted according to a one-sided MWU test that assesses whether a count
 for that specific term tends to be larger than a count from any other term.<br/>
 <p class="text-center m-2">𝙬𝙚𝙞𝙜𝙝𝙩 = -𝙡𝙤𝙜 (𝙥 -𝙫𝙖𝙡𝙪𝙚 )</p>
-Normally one would simply sum occurrences of the gene within the row, however, 
-since some columns might be highly correlated (duplicated text) 
+Normally one would simply sum occurrences of the gene within the row, however,
+since some columns might be highly correlated (duplicated text)
 the number of maximum mentions per column is used as an sample for that row.
         `,
       }
