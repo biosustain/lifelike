@@ -8,7 +8,7 @@ import { Subject } from 'rxjs';
 import { FileNameAndSheets, SheetNameAndColumnNames } from 'app/interfaces';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { KgImportService } from 'app/kg-import/services/kg-import.service';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { UserFileImportService } from 'app/user-file-import/services/user-file-import.service';
 
 @Component({
@@ -98,7 +98,7 @@ export class GeneImportWizardComponent {
                         title: 'File Upload Error',
                         message,
                         type: MessageType.Error,
-                    }
+                    } as MessageArguments
                 );
             }
         );
@@ -146,7 +146,7 @@ export class GeneImportWizardComponent {
                         title: 'Import Error',
                         message,
                         type: MessageType.Error,
-                    }
+                    } as MessageArguments
                 );
             }
         );
