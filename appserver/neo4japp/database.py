@@ -61,7 +61,7 @@ def connect_to_neo4j():
             name=current_app.config.get('NEO4J_DATABASE'),
             host=current_app.config.get('NEO4J_HOST'),
             auth=current_app.config.get('NEO4J_AUTH').split('/'),
-            secure=secure in protocols,  # Any 's' will be considered a secure protocol
+            secure=secure in protocols,
             port=current_app.config.get('NEO4J_PORT'),
             scheme=current_app.config.get('NEO4J_SCHEME')
         )
