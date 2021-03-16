@@ -16,7 +16,7 @@ export class CloudViewerComponent implements OnInit, OnChanges {
     const color = this.geneColor;
     this.slicedData = Object.entries(
       this.data.reduce((o, n) => {
-        n['geneNames'].forEach(g => {
+        n.geneNames.forEach(g => {
           o[g] = o[g] || 0;
           o[g] += 1;
         });
