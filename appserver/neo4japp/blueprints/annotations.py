@@ -310,8 +310,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
 class FileAnnotationSortedView(FilesystemBaseView):
     decorators = [auth.login_required]
 
-    def get_rows(self, files, sort):
-        annotation_service = get_sorted_annotation_service(sort)
+    def get_rows(self, files, annotation_service):
         values = annotation_service.get_annotations(files)
 
         yield [
@@ -356,19 +355,32 @@ class FileAnnotationSortedView(FilesystemBaseView):
 
         file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
-        files = self.get_nondeleted_recycled_children(
-                Files.id == file.id,
-                children_filter=and_(
-                        (Files.mime_type == 'application/pdf'),
-                        Files.recycling_date.is_(None)
-                ),
-                lazy_load_content=True
-        )
 
         buffer = io.StringIO()
         writer = csv.writer(buffer, delimiter="\t", quotechar='"')
-        for row in self.get_rows(files, sort):
-            writer.writerow(row)
+
+        if file.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table':
+            files = self.get_nondeleted_recycled_files(
+                    Files.id == file.id,
+                    lazy_load_content=True
+            )
+
+            annotation_service = get_sorted_annotation_service(sort, mime_type=file.mime_type)
+            for row in self.get_rows(files, annotation_service):
+                writer.writerow(row)
+        else:
+            files = self.get_nondeleted_recycled_children(
+                    Files.id == file.id,
+                    children_filter=and_(
+                            Files.mime_type == 'application/pdf',
+                            Files.recycling_date.is_(None)
+                    ),
+                    lazy_load_content=True
+            )
+
+            annotation_service = get_sorted_annotation_service(sort)
+            for row in self.get_rows(files, annotation_service):
+                writer.writerow(row)
 
         result = buffer.getvalue().encode('utf-8')
 
@@ -529,12 +541,37 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     annotations_list = annotations['documents'][0]['passages'][0]['annotations']
 
                     prev_k = -1
+                    enriched_gene = ''
                     for k, text_mapping in enrichment_mappings.items():
                         annotations_to_process = [anno for anno in annotations_list if anno.get(
                             'hiLocationOffset', None) and anno.get(
                                 'loLocationOffset') > prev_k and anno.get('hiLocationOffset') <= k]
 
                         prev_k = k
+
+                        # update JSON to have enrichment row and domain...
+                        for anno in annotations_to_process:
+                            # imported should come first for each row
+                            if text_mapping.get('imported'):
+                                enriched_gene = text_mapping['text']
+                                anno['enrichmentGene'] = enriched_gene
+                                # enrichment JSON doesn't have a domain label for this
+                                anno['enrichmentDomain']['domain'] = 'Imported'
+                            if text_mapping.get('matched'):
+                                anno['enrichmentGene'] = enriched_gene
+                                # enrichment JSON doesn't have a domain label for this
+                                anno['enrichmentDomain']['domain'] = 'Matched'
+                            if text_mapping.get('full_name'):
+                                anno['enrichmentGene'] = enriched_gene
+                                # enrichment JSON doesn't have a domain label for this
+                                anno['enrichmentDomain']['domain'] = 'Gene Full Name'
+                            if 'domain' in text_mapping:
+                                anno['enrichmentGene'] = enriched_gene
+                                if text_mapping['domain'] == 'Regulon':
+                                    anno['enrichmentDomain']['domain'] = text_mapping['domain']
+                                    anno['enrichmentDomain']['subDomain'] = text_mapping['label']
+                                else:
+                                    anno['enrichmentDomain']['domain'] = text_mapping['domain']
 
                         snippet = self._highlight_annotations(
                             original_text=text_mapping['text'],
@@ -675,11 +712,11 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         # Remove the highlight tags to help the annotation parser
         text = highlight_strip_tag_re.sub('%%%%%-\\1-%%%%%', text)
 
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # TODO: See JIRA BUG LL-2451
-        #
+        # sort by longest length because the regex is eager
+        # and will take the first occurrence it finds
+        annotations = sorted(annotations, key=lambda x: x['keywordLength'], reverse=True)
         for annotation in annotations:
-            keyword = annotation['keyword']
+            keyword = annotation['textInDocument']
             text = re.sub(
                 # Replace but outside tags (shh @ regex)
                 f"(?<!\\w)({re.escape(keyword)})(?!\\w)(?![^<]*>|[^<>]*</)",
