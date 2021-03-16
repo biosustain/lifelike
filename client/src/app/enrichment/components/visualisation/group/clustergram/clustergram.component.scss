@@ -1,5 +1,5 @@
 table {
-  $tilted-text-space-estimate: 3em;
+  $tilted-text-space-estimate: 6em;
   $cell-size: 1.5em;
   $first-column-width: 6em;
   $column-header-angle: 45deg;
@@ -10,6 +10,19 @@ table {
   table-layout: fixed;
   margin-top: $tilted-text-space-estimate;
   margin-right: $tilted-text-space-estimate;
+  position: relative;
+
+  &:after {
+    content: "";
+    position: absolute;
+    top: -$tilted-text-space-estimate;
+    left: 0;
+    right: -$tilted-text-space-estimate;
+    height: $tilted-text-space-estimate;
+    pointer-events: none;
+    background-image: linear-gradient(180deg, white 0, transparent $cell-size),
+                linear-gradient(270deg, white 0, transparent $cell-size);
+  }
 
   thead tr {
     th {
@@ -226,7 +239,7 @@ table {
   }
 
   tbody td.match {
-    background-color: red;
+    //background-color: $gene;
     border-left: 1px solid white;
   }
 }

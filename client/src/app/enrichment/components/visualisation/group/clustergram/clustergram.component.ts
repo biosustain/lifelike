@@ -1,4 +1,7 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { annotationTypesMap } from '../../../../../shared/annotation-styles';
+
+const geneColor = annotationTypesMap.get('gene').color;
 
 @Component({
   selector: 'app-clustergram',
@@ -11,13 +14,21 @@ export class ClustergramComponent implements OnInit, OnChanges {
 
   genes = new Map();
   goTerms = [];
+  geneColor = annotationTypesMap.get('gene').color;
 
-  rowOder(a,b) {
-   return  b.value.filter(d => d).length - a.value.filter(d => d).length
+  rowOrder(a, b) {
+    return b.value.filter(d => d).length - a.value.filter(d => d).length;
+  }
+
+  columnOrder(a, b) {
+    return b.value.filter(d => d).length - a.value.filter(d => d).length;
   }
 
   slice() {
-    const data = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 25);
+    const data = (this.showMore ?
+      this.data.slice(0, 50)
+      : this.data.slice(0, 25))
+      .sort((a, b) => b.geneNames.length - a.geneNames.length);
     const genes = new Map();
     data.forEach((goTerm, goIndex) => {
       goTerm.geneNames.forEach(g => {
