@@ -1,6 +1,6 @@
 import { Component, Input, OnDestroy } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../../shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from '../../../shared/services/message-dialog.service';
 import { FilesystemObject, ProjectImpl } from '../../models/filesystem-object';
 import { ObjectSelectService } from '../../services/object-select.service';
 import { MessageType } from '../../../interfaces/message-dialog.interface';
@@ -61,7 +61,7 @@ export class ObjectSelectionDialogComponent
         title: 'No Selection',
         message: 'You need to select a project first.',
         type: MessageType.Error,
-      });
+      } as MessageArguments);
     }
   }
 

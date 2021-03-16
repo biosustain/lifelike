@@ -440,9 +440,6 @@ def assert_patch_file_results(session, file_in_project: Files,
 
         resp_data = resp.get_json()
 
-        # Make sure we get a list of errors back for the field
-        assert type(resp_data['fields'][field]) is list
-
         # Make sure that nothing changed
         for f in [field, 'modifier', 'modified_date']:
             assert getattr(original_file, f) == getattr(updated_file, f)
