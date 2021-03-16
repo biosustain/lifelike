@@ -40,6 +40,16 @@
                             </app-clustergram>
                         </ng-template>
                     </li>
+                    <li ngbNavItem="cloud">
+                        <a ngbNavLink>Cloud</a>
+                        <ng-template ngbNavContent>
+                            <app-cloud-viewer
+                                    [data]="data"
+                                    [showMore]="showMore"
+                            >
+                            </app-cloud-viewer>
+                        </ng-template>
+                    </li>
                 </ul>
             </div>
         </ng-container>

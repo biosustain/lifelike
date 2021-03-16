@@ -12,6 +12,10 @@ export class ClustergramComponent implements OnInit, OnChanges {
   genes = new Map();
   goTerms = [];
 
+  rowOder(a,b) {
+   return  b.value.filter(d => d).length - a.value.filter(d => d).length
+  }
+
   slice() {
     const data = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 25);
     const genes = new Map();
