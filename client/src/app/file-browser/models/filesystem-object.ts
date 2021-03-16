@@ -11,7 +11,7 @@ import {
   UniversalGraphNode,
 } from '../../drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from '../../interfaces';
-import { AnnotationConfigs, FilesystemObjectData, ProjectData } from '../schema';
+import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
 import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
 import { FilePrivileges, ProjectPrivileges } from './privileges';
@@ -133,7 +133,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   fallbackOrganism?: OrganismAutocomplete;
   recycled: boolean;
   effectivelyRecycled: boolean;
-  annotationConfigs: AnnotationConfigs;
+  annotationConfigs: AnnotationConfigurations;
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
