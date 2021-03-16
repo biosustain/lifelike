@@ -52,14 +52,19 @@
                       placement="bottom top bottom-right top-right">
                 <i class="fa fa-fw fa-filter"></i>
               </button>
-              <div ngbDropdown container="body" class="btn-group" role="group"
+              <div *ngIf="sortingAlgorithms.length>1"
+                   ngbDropdown container="body" class="btn-group" role="group"
                    ngbTooltip="Method for word size calculation"
                    placement="bottom-right top-right">
                 <button class="btn btn-secondary" ngbDropdownToggle>
                   <i class="fas fa-sort-size-down"></i>
-                    <span *ngIf="sortingChanged" class="mx-2">{{sorting.name}}</span>
+                    <span class="mx-2">{{sorting.name}}</span>
                 </button>
-                <app-sorting-algorithms (changeSorting)="sort($event)" [selected]="sorting" ngbDropdownMenu></app-sorting-algorithms>
+                <app-sorting-algorithms [algorithms]="sortingAlgorithms"
+                                        (changeSorting)="sort($event)"
+                                        [selected]="sorting"
+                                        ngbDropdownMenu>
+                </app-sorting-algorithms>
               </div>
             </div>
           </div>
@@ -74,13 +79,18 @@
               No entities (annotations) found.
             </ngb-alert>
           </ng-container>
-          <div [id]="id + 'cloud-wrapper'" class="h-100 w-100 overflow-hidden"></div>
+          <div #wordCloudWrapper class="h-100 w-100 overflow-hidden">
+            <svg #wordCloudSvg>
+              <g #wordCloudGroup></g>
+            </svg>
+            <div #wordCloudTooltip class="tooltip bg-white rounded p-2" style="border: 2px solid; opacity: 1;"></div>
+          </div>
         </as-split-area>
         <as-split-area [visible]="filtersPanelOpened"
                        size="340"
                        [order]="1"
                        [class]="filtersPanelOpened ? 'as-split-area border' : 'as-split-area as-hidden'">
-        <div class="w-100 h-100 p-3">
+          <div class="w-100 h-100 p-3">
             <div class="annotation-filter-btns-container">
               <button class="btn btn-danger annotation-filter-close-btn d-flex justify-content-center align-items-center"
                       type="button"
@@ -101,4 +111,4 @@
     </div>
   </div>
 </div>
-<div [id]="id + '-hidden-text-area-wrapper'" style="display: none;"></div>
+<div #hiddenTextAreaWrapper style="display: none;"></div>

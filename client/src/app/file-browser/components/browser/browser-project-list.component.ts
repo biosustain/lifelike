@@ -9,6 +9,7 @@ import { ProjectActions } from '../../services/project-actions';
 import { ProjectList } from '../../models/project-list';
 import { PaginatedRequestOptions } from '../../../shared/schemas/common';
 import { addStatus, PipeStatus } from '../../../shared/pipes/add-status.pipe';
+import { ProjectImpl } from '../../models/filesystem-object';
 
 @Component({
   selector: 'app-browser-project-list',
@@ -46,5 +47,10 @@ export class BrowserProjectListComponent implements OnInit, OnDestroy {
       this.workspaceManager.navigate(project.getCommands());
     }, () => {
     });
+  }
+
+  projectDragStart(event: DragEvent, project: ProjectImpl) {
+    const dataTransfer: DataTransfer = event.dataTransfer;
+    project.addDataTransferData(dataTransfer);
   }
 }

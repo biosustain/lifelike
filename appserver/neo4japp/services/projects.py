@@ -1,14 +1,10 @@
 from typing import Sequence, Optional, Tuple
 
 from sqlalchemy import and_
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import Session
 
 from neo4japp.database import db, get_authorization_service
-from neo4japp.exceptions import (
-    NameUnavailableError,
-)
 from neo4japp.models import (
     AppUser,
     AppRole,
@@ -17,7 +13,6 @@ from neo4japp.models import (
 )
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
-from neo4japp.util import AttrDict
 
 
 class ProjectsService(RDBMSBaseDao):
