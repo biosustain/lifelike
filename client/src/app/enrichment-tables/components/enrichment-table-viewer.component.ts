@@ -4,6 +4,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  OnDestroy,
   OnInit,
   Output,
   ViewChild,
@@ -30,14 +31,14 @@ import {
 import { EnrichmentTableOrderDialogComponent } from './enrichment-table-order-dialog.component';
 import { ObjectVersion } from '../../file-browser/models/object-version';
 import { ObjectUpdateRequest } from '../../file-browser/schema';
-import { ElementFind } from '../../shared/utils/find/element-find';
+import { AsyncElementFind } from '../../shared/utils/find/async-element-find';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
   templateUrl: './enrichment-table-viewer.component.html',
   styleUrls: ['./enrichment-table-viewer.component.scss'],
 })
-export class EnrichmentTableViewerComponent implements OnInit, AfterViewChecked {
+export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
   @ViewChild('tableScroll', {static: false}) tableScrollRef: ElementRef;
@@ -49,7 +50,8 @@ export class EnrichmentTableViewerComponent implements OnInit, AfterViewChecked 
   document$: Observable<EnrichmentDocument> = new Subject();
   table$: Observable<EnrichmentTable> = new Subject();
   scrollTopAmount: number;
-  findController = new ElementFind();
+  findController = new AsyncElementFind();
+  private tickAnimationFrameId: number;
 
   /**
    * Keeps tracks of changes so they aren't saved to the server until you hit 'Save'. However,
@@ -87,6 +89,7 @@ export class EnrichmentTableViewerComponent implements OnInit, AfterViewChecked 
       this.errorHandler.create({label: 'Load enrichment table'}),
       shareReplay(),
     );
+    this.tickAnimationFrameId = requestAnimationFrame(this.tick.bind(this));
   }
 
   ngAfterViewChecked() {
@@ -95,6 +98,15 @@ export class EnrichmentTableViewerComponent implements OnInit, AfterViewChecked 
     } else {
       this.findController.target = null;
     }
+  }
+
+  ngOnDestroy() {
+    cancelAnimationFrame(this.tickAnimationFrameId);
+  }
+
+  tick() {
+    this.findController.tick();
+    this.tickAnimationFrameId = requestAnimationFrame(this.tick.bind(this));
   }
 
   scrollTop() {
