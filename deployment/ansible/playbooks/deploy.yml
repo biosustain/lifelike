@@ -65,7 +65,7 @@
           REDIS_HOST: "{{ REDIS_HOST }}"
           REDIS_PORT: "{{ REDIS_PORT|quote }}"
           REDIS_PASSWORD: "{{ REDIS_PASSWORD }}"
-          REDIS_SSL: "'{{ REDIS_SSL|quote }}'"
+          REDIS_SSL: "{{ REDIS_SSL }}"
           DOMAIN: "{{ DOMAIN }}"
           GITHUB_HASH: "{{ docker_img_hash }}"
           APP_VERSION: "{{ app_version }}"
