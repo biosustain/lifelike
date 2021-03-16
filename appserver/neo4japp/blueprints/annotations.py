@@ -310,8 +310,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
 class FileAnnotationSortedView(FilesystemBaseView):
     decorators = [auth.login_required]
 
-    def get_rows(self, files, sort):
-        annotation_service = get_sorted_annotation_service(sort)
+    def get_rows(self, files, annotation_service):
         values = annotation_service.get_annotations(files)
 
         yield [
@@ -356,22 +355,32 @@ class FileAnnotationSortedView(FilesystemBaseView):
 
         file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
         self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
-        files = self.get_nondeleted_recycled_children(
-                Files.id == file.id,
-                children_filter=and_(
-                        Files.mime_type.in_((
-                            'application/pdf',
-                            'vnd.***ARANGO_DB_NAME***.document/enrichment-table'
-                        )),
-                        Files.recycling_date.is_(None)
-                ),
-                lazy_load_content=True
-        )
 
         buffer = io.StringIO()
         writer = csv.writer(buffer, delimiter="\t", quotechar='"')
-        for row in self.get_rows(files, sort):
-            writer.writerow(row)
+
+        if file.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table':
+            files = self.get_nondeleted_recycled_files(
+                    Files.id == file.id,
+                    lazy_load_content=True
+            )
+
+            annotation_service = get_sorted_annotation_service(sort, mime_type=file.mime_type)
+            for row in self.get_rows(files, annotation_service):
+                writer.writerow(row)
+        else:
+            files = self.get_nondeleted_recycled_children(
+                    Files.id == file.id,
+                    children_filter=and_(
+                            Files.mime_type == 'application/pdf',
+                            Files.recycling_date.is_(None)
+                    ),
+                    lazy_load_content=True
+            )
+
+            annotation_service = get_sorted_annotation_service(sort)
+            for row in self.get_rows(files, annotation_service):
+                writer.writerow(row)
 
         result = buffer.getvalue().encode('utf-8')
 

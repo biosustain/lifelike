@@ -45,11 +45,11 @@ export class AnnotationsService {
     );
   }
 
-  getSortedAnnotations(hashId: string, sort: SortingAlgorithmId = defaultSortingAlgorithm.id) {
+  getSortedAnnotations(hashId: string, params:{sort: SortingAlgorithmId}) {
     return this.http.post(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations/sorted`, {}, {
         ...this.apiService.getHttpOptions(true),
-        params: {sort},
+        params,
         responseType: 'text',
       },
     );
