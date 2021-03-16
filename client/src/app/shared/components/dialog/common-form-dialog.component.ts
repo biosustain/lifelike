@@ -1,6 +1,7 @@
 import { MessageType } from '../../../interfaces/message-dialog.interface';
 import { AbstractControl } from '@angular/forms';
 import { CommonDialogComponent } from './common-dialog.component';
+import { MessageArguments } from 'app/shared/services/message-dialog.service';
 
 /**
  * An abstract component for dialogs that use forms.
@@ -17,7 +18,7 @@ export abstract class CommonFormDialogComponent<T = any, V = any> extends Common
         title: 'Invalid Input',
         message: 'There are some errors with your input.',
         type: MessageType.Error,
-      });
+      } as MessageArguments);
     }
   }
 }

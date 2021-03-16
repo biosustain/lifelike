@@ -8,7 +8,7 @@ from flask import (
     request,
 )
 from flask.views import MethodView
-from neo4japp.exceptions import FileUploadError
+from neo4japp.exceptions import ServerException
 from neo4japp.blueprints.auth import auth
 from neo4japp.blueprints.permissions import requires_role
 
@@ -48,7 +48,8 @@ class UserManualAPI(MethodView):
         try:
             file = request.files['file']
         except KeyError:
-            raise FileUploadError('No file specified.')
+            raise ServerException(
+                title='Unable to Upload File', message='No file specified.')
 
         self.blob.upload_from_string(file.read(), content_type='application/pdf')
 
