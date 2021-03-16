@@ -1,5 +1,3 @@
-import json
-from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError
 from neo4japp.exceptions import DatabaseError
 
