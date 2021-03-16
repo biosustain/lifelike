@@ -93,7 +93,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
     );
   }
 
-  refreshData(assumeChanged = false) {
+  refreshData() {
     this.table$ = combineLatest(
       this.document$,
       this.table$,
@@ -185,7 +185,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
       this.queuedChanges$.next({
         ...(this.queuedChanges$.value || {}),
       });
-      this.refreshData(true);
+      this.refreshData();
     }, () => {
     });
   }
