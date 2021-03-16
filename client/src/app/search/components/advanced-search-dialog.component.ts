@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProjectData } from 'app/file-browser/schema';
@@ -68,6 +68,17 @@ export class AdvancedSearchDialogComponent implements OnInit {
     } else {
       this.form.markAsDirty();
     }
+  }
+
+  resetForm() {
+    this.form.setValue({
+      q: '',
+      // Advanced Params
+      types: [],
+      projects: [],
+      phrase: '',
+      wildcards: '',
+    });
   }
 
   /**

@@ -93,6 +93,11 @@
   </app-modal-body>
 
   <app-modal-footer>
+    <button type="button"
+            class="btn btn-secondary mr-1"
+            ngbTooltip="Reset Advanced Options"
+            placement="top"
+            (click)="resetForm()"><i class="fa fa-sync"></i></button>
     <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i></button>
   </app-modal-footer>
 </form>
