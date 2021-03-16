@@ -71,7 +71,7 @@ export class ChartComponent implements OnInit, OnChanges {
       ...d,
       x: -Math.log10(d['p-value'])
     }));
-    this.labels = data.map(({gene})=>gene);
+    this.labels = data.map(({gene}) => gene);
   }
 
   ngOnInit() {
