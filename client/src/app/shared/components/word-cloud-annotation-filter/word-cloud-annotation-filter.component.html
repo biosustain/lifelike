@@ -168,7 +168,7 @@
               <div class="text-overflow">
                 <span class="entity-type-legend"
                       [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}}
-                <span>({{data.entity.frequency}})</span>
+                <span>({{data.entity.frequency | number}})</span>
                 <i *ngIf="!data.entity.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
               </div>
             </ng-container>
@@ -176,7 +176,7 @@
               <a class="text-overflow" href="#" (click)="wordOpen.emit(data.entity); $event.preventDefault()">
                 <span class="entity-type-legend"
                       [ngStyle]="{background: data.entity.color}"></span> {{data.entity.text}}
-                <span>({{data.entity.frequency}})</span>
+                <span>({{data.entity.frequency | number}})</span>
                 <i *ngIf="!data.entity.shown" class="fa fa-exclamation-triangle text-danger ml-2"></i>
               </a>
             </ng-template>

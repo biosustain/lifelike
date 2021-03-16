@@ -16,7 +16,7 @@ import { OrganismAutocomplete } from '../../interfaces';
       </span>
     </ng-container>
     <ng-template #noOrganism>
-      <em>Default</em>
+      <em>None</em>
     </ng-template>
     <ng-template #infoPopover>
       <strong>Synonym:</strong> {{ organism.synonym }}
