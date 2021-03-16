@@ -14,7 +14,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let entry of genes | keyvalue">
+    <tr *ngFor="let entry of genes | keyvalue: rowOder">
         <th scope="row">{{ entry.key }}</th>
         <td *ngFor="let value of entry.value" [ngClass]="{match:value}"></td>
     </tr>
