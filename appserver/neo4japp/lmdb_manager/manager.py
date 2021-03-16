@@ -8,7 +8,7 @@ from datetime import datetime
 from azure.common import AzureMissingResourceHttpError
 from azure.storage.file import FileService, ContentSettings
 from typing import List, Dict, Optional
-from neo4japp.exceptions import RecordNotFoundException
+from neo4japp.exceptions import RecordNotFound
 from sqlalchemy import Column, String
 from sqlalchemy.types import TIMESTAMP
 from sqlalchemy.orm import sessionmaker
@@ -95,7 +95,7 @@ class AzureStorageProvider(BaseCloudStorageProvider):
                 os.path.basename(remote_object_path),
             )
         except AzureMissingResourceHttpError:
-            raise RecordNotFoundException('Missing Resource', 'File not found.')
+            raise RecordNotFound('Missing Resource', 'File not found.')
         else:
             return remote_fi.properties.content_settings.content_md5
 
@@ -261,7 +261,7 @@ class LMDBManager:
             try:
                 remote_data_mdb_md5 = self.cloud_provider.get_remote_hash(
                     'lmdb', lmdb_file.data_mdb_path)
-            except RecordNotFoundException:
+            except RecordNotFound:
                 pass
             else:
                 if data_mdb_md5 == remote_data_mdb_md5:

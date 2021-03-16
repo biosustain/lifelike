@@ -7,7 +7,7 @@ from flask import (
 )
 from flask.globals import current_app
 from flask.views import MethodView
-from neo4japp.exceptions import FileUploadError, NotAuthorizedException
+from neo4japp.exceptions import ServerException, NotAuthorized
 from neo4japp.blueprints.auth import auth
 from azure.storage.blob import BlobType, BlobServiceClient, ContentSettings
 
@@ -46,7 +46,8 @@ class UserManualAPI(MethodView):
             try:
                 file = request.files['file']
             except KeyError:
-                raise FileUploadError('No file specified.')
+                raise ServerException(
+                    title='Unable to Upload File', message='No file specified.')
             bc = self.get_blob_service()
             bc.upload_blob(
                 file.read(),
@@ -54,7 +55,7 @@ class UserManualAPI(MethodView):
                 content_settings=ContentSettings(content_type='application/pdf'),
                 overwrite=True)
             return jsonify(dict(results='Manual successfully uploaded.'))
-        raise NotAuthorizedException('You do not have sufficient privileges')
+        raise NotAuthorized('You do not have sufficient privileges')
 
 
 bp.add_url_rule('manual', view_func=UserManualAPI.as_view('admin_manual'))

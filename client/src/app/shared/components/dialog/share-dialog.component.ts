@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../services/message-dialog.service';
+import { MessageArguments, MessageDialog } from '../../services/message-dialog.service';
 import { MessageType } from '../../../interfaces/message-dialog.interface';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -34,7 +34,7 @@ export class ShareDialogComponent {
       type: MessageType.Error,
       title: 'Error',
       message: 'Copy failed. Please copy with your keyboard.',
-    });
+    } as MessageArguments);
   }
 
   close(): void {
