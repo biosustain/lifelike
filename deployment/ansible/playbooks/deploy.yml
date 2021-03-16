@@ -181,7 +181,7 @@
           - name: backend
             aliases:
               - redis
-        when: "{{ webserver }}" == "prod" or "{{ webserver }}" == "staging"
+        when: webserver == "prod" or webserver == "staging"
 
     - name: Prune unused images
       shell: "docker image prune -a -f"
