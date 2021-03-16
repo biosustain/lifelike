@@ -5,7 +5,7 @@ import redis
 REDIS_HOST = os.environ.get('REDIS_HOST')
 REDIS_PORT = os.environ.get('REDIS_PORT')
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
-REDIS_SSL = os.environ.get('REDIS_SSL', 'false')
+REDIS_SSL = os.environ.get('REDIS_SSL', 'off')
 
 
 DEFAULT_CACHE_SETTINGS = {
@@ -13,7 +13,7 @@ DEFAULT_CACHE_SETTINGS = {
 }
 
 redis_server = redis.Redis(
-    ssl=REDIS_SSL.lower() == 'true',
+    ssl=REDIS_SSL.lower() == 'on',
     connection_pool=redis.BlockingConnectionPool(
         host=REDIS_HOST,
         port=REDIS_PORT,
