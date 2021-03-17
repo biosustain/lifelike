@@ -35,20 +35,18 @@ export interface ResultList<T> {
 }
 
 export interface ErrorResponse {
+  title: string;
   message: string;
-  detail?: string;
-  code?: 'validation' | 'permission';
-  apiHttpError?: {
-    name: string;
-    message: string;
-  };
+  additionalMsgs?: string[];
+  stacktrace?: string;
+  code?: number;
   version?: string;
   transactionId?: string;
   fields?: { [key: string]: string[] };
 }
 
 export interface ErrorLogMeta {
-  label: string;
+  label?: string;
   expected?: boolean;
   url?: string;
 }
@@ -56,6 +54,7 @@ export interface ErrorLogMeta {
 export interface ErrorLog extends ErrorLogMeta {
   title: string;
   message: string;
-  detail?: string;
-  transactionId: string;
+  additionalMsgs?: string;
+  stacktrace?: string;
+  transactionId?: string;
 }

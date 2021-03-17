@@ -1,11 +1,11 @@
 import json
 import logging
 import os
-import traceback
-from functools import partial
-from typing import Optional, Union, Literal, List, Dict
-
 import sentry_sdk
+import traceback
+
+from functools import partial
+
 from flask import (
     current_app,
     Flask,
@@ -18,7 +18,6 @@ from flask.logging import wsgi_errors_stream
 from flask_caching import Cache
 from flask_cors import CORS
 from marshmallow import ValidationError, missing
-from marshmallow.exceptions import SCHEMA
 from pythonjsonlogger import jsonlogger
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
@@ -26,20 +25,11 @@ from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from webargs.flaskparser import parser
 from werkzeug.exceptions import UnprocessableEntity
-from werkzeug.utils import (
-    find_modules,
-    import_string,
-)
+from werkzeug.utils import find_modules, import_string
 
 from neo4japp.database import db, ma, migrate, close_lmdb
 from neo4japp.encoders import CustomJSONEncoder
-from neo4japp.exceptions import (
-    BaseException,
-    JWTAuthTokenException,
-    JWTTokenException,
-    RecordNotFoundException,
-    DataNotAvailableException, AccessRequestRequiredError, FilesystemAccessRequestRequired
-)
+from neo4japp.exceptions import ServerException
 from neo4japp.schemas.common import ErrorResponseSchema
 from neo4japp.utils.logger import ErrorLog
 
@@ -65,51 +55,6 @@ BLUEPRINT_OBJNAME = 'bp'
 
 cors = CORS()
 cache = Cache()
-
-
-class ErrorResponse:
-    """
-    Encapsulates the error object that is sent to the client. The purpose of this class
-    is to keep errors sent to the client consistent, but as of writing, this class is
-    a mix of older error handling code and newer error handling code.
-    """
-
-    def __init__(self,
-                 code: Optional[Union[Literal['validation'], Literal['permission']]],
-                 message: str,
-                 *,
-                 detail: Optional[str] = None,
-                 api_http_error: str = None,
-                 version: str = None,
-                 transaction_id: str = None,
-                 fields: Optional[Dict[str, List[str]]] = None,
-                 debug_exception: Exception = None):
-        """
-        Create a new instance of the error.
-
-        :param code: the error code is a machine-parseable error code (not used yet)
-        :param message: a message that can be displayed direct to the user
-        :param detail: extra text that is show on the client in a 'extra info' box
-        :param api_http_error: the old way of returning the error
-        :param version: the version of the app
-        :param transaction_id: a transaction ID that goes into our logs
-        :param fields: a dictionary of form fields (or _schema for generic) and its errors
-        :param debug_exception: an exception that can be dumped into the 'detail' field
-        """
-        assert debug_exception is None or detail is None
-
-        self.message = message
-        self.detail = detail if detail else None
-        self.code = code
-        self.api_http_error = api_http_error
-        self.version = version or GITHUB_HASH
-        self.transaction_id = transaction_id or request.headers.get('X-Transaction-Id', '')
-        self.fields = fields or {}
-
-        if current_app.debug and debug_exception:
-            self.detail = "".join(traceback.format_exception(
-                etype=type(debug_exception), value=debug_exception,
-                tb=debug_exception.__traceback__))
 
 
 @parser.location_handler("mixed_form_json")
@@ -189,8 +134,7 @@ def create_app(name='neo4japp', config='config.Development'):
     log_handler.setFormatter(formatter)
     app_logger.addHandler(log_handler)
 
-    if config in ['config.QA', 'config.Staging', 'config.Production']:
-
+    if config in ['config.Staging', 'config.Production']:
         sentry_logging = LoggingIntegration(
             level=logging.ERROR,
             event_level=logging.ERROR,
@@ -239,16 +183,10 @@ def create_app(name='neo4japp', config='config.Development'):
 
     app.json_encoder = CustomJSONEncoder
 
-    app.register_error_handler(RecordNotFoundException, partial(handle_error, 404))
-    app.register_error_handler(JWTAuthTokenException, partial(handle_error, 401))
-    app.register_error_handler(JWTTokenException, partial(handle_error, 401))
-    app.register_error_handler(FilesystemAccessRequestRequired, partial(handle_access_error, 403))
-    app.register_error_handler(AccessRequestRequiredError, partial(handle_access_error, 403))
     app.register_error_handler(ValidationError, partial(handle_validation_error, 400))
     app.register_error_handler(UnprocessableEntity, partial(handle_webargs_error, 400))
-    app.register_error_handler(BaseException, partial(handle_error, 400))
+    app.register_error_handler(ServerException, handle_error)
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
-    app.register_error_handler(DataNotAvailableException, partial(handle_error, 500))
     return app
 
 
@@ -259,14 +197,11 @@ def register_blueprints(app, pkgname):
             app.register_blueprint(mod.bp)
 
 
-def handle_error(code: int, ex: BaseException):
+def handle_error(ex: ServerException):
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-    reterr = {'apiHttpError': ex.to_dict()}
-    reterr['version'] = GITHUB_HASH
     transaction_id = request.headers.get('X-Transaction-Id', '')
-    reterr['transactionId'] = transaction_id
     current_app.logger.error(
-        f'Request caused a handled exception "{type(ex)}"',
+        f'Request caused a handled exception <{type(ex)}>',
         exc_info=ex,
         extra={
             **{'to_sentry': False},
@@ -279,35 +214,45 @@ def handle_error(code: int, ex: BaseException):
             ).to_dict()
         }
     )
+
+    ex.version = GITHUB_HASH
+    ex.transaction_id = transaction_id
     if current_app.debug:
-        reterr['detail'] = "".join(traceback.format_exception(
+        ex.stacktrace = ''.join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
 
-    return jsonify(reterr), code
+    return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
 
 def handle_generic_error(code: int, ex: Exception):
+    # create a default server error
+    # display to user the default error message
+    # but log with the real exception message below
+    newex = ServerException()
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
-    reterr = {'apiHttpError': str(ex)}
     transaction_id = request.headers.get('X-Transaction-Id', '')
-    reterr['transactionId'] = transaction_id
     current_app.logger.error(
-        'Request caused unhandled exception',
+        f'Request caused a unhandled exception <{type(ex)}>',
         exc_info=ex,
-        extra=ErrorLog(
-            error_name=f'{type(ex)}',
-            expected=False,
-            event_type='unhandled exception',
-            transaction_id=transaction_id,
-            username=current_user,
-        ).to_dict()
+        extra={
+            **{'to_sentry': False},
+            **ErrorLog(
+                error_name=f'{type(ex)}',
+                expected=True,
+                event_type='unhandled exception',
+                transaction_id=transaction_id,
+                username=current_user,
+            ).to_dict()
+        }
     )
-    reterr['version'] = GITHUB_HASH
 
+    newex.version = GITHUB_HASH
+    newex.transaction_id = transaction_id
     if current_app.debug:
-        reterr['detail'] = "".join(traceback.format_exception(
+        newex.stacktrace = ''.join(traceback.format_exception(
             etype=type(ex), value=ex, tb=ex.__traceback__))
-    return jsonify(reterr), code
+
+    return jsonify(ErrorResponseSchema().dump(newex)), newex.code
 
 
 def handle_validation_error(code, error: ValidationError, messages=None):
@@ -336,28 +281,13 @@ def handle_validation_error(code, error: ValidationError, messages=None):
     else:
         message = 'An error occurred with the provided input.'
 
-    return jsonify(ErrorResponseSchema().dump(ErrorResponse(
-        'validation',
-        message,
-        fields=fields,
-        api_http_error='An error occurred with the provided input.',
-    ))), code
+    ex = ServerException(message=message, code=code, fields=fields)
+    current_user = g.current_user.username if g.get('current_user') else 'anonymous'
+    transaction_id = request.headers.get('X-Transaction-Id', '')
 
-
-def handle_access_error(code,
-                        error: Union[AccessRequestRequiredError, FilesystemAccessRequestRequired],
-                        messages=None):
-    """
-    Handle errors that occurs when a user doesn't have permission to something but can
-    request permission. This handler is not really fleshed out yet.
-    """
-    current_app.logger.error('Request caused access error', exc_info=error)
-    return jsonify(ErrorResponseSchema().dump(ErrorResponse(
-        'permission',
-        error.message,
-        api_http_error='You do not have the correct permissions for this item.',
-        debug_exception=error,
-    ))), code
+    ex.version = GITHUB_HASH
+    ex.transaction_id = transaction_id
+    return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
 
 # Ensure that response includes all error messages produced from the parser

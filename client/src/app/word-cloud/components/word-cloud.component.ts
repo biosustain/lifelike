@@ -1,14 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild,
-  ViewEncapsulation
-} from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 
 import { uniqueId } from 'lodash';
 
@@ -19,7 +9,7 @@ import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filte
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { LegendService } from 'app/shared/services/legend.service';
 
-import { defaultSortingAlgorithm, SortingAlgorithm } from '../sorting/sorting-algorithms';
+import { SortingAlgorithm, fileTypeSortingAlgorithms } from '../sorting/sorting-algorithms';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
 import { NodeLegend } from '../../interfaces';
@@ -62,7 +52,8 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   FONT_MIN = 12;
   FONT_MAX = 48;
 
-  sorting: SortingAlgorithm = defaultSortingAlgorithm;
+  sorting: SortingAlgorithm;
+  sortingAlgorithms: SortingAlgorithm[];
 
   keywordsShown = true;
 
@@ -70,9 +61,9 @@ export class WordCloudComponent implements OnInit, OnDestroy {
   cloudResizeObserver: any;
 
   constructor(protected readonly annotationsService: AnnotationsService,
-              protected readonly legendService: LegendService) {}
+              protected readonly legendService: LegendService) {
+    this.layout = cloud();
 
-  ngOnInit() {
     // Initialize the background task
     this.loadTask = new BackgroundTask(({hashId, sortingId}) => {
       return combineLatest(
@@ -81,27 +72,31 @@ export class WordCloudComponent implements OnInit, OnDestroy {
       );
     });
 
+    // Set up the cloud resize observer.
+    // @ts-ignore
+    this.cloudResizeObserver = new ResizeObserver(() => {
+      this.resizeCloud = true;
+    });
+  }
+
+  ngOnInit() {
+    const sortingForFileType = fileTypeSortingAlgorithms[this.object.mimeType];
+    this.sorting = sortingForFileType.default;
+    this.sortingAlgorithms = sortingForFileType.all;
+
+    this.annotationsLoadedSub = this.loadTask.results$.pipe(first()).subscribe(() =>
+      this.cloudResizeObserver.observe(this.wordCloudWrapperEl.nativeElement)
+    );
+
     // Set the background task callback
     this.annotationsLoadedSub = this.loadTask.results$.subscribe(({result: [legend, annotationExport]}) => {
-        // Reset legend
-        Object.keys(legend).forEach(label => {
-          this.legend.set(label.toLowerCase(), legend[label].color);
-        });
-
-        this.setAnnotationData(annotationExport);
-    });
-
-    // Emits the first time we get a data response
-    this.loadTask.results$.pipe(first()).subscribe(() => {
-      // Set up the cloud resize observer.
-      // @ts-ignore
-      this.cloudResizeObserver = new ResizeObserver(() => {
-        this.resizeCloud = true;
+      // Reset legend
+      Object.keys(legend).forEach(label => {
+        this.legend.set(label.toLowerCase(), legend[label].color);
       });
-      this.cloudResizeObserver.observe(this.wordCloudWrapperEl.nativeElement);
-    });
 
-    this.layout = cloud();
+      this.setAnnotationData(annotationExport);
+    });
 
     // Send initial data request
     this.getAnnotations();
