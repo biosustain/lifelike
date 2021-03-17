@@ -8,8 +8,10 @@ import { Subject } from 'rxjs';
 import { FileNameAndSheets, SheetNameAndColumnNames } from 'app/interfaces';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { KgImportService } from 'app/kg-import/services/kg-import.service';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { UserFileImportService } from 'app/user-file-import/services/user-file-import.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ErrorResponse } from 'app/shared/schemas/common';
 
 @Component({
     selector: 'app-gene-import',
@@ -85,8 +87,8 @@ export class GeneImportWizardComponent {
                 this.loadingSheet = false;
                 this.snackbar.open('Finished loading worksheet!', 'Close', {duration: 3000});
             },
-            error => {
-                const { message } = error.error.apiHttpError;
+            (error: HttpErrorResponse) => {
+                const message = (error.error as ErrorResponse).message;
 
                 // Reset the fileInput for the purpose of detecting a file change (and having clean data). Otherwise,
                 // if the user tries to re-select the file that failed to upload, no change will be detected.
@@ -98,7 +100,7 @@ export class GeneImportWizardComponent {
                         title: 'File Upload Error',
                         message,
                         type: MessageType.Error,
-                    }
+                    } as MessageArguments
                 );
             }
         );
@@ -137,8 +139,8 @@ export class GeneImportWizardComponent {
                 this.importingRelationships = false;
                 this.snackbar.open('Finished importing relationships!', 'Close', {duration: 3000});
             },
-            error => {
-                const { message } = error.error.apiHttpError;
+            (error: HttpErrorResponse) => {
+                const message = (error.error as ErrorResponse).message;
 
                 this.importingRelationships = false;
                 this.messageDialog.display(
@@ -146,7 +148,7 @@ export class GeneImportWizardComponent {
                         title: 'Import Error',
                         message,
                         type: MessageType.Error,
-                    }
+                    } as MessageArguments
                 );
             }
         );

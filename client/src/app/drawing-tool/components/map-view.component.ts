@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 import { ModuleAwareComponent } from '../../shared/modules';
 import { ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
@@ -111,7 +111,7 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
         title: 'Save Required',
         message: 'Please save your changes before exporting.',
         type: MessageType.Error,
-      });
+      } as MessageArguments);
     } else {
       return this.filesystemObjectActions.openExportDialog(this.map);
     }
