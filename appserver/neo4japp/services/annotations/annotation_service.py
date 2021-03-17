@@ -371,10 +371,15 @@ class AnnotationService:
                         if organism == HOMO_SAPIENS_TAX_ID:
                             curr_closest_organism = organism
             except KeyError:
-                raise AnnotationError(f'Organism ID {organism} does not exist.')  # noqa
+                current_app.logger.error(
+                    f'Organism ID {organism} does not exist in {self.organism_locations}.',
+                    extra=EventLog(event_type='annotations').to_dict()
+                )
 
         if curr_closest_organism is None:
-            raise AnnotationError('Cannot get gene ID with empty organism match dict.')
+            raise AnnotationError(
+                title='Unable to Annotate',
+                message='Cannot get gene ID with no organisms.')
 
         # Return the gene id of the organism with the highest priority
         return organism_matches[curr_closest_organism], curr_closest_organism, closest_dist
@@ -525,7 +530,9 @@ class AnnotationService:
                         gene_id = organisms_to_match[self.specified_organism.organism_id]  # noqa
                         category = self.specified_organism.category
                     except KeyError:
-                        raise AnnotationError('Failed to find gene id with fallback organism.')
+                        raise AnnotationError(
+                            title='Unable to Annotate',
+                            message='Failed to find gene ID with fallback organism.')
 
                 if gene_id and category:
                     annotation = self._create_annotation_object(

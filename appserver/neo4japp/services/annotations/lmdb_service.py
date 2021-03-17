@@ -16,7 +16,9 @@ class LMDBService(LMDBConnection):
             try:
                 values = [json.loads(v) for v in cursor.iternext_dup()]
             except Exception:
-                raise LMDBError(f'Failed token lookup for type "{token_type}".')
+                raise LMDBError(
+                    title='Cannot Connect to LMDB',
+                    message=f'Failed token lookup for type <{token_type}>.')
             cursor.close()
         return values
 

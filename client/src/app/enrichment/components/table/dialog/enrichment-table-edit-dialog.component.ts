@@ -73,7 +73,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
     const value = this.form.value;
     this.document.setParameters({
-      fileId: value.fileId || '',
+      fileId: value.fileId || this.fileId || '',
       importGenes: value.entitiesList.split(/[\/\n\r]/g),
       taxID: value.organism.tax_id,
       organism: value.organism.organism_name,

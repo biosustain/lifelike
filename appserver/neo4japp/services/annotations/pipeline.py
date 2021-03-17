@@ -276,12 +276,15 @@ def create_annotations_from_pdf(
         pdf_text, parsed = parse_pdf(document.id, annotation_configs['exclude_references'])
     except requests.exceptions.ConnectTimeout:
         raise AnnotationError(
+            'Unable to Annotate',
             'The request timed out while trying to connect to the parsing service.')
     except requests.exceptions.Timeout:
         raise AnnotationError(
+            'Unable to Annotate',
             'The request to the parsing service timed out.')
     except (requests.exceptions.RequestException, Exception):
         raise AnnotationError(
+            'Unable to Annotate',
             'An unexpected error occurred with the parsing service.')
 
     current_app.logger.info(
@@ -316,12 +319,15 @@ def create_annotations_from_text(
         pdf_text, parsed = parse_text(text)
     except requests.exceptions.ConnectTimeout:
         raise AnnotationError(
+            'Unable to Annotate',
             'The request timed out while trying to connect to the parsing service.')
     except requests.exceptions.Timeout:
         raise AnnotationError(
+            'Unable to Annotate',
             'The request to the parsing service timed out.')
     except (requests.exceptions.RequestException, Exception):
         raise AnnotationError(
+            'Unable to Annotate',
             'An unexpected error occurred with the parsing service.')
 
     current_app.logger.info(
@@ -357,12 +363,15 @@ def create_annotations_from_enrichment_table(
         pdf_text, parsed = parse_text(text)
     except requests.exceptions.ConnectTimeout:
         raise AnnotationError(
+            'Unable to Annotate',
             'The request timed out while trying to connect to the parsing service.')
     except requests.exceptions.Timeout:
         raise AnnotationError(
+            'Unable to Annotate',
             'The request to the parsing service timed out.')
     except (requests.exceptions.RequestException, Exception):
         raise AnnotationError(
+            'Unable to Annotate',
             'An unexpected error occurred with the parsing service.')
 
     current_app.logger.info(

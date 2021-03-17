@@ -7,6 +7,11 @@
     <div>
       {{message}}
     </div>
+    <br>
+
+    <div *ngFor="let msg of additionalMsgs">
+      <p>{{msg}}</p>
+    </div>
 
     <!-- This is only empty if its a client side error only
     TODO: Make mandatory once JS SentrySDK integrated -->
@@ -14,9 +19,9 @@
       Transaction Id: {{transactionId}}
     </div>
 
-    <div *ngIf="detail" class="detail">
+    <div *ngIf="stacktrace" class="detail">
       <div class="detail-title">Technical Details</div>
-      <pre>{{detail}}</pre>
+      <pre>{{stacktrace}}</pre>
     </div>
   </app-modal-body>
 
