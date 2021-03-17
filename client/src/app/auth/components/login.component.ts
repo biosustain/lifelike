@@ -7,7 +7,7 @@ import { State } from 'app/root-store';
 
 import { AuthActions } from '../store';
 import { MessageType } from '../../interfaces/message-dialog.interface';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from '../../shared/services/message-dialog.service';
 
 @Component({
   selector: 'app-login',
@@ -44,7 +44,7 @@ export class LoginComponent {
         title: 'Invalid Input',
         message: 'There are some errors with your input.',
         type: MessageType.Error,
-      });
+      } as MessageArguments);
     }
   }
 }

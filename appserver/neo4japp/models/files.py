@@ -169,7 +169,6 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     """
     Annotations related columns
     """
-    # NOTE: for PDFs `annotations` will be one JSON, for Enrichment tables, will be a list of JSON
     annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     annotation_configs = db.Column(postgresql.JSONB, nullable=True)
     annotations_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
@@ -319,6 +318,16 @@ class FallbackOrganism(RDBMSBase):
     organism_name = db.Column(db.String(200), nullable=False)
     organism_synonym = db.Column(db.String(200), nullable=False)
     organism_taxonomy_id = db.Column(db.String(50), nullable=False)
+
+    @property
+    def tax_id(self):
+        # Required for FallbackOrganismSchema
+        return self.organism_taxonomy_id
+
+    @property
+    def synonym(self):
+        # Required for FallbackOrganismSchema
+        return self.organism_synonym
 
 
 class FileVersion(RDBMSBase, FullTimestampMixin, HashIdMixin):

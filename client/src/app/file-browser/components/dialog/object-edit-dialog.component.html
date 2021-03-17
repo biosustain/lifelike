@@ -75,16 +75,17 @@
       </div>
     </app-form-row>
 
-    <ng-container *ngIf="promptAnnotationOptions && possiblyAnnotatable">
+    <ng-container *ngIf="possiblyAnnotatable">
       <fieldset class="fieldset-properties mt-4">
-        <legend>Annotation Options (If Applicable)</legend>
+        <legend>Annotation Options</legend>
         <app-form-row
+          *ngIf="object.promptOrganism"
           label="Organism"
           ngbTooltip="If you know the specific organism strain related to the paper, you may optionally search for it by name here."
         >
           <app-organism-autocomplete
             formId="organism"
-            [organismTaxId]="form.get('organism').value"
+            [organismTaxId]="form.get('organism').value ? form.get('organism').value.tax_id : null"
             (organismPicked)="organismChanged($event)"
           ></app-organism-autocomplete>
         </app-form-row>
@@ -93,8 +94,6 @@
           <ngb-accordion>
             <ngb-panel title="Annotation Configurations">
               <ng-template ngbPanelContent>
-                <i class="fa fa-exclamation-circle"></i>
-                Below are the current entity types that have an NLP model. Other entity types will default to Rules Based.
                 <app-annotation-config-table
                   [headers]="annotationMethods"
                   [models]="annotationModels"
