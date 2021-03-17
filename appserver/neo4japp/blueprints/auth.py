@@ -1,21 +1,21 @@
 import jwt
 import sentry_sdk
+
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+
 from datetime import datetime, timedelta, timezone
 from flask import current_app, request, Blueprint, g, jsonify
 from flask_httpauth import HTTPTokenAuth
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
 from neo4japp.exceptions import (
-    InvalidCredentialsException,
     JWTTokenException,
     JWTAuthTokenException,
-    RecordNotFoundException,
-    NotAuthorizedException,
+    ServerException,
 )
-from neo4japp.schemas.account import UserProfileSchema
 from neo4japp.schemas.auth import JWTTokenResponse
 from neo4japp.models.auth import AppUser
-from neo4japp.utils.logger import UserEventLog
+from neo4japp.utils.logger import EventLog, UserEventLog
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -89,10 +89,18 @@ class TokenService:
             jwt_resp: JWTResp = {
                 'sub': payload['sub'], 'iat': payload['iat'], 'exp': payload['exp'],
                 'type': payload['type']}
-        except jwt.exceptions.InvalidTokenError:  # type: ignore
-            raise JWTTokenException('auth token is invalid')
-        except jwt.exceptions.ExpiredSignatureError:  # type: ignore
-            raise JWTTokenException('auth token is expired')
+        # default to generic error message
+        # NOTE: is this better than avoiding to
+        # display an error message about
+        # authorization header (for security purposes)?
+        except InvalidTokenError:
+            raise JWTTokenException(
+                title='Failed to Authenticate',
+                message='The current authentication session is invalid, please try logging back in.')  # noqa
+        except ExpiredSignatureError:
+            raise JWTTokenException(
+                title='Failed to Authenticate',
+                message='The current authentication session has expired, please try logging back in.')  # noqa
         else:
             return jwt_resp
 
@@ -105,20 +113,35 @@ def verify_token(token):
     if decoded['type'] == 'access':
         token = request.headers.get('Authorization')
         if token is None:
-            raise JWTAuthTokenException('No authorization header found.')
+            current_app.logger.error(
+                f'No authorization header found <{request.headers}>.',
+                extra=EventLog(event_type='token authorization').to_dict()
+            )
+            # default to generic error message
+            # NOTE: is this better than avoiding to
+            # display an error message about
+            # authorization header (for security purposes)?
+            raise JWTAuthTokenException(
+                title='Failed to Authenticate',
+                message='There was a problem verifying the authentication session, please try again.')  # noqa
         else:
             token = token.split(' ')[-1].strip()
             try:
                 user = AppUser.query_by_email(decoded['sub']).one()
             except NoResultFound:
-                raise RecordNotFoundException('Credentials not found.')
+                raise ServerException(
+                    title='Failed to Authenticate',
+                    message='There was a problem authenticating, please try again.',
+                    code=404)
             else:
                 g.current_user = user
                 with sentry_sdk.configure_scope() as scope:
                     scope.set_tag('user_email', user.email)
                 return True
     else:
-        raise NotAuthorizedException('no access found')
+        raise ServerException(
+            title='Failed to Authenticate',
+            message='There was a problem authenticating, please try again.')
 
 
 @bp.route('/refresh', methods=['POST'])
@@ -130,7 +153,8 @@ def refresh():
 
     decoded = token_service.decode_token(token)
     if decoded['type'] != 'refresh':
-        raise JWTTokenException('wrong token type submitted')
+        raise JWTTokenException(
+            message='Your authentication session expired, but there was an error attempting to renew it.')  # noqa
 
     # Create access & refresh token pair
     token_subj = decoded['sub']
@@ -140,7 +164,10 @@ def refresh():
     try:
         user = AppUser.query.filter_by(email=decoded['sub']).one()
     except NoResultFound:
-        raise RecordNotFoundException('Credentials not found.')
+        raise ServerException(
+            title='Failed to Authenticate',
+            message='There was a problem authenticating, please try again.',
+            code=404)
     else:
         return jsonify(JWTTokenResponse().dump({
             'access_token': access_jwt,
@@ -169,7 +196,10 @@ def login():
     try:
         user = AppUser.query.filter_by(email=data.get('email')).one()
     except NoResultFound:
-        raise RecordNotFoundException('Credentials not found or invalid.')
+        raise ServerException(
+            title='Failed to Authenticate',
+            message='There was a problem authenticating, please try again.',
+            code=404)
     else:
         if user.check_password(data.get('password')):
             current_app.logger.info(
@@ -191,5 +221,7 @@ def login():
                 },
             }))
         else:
-            # Complain about invalid credentials
-            raise InvalidCredentialsException('Invalid credentials')
+            raise ServerException(
+                title='Failed to Authenticate',
+                message='There was a problem authenticating, please try again.',
+                code=404)

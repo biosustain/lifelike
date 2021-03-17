@@ -4,12 +4,8 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDialog } from '../../../shared/services/message-dialog.service';
 import { FilesystemObject } from '../../models/filesystem-object';
 import { CommonFormDialogComponent } from '../../../shared/components/dialog/common-form-dialog.component';
-import { AnnotationConfigs, ObjectContentSource, ObjectCreateRequest } from '../../schema';
+import { AnnotationConfigurations, ObjectContentSource, ObjectCreateRequest } from '../../schema';
 import { OrganismAutocomplete } from '../../../interfaces';
-import { select, Store } from '@ngrx/store';
-import { AuthSelectors } from '../../../auth/store';
-import { State } from 'app/root-store';
-import { Observable } from 'rxjs';
 import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from '../../../interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
@@ -25,14 +21,12 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   @Input() title = 'Edit Item';
   @Input() parentLabel = 'Location';
   @Input() promptUpload = false;
-  @Input() promptAnnotationOptions = true;
   @Input() forceAnnotationOptions = false;
   @Input() promptParent = false;
 
   readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
   readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(
     key => NLPANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
-  readonly userRoles$: Observable<string[]>;
 
   private _object: FilesystemObject;
   private filePossiblyAnnotatable = false;
@@ -46,12 +40,17 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     description: new FormControl(),
     public: new FormControl(false),
     annotationConfigs: new FormGroup(
-      this.annotationModels.reduce(
-        (obj, key) => ({...obj, [key]: new FormGroup(
-          {
-            nlp: new FormControl(false),
-            rulesBased: new FormControl(true)
-          })}), {}), [Validators.required]),
+      {
+        excludeReferences: new FormControl(true),
+        annotationMethods: new FormGroup(
+          this.annotationModels.reduce(
+            (obj, key) => ({...obj, [key]: new FormGroup(
+              {
+                nlp: new FormControl(false),
+                rulesBased: new FormControl(true)
+              })}), {})
+        )
+      }, [Validators.required]),
     organism: new FormControl(null),
     mimeType: new FormControl(null),
   }, (group: FormGroup): ValidationErrors | null => {
@@ -90,10 +89,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   constructor(modal: NgbActiveModal,
               messageDialog: MessageDialog,
-              store: Store<State>,
               protected readonly modalService: NgbModal) {
     super(modal, messageDialog);
-    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
   }
 
   get object() {
@@ -109,6 +106,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       description: value.description || '',
       public: value.public || false,
       mimeType: value.mimeType,
+      organism: value.fallbackOrganism,
     });
     if (!value.parent) {
       this.promptParent = true;
@@ -116,10 +114,11 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   @Input()
-  set configs(value: AnnotationConfigs) {
+  set configs(value: AnnotationConfigurations) {
     if (value) {
-      const ctrl = (this.form.get('annotationConfigs') as FormControl);
-      for (const [modelName, config] of Object.entries(value)) {
+      const ctrl = (
+        (this.form.get('annotationConfigs') as FormGroup).get('annotationMethods') as FormControl);
+      for (const [modelName, config] of Object.entries(value.annotationMethods)) {
         if (ctrl.get(modelName)) {
           ctrl.get(modelName).patchValue(config);
         }
@@ -157,12 +156,14 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   getValue(): ObjectEditDialogValue {
     const value = this.form.value;
 
-    const objectChanges = {
+    const objectChanges: Partial<FilesystemObject> = {
       parent: value.parent,
       filename: value.filename,
       description: value.description,
       public: value.public,
       mimeType: value.mimeType,
+      fallbackOrganism: value.organism,
+      annotationConfigs: value.annotationConfigs
     };
 
     const request: ObjectCreateRequest = {
@@ -171,25 +172,16 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       description: value.description,
       public: value.public,
       mimeType: value.mimeType,
+      fallbackOrganism: value.organism,
+      annotationConfigs: value.annotationConfigs,
       ...this.getFileContentRequest(value),
     };
-
-    const annotationConfigs = {};
-    for (const [modelName, config] of Object.entries(value.annotationConfigs)) {
-      const model = {};
-      for (const key of Object.keys(config)) {
-        if (key !== 'disabled') {
-          model[key] = config[key];
-        }
-      }
-      annotationConfigs[modelName] = model;
-    }
 
     return {
       object: this.object,
       objectChanges,
       request,
-      annotationConfigs,
+      annotationConfigs: value.annotationConfigs,
       organism: value.organism,
     };
   }
@@ -283,6 +275,6 @@ export interface ObjectEditDialogValue {
   object: FilesystemObject;
   objectChanges: Partial<FilesystemObject>;
   request: ObjectCreateRequest;
-  annotationConfigs: AnnotationConfigs;
+  annotationConfigs: AnnotationConfigurations;
   organism: OrganismAutocomplete;
 }

@@ -32,6 +32,14 @@ class AnnotationMethod(CamelCaseSchema):
     rules_based = fields.Boolean(required=True)
 
 
+class AnnotationConfigurations(CamelCaseSchema):
+    annotation_methods = fields.Dict(
+        keys=fields.String(),
+        values=fields.Nested(AnnotationMethod)
+    )
+    exclude_references = fields.Boolean(required=False)
+
+
 # ========================================
 # Generation
 # ========================================
@@ -44,9 +52,7 @@ class AnnotationGenerationRequestSchema(CamelCaseSchema):
     organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     texts = fields.List(fields.Nested(EnrichmentTextMapping), allow_none=True)
     enrichment = fields.Nested(EnrichmentTableSchema, allow_none=True)
-    annotation_configs = fields.Dict(
-        keys=fields.String(),
-        values=fields.Nested(AnnotationMethod, required=True), allow_none=True)
+    annotation_configs = fields.Nested(AnnotationConfigurations)
 
 
 class RefreshEnrichmentAnnotationsRequestSchema(CamelCaseSchema):
@@ -62,7 +68,7 @@ class AnnotationGenerationResultSchema(CamelCaseSchema):
 
 
 class MultipleAnnotationGenerationResponseSchema(CamelCaseSchema):
-    results = fields.Dict(keys=fields.String(),
+    mapping = fields.Dict(keys=fields.String(),
                           values=fields.Nested(AnnotationGenerationResultSchema))
     missing = fields.List(fields.String)
 
@@ -107,7 +113,9 @@ class BaseAnnotationSchema(Schema):
 # ========================================
 
 class SystemAnnotationMetaSchema(BaseAnnotationMetaSchema):
-    pass
+    isExcluded = fields.Boolean(allow_none=True)
+    exclusionReason = fields.String(allow_none=True)
+    exclusionComment = fields.String(allow_none=True)
 
 
 class SystemAnnotationSchema(BaseAnnotationSchema):
