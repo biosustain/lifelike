@@ -94,17 +94,13 @@ class TokenService:
         # display an error message about
         # authorization header (for security purposes)?
         except InvalidTokenError:
-            current_app.logger.error(
-                'Could not decode INVALID authentication token.',
-                extra=EventLog(event_type='token authorization').to_dict()
-            )
-            raise JWTTokenException()
+            raise JWTTokenException(
+                title='Failed to Authenticate',
+                message='The current authentication session is invalid, please try logging back in.')  # noqa
         except ExpiredSignatureError:
-            current_app.logger.error(
-                'Could not decode EXPIRED authentication token.',
-                extra=EventLog(event_type='token authorization').to_dict()
-            )
-            raise JWTTokenException()
+            raise JWTTokenException(
+                title='Failed to Authenticate',
+                message='The current authentication session has expired, please try logging back in.')  # noqa
         else:
             return jwt_resp
 
