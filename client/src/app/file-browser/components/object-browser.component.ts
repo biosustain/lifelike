@@ -11,7 +11,7 @@ import { FilesystemService } from '../services/filesystem.service';
 import { map } from 'rxjs/operators';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { getObjectLabel } from '../utils/objects';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ProjectsService } from '../services/projects.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -143,7 +143,7 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
         title: 'Nothing Selected',
         message: 'Select at least one item.',
         type: MessageType.Error,
-      });
+      } as MessageArguments);
       return false;
     } else {
       return true;
@@ -162,19 +162,6 @@ export class ObjectBrowserComponent implements OnInit, OnDestroy {
 
   reannotate(targets: FilesystemObject[]) {
     this.actions.reannotate(targets).then(() => {
-      this.snackBar.open(`Selected files re-annotated.`, 'Close', {
-        duration: 5000,
-      });
-      this.load(this.hashId);
-    }, () => {
-    });
-  }
-
-  openAnnotationDialog(targets: FilesystemObject[]) {
-    return this.actions.openAnnotationDialog(targets).then(() => {
-      this.snackBar.open(`Annotated ${getObjectLabel(targets)}.`, 'Close', {
-        duration: 5000,
-      });
       this.load(this.hashId);
     }, () => {
     });

@@ -3,7 +3,6 @@ from datetime import date
 
 import pytest
 
-from neo4japp.exceptions import DirectoryError
 from neo4japp.models import Files
 from neo4japp.models.auth import (
     AppRole, AppUser,

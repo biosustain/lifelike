@@ -17,7 +17,7 @@ import { ErrorHandler } from '../../shared/services/error-handler.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ObjectCreationService } from '../services/object-creation.service';
 import { FilesystemObject } from '../models/filesystem-object';
-import { MessageDialog } from '../../shared/services/message-dialog.service';
+import { MessageArguments, MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 
 @Directive({
@@ -70,13 +70,13 @@ export class FilesystemObjectTargetDirective {
 
   @HostListener('drop', ['$event'])
   drop(event: DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-
     this.dropTargeted = false;
 
     const valid = this.canAcceptDrop(event);
     if (valid) {
+      event.preventDefault();
+      event.stopPropagation();
+
       const data = event.dataTransfer.getData(FILESYSTEM_OBJECT_TRANSFER_TYPE);
       if (data !== '') {
         const transferData: FilesystemObjectTransferData = JSON.parse(data);
@@ -117,7 +117,7 @@ export class FilesystemObjectTargetDirective {
             title: 'Cannot Move Here',
             message: 'You do not have permission to put files here.',
             type: MessageType.Error,
-          });
+          } as MessageArguments);
         }
       } else if (event.dataTransfer.files.length) {
         const file = event.dataTransfer.files[0];
@@ -128,7 +128,6 @@ export class FilesystemObjectTargetDirective {
           title: 'Upload File',
           promptUpload: false,
           promptParent: true,
-          promptAnnotationOptions: true,
           forceAnnotationOptions: true, // This is not correct (we should detect this value)
           request: {
             contentValue: file,

@@ -1,0 +1,13 @@
+<app-word-cloud *ngIf="!loadingData else loadingPlaceholder"
+  class="card-body"
+  [data]="data"
+></app-word-cloud>
+<ng-template #loadingPlaceholder>
+<div style="text-align: center; padding: 1em"
+     *ngIf="loadingData">
+          <span>
+            <i class="fa fa-spinner fa-spin" style="margin-right: 2px;"></i>
+            Currently Loading Data...
+          </span>
+</div>
+</ng-template>

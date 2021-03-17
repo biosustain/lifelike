@@ -19,15 +19,30 @@ export class SearchControlComponent implements ControlValueAccessor {
   @Input() disabled = false;
   @Input() resultIndex = 0;
   @Input() resultCount = 0;
+
+  @Input() searching = false;
   @Output() previous = new EventEmitter<number>();
   @Output() next = new EventEmitter<number>();
   @Output() enterPress = new EventEmitter();
 
-  @ViewChild('searchInput', {static: false}) searchElement: ElementRef;
+  @ViewChild('searchInput', { static: false }) searchElement: ElementRef;
 
   changed() {
     if (this.changeCallback) {
       this.changeCallback(this.value);
+    }
+  }
+
+  get searchInputWidth() {
+    if (this.value) {
+      // width = font_width * ~font_proportions + padding
+      // return `calc(${this.value.length * 0.55}em + 20px)`;
+      // cannot use calc without bypassing Angular security
+      // https://angular.io/api/platform-browser/DomSanitizer
+      // using hardcoded font size instead
+      return Math.max(70, Math.min(150, 14 * this.value.length * 0.55 + 20)) + 'px';
+    } else {
+      return '70px';
     }
   }
 

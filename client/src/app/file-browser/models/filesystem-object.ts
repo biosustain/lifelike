@@ -11,9 +11,9 @@ import {
   UniversalGraphNode,
 } from '../../drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from '../../interfaces';
-import { AnnotationConfigs, FilesystemObjectData, ProjectData } from '../schema';
+import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
-import { createObjectDragImage } from '../utils/drag';
+import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
 import { FilePrivileges, ProjectPrivileges } from './privileges';
 
 // These are legacy mime type definitions that have to exist in this file until
@@ -79,6 +79,30 @@ export class ProjectImpl implements Project {
     }
     return hash % 100 / 100;
   }
+
+  addDataTransferData(dataTransfer: DataTransfer) {
+    createProjectDragImage(this).addDataTransferData(dataTransfer);
+
+    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
+      display_name: this.name,
+      label: 'link',
+      sub_labels: [],
+      data: {
+        references: [{
+          type: 'PROJECT_OBJECT',
+          id: this.id + '',
+        }],
+        sources: [{
+          domain: 'File Source',
+          url: this.getCommands().join('/'),
+        }],
+      },
+    };
+
+    dataTransfer.effectAllowed = 'all';
+    dataTransfer.setData('text/plain', this.name);
+    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify(node));
+  }
 }
 
 /**
@@ -106,10 +130,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     sort: this.defaultSort,
   });
   privileges: FilePrivileges;
+  fallbackOrganism?: OrganismAutocomplete;
   recycled: boolean;
   effectivelyRecycled: boolean;
-  fallbackOrganism: OrganismAutocomplete;
-  annotationConfigs: AnnotationConfigs;
+  annotationConfigs: AnnotationConfigurations;
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
@@ -140,6 +164,10 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     return this.mimeType === 'application/pdf' || this.mimeType === 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
   }
 
+  get promptOrganism() {
+    return this.mimeType !== ENRICHMENT_TABLE_MIMETYPE;
+  }
+
   get isMovable() {
     // TODO: Move this method to ObjectTypeProvider
     return !(this.isDirectory && !this.parent);
@@ -157,7 +185,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get isVersioned() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === MAP_MIMETYPE || this.mimeType === ENRICHMENT_TABLE_MIMETYPE;
+    return this.mimeType === MAP_MIMETYPE;
   }
 
   get isNavigable() {
@@ -167,7 +195,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
 
   get hasWordCloud() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.isDirectory || this.mimeType === PDF_MIMETYPE;
+    return this.isDirectory || this.mimeType === PDF_MIMETYPE || this.mimeType === ENRICHMENT_TABLE_MIMETYPE;
   }
 
   /**
@@ -445,7 +473,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
       });
     }
 
-    const node: Partial<Omit<UniversalGraphNode, 'data'>> & {data: Partial<UniversalEntityData>} = {
+    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
       display_name: this.name,
       label: this.type === 'map' ? 'map' : 'link',
       sub_labels: [],
@@ -519,7 +547,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     }
     for (const key of [
       'hashId', 'filename', 'user', 'description', 'mimeType', 'doi', 'public',
-      'annotationsDate', 'uploadUrl', 'highlight',
+      'annotationsDate', 'uploadUrl', 'highlight', 'fallbackOrganism',
       'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled',
       'effectivelyRecycled', 'fallbackOrganism', 'annotationConfigs']) {
       if (key in data) {

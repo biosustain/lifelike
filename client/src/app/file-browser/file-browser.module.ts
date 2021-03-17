@@ -39,8 +39,8 @@ import { FileAnnotationHistoryDialogComponent } from './components/dialog/file-a
 import { ObjectAnnotationHistoryComponent } from './components/object-annotation-history.component';
 import { AnnotationsService } from './services/annotations.service';
 import { ObjectCreationService } from './services/object-creation.service';
-import { ObjectAnnotateDialogComponent } from './components/dialog/object-annotate-dialog.component';
 import { FilesystemObjectTargetDirective } from './directives/filesystem-object-target.directive';
+import { ObjectReannotateResultsDialogComponent } from './components/dialog/object-reannotate-results-dialog.component';
 
 @NgModule({
   declarations: [
@@ -73,7 +73,7 @@ import { FilesystemObjectTargetDirective } from './directives/filesystem-object-
     ProjectCollaboratorsDialogComponent,
     FileAnnotationHistoryDialogComponent,
     ObjectAnnotationHistoryComponent,
-    ObjectAnnotateDialogComponent,
+    ObjectReannotateResultsDialogComponent,
     FilesystemObjectTargetDirective,
   ],
   imports: [
@@ -97,7 +97,7 @@ import { FilesystemObjectTargetDirective } from './directives/filesystem-object-
     ProjectCollaboratorsDialogComponent,
     FileAnnotationHistoryDialogComponent,
     ObjectAnnotationHistoryComponent,
-    ObjectAnnotateDialogComponent,
+    ObjectReannotateResultsDialogComponent,
   ],
   exports: [
     ObjectInfoComponent,
@@ -112,7 +112,7 @@ import { FilesystemObjectTargetDirective } from './directives/filesystem-object-
     ProjectIconComponent,
     FileAnnotationHistoryDialogComponent,
     ObjectAnnotationHistoryComponent,
-    ObjectAnnotateDialogComponent,
+    ObjectReannotateResultsDialogComponent,
     FilesystemObjectTargetDirective,
   ],
   providers: [
