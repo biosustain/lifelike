@@ -25,6 +25,7 @@ import {
   EnrichmentTableEditDialogComponent,
   EnrichmentTableEditDialogValue
 } from '../components/table/dialog/enrichment-table-edit-dialog.component';
+import { ObjectContentSource, ObjectCreateRequest } from '../../file-browser/schema';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 
@@ -93,7 +94,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
               tap(() => progressDialogRef.close()),
               mergeMap(blob =>
                 from(this.objectCreationService.executePutWithProgressDialog({
-                  ...value.request,
+                  ...(value.request as Omit<ObjectCreateRequest, keyof ObjectContentSource>),
                   contentValue: blob,
                 }))),
               finalize(() => progressDialogRef.close()),
