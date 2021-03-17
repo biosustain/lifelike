@@ -43,8 +43,10 @@ export class ErrorHandler {
   }
 
   createUserError(error: any): UserError {
-    let title = '';
-    let message = '';
+    let title = 'We\'re sorry!';
+    let message = 'Looks like something went wrong! ' +
+      'We track these errors, but if the problem persists, ' +
+      'feel free to contact us with the transaction id.';
     let additionalMsgs = [];
     let stacktrace = null;
     // A transaction id for log audits with Sentry (Sentry.io)
