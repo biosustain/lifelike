@@ -1,5 +1,4 @@
 from sqlalchemy.exc import SQLAlchemyError
-from neo4japp.exceptions import DatabaseError
 
 
 class GraphBaseDao:
@@ -19,9 +18,9 @@ class RDBMSBaseDao:
     def commit(self):
         try:
             self.session.commit()
-        except SQLAlchemyError as err:
+        except SQLAlchemyError:
             self.session.rollback()
-            raise DatabaseError(str(err))
+            raise
 
     def commit_or_flush(self, commit_now=True):
         if commit_now:

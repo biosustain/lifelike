@@ -52,14 +52,19 @@
                       placement="bottom top bottom-right top-right">
                 <i class="fa fa-fw fa-filter"></i>
               </button>
-              <div ngbDropdown container="body" class="btn-group" role="group"
+              <div *ngIf="sortingAlgorithms.length>1"
+                   ngbDropdown container="body" class="btn-group" role="group"
                    ngbTooltip="Method for word size calculation"
                    placement="bottom-right top-right">
                 <button class="btn btn-secondary" ngbDropdownToggle>
                   <i class="fas fa-sort-size-down"></i>
                     <span class="mx-2">{{sorting.name}}</span>
                 </button>
-                <app-sorting-algorithms (changeSorting)="sort($event)" [selected]="sorting" ngbDropdownMenu></app-sorting-algorithms>
+                <app-sorting-algorithms [algorithms]="sortingAlgorithms"
+                                        (changeSorting)="sort($event)"
+                                        [selected]="sorting"
+                                        ngbDropdownMenu>
+                </app-sorting-algorithms>
               </div>
             </div>
           </div>
