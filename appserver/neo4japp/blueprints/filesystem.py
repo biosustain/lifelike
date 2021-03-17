@@ -2,13 +2,14 @@ import hashlib
 import io
 import itertools
 import re
+import typing
 import urllib.request
+
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Iterable, Union, Literal, Tuple
 from urllib.error import URLError
 
-import typing
 from deepdiff import DeepDiff
 from flask import Blueprint, jsonify, g, request, make_response
 from flask.views import MethodView
@@ -21,21 +22,41 @@ from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.database import db, get_file_type_service, get_authorization_service
-from neo4japp.exceptions import RecordNotFoundException, AccessRequestRequiredError
-from neo4japp.models import Projects, Files, FileContent, AppUser, \
-    FileVersion, FileBackup
-from neo4japp.models.files import FileLock, FileAnnotationsVersion, FallbackOrganism
-from neo4japp.models.files_queries import FileHierarchy, \
-    build_file_hierarchy_query, build_file_children_cte, add_file_user_role_columns
+from neo4japp.exceptions import AccessRequestRequiredError, RecordNotFound
+from neo4japp.models import (
+    Projects,
+    Files,
+    FileContent,
+    AppUser,
+    FileVersion,
+    FileBackup
+)
+from neo4japp.models.files import FileLock, FileAnnotationsVersion
+from neo4japp.models.files_queries import (
+    FileHierarchy,
+    build_file_hierarchy_query,
+    build_file_children_cte,
+    add_file_user_role_columns
+)
 from neo4japp.models.projects_queries import add_project_user_role_columns
 from neo4japp.schemas.annotations import FileAnnotationHistoryResponseSchema
 from neo4japp.schemas.common import PaginatedRequestSchema
-from neo4japp.schemas.filesystem import FileUpdateRequestSchema, FileResponseSchema, \
-    FileCreateRequestSchema, BulkFileRequestSchema, MultipleFileResponseSchema, \
-    BulkFileUpdateRequestSchema, \
-    FileListSchema, FileSearchRequestSchema, FileBackupCreateRequestSchema, \
-    FileVersionHistorySchema, \
-    FileExportRequestSchema, FileLockCreateRequest, FileLockDeleteRequest, FileLockListResponse
+from neo4japp.schemas.filesystem import (
+    FileUpdateRequestSchema,
+    FileResponseSchema,
+    FileCreateRequestSchema,
+    BulkFileRequestSchema,
+    MultipleFileResponseSchema,
+    BulkFileUpdateRequestSchema,
+    FileListSchema,
+    FileSearchRequestSchema,
+    FileBackupCreateRequestSchema,
+    FileVersionHistorySchema,
+    FileExportRequestSchema,
+    FileLockCreateRequest,
+    FileLockDeleteRequest,
+    FileLockListResponse
+)
 from neo4japp.services.file_types.exports import ExportFormatError
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.collections import window
@@ -74,7 +95,10 @@ class FilesystemBaseView(MethodView):
         """
         files = self.get_nondeleted_recycled_files(filter, lazy_load_content)
         if not len(files):
-            raise RecordNotFoundException("The requested file object could not be found.")
+            raise RecordNotFound(
+                title='Failed to Get File(s)',
+                message='The requested file object could not be found.',
+                code=404)
         return files[0]
 
     def get_nondeleted_recycled_files(self, filter, lazy_load_content=False,
@@ -164,9 +188,11 @@ class FilesystemBaseView(MethodView):
             missing_hash_ids = self.get_missing_hash_ids(require_hash_ids, files)
 
             if len(missing_hash_ids):
-                raise RecordNotFoundException(
-                    f"The request specified one or more file or directory "
-                    f"({', '.join(missing_hash_ids)}) that could not be found.")
+                raise RecordNotFound(
+                    title='Failed to Get File(s)',
+                    message=f"The request specified one or more file or directory "
+                    f"({', '.join(missing_hash_ids)}) that could not be found.",
+                    code=404)
 
         # In the end, we just return a list of Files instances!
         return files
@@ -222,21 +248,24 @@ class FilesystemBaseView(MethodView):
             for permission in require_permissions:
                 if not getattr(file.calculated_privileges[user.id], permission):
                     # Do not reveal the filename with the error!
+                    # TODO: probably refactor these readable, commentable to
+                    # actual string values...
                     if not file.calculated_privileges[user.id].readable:
                         raise AccessRequestRequiredError(
-                            f"You do not have permission to access this file or folder.",
-                            file_hash_id=file.hash_id)
+                            curr_access='no',
+                            req_access='readable',
+                            hash_id=file.hash_id)
                     else:
                         if permission == 'commentable':
                             raise AccessRequestRequiredError(
-                                f"You can open '{file.filename}' but you cannot make "
-                                f"comments.",
-                                file_hash_id=file.hash_id)
+                                curr_access='commentable',
+                                req_access='writable',
+                                hash_id=file.hash_id)
                         else:
                             raise AccessRequestRequiredError(
-                                f"You can open '{file.filename}' but you cannot make "
-                                f"changes to it.",
-                                file_hash_id=file.hash_id)
+                                curr_access='readable',
+                                req_access='writable',
+                                hash_id=file.hash_id)
 
             if not permit_recycled and (file.recycled or file.parent_recycled):
                 raise ValidationError(
@@ -405,6 +434,7 @@ class FilesystemBaseView(MethodView):
             try:
                 db.session.commit()
             except IntegrityError as e:
+                db.session.rollback()
                 raise ValidationError("No two items (folder or file) can share the same name.",
                                       "filename")
 
@@ -502,7 +532,7 @@ class FileListView(FilesystemBaseView):
         try:
             parent = self.get_nondeleted_recycled_file(Files.hash_id == params['parent_hash_id'])
             self.check_file_permissions([parent], current_user, ['writable'], permit_recycled=False)
-        except RecordNotFoundException:
+        except RecordNotFound:
             # Rewrite the error to make more sense
             raise ValidationError("The requested parent object could not be found.",
                                   "parent_hash_id")
@@ -530,7 +560,7 @@ class FileListView(FilesystemBaseView):
                 existing_file = self.get_nondeleted_recycled_file(Files.hash_id == source_hash_id)
                 self.check_file_permissions([existing_file], current_user, ['readable'],
                                             permit_recycled=True)
-            except RecordNotFoundException:
+            except RecordNotFound:
                 raise ValidationError(f"The requested file or directory to clone from "
                                       f"({source_hash_id}) could not be found.",
                                       "content_hash_id")
@@ -1019,7 +1049,10 @@ class FileBackupContentView(FilesystemBaseView):
             .first()
 
         if backup is None:
-            raise RecordNotFoundException('No backup stored for this file')
+            raise RecordNotFound(
+                title='Failed to Get File Backup',
+                message='No backup stored for this file.',
+                code=404)
 
         content = backup.raw_value
         etag = hashlib.sha256(content).hexdigest()
