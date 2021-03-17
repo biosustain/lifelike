@@ -28,7 +28,7 @@
               Project Navigator for project: {{object.project.name}}
             </ng-container>
             <ng-container *ngIf="object.isDirectory && object.parent">
-              File Navigator (Folder Contents)
+              File Navigator for folder: {{object.name}}
             </ng-container>
             <ng-container *ngIf="!object.isDirectory">
               File Navigator
