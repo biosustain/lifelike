@@ -125,7 +125,9 @@ def verify_token(token):
             # NOTE: is this better than avoiding to
             # display an error message about
             # authorization header (for security purposes)?
-            raise JWTAuthTokenException()
+            raise JWTAuthTokenException(
+                title='Failed to Authenticate',
+                message='There was a problem verifying the authentication session, please try again.')  # noqa
         else:
             token = token.split(' ')[-1].strip()
             try:
@@ -143,8 +145,7 @@ def verify_token(token):
     else:
         raise ServerException(
             title='Failed to Authenticate',
-            message='There was a problem authenticating, please try again.',
-            code=404)
+            message='There was a problem authenticating, please try again.')
 
 
 @bp.route('/refresh', methods=['POST'])
