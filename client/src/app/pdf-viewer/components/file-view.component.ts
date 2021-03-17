@@ -33,6 +33,8 @@ import { mapBlobToBuffer } from '../../shared/utils/files';
 import { FilesystemObjectActions } from '../../file-browser/services/filesystem-object-actions';
 import { AnnotationsService } from '../../file-browser/services/annotations.service';
 import { SearchControlComponent } from '../../shared/components/search-control.component';
+import { ErrorResponse } from 'app/shared/schemas/common';
+import { HttpErrorResponse } from '@angular/common/http';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -354,9 +356,9 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
           this.removedAnnotationExclusion = {type, text};
           this.snackBar.open('Unmarked successfully', 'Close', {duration: 5000});
         },
-        err => {
-          const {message, name} = err.error.apiHttpError;
-          this.snackBar.open(`${name}: ${message}`, 'Close', {duration: 10000});
+        (err: HttpErrorResponse) => {
+          const error = (err.error as ErrorResponse);
+          this.snackBar.open(`${error.title}: ${error.message}`, 'Close', {duration: 10000});
         },
       );
   }

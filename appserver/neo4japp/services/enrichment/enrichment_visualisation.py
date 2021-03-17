@@ -3,7 +3,7 @@ import logging
 from functools import partial
 from typing import List
 
-from neo4japp.exceptions import DataNotAvailableException
+from neo4japp.exceptions import ServerException
 from neo4japp.services import KgService
 from neo4japp.services.enrichment.enrich_methods import fisher
 from neo4japp.services.redis import redis_cached
@@ -30,14 +30,13 @@ class EnrichmentVisualisationService(KgService):
                 RETURN
                     n.id AS geneId, n.name AS geneName, g.id AS goId, g.name AS goTerm,
                     [lbl IN go_labels WHERE lbl<> 'db_GO'] AS goLabel
-                LIMIT 100000
                 """,
                 id=organism_id
         ).data()
         # raise if empty - should never happen so fail fast
         if not r:
-            raise DataNotAvailableException(f"Could not find related GO terms for"
-                                            f" organism id: {organism_id}")
+            raise ServerException(
+                message=f'Could not find related GO terms for organism id: {organism_id}')
         return r
 
     def get_go_terms(self, organism):
