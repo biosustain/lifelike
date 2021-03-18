@@ -25,10 +25,10 @@
         <div class="module-titlebar">
           <h1 class="module-title">
             <ng-container *ngIf="object.isDirectory && !object.parent">
-              Project Navigator for project: {{object.project.name}}
+              Project Navigator for: {{object.project.name}}
             </ng-container>
             <ng-container *ngIf="object.isDirectory && object.parent">
-              File Navigator (Folder Contents)
+              Project Navigator for: {{object.filename}}
             </ng-container>
             <ng-container *ngIf="!object.isDirectory">
               File Navigator
