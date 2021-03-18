@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { annotationTypesMap } from '../../../../../shared/annotation-styles';
 import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
+import { KeyValue } from '@angular/common';
 
 @Component({
   selector: 'app-clustergram',
@@ -15,7 +16,7 @@ export class ClustergramComponent implements OnChanges {
   goTerms: EnrichWithGOTermsResult[] = [];
   geneColor: string = annotationTypesMap.get('gene').color;
 
-  rowOrder(a: { value: [] }, b: { value: [] }) {
+  rowOrder(a: KeyValue<string, boolean[]>, b: KeyValue<string, boolean[]>) {
     return b.value.filter(d => d).length - a.value.filter(d => d).length;
   }
 
