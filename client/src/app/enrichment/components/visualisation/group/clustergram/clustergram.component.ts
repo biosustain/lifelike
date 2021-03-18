@@ -19,7 +19,7 @@ export class ClustergramComponent implements OnChanges {
     return b.value.filter(d => d).length - a.value.filter(d => d).length;
   }
 
-  columnOrder(a: { geneNames: [] }, b: { geneNames: [] }) {
+  columnOrder(a: EnrichWithGOTermsResult, b: EnrichWithGOTermsResult) {
     return b.geneNames.length - a.geneNames.length;
   }
 
