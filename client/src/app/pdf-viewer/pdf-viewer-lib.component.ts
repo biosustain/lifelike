@@ -408,9 +408,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     if (an.meta.isCustom) {
       base.push(`
         <div class="mt-1">
-          <button 
-            type="button" 
-            class="btn btn-primary btn-block" 
+          <button
+            type="button"
+            class="btn btn-primary btn-block"
             onclick="
                 window.pdfViewerRef['${this.pdfViewerId}']
                   .removeCustomAnnotation(${escape(
@@ -1125,7 +1125,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         ann.meta.exclusionReason = exclusionData.reason;
         ann.meta.exclusionComment = exclusionData.comment;
         ann.meta.isCaseInsensitive = exclusionData.isCaseInsensitive;
-        this.addAnnotation(ann, ann.pageNumber);
+        this.updateAnnotationVisibility(ann);
       }
     });
     this.renderFilterSettings();
