@@ -1,18 +1,20 @@
 import { Component, OnChanges, OnInit, Input } from '@angular/core';
 import { annotationTypesMap } from '../../../../../shared/annotation-styles';
+import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
+import { WordCloudNode } from '../../../../../shared/components/word-cloud/word-cloud.component';
 
 @Component({
   selector: 'app-cloud-viewer',
   templateUrl: './cloud-viewer.component.html'
 })
-export class CloudViewerComponent implements OnInit, OnChanges {
-  @Input() data: { gene: string, 'p-value': number, geneNames: string[] }[];
-  @Input() showMore;
+export class CloudViewerComponent implements OnChanges {
+  @Input() data: EnrichWithGOTermsResult[];
+  @Input() showMore: boolean;
   geneColor = annotationTypesMap.get('gene').color;
 
-  slicedData;
+  slicedData: WordCloudNode[];
 
-  slice() {
+  ngOnChanges() {
     const color = this.geneColor;
     this.slicedData = Object.entries(
       this.data.reduce((o, n) => {
@@ -22,14 +24,6 @@ export class CloudViewerComponent implements OnInit, OnChanges {
         });
         return o;
       }, {})
-    ).map(([text, frequency]) => ({text, frequency, color}));
-  }
-
-  ngOnInit() {
-    this.slice();
-  }
-
-  ngOnChanges(change) {
-    this.slice();
+    ).map(([text, frequency]) => ({text, frequency, color} as WordCloudNode));
   }
 }

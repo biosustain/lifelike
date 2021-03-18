@@ -1,35 +1,34 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { annotationTypesMap } from '../../../../../shared/annotation-styles';
-
-const geneColor = annotationTypesMap.get('gene').color;
+import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
 
 @Component({
   selector: 'app-clustergram',
   templateUrl: './clustergram.component.html',
   styleUrls: ['./clustergram.component.scss']
 })
-export class ClustergramComponent implements OnInit, OnChanges {
-  @Input() data;
-  @Input() showMore;
+export class ClustergramComponent implements OnChanges {
+  @Input() data: EnrichWithGOTermsResult[];
+  @Input() showMore: boolean;
 
-  genes = new Map();
-  goTerms = [];
-  geneColor = annotationTypesMap.get('gene').color;
+  genes = new Map<string, boolean[]>();
+  goTerms: EnrichWithGOTermsResult[] = [];
+  geneColor: string = annotationTypesMap.get('gene').color;
 
-  rowOrder(a, b) {
+  rowOrder(a: { value: [] }, b: { value: [] }) {
     return b.value.filter(d => d).length - a.value.filter(d => d).length;
   }
 
-  columnOrder(a, b) {
+  columnOrder(a: { geneNames: [] }, b: { geneNames: [] }) {
     return b.geneNames.length - a.geneNames.length;
   }
 
-  slice() {
+  ngOnChanges() {
     const data = (this.showMore ?
       this.data.slice(0, 50)
       : this.data.slice(0, 25))
       .sort(this.columnOrder);
-    const genes = new Map();
+    const genes = new Map<string, boolean[]>();
     data.forEach((goTerm, goIndex) => {
       goTerm.geneNames.forEach(g => {
         let geneRow = genes.get(g);
@@ -42,13 +41,5 @@ export class ClustergramComponent implements OnInit, OnChanges {
     });
     this.genes = genes;
     this.goTerms = data;
-  }
-
-  ngOnInit() {
-    this.slice();
-  }
-
-  ngOnChanges(change) {
-    this.slice();
   }
 }
