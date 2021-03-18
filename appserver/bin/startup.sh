@@ -3,7 +3,7 @@
 set -o errexit                  # exit on command failure; use <cmd> || true to allow for exception
 set -o nounset                  # exit when script tries to use undeclared variables
 
-if [ "${FLASK_ENV}" = "development" ]; then
+if [ "${FLASK_ENV}" = "development" ] && [ "${FLASK_APP_CONFIG}" = "Development" ]; then
     echo "### Starting up development environment ###"
     __dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     # wait for postgres
