@@ -30,7 +30,7 @@ def fisher(geneNames, GOterms, related_go_terms_count):
         matching_gene_names = list(set(go["geneNames"]).intersection(query))
         go['p-value'] = fisher_p(len(matching_gene_names), M, len(go["geneNames"]), N)
         go['gene'] = f"{go['goTerm']} ({go['goId']})"
-        go["geneNames"] = matching_gene_names
+        # go["geneNames"] = matching_gene_names
         return go
 
     df = df.apply(f, axis=1).sort_values(by='p-value')
