@@ -53,7 +53,8 @@ return go.id as goId, go.name as goTerm, [lbl in labels(go) where lbl <> 'db_GO'
     def query_go_term_count(self, organism_id):
         r = self.graph.run(
                 """
-match (t:Taxonomy {id:$taxId})-[:HAS_TAXONOMY]-(Gene)-[:GO_LINK]-(go) with distinct go
+match (t:Taxonomy {id:$taxId})-[:HAS_TAXONOMY]-(Gene)-[:GO_LINK]-(go) 
+with distinct go
 return count(go)
                 """,
                 taxId=organism_id
