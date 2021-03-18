@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { EnrichWithGOTermsResult } from '../../../services/enrichment-visualisation.service';
 
 @Component({
   selector: 'app-group',
@@ -6,7 +7,7 @@ import { Component, Input } from '@angular/core';
   styleUrls: ['./group.component.scss']
 })
 export class GroupComponent {
-  @Input() data;
+  @Input() data: EnrichWithGOTermsResult[];
   @Input() title;
 
   showMore = false;
