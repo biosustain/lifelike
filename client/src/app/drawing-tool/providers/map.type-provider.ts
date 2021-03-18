@@ -61,7 +61,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
         openSuggested: true,
         create: (options?: CreateActionOptions) => {
           const object = new FilesystemObject();
-          object.filename = 'Untitled Map';
+          object.filename = '';
           object.mimeType = MAP_MIMETYPE;
           object.parent = options.parent;
           return this.objectCreationService.openCreateDialog(object, {
