@@ -81,20 +81,4 @@ export class EnrichmentVisualisationService {
       map((resp: any) => resp)
     );
   }
-
-  /**
-   * Match gene names to NCBI nodes with same name and has given taxonomy ID.
-   * @param analysis - analysis ID to be used
-   */
-  getGOSignificance(): Observable<[]> {
-    const {importGenes: geneNames, taxID, organism} = this.enrichmentDocument;
-    const uid = organism + geneNames.sort();
-    return this.http.post<{ result: [] }>(
-      `/api/enrichment-visualisation/get_GO_significance`,
-      {geneNames, organism: `${taxID}/${organism}`},
-      this.apiService.getHttpOptions(true),
-    ).pipe(
-      map((resp: any) => resp),
-    );
-  }
 }
