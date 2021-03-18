@@ -23,7 +23,7 @@ export class CloudViewerComponent implements OnChanges {
           o[g] += 1;
         });
         return o;
-      }, {})
+      }, {} as {[gene_name:string]:number})
     )
       .sort((a,b)=>b[1]-a[1])
       .slice(0,500)
