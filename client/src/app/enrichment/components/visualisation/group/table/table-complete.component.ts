@@ -39,7 +39,7 @@ export class TableCompleteComponent implements OnChanges {
     } else {
       this.service.pageSize = 15;
     }
-    if (data) {
+    if (data || showMore) {
       this.setData();
     }
   }

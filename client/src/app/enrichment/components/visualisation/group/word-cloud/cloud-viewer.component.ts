@@ -24,6 +24,10 @@ export class CloudViewerComponent implements OnChanges {
         });
         return o;
       }, {})
-    ).map(([text, frequency]) => ({text, frequency, color} as WordCloudNode));
+    )
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,500)
+      .map(([text, frequency]) => ({text, frequency, color} as WordCloudNode));
+    console.log(this.slicedData)
   }
 }

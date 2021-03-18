@@ -29,13 +29,13 @@ def redis_cached(
         load=None,
         dump=None
 ):
-    cached_result = redis_server.get(uid)
-    if cached_result:
-        return load(cached_result) if load else cached_result
-    else:
-        result = result_provider()
-        dumped_result = dump(result) if dump else result
-        redis_server.set(uid, dumped_result, **cache_setting)
-        if load is None:
-            return dumped_result
-        return result
+    # cached_result = redis_server.get(uid)
+    # if cached_result:
+    #     return load(cached_result) if load else cached_result
+    # else:
+    result = result_provider()
+    dumped_result = dump(result) if dump else result
+    redis_server.set(uid, dumped_result, **cache_setting)
+    if load is None:
+        return dumped_result
+    return result
