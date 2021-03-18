@@ -91,7 +91,9 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
 
   ngAfterViewChecked() {
     if (this.tableScrollRef && this.findTargetRef) {
-      this.findController.target = this.findTargetRef.nativeElement;
+      // Set the find controller target to the table body, otherwise we'll also be searching the headers. At first glance this might make
+      // sense, but the sticky headers make rendering the highlights kind of funky, and probably the user doesn't care about them anyway.
+      this.findController.target = this.findTargetRef.nativeElement.getElementsByTagName('tbody')[0];
     } else {
       this.findController.target = null;
     }
