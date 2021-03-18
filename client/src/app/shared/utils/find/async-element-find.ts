@@ -1,4 +1,9 @@
-import { NodeTextRange, nonStaticPositionPredicate, walkParentElements } from '../dom';
+import {
+  NodeTextRange,
+  nonStaticPositionPredicate,
+  scrollRectIntoView,
+  walkParentElements,
+} from '../dom';
 import { escapeRegExp } from 'lodash';
 import { AsyncFindController } from './find-controller';
 import { AsyncTextHighlighter } from '../dom/async-text-highlighter';
@@ -7,8 +12,6 @@ import { AsyncTextHighlighter } from '../dom/async-text-highlighter';
  * A find controller for finding items within an element.
  */
 export class AsyncElementFind implements AsyncFindController {
-
-  // TODO: Previous/next
 
   target: Element;
   scrollToOffset = 100;
@@ -56,7 +59,6 @@ export class AsyncElementFind implements AsyncFindController {
     }
 
     this.index = 0;
-    this.visitResult();
   }
 
   stop() {
@@ -134,12 +136,15 @@ export class AsyncElementFind implements AsyncFindController {
    * No longer highlight the current find index.
    */
   private leaveResult() {
+    this.highlighter.unfocus(this.results[this.index]);
   }
 
   /**
    * Highlight the current findindex.
    */
   private visitResult() {
+    scrollRectIntoView(this.results[this.index].node.parentElement, undefined);
+    this.highlighter.focus(this.results[this.index]);
   }
 
   getResultIndex(): number {
