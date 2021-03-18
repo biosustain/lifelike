@@ -1169,39 +1169,6 @@ class EntityRecognitionService:
         regex = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
 
         for token in tokens:
-            for current_token in self.generate_tokens(token, self.gene_max_words):
-                if (current_token.keyword.lower() in COMMON_WORDS or
-                    regex.match(current_token.keyword) or
-                    current_token.keyword in ascii_letters or
-                    current_token.keyword in digits or
-                    len(current_token.normalized_keyword) <= 2 or
-                    self.is_abbrev(current_token)
-                ):  # noqa
-                    continue
-
-                if not self.is_gene_exclusion(current_token.keyword):
-                    self.identify_gene(
-                        token=current_token,
-                        genes_found=genes_found,
-                        nlp_genes=nlp_results.genes,
-                        used_nlp=annotation_method.get(
-                            EntityType.GENE.value, {}).get('nlp', False),
-                        cursor=genes_cur)
-
-            for current_token in self.generate_tokens(token, self.food_max_words):
-                if (current_token.keyword.lower() in COMMON_WORDS or
-                    regex.match(current_token.keyword) or
-                    current_token.keyword in ascii_letters or
-                    current_token.keyword in digits or
-                    len(current_token.normalized_keyword) <= 2 or
-                    self.is_abbrev(current_token)
-                ):  # noqa
-                    continue
-
-                if not self.is_food_exclusion(current_token.keyword):
-                    self.identify_food(
-                        token=current_token, foods_found=foods_found, cursor=foods_cur)
-
             for current_token in self.generate_tokens(token, self.entity_max_words):
                 if (current_token.keyword.lower() in COMMON_WORDS or
                     regex.match(current_token.keyword) or
@@ -1211,6 +1178,25 @@ class EntityRecognitionService:
                     self.is_abbrev(current_token)
                 ):  # noqa
                     continue
+
+                num_words = len(current_token.keyword.split(' '))
+
+                if num_words <= self.gene_max_words:
+                    if not self.is_gene_exclusion(current_token.keyword):
+                        self.identify_gene(
+                            token=current_token,
+                            genes_found=genes_found,
+                            nlp_genes=nlp_results.genes,
+                            used_nlp=annotation_method.get(
+                                EntityType.GENE.value, {}).get('nlp', False),
+                            cursor=genes_cur)
+
+                if num_words <= self.food_max_words:
+                    if not self.is_food_exclusion(current_token.keyword):
+                        self.identify_food(
+                            token=current_token,
+                            foods_found=foods_found,
+                            cursor=foods_cur)
 
                 if not self.is_anatomy_exclusion(current_token.keyword):
                     self.identify_anatomy(
