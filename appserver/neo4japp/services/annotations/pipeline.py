@@ -166,7 +166,7 @@ def parse_pdf(file_id: int, exclude_references: bool) -> Tuple[str, List[PDFWord
         data={
             'fileUrl': f'http://appserver:5000/annotations/files/{file_id}',
             'excludeReferences': exclude_references
-        }, timeout=45)
+        }, timeout=60)
     resp = req.json()
     req.close()
 
