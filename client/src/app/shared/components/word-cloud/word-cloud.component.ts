@@ -25,7 +25,7 @@ export function throttled(fn: (...r: any[]) => void) {
   };
 }
 
-interface Node {
+export interface WordCloudNode {
   value?: any;
   result?: any;
   frequency: any;
@@ -90,7 +90,7 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
   @ViewChild('svg', {static: false}) svg!: ElementRef;
   @ViewChild('g', {static: false}) g!: ElementRef;
 
-  private _data: (string | Node)[] = [];
+  private _data: (string | WordCloudNode)[] = [];
 
   clickableWords = false;
   WORD_CLOUD_MARGIN = 10;
