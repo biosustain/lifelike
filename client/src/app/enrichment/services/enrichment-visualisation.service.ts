@@ -14,6 +14,8 @@ import { BaseEnrichmentDocument } from '../models/enrichment-document';
 export interface EnrichWithGOTermsResult {
   'p-value': any;
   'goLabel': string[];
+  'geneNames': string[];
+  'gene': string;
 }
 
 @Injectable()

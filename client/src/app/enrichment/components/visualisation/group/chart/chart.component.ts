@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { ChartOptions, ChartType } from 'chart.js';
+import { ChartOptions, ChartType, ChartPoint } from 'chart.js';
+import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
 
 const mapTootipItem = func =>
   ({datasetIndex, index}, {datasets}) => {
@@ -16,7 +17,7 @@ const mapSingularOfTootipItems = func => {
   selector: 'app-chart',
   templateUrl: './chart.component.html'
 })
-export class ChartComponent implements OnInit, OnChanges {
+export class ChartComponent implements OnChanges {
   public options: ChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -58,27 +59,19 @@ export class ChartComponent implements OnInit, OnChanges {
   };
   public chartType: ChartType = 'horizontalBar';
   legend = false;
-  public chartData = [];
-  @Input() showMore;
-  @Input() data;
 
-  slicedData;
-  labels;
+  @Input() showMore: boolean;
+  @Input() data: EnrichWithGOTermsResult[];
 
-  parseData() {
+  slicedData: (EnrichWithGOTermsResult & ChartPoint)[];
+  labels: string[];
+
+  ngOnChanges() {
     const data = this.showMore ? this.data.slice(0, 50) : this.data.slice(0, 10);
     this.slicedData = data.map((d: any, i) => ({
       ...d,
       x: -Math.log10(d['p-value'])
     }));
     this.labels = data.map(({gene}) => gene);
-  }
-
-  ngOnInit() {
-    this.parseData();
-  }
-
-  ngOnChanges(change) {
-    this.parseData();
   }
 }
