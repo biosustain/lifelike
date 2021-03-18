@@ -1,4 +1,4 @@
-import { Component, OnChanges, OnInit, Input } from '@angular/core';
+import { Component, OnChanges, Input } from '@angular/core';
 import { annotationTypesMap } from '../../../../../shared/annotation-styles';
 import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
 import { WordCloudNode } from '../../../../../shared/components/word-cloud/word-cloud.component';
@@ -23,11 +23,11 @@ export class CloudViewerComponent implements OnChanges {
           o[g] += 1;
         });
         return o;
-      }, {} as {[gene_name:string]:number})
+      }, {} as { [geneName: string]: number })
     )
-      .sort((a,b)=>b[1]-a[1])
-      .slice(0,500)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 500)
       .map(([text, frequency]) => ({text, frequency, color} as WordCloudNode));
-    console.log(this.slicedData)
+    console.log(this.slicedData);
   }
 }

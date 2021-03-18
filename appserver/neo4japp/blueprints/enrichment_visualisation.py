@@ -64,4 +64,3 @@ def enrich_go(args):
     return redis_cached(
             cache_id, partial(enrichment_visualisation.enrich_go, gene_names, analysis, organism)
     ), dict(mimetype='application/json')
-
