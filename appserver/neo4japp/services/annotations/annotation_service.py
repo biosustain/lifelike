@@ -1110,56 +1110,24 @@ class AnnotationService:
         from the knowledge graph. Also update the annotation id to have the source
         database prefix.
         """
-        chemical_ids = set()
-        compound_ids = set()
-        disease_ids = set()
         gene_ids = set()
         protein_ids = set()
-        organism_ids = set()
-        mesh_ids = set()
 
         for anno in annotations:
-            if anno.meta.type == EntityType.ANATOMY.value or anno.meta.type == EntityType.FOOD.value:  # noqa
-                mesh_ids.add(anno.meta.id)
-            elif anno.meta.type == EntityType.CHEMICAL.value:
-                chemical_ids.add(anno.meta.id)
-            elif anno.meta.type == EntityType.COMPOUND.value:
-                compound_ids.add(anno.meta.id)
-            elif anno.meta.type == EntityType.DISEASE.value:
-                disease_ids.add(anno.meta.id)
-            elif anno.meta.type == EntityType.GENE.value:
+            if anno.meta.type == EntityType.GENE.value:
                 gene_ids.add(anno.meta.id)
             elif anno.meta.type == EntityType.PROTEIN.value:
                 protein_ids.add(anno.meta.id)
-            elif anno.meta.type == EntityType.SPECIES.value:
-                organism_ids.add(anno.meta.id)
 
-        chemical_names = self.graph.get_chemicals_from_chemical_ids(list(chemical_ids))  # noqa
-        compound_names = self.graph.get_compounds_from_compound_ids(list(compound_ids))  # noqa
-        disease_names = self.graph.get_diseases_from_disease_ids(list(disease_ids))  # noqa
         gene_names = self.graph.get_genes_from_gene_ids(list(gene_ids))
-        protein_names = self.graph.get_proteins_from_protein_ids(list(protein_ids))  # noqa
-        organism_names = self.graph.get_organisms_from_organism_ids(list(organism_ids))  # noqa
-        mesh_names = self.graph.get_mesh_from_mesh_ids(list(mesh_ids))
+        protein_names = self.graph.get_proteins_from_protein_ids(list(protein_ids))
 
         for anno in annotations:
             try:
-                if anno.meta.type == EntityType.ANATOMY.value or anno.meta.type == EntityType.FOOD.value:  # noqa
-                    anno.primary_name = mesh_names[anno.meta.id]
-                elif anno.meta.type == EntityType.CHEMICAL.value:
-                    anno.primary_name = chemical_names[anno.meta.id]
-                elif anno.meta.type == EntityType.COMPOUND.value:
-                    anno.primary_name = compound_names[anno.meta.id]
-                elif anno.meta.type == EntityType.DISEASE.value:
-                    anno.primary_name = disease_names[anno.meta.id]
-                elif anno.meta.type == EntityType.GENE.value:
+                if anno.meta.type == EntityType.GENE.value:
                     anno.primary_name = gene_names[anno.meta.id]
                 elif anno.meta.type == EntityType.PROTEIN.value:
                     anno.primary_name = protein_names[anno.meta.id]
-                elif anno.meta.type == EntityType.SPECIES.value:
-                    anno.primary_name = organism_names[anno.meta.id]
-                else:
-                    anno.primary_name = anno.keyword
             except KeyError:
                 # just keep what is already there or use the
                 # synonym if blank
