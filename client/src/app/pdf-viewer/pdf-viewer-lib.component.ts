@@ -408,9 +408,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
     if (an.meta.isCustom) {
       base.push(`
         <div class="mt-1">
-          <button 
-            type="button" 
-            class="btn btn-primary btn-block" 
+          <button
+            type="button"
+            class="btn btn-primary btn-block"
             onclick="
                 window.pdfViewerRef['${this.pdfViewerId}']
                   .removeCustomAnnotation(${escape(
@@ -756,7 +756,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
             },
           },
           show: {
-            event: 'click',
             delay: 10,
           },
           hide: {
