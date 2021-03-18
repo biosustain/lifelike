@@ -4,9 +4,6 @@
                              [(ngModel)]="service.searchTerm"/>
         </span>
         <span class="ml-3" *ngIf="service.loading$ | async">Loading...</span>
-        <span class="flex-grow-0">Show insignificant: <input class="form-control ml-2" type="checkbox" name="showInsignificant"
-                                         [(ngModel)]="showInsignificant" (change)="toggleShowInsignificant($event)"/>
-        </span>
     </div>
     <table class="table table-striped">
         <thead>
@@ -20,10 +17,10 @@
         </thead>
         <tbody [ngClass]="{'line-clamp':!service.searchTerm}">
         <tr *ngFor="let row of data$ | async; let i = index" [tabindex]="i">
-            <th scope="row">{{ "" + row.goId }}</th>
-            <td>
+            <td>{{ row.goId }}</td>
+            <th scope="row">
                 <ngb-highlight [result]="row.goTerm" [term]="service.searchTerm"></ngb-highlight>
-            </td>
+            </th>
             <td>
                 <ngb-highlight [result]="row['geneNames'].join(', ')"
                                [term]="service.searchTerm"></ngb-highlight>
