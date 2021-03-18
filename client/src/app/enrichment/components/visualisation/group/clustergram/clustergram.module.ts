@@ -1,9 +1,9 @@
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
-import {SharedModule} from 'app/shared/shared.module';
+import { SharedModule } from 'app/shared/shared.module';
 
-import {ClustergramComponent} from './clustergram.component';
+import { ClustergramComponent } from './clustergram.component';
 
 const components = [
   ClustergramComponent
