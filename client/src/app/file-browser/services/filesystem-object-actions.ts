@@ -136,8 +136,6 @@ export class FilesystemObjectActions {
       parentLabel: 'Copy To',
       request: {
         contentHashId: target.hashId,
-        contentUrl: null,
-        contentValue: null,
       },
     });
   }
