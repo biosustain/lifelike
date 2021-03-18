@@ -5,7 +5,6 @@ import { getBoundingClientRectRelativeToContainer, NodeTextRange } from '../dom'
  */
 export class AsyncTextHighlighter {
 
-  // TODO: Implement the ability to highlight a specific entry even more (add the .highlight-block-focus CSS class)
   // TODO: Redraw on DOM changes / scroll
   // TODO: Adjust throttling to reduce even minor freezing in browser during scroll
 
@@ -41,6 +40,7 @@ export class AsyncTextHighlighter {
   }
 
   addAll(entries: NodeTextRange[]) {
+    let firstResult = true;
     for (const entry of entries) {
       const element = entry.node.parentElement;
 
@@ -51,7 +51,33 @@ export class AsyncTextHighlighter {
         this.intersectionObserver.observe(element);
       }
 
-      highlights.push(new TextHighlight(entry.node, entry.start, entry.end));
+      highlights.push(new TextHighlight(entry.node, firstResult, entry.start, entry.end));
+
+      if (firstResult) {
+        firstResult = false;
+      }
+    }
+  }
+
+  focus(entry: NodeTextRange) {
+    const element = entry.node.parentElement;
+    const highlights = this.mapping.get(element);
+
+    for (const highlight of highlights) {
+      if (highlight.start === entry.start && highlight.end === entry.end) {
+        this.renderQueue.set(highlight, () => highlight.focusHighlights());
+      }
+    }
+  }
+
+  unfocus(entry: NodeTextRange) {
+    const element = entry.node.parentElement;
+    const highlights = this.mapping.get(element);
+
+    for (const highlight of highlights) {
+      if (highlight.start === entry.start && highlight.end === entry.end) {
+        this.renderQueue.set(highlight, () => highlight.unfocusHighlights());
+      }
     }
   }
 
@@ -95,26 +121,32 @@ export class AsyncTextHighlighter {
 
 class TextHighlight implements NodeTextRange {
   protected elements: Element[] = [];
+  private focusOnNextRender = false;
 
   constructor(public readonly node: Node,
+              public readonly initialFocus: boolean,
               public readonly start: number,
               public readonly end: number) {
+    this.focusOnNextRender = initialFocus;
   }
 
   get rects() {
     const range = document.createRange();
     range.setStart(this.node, this.start);
     range.setEnd(this.node, this.end);
-    return range.getClientRects();
+    // When the range contains a line break, we often see an additional DOMRect representing a space just before the break. We attempt to
+    // filter these spurrious rects so we don't draw them.
+    // TODO: Is this browser-safe? Would be worthwhile to make sure this doesn't break in different environments.
+    return Array.from(range.getClientRects()).filter((rect) => rect.width >= 3.6);
   }
 
   createHighlights(container: Element): Element[] {
     const elements: Element[] = [];
 
-    for (const rect of Array.from(this.rects)) {
+    for (const rect of this.rects) {
       const relativeRect = getBoundingClientRectRelativeToContainer(rect, container);
       const el = document.createElement('div');
-      el.className = 'highlight-block';
+      el.className = this.focusOnNextRender ? 'highlight-block-focus' : 'highlight-block';
       el.style.position = 'absolute';
       el.style.top = relativeRect.y + 'px';
       el.style.left = relativeRect.x + 'px';
@@ -125,6 +157,26 @@ class TextHighlight implements NodeTextRange {
     }
 
     return elements;
+  }
+
+  /**
+   * Immediately changes this highlight to use the focused styling. Also sets this highlight to be focused on future renders.
+   */
+  focusHighlights() {
+    this.focusOnNextRender = true;
+    for (const el of this.elements) {
+      el.className = 'highlight-block-focus';
+    }
+  }
+
+  /**
+   * Immediately changes this highlight to use the unfocused styling. Also sets this highlight to be unfocused on future renders.
+   */
+  unfocusHighlights() {
+    this.focusOnNextRender = false;
+    for (const el of this.elements) {
+      el.className = 'highlight-block';
+    }
   }
 
   removeHighlights() {
