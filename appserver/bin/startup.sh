@@ -19,7 +19,7 @@ if [ "${FLASK_ENV}" = "development" ]; then
     # Mark ready
     touch .READY
     flask run --host 0.0.0.0
-elif [ "${FLASK_ENV}" = "production" ]; then
+elif [ "${FLASK_APP_CONFIG}" = "Production" ] || [ "${FLASK_APP_CONFIG}" = "Staging" ] || [ "${FLASK_APP_CONFIG}" = "QA" ]; then
     gunicorn -b 0.0.0.0:5000 -w 4 app:app --timeout 1200
 else
     echo "No environment setup for ${FLASK_ENV}"
