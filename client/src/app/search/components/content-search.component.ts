@@ -59,6 +59,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   searchTypes: SearchType[];
   searchTypesMap: Map<string, SearchType>;
 
+  contentSearchFormVal: ContentSearchOptions;
+
   get emptyParams(): boolean {
     if (isNullOrUndefined(this.params)) {
       return true;
@@ -167,13 +169,17 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     };
   }
 
-  search(params) {
+  contentSearchFormChanged(form: ContentSearchOptions) {
+    this.contentSearchFormVal = form;
+  }
+
+  search(form: ContentSearchOptions) {
     this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {
       queryParams: {
         ...this.serializeParams({
           ...this.getDefaultParams(),
-          // If normal search, only use the 'q' param; Ignore any advanced params we arrived at the page with
-          q: isNullOrUndefined(params.q) ? '' : params.q,
+          // If normal search, only use the 'q' form value; Ignore any advanced params we arrived at the page with
+          q: isNullOrUndefined(form.q) ? '' : form.q,
         }, true),
         t: new Date().getTime(),
       },
@@ -264,67 +270,56 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
   /**
    * Attempts to extract advanced search options from the query string paramter 'q'. If any advanced options are found, they are removed
-   * 'q' and added to the params object.
+   * from 'q' and added to the params object.
    * @param params object representing the content search options
    */
   extractAdvancedParams(params: ContentSearchOptions) {
-    const advancedParams: any = {};
-    let q = '';
+    const advancedParams: ContentSearchOptions = {};
+    let q = isNullOrUndefined(params.q) ? '' : params.q;
 
-    if (params.hasOwnProperty('q')) {
-      q = (params.q as string);
+    // Remove 'types' from q and add to the types option of the advancedParams
+    const typeMatches = q.match(/\btype:\S*/g);
+    const extractedTypes = typeMatches == null ? [] : typeMatches.map(typeVal => typeVal.split(':')[1]);
+    const givenTypes = isNullOrUndefined(params.types) ? [] : params.types.map(value => value.shorthand);
 
-      // Remove 'types' from q and add to the types option of the advancedParams
-      const typeMatches = q.match(/\btype:\S*/g);
-      let extractedTypes = [];
-      if (!isNullOrUndefined(typeMatches)) {
-        extractedTypes = typeMatches.map(typeVal => typeVal.split(':')[1]);
-      }
+    q = q.replace(/\btype:\S*/g, '');
+    advancedParams.types = getChoicesFromQuery(
+      {types: extractedTypes.concat(givenTypes).join(';')},
+      'types',
+      this.searchTypesMap
+    );
 
+    // Remove 'projects' from q and add to the projects option of the advancedParams
+    const projectMatches = q.match(/\bproject:\S*/g);
+    const givenProjects = isNullOrUndefined(params.projects) ? [] : params.projects;
+    const extractedProjects = projectMatches === null ? [] : projectMatches.map(projectVal => projectVal.split(':')[1]);
 
-      let givenTypes = [];
-      if (params.hasOwnProperty('types')) {
-        givenTypes = params.types.map(value => value.shorthand);
-      }
+    q = q.replace(/\bproject:\S*/g, '');
+    advancedParams.projects = extractedProjects.concat(givenProjects);
 
-      q = q.replace(/\btype:\S*/g, '').trim();
-      advancedParams.types = getChoicesFromQuery(
-        {types: extractedTypes.concat(givenTypes).join(';')},
-        'types',
-        this.searchTypesMap
-      );
+    // Remove the first phrase from q and add to the phrase option of the advancedParams
+    const phraseMatch = q.match(/\"((?:\"\"|[^\"])*)\"/);
+    const givenPhrase = isNullOrUndefined(params.phrase) ? '' : params.phrase;
 
-      // Remove 'projects' from q and add to the projects option of the advancedParams
-      const givenProjects = params.hasOwnProperty('projects') ? params.projects : [];
-      const projectMatches = q.match(/\bproject:\S*/g);
-
-      let extractedProjects = [];
-      if (!isNullOrUndefined(projectMatches)) {
-        extractedProjects = projectMatches.map(projectVal => projectVal.split(':')[1]);
-      }
-
-      q = q.replace(/\bproject:\S*/g, '').trim();
-      advancedParams.projects = extractedProjects.concat(givenProjects);
-
-      // Remove the first phrase from q and add to the phrase option of the advancedParams
-      if (params.hasOwnProperty('phrase')) {
-        advancedParams.phrase = params.phrase;
-      } else {
-        const phraseMatches = q.match(/\"((?:\"\"|[^\"])*)\"/);
-        if (!isNullOrUndefined(phraseMatches)) {
-          // Object at index 1 should be the string enclosed by '"'
-          advancedParams.phrase = phraseMatches[1];
-          q = q.replace(/\"((?:\"\"|[^\"])*)\"/, '').trim();
-        }
-      }
-
-      // Remove 'wildcards' from q and add to the wildcards option of the advancedParams
-      const givenWildcards = params.hasOwnProperty('wildcards') ? [params.wildcards] : [];
-      const extractedWildcards = q.match(/\S*(\?|\*)\S*/g);
-
-      q = q.replace(/\S*(\?|\*)\S*/g, '').trim();
-      advancedParams.wildcards = givenWildcards.concat(extractedWildcards).join(' ').trim();
+    q = q.replace(/\"((?:\"\"|[^\"])*)\"/, '');
+    // If a phrase was given, we should use that in the advanced options. If it wasn't given, but there was a phrase found in q, then use
+    // that instead.
+    if (givenPhrase !== '') {
+      advancedParams.phrase = givenPhrase;
+    } else {
+      // Group 2 of the match should be the `"` enclosed string, hence the `phraseMatch[1]` here
+      advancedParams.phrase = phraseMatch !== null ? phraseMatch[1] : '';
     }
+
+    // Remove 'wildcards' from q and add to the wildcards option of the advancedParams
+    const givenWildcards = isNullOrUndefined(params.wildcards) ? [] : [params.wildcards];
+    const extractedWildcards = q.match(/\S*(\?|\*)\S*/g);
+
+    q = q.replace(/\S*(\?|\*)\S*/g, '');
+    advancedParams.wildcards = givenWildcards.concat(extractedWildcards).join(' ').trim();
+
+    // Do one last whitespace replacement to clean up the query string
+    q = q.replace(/\s+/g, ' ').trim();
 
     advancedParams.q = q;
 
@@ -338,7 +333,9 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     const modalRef = this.modalService.open(AdvancedSearchDialogComponent, {
       size: 'md',
     });
-    modalRef.componentInstance.params = this.extractAdvancedParams(this.params);
+    // Get the starting options from the content search form query, if the user has edited it since loading the page. Otherwise, get them
+    // from the URL params.
+    modalRef.componentInstance.params = this.extractAdvancedParams(this.contentSearchFormVal);
     modalRef.componentInstance.typeChoices = this.searchTypes.concat().sort((a, b) => a.name.localeCompare(b.name));
     modalRef.result
       // Advanced search was triggered
