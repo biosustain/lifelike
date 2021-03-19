@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, combineLatest } from 'rxjs';
 import { ApiService } from '../../shared/services/api.service';
@@ -14,6 +14,8 @@ import { BaseEnrichmentDocument } from '../models/enrichment-document';
 export interface EnrichWithGOTermsResult {
   'p-value': any;
   'goLabel': string[];
+  'geneNames': string[];
+  'gene': string;
 }
 
 @Injectable()
@@ -79,22 +81,6 @@ export class EnrichmentVisualisationService {
       this.apiService.getHttpOptions(true),
     ).pipe(
       map((resp: any) => resp)
-    );
-  }
-
-  /**
-   * Match gene names to NCBI nodes with same name and has given taxonomy ID.
-   * @param analysis - analysis ID to be used
-   */
-  getGOSignificance(): Observable<[]> {
-    const {importGenes: geneNames, taxID, organism} = this.enrichmentDocument;
-    const uid = organism + geneNames.sort();
-    return this.http.post<{ result: [] }>(
-      `/api/enrichment-visualisation/get_GO_significance`,
-      {geneNames, organism: `${taxID}/${organism}`},
-      this.apiService.getHttpOptions(true),
-    ).pipe(
-      map((resp: any) => resp),
     );
   }
 }
