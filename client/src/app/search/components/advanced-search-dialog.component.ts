@@ -17,24 +17,30 @@ export class AdvancedSearchDialogComponent implements OnInit {
   @Input() set params(params: ContentSearchOptions) {
     this.form.setValue({
       ...this.form.value,
-      q: params.q,
+      q: [
+        params.q,
+        params.phrase ? `"${params.phrase}"` : '',
+        params.wildcards ? params.wildcards : ''
+      ].join(' '),
       // Advanced Params
       types: params.types ? params.types : [],
       projects: params.projects ? params.projects : [],
-      phrase: params.phrase ? params.phrase : '',
-      wildcards: params.wildcards ? params.wildcards : '',
+      // phrase: params.phrase ? params.phrase : '',
+      // wildcards: params.wildcards ? params.wildcards : '',
     });
   }
   @Input() typeChoices: SearchType[] = [];
 
   projects: string[] = [];
 
+  // Removing `phrase` and `wildcard` for now, in favor of just putting them in `q`. See a related comment in the template.
+
   form = new FormGroup({
     q: new FormControl(''),
     types: new FormControl([]),
     projects: new FormControl([]),
-    phrase: new FormControl(''),
-    wildcards: new FormControl(''),
+    // phrase: new FormControl(''),
+    // wildcards: new FormControl(''),
   });
 
   constructor(
@@ -76,8 +82,8 @@ export class AdvancedSearchDialogComponent implements OnInit {
       // Advanced Params
       types: [],
       projects: [],
-      phrase: '',
-      wildcards: '',
+      // phrase: '',
+      // wildcards: '',
     });
   }
 
