@@ -74,7 +74,7 @@ export class ObjectCreationService {
           // we can't actually show a progress percentage)
           progressObservable.next(new Progress({
             mode: ProgressMode.Indeterminate,
-            status: 'Saved; identifying annotations...',
+            status: 'Saved; Parsing and identifying annotations...',
           }));
           return this.annotationsService.generateAnnotations(
             [object.hashId], annotationOptions,

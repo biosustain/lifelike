@@ -1084,15 +1084,12 @@ class AnnotationService:
             # need to split up the annotations otherwise
             # a text in a cell could be removed due to
             # overlapping with an adjacent cell
-            split: Dict[int, List[Annotation]] = {k: list() for k in enrichment_mappings}
-            for anno in fixed_unified_annotations:
-                for i in split:
-                    # append annotation to list that is greater
-                    # than hi_location_offset
-                    # this means the annotation is part of that sublist
-                    if anno.hi_location_offset <= i:
-                        split[i].append(anno)
-                        break
+            split: Dict[int, List[Annotation]] = {}
+            for k in enrichment_mappings:
+                # append annotation to list that is greater
+                # than hi_location_offset
+                # this means the annotation is part of that sublist
+                split[k] = [anno for anno in fixed_unified_annotations if anno.hi_location_offset <= k]  # noqa
 
             combined: List[Annotation] = []
             for _, v in split.items():
