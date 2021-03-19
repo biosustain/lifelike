@@ -10,19 +10,33 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { Observable, Subject, Subscription } from 'rxjs';
-import { AddedAnnotationExclusion, Annotation, RemovedAnnotationExclusion, Location, Meta, Rect, } from './annotation-type';
-import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
-import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
-import { PDFPageViewport } from 'pdfjs-dist';
-import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
+
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { escape, uniqueId } from 'lodash';
-import { SEARCH_LINKS } from 'app/shared/links';
+
+import { PDFPageViewport } from 'pdfjs-dist';
+
+import { Observable, Subject, Subscription } from 'rxjs';
+
+import { isNullOrUndefined } from 'util';
 
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { SEARCH_LINKS } from 'app/shared/links';
+
+import {
+  AddedAnnotationExclusion,
+  Annotation,
+  Location,
+  Meta,
+  Rect,
+  RemovedAnnotationExclusion,
+} from './annotation-type';
+import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
+import { AnnotationExcludeDialogComponent } from './components/annotation-exclude-dialog.component';
+import { PDFDocumentProxy, PDFProgressData, PDFSource } from './pdf-viewer/pdf-viewer.module';
+import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
 import { FindState, RenderTextMode } from './utils/constants';
 
 declare var jQuery: any;
@@ -270,79 +284,82 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
   }
 
   addAnnotation(annotation: Annotation, pageNum: number) {
-    const pdfPageView = this.pageRef[pageNum];
-    const viewPort: PDFPageViewport = pdfPageView.viewport;
-
     // each annotation should have allText field set.
     const allText = (annotation.keywords || []).join(' ');
     if (!annotation.meta.allText || annotation.meta.allText === '') {
       annotation.meta.allText = allText;
     }
 
-    const elementRefs = [];
-    this.annotationHighlightElementMap.set(annotation, elementRefs);
+    // Do NOT attempt to draw an annotation if the corresponding page has yet to be rendered! (It will get drawn on-demand)
+    if (!isNullOrUndefined(this.pageRef[pageNum])) {
+      const pdfPageView = this.pageRef[pageNum];
+      const viewPort: PDFPageViewport = pdfPageView.viewport;
+      const elementRefs = [];
+      this.annotationHighlightElementMap.set(annotation, elementRefs);
 
-    for (const rect of annotation.rects) {
-      const bounds = viewPort.convertToViewportRectangle(rect);
-      const left = Math.min(bounds[0], bounds[2]);
-      let top = Math.min(bounds[1], bounds[3]);
-      const width = Math.abs(bounds[0] - bounds[2]);
-      const height = Math.abs(bounds[1] - bounds[3]);
-      const overlayContainer = pdfPageView.div;
-      const overlayDiv = document.createElement('div');
-      const location: Location = {
-        pageNumber: annotation.pageNumber,
-        rect,
-      };
-      overlayDiv.setAttribute('draggable', 'true');
-      overlayDiv.addEventListener('dragstart', event => {
-        this.annotationDragStart.emit(event);
-      });
-      overlayDiv.dataset.annotationId = annotation.meta.id;
-      overlayDiv.setAttribute('class', 'system-annotation'
-        + (this.currentHighlightAnnotationId === annotation.meta.id
-          ? ' annotation-highlight' : ''));
-      overlayDiv.setAttribute('location', JSON.stringify(location));
-      overlayDiv.setAttribute('meta', JSON.stringify(annotation.meta));
-      top = this.normalizeTopCoordinate(top, annotation);
-      const opacity = this.normalizeOpacityLevel(annotation);
-      const bgcolor = this.normalizeBackgroundColor(annotation);
-      overlayDiv.setAttribute('style', `opacity:${escape(opacity)}; background-color: ${escape(bgcolor)};position:absolute;` +
-        'left:' + left + 'px;top:' + (top) + 'px;width:' + width + 'px;height:' + height + 'px;');
-      overlayContainer.appendChild(overlayDiv);
-      (annotation as any).ref = overlayDiv;
-      elementRefs.push(overlayDiv);
-      jQuery(overlayDiv).css('cursor', 'move');
-      (jQuery(overlayDiv) as any).qtip(
-        {
-          content: this.prepareTooltipContent(annotation),
-          position: {
-            my: 'top center',
-            at: 'bottom center',
-            viewport: false,
-            target: [left+width/2,top+height],
-            container: jQuery(overlayContainer)
-          },
-          style: {
-            classes: 'qtip-bootstrap',
-            tip: {
-              width: 16,
-              height: 8,
+      for (const rect of annotation.rects) {
+        const bounds = viewPort.convertToViewportRectangle(rect);
+        const left = Math.min(bounds[0], bounds[2]);
+        let top = Math.min(bounds[1], bounds[3]);
+        const width = Math.abs(bounds[0] - bounds[2]);
+        const height = Math.abs(bounds[1] - bounds[3]);
+        const overlayContainer = pdfPageView.div;
+        const overlayDiv = document.createElement('div');
+        const location: Location = {
+          pageNumber: annotation.pageNumber,
+          rect,
+        };
+        overlayDiv.setAttribute('draggable', 'true');
+        overlayDiv.addEventListener('dragstart', event => {
+          this.annotationDragStart.emit(event);
+        });
+        overlayDiv.dataset.annotationId = annotation.meta.id;
+        overlayDiv.setAttribute('class', 'system-annotation'
+          + (this.currentHighlightAnnotationId === annotation.meta.id
+            ? ' annotation-highlight' : ''));
+        overlayDiv.setAttribute('location', JSON.stringify(location));
+        overlayDiv.setAttribute('meta', JSON.stringify(annotation.meta));
+        top = this.normalizeTopCoordinate(top, annotation);
+        const opacity = this.normalizeOpacityLevel(annotation);
+        const bgcolor = this.normalizeBackgroundColor(annotation);
+        overlayDiv.setAttribute('style', `opacity:${escape(opacity)}; background-color: ${escape(bgcolor)};position:absolute;` +
+          'left:' + left + 'px;top:' + (top) + 'px;width:' + width + 'px;height:' + height + 'px;');
+        overlayContainer.appendChild(overlayDiv);
+        (annotation as any).ref = overlayDiv;
+        elementRefs.push(overlayDiv);
+        jQuery(overlayDiv).css('cursor', 'move');
+        (jQuery(overlayDiv) as any).qtip(
+          {
+            content: this.prepareTooltipContent(annotation),
+            position: {
+              my: 'top center',
+              at: 'bottom center',
+              viewport: false,
+              target: [left+width/2,top+height],
+              container: jQuery(overlayContainer)
             },
+            style: {
+              classes: 'qtip-bootstrap',
+              tip: {
+                width: 16,
+                height: 8,
+              },
+            },
+            show: {
+              delay: 10,
+              event: 'click',
+              solo: true
+            },
+            hide: {
+              fixed: true,
+              delay: 150,
+              event: 'unfocus'
+            }
           },
-          show: {
-            delay: 10,
-            event: 'click',
-            solo: true
-          },
-          hide: {
-            fixed: true,
-            delay: 150,
-            event: 'unfocus'
-          }
-        },
-      );
+        );
+      }
     }
+
     if (this.pendingHighlights[pageNum]) {
       const rect = this.pendingHighlights[pageNum];
       delete this.pendingHighlights[pageNum];
@@ -1124,7 +1141,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
         ann.meta.exclusionReason = exclusionData.reason;
         ann.meta.exclusionComment = exclusionData.comment;
         ann.meta.isCaseInsensitive = exclusionData.isCaseInsensitive;
-        this.updateAnnotationVisibility(ann);
+        this.addAnnotation(ann, ann.pageNumber);
       }
     });
     this.renderFilterSettings();
