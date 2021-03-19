@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { annotationTypesMap } from '../../../../../shared/annotation-styles';
-import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
+import { EnrichWithGOTermsResult, EnrichmentVisualisationService } from '../../../../services/enrichment-visualisation.service';
 import { KeyValue } from '@angular/common';
 
 @Component({
@@ -16,6 +16,9 @@ export class ClustergramComponent implements OnChanges {
   goTerms: EnrichWithGOTermsResult[] = [];
   geneColor: string = annotationTypesMap.get('gene').color;
 
+  constructor(readonly enrichmentService: EnrichmentVisualisationService) {
+  }
+
   rowOrder(a: KeyValue<string, boolean[]>, b: KeyValue<string, boolean[]>) {
     return b.value.filter(d => d).length - a.value.filter(d => d).length;
   }
@@ -30,8 +33,9 @@ export class ClustergramComponent implements OnChanges {
       : this.data.slice(0, 25))
       .sort(this.columnOrder);
     const genes = new Map<string, boolean[]>();
-    data.forEach((goTerm, goIndex) => {
-      goTerm.geneNames.forEach(g => {
+    const {importGenes} = this.enrichmentService.enrichmentDocument;
+    data.forEach(({geneNames}, goIndex) => {
+      importGenes.filter(value => geneNames.includes(value)).forEach(g => {
         let geneRow = genes.get(g);
         if (!geneRow) {
           geneRow = new Array(data.length);
