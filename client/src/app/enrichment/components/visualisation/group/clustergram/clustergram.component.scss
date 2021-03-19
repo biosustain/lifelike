@@ -23,10 +23,11 @@ $background-color: white;
                     270deg, $background-color 0, transparent 1.5em);
   }
 
-  .fun {
+  .inner-wrapper {
     position: relative;
     overflow: scroll;
     scroll-snap-type: y mandatory;
+    min-height: 300px;
 
     table {
       margin-top: $tilted-text-estimate-space;
