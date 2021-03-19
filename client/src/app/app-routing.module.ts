@@ -119,7 +119,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     component: EnrichmentVisualisationViewerComponent,
     data: {
-      title: 'Enrichment Visualisation',
+      title: 'Statistical Enrichment',
       fontAwesomeIcon: 'chart-bar',
     },
   },

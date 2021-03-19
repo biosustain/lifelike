@@ -1,5 +1,5 @@
 import { Observable, of, concat, merge } from 'rxjs';
-import { mapBlobToBuffer, mapBufferToJson } from '../../shared/utils/files';
+import { mapBlobToBuffer } from '../../shared/utils/files';
 import { concatMap, first, map, mergeMap, switchMap, toArray } from 'rxjs/operators';
 import { EnrichmentTableService, EnrichmentWrapper, GoNode, NCBINode, NCBIWrapper, } from '../services/enrichment-table.service';
 import { nullCoalesce } from '../../shared/utils/types';

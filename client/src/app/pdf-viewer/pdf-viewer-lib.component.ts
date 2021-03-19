@@ -756,7 +756,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy {
             },
           },
           show: {
-            event: 'click',
             delay: 10,
           },
           hide: {
