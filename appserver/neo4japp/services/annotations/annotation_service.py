@@ -516,9 +516,7 @@ class AnnotationService:
                         gene_id = organisms_to_match[self.specified_organism.organism_id]  # noqa
                         category = self.specified_organism.category
                     except KeyError:
-                        raise AnnotationError(
-                            title='Unable to Annotate',
-                            message='Failed to find gene ID with fallback organism.')
+                        continue
 
                 if gene_id and category:
                     annotation = self._create_annotation_object(
