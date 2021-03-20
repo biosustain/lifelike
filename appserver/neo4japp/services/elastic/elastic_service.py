@@ -12,7 +12,7 @@ from typing import (
 from elasticsearch.helpers import parallel_bulk
 from flask import current_app
 from sqlalchemy import and_
-from sqlalchemy.orm import joinedload, raiseload, lazyload
+from sqlalchemy.orm import joinedload, raiseload
 
 from neo4japp.constants import FILE_INDEX_ID
 from neo4japp.database import db, get_file_type_service
@@ -25,9 +25,8 @@ from neo4japp.services.elastic import (
     ELASTIC_INDEX_SEED_PAIRS,
     ELASTIC_PIPELINE_SEED_PAIRS,
 )
-from neo4japp.services.file_types.providers import MapTypeProvider
 from neo4japp.utils import EventLog
-
+from app import app
 
 class ElasticService():
     def __init__(self, elastic):
@@ -110,6 +109,7 @@ class ElasticService():
 
         for (index_id, index_mapping_file) in ELASTIC_INDEX_SEED_PAIRS:
             self.update_or_create_index(index_id, index_mapping_file)
+        return 'done'
 
     def parallel_bulk_documents(self, documents):
         """Performs a series of bulk operations in elastic, determined by the `documents` input."""
@@ -176,10 +176,21 @@ class ElasticService():
             if not batch:
                 break
 
-            self.parallel_bulk_documents([
-                self._get_elastic_document(file, project, FILE_INDEX_ID) for
-                file, initial_id, level, project, *_ in batch
-            ])
+            self.parallel_bulk_documents(self._lazy_create_es_docs(batch))
+
+    def _lazy_create_es_docs(self, batch):
+        """
+        Creates a generator out of the elastic document creation
+        process to prevent loading everything into memory.
+        :param batch: results from the 'query.yield_per'
+        :return: indexable object in generator form
+        """
+
+        # Preserve context that is lost from threading when used
+        # with the elasticsearch parallel_bulk
+        with app.app_context():
+            for file, _, _, project, *_ in batch:
+                yield self._get_elastic_document(file, project, FILE_INDEX_ID)
 
     def _get_file_hierarchy_query(self, filter):
         """
@@ -210,6 +221,8 @@ class ElasticService():
             indexable_content = b''
             data_ok = False
 
+            # TODO: Threading caused us to lose context, but we should rethink
+            # how we do logging. Do we actually need to use the app_context?
             current_app.logger.error(
                 f'Failed to generate indexable data for file '
                 f'#{file.id} (hash={file.hash_id}, mime type={file.mime_type})',
