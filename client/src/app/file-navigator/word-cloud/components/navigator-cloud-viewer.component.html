@@ -21,12 +21,11 @@
                         <div class="d-flex align-items-center mr-3">
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input"
-                                       #toggleShownTextCheckbox
+                                       [id]="id + '-toggle-shown-text-checkbox'"
                                        [checked]="false"
                                        (change)="toggleShownText()">
-                                <label class="custom-control-label" [for]="toggleShownTextCheckbox">
-                                    Show Primary Names
-                                </label>
+                                <label class="custom-control-label" [for]="id + '-toggle-shown-text-checkbox'">Show
+                                    Primary Names</label>
                             </div>
                         </div>
                         <div class="btn-group ml-auto d-flex align-items-stretch" role="group">
@@ -95,6 +94,7 @@
                             ngbTooltip=""
                             [autoClose]="false"
                             triggers="manual"
+                            position="bottom"
                             #wordCloudTooltip="ngbTooltip"
                             tooltipClass="tooltip navigator-tooltip bg-white rounded p-2"
                         ></div>

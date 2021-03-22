@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, OnChanges } from '@angular/core';
 
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
 
