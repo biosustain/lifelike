@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 import { DataService } from '../../../../../shared/services/table.service';
 import { SortableTableHeaderDirective, SortEvent } from '../../../../../shared/directives/table-sortable-header.directive';
+import { EnrichWithGOTermsResult } from '../../../../services/enrichment-visualisation.service';
 
 
 @Component({
@@ -12,12 +13,11 @@ import { SortableTableHeaderDirective, SortEvent } from '../../../../../shared/d
   styleUrls: ['./table-complete.component.scss'],
   providers: [DataService, DecimalPipe]
 })
-export class TableCompleteComponent implements OnInit, OnChanges {
-  data$: Observable<any[]>;
+export class TableCompleteComponent implements OnChanges {
+  data$: Observable<EnrichWithGOTermsResult[]>;
   total$: Observable<number>;
-  showInsignificant: false;
-  @Input() data;
-  @Input() itemsPerPage;
+  @Input() data: EnrichWithGOTermsResult[];
+  @Input() itemsPerPage: number;
   @Input() showMore = true;
 
   @ViewChildren(SortableTableHeaderDirective) headers: QueryList<SortableTableHeaderDirective>;
@@ -25,11 +25,6 @@ export class TableCompleteComponent implements OnInit, OnChanges {
   constructor(public service: DataService) {
     this.data$ = service.data$;
     this.total$ = service.total$;
-  }
-
-  ngOnInit() {
-    this.service.pageSize = this.showMore ? 15 : 5;
-    this.setData();
   }
 
   ngOnChanges({showMore, data}: SimpleChanges) {
@@ -44,13 +39,13 @@ export class TableCompleteComponent implements OnInit, OnChanges {
     } else {
       this.service.pageSize = 15;
     }
-    if (data) {
+    if (data || showMore) {
       this.setData();
     }
   }
 
   setData() {
-    if (this.showInsignificant) {
+    if (this.showMore) {
       this.service.inputData = this.data;
     } else {
       this.service.inputData = this.data.filter(d => d['q-value'] <= 0.05);

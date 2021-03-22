@@ -51,13 +51,14 @@
                 </span>
               </div>
 
-              <div class="btn-group ml-2">
+              <!-- Decided to remove this for now, may bring back in the future. -->
+              <!-- <div class="btn-group ml-2">
                 <button type="button" class="btn btn-secondary"
                         ngbTooltip="Save" placement="bottom" container="body" (click)="save()"
                         [disabled]="!result.object.value.privileges.writable">
                   <i class="fa fa-fw fa-save"></i>
                 </button>
-              </div>
+              </div> -->
 
               <div class="btn-group ml-2">
                 <button class="btn btn-secondary"
@@ -85,7 +86,7 @@
                             result.object.value.hashId
                         ]"
                         [newTab]="true" [sideBySide]="true">
-                  <i class="fas fa-fw fa-chart-bar"></i> Open visualisation
+                  <i class="fas fa-fw fa-chart-bar"></i> Statistical Enrichment
                 </button>
                 <button class="btn btn-secondary"
                         [appLink]="[

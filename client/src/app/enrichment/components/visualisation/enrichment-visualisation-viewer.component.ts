@@ -7,6 +7,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
 import { EnrichmentVisualisationService, EnrichWithGOTermsResult } from '../../services/enrichment-visualisation.service';
 
+
 @Component({
   selector: 'app-enrichment-visualisation-viewer',
   templateUrl: './enrichment-visualisation-viewer.component.html',
@@ -24,14 +25,13 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  loadTableTask: BackgroundTask<null, [FilesystemObject, EnrichmentVisualisationData]>;
   object: FilesystemObject;
   groups = [
     'Biological Process',
     'Molecular Function',
     'Cellular Component'
   ];
-  data = new Map([
+  data = new Map<string, undefined | EnrichWithGOTermsResult[]>([
     ['BiologicalProcess', undefined],
     ['MolecularFunction', undefined],
     ['CellularComponent', undefined]
@@ -43,6 +43,11 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
 
   loadSubscription: Subscription;
 
+  // preserve sort for keyvalue pipe
+  originalOrder(a, b) {
+    return 0;
+  }
+
   ngOnInit() {
     this.enrichmentService.loadTaskMetaData.results$.subscribe(({result}) => {
       this.object = result;
@@ -52,10 +57,10 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
       this.enrichmentService.enrichWithGOTerms(analysis),
     );
 
-    this.loadSubscription = this.loadTask.results$.subscribe((result) => {
-      const data = result.result.sort((a, b) => a['p-value'] - b['p-value']);
+    this.loadSubscription = this.loadTask.results$.subscribe(({result}) => {
+      const data = result.sort((a, b) => a['p-value'] - b['p-value']);
       this.data.forEach((value, key, map) =>
-          map.set(key, data.filter(({goLabel}) => goLabel.includes(key)))
+        map.set(key, data.filter(({goLabel}) => goLabel.includes(key)) as EnrichWithGOTermsResult[])
       );
       this.loadingData = false;
     });

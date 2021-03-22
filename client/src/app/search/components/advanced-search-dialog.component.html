@@ -2,12 +2,13 @@
   <app-modal-header (cancel)="dismiss()">Advanced Search</app-modal-header>
 
   <app-modal-body>
-    <div>
+    <!-- <div>
       <div class="font-weight-bold mb-2">Find content</div>
-    </div>
+    </div> -->
+
     <!-- AND Words field -->
     <div class="form-group row">
-      <label class="col-sm-4 col-form-label">with <strong>all</strong> the words</label>
+      <label class="col-sm-4 col-form-label">Find:</label>
       <div class="col-sm-8">
         <input class="form-control border" formControlName="q">
         <app-form-input-feedback [control]="form.get('q')"></app-form-input-feedback>
@@ -16,7 +17,7 @@
 
     <!-- Types field -->
     <div class="form-group row">
-      <label class="col-sm-4 col-form-label">with these <strong>types</strong></label>
+      <label class="col-sm-4 col-form-label">Types:</label>
       <div class="col-sm-8">
         <app-select formId="types" [choices]="typeChoices"
                 [values]="form.value.types" (valuesChange)="form.get('types').setValue($event)"
@@ -28,7 +29,7 @@
 
     <!-- Projects field -->
     <div class="form-group row">
-      <label class="col-sm-4 col-form-label">in these <strong>projects</strong></label>
+      <label class="col-sm-4 col-form-label">Projects:</label>
       <div class="col-sm-8">
         <!-- TODO: Likely going to update this in the future to be a text search box. It's not reasonable to
           assume the list of accessible projects will remain small as the site grows. -->
@@ -42,16 +43,33 @@
 
     <div class="d-flex my-4 border-bottom"></div>
 
+    <div>
+      Tips:
+      <ul>
+        <li class="small-font">
+          Surround one or more words with " to create a phrase term. Ex: "Homo Sapiens"
+        </li>
+        <li class="small-font">
+          Use * in a word to match 0 or more characters. ? will match 0 or 1 characters. Ex: CO*ID, CO?ID
+        </li>
+      </ul>
+    </div>
+
+    <!--
+      Removing the "Phrase" and "Wildcard" fields for now. My intuition is that as the number of options grows, we're going to return to
+      this method of displaying them, because putting them all in a lengthy "Hint" is arguably far worse UX.
+    -->
+
     <!-- Phrase field -->
-    <div class="form-group row">
+    <!-- <div class="form-group row">
       <label class="col-sm-4 col-form-label">with the <strong>exact phrase</strong></label>
       <div class="col-sm-8">
         <input class="form-control border" formControlName="phrase" placeholder="e.g., patients with comorbidities">
       </div>
-    </div>
+    </div> -->
 
     <!-- Wildcards field -->
-    <div class="form-group row">
+    <!-- <div class="form-group row">
       <label class="col-sm-4 col-form-label">with the <strong>wildcard</strong> words</label>
       <div class="col-sm-8">
         <input class="form-control border" formControlName="wildcards" placeholder="e.g., C*ID, CO?ID">
@@ -59,7 +77,7 @@
           Use '*' anywhere in a word to match 0 or more characters. '?' will match 0 or 1 characters.
         </small>
       </div>
-    </div>
+    </div> -->
 
     <!-- TODOs -->
 
@@ -93,6 +111,11 @@
   </app-modal-body>
 
   <app-modal-footer>
+    <button type="button"
+            class="btn btn-secondary mr-1"
+            ngbTooltip="Reset Advanced Options"
+            placement="top"
+            (click)="resetForm()"><i class="fa fa-sync"></i></button>
     <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i></button>
   </app-modal-footer>
 </form>

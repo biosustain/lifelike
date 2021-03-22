@@ -94,17 +94,13 @@ class TokenService:
         # display an error message about
         # authorization header (for security purposes)?
         except InvalidTokenError:
-            current_app.logger.error(
-                'Could not decode INVALID authentication token.',
-                extra=EventLog(event_type='token authorization').to_dict()
-            )
-            raise JWTTokenException()
+            raise JWTTokenException(
+                title='Failed to Authenticate',
+                message='The current authentication session is invalid, please try logging back in.')  # noqa
         except ExpiredSignatureError:
-            current_app.logger.error(
-                'Could not decode EXPIRED authentication token.',
-                extra=EventLog(event_type='token authorization').to_dict()
-            )
-            raise JWTTokenException()
+            raise JWTTokenException(
+                title='Failed to Authenticate',
+                message='The current authentication session has expired, please try logging back in.')  # noqa
         else:
             return jwt_resp
 
@@ -125,7 +121,9 @@ def verify_token(token):
             # NOTE: is this better than avoiding to
             # display an error message about
             # authorization header (for security purposes)?
-            raise JWTAuthTokenException()
+            raise JWTAuthTokenException(
+                title='Failed to Authenticate',
+                message='There was a problem verifying the authentication session, please try again.')  # noqa
         else:
             token = token.split(' ')[-1].strip()
             try:
@@ -143,8 +141,7 @@ def verify_token(token):
     else:
         raise ServerException(
             title='Failed to Authenticate',
-            message='There was a problem authenticating, please try again.',
-            code=404)
+            message='There was a problem authenticating, please try again.')
 
 
 @bp.route('/refresh', methods=['POST'])
