@@ -1,9 +1,22 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  ViewChild,
+  ViewEncapsulation,
+  OnChanges,
+  EventEmitter,
+  Output
+} from '@angular/core';
 
 import { WordCloudFilterEntity } from 'app/interfaces/filter.interface';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
+import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 /**
  * Throttles calling `fn` once per animation frame
@@ -47,7 +60,7 @@ function deepCopy(data) {
 const createResizeObserver = (callback, container) => {
   const resize = throttled(async (width, height) => {
     const w = container.clientWidth;
-    await callback(width, height - 42);
+    await callback(width, height);
     if (w < container.clientWidth) {
       // If the container size shrank during chart resize, let's assume
       // scrollbar appeared. So we resize again with the scrollbar visible -
@@ -84,13 +97,11 @@ const createResizeObserver = (callback, container) => {
   styleUrls: ['./word-cloud.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class WordCloudComponent implements AfterViewInit, OnDestroy {
+export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
   @ViewChild('cloudWrapper', {static: false}) cloudWrapper!: ElementRef;
   @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
   @ViewChild('svg', {static: false}) svg!: ElementRef;
   @ViewChild('g', {static: false}) g!: ElementRef;
-
-  private _data: (string | WordCloudNode)[] = [];
 
   clickableWords = false;
   WORD_CLOUD_MARGIN = 10;
@@ -105,8 +116,50 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
   MIN_FONT = 12;
   MAX_FONT = 48;
 
-  private layout: any;
+  layout: any;
   resizeObserver: any;
+
+  $wordElements;
+  $wordElementsPipe;
+
+  enter(elements: any) {
+    return elements
+      .append('text')
+      .style('fill', ({color}) => color)
+      .attr('text-anchor', 'middle')
+      .text(({text}) => text);
+  }
+
+  @Output('enter') enterPatch: EventEmitter<any> = new EventEmitter();
+
+  @Output('update') updatePatch: EventEmitter<any> = new EventEmitter();
+
+  update(elements: any) {
+    return elements;
+  }
+
+  join(elements: any) {
+    return elements
+      .style('font-size', (d) => d.size + 'px')
+      .call((transElements: any) =>
+        transElements
+          .transition()
+          .attr('transform', (d) => {
+            return 'translate(' + [d.x, d.y] + ') rotate(' + d.rotate + ')';
+          })
+          .ease(d3.easeSin)
+          .duration(1000)
+      );
+  }
+
+  @Output('join') joinPatch: EventEmitter<any> = new EventEmitter();
+
+  exit(elements: any) {
+    return elements
+      .remove();
+  }
+
+  @Output('exit') exitPatch: EventEmitter<any> = new EventEmitter();
 
   constructor() {
     this.layout = cloud()
@@ -115,23 +168,56 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
       // http://rocha.la/JavaScript-bitwise-operators-in-practice
       // tslint:disable-next-line:no-bitwise
       .rotate(d => d.rotate || (~~(Math.random() * 6) - 3) * 30);
+
+    this.$wordElements = new BehaviorSubject([]);
+    this.$wordElementsPipe = this.$wordElements.pipe(
+      map((placedWords: any) => {
+        const elements = d3.select(this.g.nativeElement)
+          .selectAll('text')
+          .data(placedWords, ({text}) => text);
+        return this.join(
+          elements
+            .join(
+              enter => this.enter(enter)
+                .call(e =>
+                  this.enterPatch.emit(e)
+                ),
+              update => this.update(update)
+                .call(e => this.updatePatch.emit(e)),
+              exit => this.exit(exit)
+                .call(e => this.exitPatch.emit(e))
+            )
+        )
+          .call(e => this.joinPatch.emit(e));
+      })
+    );
   }
 
-  @Input('data') set data(data) {
-    console.count('set data');
-    const count: any = {};
-    if (Array.isArray(data) && data.every(d => typeof d === 'string' && (count[d] = (count[d] || 0) + 1))) {
-      this._data = Object.entries(count).map(([text, frequency]) => ({text, frequency}));
-    } else {
-      this._data = deepCopy(data);
-    }
-    if (this.svg) {
-      this.updateLayout(this._data).then(this.updateDOM.bind(this));
-    }
-  }
+  @Input('data') data = [];
 
-  get data() {
-    return this._data;
+
+  // set data(data) {
+  //   console.count('set data');
+  //   const count: any = {};
+  //   if (Array.isArray(data) && data.every(d => typeof d === 'string' && (count[d] = (count[d] || 0) + 1))) {
+  //     this._data = Object.entries(count).map(([text, frequency]) => ({text, frequency}));
+  //   } else {
+  //     this._data = deepCopy(data);
+  //   }
+  //   if (this.svg) {
+  //     this.updateLayout(this._data);
+  //   }
+  //   this.updateLayout(this._data);
+  // }
+  //
+  // get data() {
+  //   return this._data;
+  // }
+
+  ngOnChanges({data}) {
+    if (data && !data.firstChange) {
+      this.updateLayout(data.currentValue);
+    }
   }
 
 
@@ -139,8 +225,13 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
     console.count('ngAfterViewInit');
     const {width, height} = this.getCloudSvgDimensions();
     this.layout.canvas(this.hiddenTextAreaWrapper.nativeElement);
-    this.onResize(width, height).then();
+    this.onResize(width, height);
     this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.cloudWrapper.nativeElement);
+
+    this.$wordElementsPipe.subscribe(d => {
+      console.log(`Word elements: ${d}`);
+    });
+    this.updateLayout(this.data);
   }
 
   ngOnDestroy() {
@@ -162,7 +253,7 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
 
     this.layout.size([width, height]);
 
-    return this.updateLayout(this.data).then(this.updateDOM.bind(this));
+    return this.updateLayout(this.data);
   }
 
   getFontSize(normSize) {
@@ -173,16 +264,16 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
    * Draws a word cloud with the given FilterEntity inputs using the d3.layout.cloud library.
    * @param data represents a collection of FilterEntity data
    */
-  updateLayout(data) {
+  updateLayout(data: []) {
     console.count('updateLayout');
-    // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
-    const freqValues = data.map(d => d.frequency as number);
-    const maximumCount = Math.max(...freqValues);
-    const minimumCount = Math.min(...freqValues);
+    if (data.length) {
+      // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
+      const freqValues = data.map(d => d.frequency as number);
+      const maximumCount = Math.max(...freqValues);
+      const minimumCount = Math.min(...freqValues);
 
-    return new Promise(resolve => {
       // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
-      this.layout
+      return this.layout
         .words(data)
         .fontSize(d => this.getFontSize((d.frequency - minimumCount) / maximumCount))
         .on('end', placedWords => {
@@ -190,11 +281,12 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
           if (notPlaced) {
             console.warn(`${notPlaced} words did not fit into cloud`);
           }
-          resolve(placedWords);
+          this.$wordElements.next(placedWords);
         })
         .start();
-    });
-
+    } else {
+      this.$wordElements.next([]);
+    }
   }
 
 
@@ -212,41 +304,41 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
   }
 
 
-  /**
-   * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
-   * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
-   */
-  /**
-   * Updates the word cloud svg and related elements. Distinct from createInitialWordCloudElements in that it finds the existing elements
-   * and updates them if possible. Any existing words will be re-scaled and moved to their new positions, removed words will be removed,
-   * and added words will be drawn.
-   * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
-   */
-  private updateDOM(words) {
-    // Get the word elements
-    const wordElements = d3.select(this.g.nativeElement)
-      .selectAll('text')
-      .data(words, (d) => d.text);
-
-    // Remove any words that have been removed by either the algorithm or the user
-    wordElements.exit().remove();
-
-    // Add any new words
-    return wordElements
-      .enter()
-      .append('text')
-      .attr('text-anchor', 'middle')
-      .text((d) => d.text)
-      .merge(wordElements)
-      .style('fill', (d) => d.color)
-      .style('font-size', (d) => d.size + 'px')
-      .transition()
-      .attr('transform', (d) => {
-        return 'translate(' + [d.x, d.y] + ') rotate(' + d.rotate + ')';
-      })
-      .ease(d3.easeSin)
-      .duration(1000);
-  }
+  // /**
+  //  * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
+  //  * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
+  //  */
+  // /**
+  //  * Updates the word cloud svg and related elements. Distinct from createInitialWordCloudElements in that it finds the existing elements
+  //  * and updates them if possible. Any existing words will be re-scaled and moved to their new positions, removed words will be removed,
+  //  * and added words will be drawn.
+  //  * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
+  //  */
+  // private updateDOM(words) {
+  //   // Get the word elements
+  //   const wordElements = d3.select(this.g.nativeElement)
+  //     .selectAll('text')
+  //     .data(words, (d) => d.text);
+  //
+  //   // Remove any words that have been removed by either the algorithm or the user
+  //   wordElements.exit().remove();
+  //
+  //   // Add any new words
+  //   const enter = this.enter(
+  //     wordElements
+  //       .enter()
+  //   );
+  //
+  //   const update = this.update(
+  //     enter
+  //       .merge(wordElements)
+  //   );
+  //
+  //   // Add any new words
+  //   return this.transition(update
+  //     .transition()
+  //   );
+  // }
 
 
 }

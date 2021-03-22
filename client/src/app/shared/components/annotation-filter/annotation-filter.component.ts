@@ -4,7 +4,7 @@ import {
   Input,
   OnDestroy,
   OnInit,
-  Output,
+  Output, ViewChild,
 } from '@angular/core';
 import {
   FormControl,
@@ -13,8 +13,6 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-
-import { uniqueId } from 'lodash';
 
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -28,7 +26,7 @@ import {
   DefaultOrderByOptions,
   OrderDirection,
 } from 'app/interfaces/annotation-filter.interface';
-import {SortingAlgorithm} from '../../../word-cloud/sorting/sorting-algorithms';
+import { SortingAlgorithm } from '../../schemas/common';
 
 @Component({
   selector: 'app-annotation-filter',
@@ -36,8 +34,6 @@ import {SortingAlgorithm} from '../../../word-cloud/sorting/sorting-algorithms';
   styleUrls: ['./annotation-filter.component.scss'],
 })
 export class AnnotationFilterComponent<T extends AnnotationFilterEntity> implements OnInit, OnDestroy {
-  id = uniqueId('AnnotationFilterComponent-');
-
   _annotationData: T[];
   @Input() set annotationData(data: T[]) {
     this._annotationData = data;
@@ -78,9 +74,6 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
   filtersForm: FormGroup;
   filtersFormValueChangesSub: Subscription;
 
-  minimumValueInputId: string;
-  maximumValueInputId: string;
-
   selectedGroupByOption: string;
   selectedOrderByOption: string;
   selectedOrderDirection: string;
@@ -92,6 +85,9 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
 
   initialized = false;
 
+  @ViewChild('minimumValueInputId', {static: false}) minimumValueInputId;
+  // @ViewChild('maximumValueInputId', {static: false}) maximumValueInputId;
+
   constructor() {
     this.outputSubject = new Subject<boolean>();
 
@@ -101,9 +97,6 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
 
     this.selectedOrderByOption = DefaultOrderByOptions.FREQUENCY;
     this.selectedOrderDirection = OrderDirection.DESCENDING;
-
-    this.minimumValueInputId = `${this.id}-mininum-frequency-input`;
-    this.maximumValueInputId = `${this.id}-maximum-frequency-input`;
 
     this.wordVisibilityOutput = new EventEmitter<Map<string, boolean>>();
 
