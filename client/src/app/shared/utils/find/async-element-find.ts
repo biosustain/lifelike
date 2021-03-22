@@ -1,17 +1,21 @@
+import { escapeRegExp } from 'lodash';
+
 import {
   NodeTextRange,
   nonStaticPositionPredicate,
   scrollRectIntoView,
   walkParentElements,
 } from '../dom';
-import { escapeRegExp } from 'lodash';
-import { AsyncFindController } from './find-controller';
 import { AsyncTextHighlighter } from '../dom/async-text-highlighter';
+
+import { AsyncFindController } from './find-controller';
 
 /**
  * A find controller for finding items within an element.
  */
 export class AsyncElementFind implements AsyncFindController {
+
+  private pendingJump = false;
 
   target: Element;
   scrollToOffset = 100;
@@ -54,6 +58,7 @@ export class AsyncElementFind implements AsyncFindController {
     // Start find process if needed
     if (this.query.length) {
       this.textFinder.find(this.target, this.query);
+      this.pendingJump = true;
     } else {
       this.textFinder.stop();
     }
@@ -122,6 +127,11 @@ export class AsyncElementFind implements AsyncFindController {
   private matchFind(matches: NodeTextRange[]) {
     this.highlighter.addAll(matches);
     this.results.push(...matches);
+
+    if (this.pendingJump) {
+      this.pendingJump = false;
+      this.visitResult();
+    }
   }
 
   private findHighlightContainerElement(start: Element): Element {
