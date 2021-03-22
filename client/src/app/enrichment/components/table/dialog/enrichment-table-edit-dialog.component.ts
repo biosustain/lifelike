@@ -19,6 +19,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
   @Input() submitButtonLabel = 'Save';
   @Input() fileId: string;
   @Input() promptObject = true;
+  @Input() fileType: string;
 
   organismTaxId: string;
   domains: string[] = [];
