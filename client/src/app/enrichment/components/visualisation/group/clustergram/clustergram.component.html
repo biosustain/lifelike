@@ -1,22 +1,32 @@
-<table class="table table-striped column-hover">
-    <thead>
-    <tr>
-        <th></th>
-        <th scope="col" *ngFor="let goTerm of goTerms">
-            <div>
-            <span [ngbTooltip]="goTerm.goTerm"
-                  tooltipClass="rotatedTooltip"
-                  placement="bottom-left bottom-right"
-                  closeDelay="10">
-                {{goTerm.goId}}</span>
-            </div>
-        </th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr *ngFor="let entry of genes | keyvalue">
-        <th scope="row">{{ entry.key }}</th>
-        <td *ngFor="let value of entry.value" [ngClass]="{match:value}"></td>
-    </tr>
-    </tbody>
-</table>
+<div class="clustergram-wrapper">
+    <div class="inner-wrapper" [style.height.em]="genes.size*2.5 + 8.5">
+        <table class="table table-striped column-hover">
+            <thead>
+            <tr>
+                <th></th>
+                <th scope="col" *ngFor="let goTerm of goTerms">
+                    <div>
+                        <ng-template #tooltip>
+                            {{goTerm.goTerm}} ({{goTerm.goId}})
+                        </ng-template>
+                    <span [ngbTooltip]="tooltip"
+                          container="body"
+                          tooltipClass="rotatedTooltip"
+                          placement="bottom-left bottom-right">
+                        {{goTerm.goTerm}}</span>
+                    </div>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let entry of genes | keyvalue: rowOrder">
+                <th scope="row">{{ entry.key }}</th>
+                <td *ngFor="let value of entry.value"
+                    [ngClass]="{match:value}"
+                    [style.backgroundColor]="value && geneColor"
+                ></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

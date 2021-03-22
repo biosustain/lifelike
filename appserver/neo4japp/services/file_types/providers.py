@@ -134,10 +134,11 @@ class MapTypeProvider(BaseFileTypeProvider):
         }
 
         for node in content_json.get('nodes', []):
+            node_data = node.get('data', {})
             map_data['nodes'].append({
                 'label': node.get('label', ''),
                 'display_name': node.get('display_name', ''),
-                'detail': node.get('detail', ''),
+                'detail': node_data.get('detail', '') if node_data else '',
             })
 
         for edge in content_json.get('edges', []):

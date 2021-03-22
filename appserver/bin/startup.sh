@@ -3,7 +3,7 @@
 set -o errexit                  # exit on command failure; use <cmd> || true to allow for exception
 set -o nounset                  # exit when script tries to use undeclared variables
 
-if [ "${FLASK_ENV}" = "development" ]; then
+if [ "${FLASK_ENV}" = "development" ] && [ "${FLASK_APP_CONFIG}" = "Development" ]; then
     echo "### Starting up development environment ###"
     __dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     # wait for postgres
@@ -19,7 +19,7 @@ if [ "${FLASK_ENV}" = "development" ]; then
     # Mark ready
     touch .READY
     flask run --host 0.0.0.0
-elif [ "${FLASK_ENV}" = "production" ]; then
+elif [ "${FLASK_APP_CONFIG}" = "Production" ] || [ "${FLASK_APP_CONFIG}" = "Staging" ] || [ "${FLASK_APP_CONFIG}" = "QA" ]; then
     gunicorn -b 0.0.0.0:5000 -w 4 app:app --timeout 1200
 else
     echo "No environment setup for ${FLASK_ENV}"

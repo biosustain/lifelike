@@ -64,18 +64,3 @@ def enrich_go(args):
     return redis_cached(
             cache_id, partial(enrichment_visualisation.enrich_go, gene_names, analysis, organism)
     ), dict(mimetype='application/json')
-
-
-@bp.route('/get_GO_significance', methods=['POST'])
-@auth.login_required
-@use_args(GeneOrganismSchema)
-def go_significance(args):
-    gene_names = args['geneNames']
-    organism = args['organism']
-    cache_id = '_'.join(['go_significance', ','.join(gene_names), str(organism)])
-    enrichment_visualisation = get_enrichment_visualisation_service()
-    return redis_cached(
-            cache_id,
-            partial(enrichment_visualisation.get_go_significance, gene_names, organism),
-            dump=json.dumps
-    ), dict(mimetype='application/json')
