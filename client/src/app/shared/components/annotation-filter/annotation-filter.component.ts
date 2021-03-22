@@ -1,18 +1,5 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output, ViewChild,
-} from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, OnChanges, } from '@angular/core';
+import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
 
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -33,7 +20,7 @@ import { SortingAlgorithm } from '../../schemas/common';
   templateUrl: './annotation-filter.component.html',
   styleUrls: ['./annotation-filter.component.scss'],
 })
-export class AnnotationFilterComponent<T extends AnnotationFilterEntity> implements OnInit, OnDestroy {
+export class AnnotationFilterComponent<T extends AnnotationFilterEntity> implements OnInit, OnDestroy, OnChanges {
   _annotationData: T[];
   @Input() set annotationData(data: T[]) {
     this._annotationData = data;
@@ -55,11 +42,27 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
       this.outputSubject.next();
     }
   }
+
   get annotationData() {
     return this._annotationData;
   }
+
   @Output() wordVisibilityOutput: EventEmitter<Map<string, boolean>>;
-  @Input() sortingAlgorithm: SortingAlgorithm;
+  _sortingAlgorithm: SortingAlgorithm;
+  @Input() set sortingAlgorithm(sa: SortingAlgorithm) {
+    this._sortingAlgorithm = sa;
+    this.setDefaultFrequency();
+  }
+
+  get sortingAlgorithm() {
+    return this._sortingAlgorithm;
+  }
+
+  ngOnChanges({sortingAlgorithm}) {
+    if (sortingAlgorithm) {
+      console.log(sortingAlgorithm);
+    }
+  }
 
   outputSubject: Subject<boolean>;
   outputSubjectSub: Subscription;
@@ -86,6 +89,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
   initialized = false;
 
   @ViewChild('minimumValueInputId', {static: false}) minimumValueInputId;
+
   // @ViewChild('maximumValueInputId', {static: false}) maximumValueInputId;
 
   constructor() {
@@ -107,12 +111,23 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     this.legend = new Map<string, string>();
   }
 
+  setDefaultFrequency() {
+    const {filtersForm, sortingAlgorithm} = this;
+    if (filtersForm && sortingAlgorithm.hasOwnProperty('default')) {
+      this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default);
+    }
+  }
+
   ngOnInit() {
     const validators = [
       Validators.required
     ];
-    if (this.sortingAlgorithm.hasOwnProperty('min')) { validators.push(Validators.min(this.sortingAlgorithm.min)); }
-    if (this.sortingAlgorithm.step === 1) { validators.push(Validators.pattern(/^-?[0-9]*\.?[0-9]*$/)); }
+    if (this.sortingAlgorithm.hasOwnProperty('min')) {
+      validators.push(Validators.min(this.sortingAlgorithm.min));
+    }
+    if (this.sortingAlgorithm.step === 1) {
+      validators.push(Validators.pattern(/^-?[0-9]*\.?[0-9]*$/));
+    }
     this.filtersForm = new FormGroup(
       // Form controls
       {
@@ -128,7 +143,8 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     );
 
     // The very first time we get the annotationData, set the default values for the frequency filters
-    if (this.sortingAlgorithm.hasOwnProperty('default')) { this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default); }
+    this.setDefaultFrequency();
+
     // TODO: Uncomment if we bring back max frequency
     // this.filtersForm.get('maximumValue').setValue(this.annotationData[0].frequency);
 
@@ -466,8 +482,8 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
       const maxFreqControl = fg.get('maximumValue');
 
       if (minFreqControl.value > maxFreqControl.value) {
-        minFreqControl.setErrors({ ...minFreqControl.errors, badMinMax: true });
-        maxFreqControl.setErrors({ ...maxFreqControl.errors, badMinMax: true });
+        minFreqControl.setErrors({...minFreqControl.errors, badMinMax: true});
+        maxFreqControl.setErrors({...maxFreqControl.errors, badMinMax: true});
       } else {
         let minFreqControlErrors = minFreqControl.errors;
         let maxFreqControlErrors = maxFreqControl.errors;

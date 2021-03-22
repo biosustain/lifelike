@@ -64,8 +64,8 @@
     <legend>Grouping</legend>
 
     <div class="form-group d-flex align-items-center">
-      <label [for]="groupByOptionsEl" class="my-0 mr-2 text-nowrap">Group By:</label>
-      <select [(ngModel)]="selectedGroupByOption" class="custom-select" #groupByOptionsEl
+      <label [for]="id + '-group-by-options'" class="my-0 mr-2 text-nowrap">Group By:</label>
+      <select [(ngModel)]="selectedGroupByOption" class="custom-select" [id]="id + '-group-by-options'"
               (change)="groupAndSortData()">
         <option *ngFor="let option of groupByOptions" [value]="option">
           {{option}}
@@ -114,14 +114,14 @@
   <div *ngFor="let keyvalue of legend | keyvalue">
     <div *ngIf="disabledTypeMap.get(keyvalue.key); else notDisabled">
       <div class="custom-control custom-checkbox">
-        <input #legendFilter
+        <input [id]="id + '-legend-filter-' + keyvalue.key"
                class="custom-control-input"
                type="checkbox"
                value="1"
                [checked]="isTypeVisible(keyvalue.key)"
                (change)="changeTypeVisibility(keyvalue.key, $event)">
         <label class="custom-control-label text-nowrap"
-               [for]="legendFilter"
+               [for]="id + '-legend-filter-' + keyvalue.key"
                [autoClose]="false"
                container="body"
                placement="right bottom top"
@@ -133,13 +133,13 @@
     </div>
     <ng-template #notDisabled>
       <div class="custom-control custom-checkbox">
-        <input #legendFilter
+        <input [id]="id + '-legend-filter-' + keyvalue.key"
                class="custom-control-input"
                type="checkbox"
                value="1"
                [checked]="isTypeVisible(keyvalue.key)"
                (change)="changeTypeVisibility(keyvalue.key, $event)">
-        <label class="custom-control-label text-nowrap" [for]="legendFilter">
+        <label class="custom-control-label text-nowrap" [for]="id + '-legend-filter-' + keyvalue.key">
           <span class="entity-type-legend" [ngStyle]="{background: keyvalue.value}"></span> {{keyvalue.key}}
         </label>
       </div>
@@ -158,12 +158,12 @@
     <div *cdkVirtualFor="let data of annotationVisibility; templateCacheSize: 0" class="virtual-scroll-item">
       <div class="d-flex align-items-center text-overflow">
         <div class="custom-control custom-checkbox">
-          <input #filter
+          <input [id]="id + 'filter-' + data.identifier"
                 class="custom-control-input"
                 type="checkbox"
                 [checked]="data.visible"
                 (change)="changeWordVisibility(data.identifier, $event)">
-          <label class="custom-control-label text-nowrap" [for]="filter">
+          <label class="custom-control-label text-nowrap" [for]="id + 'filter-' + data.identifier">
             <ng-container *ngIf="!clickableWords; else showClickableWords">
               <div class="text-overflow">
                 <span class="entity-type-legend"
