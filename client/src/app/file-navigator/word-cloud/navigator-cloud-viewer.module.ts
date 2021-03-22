@@ -4,10 +4,11 @@ import { CommonModule } from '@angular/common';
 import { SharedModule } from 'app/shared/shared.module';
 
 import {SortingAlgorithmsComponent} from './sorting/sorting-algorithms.component';
-import { WordCloudComponent } from './components/word-cloud.component';
+import { NavigatorCloudViewerComponent } from './components/navigator-cloud-viewer.component';
+import { WordCloudModule } from '../../shared/components/word-cloud/word-cloud.module';
 
 const components = [
-  WordCloudComponent,
+  NavigatorCloudViewerComponent,
   SortingAlgorithmsComponent,
 ];
 
@@ -16,8 +17,9 @@ const components = [
   imports: [
     CommonModule,
     SharedModule,
+    WordCloudModule,
   ],
   exports: components,
 })
-export class WordCloudModule {
+export class NavigatorCloudViewerModule {
 }

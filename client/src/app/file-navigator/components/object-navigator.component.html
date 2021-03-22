@@ -45,8 +45,8 @@
 
         <div class="module-body flex-fill" *ngIf="object.hasWordCloud"
              style="height: 100%; min-height: 60vh">
-          <app-word-cloud [object]="object" [clickableWords]="true"
-                          (wordOpen)="openWord($event.entity, $event.keywordsShown)"></app-word-cloud>
+          <app-navigator-cloud-viewer [object]="object" [clickableWords]="true"
+                                      (wordOpen)="openWord($event.entity, $event.keywordsShown)"></app-navigator-cloud-viewer>
         </div>
 
         <div class="module-body border-top" *ngIf="object.isAnnotatable">
