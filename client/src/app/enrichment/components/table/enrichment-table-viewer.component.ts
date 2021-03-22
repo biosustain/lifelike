@@ -181,6 +181,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
     dialogRef.componentInstance.object = object;
     dialogRef.componentInstance.document = document;
     dialogRef.componentInstance.fileId = this.fileId;
+    dialogRef.componentInstance.fileType = object.mimeType;
     return dialogRef.result.then((result: EnrichmentTableEditDialogValue) => {
       this.queuedChanges$.next({
         ...(this.queuedChanges$.value || {}),
