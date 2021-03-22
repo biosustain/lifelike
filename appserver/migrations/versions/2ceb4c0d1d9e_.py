@@ -73,11 +73,10 @@ def data_upgrades():
                 filename_dupe_count += 1
                 renamed_fi = f'{renamed_fi} ({filename_dupe_count})'
             else:
-                break
-            finally:
                 session.commit()
+                break
+
         logger.debug(f'Renaming file: <{file_name}> to <{renamed_fi}>')
-    session.commit()
 
 def data_downgrades():
     """Add optional data downgrade migrations here"""
