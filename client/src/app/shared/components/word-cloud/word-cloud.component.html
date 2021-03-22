@@ -1,6 +1,9 @@
-<div #cloudWrapper class="h-100 w-100 overflow-hidden min-h-100-l">
-  <svg #svg>
-    <g #g></g>
-  </svg>
+<div #cloudWrapper class="h-100 w-100 overflow-hidden min-h-100-l cloud-wrapper">
+    <svg #svg>
+        <g #g></g>
+    </svg>
+    <canvas #hiddenTextAreaWrapper style="display: none;"></canvas>
+    <div class="overlayered-children">
+        <ng-content></ng-content>
+    </div>
 </div>
-<canvas #hiddenTextAreaWrapper style="display: none;"></canvas>

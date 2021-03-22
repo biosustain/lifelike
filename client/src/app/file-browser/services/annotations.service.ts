@@ -15,10 +15,7 @@ import {
   AnnotationSelectionResponse,
 } from '../schema';
 import { map } from 'rxjs/operators';
-import { ResultList, ResultMapping } from '../../shared/schemas/common';
-import {
-  SortingAlgorithmId
-} from '../../word-cloud/sorting/sorting-algorithms';
+import { ResultList, ResultMapping, SortingAlgorithmId } from '../../shared/schemas/common';
 
 @Injectable()
 export class AnnotationsService {
