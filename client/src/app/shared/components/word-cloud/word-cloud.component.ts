@@ -195,27 +195,17 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   @Input('data') data = [];
 
-
-  // set data(data) {
-  //   console.count('set data');
-  //   const count: any = {};
-  //   if (Array.isArray(data) && data.every(d => typeof d === 'string' && (count[d] = (count[d] || 0) + 1))) {
-  //     this._data = Object.entries(count).map(([text, frequency]) => ({text, frequency}));
-  //   } else {
-  //     this._data = deepCopy(data);
-  //   }
-  //   if (this.svg) {
-  //     this.updateLayout(this._data);
-  //   }
-  //   this.updateLayout(this._data);
-  // }
-  //
-  // get data() {
-  //   return this._data;
-  // }
-
   ngOnChanges({data}) {
     if (data && !data.firstChange) {
+      console.count('set data');
+      const count: any = {};
+      let _data;
+      if (Array.isArray(data) && data.every(d => typeof d === 'string' && (count[d] = (count[d] || 0) + 1))) {
+        _data = Object.entries(count).map(([text, frequency]) => ({text, frequency}));
+      } else {
+        _data = deepCopy(data);
+      }
+      this.updateLayout(_data);
       this.updateLayout(data.currentValue);
     }
   }
@@ -302,43 +292,5 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
       height: cloudWrapper.offsetHeight - margin.top - margin.bottom
     };
   }
-
-
-  // /**
-  //  * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
-  //  * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
-  //  */
-  // /**
-  //  * Updates the word cloud svg and related elements. Distinct from createInitialWordCloudElements in that it finds the existing elements
-  //  * and updates them if possible. Any existing words will be re-scaled and moved to their new positions, removed words will be removed,
-  //  * and added words will be drawn.
-  //  * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
-  //  */
-  // private updateDOM(words) {
-  //   // Get the word elements
-  //   const wordElements = d3.select(this.g.nativeElement)
-  //     .selectAll('text')
-  //     .data(words, (d) => d.text);
-  //
-  //   // Remove any words that have been removed by either the algorithm or the user
-  //   wordElements.exit().remove();
-  //
-  //   // Add any new words
-  //   const enter = this.enter(
-  //     wordElements
-  //       .enter()
-  //   );
-  //
-  //   const update = this.update(
-  //     enter
-  //       .merge(wordElements)
-  //   );
-  //
-  //   // Add any new words
-  //   return this.transition(update
-  //     .transition()
-  //   );
-  // }
-
 
 }
