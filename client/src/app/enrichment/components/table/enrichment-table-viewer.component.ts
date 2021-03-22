@@ -1,5 +1,5 @@
 import {
-  AfterViewChecked,
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -7,40 +7,45 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  QueryList,
   ViewChild,
+  ViewChildren,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
+
+import { isNullOrUndefined } from 'util';
+
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { ObjectVersion } from 'app/file-browser/models/object-version';
+import { ObjectUpdateRequest } from 'app/file-browser/schema';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
 
-import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
 import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
-import { ObjectUpdateRequest } from '../../../file-browser/schema';
 import { EnrichmentTableService } from '../../services/enrichment-table.service';
-import { FilesystemService } from '../../../file-browser/services/filesystem.service';
-import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
-import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
 import { EnrichmentTableEditDialogComponent, EnrichmentTableEditDialogValue } from './dialog/enrichment-table-edit-dialog.component';
-import { AsyncElementFind } from '../../../shared/utils/find/async-element-find';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
   templateUrl: './enrichment-table-viewer.component.html',
   styleUrls: ['./enrichment-table-viewer.component.scss'],
 })
-export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
   @ViewChild('tableScroll', {static: false}) tableScrollRef: ElementRef;
-  @ViewChild('findTarget', {static: false}) findTargetRef: ElementRef;
+  @ViewChildren('findTarget') findTarget: QueryList<ElementRef>;
 
   fileId: string;
   object$: Observable<FilesystemObject> = new Subject();
@@ -48,6 +53,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   table$: Observable<EnrichmentTable> = new Subject();
   scrollTopAmount: number;
   findController = new AsyncElementFind();
+  findTargetChangesSub: Subscription;
   private tickAnimationFrameId: number;
 
   /**
@@ -66,6 +72,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
               protected readonly changeDetectorRef: ChangeDetectorRef,
               protected readonly elementRef: ElementRef) {
     this.fileId = this.route.snapshot.params.file_id || '';
+    this.findController.query = this.parseQueryFromUrl(this.route.snapshot.fragment);
   }
 
   ngOnInit() {
@@ -89,18 +96,36 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     this.tickAnimationFrameId = requestAnimationFrame(this.tick.bind(this));
   }
 
-  ngAfterViewChecked() {
-    if (this.tableScrollRef && this.findTargetRef) {
-      // Set the find controller target to the table body, otherwise we'll also be searching the headers. At first glance this might make
-      // sense, but the sticky headers make rendering the highlights kind of funky, and probably the user doesn't care about them anyway.
-      this.findController.target = this.findTargetRef.nativeElement.getElementsByTagName('tbody')[0];
-    } else {
-      this.findController.target = null;
-    }
+  ngAfterViewInit() {
+    this.findTargetChangesSub = this.findTarget.changes.subscribe({
+      next: () => {
+        if (this.findTarget.first) {
+          this.findController.target = this.findTarget.first.nativeElement.getElementsByTagName('tbody')[0];
+          // This may seem like an anti-pattern -- and it probably is -- but there is seemingingly no other way around Angular's
+          // `ExpressionChangedAfterItHasBeenCheckedError` here. Even Angular seems to think so, as they use this exact pattern in their
+          // own example: https://angular.io/api/core/ViewChildren#another-example
+          setTimeout(() => {
+            // TODO: Need to have a brief background color animation when the table is loaded and the first match is rendered. (?)
+            // Actually not sure if this the desired behavior.
+            this.findController.nextOrStart();
+          }, 0);
+        } else {
+          this.findController.target = null;
+        }
+      }
+    });
   }
 
   ngOnDestroy() {
     cancelAnimationFrame(this.tickAnimationFrameId);
+    if (!isNullOrUndefined(this.findTargetChangesSub)) {
+      this.findTargetChangesSub.unsubscribe();
+    }
+  }
+
+  parseQueryFromUrl(fragment: string): string {
+    const params = new URLSearchParams(fragment);
+    return params.get('query') || '';
   }
 
   tick() {
