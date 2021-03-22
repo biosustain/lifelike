@@ -1,4 +1,4 @@
-"""Drops the '.enrichment' prefix from old enrichment files.
+"""Drops the '.enrichment' suffix from old enrichment files.
 
 Revision ID: 2ceb4c0d1d9e
 Revises: 20a288c39ff2
