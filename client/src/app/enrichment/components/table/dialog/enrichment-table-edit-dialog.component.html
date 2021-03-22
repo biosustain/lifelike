@@ -85,11 +85,17 @@
         <fieldset class="fieldset-properties mt-4">
           <legend>Annotation Options</legend>
           <app-form-row>
-            <app-annotation-config-table
-              [headers]="annotationMethods"
-              [models]="annotationModels"
-              [form]="form.get('annotationConfigs')"
-              [fileType]="fileType"></app-annotation-config-table>
+            <ngb-accordion>
+              <ngb-panel title="Annotation Configurations">
+                <ng-template ngbPanelContent>
+                  <app-annotation-config-table
+                    [headers]="annotationMethods"
+                    [models]="annotationModels"
+                    [form]="form.get('annotationConfigs')"
+                    [fileType]="fileType"></app-annotation-config-table>
+                </ng-template>
+              </ngb-panel>
+            </ngb-accordion>
           </app-form-row>
         </fieldset>
       </ng-container>
