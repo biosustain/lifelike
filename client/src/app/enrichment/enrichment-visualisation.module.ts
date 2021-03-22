@@ -4,7 +4,6 @@ import { FileBrowserModule } from '../file-browser/file-browser.module';
 import { EnrichmentVisualisationViewerComponent } from './components/visualisation/enrichment-visualisation-viewer.component';
 import { EnrichmentVisualisationService } from './services/enrichment-visualisation.service';
 import { GroupModule } from './components/visualisation/group/group.module';
-import { CloudViewerModule } from './components/visualisation/word-cloud/cloud-viewer.module';
 
 @NgModule({
   declarations: [
@@ -13,8 +12,7 @@ import { CloudViewerModule } from './components/visualisation/word-cloud/cloud-v
   imports: [
     SharedModule,
     FileBrowserModule,
-    GroupModule,
-    CloudViewerModule
+    GroupModule
   ],
   exports: [
     EnrichmentVisualisationViewerComponent
