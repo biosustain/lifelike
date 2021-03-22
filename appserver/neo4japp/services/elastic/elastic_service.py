@@ -28,6 +28,7 @@ from neo4japp.services.elastic import (
 from neo4japp.utils import EventLog
 from app import app
 
+
 class ElasticService():
     def __init__(self, elastic):
         self.elastic_client = elastic
