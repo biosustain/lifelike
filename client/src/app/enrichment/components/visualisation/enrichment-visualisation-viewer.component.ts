@@ -43,6 +43,11 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
 
   loadSubscription: Subscription;
 
+  // preserve sort for keyvalue pipe
+  originalOrder(a, b) {
+    return 0;
+  }
+
   ngOnInit() {
     this.enrichmentService.loadTaskMetaData.results$.subscribe(({result}) => {
       this.object = result;
