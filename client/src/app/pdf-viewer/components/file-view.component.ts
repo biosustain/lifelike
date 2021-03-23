@@ -35,6 +35,7 @@ import { AnnotationsService } from '../../file-browser/services/annotations.serv
 import { SearchControlComponent } from '../../shared/components/search-control.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { GenericDataProvider } from '../../shared/providers/data-transfer-data/generic-data.provider';
 
 class DummyFile implements PdfFile {
   constructor(
@@ -412,7 +413,11 @@ export class FileViewComponent implements OnDestroy, ModuleAwareComponent {
     const text = meta.type === 'link' ? 'Link' : meta.allText;
 
     const dataTransfer: DataTransfer = event.dataTransfer;
-    dataTransfer.setData('text/plain', text);
+    dataTransfer.setData('text/plain', meta.allText);
+    GenericDataProvider.setURIs(dataTransfer, [{
+      title: text,
+      uri: new URL(source, window.location.href).href,
+    }]);
     dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
       display_name: text,
       label: meta.type.toLowerCase(),

@@ -1,6 +1,19 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { cloneDeep, startCase } from 'lodash';
-import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode } from '../../services/interfaces';
+import {
+  DETAIL_NODE_LABELS,
+  isCommonNodeDisplayName,
+  Source,
+  UniversalGraphNode,
+} from '../../services/interfaces';
 import { LINE_TYPES } from '../../services/line-types';
 import { annotationTypes, annotationTypesMap } from '../../../shared/annotation-styles';
 import { nullIfEmpty, RecursivePartial } from '../../../shared/utils/types';
@@ -71,6 +84,8 @@ export class NodeFormComponent implements AfterViewInit {
     this.originalNode.style = this.originalNode.style || {};
 
     this.updatedNode = cloneDeep(node);
+    this.updatedNode.data.sources = this.updatedNode.data.sources || [];
+    this.updatedNode.data.hyperlinks = this.updatedNode.data.hyperlinks || [];
     this.updatedNode.style = this.updatedNode.style || {};
   }
 
@@ -132,6 +147,7 @@ export class NodeFormComponent implements AfterViewInit {
     this.save.next({
       originalData: {
         data: {
+          sources: this.originalNode.data.sources,
           hyperlinks: this.originalNode.data.hyperlinks,
           detail: this.originalNode.data.detail,
           subtype: this.originalNode.data.subtype,
@@ -149,6 +165,7 @@ export class NodeFormComponent implements AfterViewInit {
       },
       updatedData: {
         data: {
+          sources: this.updatedNode.data.sources,
           hyperlinks: this.updatedNode.data.hyperlinks,
           detail: this.updatedNode.data.detail,
           subtype: this.updatedNode.data.subtype,
