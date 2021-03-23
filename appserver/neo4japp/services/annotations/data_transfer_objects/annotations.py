@@ -152,6 +152,14 @@ class SpecifiedOrganismStrain():
 
 
 @attr.s(frozen=True)
+class BestOrganismMatch():
+    entity_id: str = attr.ib()
+    organism_id: str = attr.ib()
+    closest_distance: float = attr.ib()
+    specified_organism_id: Optional[str] = attr.ib(default=None)
+
+
+@attr.s(frozen=True)
 class GlobalAnnotationData():
     file_id: str = attr.ib()
     filename: str = attr.ib()
