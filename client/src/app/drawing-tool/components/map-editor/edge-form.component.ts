@@ -69,6 +69,8 @@ export class EdgeFormComponent implements AfterViewInit {
 
     this.updatedEdge = cloneDeep(edge);
     this.updatedEdge.data = this.updatedEdge.data || {};
+    this.updatedEdge.data.sources = this.updatedEdge.data.sources || [];
+    this.updatedEdge.data.hyperlinks = this.updatedEdge.data.hyperlinks || [];
     this.updatedEdge.style = this.updatedEdge.style || {};
   }
 
