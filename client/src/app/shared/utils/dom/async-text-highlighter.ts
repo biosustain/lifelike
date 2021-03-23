@@ -5,7 +5,6 @@ import { getBoundingClientRectRelativeToContainer, NodeTextRange } from '../dom'
  */
 export class AsyncTextHighlighter {
 
-  // TODO: Redraw on DOM changes / scroll
   // TODO: Adjust throttling to reduce even minor freezing in browser during scroll
 
   renderTimeBudget = 1;
@@ -40,7 +39,7 @@ export class AsyncTextHighlighter {
   }
 
   addAll(entries: NodeTextRange[]) {
-    let firstResult = true;
+    let firstResult = true && !(this.mapping.size > 0);
     for (const entry of entries) {
       const element = entry.node.parentElement;
 
@@ -92,6 +91,17 @@ export class AsyncTextHighlighter {
     }
 
     this.mapping.clear();
+  }
+
+  redraw(entries: NodeTextRange[]) {
+    for (const entry of entries) {
+      const element = entry.node.parentElement;
+      const highlights = this.mapping.get(element);
+
+      for (const highlight of highlights) {
+        highlight.redrawHighlights(this.container);
+      }
+    }
   }
 
   private intersectionChange(entries: IntersectionObserverEntry[], observer: IntersectionObserver) {
@@ -157,6 +167,17 @@ class TextHighlight implements NodeTextRange {
     }
 
     return elements;
+  }
+
+  redrawHighlights(container: Element) {
+    for (const [i, el] of this.elements.entries()) {
+      const htmlEl = el as HTMLElement;
+      const relativeRect = getBoundingClientRectRelativeToContainer(this.rects[i], container);
+      htmlEl.style.top = relativeRect.y + 'px';
+      htmlEl.style.left = relativeRect.x + 'px';
+      htmlEl.style.width = relativeRect.width + 'px';
+      htmlEl.style.height = relativeRect.height + 'px';
+    }
   }
 
   /**
