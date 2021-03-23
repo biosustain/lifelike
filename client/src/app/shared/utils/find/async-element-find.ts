@@ -18,6 +18,7 @@ export class AsyncElementFind implements AsyncFindController {
   private pendingJump = false;
 
   target: Element;
+  resizeObserver = new ResizeObserver(this.redraw.bind(this));
   scrollToOffset = 100;
   query = '';
   protected readonly textFinder = new AsyncElementTextFinder(this.matchFind.bind(this));
@@ -44,6 +45,10 @@ export class AsyncElementFind implements AsyncFindController {
       return;
     }
 
+    // Start observing the new target
+    this.resizeObserver.disconnect();
+    this.resizeObserver.observe(this.target);
+
     // Make sure we put the highlights in the right container
     this.highlighter.container = this.findHighlightContainerElement(this.target);
 
@@ -69,6 +74,7 @@ export class AsyncElementFind implements AsyncFindController {
   stop() {
     this.activeQuery = null;
     this.results = [];
+    this.resizeObserver.disconnect();
     this.textFinder.stop();
     this.highlighter.clear();
   }
@@ -118,7 +124,7 @@ export class AsyncElementFind implements AsyncFindController {
   }
 
   redraw() {
-    // TODO: Redraw on DOM changes / scroll
+    this.highlighter.redraw(this.results);
   }
 
   /**
