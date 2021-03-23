@@ -34,7 +34,7 @@
 
             <ng-container *ngIf="(loadTask.status$ | async) as status">
                 <ng-container *ngIf="status.error">
-                    <app-module-error [error]="" class="d-block p-4">
+                    <app-module-error [error]="status.error" class="d-block p-4">
                     </app-module-error>
                 </ng-container>
 
