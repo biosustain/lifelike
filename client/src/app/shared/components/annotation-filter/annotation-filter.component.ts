@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, OnChanges, } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, OnChanges, SimpleChanges, } from '@angular/core';
 import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
 
 import { Subject, Subscription } from 'rxjs';
@@ -25,7 +25,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
   @Input() set annotationData(data: T[]) {
     this._annotationData = data;
     // Get all the annotation types to populate the legend
-    data.forEach((annotation) => {
+    this._annotationData.forEach((annotation) => {
       this.legend.set(annotation.type, annotation.color);
     });
 
@@ -58,7 +58,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     return this._sortingAlgorithm;
   }
 
-  ngOnChanges({sortingAlgorithm}) {
+  ngOnChanges({sortingAlgorithm}: SimpleChanges) {
     if (sortingAlgorithm) {
       console.log(sortingAlgorithm);
     }
@@ -87,6 +87,17 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
   legend: Map<string, string>;
 
   initialized = false;
+
+  _shownWords;
+  @Input() set shownWords(shownWords) {
+    if (shownWords) {
+      this._shownWords = shownWords.map(this.getAnnotationIdentifier);
+    }
+  };
+
+  get shownWords() {
+    return this._shownWords;
+  }
 
   @ViewChild('minimumValueInputId', {static: false}) minimumValueInputId;
 
@@ -195,11 +206,15 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
   }
 
   isWordVisible(identifier: string) {
-    const value = this.wordVisibilityMap.get(identifier);
-    if (value === undefined) {
-      return true;
+    if (this.shownWords) {
+      return this.shownWords.includes(indentifier);
     } else {
-      return value;
+      const value = this.wordVisibilityMap.get(identifier);
+      if (value === undefined) {
+        return true;
+      } else {
+        return value;
+      }
     }
   }
 

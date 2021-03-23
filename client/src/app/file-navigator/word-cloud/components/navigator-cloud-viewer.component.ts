@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewEncapsul
 
 import { uniqueId } from 'lodash';
 
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, Subscription, BehaviorSubject } from 'rxjs';
 
 import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filter.interface';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -14,7 +14,7 @@ import { FilesystemObject } from '../../../file-browser/models/filesystem-object
 import { AnnotationsService } from '../../../file-browser/services/annotations.service';
 import { NodeLegend } from '../../../interfaces';
 import { SortingAlgorithm } from '../../../shared/schemas/common';
-import * as cloud from 'd3.layout.cloud';
+import * as d3 from 'd3';
 
 @Component({
   selector: 'app-navigator-cloud-viewer',
@@ -29,16 +29,14 @@ export class NavigatorCloudViewerComponent implements OnInit, OnDestroy {
   @Input() object: FilesystemObject;
   @Input() clickableWords = false;
   @Output() wordOpen = new EventEmitter<WordOpen>();
-
-
   @ViewChild('wordCloudTooltip', {static: false}) wordCloudTooltip;
-  @ViewChild('wordCloudTooltipPseudoElement', {static: false}) wordCloudTooltipPseudoElement;
 
   loadTask: BackgroundTask<any, [NodeLegend, string]>;
   annotationsLoadedSub: Subscription;
 
+  wordCloudTooltipPseudoElementPosition;
   wordVisibilityMap: Map<string, boolean> = new Map<string, boolean>();
-  annotationData: WordCloudAnnotationFilterEntity[] = [];
+  annotationData: WordCloudAnnotationFilterEntity[];
   filtersPanelOpened = false;
 
   legend: Map<string, string> = new Map<string, string>();
@@ -55,54 +53,46 @@ export class NavigatorCloudViewerComponent implements OnInit, OnDestroy {
   keywordsShown = true;
   layoutOverwrite;
 
-  wordCloud;
+  @ViewChild('wordCloud', {static: false}) wordCloud;
 
-  @ViewChild('wordCloud', {static: false}) set wordCloudSetter(wordCloud) {
-    if (wordCloud) { // initially setter gets called with undefined
-      wordCloud.layout
-        .padding(3)
-        .rotate(() => 0);
-      this.wordCloud = wordCloud;
-    }
+  get d3Tooltip() {
+    // Get the tooltip for the word cloud text (this should already be present in the DOM)
+    return d3.select(this.wordCloudTooltip.nativeElement);
   }
 
   enter(elements) {
-    elements = elements
+    return elements
       .on('click', (item: WordCloudAnnotationFilterEntity) => {
         this.wordOpen.emit({
           entity: item,
           keywordsShown: this.keywordsShown,
         });
-      })
-      .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''));
+      });
+  }
 
-    const {wordCloudTooltip, wordCloudTooltipPseudoElement} = this;
-    if (wordCloudTooltip && wordCloudTooltipPseudoElement) {
-      // Also create a function for the tooltip content, to be shown when the text is hovered over
-      const cloudViewer = this;
-      const mouseenter = d => {
-        const keywordsShown = cloudViewer.keywordsShown;
-        Object.assign(wordCloudTooltipPseudoElement.nativeElement.style, {
-          left: `${d.x}px`,
-          top: `${d.y + d.y0}px`
-        });
-        wordCloudTooltip.ngbTooltip = keywordsShown ? `Primary Name: ${d.primaryName}` : `Text in Document: ${d.keyword}`;
-        wordCloudTooltip.open();
-      };
+  join(elements) {
+    // Also create a function for the tooltip content, to be shown when the text is hovered over
+    const mouseenter = d => {
+      this.d3Tooltip
+        .html(this.keywordsShown ? `Primary Name: ${d.primaryName}` : `Text in Document: ${d.keyword}`)
+        .style('display', 'block')
+        .style('left', d.x + 'px')
+        .style('top', (d.y + d.y0) + 'px');
+    };
+    return elements
+      .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
+      .on('mouseenter', mouseenter.bind(this))
+      .on('mouseleave', () => this.d3Tooltip.style('display', 'none'));
+  }
 
-      elements
-        .on('mouseenter', mouseenter.bind(this))
-        .on('mouseleave', () => wordCloudTooltip.close());
-    }
-
+  layout(layout) {
+    return layout
+      .padding(1)
+      .rotate(_ => 0);
   }
 
   constructor(protected readonly annotationsService: AnnotationsService,
               protected readonly legendService: LegendService) {
-    this.layoutOverwrite = cloud()
-      .padding(1)
-      .rotate(0);
-
     // Initialize the background task
     this.loadTask = new BackgroundTask(({hashId, sortingId}) => {
       return combineLatest(
@@ -110,6 +100,8 @@ export class NavigatorCloudViewerComponent implements OnInit, OnDestroy {
         this.annotationsService.getSortedAnnotations(hashId, sortingId),
       );
     });
+
+    this.wordCloudTooltipPseudoElementPosition = new BehaviorSubject({});
   }
 
   ngOnInit() {
@@ -153,7 +145,7 @@ export class NavigatorCloudViewerComponent implements OnInit, OnDestroy {
 
   setAnnotationData(annotationExport: string) {
     // Reset annotation data
-    this.annotationData = [];
+    const annotationData = [];
     this.wordVisibilityMap.clear();
 
     const uniquePairMap = new Map<string, number>();
@@ -184,14 +176,14 @@ export class NavigatorCloudViewerComponent implements OnInit, OnDestroy {
           this.getAnnotationIdentifier(annotation),
           this.sorting.min === undefined || annotation.frequency >= this.sorting.min,
         );
-        this.annotationData.push(annotation);
-        uniquePairMap.set(uniquePair, this.annotationData.length - 1);
+        annotationData.push(annotation);
+        uniquePairMap.set(uniquePair, annotationData.length - 1);
       } else {
         // Add the frequency of the synonym to the original word
-        this.annotationData[uniquePairMap.get(uniquePair)].frequency += parseInt(cols[4], 10);
+        annotationData[uniquePairMap.get(uniquePair)].frequency += parseInt(cols[4], 10);
 
         // And also update the word visibility, since the original frequency might have been 1
-        this.wordVisibilityMap.set(this.getAnnotationIdentifier(this.annotationData[uniquePairMap.get(uniquePair)]), true);
+        this.wordVisibilityMap.set(this.getAnnotationIdentifier(annotationData[uniquePairMap.get(uniquePair)]), true);
 
         // TODO: In the future, we may want to show "synonyms" somewhere, or even allow the user to swap out the most frequent term for a
         // synonym
@@ -199,7 +191,7 @@ export class NavigatorCloudViewerComponent implements OnInit, OnDestroy {
     });
 
     // Need to sort the data, since we may have squashed some terms down and messed with the order given by the API
-    this.annotationData = this.annotationData.sort((a, b) => b.frequency - a.frequency);
+    this.annotationData = annotationData.sort((a, b) => b.frequency - a.frequency);
   }
 
   /**
@@ -218,11 +210,18 @@ export class NavigatorCloudViewerComponent implements OnInit, OnDestroy {
    * Redraws the word cloud with updated dimensions to fit the current window.
    */
   fitCloudToWindow() {
-    this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
+    this.wordCloud.resize();
+    // this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
   }
 
   toggleFiltersPanel() {
     this.filtersPanelOpened = !this.filtersPanelOpened;
+  }
+
+  fittedWords;
+
+  fittedWordsCallback(fittedWords) {
+    this.fittedWords = fittedWords;
   }
 
   /**
@@ -295,7 +294,7 @@ export class NavigatorCloudViewerComponent implements OnInit, OnDestroy {
         word.shown = true;
       } else {
         // If it wasn't returned BUT it's been filtered, we don't need to show a warning
-        if(!this.wordVisibilityMap.get(this.getAnnotationIdentifier(word))) {
+        if (!this.wordVisibilityMap.get(this.getAnnotationIdentifier(word))) {
           word.shown = true;
         } else {
           // If it wasn't returned but it HASN'T been filtered, we need to show a warning
@@ -303,21 +302,6 @@ export class NavigatorCloudViewerComponent implements OnInit, OnDestroy {
         }
       }
     }
-  }
-
-  /**
-   * Given dataset return normalised font-size generator
-   * @param data represents a collection of AnnotationFilterEntity data
-   */
-  fontSize(data) {
-    const frequencies = data.map(annotation => annotation.frequency as number);
-    const maximum = Math.max(...frequencies);
-    const minimum = Math.min(...frequencies);
-    const fontDelta = this.FONT_MAX - this.FONT_MIN;
-    return d => {
-      const fraction = (d.frequency - minimum) / (maximum - minimum) || 0;
-      return (fraction * fontDelta) + this.FONT_MIN;
-    };
   }
 
   /**
