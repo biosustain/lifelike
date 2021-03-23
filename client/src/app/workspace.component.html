@@ -71,7 +71,8 @@
             <div class="d-flex flex-fill overflow-hidden w-100 h-100 workspace-tab-content-container">
               <div *ngFor="let tab of pane.tabs; index as i"
                    class="flex-fill overflow-hidden position-absolute workspace-tab-content-inner-container"
-                   [class.workspace-hidden-tab-content]="pane.activeTab !== tab">
+                   [class.workspace-hidden-tab-content]="pane.activeTab !== tab"
+                   appDataTransferData [uriData]="[{title: tab.title, uri: tab.absoluteUrl}]">
                 <app-workspace-outlet [name]="pane.id" [container]="tab.container"
                                       (outletFocus)="setFocus(pane)"
                                       [active]="pane.activeTab === tab"></app-workspace-outlet>

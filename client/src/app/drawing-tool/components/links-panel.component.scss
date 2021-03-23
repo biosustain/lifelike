@@ -1,0 +1,25 @@
+@import 'src/scss/variables';
+
+.link-item {
+  cursor: pointer;
+}
+
+.link-item-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-height: 100px;
+}
+
+.link-item.active {
+  .card-body {
+    background: $table-row-active-bg !important;
+  }
+
+  .link-item-text {
+    display: block;
+    overflow: visible;
+    max-height: none;
+  }
+}
