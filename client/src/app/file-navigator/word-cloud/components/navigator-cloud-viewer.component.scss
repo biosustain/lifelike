@@ -2,25 +2,11 @@
 @import '../../../../../node_modules/bootstrap/scss/variables';
 @import '../../../../scss/variables';
 
-.tooltip-pseudo-element {
-  position: absolute;
-  // sometimes positioning calc is affected if size is too small
-  content: " ";
-  visibility: hidden;
-}
-
 .navigator-tooltip {
   border: 2px solid;
-
-  .tooltip-inner {
-    color: #000;
-    background-color: transparent;
-    border-radius: unset;
-  }
-
-  .arrow {
-    display: none;
-  }
+  opacity: 1;
+  transform: translate(-50%, -100%);
+  display: none;
 }
 
 .annotation-filter-btns-container {
