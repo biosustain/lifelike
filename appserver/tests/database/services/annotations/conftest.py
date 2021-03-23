@@ -1192,8 +1192,8 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
 def mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch):
     def get_match_result(*args, **kwargs):
         return {
-            'YdhC': {'562': 'P37597'},
-            'YdhB': {'562': 'P0ACR2'},
+            'YdhC': {'YdhC': {'562': 'P37597'}},
+            'YdhB': {'YdhB': {'562': 'P0ACR2'}},
         }
 
     monkeypatch.setattr(
