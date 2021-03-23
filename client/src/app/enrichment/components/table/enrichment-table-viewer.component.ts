@@ -121,6 +121,8 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
     if (!isNullOrUndefined(this.findTargetChangesSub)) {
       this.findTargetChangesSub.unsubscribe();
     }
+    // Give the findController a chance to teardown any listeners/callbacks/subscriptions etc.
+    this.findController.stop();
   }
 
   parseQueryFromUrl(fragment: string): string {
