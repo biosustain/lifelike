@@ -1005,6 +1005,79 @@ def fish_gene_lmdb_setup(app, request):
     request.addfinalizer(teardown)
 
 
+@pytest.fixture(scope='function')
+def gene_organism_matching_use_organism_before_lmdb_setup(app, request):
+    ptgs2 = lmdb_gene_factory(
+        gene_id='289085',
+        id_type=DatabaseType.NCBI.value,
+        name='PTGS2',
+        synonym='PTGS2',
+        category=OrganismCategory.EUKARYOTA.value,
+    )
+
+    bdnf = lmdb_gene_factory(
+        gene_id='28908534',
+        id_type=DatabaseType.NCBI.value,
+        name='BDNF',
+        synonym='BDNF',
+        category=OrganismCategory.EUKARYOTA.value,
+    )
+
+    bst2 = lmdb_gene_factory(
+        gene_id='2890832455',
+        id_type=DatabaseType.NCBI.value,
+        name='BST2',
+        synonym='BST2',
+        category=OrganismCategory.EUKARYOTA.value,
+    )
+
+    cat = lmdb_species_factory(
+        tax_id='9685',
+        category=OrganismCategory.EUKARYOTA.value,
+        id_type=DatabaseType.NCBI.value,
+        name='Felis Catus',
+        synonym='Felis Catus',
+    )
+
+    homo = lmdb_species_factory(
+        tax_id='9606',
+        category=OrganismCategory.EUKARYOTA.value,
+        id_type=DatabaseType.NCBI.value,
+        name='Homo Sapiens',
+        synonym='Homo Sapiens',
+    )
+
+    human = lmdb_species_factory(
+        tax_id='9606',
+        category=OrganismCategory.EUKARYOTA.value,
+        id_type=DatabaseType.NCBI.value,
+        name='Human',
+        synonym='Human',
+    )
+
+    entities = [
+        (ANATOMY_MESH_LMDB, 'anatomy', []),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
+        (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
+        (DISEASES_MESH_LMDB, 'diseases', []),
+        (FOODS_MESH_LMDB, 'foods', []),
+        (GENES_NCBI_LMDB, 'genes', [ptgs2, bdnf, bst2]),
+        (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', []),
+        (PROTEINS_UNIPROT_LMDB, 'proteins', []),
+        (SPECIES_NCBI_LMDB, 'species', [homo, human, cat]),
+    ]
+    for db_names, entity, data in entities:
+        create_entity_lmdb(f'lmdb/{entity}', db_names, data)
+
+    def teardown():
+        for parent, subfolders, filenames in walk(path.join(directory, 'lmdb/')):
+            for fn in filenames:
+                if fn.lower().endswith('.mdb'):
+                    remove(path.join(parent, fn))
+
+    request.addfinalizer(teardown)
+
+
 ################################################################################
 # Start monkeypatch mocks here
 # doc on how to monkeypatch: https://docs.pytest.org/en/latest/monkeypatch.html
@@ -1126,6 +1199,22 @@ def mock_get_protein_to_organism_match_result_for_escherichia_coli_pdf(monkeypat
     monkeypatch.setattr(
         AnnotationGraphService,
         'get_proteins_to_organisms',
+        get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_get_gene_to_organism_match_using_organism_before(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {
+            'PTGS2': {'PTGS2': {'9606': '5743', '9685': '100126581'}},
+            'BDNF': {'BDNF': {'9606': '627', '9685': '493690'}},
+            'BST2': {'BST2': {'9606': '684', '9685': '100652388'}}
+        }
+
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_gene_to_organism_match_result',
         get_match_result,
     )
 
