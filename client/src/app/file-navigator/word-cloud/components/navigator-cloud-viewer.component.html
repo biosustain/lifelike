@@ -77,7 +77,7 @@
                       direction="horizontal"
                       [gutterSize]="5">
                 <as-split-area [order]="0">
-                    <ng-container *ngIf="annotationData.length === 0">
+                    <ng-container *ngIf="annotationData?.length === 0">
                         <ngb-alert [dismissible]="false">
                             No entities (annotations) found.
                         </ngb-alert>
@@ -87,17 +87,11 @@
                                     class="h-100 w-100 overflow-hidden word-cloud"
                                     [data]="data"
                                     (enter)="enter($event)"
+                                    (join)="join($event)"
+                                    [layout]="layout"
+                                    (fittedWordsCallback)="fittedWordsCallback($event)"
                     >
-                        <div
-                            #wordCloudTooltipPseudoElement
-                            class="tooltip-pseudo-element"
-                            ngbTooltip=""
-                            [autoClose]="false"
-                            triggers="manual"
-                            position="bottom"
-                            #wordCloudTooltip="ngbTooltip"
-                            tooltipClass="tooltip navigator-tooltip bg-white rounded p-2"
-                        ></div>
+                        <div #wordCloudTooltip class="tooltip bg-white rounded p-2 navigator-tooltip"></div>
                     </app-word-cloud>
                 </as-split-area>
                 <as-split-area [visible]="filtersPanelOpened"
@@ -113,7 +107,9 @@
                             </button>
                         </div>
                         <app-word-cloud-annotation-filter
+                                *ngIf="annotationData"
                                 [clickableWords]="true"
+                                [shownWords]="fittedWords"
                                 (wordOpen)="this.wordOpen.emit({entity: $event, keywordsShown: keywordsShown})"
                                 [sortingAlgorithm]="sorting"
                                 [annotationData]="annotationData"
