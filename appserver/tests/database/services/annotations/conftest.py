@@ -1429,8 +1429,3 @@ def mock_global_species_inclusion(session):
 
     session.add(inclusion)
     session.flush()
-
-
-@pytest.fixture(scope='function')
-def annotations_setup(app):
-    pass
