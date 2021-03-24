@@ -79,6 +79,7 @@ export class EdgeFormComponent implements AfterViewInit {
       originalData: {
         label: this.originalEdge.label,
         data: {
+          sources: this.originalEdge.data.sources,
           hyperlinks: this.originalEdge.data.hyperlinks,
           detail: this.originalEdge.data.detail,
         },
@@ -94,6 +95,7 @@ export class EdgeFormComponent implements AfterViewInit {
       updatedData: {
         label: this.updatedEdge.label,
         data: {
+          sources: this.updatedEdge.data.sources,
           hyperlinks: this.updatedEdge.data.hyperlinks,
           detail: this.updatedEdge.data.detail,
         },
