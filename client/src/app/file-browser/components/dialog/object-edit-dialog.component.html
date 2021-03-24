@@ -97,7 +97,8 @@
                 <app-annotation-config-table
                   [headers]="annotationMethods"
                   [models]="annotationModels"
-                  [form]="form.get('annotationConfigs')"></app-annotation-config-table>
+                  [form]="form.get('annotationConfigs')"
+                  [fileType]="object.mimeType"></app-annotation-config-table>
               </ng-template>
             </ngb-panel>
           </ngb-accordion>
