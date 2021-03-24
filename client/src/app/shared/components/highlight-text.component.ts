@@ -10,6 +10,8 @@ import {
 import Color from 'color';
 import { createNodeDragImage } from '../../drawing-tool/utils/drag';
 import { isCtrlOrMetaPressed } from '../utils';
+import { Meta } from '../../pdf-viewer/annotation-type';
+import { SEARCH_LINKS } from '../links';
 
 @Component({
   selector: 'app-highlight-text',
@@ -20,6 +22,10 @@ import { isCtrlOrMetaPressed } from '../utils';
 })
 export class HighlightTextComponent {
   node: Node;
+  annotationColor: string;
+  annotationBackgroundColor: string;
+  annotationMeta: Meta;
+  searchLinks: Hyperlink[];
 
   constructor(private readonly elementRef: ElementRef) {
   }
@@ -35,6 +41,11 @@ export class HighlightTextComponent {
     } else {
       this.node = data;
     }
+
+    this.annotationColor = this.getAnnotationColor();
+    this.annotationBackgroundColor = this.getAnnotationBackgroundColor();
+    this.annotationMeta = this.getAnnotationMeta();
+    this.searchLinks = this.getSearchLinks();
   }
 
   get childNodes() {
@@ -45,7 +56,20 @@ export class HighlightTextComponent {
     return this.node.nodeType === Node.ELEMENT_NODE ? this.node as Element : null;
   }
 
-  get annotationColor() {
+  private getSearchLinks(): Hyperlink[] {
+    const meta = this.annotationMeta;
+    if (meta) {
+      return SEARCH_LINKS.map(({domain, url}) => {
+        return {
+          domain,
+          url: meta.links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(meta.allText)),
+          isDatabase: false,
+        };
+      });
+    }
+  }
+
+  private getAnnotationColor() {
     if (!this.node || this.node.nodeType !== Node.ELEMENT_NODE) {
       return;
     }
@@ -60,7 +84,19 @@ export class HighlightTextComponent {
     return null;
   }
 
-  get annotationBackgroundColor() {
+  private getAnnotationMeta(): Meta {
+    if (!this.node || this.node.nodeType !== Node.ELEMENT_NODE) {
+      return;
+    }
+    const element = this.node as Element;
+    const metaData = element.getAttribute('meta');
+    if (metaData) {
+      return JSON.parse(metaData);
+    }
+    return null;
+  }
+
+  private getAnnotationBackgroundColor() {
     const color = this.annotationColor;
     if (color != null) {
       const colorObj = Color(color);

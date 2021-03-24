@@ -1,3 +1,4 @@
+import itertools
 import uuid
 
 from datetime import datetime
@@ -83,10 +84,18 @@ class ManualAnnotationService:
             _, parsed = parse_pdf(file.id, False)
             annotator = get_annotation_service()
             is_case_insensitive = custom_annotation['meta']['isCaseInsensitive']
+
+            if custom_annotation['meta']['type'] == EntityType.GENE.value:
+                max_words = recognition.gene_max_words
+            elif custom_annotation['meta']['type'] == EntityType.FOOD.value:
+                max_words = recognition.food_max_words
+            else:
+                max_words = recognition.entity_max_words
             matches = annotator.get_matching_manual_annotations(
                 keyword=term,
                 is_case_insensitive=is_case_insensitive,
-                tokens_list=parsed
+                tokens_list=list(itertools.chain.from_iterable(
+                    [recognition.generate_tokens(token, max_words) for token in parsed]))
             )
 
             def add_annotation(new_annotation, primary_name=None):
@@ -109,6 +118,12 @@ class ManualAnnotationService:
                     message=f'There was a problem annotating "{term}". ' +
                             'Please make sure the term is correct, ' +
                             'including correct spacing and no extra characters.',
+                    additional_msgs=[
+                        f'We currently only allow up to {recognition.entity_max_words} word(s)'
+                        ' in length for a term. In addition, we'
+                        ' have specific word limits for some entity types:',
+                        f'Gene: Max {recognition.gene_max_words} word.',
+                        f'Food: Max {recognition.food_max_words} words.'],
                     code=400)
         else:
             if not annotation_exists(annotation_to_add):
@@ -140,7 +155,7 @@ class ManualAnnotationService:
         return inclusions
 
     def remove_inclusions(self, file: Files, user: AppUser, uuid, remove_all):
-        """ Removes custom annotation from a givenf file.
+        """ Removes custom annotation from a given file.
         If remove_all is True, removes all custom annotations with matching term and entity type.
 
         Returns uuids of the removed inclusions.

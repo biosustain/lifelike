@@ -5,6 +5,7 @@
         <th
           *ngFor="let col of row"
           class="border-top text-center text-truncate"
+          style="z-index: 1"
           [attr.colspan]="col.span"
         >
           {{ col.name }}
