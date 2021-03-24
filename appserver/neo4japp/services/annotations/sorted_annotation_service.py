@@ -112,9 +112,10 @@ class MannWhitneyUSA(SortedAnnotation):
         idx = pd.MultiIndex.from_product([unique_file_ids, unique_keys], names=['file_id', 'key'])
         ds = ds.reindex(idx, fill_value=0, copy=False)
 
+        key_index_values = idx.get_level_values('key')
         distinct_annotations = dict()
         for key in unique_keys:
-            mask = keys == key
+            mask = key_index_values == key
             distinct_annotations[key] = {
                 'annotation': key_map[key],
                 'value': -np.log(
