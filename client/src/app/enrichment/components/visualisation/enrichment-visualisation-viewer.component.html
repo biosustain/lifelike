@@ -34,7 +34,7 @@
 
             <ng-container *ngIf="(loadTask.status$ | async) as status">
                 <ng-container *ngIf="status.error">
-                    <app-module-error [error]="" class="d-block p-4">
+                    <app-module-error [error]="status.error" class="d-block p-4">
                     </app-module-error>
                 </ng-container>
 
@@ -49,7 +49,7 @@
                 <ng-container *ngIf="status.loaded">
                     <div class="module-body flex-fill overflow-auto space-cards">
                         <app-group
-                                *ngFor="let d of data | keyvalue; let i = index"
+                                *ngFor="let d of data | keyvalue: originalOrder; let i = index"
                                 [title]="groups[i]"
                                 [data]="d.value"
                         >

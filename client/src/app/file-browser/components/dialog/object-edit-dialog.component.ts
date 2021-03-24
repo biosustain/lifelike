@@ -116,13 +116,17 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   @Input()
   set configs(value: AnnotationConfigurations) {
     if (value) {
-      const ctrl = (
+      let ctrl = (
         (this.form.get('annotationConfigs') as FormGroup).get('annotationMethods') as FormControl);
       for (const [modelName, config] of Object.entries(value.annotationMethods)) {
         if (ctrl.get(modelName)) {
           ctrl.get(modelName).patchValue(config);
         }
       }
+
+      ctrl = (
+        (this.form.get('annotationConfigs') as FormGroup).get('excludeReferences') as FormControl);
+      ctrl.patchValue(value.excludeReferences);
     }
   }
 

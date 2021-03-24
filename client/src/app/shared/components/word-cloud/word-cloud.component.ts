@@ -118,7 +118,6 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
   }
 
   @Input('data') set data(data) {
-    console.count('set data');
     const count: any = {};
     if (Array.isArray(data) && data.every(d => typeof d === 'string' && (count[d] = (count[d] || 0) + 1))) {
       this._data = Object.entries(count).map(([text, frequency]) => ({text, frequency}));
@@ -136,7 +135,6 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
 
 
   ngAfterViewInit() {
-    console.count('ngAfterViewInit');
     const {width, height} = this.getCloudSvgDimensions();
     this.layout.canvas(this.hiddenTextAreaWrapper.nativeElement);
     this.onResize(width, height).then();
@@ -144,13 +142,11 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    console.count('ngOnDestroy');
     this.resizeObserver.disconnect();
     delete this.resizeObserver;
   }
 
   onResize(width, height) {
-    console.count('onResize');
     // Get the svg element and update
     d3.select(this.svg.nativeElement)
       .attr('width', width)
@@ -174,7 +170,6 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
    * @param data represents a collection of FilterEntity data
    */
   updateLayout(data) {
-    console.count('updateLayout');
     // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
     const freqValues = data.map(d => d.frequency as number);
     const maximumCount = Math.max(...freqValues);
