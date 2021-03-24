@@ -17,30 +17,23 @@ def fisher_p(k, M, n, N):
     return hypergeom.cdf(n - k, M, n, M - N)
 
 
-def fisher(geneNames, GOterms):
+def fisher(geneNames, GOterms, related_go_terms_count):
     """
     Run standard fisher's exact tests for each annotation term.
     """
-    go = pd.DataFrame(GOterms)
-
-    df = go.drop_duplicates(["geneName", "goId"])
+    df = pd.DataFrame(GOterms)
     query = pd.unique(geneNames)
-    df["query"] = np.in1d(df["geneName"], query).astype(float)
-    M = df["geneName"].nunique()
+    M = df["geneNames"].explode().nunique()
     N = len(query)
 
-    df = df.groupby("goId").agg(
-            p_value=('query', lambda q: fisher_p(q.sum(), M, len(q), N)),
-            geneNames=('geneName', lambda gn: list(gn[np.in1d(gn, query)])),
-            goTerm=('goTerm', 'first'),
-            goLabel=('goLabel', 'first')
-    )
+    def f(go):
+        matching_gene_names = list(set(go["geneNames"]).intersection(query))
+        go['p-value'] = fisher_p(len(matching_gene_names), M, len(go["geneNames"]), N)
+        go['gene'] = f"{go['goTerm']} ({go['goId']})"
+        go["geneNames"] = matching_gene_names
+        return go
 
-    df = df[df['p_value'] < 1].sort_values(by='p_value')
+    df = df.apply(f, axis=1).sort_values(by='p-value')
 
-    df = df.reset_index().rename(columns={'p_value': 'p-value'})
-
-    df['gene'] = df.apply(lambda m: f"{m['goTerm']} ({m['goId']})", axis=1)
-
-    add_q_value(df)
+    add_q_value(df, related_go_terms_count)
     return df.to_json(orient='records')

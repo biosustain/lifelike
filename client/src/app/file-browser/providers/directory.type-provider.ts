@@ -49,7 +49,7 @@ export class DirectoryTypeProvider extends AbstractObjectTypeProvider {
         openSuggested: false,
         create: (options?: CreateActionOptions) => {
           const object = new FilesystemObject();
-          object.filename = 'New Folder';
+          object.filename = '';
           object.mimeType = DIRECTORY_MIMETYPE;
           object.parent = options.parent;
           return this.objectCreationService.openCreateDialog(object, {
