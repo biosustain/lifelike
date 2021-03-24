@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -11,12 +11,8 @@ import { nullCoalesce } from '../../shared/utils/types';
 import { uniqueId } from 'lodash';
 import { CollectionModel } from '../../shared/utils/collection-model';
 import { getObjectLabel } from '../utils/objects';
-import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
 import { FilesystemService } from '../services/filesystem.service';
-import { BehaviorSubject } from 'rxjs';
-import { finalize, tap } from 'rxjs/operators';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
-import { Progress } from '../../interfaces/common-dialog.interface';
 
 @Component({
   selector: 'app-object-list',
@@ -49,6 +45,7 @@ export class ObjectListComponent {
 
   objectDragStart(event: DragEvent, object: FilesystemObject) {
     const dataTransfer: DataTransfer = event.dataTransfer;
+    // TODO: Move to DataTransferData framework
     object.addDataTransferData(dataTransfer);
 
     // At this time, we don't support dragging multiple items
