@@ -20,7 +20,11 @@ import { filter } from 'rxjs/operators';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ModuleAwareComponent, ModuleProperties } from './modules';
-import { TabData, WorkspaceSessionLoader, WorkspaceSessionService } from './services/workspace-session.service';
+import {
+  TabData,
+  WorkspaceSessionLoader,
+  WorkspaceSessionService,
+} from './services/workspace-session.service';
 import { cloneDeep } from 'lodash';
 
 export interface TabDefaults {
@@ -136,6 +140,10 @@ export class Tab {
   constructor(private readonly injector: Injector,
               private readonly componentFactoryResolver: ComponentFactoryResolver) {
     this.workspaceManager = this.injector.get<WorkspaceManager>(WorkspaceManager);
+  }
+
+  get absoluteUrl(): string {
+    return new URL(this.url.replace(/^\/+/, '/'), new URL(window.location.href)).href;
   }
 
   queuePropertyChange(properties: ModuleProperties) {
