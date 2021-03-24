@@ -714,3 +714,7 @@ def load_lmdb():
     lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
     manager.download_all(lmdb_dir_path)
     manager.update_all_dates()
+
+
+if __name__ == '__main__':
+    app.run()
