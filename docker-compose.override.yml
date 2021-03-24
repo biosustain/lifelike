@@ -68,15 +68,13 @@ services:
         # End debugging section
         volumes:
             - ./appserver:/home/n4j
-        networks:
-            - frontend
-            - backend
         depends_on:
             - elasticsearch
             - database
             - pgdatabase
             - redis
             - pdfparser
+        network_mode: host
 
     nlpapi:
         container_name: nlpapi
@@ -113,8 +111,7 @@ services:
             - /home/node/client/node_modules
         ports:
             - "4200:4200"
-        networks:
-            - frontend
+        network_mode: host
 
     redis:
         container_name: redis
@@ -221,5 +218,4 @@ services:
             - backend
 
 networks:
-    frontend:
     backend:
