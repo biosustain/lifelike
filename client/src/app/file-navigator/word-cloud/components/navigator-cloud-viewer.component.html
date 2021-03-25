@@ -85,11 +85,9 @@
                     <app-word-cloud *ngIf="data"
                                     #wordCloud
                                     class="h-100 w-100 overflow-hidden word-cloud"
-                                    [data]="data"
+                                    [(data)]="data"
                                     (enter)="enter($event)"
                                     (join)="join($event)"
-                                    [layout]="layout"
-                                    (fittedWordsCallback)="fittedWordsCallback($event)"
                     >
                         <div #wordCloudTooltip class="tooltip bg-white rounded p-2 navigator-tooltip"></div>
                     </app-word-cloud>
@@ -107,12 +105,11 @@
                             </button>
                         </div>
                         <app-word-cloud-annotation-filter
-                                *ngIf="annotationData"
+                                *ngIf="data"
                                 [clickableWords]="true"
-                                [shownWords]="fittedWords"
                                 (wordOpen)="this.wordOpen.emit({entity: $event, keywordsShown: keywordsShown})"
                                 [sortingAlgorithm]="sorting"
-                                [annotationData]="annotationData"
+                                [annotationData]="data"
                                 (wordVisibilityOutput)="updateWordVisibilityMap($event)"
                         ></app-word-cloud-annotation-filter>
                     </div>
