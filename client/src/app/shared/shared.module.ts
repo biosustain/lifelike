@@ -66,6 +66,8 @@ import { AccountsService } from './services/accounts.service';
 import { OrganismComponent } from './components/organism.component';
 import { ResultControlComponent } from './components/result-control.component';
 import { PaginationComponent } from './components/pagination.component';
+import { DATA_TRANSFER_DATA_PROVIDER, DataTransferDataService } from './services/data-transfer-data.service';
+import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
 
 const components = [
   VisJsNetworkComponent,
@@ -140,7 +142,7 @@ const components = [
     FriendlyDateStrPipe,
     NodeTextStylePipe,
     ScrubHtmlPipe,
-    AddStatusPipe
+    AddStatusPipe,
   ],
   providers: [
     ApiService,
@@ -148,6 +150,12 @@ const components = [
     SharedSearchService,
     ApiService,
     AccountsService,
+    DataTransferDataService,
+    {
+      provide: DATA_TRANSFER_DATA_PROVIDER,
+      useClass: GenericDataProvider,
+      multi: true,
+    },
   ],
   // exported modules are visible to modules that import this one
   exports: [
@@ -170,7 +178,7 @@ const components = [
     FriendlyDateStrPipe,
     NodeTextStylePipe,
     NgbModule,
-    AddStatusPipe
+    AddStatusPipe,
   ],
 })
 export class SharedModule {
