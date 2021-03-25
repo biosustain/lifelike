@@ -1,6 +1,7 @@
 import json
 import logging
 from functools import partial
+from time import time
 from typing import List
 
 from neo4japp.exceptions import ServerException
@@ -18,8 +19,16 @@ class EnrichmentVisualisationService(KgService):
 
     def enrich_go(self, gene_names: List[str], analysis, organism):
         if analysis == 'fisher':
-            return fisher(gene_names, self.get_go_terms(organism, gene_names),
-                          self.get_go_term_count(organism))
+            s = time()
+            go = self.get_go_terms(organism, gene_names)
+            print(f"\tFetching GO terms: {time() - s}s")
+            s = time()
+            go_count = self.get_go_term_count(organism)
+            print(f"\tFetching organism GO term count: {time() - s}s")
+            s = time()
+            r = fisher(gene_names, go, go_count)
+            print(f"\tFisher analysis: {time() - s}s")
+            return r
         raise NotImplementedError
 
     def query_go_term(self, organism_id, gene_names):
@@ -38,7 +47,7 @@ return go.id as goId, go.name as goTerm, [lbl in labels(go) where lbl <> 'db_GO'
         # raise if empty - should never happen so fail fast
         if not r:
             raise ServerException(
-                message=f'Could not find related GO terms for organism id: {organism_id}')
+                    message=f'Could not find related GO terms for organism id: {organism_id}')
         return r
 
     def get_go_terms(self, organism, gene_names):
@@ -62,7 +71,7 @@ return count(go)
         # raise if empty - should never happen so fail fast
         if not r:
             raise ServerException(
-                message=f'Could not find related GO terms for organism id: {organism_id}')
+                    message=f'Could not find related GO terms for organism id: {organism_id}')
         return r[0]['count(go)']
 
     def get_go_term_count(self, organism):
