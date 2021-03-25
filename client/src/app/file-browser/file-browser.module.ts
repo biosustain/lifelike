@@ -27,7 +27,12 @@ import {
 import { ObjectExportDialogComponent } from './components/dialog/object-export-dialog.component';
 import { ObjectTileDeckComponent } from './components/object-tile-deck.component';
 import { ObjectPathComponent } from './components/object-path.component';
-import { ObjectTypeService, TYPE_PROVIDER } from './services/object-type.service';
+import {
+  AbstractObjectTypeProviderHelper,
+  DefaultObjectTypeProvider,
+  ObjectTypeService,
+  TYPE_PROVIDER,
+} from './services/object-type.service';
 import { DirectoryTypeProvider } from './providers/directory.type-provider';
 import { DirectoryPreviewComponent } from './components/directory-preview.component';
 import { ObjectMenuComponent } from './components/object-menu.component';
@@ -123,6 +128,8 @@ import { ObjectReannotateResultsDialogComponent } from './components/dialog/obje
     ProjectActions,
     ObjectCreationService,
     ObjectTypeService,
+    DefaultObjectTypeProvider,
+    AbstractObjectTypeProviderHelper,
     {
       provide: TYPE_PROVIDER,
       useClass: DirectoryTypeProvider,
