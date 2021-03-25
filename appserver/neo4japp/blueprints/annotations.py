@@ -579,13 +579,13 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         )
                         if text_mapping.get('imported'):
                             enrichment['genes'][text_mapping[
-                                'row']]['imported'] = snippet
+                                'row']]['annotated_imported'] = snippet
                         elif text_mapping.get('matched'):
                             enrichment['genes'][text_mapping[
-                                'row']]['matched'] = snippet
+                                'row']]['annotated_matched'] = snippet
                         elif text_mapping.get('full_name'):
                             enrichment['genes'][text_mapping[
-                                'row']]['full_name'] = snippet
+                                'row']]['annotated_full_name'] = snippet
                         else:
                             enrichment[
                                 'genes'][text_mapping[
