@@ -30,7 +30,7 @@
                                [term]="service.searchTerm"></ngb-highlight>
             </td>
             <td>
-                <ngb-highlight [result]="row['q-value']"
+                <ngb-highlight [result]="addSignificanceIndicator(row['q-value'])"
                                [term]="service.searchTerm"></ngb-highlight>
             </td>
         </tr>

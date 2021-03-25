@@ -114,7 +114,8 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy {
       // ~~ faster substitute for Math.floor() for positive numbers
       // http://rocha.la/JavaScript-bitwise-operators-in-practice
       // tslint:disable-next-line:no-bitwise
-      .rotate(d => d.rotate || (~~(Math.random() * 6) - 3) * 30);
+      // .rotate(d => d.rotate || (~~(Math.random() * 6) - 3) * 30);
+      .rotate(_ => 0);
   }
 
   @Input('data') set data(data) {
