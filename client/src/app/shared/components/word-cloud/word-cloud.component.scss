@@ -3,14 +3,13 @@
 @import '../../../../scss/variables';
 
 .cloud-wrapper {
-  position: relative;
+  //position: relative;
 }
 
 .overlayered-children {
   position: absolute;
   top: 0;
   left: 0;
-  transform: translate(50%,50%);
 
   &:empty {
     display: none;

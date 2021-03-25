@@ -88,17 +88,6 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
 
   initialized = false;
 
-  _shownWords;
-  @Input() set shownWords(shownWords) {
-    if (shownWords) {
-      this._shownWords = shownWords.map(this.getAnnotationIdentifier);
-    }
-  };
-
-  get shownWords() {
-    return this._shownWords;
-  }
-
   @ViewChild('minimumValueInputId', {static: false}) minimumValueInputId;
 
   // @ViewChild('maximumValueInputId', {static: false}) maximumValueInputId;
@@ -206,15 +195,11 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
   }
 
   isWordVisible(identifier: string) {
-    if (this.shownWords) {
-      return this.shownWords.includes(indentifier);
+    const value = this.wordVisibilityMap.get(identifier);
+    if (value === undefined) {
+      return true;
     } else {
-      const value = this.wordVisibilityMap.get(identifier);
-      if (value === undefined) {
-        return true;
-      } else {
-        return value;
-      }
+      return value;
     }
   }
 

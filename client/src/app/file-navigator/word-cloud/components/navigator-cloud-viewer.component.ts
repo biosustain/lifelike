@@ -76,19 +76,13 @@ export class NavigatorCloudViewerComponent implements OnInit, OnDestroy {
       this.d3Tooltip
         .html(this.keywordsShown ? `Primary Name: ${d.primaryName}` : `Text in Document: ${d.keyword}`)
         .style('display', 'block')
-        .style('left', d.x + 'px')
-        .style('top', (d.y + d.y0) + 'px');
+        .style('left', (d.x + d.x0 + 10) + 'px')
+        .style('top', (d.y + d.y0 + 30) + 'px');
     };
     return elements
       .attr('class', 'cloud-word' + (this.clickableWords ? ' cloud-word-clickable' : ''))
       .on('mouseenter', mouseenter.bind(this))
       .on('mouseleave', () => this.d3Tooltip.style('display', 'none'));
-  }
-
-  layout(layout) {
-    return layout
-      .padding(1)
-      .rotate(_ => 0);
   }
 
   constructor(protected readonly annotationsService: AnnotationsService,
@@ -211,17 +205,10 @@ export class NavigatorCloudViewerComponent implements OnInit, OnDestroy {
    */
   fitCloudToWindow() {
     this.wordCloud.resize();
-    // this.drawWordCloud(this.getFilteredAnnotationDeepCopy());
   }
 
   toggleFiltersPanel() {
     this.filtersPanelOpened = !this.filtersPanelOpened;
-  }
-
-  fittedWords;
-
-  fittedWordsCallback(fittedWords) {
-    this.fittedWords = fittedWords;
   }
 
   /**
