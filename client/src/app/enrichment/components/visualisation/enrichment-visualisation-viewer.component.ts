@@ -71,7 +71,7 @@ export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwa
 
   // End of changing enrichment params section.
   emitModuleProperties() {
-    let title = 'Enrichment Visualisation';
+    let title = 'Statistical Enrichment';
     if (this.object) {
       title += ` for ${this.object.filename}`;
     }

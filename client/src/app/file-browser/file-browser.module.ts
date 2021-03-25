@@ -41,6 +41,8 @@ import { AnnotationsService } from './services/annotations.service';
 import { ObjectCreationService } from './services/object-creation.service';
 import { FilesystemObjectTargetDirective } from './directives/filesystem-object-target.directive';
 import { ObjectReannotateResultsDialogComponent } from './components/dialog/object-reannotate-results-dialog.component';
+import { FilesystemObjectDataProvider } from './providers/data-transfer-data/filesystem-object-data.provider';
+import { DATA_TRANSFER_DATA_PROVIDER } from '../shared/services/data-transfer-data.service';
 
 @NgModule({
   declarations: [
@@ -126,6 +128,11 @@ import { ObjectReannotateResultsDialogComponent } from './components/dialog/obje
     {
       provide: TYPE_PROVIDER,
       useClass: DirectoryTypeProvider,
+      multi: true,
+    },
+    {
+      provide: DATA_TRANSFER_DATA_PROVIDER,
+      useClass: FilesystemObjectDataProvider,
       multi: true,
     },
   ],

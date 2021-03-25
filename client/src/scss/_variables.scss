@@ -147,3 +147,9 @@ $floating-toolbar-bg: $gray-400;
 $floating-toolbar-border-radius: $border-radius;
 
 $dropdown-menu-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+$btn-border-radius-xs:        $border-radius-sm;
+$btn-padding-y-xs:            0.1rem;
+$btn-padding-x-xs:            0.3rem;
+$btn-font-size-xs:            $input-btn-font-size-sm * 0.8;
+$btn-line-height-xs:          $input-btn-line-height-sm;

@@ -13,7 +13,7 @@
     & > td > * {
       // clamp by height so no ellipsis is shown
       max-height: calc(1.5em * 15); // ~15 lines
-      overflow: scroll;
+      overflow: auto;
       display: block;
 
       // auto-scroll within cell to searched term
@@ -42,7 +42,7 @@
     // stop clamping while focussed
     &:focus > td > *, &:focus-within > td > * {
       -webkit-line-clamp: unset;
-      overflow: scroll;
+      overflow: auto;
     }
   }
 }
