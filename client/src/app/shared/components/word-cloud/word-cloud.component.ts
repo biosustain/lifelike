@@ -121,6 +121,7 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
   layout: any;
   resizeObserver: any;
   $wordElementsPipe;
+  mutateData: false;
 
   enter(elements: any) {
     return elements
@@ -154,6 +155,7 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   @Input() data;
+  @Output() dataChange = new EventEmitter<number>();
   @Input() responsive = true;
   @Input('layout') layoutPatch;
 
@@ -161,7 +163,6 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Output('update') updatePatch: EventEmitter<any> = new EventEmitter();
   @Output('join') joinPatch: EventEmitter<any> = new EventEmitter();
   @Output('exit') exitPatch: EventEmitter<any> = new EventEmitter();
-  @Output() fittedWordsCallback: EventEmitter<any> = new EventEmitter();
 
   layoutUpdate;
 
@@ -177,14 +178,15 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
     );
 
     this.layout = cloud()
-      .padding(1)
+      .padding(3)
       // ~~ faster substitute for Math.floor() for positive numbers
       // http://rocha.la/JavaScript-bitwise-operators-in-practice
       // tslint:disable-next-line:no-bitwise
-      .rotate(d => d.rotate || (~~(Math.random() * 6) - 3) * 30);
+      .rotate(_ => 0);
 
-    this.$wordElementsPipe = this.fittedWordsCallback.pipe(
-      map((placedWords: any) => {
+    this.$wordElementsPipe = this.dataChange.pipe(
+      map((data: any) => {
+        const placedWords = data.filter(({shown}) => shown);
         const elements = d3.select(this.g.nativeElement)
           .selectAll('text')
           .data(placedWords, ({text}) => text);
@@ -286,7 +288,7 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
       .attr('height', height);
 
     d3.select(this.childrenContainer.nativeElement)
-      .attr('style', `transform: translate(${width / 2}px, ${height / 2}px);`);
+      .attr('style', `left: ${width / 2}px; top: ${height / 2}px;`);
 
     // Get and update the grouping element
     d3.select(this.g.nativeElement)
@@ -327,11 +329,11 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
           if (notPlaced) {
             console.warn(`${notPlaced} words did not fit into cloud`);
           }
-          this.fittedWordsCallback.emit(placedWords);
+          this.dataChange.emit(this.data);
         })
         .start();
     } else {
-      this.fittedWordsCallback.emit([]);
+      this.dataChange.emit([]);
     }
   }
 

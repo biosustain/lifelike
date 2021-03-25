@@ -5,8 +5,8 @@
 .navigator-tooltip {
   border: 2px solid;
   opacity: 1;
-  transform: translate(-50%, -100%);
   display: none;
+  transform: translateY(-100%);
 }
 
 .annotation-filter-btns-container {
