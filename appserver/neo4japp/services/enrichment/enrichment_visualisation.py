@@ -1,6 +1,7 @@
 import json
 import logging
 from functools import partial
+from time import time
 from typing import List
 
 import pandas as pd
@@ -23,19 +24,28 @@ class EnrichmentVisualisationService(KgService):
 
     def enrich_go(self, gene_names: List[str], analysis, organism):
         if analysis == 'fisher':
+            s = time()
             GO_terms = redis_server.get(f"GO_for_{organism.id}")
+            print(f"\tFetching precomputed GO terms and count: {time() - s}s")
             if GO_terms:
                 df = pd.read_json(GO_terms)
                 df = df.explode('geneNames')
                 mask = np.in1d(df['geneNames'], gene_names)
                 df = df[mask]
-                GO = df.groupby('goId').agg(dict(goTerm='first',goLabel='first',
+                go = df.groupby('goId').agg(dict(goTerm='first',goLabel='first',
                                                  geneNames=list)).reset_index()
-                count = len(GO_terms)
+                go_count = len(GO_terms)
             else:
-                GO = self.get_go_terms(organism, gene_names)
-                count = self.get_go_term_count(organism)
-            return fisher(gene_names, GO, count)
+                s = time()
+                go = self.get_go_terms(organism, gene_names)
+                print(f"\tFetching GO terms: {time() - s}s")
+                s = time()
+                go_count = self.get_go_term_count(organism)
+                print(f"\tFetching organism GO term count: {time() - s}s")
+            s = time()
+            r = fisher(gene_names, go, go_count)
+            print(f"\tFisher analysis: {time() - s}s")
+            return r
         raise NotImplementedError
 
     def query_go_term(self, organism_id, gene_names):
