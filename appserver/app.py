@@ -2,15 +2,13 @@ import importlib
 import json
 import logging
 import os
+
 import click
 import sentry_sdk
-from datetime import datetime
 from flask import request
-
-from sqlalchemy import func, MetaData, inspect, Table
+from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import text
 
-from neo4japp.constants import TIMEZONE
 from neo4japp.database import db, get_account_service, get_elastic_service
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, GCPStorageProvider
@@ -35,9 +33,9 @@ def home():
 def request_navigator_log():
     with sentry_sdk.configure_scope() as scope:
         scope.set_tag(
-            'transaction_id', request.headers.get('X-Transaction-Id'))
+                'transaction_id', request.headers.get('X-Transaction-Id'))
     app.logger.info(
-        EventLog(event_type='user navigate').to_dict())
+            EventLog(event_type='user navigate').to_dict())
 
 
 @app.cli.command("seed")
@@ -101,7 +99,7 @@ def seed():
                             if isinstance(record[key], list):
                                 for value in record[key]:
                                     getattr(instance, key).append(
-                                        find_existing_row(fk_model, value)
+                                            find_existing_row(fk_model, value)
                                     )
                             else:
                                 setattr(instance, key, find_existing_row(fk_model, record[key]))
@@ -167,10 +165,10 @@ def drop_all_tables_and_enums():
 @click.argument("email", nargs=1)
 def create_user(name, email):
     user = AppUser(
-        username=name,
-        first_name=name,
-        last_name=name,
-        email=email,
+            username=name,
+            first_name=name,
+            last_name=name,
+            email=email,
     )
     # set default role
     account_service = get_account_service()
@@ -198,7 +196,8 @@ def seed_organism_gene_match_table():
     directory = os.path.realpath(os.path.dirname(__file__))
 
     rows = []
-    with open(os.path.join(directory, './migrations/upgrade_data/gene_names_for_4organisms.csv'), 'r') as f:  # noqa
+    with open(os.path.join(directory, './migrations/upgrade_data/gene_names_for_4organisms.csv'),
+              'r') as f:  # noqa
         for i, line in enumerate(f.readlines()):
             if i == 0:
                 continue
@@ -207,11 +206,11 @@ def seed_organism_gene_match_table():
             data = line.split(',')
 
             row = OrganismGeneMatch(
-                gene_id=data[0].strip(),
-                gene_name=data[1].strip(),
-                synonym=data[2].strip(),
-                taxonomy_id=data[3].strip(),
-                organism=data[4].strip(),
+                    gene_id=data[0].strip(),
+                    gene_name=data[1].strip(),
+                    synonym=data[2].strip(),
+                    taxonomy_id=data[3].strip(),
+                    organism=data[4].strip(),
             )
             rows.append(row)
 
@@ -248,16 +247,16 @@ def reannotate_all():
     from neo4japp.models import Files, FileContent
     from neo4japp.exceptions import AnnotationError
     files = db.session.query(
-        Files.id,
-        Files.annotations,
-        Files.custom_annotations,
-        Files.excluded_annotations,
-        Files.file_id,
-        Files.filename,
-        FileContent.raw_file,
+            Files.id,
+            Files.annotations,
+            Files.custom_annotations,
+            Files.excluded_annotations,
+            Files.file_id,
+            Files.filename,
+            FileContent.raw_file,
     ).join(
-        FileContent,
-        FileContent.id == Files.content_id,
+            FileContent,
+            FileContent.id == Files.content_id,
     ).all()
     updated_files = []
     versions = []
@@ -316,22 +315,22 @@ def files2gcp(bucket_name, project_name, username):
 
     with app.app_context():
         query = db.session.query(
-            Files,
-            FileContent,
+                Files,
+                FileContent,
         ).join(
-            Files,
-            Files.content_id == FileContent.id
+                Files,
+                Files.content_id == FileContent.id
         ).join(
-            Projects,
-            Files.project == Projects.id,
+                Projects,
+                Files.project == Projects.id,
         ).join(
-            AppUser,
-            Files.user_id == AppUser.id,
+                AppUser,
+                Files.user_id == AppUser.id,
         ).filter(
-            and_(
-                Projects.project_name == project_name,
-                AppUser.username == username,
-            )
+                and_(
+                        Projects.project_name == project_name,
+                        AppUser.username == username,
+                )
         )
         for fi, fi_content in query.all():
             if fi.filename.find('.enrichment') > -1:
@@ -379,11 +378,8 @@ def bulk_upload_files(gcp_source, project_name, username, reannotate):
     should be refactored once we have a user facing
     bulk interface.
     """
-    import copy
     import hashlib
     import uuid
-    import re
-    import io
     import json
     from google.cloud import storage
     from sqlalchemy import and_
@@ -401,7 +397,6 @@ def bulk_upload_files(gcp_source, project_name, username, reannotate):
     from neo4japp.exceptions import AnnotationError
     from neo4japp.blueprints.files import extract_doi
     from neo4japp.blueprints.annotations import annotate
-    from pdfminer import high_level
     from flask import g
 
     with app.app_context():
@@ -414,23 +409,23 @@ def bulk_upload_files(gcp_source, project_name, username, reannotate):
         bucket = storage_client.get_bucket(gcp_source)
 
         project = db.session.query(
-            Projects.id
+                Projects.id
         ).filter(
-            Projects.project_name == project_name
+                Projects.project_name == project_name
         ).join(
-            projects_collaborator_role,
-            Projects.id == projects_collaborator_role.c.projects_id,
+                projects_collaborator_role,
+                Projects.id == projects_collaborator_role.c.projects_id,
         ).join(
-            AppUser,
-            AppUser.id == projects_collaborator_role.c.appuser_id,
+                AppUser,
+                AppUser.id == projects_collaborator_role.c.appuser_id,
         ).join(
-            AppRole,
-            AppRole.id == projects_collaborator_role.c.app_role_id
+                AppRole,
+                AppRole.id == projects_collaborator_role.c.app_role_id
         ).filter(
-            and_(
-                AppUser.id == user.id,
-                AppRole.name == 'project-admin',
-            )
+                and_(
+                        AppUser.id == user.id,
+                        AppRole.name == 'project-admin',
+                )
         ).one_or_none()
 
         if project is None:
@@ -462,14 +457,14 @@ def bulk_upload_files(gcp_source, project_name, username, reannotate):
             checksum_sha256 = hashlib.sha256(raw_content).digest()
             try:
                 file_content = db.session.query(
-                    FileContent.id
+                        FileContent.id
                 ).filter(
-                    FileContent.checksum_sha256 == checksum_sha256
+                        FileContent.checksum_sha256 == checksum_sha256
                 ).one()
             except NoResultFound:
                 file_content = FileContent(
-                    raw_file=raw_content,
-                    checksum_sha256=checksum_sha256,
+                        raw_file=raw_content,
+                        checksum_sha256=checksum_sha256,
                 )
                 db.session.add(file_content)
                 db.session.flush()
@@ -477,9 +472,9 @@ def bulk_upload_files(gcp_source, project_name, username, reannotate):
             file_id = str(uuid.uuid4())
             doi = extract_doi(raw_content, file_id, filename)
             exists = files_queries.filename_exist(
-                filename=filename,
-                directory_id=root_dir.id,
-                project_id=project.id,
+                    filename=filename,
+                    directory_id=root_dir.id,
+                    project_id=project.id,
             )
 
             if exists:
@@ -487,20 +482,20 @@ def bulk_upload_files(gcp_source, project_name, username, reannotate):
                 return None
 
             new_file = Files(
-                file_id=file_id,
-                filename=meta_json['filename'],
-                description=meta_json['description'],
-                content_id=file_content.id,
-                user_id=user.id,
-                project=project.id,
-                dir_id=root_dir.id,
-                upload_url=meta_json['uploadUrl'],
-                excluded_annotations=meta_json['excludedAnnotations'],
-                custom_annotations=meta_json['customAnnotations'],
-                creation_date=meta_json['creationDate'],
-                modified_date=meta_json['modifiedDate'],
-                annotations=meta_json['annotations'],
-                annotations_date=meta_json['annotationsDate'],
+                    file_id=file_id,
+                    filename=meta_json['filename'],
+                    description=meta_json['description'],
+                    content_id=file_content.id,
+                    user_id=user.id,
+                    project=project.id,
+                    dir_id=root_dir.id,
+                    upload_url=meta_json['uploadUrl'],
+                    excluded_annotations=meta_json['excludedAnnotations'],
+                    custom_annotations=meta_json['customAnnotations'],
+                    creation_date=meta_json['creationDate'],
+                    modified_date=meta_json['modifiedDate'],
+                    annotations=meta_json['annotations'],
+                    annotations_date=meta_json['annotationsDate'],
             )
             db.session.add(new_file)
             db.session.commit()
@@ -523,8 +518,8 @@ def bulk_upload_files(gcp_source, project_name, username, reannotate):
                 pass
 
         docs = files_queries.get_all_files_and_content_by_id(
-            file_ids=new_file_ids,
-            project_id=project.id,
+                file_ids=new_file_ids,
+                project_id=project.id,
         ).all()
 
         if reannotate:
@@ -567,7 +562,7 @@ def seed_global_annotation_from_gcp(bucket_name, mapping_file, username):
     FILE_PREFIX = 'global-file_'
 
     user = db.session.query(AppUser).filter(
-        AppUser.username == username).one()
+            AppUser.username == username).one()
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
 
@@ -580,9 +575,9 @@ def seed_global_annotation_from_gcp(bucket_name, mapping_file, username):
         file_blob = bucket.get_blob(f'raw_file/{filename}').download_as_bytes()
         checksum_sha256 = hashlib.sha256(file_blob).digest()
         file_content = db.session.query(
-            FileContent.id
+                FileContent.id
         ).filter(
-            FileContent.checksum_sha256 == checksum_sha256
+                FileContent.checksum_sha256 == checksum_sha256
         ).one_or_none()
         # Previous file found, use that file id
         if file_content:
@@ -591,8 +586,8 @@ def seed_global_annotation_from_gcp(bucket_name, mapping_file, username):
         # No previous file, upload it and use that id
         else:
             new_fc = FileContent(
-                raw_file=file_blob,
-                checksum_sha256=checksum_sha256,
+                    raw_file=file_blob,
+                    checksum_sha256=checksum_sha256,
             )
             db.session.add(new_fc)
             db.session.flush()
@@ -605,13 +600,13 @@ def seed_global_annotation_from_gcp(bucket_name, mapping_file, username):
         # we chose an arbitrary user to assign the annotations to
         annotation_json['user_id'] = user.id
         global_list = GlobalList(
-            annotation=annotation_json,
-            type=annotation['type'],
-            file_id=file_id,
-            reviewed=annotation['reviewed'],
-            approved=annotation['approved'],
-            creation_date=annotation['creationDate'],
-            modified_date=annotation['modifiedDate'],
+                annotation=annotation_json,
+                type=annotation['type'],
+                file_id=file_id,
+                reviewed=annotation['reviewed'],
+                approved=annotation['approved'],
+                creation_date=annotation['creationDate'],
+                modified_date=annotation['modifiedDate'],
         )
         try:
             db.session.add(global_list)
@@ -648,7 +643,6 @@ def global2gcp(bucket_name, users_filter):
     databases.
     """
     import json
-    import copy
     from sqlalchemy import or_
     from google.cloud import storage
     from google.cloud.exceptions import NotFound
@@ -666,20 +660,20 @@ def global2gcp(bucket_name, users_filter):
         if users_filter:
             filters = [AppUser.username == u for u in users_filter]
             query = db.session.query(
-                GlobalList,
-                FileContent
+                    GlobalList,
+                    FileContent
             ).join(
-                FileContent
+                    FileContent
             ).join(
-                AppUser,
-                AppUser.id == GlobalList.annotation['user_id'].as_integer()
+                    AppUser,
+                    AppUser.id == GlobalList.annotation['user_id'].as_integer()
             ).filter(or_(*filters))
         else:
             query = db.session.query(
-                GlobalList,
-                FileContent,
+                    GlobalList,
+                    FileContent,
             ).join(
-                FileContent
+                    FileContent
             )
         data = []
         app.logger.info('Processing files...')
@@ -702,7 +696,7 @@ def global2gcp(bucket_name, users_filter):
                 blob.upload_from_string(fc.raw_file, 'application/pdf')
         annotation_blob = bucket.blob('global-annotations.json')
         annotation_blob.upload_from_string(json.dumps(
-            dict(annotations=data)
+                dict(annotations=data)
         ), 'application/json')
     app.logger.info(f'Finish loading files to bucket: {bucket_name}')
 
@@ -714,3 +708,5 @@ def load_lmdb():
     lmdb_dir_path = os.path.join(app.root_path, 'services/annotations/lmdb')
     manager.download_all(lmdb_dir_path)
     manager.update_all_dates()
+
+
