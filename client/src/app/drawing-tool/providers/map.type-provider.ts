@@ -1,4 +1,10 @@
-import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
+import {
+  ComponentFactory,
+  ComponentFactoryResolver,
+  Injectable,
+  Injector,
+  NgZone,
+} from '@angular/core';
 
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -7,7 +13,7 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
 import {
-  AbstractObjectTypeProvider,
+  AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
   CreateActionOptions,
   CreateDialogAction,
   Exporter,
@@ -19,6 +25,10 @@ import { RankedItem } from 'app/shared/schemas/common';
 import { MapComponent } from '../components/map.component';
 import { UniversalGraph } from '../services/interfaces';
 import { mapBlobToBuffer, mapBufferToJson } from '../../shared/utils/files';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { AnnotationsService } from '../../file-browser/services/annotations.service';
+import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
 
 export const MAP_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/map';
 export const MAP_SHORTHAND = 'map';
@@ -26,11 +36,12 @@ export const MAP_SHORTHAND = 'map';
 @Injectable()
 export class MapTypeProvider extends AbstractObjectTypeProvider {
 
-  constructor(protected readonly componentFactoryResolver: ComponentFactoryResolver,
+  constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
+              protected readonly filesystemService: FilesystemService,
               protected readonly injector: Injector,
               protected readonly objectCreationService: ObjectCreationService,
-              protected readonly filesystemService: FilesystemService) {
-    super();
+              protected readonly componentFactoryResolver: ComponentFactoryResolver) {
+    super(abstractObjectTypeProviderHelper);
   }
 
   handles(object: FilesystemObject): boolean {
