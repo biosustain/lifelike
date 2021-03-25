@@ -7,6 +7,7 @@ Create Date: 2021-03-22 20:25:50.418793
 """
 from alembic import context
 from alembic import op
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 import sqlalchemy as sa
 import logging
@@ -54,29 +55,38 @@ def data_upgrades():
 
     session = Session(op.get_bind())
 
-    query = sa.select([t_file.c.filename, t_file.c.id])\
+    query = sa.select([t_file.c.filename, t_file.c.id, t_file.c.parent_id])\
               .where(t_file.c.filename.ilike('%.enrichment'))
 
     files_to_change = session.execute(query)
 
-    for file_name, fid in files_to_change.fetchall():
+    for file_name, fid, pid in files_to_change.fetchall():
         renamed_fi = file_name.replace('.enrichment', '')
         filename_dupe_count = 0
+
         while True:
-            try:
+            found = session.execute(sa.select(
+                [t_file.c.filename]
+            ).where(
+                and_(
+                    t_file.c.filename == renamed_fi,
+                    t_file.c.parent_id == pid,
+                )
+            )).fetchone()
+            logger.debug(f'Searching for file: {renamed_fi}. {found}')
+            if found is None:
+                logger.debug(f'Renaming file: <{file_name}> to <{renamed_fi}>')
                 session.execute(t_file.update().values(
-                    filename=renamed_fi,
+                    filename=renamed_fi
                 ).where(t_file.c.id == fid))
-            except sa.exc.IntegrityError as err:
-                session.rollback()
-                logging.debug(f'Issue renaming file to {renamed_fi}. {str(err)}')
-                filename_dupe_count += 1
-                renamed_fi = f'{renamed_fi} ({filename_dupe_count})'
-            else:
                 session.commit()
                 break
+            else:
+                logger.debug(f'Found dupe for {file_name}')
+                filename_dupe_count += 1
+                renamed_fi = f'{renamed_fi} ({filename_dupe_count})'
 
-        logger.debug(f'Renaming file: <{file_name}> to <{renamed_fi}>')
+    session.commit()
 
 def data_downgrades():
     """Add optional data downgrade migrations here"""

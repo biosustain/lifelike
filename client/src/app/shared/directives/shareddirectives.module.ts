@@ -9,6 +9,7 @@ import { ContainerBreakpointsDirective } from './container-breakpoints.directive
 import { TabSelectableDirective } from './tab-selectable.directive';
 import { ContextMenuBodyDirective, ContextMenuDirective } from './context-menu.directive';
 import { MouseNavigableDirective, MouseNavigableItemDirective } from './mouse-navigable.directive';
+import { DataTransferDataDirective } from './data-transfer-data.directive';
 
 const directives = [
   DebounceClickDirective,
@@ -24,6 +25,7 @@ const directives = [
   ContextMenuBodyDirective,
   MouseNavigableDirective,
   MouseNavigableItemDirective,
+  DataTransferDataDirective,
 ];
 
 @NgModule({

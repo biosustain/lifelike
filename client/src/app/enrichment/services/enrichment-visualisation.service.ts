@@ -44,14 +44,14 @@ export class EnrichmentVisualisationService {
       this.filesystemService.get(
         this.fileId,
       ).pipe(
-        this.errorHandler.create({label: 'Load enrichment visualisation'}),
+        this.errorHandler.create({label: 'Load Statistical Enrichment'}),
         map((value: FilesystemObject, _) => this.object = value),
       ));
     this.loadTask = new BackgroundTask(() =>
       this.filesystemService.getContent(
         this.fileId,
       ).pipe(
-        this.errorHandler.create({label: 'Load enrichment visualisation'}),
+        this.errorHandler.create({label: 'Load Statistical Enrichment'}),
         mergeMap((blob: Blob) => enrichmentDocument.load(blob))
       )
     );

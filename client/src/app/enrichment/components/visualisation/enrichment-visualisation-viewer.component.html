@@ -26,7 +26,7 @@
                 <div class="d-flex flex-wrap align-items-center">
                     <div class="module-title-bar mr-4">
                         <h1 class="module-title text-truncate" draggable="true">
-                            Enrichment Visualisation
+                            Statistical Enrichment
                         </h1>
                     </div>
                 </div>
@@ -34,14 +34,14 @@
 
             <ng-container *ngIf="(loadTask.status$ | async) as status">
                 <ng-container *ngIf="status.error">
-                    <app-module-error [error]="" class="d-block p-4">
+                    <app-module-error [error]="status.error" class="d-block p-4">
                     </app-module-error>
                 </ng-container>
 
                 <ng-container *ngIf="status.running">
                     <div class="d-flex flex-fill align-items-center justify-content-center">
                         <app-module-progress>
-                            Loading enrichment visualisation...
+                            Loading Statistical Enrichment...
                         </app-module-progress>
                     </div>
                 </ng-container>
