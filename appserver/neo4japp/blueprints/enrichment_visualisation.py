@@ -51,6 +51,7 @@ class GeneOrganismSchema(Schema):
 class EnrichmentSchema(GeneOrganismSchema):
     analysis = fields.Str(validate=OneOf(['fisher']))
 
+
 @bp.route('/enrich-with-go-terms', methods=['POST'])
 @auth.login_required
 @use_args(EnrichmentSchema)
