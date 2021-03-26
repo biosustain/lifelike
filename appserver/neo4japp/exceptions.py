@@ -122,7 +122,7 @@ class InvalidArgument(ServerException):
 class JWTTokenException(ServerException):
     """Signals JWT token issue"""
 
-    def __init__(self, title=None, message=None, additional_msgs=[], code=500):
+    def __init__(self, title=None, message=None, additional_msgs=[], code=401):
         super().__init__(
             title=title,
             message=message,
