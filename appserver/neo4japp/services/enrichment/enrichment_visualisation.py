@@ -15,7 +15,6 @@ from neo4japp.services.redis import redis_cached, redis_server
 logging.getLogger("py2neo.client.bolt").setLevel(logging.INFO)
 
 
-
 class EnrichmentVisualisationService(KgService):
 
     def __init__(self, graph, session):
@@ -29,7 +28,7 @@ class EnrichmentVisualisationService(KgService):
                 df = df.explode('geneNames')
                 mask = np.in1d(df['geneNames'], gene_names)
                 df = df[mask]
-                go = df.groupby('goId').agg(dict(goTerm='first',goLabel='first',
+                go = df.groupby('goId').agg(dict(goTerm='first', goLabel='first',
                                                  geneNames=list)).reset_index()
                 go_count = len(GO_terms)
             else:
