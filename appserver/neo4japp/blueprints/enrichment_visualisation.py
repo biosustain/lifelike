@@ -60,7 +60,6 @@ def enrich_go(args):
     analysis = args['analysis']
     cache_id = '_'.join(['enrich_go', ','.join(gene_names), analysis, str(organism)])
     enrichment_visualisation = get_enrichment_visualisation_service()
-    result = redis_cached(
+    return redis_cached(
             cache_id, partial(enrichment_visualisation.enrich_go, gene_names, analysis, organism)
     ), dict(mimetype='application/json')
-    return result
