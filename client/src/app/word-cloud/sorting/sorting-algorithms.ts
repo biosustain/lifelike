@@ -1,4 +1,21 @@
-import { SortingAlgorithmId } from '../../../shared/schemas/common';
+export enum SortingAlgorithmId {
+  frequency = 'frequency',
+  sum_log_count = 'sum_log_count',
+  mwu = 'mwu',
+  count_per_row = 'count_per_row'
+}
+
+export interface SortingAlgorithm {
+  id: SortingAlgorithmId;
+  name: string;
+  title?: string;
+  description?: string;
+  valueDescription: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  default?: number;
+}
 
 const frequency = {
   id: SortingAlgorithmId.frequency,
