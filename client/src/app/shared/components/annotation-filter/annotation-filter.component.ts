@@ -25,50 +25,8 @@ import { SortingAlgorithm } from 'app/word-cloud/sorting/sorting-algorithms';
 export class AnnotationFilterComponent<T extends AnnotationFilterEntity> implements OnInit, OnDestroy {
   id = uniqueId('AnnotationFilterComponent-');
 
-  _annotationData: T[];
-  @Input() set annotationData(data: T[]) {
-    this._annotationData = data;
-    // Get all the annotation types to populate the legend
-    data.forEach((annotation) => {
-      this.legend.set(annotation.type, annotation.color);
-    });
-
-    // For each NEW type in the legend, set the visibility of that type to true by default. For any existing type, use the current
-    // visibility.
-    this.legend.forEach((_, type) => {
-      this.typeVisibilityMap.set(type, this.typeVisibilityMap.has(type) ? this.typeVisibilityMap.get(type) : true);
-    });
-
-    // When the component is initially created, we apply the default filters and emit to the parent, and on subsequent data loads we also
-    // need to apply the filters and output to the parent.
-    if (this.initialized) {
-      this.applyFilters();
-      this.outputSubject.next();
-    }
-  }
-
-  get annotationData() {
-    return this._annotationData;
-  }
-
-  @Output() wordVisibilityOutput: EventEmitter<Map<string, boolean>>;
-
   _sortingAlgorithm: SortingAlgorithm;
-  @Input() set sortingAlgorithm(sa: SortingAlgorithm) {
-    this._sortingAlgorithm = sa;
-    this.setDefaultFrequency();
-  }
-
-  get sortingAlgorithm() {
-    return this._sortingAlgorithm;
-  }
-
-  setDefaultFrequency() {
-    const {filtersForm, sortingAlgorithm} = this;
-    if (filtersForm && sortingAlgorithm.hasOwnProperty('default')) {
-      this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default);
-    }
-  }
+  _annotationData: T[];
 
   outputSubject: Subject<boolean>;
   outputSubjectSub: Subscription;
@@ -96,6 +54,42 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
   legend: Map<string, string>;
 
   initialized = false;
+
+  @Output() wordVisibilityOutput: EventEmitter<Map<string, boolean>>;
+
+  @Input() set annotationData(data: T[]) {
+    this._annotationData = data;
+    // Get all the annotation types to populate the legend
+    data.forEach((annotation) => {
+      this.legend.set(annotation.type, annotation.color);
+    });
+
+    // For each NEW type in the legend, set the visibility of that type to true by default. For any existing type, use the current
+    // visibility.
+    this.legend.forEach((_, type) => {
+      this.typeVisibilityMap.set(type, this.typeVisibilityMap.has(type) ? this.typeVisibilityMap.get(type) : true);
+    });
+
+    // When the component is initially created, we apply the default filters and emit to the parent, and on subsequent data loads we also
+    // need to apply the filters and output to the parent.
+    if (this.initialized) {
+      this.applyFilters();
+      this.outputSubject.next();
+    }
+  }
+
+  get annotationData() {
+    return this._annotationData;
+  }
+
+  @Input() set sortingAlgorithm(sa: SortingAlgorithm) {
+    this._sortingAlgorithm = sa;
+    this.setDefaultFrequency();
+  }
+
+  get sortingAlgorithm() {
+    return this._sortingAlgorithm;
+  }
 
   constructor() {
     this.outputSubject = new Subject<boolean>();
@@ -173,6 +167,13 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     this.applyFilters();
     this.outputSubject.next();
     this.initialized = true;
+  }
+
+  setDefaultFrequency() {
+    const {filtersForm, sortingAlgorithm} = this;
+    if (filtersForm && sortingAlgorithm.hasOwnProperty('default')) {
+      this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default);
+    }
   }
 
   updateVisibility() {
