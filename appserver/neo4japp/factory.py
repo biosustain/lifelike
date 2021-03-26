@@ -1,10 +1,11 @@
 import json
 import logging
 import os
+import sentry_sdk
 import traceback
+
 from functools import partial
 
-import sentry_sdk
 from flask import (
     current_app,
     Flask,
@@ -135,18 +136,18 @@ def create_app(name='neo4japp', config='config.Development'):
 
     if config in ['config.Staging', 'config.Production']:
         sentry_logging = LoggingIntegration(
-                level=logging.ERROR,
-                event_level=logging.ERROR,
+            level=logging.ERROR,
+            event_level=logging.ERROR,
         )
         sentry_sdk.init(
-                before_send=filter_to_sentry,
-                dsn=os.environ.get('SENTRY_KEY'),
-                integrations=[
-                    sentry_logging,
-                    FlaskIntegration(),
-                    SqlalchemyIntegration(),
-                ],
-                send_default_pii=True,
+            before_send=filter_to_sentry,
+            dsn=os.environ.get('SENTRY_KEY'),
+            integrations=[
+                sentry_logging,
+                FlaskIntegration(),
+                SqlalchemyIntegration(),
+            ],
+            send_default_pii=True,
         )
         ignore_logger('werkzeug')
         app_logger.setLevel(logging.INFO)
@@ -186,7 +187,6 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(UnprocessableEntity, partial(handle_webargs_error, 400))
     app.register_error_handler(ServerException, handle_error)
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
-
     return app
 
 
@@ -201,25 +201,25 @@ def handle_error(ex: ServerException):
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
     transaction_id = request.headers.get('X-Transaction-Id', '')
     current_app.logger.error(
-            f'Request caused a handled exception <{type(ex)}>',
-            exc_info=ex,
-            extra={
-                **{'to_sentry': False},
-                **ErrorLog(
-                        error_name=f'{type(ex)}',
-                        expected=True,
-                        event_type='handled exception',
-                        transaction_id=transaction_id,
-                        username=current_user,
-                ).to_dict()
-            }
+        f'Request caused a handled exception <{type(ex)}>',
+        exc_info=ex,
+        extra={
+            **{'to_sentry': False},
+            **ErrorLog(
+                error_name=f'{type(ex)}',
+                expected=True,
+                event_type='handled exception',
+                transaction_id=transaction_id,
+                username=current_user,
+            ).to_dict()
+        }
     )
 
     ex.version = GITHUB_HASH
     ex.transaction_id = transaction_id
     if current_app.debug:
         ex.stacktrace = ''.join(traceback.format_exception(
-                etype=type(ex), value=ex, tb=ex.__traceback__))
+            etype=type(ex), value=ex, tb=ex.__traceback__))
 
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
 
@@ -232,25 +232,25 @@ def handle_generic_error(code: int, ex: Exception):
     current_user = g.current_user.username if g.get('current_user') else 'anonymous'
     transaction_id = request.headers.get('X-Transaction-Id', '')
     current_app.logger.error(
-            f'Request caused a unhandled exception <{type(ex)}>',
-            exc_info=ex,
-            extra={
-                **{'to_sentry': False},
-                **ErrorLog(
-                        error_name=f'{type(ex)}',
-                        expected=True,
-                        event_type='unhandled exception',
-                        transaction_id=transaction_id,
-                        username=current_user,
-                ).to_dict()
-            }
+        f'Request caused a unhandled exception <{type(ex)}>',
+        exc_info=ex,
+        extra={
+            **{'to_sentry': False},
+            **ErrorLog(
+                error_name=f'{type(ex)}',
+                expected=True,
+                event_type='unhandled exception',
+                transaction_id=transaction_id,
+                username=current_user,
+            ).to_dict()
+        }
     )
 
     newex.version = GITHUB_HASH
     newex.transaction_id = transaction_id
     if current_app.debug:
         newex.stacktrace = ''.join(traceback.format_exception(
-                etype=type(ex), value=ex, tb=ex.__traceback__))
+            etype=type(ex), value=ex, tb=ex.__traceback__))
 
     return jsonify(ErrorResponseSchema().dump(newex)), newex.code
 

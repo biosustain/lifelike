@@ -1,6 +1,6 @@
 {
     "/api": {
-      "target": "http://host.docker.internal:5000",
+      "target": "http://appserver:5000",
       "secure": false,
       "pathRewrite": {
         "^/api": ""
