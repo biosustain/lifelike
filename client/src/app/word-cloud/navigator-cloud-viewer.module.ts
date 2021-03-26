@@ -5,7 +5,7 @@ import { SharedModule } from 'app/shared/shared.module';
 
 import {SortingAlgorithmsComponent} from './sorting/sorting-algorithms.component';
 import { NavigatorCloudViewerComponent } from './components/navigator-cloud-viewer.component';
-import { WordCloudModule } from '../../shared/components/word-cloud/word-cloud.module';
+import { WordCloudModule } from 'app/shared/components/word-cloud/word-cloud.module';
 
 const components = [
   NavigatorCloudViewerComponent,

@@ -9,11 +9,10 @@ import { WordCloudAnnotationFilterEntity } from 'app/interfaces/annotation-filte
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { LegendService } from 'app/shared/services/legend.service';
 
-import { fileTypeSortingAlgorithms } from '../sorting/sorting-algorithms';
-import { FilesystemObject } from '../../../file-browser/models/filesystem-object';
-import { AnnotationsService } from '../../../file-browser/services/annotations.service';
-import { NodeLegend } from '../../../interfaces';
-import { SortingAlgorithm } from '../../../shared/schemas/common';
+import { fileTypeSortingAlgorithms, SortingAlgorithm } from '../sorting/sorting-algorithms';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { AnnotationsService } from 'app/file-browser/services/annotations.service';
+import { NodeLegend } from 'app/interfaces';
 import * as d3 from 'd3';
 
 @Component({
