@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, QueryList, ViewChildren, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, QueryList, ViewChildren, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { DataService } from '../../../../../shared/services/table.service';
@@ -39,21 +39,16 @@ export class TableCompleteComponent implements OnChanges {
     } else {
       this.service.pageSize = 15;
     }
-    if (data) {
-      this.setData();
-    }
-  }
-
-  setData() {
-    if (this.showMore) {
+    if (data || showMore) {
       this.service.inputData = this.data;
-    } else {
-      this.service.inputData = this.data.filter(d => d['q-value'] <= 0.05);
     }
   }
 
-  toggleShowInsignificant(e) {
-    this.setData();
+  addSignificanceIndicator(qValue) {
+    return qValue + (qValue >= 1 ? '' :
+      qValue >= 0.1 ? '.' :
+        qValue >= 0.01 ? '**' :
+          '***');
   }
 
   onSort({column, direction}: SortEvent) {

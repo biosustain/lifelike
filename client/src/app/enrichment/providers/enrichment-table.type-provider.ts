@@ -70,7 +70,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
         openSuggested: true,
         create: (options?: CreateActionOptions): Promise<FilesystemObject> => {
           const object = new FilesystemObject();
-          object.filename = 'Untitled Enrichment Table';
+          object.filename = '';
           object.mimeType = ENRICHMENT_TABLE_MIMETYPE;
           object.parent = options.parent;
 
