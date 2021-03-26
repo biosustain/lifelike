@@ -51,21 +51,16 @@ class GeneOrganismSchema(Schema):
 class EnrichmentSchema(GeneOrganismSchema):
     analysis = fields.Str(validate=OneOf(['fisher']))
 
-from time import time
-
 @bp.route('/enrich-with-go-terms', methods=['POST'])
 @auth.login_required
 @use_args(EnrichmentSchema)
 def enrich_go(args):
-    s = time()
     gene_names = args['geneNames']
     organism = args['organism']
     analysis = args['analysis']
-    print(f"Start request for {organism} and {len(gene_names)} genes")
     cache_id = '_'.join(['enrich_go', ','.join(gene_names), analysis, str(organism)])
     enrichment_visualisation = get_enrichment_visualisation_service()
     result = redis_cached(
             cache_id, partial(enrichment_visualisation.enrich_go, gene_names, analysis, organism)
     ), dict(mimetype='application/json')
-    print(f"Request processing: {time()-s}s")
     return result
