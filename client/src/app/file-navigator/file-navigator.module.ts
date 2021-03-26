@@ -2,11 +2,11 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { SharedModule } from 'app/shared/shared.module';
+import { WordCloudModule } from 'app/word-cloud/word-cloud.module';
 
 import { ObjectNavigatorComponent } from './components/object-navigator.component';
 import { AssociatedMapsComponent } from './components/associated-maps.component';
 import { FileBrowserModule } from '../file-browser/file-browser.module';
-import { NavigatorCloudViewerModule } from './word-cloud/navigator-cloud-viewer.module';
 
 
 
@@ -18,7 +18,7 @@ import { NavigatorCloudViewerModule } from './word-cloud/navigator-cloud-viewer.
   imports: [
     CommonModule,
     SharedModule,
-    NavigatorCloudViewerModule,
+    WordCloudModule,
     FileBrowserModule,
   ]
 })

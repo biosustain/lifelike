@@ -1,5 +1,7 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, OnChanges, SimpleChanges, } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, } from '@angular/core';
 import { FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
+
+import { uniqueId } from 'lodash';
 
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -13,19 +15,21 @@ import {
   DefaultOrderByOptions,
   OrderDirection,
 } from 'app/interfaces/annotation-filter.interface';
-import { SortingAlgorithm } from '../../schemas/common';
+import { SortingAlgorithm } from 'app/word-cloud/sorting/sorting-algorithms';
 
 @Component({
   selector: 'app-annotation-filter',
   templateUrl: './annotation-filter.component.html',
   styleUrls: ['./annotation-filter.component.scss'],
 })
-export class AnnotationFilterComponent<T extends AnnotationFilterEntity> implements OnInit, OnDestroy, OnChanges {
+export class AnnotationFilterComponent<T extends AnnotationFilterEntity> implements OnInit, OnDestroy {
+  id = uniqueId('AnnotationFilterComponent-');
+
   _annotationData: T[];
   @Input() set annotationData(data: T[]) {
     this._annotationData = data;
     // Get all the annotation types to populate the legend
-    this._annotationData.forEach((annotation) => {
+    data.forEach((annotation) => {
       this.legend.set(annotation.type, annotation.color);
     });
 
@@ -48,6 +52,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
   }
 
   @Output() wordVisibilityOutput: EventEmitter<Map<string, boolean>>;
+
   _sortingAlgorithm: SortingAlgorithm;
   @Input() set sortingAlgorithm(sa: SortingAlgorithm) {
     this._sortingAlgorithm = sa;
@@ -58,9 +63,10 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     return this._sortingAlgorithm;
   }
 
-  ngOnChanges({sortingAlgorithm}: SimpleChanges) {
-    if (sortingAlgorithm) {
-      console.log(sortingAlgorithm);
+  setDefaultFrequency() {
+    const {filtersForm, sortingAlgorithm} = this;
+    if (filtersForm && sortingAlgorithm.hasOwnProperty('default')) {
+      this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default);
     }
   }
 
@@ -77,6 +83,9 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
   filtersForm: FormGroup;
   filtersFormValueChangesSub: Subscription;
 
+  minimumValueInputId: string;
+  maximumValueInputId: string;
+
   selectedGroupByOption: string;
   selectedOrderByOption: string;
   selectedOrderDirection: string;
@@ -88,10 +97,6 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
 
   initialized = false;
 
-  @ViewChild('minimumValueInputId', {static: false}) minimumValueInputId;
-
-  // @ViewChild('maximumValueInputId', {static: false}) maximumValueInputId;
-
   constructor() {
     this.outputSubject = new Subject<boolean>();
 
@@ -102,6 +107,9 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     this.selectedOrderByOption = DefaultOrderByOptions.FREQUENCY;
     this.selectedOrderDirection = OrderDirection.DESCENDING;
 
+    this.minimumValueInputId = `${this.id}-mininum-frequency-input`;
+    this.maximumValueInputId = `${this.id}-maximum-frequency-input`;
+
     this.wordVisibilityOutput = new EventEmitter<Map<string, boolean>>();
 
     this.setGroupByOptions();
@@ -109,13 +117,6 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     this.setOrderDirections();
 
     this.legend = new Map<string, string>();
-  }
-
-  setDefaultFrequency() {
-    const {filtersForm, sortingAlgorithm} = this;
-    if (filtersForm && sortingAlgorithm.hasOwnProperty('default')) {
-      this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default);
-    }
   }
 
   ngOnInit() {
@@ -143,8 +144,9 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity> impleme
     );
 
     // The very first time we get the annotationData, set the default values for the frequency filters
-    this.setDefaultFrequency();
-
+    if (this.sortingAlgorithm.hasOwnProperty('default')) {
+      this.filtersForm.get('minimumValue').setValue(this.sortingAlgorithm.default);
+    }
     // TODO: Uncomment if we bring back max frequency
     // this.filtersForm.get('maximumValue').setValue(this.annotationData[0].frequency);
 
