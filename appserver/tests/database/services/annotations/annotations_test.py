@@ -1383,3 +1383,31 @@ def test_compound_use_chemical_nlp(
     keywords = {o.keyword: o.meta.type for o in annotations}
 
     assert 'Lead' not in keywords
+
+
+def test_global_inclusion_normalized_already_in_lmdb(
+    global_inclusion_normalized_already_in_lmdb_setup,
+    mock_global_gene_inclusion,
+    mock_gene_to_organism_il8_human_gene,
+    mock_get_gene_IL8_CXCL8_for_global_gene_inclusion,
+    get_annotation_service,
+    get_entity_service
+):
+    annotation_service = get_annotation_service
+    entity_service = get_entity_service
+
+    pdf = path.join(
+        directory,
+        'pdf_samples/annotations_test/test_global_inclusion_normalized_already_in_lmdb.json')  # noqa
+
+    with open(pdf, 'rb') as f:
+        parsed = json.load(f)
+
+    _, parsed = read_parser_response(parsed)
+    annotations = annotate_pdf(
+        annotation_service=annotation_service,
+        entity_service=entity_service,
+        parsed=parsed
+    )
+
+    assert annotations[1].primary_name == 'CXCL8'
