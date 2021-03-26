@@ -1,23 +1,9 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  Input,
-  OnDestroy,
-  ViewChild,
-  ViewEncapsulation,
-  OnChanges,
-  EventEmitter,
-  Output,
-  SimpleChanges
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
 
 import { WordCloudFilterEntity } from 'app/interfaces/filter.interface';
 
 import * as d3 from 'd3';
 import * as cloud from 'd3.layout.cloud';
-import { map, observeOn } from 'rxjs/operators';
-import { BehaviorSubject, Subject, animationFrameScheduler } from 'rxjs';
 
 /**
  * Throttles calling `fn` once per animation frame
@@ -61,7 +47,7 @@ function deepCopy(data) {
 const createResizeObserver = (callback, container) => {
   const resize = throttled(async (width, height) => {
     const w = container.clientWidth;
-    await callback(width, height);
+    await callback(width, height - 42);
     if (w < container.clientWidth) {
       // If the container size shrank during chart resize, let's assume
       // scrollbar appeared. So we resize again with the scrollbar visible -
@@ -98,12 +84,13 @@ const createResizeObserver = (callback, container) => {
   styleUrls: ['./word-cloud.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
+export class WordCloudComponent implements AfterViewInit, OnDestroy {
   @ViewChild('cloudWrapper', {static: false}) cloudWrapper!: ElementRef;
   @ViewChild('hiddenTextAreaWrapper', {static: false}) hiddenTextAreaWrapper!: ElementRef;
   @ViewChild('svg', {static: false}) svg!: ElementRef;
   @ViewChild('g', {static: false}) g!: ElementRef;
-  @ViewChild('childrenContainer', {static: false}) childrenContainer!: ElementRef;
+
+  private _data: (string | WordCloudNode)[] = [];
 
   clickableWords = false;
   WORD_CLOUD_MARGIN = 10;
@@ -118,161 +105,41 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
   MIN_FONT = 12;
   MAX_FONT = 48;
 
-  layout: any;
+  private layout: any;
   resizeObserver: any;
-  $wordElementsPipe;
-  mutateData: false;
-
-  enter(elements: any) {
-    return elements
-      .append('text')
-      .style('fill', ({color}) => color)
-      .attr('text-anchor', 'middle')
-      .text(({text}) => text);
-  }
-
-  update(elements: any) {
-    return elements;
-  }
-
-  join(elements: any) {
-    return elements
-      .style('font-size', (d) => d.size + 'px')
-      .call((transElements: any) =>
-        transElements
-          .transition()
-          .attr('transform', (d) => {
-            return 'translate(' + [d.x, d.y] + ') rotate(' + d.rotate + ')';
-          })
-          .ease(d3.easeSin)
-          .duration(1000)
-      );
-  }
-
-  exit(elements: any) {
-    return elements
-      .remove();
-  }
-
-  @Input() data;
-  @Output() dataChange = new EventEmitter<number>();
-  @Input() responsive = true;
-  @Input('layout') layoutPatch;
-
-  @Output('enter') enterPatch: EventEmitter<any> = new EventEmitter();
-  @Output('update') updatePatch: EventEmitter<any> = new EventEmitter();
-  @Output('join') joinPatch: EventEmitter<any> = new EventEmitter();
-  @Output('exit') exitPatch: EventEmitter<any> = new EventEmitter();
-
-  layoutUpdate;
-
-  $resize;
-
-  resize() {
-    this.$resize.next(this.getCloudSvgDimensions());
-  }
 
   constructor() {
-    this.$resize = new Subject().pipe(
-      observeOn(animationFrameScheduler)
-    );
-
     this.layout = cloud()
-      .padding(3)
+      .padding(1)
       // ~~ faster substitute for Math.floor() for positive numbers
       // http://rocha.la/JavaScript-bitwise-operators-in-practice
       // tslint:disable-next-line:no-bitwise
+      // .rotate(d => d.rotate || (~~(Math.random() * 6) - 3) * 30);
       .rotate(_ => 0);
-
-    this.$wordElementsPipe = this.dataChange.pipe(
-      map((data: any) => {
-        const placedWords = data.filter(({shown}) => shown);
-        const elements = d3.select(this.g.nativeElement)
-          .selectAll('text')
-          .data(placedWords, ({text}) => text);
-        return this.join(
-          elements
-            .join(
-              enter => this.enter(enter)
-                .call(e =>
-                  this.enterPatch.emit(e)
-                ),
-              update => this.update(update)
-                .call(e => this.updatePatch.emit(e)),
-              exit => this.exit(exit)
-                .call(e => this.exitPatch.emit(e))
-            )
-        )
-          .call(e => this.joinPatch.emit(e));
-      })
-    );
-
-    this.layoutUpdate = new BehaviorSubject([]);
-    const resizeCallback = function(entries) {
-      const entry = entries[0];
-      const width = entry.contentRect.width;
-      const height = entry.contentRect.height;
-      // When its container's display is set to 'none' the callback will be called with a
-      // size of (0, 0), which will cause the chart to lost its original height, so skip
-      // resizing in such case.
-      if (width === 0 && height === 0) {
-        return;
-      }
-      this.$resize.next({width, height});
-    };
-    // @ts-ignore until https://github.com/microsoft/TypeScript/issues/37861 implemented
-    this.resizeObserver = new ResizeObserver(resizeCallback.bind(this));
   }
 
-
-  parseData(data) {
+  @Input('data') set data(data) {
     const count: any = {};
     if (Array.isArray(data) && data.every(d => typeof d === 'string' && (count[d] = (count[d] || 0) + 1))) {
-      return Object.entries(count).map(([text, frequency]) => ({text, frequency}));
+      this._data = Object.entries(count).map(([text, frequency]) => ({text, frequency}));
     } else {
-      return deepCopy(data);
+      this._data = deepCopy(data);
+    }
+    if (this.svg) {
+      this.updateLayout(this._data).then(this.updateDOM.bind(this));
     }
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    const {
-      data,
-      responsive,
-      layoutPatch
-    } = changes;
-    if (responsive) {
-      this.setResizeObserver(responsive.currentValue);
-    }
-    if (layoutPatch) {
-      this.layout = layoutPatch.currentValue(
-        this.layout
-      );
-    }
-    if (data) {
-      this.layoutUpdate.next(this.parseData(data.currentValue));
-    }
+  get data() {
+    return this._data;
   }
 
-  setResizeObserver(enabled) {
-    if (enabled) {
-      this.resizeObserver.observe(this.cloudWrapper.nativeElement);
-    } else {
-      if (this.resizeObserver) {
-        this.resizeObserver.disconnect();
-      }
-    }
-  }
 
   ngAfterViewInit() {
-    this.setResizeObserver(this.responsive);
+    const {width, height} = this.getCloudSvgDimensions();
     this.layout.canvas(this.hiddenTextAreaWrapper.nativeElement);
-    this.$wordElementsPipe.subscribe(d => {
-      console.log(`Word elements: ${d}`);
-    });
-    this.$resize.subscribe(this.onResize.bind(this));
-
-    this.layoutUpdate.next(this.parseData(this.data));
-    this.layoutUpdate.subscribe(data => this.updateLayout(data));
+    this.onResize(width, height).then();
+    this.resizeObserver = createResizeObserver(this.onResize.bind(this), this.cloudWrapper.nativeElement);
   }
 
   ngOnDestroy() {
@@ -280,14 +147,11 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
     delete this.resizeObserver;
   }
 
-  onResize({width, height}) {
+  onResize(width, height) {
     // Get the svg element and update
     d3.select(this.svg.nativeElement)
       .attr('width', width)
       .attr('height', height);
-
-    d3.select(this.childrenContainer.nativeElement)
-      .attr('style', `left: ${width / 2}px; top: ${height / 2}px;`);
 
     // Get and update the grouping element
     d3.select(this.g.nativeElement)
@@ -295,18 +159,7 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     this.layout.size([width, height]);
 
-    return this.layoutUpdate.next(this.data);
-  }
-
-  /**
-   * Given dataset return normalised font-size generator
-   * @param data represents a collection of AnnotationFilterEntity data
-   */
-  fontSizeGenerator(data) {
-    const freqValues = data.map(d => d.frequency as number);
-    const maximumCount = Math.max(...freqValues);
-    const minimumCount = Math.min(...freqValues);
-    return d => this.getFontSize((d.frequency - minimumCount) / maximumCount);
+    return this.updateLayout(this.data).then(this.updateDOM.bind(this));
   }
 
   getFontSize(normSize) {
@@ -317,23 +170,27 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
    * Draws a word cloud with the given FilterEntity inputs using the d3.layout.cloud library.
    * @param data represents a collection of FilterEntity data
    */
-  updateLayout(data: []) {
-    if (data.length) {
+  updateLayout(data) {
+    // Reference for this code: https://www.d3-graph-gallery.com/graph/wordcloud_basic
+    const freqValues = data.map(d => d.frequency as number);
+    const maximumCount = Math.max(...freqValues);
+    const minimumCount = Math.min(...freqValues);
+
+    return new Promise(resolve => {
       // Constructs a new cloud layout instance (it runs the algorithm to find the position of words)
-      return this.layout
+      this.layout
         .words(data)
-        .fontSize(this.fontSizeGenerator(data))
+        .fontSize(d => this.getFontSize((d.frequency - minimumCount) / maximumCount))
         .on('end', placedWords => {
           const notPlaced = data.length - placedWords.length;
           if (notPlaced) {
             console.warn(`${notPlaced} words did not fit into cloud`);
           }
-          this.dataChange.emit(this.data);
+          resolve(placedWords);
         })
         .start();
-    } else {
-      this.dataChange.emit([]);
-    }
+    });
+
   }
 
 
@@ -349,4 +206,43 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
       height: cloudWrapper.offsetHeight - margin.top - margin.bottom
     };
   }
+
+
+  /**
+   * Creates the word cloud svg and related elements. Also creates 'text' elements for each value in the 'words' input.
+   * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
+   */
+  /**
+   * Updates the word cloud svg and related elements. Distinct from createInitialWordCloudElements in that it finds the existing elements
+   * and updates them if possible. Any existing words will be re-scaled and moved to their new positions, removed words will be removed,
+   * and added words will be drawn.
+   * @param words list of objects representing terms and their position info as decided by the word cloud layout algorithm
+   */
+  private updateDOM(words) {
+    // Get the word elements
+    const wordElements = d3.select(this.g.nativeElement)
+      .selectAll('text')
+      .data(words, (d) => d.text);
+
+    // Remove any words that have been removed by either the algorithm or the user
+    wordElements.exit().remove();
+
+    // Add any new words
+    return wordElements
+      .enter()
+      .append('text')
+      .attr('text-anchor', 'middle')
+      .text((d) => d.text)
+      .merge(wordElements)
+      .style('fill', (d) => d.color)
+      .style('font-size', (d) => d.size + 'px')
+      .transition()
+      .attr('transform', (d) => {
+        return 'translate(' + [d.x, d.y] + ') rotate(' + d.rotate + ')';
+      })
+      .ease(d3.easeSin)
+      .duration(1000);
+  }
+
+
 }

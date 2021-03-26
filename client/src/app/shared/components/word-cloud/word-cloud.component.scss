@@ -2,20 +2,6 @@
 @import '../../../../../node_modules/bootstrap/scss/variables';
 @import '../../../../scss/variables';
 
-.cloud-wrapper {
-  //position: relative;
-}
-
-.overlayered-children {
-  position: absolute;
-  top: 0;
-  left: 0;
-
-  &:empty {
-    display: none;
-  }
-}
-
 .min-h-100-l {
   min-height: 200px;
 }
