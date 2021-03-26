@@ -276,7 +276,6 @@ export class WordCloudComponent implements AfterViewInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy() {
-    console.count('ngOnDestroy');
     this.resizeObserver.disconnect();
     delete this.resizeObserver;
   }

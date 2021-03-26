@@ -12,9 +12,12 @@ import {
 } from '../../drawing-tool/services/interfaces';
 import { AppUser, OrganismAutocomplete, User } from '../../interfaces';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
-import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
 import { createObjectDragImage, createProjectDragImage } from '../utils/drag';
 import { FilePrivileges, ProjectPrivileges } from './privileges';
+import {
+  FILESYSTEM_OBJECT_TRANSFER_TYPE,
+  FilesystemObjectTransferData,
+} from '../providers/data-transfer-data/filesystem-object-data.provider';
 
 // These are legacy mime type definitions that have to exist in this file until
 // all the file type-specific query methods on FilesystemObject are moved to ObjectTypeProviders
@@ -447,6 +450,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   }
 
   addDataTransferData(dataTransfer: DataTransfer) {
+    // TODO: Move to DataTransferData framework
     createObjectDragImage(this).addDataTransferData(dataTransfer);
 
     const filesystemObjectTransfer: FilesystemObjectTransferData = {
