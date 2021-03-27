@@ -64,19 +64,21 @@ export class EnrichmentTable {
         tableHeader.push(tableHeaderLine2);
       }
 
+      // if enrichment is not annotated, annotatedText == text
+      // that's why can set text properties like this
       for (const resultGene of result.genes) {
         const row: TableCell[] = [{
-          text: resultGene.imported,
+          text: resultGene.annotatedImported || resultGene.imported,
         }];
 
         if (resultGene.domains) {
           // There was a match
           row.push({
-            text: resultGene.matched,
+            text: resultGene.annotatedMatched,
           });
 
           row.push({
-            text: resultGene.fullName,
+            text: resultGene.annotatedFullName,
             singleLink: {
               link: resultGene.link,
               linkText: 'NCBI Link',
@@ -89,7 +91,7 @@ export class EnrichmentTable {
               const geneDomainResult = resultGene.domains[domainId] && resultGene.domains[domainId][label];
               if (geneDomainResult) {
                 row.push({
-                  text: geneDomainResult.annotatedText,  // if enrichment is not annotated, annotatedText == text
+                  text: geneDomainResult.annotatedText,
                   singleLink: {
                     link: geneDomainResult.link,
                     linkText: `${domainId} Link`,
