@@ -230,7 +230,7 @@ class CountPerRowUSA(SortedAnnotation):
 sorted_annotations_dict = {
     SumLogCountSA.id: SumLogCountSA,
     FrequencySA.id: FrequencySA,
-    MannWhitneyUSA.id: MannWhitneyUSA,
+    # MannWhitneyUSA.id: MannWhitneyUSA, Temporarily disable
     CountPerRowUSA.id: CountPerRowUSA
 }
 
