@@ -123,23 +123,6 @@ class FileAnnotationsView(FilesystemBaseView):
         }))
 
 
-class AnnotationSelectionView(FilesystemBaseView):
-    decorators = [auth.login_required]
-
-    def get(self, hash_id: str):
-        """Fetch annotation selection configs for file."""
-        current_user = g.current_user
-
-        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
-        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
-
-        configs = {'annotation_configs': file.annotation_configs}
-
-        return jsonify({
-            'results': AnnotationGenerationRequestSchema().dump(configs)
-        })
-
-
 class EnrichmentAnnotationsView(FilesystemBaseView):
     decorators = [auth.login_required]
 
@@ -1018,6 +1001,3 @@ filesystem_bp.add_url_rule(
     'annotations/refresh',
     # TODO: this can potentially become a generic annotations refresh
     view_func=RefreshEnrichmentAnnotationsView.as_view('refresh_annotations'))
-filesystem_bp.add_url_rule(
-    'objects/<string:hash_id>/annotations/configs',
-    view_func=AnnotationSelectionView.as_view('file_annotation_configs'))

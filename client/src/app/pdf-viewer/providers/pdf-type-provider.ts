@@ -1,5 +1,5 @@
 import {
-  AbstractObjectTypeProvider,
+  AbstractObjectTypeProvider, AbstractObjectTypeProviderHelper,
   Exporter,
 } from '../../file-browser/services/object-type.service';
 import { FilesystemObject } from '../../file-browser/models/filesystem-object';
@@ -12,8 +12,9 @@ import { FilesystemService } from '../../file-browser/services/filesystem.servic
 @Injectable()
 export class PdfTypeProvider extends AbstractObjectTypeProvider {
 
-  constructor(protected readonly filesystemService: FilesystemService) {
-    super();
+  constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
+              protected readonly filesystemService: FilesystemService) {
+    super(abstractObjectTypeProviderHelper);
   }
 
 
