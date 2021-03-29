@@ -122,7 +122,7 @@ class EntityRecognitionService:
         # case insensitive NOT punctuation insensitive
         for exclusion in exclusion_list:
             if exclusion.get('text') and exclusion.get('type') == EntityType.COMPOUND.value:
-                self.exclusion_type_chemical.add(exclusion.get('text').lower())  # type: ignore
+                self.exclusion_type_compound.add(exclusion.get('text').lower())  # type: ignore
 
     def _get_annotation_type_disease_to_exclude(
         self,

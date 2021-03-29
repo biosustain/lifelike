@@ -392,7 +392,8 @@ class AnnotationService:
         token,
         entity_synonym,
         organisms_to_match,
-        fallback_organism_matches
+        fallback_organism_matches,
+        is_protein=False
     ) -> BestOrganismMatch:
         """Finds the best entity/organism pair.
 
@@ -419,7 +420,7 @@ class AnnotationService:
                 fallback_organisms_to_match: Dict[str, str] = {}
 
                 try:
-                    if token.meta.type == EntityType.PROTEIN.value:
+                    if is_protein:
                         raise KeyError  # protein doesn't prioritize
 
                     # prioritize common name match over synonym
@@ -740,7 +741,8 @@ class AnnotationService:
                         token=token,
                         entity_synonym=entity_synonym,
                         organisms_to_match=organisms_to_match,
-                        fallback_organism_matches=fallback_protein_organism_matches)
+                        fallback_organism_matches=fallback_protein_organism_matches,
+                        is_protein=True)
 
                     if isinf(best_match.closest_distance):
                         continue
