@@ -590,18 +590,7 @@ class EntityRecognitionService:
         else:
             return True
 
-    def generate_tokens(self, token: PDFWord, max_words) -> List[PDFWord]:
-        num_words = 0
-        current_token = token
-        tokens_list = []
-        while num_words < max_words:
-            tokens_list.append(current_token)
-            if not current_token.next:
-                # reached end of text
-                break
-            current_token = current_token.next
-            num_words += 1
-
+    def generate_tokens(self, tokens_list: List[PDFWord]) -> List[PDFWord]:
         prev_token = None
         new_tokens = []
 
@@ -1171,8 +1160,8 @@ class EntityRecognitionService:
 
         regex = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))
 
-        for token in tokens:
-            for current_token in self.generate_tokens(token, self.entity_max_words):
+        for i, token in enumerate(tokens):
+            for current_token in self.generate_tokens(tokens[i:self.entity_max_words + i]):
                 if (current_token.keyword.lower() in COMMON_WORDS or
                     regex.match(current_token.keyword) or
                     current_token.keyword in ascii_letters or

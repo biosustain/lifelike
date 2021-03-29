@@ -122,7 +122,6 @@ def get_nlp_entities(text: str, entities: Set[str]):
 def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
     parsed = []
     pdf_text = ''
-    prev_pdf_word = None
 
     for page in resp['pages']:
         prev_words: List[str] = []
@@ -150,10 +149,7 @@ def read_parser_response(resp: dict) -> Tuple[str, List[PDFWord]]:
                     previous_words=' '.join(
                         prev_words[-MAX_ABBREVIATION_WORD_LENGTH:]) if token['possibleAbbrev'] else '',  # noqa
                 )
-                if prev_pdf_word:
-                    prev_pdf_word.next = pdf_word
                 parsed.append(pdf_word)
-                prev_pdf_word = pdf_word
                 prev_words.append(token['text'])
                 if len(prev_words) > MAX_ABBREVIATION_WORD_LENGTH:
                     prev_words = prev_words[1:]
@@ -232,7 +228,7 @@ def _create_annotations(
         entity_id = specified_organism_tax_id
         try:
             entity_category = json.loads(
-                entity_recog.lmdb_session.species_txn.get(
+                entity_recog.lmdb.session.species_txn.get(
                     entity_synonym.encode('utf-8')))['category']
         except (TypeError, Exception):
             # could not get data from lmdb
