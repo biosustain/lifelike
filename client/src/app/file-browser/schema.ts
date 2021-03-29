@@ -237,8 +237,8 @@ export interface AnnotationMethods {
 }
 
 export interface AnnotationConfigurations {
-  excludeReferences: boolean;
-  annotationMethods: AnnotationMethods;
+  excludeReferences?: boolean;
+  annotationMethods?: AnnotationMethods;
 }
 
 export interface PDFAnnotationGenerationRequest extends AnnotationGenerationRequest {
