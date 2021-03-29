@@ -53,8 +53,6 @@ class PDFWord(PDFBase):
     heights: List[float] = attr.ib(default=attr.Factory(list))
     widths: List[float] = attr.ib(default=attr.Factory(list))
     coordinates: List[List[float]] = attr.ib(default=attr.Factory(list))
-    # type is itself, not sure how that works so set to Any for now
-    next: Optional[Any] = attr.ib(default=None)
 
 
 @attr.s(frozen=False)
