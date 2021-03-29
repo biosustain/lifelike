@@ -36,7 +36,7 @@ t_file_backup = sa.Table(
     sa.Column('hash_id'),
 )
 
-affected_tables = [t_file_backup, t_file_backup]
+affected_tables = [t_file_version, t_file_backup]
 
 
 def iter_query(query, *, batch_size):
