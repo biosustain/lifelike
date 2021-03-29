@@ -1,6 +1,6 @@
 <div class="highlight-container" *ngIf="node" (dragstart)="dragStart($event)" (mousedown)="mouseDown($event)" [ngbPopover]="annotationPopoverContent" [disablePopover]="!annotationMeta"
      [popoverTitle]="annotationMeta?.allText" triggers="click"
-     container="body" [autoClose]="false"
+     container="body" [autoClose]="'outside'"
      [class.highlight-term]="element?.tagName === 'highlight'" [style.background]="element?.tagName === 'annotation' ? annotationBackgroundColor : null"><app-highlight-text *ngFor="let child of childNodes" [highlight]="child"></app-highlight-text>{{ node.nodeValue }}</div><ng-template #annotationPopoverContent>
   <div>
     Type: {{ annotationMeta.type }}
