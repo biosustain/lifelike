@@ -1,9 +1,22 @@
-import { ComponentRef, Injectable, InjectionToken, Injector } from '@angular/core';
+import { ComponentRef, Injectable, InjectionToken, Injector, NgZone } from '@angular/core';
 import { FilesystemObject } from '../models/filesystem-object';
-import { Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { RankedItem } from '../../shared/schemas/common';
 import { CreateDialogOptions } from './object-creation.service';
 import { SearchType } from '../../search/shared';
+import {
+  ObjectEditDialogComponent,
+  ObjectEditDialogValue,
+} from '../components/dialog/object-edit-dialog.component';
+import { getObjectLabel } from '../utils/objects';
+import { finalize, map } from 'rxjs/operators';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { AnnotationsService } from './annotations.service';
+import { FilesystemService } from './filesystem.service';
+import { ErrorHandler } from '../../shared/services/error-handler.service';
+import { Progress } from '../../interfaces/common-dialog.interface';
+import { ProgressDialog } from '../../shared/services/progress-dialog.service';
+import { openModal } from '../../shared/utils/modals';
 
 export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>('objectTypeProvider');
 
@@ -31,6 +44,7 @@ export interface PreviewOptions {
 
 export interface Exporter {
   name: string;
+
   export(): Observable<File>;
 }
 
@@ -64,6 +78,15 @@ export interface ObjectTypeProvider {
   getCreateDialogOptions(): RankedItem<CreateDialogAction>[];
 
   /**
+   * Open the edit dialog for the provided object.
+   *
+   * @param target the object
+   * @param options options for the dialog
+   * @return a promise that resolves after edit or fails if editing is cancelled
+   */
+  openEditDialog(target: FilesystemObject, options?: {}): Promise<any>;
+
+  /**
    * Get a list of search types for the content search.
    */
   getSearchTypes(): SearchType[];
@@ -76,10 +99,54 @@ export interface ObjectTypeProvider {
 }
 
 /**
+ * A collection of methods used by {@link AbstractObjectTypeProvider} separated so
+ * that when additional DI dependencies are required, it doesn't require updating
+ * all subclasses of {@link AbstractObjectTypeProvider}.
+ */
+@Injectable()
+export class AbstractObjectTypeProviderHelper {
+  constructor(protected readonly modalService: NgbModal,
+              protected readonly annotationsService: AnnotationsService,
+              protected readonly filesystemService: FilesystemService,
+              protected readonly progressDialog: ProgressDialog,
+              protected readonly errorHandler: ErrorHandler,
+              protected readonly ngZone: NgZone) {
+  }
+
+  openEditDialog(target: FilesystemObject, options: {} = {}): Promise<any> {
+    const dialogRef = openModal(this.modalService, ObjectEditDialogComponent);
+    dialogRef.componentInstance.object = target;
+    dialogRef.componentInstance.accept = ((value: ObjectEditDialogValue) => {
+      const progressObservable = new BehaviorSubject<Progress>(new Progress({
+        status: `Saving changes to ${getObjectLabel(target)}...`,
+      }));
+      const progressDialogRef = this.progressDialog.display({
+        title: 'Working...',
+        progressObservable,
+      });
+      return this.filesystemService.save([target.hashId], value.request, {
+        [target.hashId]: target,
+      })
+        .pipe(
+          map(() => value),
+          finalize(() => progressDialogRef.close()),
+          this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
+          this.errorHandler.create({label: 'Edit object'}),
+        )
+        .toPromise();
+    });
+    return dialogRef.result;
+  }
+}
+
+/**
  * A base class for object type providers.
  */
 export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   abstract handles(object: FilesystemObject): boolean;
+
+  constructor(private readonly helper: AbstractObjectTypeProviderHelper) {
+  }
 
   createPreviewComponent(object: FilesystemObject, contentValue$: Observable<Blob>,
                          options?: PreviewOptions): Observable<ComponentRef<any> | undefined> {
@@ -88,6 +155,10 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
 
   getCreateDialogOptions(options?: CreateDialogOptions) {
     return [];
+  }
+
+  openEditDialog(target: FilesystemObject, options: {} = {}): Promise<any> {
+    return this.helper.openEditDialog(target, options);
   }
 
   getSearchTypes(): SearchType[] {
@@ -104,12 +175,15 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
  * A generic file type provider that is returned when we don't know what type of object
  * it is or we don't support it.
  */
+@Injectable()
 export class DefaultObjectTypeProvider extends AbstractObjectTypeProvider {
+  constructor(abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper) {
+    super(abstractObjectTypeProviderHelper);
+  }
 
   handles(object: FilesystemObject): boolean {
     return true;
   }
-
 }
 
 /**
@@ -117,9 +191,8 @@ export class DefaultObjectTypeProvider extends AbstractObjectTypeProvider {
  */
 @Injectable()
 export class ObjectTypeService {
-  private defaultProvider = new DefaultObjectTypeProvider();
-
-  constructor(protected readonly injector: Injector) {
+  constructor(protected readonly injector: Injector,
+              private readonly defaultProvider: DefaultObjectTypeProvider) {
   }
 
   /**
