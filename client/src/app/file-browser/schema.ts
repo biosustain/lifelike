@@ -204,10 +204,6 @@ export interface ObjectVersionHistoryResponse extends ResultList<ObjectVersionDa
   object: FilesystemObjectData;
 }
 
-export interface AnnotationSelectionResponse {
-  annotationConfigs: AnnotationConfigurations;
-}
-
 // ========================================
 // Locks
 // ========================================
@@ -237,8 +233,8 @@ export interface AnnotationMethods {
 }
 
 export interface AnnotationConfigurations {
-  excludeReferences: boolean;
-  annotationMethods: AnnotationMethods;
+  excludeReferences?: boolean;
+  annotationMethods?: AnnotationMethods;
 }
 
 export interface PDFAnnotationGenerationRequest {

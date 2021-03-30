@@ -44,11 +44,12 @@ export class TableCompleteComponent implements OnChanges {
     }
   }
 
-  addSignificanceIndicator(qValue) {
-    return qValue + (qValue >= 1 ? '' :
-      qValue >= 0.1 ? '.' :
-        qValue >= 0.01 ? '**' :
-          '***');
+  significanceIndicator(qValue) {
+    return (qValue >= .1 ? '' :
+      qValue >= 0.05 ? '.' :
+        qValue >= 0.01 ? '*' :
+          qValue >= 0.001 ? '**' :
+            '***');
   }
 
   onSort({column, direction}: SortEvent) {
