@@ -18,24 +18,28 @@
         {{ selected.entity.data.detail }}
       </div>
     </div>
-  </div>
 
-  <div class="module-body">
-    <div class="mb-4" *ngIf="(selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)
-    || (selected.entity.data?.sources && selected.entity.data?.sources.length)">
-      <h5>Links</h5>
+    <ng-container *ngIf="selected.entity.data?.sources && selected.entity.data?.sources.length">
+      <fieldset class="fieldset-properties mt-4">
+        <legend>Sources</legend>
+        <app-links-panel title="Sources" singularTitle="Source" fontAwesomeIcon="far fa-book"
+                         [ngModel]="selected.entity.data.sources"
+                         [showHeader]="false" [editable]="false"></app-links-panel>
+      </fieldset>
+    </ng-container>
 
-      <app-sources (executeFileSource)="goToSource($event)" [links]="selected.entity.data?.sources"></app-sources>
-      <ul class="list-unstyled m-0" *ngIf="(selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)">
-        <li *ngFor='let h of selected.entity.data?.hyperlinks; let i = index;' class="text-truncate">
-          <a [href]="h.url" (click)="goToLink(h.url); $event.preventDefault()"
-             [ngbTooltip]="h.url" container="body">{{ h.url }}</a>
-        </li>
-      </ul>
-    </div>
+    <ng-container
+      *ngIf="selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length">
+      <fieldset class="fieldset-properties mt-4">
+        <legend>Hyperlinks</legend>
+        <app-links-panel title="Hyperlinks" singularTitle="Hyperlink"
+                         [ngModel]="selected.entity.data.hyperlinks"
+                         [showHeader]="false" [editable]="false"></app-links-panel>
+      </fieldset>
+    </ng-container>
 
     <div *ngIf="name || selected.entity.data?.search">
-      <fieldset class="fieldset-properties">
+      <fieldset class="fieldset-properties mt-4">
         <legend>Search Internal <i class="fas fa-external-link-alt ml-1"></i></legend>
 
         <ul class="list-unstyled m-0">

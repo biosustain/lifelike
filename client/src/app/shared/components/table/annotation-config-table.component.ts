@@ -10,6 +10,7 @@ export class AnnotationConfigurationTableComponent {
   @Input() headers: string[];
   @Input() models: string[];
   @Input() form: FormGroup;
+  @Input() fileType: string;
 
   constructor() {}
 

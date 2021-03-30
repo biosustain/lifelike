@@ -98,16 +98,27 @@ export interface FilesystemObjectData {
   annotationConfigs: AnnotationConfigurations;
 }
 
-interface ObjectContentValueRequest {
+interface ContentValue {
   contentValue: Blob;
 }
 
-/**
- * You can specify content one of three ways.
- */
-export type ObjectContentSource = { contentHashId: string }
-  | { contentUrl: string }
-  | ObjectContentValueRequest;
+interface ContentUrl {
+  contentUrl: string;
+}
+
+interface ContentObject {
+  contentHashId: string;
+}
+
+type AllContent = ContentValue & ContentUrl & ContentObject;
+
+// This type just means that you can only define either contentValue, contentUrl, OR
+// contentHashId but not a combination of any of those.
+// We use Record<T, never> to make all the keys of T to 'never', then we use
+// Partial<T> to make the keys optional so the end result is { wantThis: any, dontWant?: never, ... }
+export type ObjectContentSource = (ContentValue & Partial<Record<keyof Omit<AllContent, keyof ContentValue>, never>>)
+  | (ContentUrl & Partial<Record<keyof Omit<AllContent, keyof ContentUrl>, never>>)
+  | (ContentObject & Partial<Record<keyof Omit<AllContent, keyof ContentObject>, never>>);
 
 // Requests
 // ----------------------------------------
@@ -127,7 +138,7 @@ export type ObjectSearchRequest = ({
 /**
  * Bulk update request.
  */
-export interface BulkObjectUpdateRequest extends Partial<ObjectContentValueRequest> {
+export interface BulkObjectUpdateRequest extends Partial<ContentValue> {
   filename?: string;
   parentHashId?: string;
   description?: string;
@@ -171,7 +182,7 @@ export interface ObjectExportRequest {
 // Requests
 // ----------------------------------------
 
-export interface ObjectBackupCreateRequest extends ObjectContentValueRequest {
+export interface ObjectBackupCreateRequest extends ContentValue {
   hashId: string;
 }
 
@@ -191,10 +202,6 @@ export interface ObjectVersionData {
 
 export interface ObjectVersionHistoryResponse extends ResultList<ObjectVersionData> {
   object: FilesystemObjectData;
-}
-
-export interface AnnotationSelectionResponse {
-  annotationConfigs: AnnotationConfigurations;
 }
 
 // ========================================
@@ -230,8 +237,8 @@ export interface AnnotationMethods {
 }
 
 export interface AnnotationConfigurations {
-  excludeReferences: boolean;
-  annotationMethods: AnnotationMethods;
+  excludeReferences?: boolean;
+  annotationMethods?: AnnotationMethods;
 }
 
 export interface PDFAnnotationGenerationRequest extends AnnotationGenerationRequest {

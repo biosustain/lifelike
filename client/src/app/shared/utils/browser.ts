@@ -2,6 +2,22 @@ import { FileViewComponent } from '../../pdf-viewer/components/file-view.compone
 import { WorkspaceManager } from '../workspace-manager';
 import { escapeRegExp } from 'lodash';
 
+export function toValidLink(url: string) {
+  let newUrl: string;
+  // Watch out for javascript:!
+  if (url.match(/^(http|ftp)s?:\/\//i)) {
+    newUrl = url;
+  } else if (url.match(/^\/\//i)) {
+    newUrl = 'http:' + url;
+  } else if (url.match(/^mailto:/i)) {
+    newUrl = url;
+  } else {
+    newUrl = 'http://' + url;
+  }
+  const urlObject = new URL(newUrl);
+  return newUrl;
+}
+
 /**
  * Open a link given by the URL. Handles mailto: and poorly formatted URLs.
  * @param url the URL
@@ -12,16 +28,8 @@ export function openLink(url: string, target = '_blank'): boolean {
     return false;
   }
 
-  // Watch out for javascript:!
-  if (url.match(/^(http|ftp)s?:\/\//i)) {
-    window.open(url, target);
-  } else if (url.match(/^\/\//i)) {
-    window.open('http:' + url, target);
-  } else if (url.match(/^mailto:/i)) {
-    window.open(url);
-  } else {
-    window.open('http://' + url, target);
-  }
+  url = toValidLink(url);
+  window.open(url, target);
 
   return true;
 }
@@ -47,7 +55,7 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
   if (openInternally) {
     let m;
 
-    m = pathSearchHash.match(/^\/projects\//);
+    m = pathSearchHash.match(/^\/projects\/[^\/]+\/([^\/]+)\/([^\/#?]+)/);
     if (m != null) {
       workspaceManager.navigateByUrl(pathSearchHash, {
         newTab: true,
@@ -63,6 +71,17 @@ export function openPotentialInternalLink(workspaceManager: WorkspaceManager, ur
           }
           return false;
         },
+      });
+
+      return true;
+    }
+
+    m = pathSearchHash.match(/^\/projects\/([^\/]+)/);
+    if (m != null) {
+      workspaceManager.navigateByUrl(pathSearchHash, {
+        newTab: true,
+        sideBySide: true,
+        matchExistingTab: `^/+projects/${escapeRegExp(m[1])}`,
       });
 
       return true;

@@ -1,11 +1,17 @@
 import datetime
+import pytest
+
 from collections import namedtuple
 from typing import Optional
 
-import pytest
-
-from neo4japp.models import AppUser, Projects, projects_collaborator_role, Files, FileContent, \
+from neo4japp.models import (
+    AppUser,
+    Files,
+    FileContent,
+    Projects,
+    projects_collaborator_role,
     file_collaborator_role
+)
 from neo4japp.services import AccountService
 from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider
 
