@@ -1,7 +1,7 @@
 from typing import List
 
 from neo4japp.constants import EnrichmentDomain
-from neo4japp.exceptions import InvalidArgument
+from neo4japp.exceptions import ServerException
 from neo4japp.models import DomainURLsMap
 from neo4japp.services import KgService
 from neo4japp.services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
@@ -69,7 +69,13 @@ class EnrichmentTableService(KgService):
         ).data()
         result_list = []
         domain = self.session.query(DomainURLsMap).filter(
-                                        DomainURLsMap.domain == 'NCBI_Gene').one()
+            DomainURLsMap.domain == 'NCBI_Gene').one_or_none()
+
+        if domain is None:
+            raise ServerException(
+                title='Could not create enrichment table',
+                message='There was a problem finding NCBI domain URLs.')
+
         for meta_result in result:
             item = {'x': meta_result['x'], 'neo4jID': meta_result['neo4jID'], 's': meta_result['s']}
             if (meta_result['x'] is not None):

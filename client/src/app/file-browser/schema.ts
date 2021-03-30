@@ -6,7 +6,6 @@ import {
 } from '../pdf-viewer/annotation-type';
 import { AppUser, OrganismAutocomplete } from '../interfaces';
 import { PaginatedRequestOptions, ResultList } from '../shared/schemas/common';
-import { EnrichmentResult, EnrichmentTextMapping } from 'app/enrichment/models/enrichment-document';
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 
 // ========================================

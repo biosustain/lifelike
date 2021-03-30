@@ -1,6 +1,7 @@
 import attr
 import json
 import os
+import time
 
 from typing import Dict, List
 
@@ -193,12 +194,15 @@ class KgService(HybridDBDao):
         ncbi_gene_ids: List[int],
     ):
         query = self.get_uniprot_genes_query()
+        start = time.time()
         result = self.graph.run(
             query,
             {
                 'ncbi_gene_ids': ncbi_gene_ids,
             }
         ).data()
+        print(f'Time to get uniprot genes {time.time() - start}')
+
         result_list = []
         domain = self.session.query(DomainURLsMap).filter(
                                         DomainURLsMap.domain == 'uniprot').one()
@@ -218,12 +222,15 @@ class KgService(HybridDBDao):
         ncbi_gene_ids: List[int],
     ):
         query = self.get_string_genes_query()
+        start = time.time()
         result = self.graph.run(
             query,
             {
                 'ncbi_gene_ids': ncbi_gene_ids,
             }
         ).data()
+        print(f'Time to get string genes {time.time() - start}')
+
         result_list = []
         for meta_result in result:
             item = {'result': meta_result['x']}
@@ -313,12 +320,15 @@ class KgService(HybridDBDao):
         taxID: str
     ):
         query = self.get_biocyc_genes_query()
+        start = time.time()
         result = self.graph.run(
             query,
             {
                 'ncbi_gene_ids': ncbi_gene_ids,
             }
         ).data()
+        print(f'Time to get biocyc genes {time.time() - start}')
+
         result_list = []
         for meta_result in result:
             item = {'result': meta_result['x']}
@@ -342,12 +352,15 @@ class KgService(HybridDBDao):
         query = self.get_go_genes_query()
         numbers = range(0, len(ncbi_gene_ids))
         gene_tuples = list(zip(ncbi_gene_ids, numbers))
+        start = time.time()
         result = self.graph.run(
             query,
             {
                 'gene_tuples': gene_tuples
             }
         ).data()
+        print(f'Time to get GO genes {time.time() - start}')
+
         result_list = []
         domain = 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
         for meta_result in result:
@@ -363,12 +376,15 @@ class KgService(HybridDBDao):
         ncbi_gene_ids: List[int],
     ):
         query = self.get_regulon_genes_query()
+        start = time.time()
         result = self.graph.run(
             query,
             {
                 'ncbi_gene_ids': ncbi_gene_ids,
             }
         ).data()
+        print(f'Time to get regulon genes {time.time() - start}')
+
         result_list = []
         for meta_result in result:
             item = {'result': meta_result['x']}

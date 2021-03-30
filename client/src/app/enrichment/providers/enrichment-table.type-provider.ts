@@ -103,7 +103,11 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
                 from(this.objectCreationService.executePutWithProgressDialog({
                   ...(value.request as Omit<ObjectCreateRequest, keyof ObjectContentSource>),
                   contentValue: blob,
-                }))),
+                }, {
+                  organism: {
+                    organism_name: document.organism,
+                    synonym: document.organism,
+                    tax_id: document.taxID}}))),
               finalize(() => progressDialogRef.close()),
             ).toPromise();
           });
