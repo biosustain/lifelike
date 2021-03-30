@@ -522,10 +522,22 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                                 'loLocationOffset') > prev_index and anno.get(
                                     'hiLocationOffset') <= index]
 
-                        prev_index = index
-
                         # update JSON to have enrichment row and domain...
                         for anno in annotation_chunk:
+                            # NOTE: this is not consistent
+                            # because the PDF parser can parse out commas, semicolons, etc
+                            # that is actually part of a word
+                            # e.g Adenylate kinase 2, mitochondrial
+                            # loses the comma
+                            #
+                            # if prev_index != -1:
+                                # # only do this for subsequent cells b/c
+                                # # first cell will always have the correct index
+                                # # update index offset to be relative to the cell again
+                                # # since they're relative to the combined text
+                                # anno['loLocationOffset'] = anno['loLocationOffset'] - (prev_index + 1) - 1  # noqa
+                                # anno['hiLocationOffset'] = anno['loLocationOffset'] + anno['keywordLength'] - 1  # noqa
+
                             # imported should come first for each row
                             if cell_text.get('imported'):
                                 enriched_gene = cell_text['text']
@@ -564,6 +576,8 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                                     'index']]['domains'][cell_text[
                                         'domain']][cell_text[
                                             'label']]['annotatedText'] = snippet
+
+                        prev_index = index
 
                     current_app.logger.info(
                         f'Time to create enrichment snippets {time.time() - start}')
