@@ -16,6 +16,8 @@ import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
+import { escapeRegExp } from 'lodash';
+
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
 
@@ -28,6 +30,7 @@ import { FilesystemService } from 'app/file-browser/services/filesystem.service'
 import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { NodeTextRange } from 'app/shared/utils/dom';
 import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
 
 import { EnrichmentDocument } from '../../models/enrichment-document';
@@ -52,7 +55,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   document$: Observable<EnrichmentDocument> = new Subject();
   table$: Observable<EnrichmentTable> = new Subject();
   scrollTopAmount: number;
-  findController = new AsyncElementFind();
+  findController = new AsyncElementFind(null, this.generateFindQueue);
   findTargetChangesSub: Subscription;
   private tickAnimationFrameId: number;
 
@@ -273,5 +276,73 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   objectUpdate() {
     this.emitModuleProperties();
     this.changeDetectorRef.detectChanges();
+  }
+
+  private* generateFindQueue(root: Node, query: string): IterableIterator<NodeTextRange | undefined> {
+    const queue: Node[] = [
+      root,
+    ];
+
+    while (true) {
+      const node = queue.shift();
+      if (node == null) {
+        break;
+      }
+
+      switch (node.nodeType) {
+        case 1:
+          const el = node as HTMLElement;
+          const style = window.getComputedStyle(el);
+          // Should be true when we find the top-level container for the table cell
+          if (style.display === 'block') {
+            const regex = new RegExp(escapeRegExp(query), 'ig');
+            let match = regex.exec(node.textContent);
+
+            // If there's no match in the root, then there's no reason to continue
+            if (match === null) {
+              break;
+            }
+
+            // If there is a match, go ahead and find all the descendant text nodes
+            const descendants = Array.from(el.getElementsByTagName('*'));
+            const textNodes: Node[] = [];
+            for (const descendant of descendants) {
+              for (const child of Array.from(descendant.childNodes)) {
+                if (child.nodeType === 3) {
+                  textNodes.push(child);
+                }
+              }
+            }
+
+            // Create a map of the root text content indices to the descendant text node corresponding to that index
+            let index = 0;
+            const textNodeMap = new Map<number, [Node, number]>();
+            for (const textNode of textNodes) {
+              for (let i = 0; i < textNode.textContent.length; i++) {
+                textNodeMap.set(index++, [textNode, i]);
+              }
+            }
+
+            while (match !== null) {
+              // Need to catch the case where regex.lastIndex returns a value greater than the last index of the text
+              const lastIndexIsEOS = regex.lastIndex === node.textContent.length;
+              const endOfMatch = lastIndexIsEOS ? regex.lastIndex - 1 : regex.lastIndex;
+
+              yield {
+                startNode: textNodeMap.get(match.index)[0],
+                endNode: textNodeMap.get(endOfMatch)[0],
+                start: textNodeMap.get(match.index)[1],
+                end: textNodeMap.get(endOfMatch)[1] + (lastIndexIsEOS ? 1 : 0), // IMPORTANT: `end` is EXCLUSIVE!
+              };
+              match = regex.exec(node.textContent);
+            }
+            break;
+          }
+          for (let child = node.firstChild; child; child = child.nextSibling) {
+            queue.push(child);
+          }
+          break;
+      }
+    }
   }
 }
