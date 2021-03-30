@@ -178,8 +178,14 @@ export class HighlightTextComponent {
     text = typeId === 'link' ? 'Link' : text;
 
     if (hyperlink.length) {
+      let hyperlinkText = 'Annotation URL';
+      try {
+        hyperlinkText = new URL(hyperlink).hostname.replace(/^www\./i, '');
+      } catch (e) {
+      }
+
       hyperlinks.push({
-        domain: 'Annotation URL',
+        domain: hyperlinkText,
         url: hyperlink,
         isDatabase: false,
       });

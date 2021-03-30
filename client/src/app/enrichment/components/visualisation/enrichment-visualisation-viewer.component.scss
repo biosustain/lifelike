@@ -3,6 +3,12 @@
   justify-content: center;
 }
 
+.legend {
+  display: grid;
+  grid-template-columns: 4ch 1fr;
+  margin: 0;
+}
+
 .space-cards {
   display: flex;
   flex-direction: column;
