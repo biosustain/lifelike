@@ -1,13 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProgressDialog } from '../../shared/services/progress-dialog.service';
 import { WorkspaceManager } from '../../shared/workspace-manager';
-import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, merge, Observable, of } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
-import { finalize, map, mergeMap, take } from 'rxjs/operators';
+import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 import { MessageType } from '../../interfaces/message-dialog.interface';
 import { ShareDialogComponent } from '../../shared/components/dialog/share-dialog.component';
 import { FilesystemObject } from '../models/filesystem-object';
@@ -177,24 +177,10 @@ export class FilesystemObjectActions {
    * @param target the file to edit
    */
   openEditDialog(target: FilesystemObject): Promise<any> {
-    const dialogRef = this.modalService.open(ObjectEditDialogComponent);
-    dialogRef.componentInstance.object = target;
-    this.annotationsService.getAnnotationSelections(target.hashId).subscribe(configs => {
-      dialogRef.componentInstance.configs = configs.annotationConfigs;
-      dialogRef.componentInstance.accept = ((changes: ObjectEditDialogValue) => {
-        const progressDialogRef = this.createProgressDialog(`Saving changes to ${getObjectLabel(target)}...`);
-        return this.filesystemService.save([target.hashId], changes.request, {
-          [target.hashId]: target,
-        })
-          .pipe(
-            finalize(() => progressDialogRef.close()),
-            this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
-            this.errorHandler.create({label: 'Edit object'}),
-          )
-          .toPromise();
-      });
-    });
-    return dialogRef.result;
+    return this.objectTypeService.get(target).pipe(
+      mergeMap(typeProvider => from(typeProvider.openEditDialog(target))),
+      take(1),
+    ).toPromise();
   }
 
   openDeleteDialog(targets: FilesystemObject[]): Promise<any> {
