@@ -229,10 +229,6 @@ export interface AnnotationGenerationResultData {
 // Requests
 // ----------------------------------------
 
-export interface AnnotationGenerationRequest {
-  refresh?: boolean;
-}
-
 export interface AnnotationMethods {
   [model: string]: {
     nlp: boolean;
@@ -245,14 +241,14 @@ export interface AnnotationConfigurations {
   annotationMethods: AnnotationMethods;
 }
 
-export interface PDFAnnotationGenerationRequest extends AnnotationGenerationRequest {
+export interface PDFAnnotationGenerationRequest {
   organism?: OrganismAutocomplete;
   annotationConfigs?: AnnotationConfigurations;
 }
 
+/* tslint:disable-next-line */
 export interface TextAnnotationGenerationRequest extends PDFAnnotationGenerationRequest {
-  texts?: EnrichmentTextMapping[];
-  enrichment?: EnrichmentResult;
+  //
 }
 
 // ========================================

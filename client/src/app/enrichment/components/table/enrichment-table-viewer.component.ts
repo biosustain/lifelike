@@ -185,7 +185,7 @@ export class EnrichmentTableViewerComponent implements OnInit {
       this.queuedChanges$.next({
         ...(this.queuedChanges$.value || {}),
       });
-      this.refreshData();
+      this.save();
     }, () => {
     });
   }
