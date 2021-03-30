@@ -113,4 +113,3 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 export interface EnrichmentTableEditDialogValue extends ObjectEditDialogValue {
   document: EnrichmentDocument;
 }
-
