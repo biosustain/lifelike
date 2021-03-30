@@ -62,7 +62,7 @@ over similar counts collected from a single source.<br/>
         step: 0.1,
         default: 0,
       },
-      mwu
+      // mwu <Temporarily disabled>
     ]
   },
   'application/pdf': {
@@ -84,7 +84,7 @@ over similar counts collected from a single source.<br/>
         default: 0,
       },
       {
-        ...mwu,
+        // ...mwu <Temporarily disabled>
         description: `
 Each word are weighted according to a one-sided MWU test that assesses whether a count
 for that specific term tends to be larger than a count from any other term.<br/>
