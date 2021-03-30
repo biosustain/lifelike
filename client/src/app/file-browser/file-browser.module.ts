@@ -27,7 +27,12 @@ import {
 import { ObjectExportDialogComponent } from './components/dialog/object-export-dialog.component';
 import { ObjectTileDeckComponent } from './components/object-tile-deck.component';
 import { ObjectPathComponent } from './components/object-path.component';
-import { ObjectTypeService, TYPE_PROVIDER } from './services/object-type.service';
+import {
+  AbstractObjectTypeProviderHelper,
+  DefaultObjectTypeProvider,
+  ObjectTypeService,
+  TYPE_PROVIDER,
+} from './services/object-type.service';
 import { DirectoryTypeProvider } from './providers/directory.type-provider';
 import { DirectoryPreviewComponent } from './components/directory-preview.component';
 import { ObjectMenuComponent } from './components/object-menu.component';
@@ -41,6 +46,8 @@ import { AnnotationsService } from './services/annotations.service';
 import { ObjectCreationService } from './services/object-creation.service';
 import { FilesystemObjectTargetDirective } from './directives/filesystem-object-target.directive';
 import { ObjectReannotateResultsDialogComponent } from './components/dialog/object-reannotate-results-dialog.component';
+import { FilesystemObjectDataProvider } from './providers/data-transfer-data/filesystem-object-data.provider';
+import { DATA_TRANSFER_DATA_PROVIDER } from '../shared/services/data-transfer-data.service';
 
 @NgModule({
   declarations: [
@@ -123,9 +130,16 @@ import { ObjectReannotateResultsDialogComponent } from './components/dialog/obje
     ProjectActions,
     ObjectCreationService,
     ObjectTypeService,
+    DefaultObjectTypeProvider,
+    AbstractObjectTypeProviderHelper,
     {
       provide: TYPE_PROVIDER,
       useClass: DirectoryTypeProvider,
+      multi: true,
+    },
+    {
+      provide: DATA_TRANSFER_DATA_PROVIDER,
+      useClass: FilesystemObjectDataProvider,
       multi: true,
     },
   ],

@@ -37,7 +37,10 @@ import { EnrichmentDocument } from '../../models/enrichment-document';
 import { EnrichmentTable } from '../../models/enrichment-table';
 import { EnrichmentTableService } from '../../services/enrichment-table.service';
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
-import { EnrichmentTableEditDialogComponent, EnrichmentTableEditDialogValue } from './dialog/enrichment-table-edit-dialog.component';
+import {
+  EnrichmentTableEditDialogComponent,
+  EnrichmentTableEditDialogValue,
+} from './dialog/enrichment-table-edit-dialog.component';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -79,6 +82,18 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   }
 
   ngOnInit() {
+    this.load();
+  }
+
+  scrollTop() {
+    this.scrollTopAmount = 0;
+  }
+
+  onTableScroll(e) {
+    this.scrollTopAmount = e.target.scrollTop;
+  }
+
+  load() {
     this.object$ = this.filesystemService.get(this.fileId).pipe(
       tap(() => {
         this.emitModuleProperties();
@@ -136,14 +151,6 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
   tick() {
     this.findController.tick();
     this.tickAnimationFrameId = requestAnimationFrame(this.tick.bind(this));
-  }
-
-  scrollTop() {
-    this.scrollTopAmount = 0;
-  }
-
-  onTableScroll(e) {
-    this.scrollTopAmount = e.target.scrollTop;
   }
 
   restore(version: ObjectVersion) {
@@ -275,7 +282,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy, AfterV
 
   objectUpdate() {
     this.emitModuleProperties();
-    this.changeDetectorRef.detectChanges();
+    this.load();
   }
 
   private* generateFindQueue(root: Node, query: string): IterableIterator<NodeTextRange | undefined> {

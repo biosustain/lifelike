@@ -7,7 +7,6 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { FILESYSTEM_OBJECT_TRANSFER_TYPE, FilesystemObjectTransferData } from '../data';
 import { BehaviorSubject } from 'rxjs';
 import { Progress } from '../../interfaces/common-dialog.interface';
 import { finalize, tap } from 'rxjs/operators';
@@ -19,6 +18,10 @@ import { ObjectCreationService } from '../services/object-creation.service';
 import { FilesystemObject } from '../models/filesystem-object';
 import { MessageArguments, MessageDialog } from '../../shared/services/message-dialog.service';
 import { MessageType } from '../../interfaces/message-dialog.interface';
+import {
+  FILESYSTEM_OBJECT_TRANSFER_TYPE,
+  FilesystemObjectTransferData,
+} from '../providers/data-transfer-data/filesystem-object-data.provider';
 
 @Directive({
   selector: '[appFSObjectTarget]',

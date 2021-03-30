@@ -558,37 +558,45 @@ class EntityRecognitionService:
 
         Start from closest word to abbreviation, and check the first character.
         """
-        if not token.previous_words:
-            return False
+        if token.keyword in self.abbreviations:
+            return True
 
         if len(token.keyword) not in ABBREVIATION_WORD_LENGTH:
             return False
 
-        if token.keyword not in self.abbreviations:
-            abbrev = ''
-            len_of_word = len(token.keyword)
-            previous_words = token.previous_words.split(' ')
-            for w in previous_words:
-                if '-' in w:
-                    split = w.split('-')
-                    for w2 in split:
-                        if w2:
-                            abbrev += w2[0].upper()
-                elif '/' in w:
-                    split = w.split('/')
-                    for w2 in split:
-                        if w2:
-                            abbrev += w2[0].upper()
-                else:
-                    abbrev += w[0].upper()
-            abbrev = abbrev[-len_of_word:]
+        # a token will only have previous words
+        # if it is a possible abbreviation
+        # the assumption here is, if an abbreviation
+        # is used the *first time*, it will have previous
+        # words that it is an abbreviation of
+        # any subsequent uses of the abbreviation
+        # will not have the word it is abbreviated from
+        # as a previous word in the document
+        if not token.previous_words:
+            return False
 
-            if abbrev == token.keyword:
-                self.abbreviations.add(token.keyword)
+        abbrev = ''
+        len_of_word = len(token.keyword)
+        previous_words = token.previous_words.split(' ')
+        for w in reversed(previous_words):
+            if '-' in w:
+                split = w.split('-')
+                for w2 in reversed(split):
+                    if w2:
+                        abbrev = w2[0].upper() + abbrev
+            elif '/' in w:
+                split = w.split('/')
+                for w2 in reversed(split):
+                    if w2:
+                        abbrev = w2[0].upper() + abbrev
+            else:
+                abbrev = w[0].upper() + abbrev
+        abbrev = abbrev[-len_of_word:]
 
-            return True if abbrev == token.keyword else False
-        else:
+        if abbrev == token.keyword:
+            self.abbreviations.add(token.keyword)
             return True
+        return False
 
     def generate_tokens(self, token: PDFWord, max_words) -> List[PDFWord]:
         num_words = 0
@@ -708,7 +716,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -745,7 +753,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -796,7 +804,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -847,7 +855,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -895,7 +903,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -932,7 +940,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -940,14 +948,17 @@ class EntityRecognitionService:
 
         if cursor.set_key(lookup_term.encode('utf-8')):
             entities = [json.loads(v) for v in cursor.iternext_dup()]
-        else:
-            # didn't find in LMDB so look in global inclusion
-            found = self.inclusion_type_gene.get(lookup_term, None)
-            if found:
-                found_inclusion = True
-                entities = found.entities
-                id_type = found.entity_id_type
-                id_hyperlink = found.entity_id_hyperlink
+
+        found = self.inclusion_type_gene.get(lookup_term, None)
+        if found:
+            found_inclusion = True
+            # need to concatenate and not do either LMDB or global inclusion
+            # because a global could normalize to something already in
+            # LMDB, e.g IL-8 is a global inclusion, but il8 is already
+            # normalized in LMDB from IL8
+            entities += found.entities
+            id_type = found.entity_id_type
+            id_hyperlink = found.entity_id_hyperlink
 
         # only want those in inclusion or identified by NLP (if any)
         if entities:
@@ -980,7 +991,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -1014,7 +1025,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -1048,7 +1059,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 
@@ -1086,7 +1097,7 @@ class EntityRecognitionService:
         term = current_token.keyword
         lookup_term = current_token.normalized_keyword
 
-        entities = None
+        entities = []
         id_type = None
         id_hyperlink = None
 

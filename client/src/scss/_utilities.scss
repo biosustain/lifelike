@@ -59,3 +59,7 @@
   outline: 2px solid black;
   outline-offset: -2px;
 }
+
+.drop-target-outset {
+  outline-offset: 0;
+}
