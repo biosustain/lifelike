@@ -459,7 +459,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
     };
 
     const sources: Source[] = [{
-      domain: 'File Source',
+      domain: this.filename,
       url: this.getCommands().join('/'),
     }];
 

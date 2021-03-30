@@ -153,34 +153,6 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
     return this.actions.openShareDialog(target, false);
   }
 
-  copyAsMapNode(target: FilesystemObject) {
-    const clipboardData = JSON.stringify({
-      type: TYPE_STRING,
-      selection: [{
-        type: 'node',
-        entity: {
-          display_name: target.filename,
-          label: target.mapNodeLabel,
-          sub_labels: [],
-          data: {
-            references: [{
-              type: 'PROJECT_OBJECT',
-              id: target.hashId + '',
-            }],
-            sources: [{
-              domain: 'File Source',
-              url: target.getURL(false),
-            }],
-          },
-        },
-      }],
-    } as GraphClipboardData);
-
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(clipboardData);
-    }
-  }
-
   openLink(url: string) {
     window.open(url);
   }
