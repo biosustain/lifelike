@@ -5,8 +5,9 @@
 
   <app-modal-body>
     <app-form-row for="domain" label="Text" [control]="form.get('domain')">
-      <input type="text" formControlName="domain" id="domain" [appFormInput]="form.get('domain')"
-             appAutoFocus [setFocus]="form.get('url').value" [autoSelect]="form.get('url').value">
+      <textarea formControlName="domain" id="domain" [appFormInput]="form.get('domain')"
+                appAutoFocus [setFocus]="form.get('url').value"
+                [autoSelect]="form.get('url').value" rows="10" cols="30"></textarea>
     </app-form-row>
 
     <app-form-row for="url" label="URL" [control]="form.get('url')" [errors]="errors">
