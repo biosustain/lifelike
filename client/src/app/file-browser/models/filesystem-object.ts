@@ -136,7 +136,7 @@ export class FilesystemObject implements DirectoryObject, Directory, PdfFile, Kn
   fallbackOrganism?: OrganismAutocomplete;
   recycled: boolean;
   effectivelyRecycled: boolean;
-  annotationConfigs: AnnotationConfigurations;
+  annotationConfigs?: AnnotationConfigurations;
 
   highlight?: string[];
   highlightAnnotated?: boolean[];
