@@ -17,7 +17,10 @@ import { FilesystemService } from '../../../file-browser/services/filesystem.ser
 import { ProgressDialog } from '../../../shared/services/progress-dialog.service';
 import { ObjectVersion } from '../../../file-browser/models/object-version';
 import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-order-dialog.component';
-import { EnrichmentTableEditDialogComponent, EnrichmentTableEditDialogValue } from './dialog/enrichment-table-edit-dialog.component';
+import {
+  EnrichmentTableEditDialogComponent,
+  EnrichmentTableEditDialogValue,
+} from './dialog/enrichment-table-edit-dialog.component';
 
 @Component({
   selector: 'app-enrichment-table-viewer',
@@ -52,6 +55,18 @@ export class EnrichmentTableViewerComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.load();
+  }
+
+  scrollTop() {
+    this.scrollTopAmount = 0;
+  }
+
+  onTableScroll(e) {
+    this.scrollTopAmount = e.target.scrollTop;
+  }
+
+  load() {
     this.object$ = this.filesystemService.get(this.fileId).pipe(
       tap(() => {
         this.emitModuleProperties();
@@ -69,14 +84,6 @@ export class EnrichmentTableViewerComponent implements OnInit {
       this.errorHandler.create({label: 'Load enrichment table'}),
       shareReplay(),
     );
-  }
-
-  scrollTop() {
-    this.scrollTopAmount = 0;
-  }
-
-  onTableScroll(e) {
-    this.scrollTopAmount = e.target.scrollTop;
   }
 
   restore(version: ObjectVersion) {
@@ -208,6 +215,6 @@ export class EnrichmentTableViewerComponent implements OnInit {
 
   objectUpdate() {
     this.emitModuleProperties();
-    this.changeDetectorRef.detectChanges();
+    this.load();
   }
 }

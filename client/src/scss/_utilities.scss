@@ -63,3 +63,11 @@
 .drop-target-outset {
   outline-offset: 0;
 }
+
+.drop-zone {
+  border: 2px dashed $gray-400;
+  padding: $input-padding-y $input-padding-x;
+  border-radius: $input-border-radius;
+  text-align: center;
+  color: $gray-400;
+}
