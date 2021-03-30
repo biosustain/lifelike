@@ -1,7 +1,7 @@
 """Fix file_version hash_id
 
 Revision ID: bc9d080502da
-Revises: 2ceb4c0d1d9e
+Revises: 819554a9fcf3
 Create Date: 2021-03-29 18:08:35.564640
 
 """
@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from neo4japp.models.common import generate_hash_id
 
 revision = 'bc9d080502da'
-down_revision = '2ceb4c0d1d9e'
+down_revision = '819554a9fcf3'
 branch_labels = None
 depends_on = None
 
