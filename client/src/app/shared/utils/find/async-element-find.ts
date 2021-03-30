@@ -1,5 +1,7 @@
 import { escapeRegExp } from 'lodash';
 
+import { isNullOrUndefined } from 'util';
+
 import {
   NodeTextRange,
   nonStaticPositionPredicate,
@@ -18,16 +20,20 @@ export class AsyncElementFind implements AsyncFindController {
   private pendingJump = false;
 
   target: Element;
+  // @ts-ignore
   resizeObserver = new ResizeObserver(this.redraw.bind(this));
   scrollToOffset = 100;
   query = '';
-  protected readonly textFinder = new AsyncElementTextFinder(this.matchFind.bind(this));
+  protected readonly textFinder = new AsyncElementTextFinder(this.matchFind.bind(this), this.findGenerator);
   protected results: NodeTextRange[] = [];
   protected readonly highlighter = new AsyncTextHighlighter(document.body);
   protected activeQuery: string | undefined = null;
   protected index = -1;
 
-  constructor(target: Element = null) {
+  constructor(
+    target: Element = null,
+    private findGenerator: (root: Node, query: string) => IterableIterator<NodeTextRange | undefined> = null,
+  ) {
     this.target = target;
   }
 
@@ -159,7 +165,7 @@ export class AsyncElementFind implements AsyncFindController {
    * Highlight the current findindex.
    */
   private visitResult() {
-    scrollRectIntoView(this.results[this.index].node.parentElement, undefined);
+    scrollRectIntoView(this.results[this.index].startNode.parentElement, undefined);
     this.highlighter.focus(this.results[this.index]);
   }
 
@@ -179,16 +185,21 @@ export class AsyncElementFind implements AsyncFindController {
 class AsyncElementTextFinder {
 
   // TODO: Handle DOM changes mid-find
-  // TODO: Handle text matches between elements (like <span>find <strong>this</strong></span>
 
   private findQueue: IterableIterator<NodeTextRange> | undefined;
   findTimeBudget = 10;
 
-  constructor(protected readonly callback: (matches: NodeTextRange[]) => void) {
+  constructor(
+    protected readonly callback: (matches: NodeTextRange[]) => void,
+    private generator?: (root: Node, query: string) => IterableIterator<NodeTextRange | undefined>
+  ) {
+    if (isNullOrUndefined(this.generator)) {
+      this.generator = this.defaultGenerator;
+    }
   }
 
   find(root: Node, query: string) {
-    this.findQueue = this.generateFindQueue(root, query);
+    this.findQueue = this.generator(root, query);
   }
 
   stop() {
@@ -226,7 +237,7 @@ class AsyncElementTextFinder {
     }
   }
 
-  private* generateFindQueue(root: Node, query: string): IterableIterator<NodeTextRange | undefined> {
+  private* defaultGenerator(root: Node, query: string): IterableIterator<NodeTextRange | undefined> {
     const queue: Node[] = [
       root,
     ];
@@ -252,7 +263,8 @@ class AsyncElementTextFinder {
               break;
             }
             yield {
-              node,
+              startNode: node,
+              endNode: node,
               start: match.index,
               end: regex.lastIndex,
             };

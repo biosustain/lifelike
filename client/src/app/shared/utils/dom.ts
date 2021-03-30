@@ -230,7 +230,9 @@ const defaultScrollRectIntoViewOptions: ScrollRectIntoViewOptions = {
 };
 
 export interface NodeTextRange {
-  node: Node;
+  // Start and end node could refer to the same element!
+  startNode: Node;
+  endNode: Node;
   start: number;
   end: number;
 }
