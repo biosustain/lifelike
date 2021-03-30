@@ -1,3 +1,4 @@
+import itertools
 import time
 
 from math import inf
@@ -1062,12 +1063,9 @@ class AnnotationService:
                         split[i].append(anno)
                         break
 
-            combined: List[Annotation] = []
-            for _, v in split.items():
-                combined += self.fix_conflicting_annotations(
-                    unified_annotations=v)
-
-            fixed_unified_annotations = combined
+            fixed_unified_annotations = list(itertools.chain.from_iterable(
+                [self.fix_conflicting_annotations(unified_annotations=v) for _, v in split.items()]
+            ))
         else:
             fixed_unified_annotations = self.fix_conflicting_annotations(
                 unified_annotations=fixed_unified_annotations)
