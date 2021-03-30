@@ -96,16 +96,14 @@ def get_ncbi_enrichment_domains():
         go = kg.get_go_genes(node_ids)
         string = kg.get_string_genes(node_ids)
         uniprot = kg.get_uniprot_genes(node_ids)
-        nodes = []
-        for i, node_id in enumerate(node_ids):
-            node = {'regulon': regulon[i],
-                    'uniprot': uniprot[i],
-                    'string': string[i],
-                    'go': go[i],
-                    'biocyc': biocyc[i],
-                    'node_id': node_id
-                    }
-            nodes.append(node)
+        nodes = [{
+            'regulon': regulon[i],
+            'uniprot': uniprot[i],
+            'string': string[i],
+            'go': go[i],
+            'biocyc': biocyc[i],
+            'node_id': node_id
+        } for i, node_id in enumerate(node_ids)]
     else:
         nodes = []
     return jsonify({'result': nodes}), 200
