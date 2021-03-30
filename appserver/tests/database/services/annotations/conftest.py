@@ -546,20 +546,36 @@ def abbreviation_lmdb_setup(app, request):
         synonym='Pentose Phosphate Pathway',
     )
 
-    ppp = lmdb_chemical_factory(
-        chemical_id='CHEBI:73647',
-        id_type=DatabaseType.CHEBI.value,
-        name='Pro-Pro-Pro',
+    hypertension = lmdb_disease_factory(
+        disease_id='MESH:D000081029',
+        id_type=DatabaseType.MESH.value,
+        name='Pulmonary Arterial Hypertension',
+        synonym='Pulmonary Arterial Hypertension',
+    )
+
+    ppp = lmdb_gene_factory(
+        gene_id='101099627',
+        id_type=DatabaseType.NCBI.value,
+        name='PPP',
         synonym='PPP',
+        category=OrganismCategory.EUKARYOTA.value,
+    )
+
+    pah = lmdb_gene_factory(
+        gene_id='245623',
+        id_type=DatabaseType.NCBI.value,
+        name='PAH',
+        synonym='PAH',
+        category=OrganismCategory.EUKARYOTA.value,
     )
 
     entities = [
         (ANATOMY_MESH_LMDB, 'anatomy', []),
-        (CHEMICALS_CHEBI_LMDB, 'chemicals', [ppp]),
+        (CHEMICALS_CHEBI_LMDB, 'chemicals', []),
         (COMPOUNDS_BIOCYC_LMDB, 'compounds', []),
-        (DISEASES_MESH_LMDB, 'diseases', []),
+        (DISEASES_MESH_LMDB, 'diseases', [hypertension]),
         (FOODS_MESH_LMDB, 'foods', []),
-        (GENES_NCBI_LMDB, 'genes', []),
+        (GENES_NCBI_LMDB, 'genes', [ppp, pah]),
         (PHENOTYPES_CUSTOM_LMDB, 'phenotypes', [pathway]),
         (PROTEINS_UNIPROT_LMDB, 'proteins', []),
         (SPECIES_NCBI_LMDB, 'species', []),
@@ -1166,6 +1182,21 @@ def mock_get_gene_to_organism_match_result_for_escherichia_coli_pdf(monkeypatch)
             'purC': {'purC': {'562': '946957'}},
             'purD': {'purD': {'562': '948504'}},
             'purF': {'purF': {'562': '946794'}},
+        }
+
+    monkeypatch.setattr(
+        AnnotationGraphService,
+        'get_gene_to_organism_match_result',
+        get_match_result,
+    )
+
+
+@pytest.fixture(scope='function')
+def mock_gene_organism_abbrev_test(monkeypatch):
+    def get_match_result(*args, **kwargs):
+        return {
+            'PPP': {'PPP': {'9606': '80267'}},
+            'PAH': {'PAH': {'9606': '289085'}}
         }
 
     monkeypatch.setattr(

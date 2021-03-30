@@ -1,3 +1,16 @@
+.legend {
+  display: grid;
+  grid-template-columns: 4ch 1fr;
+  margin: 0;
+}
+
+.hidden-text {
+  display: inline-block;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 @mixin clamp($max-lines) {
   overflow: hidden;
   // oddly those prefixes are supported among all modern browsers
