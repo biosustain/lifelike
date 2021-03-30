@@ -1,5 +1,5 @@
 import { Observable, of, concat, merge } from 'rxjs';
-import { mapBlobToBuffer, mapBufferToJson } from '../../shared/utils/files';
+import { mapBlobToBuffer } from '../../shared/utils/files';
 import { concatMap, first, map, mergeMap, switchMap, toArray } from 'rxjs/operators';
 import { EnrichmentTableService, EnrichmentWrapper, GoNode, NCBINode, NCBIWrapper, } from '../services/enrichment-table.service';
 import { nullCoalesce } from '../../shared/utils/types';
@@ -302,8 +302,11 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 for (let i = 0; i < ncbiNodes.length; i++) {
                   geneMap.set(synonyms[i], {
                     imported: synonyms[i],
+                    annotatedImported: synonyms[i],
                     matched: ncbiNodes[i].name,
+                    annotatedMatched: ncbiNodes[i].name,
                     fullName: ncbiNodes[i].full_name,
+                    annotatedFullName: ncbiNodes[i].full_name,
                     link: ncbiLinks[i],
                     domains: this.generateGeneDomainResults(domains, domainResults[i], ncbiNodes, ncbiIds),
                   });
@@ -318,7 +321,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
                 }
 
                 return {
-                  version: '1',
+                  version: '3',
                   domainInfo: {
                     Regulon: {
                       labels: ['Regulator Family', 'Activated By', 'Repressed By'],
@@ -476,14 +479,17 @@ export interface EnrichedGeneDomain {
 
 export interface EnrichedGene {
   imported: string;
+  annotatedImported?: string;
   matched?: string;
+  annotatedMatched?: string;
   fullName?: string;
+  annotatedFullName?: string;
   link?: string;
   domains?: { [domain: string]: EnrichedGeneDomain };
 }
 
 export interface EnrichmentResult {
-  version: '1';
+  version: '3';
   domainInfo: DomainInfoMap;
   genes: EnrichedGene[];
 }

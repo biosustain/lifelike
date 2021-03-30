@@ -5,6 +5,7 @@
         <th
           *ngFor="let col of row"
           class="border-top text-center text-truncate"
+          style="z-index: 1"
           [attr.colspan]="col.span"
         >
           {{ col.name }}
@@ -18,9 +19,11 @@
       <tr *ngFor="let row of entries">
         <td *ngFor="let entry of row" style="white-space:pre-wrap; word-wrap:break-word" class="overflow-auto resizeable" [ngClass]="{ 'error': entry.highlight}">
           <div>
-            <span *ngIf="entry.text.indexOf('snippet') === -1; else highlightText">{{ entry.text }}</span>
-            <ng-template #highlightText>
+            <span *ngIf="entry.text && entry.text.indexOf('snippet') > -1; else noHighlight">
               <app-highlight-text [highlight]="entry.text"></app-highlight-text>
+            </span>
+            <ng-template #noHighlight>
+              {{ entry.text }}
             </ng-template>
           </div>
           <ng-container *ngIf="entry.multiLink">

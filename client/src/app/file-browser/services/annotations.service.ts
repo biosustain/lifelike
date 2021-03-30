@@ -12,7 +12,6 @@ import {
   AnnotationGenerationResultData,
   CustomAnnotationCreateRequest,
   CustomAnnotationDeleteRequest,
-  AnnotationSelectionResponse,
 } from '../schema';
 import { map } from 'rxjs/operators';
 import { ResultList, ResultMapping } from '../../shared/schemas/common';
@@ -29,15 +28,6 @@ export class AnnotationsService {
   getAnnotations(hashId: string): Observable<Annotation[]> {
     return this.http.get<ResultList<Annotation>>(
       `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations`,
-      this.apiService.getHttpOptions(true),
-    ).pipe(
-      map(data => data.results),
-    );
-  }
-
-  getAnnotationSelections(hashId: string): Observable<AnnotationSelectionResponse> {
-    return this.http.get<{results: AnnotationSelectionResponse}>(
-      `/api/filesystem/objects/${encodeURIComponent(hashId)}/annotations/configs`,
       this.apiService.getHttpOptions(true),
     ).pipe(
       map(data => data.results),

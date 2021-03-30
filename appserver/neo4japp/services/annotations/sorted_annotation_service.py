@@ -5,6 +5,7 @@ from neo4japp.models import Files
 from neo4japp.services.annotations import ManualAnnotationService
 from pandas import DataFrame, MultiIndex
 from scipy.stats import mannwhitneyu
+import pandas as pd
 
 
 # region Types
@@ -24,8 +25,6 @@ class SortedAnnotationResult(TypedDict):
 SortedAnnotationResults = Dict[str, SortedAnnotationResult]
 FileAnnotationTable = List[Tuple[str, str]]
 AnnotationLookupTable = Dict[str, Annotation]
-
-
 # endregion
 
 
@@ -96,45 +95,34 @@ class FrequencySA(SortedAnnotation):
 class MannWhitneyUSA(SortedAnnotation):
     id = 'mwu'
 
-    @staticmethod
-    # https://stackoverflow.com/questions/11144513/cartesian-product-of-x-and-y-array-points-into
-    # -single-array-of-2d-points/11146645#11146645
-    def cartesian_product(*arrays):
-        la = len(arrays)
-        dtype = np.result_type(*arrays)
-        arr = np.empty([len(a) for a in arrays] + [la], dtype=dtype)
-        for i, a in enumerate(np.ix_(*arrays)):
-            arr[..., i] = a
-        return arr.reshape(-1, la)
-
     def get_annotations(self, files):
         files_annotations, key_map = self.get_annotations_per_file(files)
 
-        df = DataFrame(
+        ds = DataFrame(
                 files_annotations,
                 columns=['file_id', 'key']
         ) \
             .groupby(['file_id', 'key']) \
-            .size() \
-            .reset_index()
+            .size()
 
         # Calc before exploding the array
-        unique_keys = df['key'].unique()
+        keys = ds.index.get_level_values('key')
+        unique_keys = keys.unique()
+        unique_file_ids = ds.index.get_level_values('file_id').unique()
 
-        v = self.cartesian_product(df.key, df.file_id)
-        idx = MultiIndex.from_arrays([v[:, 0], v[:, 1]])
+        idx = pd.MultiIndex.from_product([unique_file_ids, unique_keys], names=['file_id', 'key'])
+        ds = ds.reindex(idx, fill_value=0, copy=False)
 
-        df.set_index(['file_id', 'key']).reindex(idx)
-
+        key_index_values = idx.get_level_values('key')
         distinct_annotations = dict()
         for key in unique_keys:
-            df['mask'] = df['key'] == key
+            mask = key_index_values == key
             distinct_annotations[key] = {
                 'annotation': key_map[key],
                 'value': -np.log(
                         mannwhitneyu(
-                                df[df['mask']][0],
-                                df[~df['mask']][0],
+                                ds[mask],
+                                ds[~mask],
                                 alternative='greater'
                         ).pvalue
                 )
@@ -195,14 +183,16 @@ class MannWhitneyPerRowUSA(SortedAnnotation):
                     columns=dict(uuid=0)).reset_index()
 
             gen = df.groupby(['id']).aggregate(take_first_annotation).iterrows()
+            ids = df['id']
+            values = df[0]
             for (key, annotation) in gen:
-                df['mask'] = df['id'] == key
+                mask = ids == key
                 distinct_annotations[key] = {
                     'annotation': annotation,
                     'value': -np.log(
                             mannwhitneyu(
-                                    df[df['mask']][0],
-                                    df[0] * (~df['mask']),
+                                    values[mask],
+                                    values[~mask],
                                     alternative='greater'
                             ).pvalue
                     )
@@ -240,7 +230,7 @@ class CountPerRowUSA(SortedAnnotation):
 sorted_annotations_dict = {
     SumLogCountSA.id: SumLogCountSA,
     FrequencySA.id: FrequencySA,
-    MannWhitneyUSA.id: MannWhitneyUSA,
+    # MannWhitneyUSA.id: MannWhitneyUSA, Temporarily disable
     CountPerRowUSA.id: CountPerRowUSA
 }
 

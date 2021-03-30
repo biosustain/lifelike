@@ -1,29 +1,50 @@
 <form>
     <div *ngIf="showMore" class="form-group form-inline d-flex justify-content-between align-items-stretch">
         <span class="flex-grow-0">Search: <input class="form-control ml-2" type="text" name="searchTerm"
-                             [(ngModel)]="service.searchTerm"/>
+                                                 [(ngModel)]="service.searchTerm"/>
         </span>
         <span class="ml-3" *ngIf="service.loading$ | async">Loading...</span>
-        <span class="flex-grow-0">Show insignificant: <input class="form-control ml-2" type="checkbox" name="showInsignificant"
-                                         [(ngModel)]="showInsignificant" (change)="toggleShowInsignificant($event)"/>
-        </span>
     </div>
     <table class="table table-striped">
+        <ng-template #legend>
+            <dl class="legend">
+                <dt>' '</dt>
+                <dd><i>q-value</i> <= 1</dd>
+                <dt>.</dt>
+                <dd><i>q-value</i> <= 0.1</dd>
+                <dt>*</dt>
+                <dd><i>q-value</i> <= 0.05</dd>
+                <dt>**</dt>
+                <dd><i>q-value</i> <= 0.01</dd>
+                <dt>***</dt>
+                <dd><i>q-value</i> <= 0.001</dd>
+            </dl>
+        </ng-template>
         <thead>
         <tr>
             <th scope="col" appSortable="goId" (sort)="onSort($event)">GOID</th>
             <th scope="col" appSortable="goTerm" (sort)="onSort($event)">GO Term</th>
             <th scope="col" appSortable="geneNames" (sort)="onSort($event)">Associated genes</th>
             <th scope="col" appSortable="p-value" (sort)="onSort($event)">p-value</th>
-            <th scope="col" appSortable="q-value" (sort)="onSort($event)">q-value</th>
+            <th scope="col" appSortable="q-value" (sort)="onSort($event)"
+                [style.paddingRight]="0"
+            >q-value
+            </th>
+            <th scope="col"
+                [ngbTooltip]="legend"
+                placement="bottom-right top-right"
+                openDelay="500"
+            >
+                <span class="hidden-text">Significance marker</span>
+            </th>
         </tr>
         </thead>
         <tbody [ngClass]="{'line-clamp':!service.searchTerm}">
         <tr *ngFor="let row of data$ | async; let i = index" [tabindex]="i">
-            <th scope="row">{{ "" + row.goId }}</th>
-            <td>
+            <td>{{ row.goId }}</td>
+            <th scope="row">
                 <ngb-highlight [result]="row.goTerm" [term]="service.searchTerm"></ngb-highlight>
-            </td>
+            </th>
             <td>
                 <ngb-highlight [result]="row['geneNames'].join(', ')"
                                [term]="service.searchTerm"></ngb-highlight>
@@ -32,8 +53,16 @@
                 <ngb-highlight [result]="row['p-value']"
                                [term]="service.searchTerm"></ngb-highlight>
             </td>
-            <td>
+            <td [style.paddingRight]="0">
                 <ngb-highlight [result]="row['q-value']"
+                               [term]="service.searchTerm"></ngb-highlight>
+            </td>
+            <td [style.paddingLeft]="0"
+                [ngbTooltip]="legend"
+                placement="bottom-right top-right"
+                openDelay="1000"
+            >
+                <ngb-highlight [result]="significanceIndicator(row['q-value'])"
                                [term]="service.searchTerm"></ngb-highlight>
             </td>
         </tr>
